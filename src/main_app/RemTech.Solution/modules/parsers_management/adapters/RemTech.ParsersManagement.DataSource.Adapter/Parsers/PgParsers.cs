@@ -7,6 +7,8 @@ using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Errors;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
+using RemTech.ParsersManagement.DataSource.Adapter.Parsers.FromSqlConversion;
+using RemTech.ParsersManagement.DataSource.Adapter.Parsers.SelectConstants;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers;
@@ -17,14 +19,50 @@ public sealed class PgParsers : IParsers
 
     public PgParsers(PostgreSqlEngine engine) => _engine = engine;
 
-    public Task<Status<IParser>> Find(Name name, CancellationToken ct = default)
+    public async Task<Status<IParser>> Find(Name name, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        string sql = $"""
+            SELECT
+                {new SelectParserWithLeftJoinedLinks().Read()}
+            FROM parsers p
+            LEFT JOIN parser_links pl ON p.id = pl.parser_id
+            WHERE p.name = @name
+            """;
+        var parameters = new { name = name.NameString().StringValue() };
+        CommandDefinition command = new(sql, parameters, cancellationToken: ct);
+        await using NpgsqlConnection connection = await _engine.Connect(ct);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+        List<IParser> parsers = [];
+        while (await reader.ReadAsync(ct))
+        {
+            IParser parser = await new ParserFromSqlRow(reader).Read();
+            parsers.Add(parser);
+        }
+
+        return parsers.Count == 0 ? new ParserWithNameNotFoundError(name) : parsers[0].Success();
     }
 
-    public Task<Status<IParser>> Find(NotEmptyGuid id, CancellationToken ct = default)
+    public async Task<Status<IParser>> Find(NotEmptyGuid id, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        string sql = $"""
+            SELECT
+                {new SelectParserWithLeftJoinedLinks().Read()}
+            FROM parsers p
+            LEFT JOIN parser_links pl ON p.id = pl.parser_id
+            WHERE p.id = @id
+            """;
+        var parameters = new { id = id.GuidValue() };
+        CommandDefinition command = new(sql, parameters, cancellationToken: ct);
+        await using NpgsqlConnection connection = await _engine.Connect(ct);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+        List<IParser> parsers = [];
+        while (await reader.ReadAsync(ct))
+        {
+            IParser parser = await new ParserFromSqlRow(reader).Read();
+            parsers.Add(parser);
+        }
+
+        return parsers.Count == 0 ? new ParserWithIdNotFoundError(id) : parsers[0].Success();
     }
 
     public async Task<Status<IParser>> Find(
@@ -33,34 +71,12 @@ public sealed class PgParsers : IParsers
         CancellationToken ct = default
     )
     {
-        const string sql = """
+        string sql = $"""
             SELECT
-                p.id,
-                p.name,
-                p.type,
-                p.state,
-                p.domain,
-                p.processed,
-                p.total_seconds,
-                p.hours,
-                p.minutes,
-                p.seconds,
-                p.wait_days,
-                p.next_run,
-                p.last_run,
-                pl.id as link_id,
-                pl.parser_id,
-                pl.name as link_name,
-                pl.url,
-                pl.activity,
-                pl.processed as link_processed,
-                pl.total_seconds as link_total_seconds,
-                pl.hours as link_hours,
-                pl.minutes as link_minutes,
-                pl.seconds as link_seconds
+                {new SelectParserWithLeftJoinedLinks().Read()}
             FROM parsers p
             LEFT JOIN parser_links pl ON p.id = pl.parser_id
-            WHERE p.type = @type AND p.domain = @domain
+            WHERE p.type = type AND p.domain = @domain
             """;
         var parameters = new { type = type.Read().StringValue(), domain = domain.StringValue() };
         CommandDefinition command = new(sql, parameters, cancellationToken: ct);

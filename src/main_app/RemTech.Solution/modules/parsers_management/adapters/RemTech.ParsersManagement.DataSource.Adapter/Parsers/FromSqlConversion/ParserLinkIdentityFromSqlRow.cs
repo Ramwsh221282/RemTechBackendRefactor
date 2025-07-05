@@ -3,7 +3,7 @@ using RemTech.ParsersManagement.Core.Common.Primitives;
 using RemTech.ParsersManagement.Core.Common.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects.ParserLinkIdentities;
 
-namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers;
+namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers.FromSqlConversion;
 
 public sealed class ParserLinkIdentityFromSqlRow(DbDataReader reader)
 {

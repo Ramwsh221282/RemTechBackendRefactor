@@ -19,5 +19,8 @@ public sealed class ParserWithIdNotFoundError : IError
 
     public static implicit operator Status(ParserWithIdNotFoundError error) => error._error;
 
+    public static implicit operator Status<IParser>(ParserWithIdNotFoundError error) =>
+        error._error;
+
     public Error Read() => _error;
 }

@@ -3,7 +3,7 @@ using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.Result.Library;
 
-namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers;
+namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers.FromSqlConversion;
 
 public sealed class ParserFromSqlRow(DbDataReader reader)
 {

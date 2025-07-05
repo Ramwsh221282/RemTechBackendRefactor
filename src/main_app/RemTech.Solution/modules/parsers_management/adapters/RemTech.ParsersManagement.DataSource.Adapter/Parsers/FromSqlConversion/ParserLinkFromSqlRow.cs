@@ -1,7 +1,7 @@
 ﻿using System.Data.Common;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
 
-namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers;
+namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers.FromSqlConversion;
 
 public sealed class ParserLinkFromSqlRow(DbDataReader reader)
 {

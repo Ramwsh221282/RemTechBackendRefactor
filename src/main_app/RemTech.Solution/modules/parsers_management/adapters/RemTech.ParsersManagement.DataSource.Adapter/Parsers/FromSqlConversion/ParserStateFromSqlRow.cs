@@ -2,7 +2,7 @@
 using RemTech.ParsersManagement.Core.Common.Primitives;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 
-namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers;
+namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers.FromSqlConversion;
 
 public sealed class ParserStateFromSqlRow(DbDataReader reader)
 {

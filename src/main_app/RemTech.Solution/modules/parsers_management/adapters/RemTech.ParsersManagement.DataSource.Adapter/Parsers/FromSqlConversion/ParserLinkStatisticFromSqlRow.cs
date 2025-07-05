@@ -4,7 +4,7 @@ using RemTech.ParsersManagement.Core.Common.ValueObjects.WorkingStatistics;
 using RemTech.ParsersManagement.Core.Common.ValueObjects.WorkingTimes;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects;
 
-namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers;
+namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers.FromSqlConversion;
 
 public sealed class ParserLinkStatisticFromSqlRow(DbDataReader reader)
 {
