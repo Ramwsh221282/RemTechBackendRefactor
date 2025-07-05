@@ -12,6 +12,13 @@ public sealed class ParserLinkIdentity : ISameBy
     private readonly NotEmptyGuid _id;
     private readonly Name _name;
 
+    public ParserLinkIdentity(ParserIdentity parserIdentity, NotEmptyGuid id, Name name)
+    {
+        _parserIdentity = parserIdentity;
+        _id = id;
+        _name = name;
+    }
+
     public ParserLinkIdentity(IParser parser, Name name)
     {
         _parserIdentity = parser.Identification();

@@ -6,7 +6,7 @@ using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
 using RemTech.Result.Library;
 
-namespace RemTech.ParsersManagement.Core.Tests.Parsers.Mocks;
+namespace RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
 public sealed class MokValidParsers(MokParsers inner) : IParsers
 {

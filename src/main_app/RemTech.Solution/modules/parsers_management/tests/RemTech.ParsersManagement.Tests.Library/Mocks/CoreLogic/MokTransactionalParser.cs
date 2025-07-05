@@ -1,15 +1,12 @@
 ﻿using RemTech.ParsersManagement.Core.Common.Primitives;
-using RemTech.ParsersManagement.Core.Common.ValueObjects;
-using RemTech.ParsersManagement.Core.Domains.ParsersDomain;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
-using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects.ParserLinksBags;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
 using RemTech.Result.Library;
 
-namespace RemTech.ParsersManagement.Core.Tests.Parsers.Mocks;
+namespace RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
 public sealed class MokTransactionalParser(IParser inner, MokValidParsers source)
     : ITransactionalParser

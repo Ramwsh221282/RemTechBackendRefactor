@@ -1,15 +1,13 @@
 ﻿using RemTech.ParsersManagement.Core.Common.Extensions;
 using RemTech.ParsersManagement.Core.Common.Primitives;
 using RemTech.ParsersManagement.Core.Common.ValueObjects;
-using RemTech.ParsersManagement.Core.Domains.ParsersDomain;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
-using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Errors;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
 using RemTech.Result.Library;
 
-namespace RemTech.ParsersManagement.Core.Tests.Parsers.Mocks;
+namespace RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
 public sealed class MokParsers : IParsers
 {

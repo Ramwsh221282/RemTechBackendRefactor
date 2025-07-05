@@ -1,6 +1,6 @@
 ﻿using RemTech.Logging.Library;
 
-namespace RemTech.ParsersManagement.Core.Tests.Parsers.Mocks;
+namespace RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
 public sealed class MokLogger : ICustomLogger
 {

@@ -1,9 +1,7 @@
 ﻿using RemTech.Logging.Library;
-using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
-using RemTech.ParsersManagement.Core.Tests.Parsers.Mocks;
 
-namespace RemTech.ParsersManagement.Core.Tests.Parsers;
+namespace RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
 public sealed class ParsersFixture
 {

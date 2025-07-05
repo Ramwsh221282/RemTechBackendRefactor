@@ -1,6 +1,6 @@
 ﻿using RemTech.Result.Library;
 
-namespace RemTech.ParsersManagement.Core.Tests.Asserts;
+namespace RemTech.ParsersManagement.Tests.Library.Asserts;
 
 public class AssertStatusSuccess<T>
 {

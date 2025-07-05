@@ -23,6 +23,19 @@ public sealed class ParserLink : IParserLink
         _statistic = new ParserLinkStatistic(new WorkingStatistic());
     }
 
+    public ParserLink(
+        ParserLinkIdentity identity,
+        ParserLinkUrl url,
+        ParserLinkStatistic statistic,
+        ParserLinkActivity activity
+    )
+    {
+        _identity = identity;
+        _url = url;
+        _statistic = statistic;
+        _activity = activity;
+    }
+
     public ParserLinkStatistic WorkedStatistic() => _statistic;
 
     public ParserLinkIdentity Identification() => _identity;

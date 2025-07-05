@@ -1,8 +1,7 @@
-﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain;
-using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
+﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
 
-namespace RemTech.ParsersManagement.Core.Tests.Parsers.Mocks;
+namespace RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
 public sealed class MokTransactionalParsers(MokValidParsers dataSource) : ITransactionalParsers
 {

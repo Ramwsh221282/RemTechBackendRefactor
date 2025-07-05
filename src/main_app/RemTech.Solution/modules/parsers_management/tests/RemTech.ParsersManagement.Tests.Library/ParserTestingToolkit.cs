@@ -35,10 +35,11 @@ using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
-using RemTech.ParsersManagement.Core.Tests.Asserts;
+using RemTech.ParsersManagement.Tests.Library.Asserts;
+using RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 using RemTech.Result.Library;
 
-namespace RemTech.ParsersManagement.Core.Tests.Parsers.Features;
+namespace RemTech.ParsersManagement.Tests.Library;
 
 public sealed class ParserTestingToolkit
 {
@@ -49,6 +50,12 @@ public sealed class ParserTestingToolkit
     {
         _logger = fixture.AccessLogger();
         _parsers = fixture.AccessParsersSource();
+    }
+
+    public ParserTestingToolkit(ICustomLogger logger, ParsersSource source)
+    {
+        _logger = logger;
+        _parsers = source;
     }
 
     public async Task<Status<IParser>> ReadFromDataSource(string parserName)
