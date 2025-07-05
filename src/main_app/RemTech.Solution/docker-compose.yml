@@ -1,0 +1,25 @@
+﻿version: "3.8"
+
+services:
+  database:
+    image: postgres:latest
+    restart: always
+    container_name: database
+    environment:
+      POSTGRES_DB: remtech_db
+      POSTGRES_USER: remtech_user
+      POSTGRES_PASSWORD: remtech_password
+      PGPORT: 5435
+    ports:
+      - "5535:5435"
+#    networks:
+#    - app_network
+    volumes:
+      - remtech_data:/var/lib/postgresql/data
+
+volumes:
+  remtech_data:
+
+#networks:
+#  app_network:
+#    external: true

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\shared_module\ports\RemTech.Logging.Port\RemTech.Logging.Port.csproj" />
+      <ProjectReference Include="..\..\shared_module\RemTech.Cqrs.Library\RemTech.Cqrs.Library.csproj" />
+      <ProjectReference Include="..\..\shared_module\RemTech.Result.Library\RemTech.Result.Library.csproj" />
+    </ItemGroup>
+
+</Project>
