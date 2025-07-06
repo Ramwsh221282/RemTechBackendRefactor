@@ -26,4 +26,16 @@ public sealed class ParsersSource(IParsers parsers, ITransactionalParsers transa
 
     Task<ITransactionalParser> ITransactionalParsers.Add(IParser parser, CancellationToken ct) =>
         transactional.Add(parser, ct);
+
+    public void Dispose()
+    {
+        parsers.Dispose();
+        transactional.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await parsers.DisposeAsync();
+        await transactional.DisposeAsync();
+    }
 }

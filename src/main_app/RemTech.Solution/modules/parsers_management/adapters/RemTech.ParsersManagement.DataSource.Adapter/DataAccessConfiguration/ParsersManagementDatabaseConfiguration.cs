@@ -7,13 +7,20 @@ public sealed class ParsersManagementDatabaseConfiguration
 {
     public string ConnectionString { get; }
 
-    private ParsersManagementDatabaseConfiguration(string connectionString) =>
+    public ParsersManagementDatabaseConfiguration(string jsonFilePath)
+    {
+        IConfiguration configuration = new ConfigurationBuilder().AddJsonFile(jsonFilePath).Build();
+        IConfigurationSection section = configuration
+            .GetSection(nameof(ParsersManagementDatabaseConfiguration))
+            .GetSection(nameof(ConnectionString));
+        string? connectionString = section.Value;
+        ArgumentNullException.ThrowIfNull(connectionString);
         ConnectionString = connectionString;
+    }
 
     public static ParsersManagementDatabaseConfiguration FromAppSettings(string jsonFile)
     {
-        string connectionString = ReadConnectionString(jsonFile);
-        ParsersManagementDatabaseConfiguration configuration = new(connectionString);
+        ParsersManagementDatabaseConfiguration configuration = new(jsonFile);
         return configuration;
     }
 
@@ -22,20 +29,8 @@ public sealed class ParsersManagementDatabaseConfiguration
         string jsonFile
     )
     {
-        string connectionString = ReadConnectionString(jsonFile);
-        ParsersManagementDatabaseConfiguration configuration = new(connectionString);
+        ParsersManagementDatabaseConfiguration configuration = new(jsonFile);
         services.AddSingleton(configuration);
         return configuration;
-    }
-
-    public static string ReadConnectionString(string jsonFile)
-    {
-        IConfiguration configuration = new ConfigurationBuilder().AddJsonFile(jsonFile).Build();
-        IConfigurationSection section = configuration
-            .GetSection(nameof(ParsersManagementDatabaseConfiguration))
-            .GetSection(nameof(ConnectionString));
-        string? connectionString = section.Value;
-        ArgumentNullException.ThrowIfNull(connectionString);
-        return connectionString;
     }
 }

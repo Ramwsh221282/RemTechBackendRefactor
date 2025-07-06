@@ -41,6 +41,20 @@ public sealed class Parser : IParser
         _links = links;
     }
 
+    public Parser(
+        ParserIdentity identity,
+        ParserStatistic statistic,
+        ParserSchedule schedule,
+        ParserState state
+    )
+    {
+        _identity = identity;
+        _statistics = statistic;
+        _schedule = schedule;
+        _state = state;
+        _links = new ParserLinksBag();
+    }
+
     public ParserIdentity Identification() => _identity;
 
     public ParserStatistic WorkedStatistics() => _statistics;

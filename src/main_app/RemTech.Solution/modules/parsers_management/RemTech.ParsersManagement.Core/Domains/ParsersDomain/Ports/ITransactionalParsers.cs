@@ -2,7 +2,7 @@
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
 
-public interface ITransactionalParsers
+public interface ITransactionalParsers : IDisposable, IAsyncDisposable
 {
     Task<ITransactionalParser> Add(IParser parser, CancellationToken ct = default);
 }

@@ -3,6 +3,7 @@
     name            varchar(150) NOT NULL,
     type            varchar(100) NOT NULL,
     state           varchar(100) NOT NULL,
+    domain          varchar(100) NOT NULL,
     processed       integer NOT NULL,
     total_seconds   bigint NOT NULL,
     hours           integer NOT NULL,
@@ -11,7 +12,8 @@
     wait_days       integer NOT NULL,
     next_run        DATE NOT NULL,
     last_run        DATE NOT NULL,
-    UNIQUE (name, type)
+    UNIQUE (name, type),
+    UNIQUE (domain, type)
 );
 
 CREATE TABLE IF NOT EXISTS parser_links (

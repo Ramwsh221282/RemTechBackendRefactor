@@ -2,6 +2,7 @@
 using RemTech.ParsersManagement.Core.Common.Primitives.Comparing;
 using RemTech.ParsersManagement.Core.Common.ValueObjects.WorkingStatistics;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects.ParserLinkActivities;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects.ParserLinkIdentities;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects.ParserLinkUrls;
 using RemTech.Result.Library;
@@ -21,6 +22,19 @@ public sealed class ParserLink : IParserLink
         _url = url;
         _activity = new ParserLinkActivity(false);
         _statistic = new ParserLinkStatistic(new WorkingStatistic());
+    }
+
+    public ParserLink(
+        ParserLinkIdentity identity,
+        ParserLinkUrl url,
+        ParserLinkStatistic statistic,
+        ParserLinkActivity activity
+    )
+    {
+        _identity = identity;
+        _url = url;
+        _statistic = statistic;
+        _activity = activity;
     }
 
     public ParserLinkStatistic WorkedStatistic() => _statistic;

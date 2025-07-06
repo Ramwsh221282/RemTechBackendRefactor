@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Logging.Port", "mod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsersManagement.Tests.Library", "modules\parsers_management\tests\RemTech.ParsersManagement.Tests.Library\RemTech.ParsersManagement.Tests.Library.csproj", "{5DDBDFC8-10CE-4CF3-ABA4-5933B35C5EB3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsersManagement.DataAccess.Adapter.Tests", "modules\parsers_management\tests\RemTech.ParsersManagement.DataAccess.Adapter.Tests\RemTech.ParsersManagement.DataAccess.Adapter.Tests.csproj", "{A2CE59F8-CB3A-4391-8111-98560C8FB1D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,7 @@ Global
 		{7CBDDF26-5910-4E0A-AB5C-867005DCC441} = {6F5C9BC2-2F61-40A4-B372-CCE7AA12358D}
 		{26ACCA4A-7B11-4EC7-B7A2-1B449CBD69CD} = {7CBDDF26-5910-4E0A-AB5C-867005DCC441}
 		{5DDBDFC8-10CE-4CF3-ABA4-5933B35C5EB3} = {F39599E5-F4D6-4C39-937F-432FF82570F1}
+		{A2CE59F8-CB3A-4391-8111-98560C8FB1D7} = {F39599E5-F4D6-4C39-937F-432FF82570F1}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -91,5 +94,9 @@ Global
 		{5DDBDFC8-10CE-4CF3-ABA4-5933B35C5EB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DDBDFC8-10CE-4CF3-ABA4-5933B35C5EB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DDBDFC8-10CE-4CF3-ABA4-5933B35C5EB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2CE59F8-CB3A-4391-8111-98560C8FB1D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2CE59F8-CB3A-4391-8111-98560C8FB1D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2CE59F8-CB3A-4391-8111-98560C8FB1D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2CE59F8-CB3A-4391-8111-98560C8FB1D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

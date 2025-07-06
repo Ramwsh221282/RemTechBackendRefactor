@@ -1,4 +1,5 @@
-﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
+﻿using RemTech.ParsersManagement.Core.Common.Decorators;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.AddingNewParser.Decorators;
@@ -6,5 +7,5 @@ namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.AddingNe
 public sealed class ValidatingNewParser(INewParser inner) : INewParser
 {
     public Status<IParser> Register(AddNewParser add) =>
-        add.Errored() ? add.Error() : inner.Register(add);
+        new ValidatingOperation(add).Process(() => inner.Register(add));
 }

@@ -25,6 +25,8 @@ public sealed class AsyncDisableParser : IMaybeError, IMaybeParser, IMaybeParser
 
     public Error Error() => _errorBag.Error();
 
+    public NotEmptyGuid WhomDisableId() => _idBag.Take();
+
     public void Put(IParser parser) => _parserBag.Put(parser);
 
     public IParser Take() => _parserBag.Take();
