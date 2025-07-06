@@ -22,6 +22,8 @@ using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.EnablingPars
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.EnablingParser.Async.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.EnablingParser.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.FinishingParserLink;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.FinishingParserLink.Async;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.FinishingParserLink.Async.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.FinishingParserLink.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.IncreasingProcessed;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.IncreasingProcessed.Decorators;
@@ -805,6 +807,51 @@ public sealed class ParserTestingToolkit
         ).Asserted();
         return finished.Value;
     }
+
+    public async Task<IParserLink> AsyncFinishLinkSuccess(
+        Guid? parserId,
+        Guid? linkId,
+        long? elapsed
+    )
+    {
+        Status<IParserLink> link = await new AsyncAssertStatusSuccess<IParserLink>(
+            () =>
+                new AsyncLoggingFinishedParserLink(
+                    _logger,
+                    new AsyncValidatingFinishedParserLink(
+                        new AsyncSqlSpeakingFinishedParserLink(
+                            _parsers,
+                            new AsyncFinishedParserLink(
+                                new LoggingFinishedParserLink(
+                                    _logger,
+                                    new ValidatingFinishedParserLink(new FinishedParserLink())
+                                )
+                            )
+                        )
+                    )
+                ).AsyncFinished(new AsyncFinishParserLink(parserId, linkId, elapsed))
+        ).AsyncAsserted();
+        return link.Value;
+    }
+
+    public async Task AsyncFinishLinkFailure(Guid? parserId, Guid? linkId, long? elapsed) =>
+        await new AsyncAssertStatusFailure<IParserLink>(
+            () =>
+                new AsyncLoggingFinishedParserLink(
+                    _logger,
+                    new AsyncValidatingFinishedParserLink(
+                        new AsyncSqlSpeakingFinishedParserLink(
+                            _parsers,
+                            new AsyncFinishedParserLink(
+                                new LoggingFinishedParserLink(
+                                    _logger,
+                                    new ValidatingFinishedParserLink(new FinishedParserLink())
+                                )
+                            )
+                        )
+                    )
+                ).AsyncFinished(new AsyncFinishParserLink(parserId, linkId, elapsed))
+        ).AsyncAsserted();
 
     public IParserLink FinishLinkSuccess(IParser parser, Guid? linkId, long? elapsed)
     {
