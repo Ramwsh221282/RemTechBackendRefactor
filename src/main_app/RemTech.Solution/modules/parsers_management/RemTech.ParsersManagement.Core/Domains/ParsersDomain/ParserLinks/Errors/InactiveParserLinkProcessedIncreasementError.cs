@@ -9,9 +9,11 @@ public sealed class InactiveParserLinkProcessedIncreasementError : IError
 
     public InactiveParserLinkProcessedIncreasementError(IParserLink link)
     {
+        Guid id = link.Identification().ReadId();
+        string name = link.Identification().ReadName();
         string text =
-            $"Нельзя увеличить количество обработанных данных у неактивной ссылки: {link.Identification().ReadId().GuidValue()}, {link.Identification().ReadName().NameString().StringValue()}";
-        _error = Error.Conflict(text);
+            $"Нельзя увеличить количество обработанных данных у неактивной ссылки: ID: {id}, Название: {name}.";
+        _error = (text, ErrorCodes.Conflict);
     }
 
     public Error Read() => _error;

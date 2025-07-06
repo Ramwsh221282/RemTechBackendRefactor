@@ -1,5 +1,6 @@
 ﻿using RemTech.ParsersManagement.Core.Common.Extensions;
 using RemTech.ParsersManagement.Core.Common.Primitives;
+using RemTech.ParsersManagement.Core.Common.Primitives.Comparing;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
@@ -45,21 +46,22 @@ public sealed class ParserState
             : allowed;
     }
 
-    public static Status<ParserState> New(string? input)
-    {
-        Status<NotEmptyString> notEmpty = NotEmptyString.New(input);
-        return notEmpty switch
-        {
-            { IsFailure: true } => Error.Validation("Строка состояния парсера была пустой."),
-            { Value: { } val } when val.Length() > 150 => Error.Validation(
-                "Строка состояния парсера больше 150 символов."
-            ),
-            { Value: { } val } when val.Length() < 5 => Error.Validation(
-                "Строка состояния парсера меньше 5 символов."
-            ),
-            _ => New(notEmpty),
-        };
-    }
+    public static Status<ParserState> New(string? input) =>
+        new SwitchReturn<NotEmptyString, Status<ParserState>>(new NotEmptyString(input))
+            .With(
+                comp => new True(new LengthIs(new Length(comp), 0)),
+                _ => Error.Conflict("Строка состояния парсера была пустой.")
+            )
+            .With(
+                comp => new True(new GreaterThan(new Length(comp), new Length(150))),
+                _ => Error.Validation("Строка состояния парсера была пустой.")
+            )
+            .With(
+                comp => new True(new LesserThan(new Length(comp), new Length(5))),
+                _ => Error.Validation("Строка состояния парсера меньше 5 символов.")
+            )
+            .Default(nes => new ParserState(nes))
+            .Return();
 
     public static implicit operator NotEmptyString(ParserState state) => state._value;
 

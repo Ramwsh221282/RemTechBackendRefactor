@@ -31,7 +31,7 @@ public sealed class DisableParserTests : IClassFixture<DataAccessParsersFixture>
         IParser disabled = await new ParserTestingToolkit(
             _fixture.Logger(),
             _fixture.ParsersSource()
-        ).DisableParserSuccessAsync(enabled.Identification().ReadId().GuidValue());
+        ).DisableParserSuccessAsync(enabled.Identification().ReadId());
         await using ParsersSource source = _fixture.ParsersSource();
         Status<IParser> fromDb = await source.Find(disabled.Identification().ReadId());
         Assert.True(new CompareParserState(fromDb.Value, expectedState));
@@ -50,6 +50,6 @@ public sealed class DisableParserTests : IClassFixture<DataAccessParsersFixture>
         await new ParserTestingToolkit(
             _fixture.Logger(),
             _fixture.ParsersSource()
-        ).DisableParserFailureAsync(parser.Identification().ReadId().GuidValue());
+        ).DisableParserFailureAsync(parser.Identification().ReadId());
     }
 }

@@ -15,4 +15,6 @@ public sealed class Minutes
 
     private static int CalculateMinutesFromElapsedSeconds(long seconds) =>
         (int)((seconds % 3600) / 60);
+
+    public static implicit operator int(Minutes minutes) => minutes._minutes;
 }

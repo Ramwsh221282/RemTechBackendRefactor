@@ -11,4 +11,7 @@ public sealed record Error(string ErrorText, ErrorCodes Code)
     public static Error Conflict(string errorMessage) => new(errorMessage, ErrorCodes.Conflict);
 
     public bool Any() => !(string.IsNullOrWhiteSpace(ErrorText) || Code == ErrorCodes.Empty);
+
+    public static implicit operator Error((string, ErrorCodes code) tuple) =>
+        new(tuple.Item1, tuple.code);
 }

@@ -9,9 +9,13 @@ public sealed class FinishLinkWhenNotWorkingError : IError
 
     public FinishLinkWhenNotWorkingError(IParser parser)
     {
+        Guid id = parser.Identification().ReadId();
+        string name = parser.Identification().ReadName();
+        string type = parser.Identification().ReadType().Read();
+        string domain = parser.Domain().Read();
         string message =
-            $"Парсер ID: {parser.Identification().ReadId().GuidValue()}, название: {parser.Identification().ReadName().NameString().StringValue()} тип: {parser.Identification().ReadType().Read().StringValue()} домен: {parser.Identification().Domain().Read().NameString().StringValue()} не может закончить работу ссылку, поскольку парсер не в рабочем состоянии.";
-        _error = Error.Conflict(message);
+            $"Парсер ID: {id}, названием: {name} тип: {type} домен: {domain} не может закончить работу ссылку, поскольку парсер не в рабочем состоянии.";
+        _error = (message, ErrorCodes.Conflict);
     }
 
     public Error Read() => _error;

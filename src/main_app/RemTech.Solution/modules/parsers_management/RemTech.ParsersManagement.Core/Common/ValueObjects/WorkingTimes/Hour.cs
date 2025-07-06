@@ -14,4 +14,6 @@ public sealed class Hour
     public PositiveInteger Read() => _hours;
 
     private static int CalculateHoursFromElapsedSeconds(long seconds) => (int)(seconds / 3600);
+
+    public static implicit operator int(Hour hour) => hour._hours;
 }

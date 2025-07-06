@@ -16,10 +16,10 @@ public sealed class LoggingRemovedParserLink(ICustomLogger logger, IRemovedParse
         ParserIdentity identification = parser.Identification();
         logger.Info(
             "Удаление ссылки у парсера с ID: {0}. Названием: {1}. Типом: {2}. Доменом: {3}.",
-            identification.ReadId().GuidValue(),
-            identification.ReadName().NameString().StringValue(),
-            identification.ReadType().Read().StringValue(),
-            parser.Domain().Read().NameString().StringValue()
+            (Guid)identification.ReadId(),
+            (string)identification.ReadName().NameString(),
+            (string)identification.ReadType().Read(),
+            (string)parser.Domain().Read().NameString()
         );
         Status<IParserLink> link = inner.Removed(remove);
         if (link.IsSuccess)

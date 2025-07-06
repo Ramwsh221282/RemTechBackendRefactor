@@ -18,14 +18,14 @@ public sealed class ParserPrint(IParser parser) : IPrint
             return _print;
         return _print = $"""
             Информация о парсере:
-            ID: {parser.Identification().ReadId().GuidValue()}
-            Название: {parser.Identification().ReadName().NameString().StringValue()}
-            Тип: {parser.Identification().ReadType().Read().StringValue()}
-            Домен: {parser.Domain().Read().NameString().StringValue()}
-            Состояние: {parser.WorkState().Read().StringValue()}
+            ID: {(Guid)parser.Identification().ReadId()}
+            Название: {(string)parser.Identification().ReadName().NameString()}
+            Тип: {(string)parser.Identification().ReadType().Read()}
+            Домен: {(string)parser.Domain().Read().NameString()}
+            Состояние: {(string)parser.WorkState()}
             Последний раз работал: {LastRunDateString}
             Следующий раз работать: {NextRunDateString}
-            Время ожидания между работой: {parser.WorkSchedule().WaitDays().Read()}
+            Время ожидания между работой: {(int)parser.WorkSchedule().WaitDays()}
             """;
     }
 }

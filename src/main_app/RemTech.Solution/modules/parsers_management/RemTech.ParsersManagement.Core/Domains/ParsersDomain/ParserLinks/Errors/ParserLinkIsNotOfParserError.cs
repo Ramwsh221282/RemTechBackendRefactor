@@ -10,9 +10,13 @@ public sealed class ParserLinkIsNotOfParserError : IError
 
     public ParserLinkIsNotOfParserError(IParserLink link, IParser parser)
     {
+        Guid parserId = parser.Identification().ReadId();
+        Guid linkId = link.Identification().ReadId();
+        string parserName = parser.Identification().ReadName();
+        string linkName = link.Identification().ReadName();
         string text =
-            $"Парсер с ID: {parser.Identification().ReadId().GuidValue()} и названием: {parser.Identification().ReadName().NameString()} не обладатель ссылки с ID: {link.Identification().ReadId().GuidValue()} и названием: {link.Identification().ReadName().NameString()}";
-        _error = Error.Conflict(text);
+            $"Парсер с ID: {parserId}, названием: {parserName} не обладатель ссылки с ID: {linkId} и названием: {linkName}. ";
+        _error = (text, ErrorCodes.Conflict);
     }
 
     public Error Read() => _error;

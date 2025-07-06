@@ -13,10 +13,10 @@ public sealed class LoggingIncreasedProcessed(ICustomLogger logger, IIncreasePro
         IParser parser = increase.TakeOwner();
         logger.Info(
             "Увеличение количества обработанных объявлений у парсера ID: {0}, название: {1}, тип: {2}, домен: {3}",
-            parser.Identification().ReadId().GuidValue(),
-            parser.Identification().ReadName().NameString().StringValue(),
-            parser.Identification().ReadType().Read().StringValue(),
-            parser.Domain().Read().NameString().StringValue()
+            (Guid)parser.Identification().ReadId(),
+            (string)parser.Identification().ReadName().NameString(),
+            (string)parser.Identification().ReadType().Read(),
+            (string)parser.Domain().Read().NameString()
         );
         logger.Info(
             "Предыдущее число обработанных: {0}.",

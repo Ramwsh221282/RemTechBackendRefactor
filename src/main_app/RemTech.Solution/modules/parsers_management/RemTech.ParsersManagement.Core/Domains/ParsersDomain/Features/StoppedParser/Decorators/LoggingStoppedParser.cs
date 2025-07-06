@@ -12,10 +12,10 @@ public sealed class LoggingStoppedParser(ICustomLogger logger, IStoppedParser in
         IParser parser = stop.WhomStop();
         logger.Info(
             "Остановка парсера с ID: {0}, название: {1}, тип: {2}, домен: {3}.",
-            parser.Identification().ReadId().GuidValue(),
-            parser.Identification().ReadName().NameString().StringValue(),
-            parser.Identification().ReadType().Read().StringValue(),
-            parser.Identification().Domain().Read().NameString().StringValue()
+            (Guid)parser.Identification().ReadId(),
+            (string)parser.Identification().ReadName().NameString(),
+            (string)parser.Identification().ReadType().Read(),
+            (string)parser.Identification().Domain().Read().NameString()
         );
         Status<IParser> stopped = inner.Stopped(stop);
         if (stopped.IsSuccess)

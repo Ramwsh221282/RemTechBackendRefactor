@@ -13,4 +13,6 @@ public sealed class Name
     public bool Same(Name other) => _name.Same(other._name);
 
     public static implicit operator Name(NotEmptyString input) => new(input);
+
+    public static implicit operator string(Name name) => name._name;
 }

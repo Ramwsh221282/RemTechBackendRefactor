@@ -31,7 +31,7 @@ public sealed class PgParsers : IParsers
             WHERE p.name = @name
             """
         );
-        var parameters = new { name = name.NameString().StringValue() };
+        var parameters = new { name = (string)name.NameString() };
         CommandDefinition command = new(sql, parameters, cancellationToken: ct);
         await using NpgsqlConnection connection = await _engine.Connect(ct);
         await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
@@ -57,7 +57,7 @@ public sealed class PgParsers : IParsers
             WHERE p.id = @id
             """
         );
-        var parameters = new { id = id.GuidValue() };
+        var parameters = new { id = (Guid)id };
         CommandDefinition command = new(sql, parameters, cancellationToken: ct);
         await using NpgsqlConnection connection = await _engine.Connect(ct);
         await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
@@ -86,7 +86,7 @@ public sealed class PgParsers : IParsers
             WHERE p.type = @type AND p.domain = @domain
             """
         );
-        var parameters = new { type = type.Read().StringValue(), domain = domain.StringValue() };
+        var parameters = new { type = (string)type.Read(), domain = (string)domain };
         CommandDefinition command = new(sql, parameters, cancellationToken: ct);
         await using NpgsqlConnection connection = await _engine.Connect(ct);
         await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
@@ -116,17 +116,17 @@ public sealed class PgParsers : IParsers
         ParserIdentity identification = parser.Identification();
         var parameters = new
         {
-            @id = identification.ReadId().GuidValue(),
-            @name = identification.ReadName().NameString().StringValue(),
-            @type = identification.ReadType().Read().StringValue(),
-            @state = parser.WorkState().Read().StringValue(),
-            @domain = parser.Domain().Read().NameString().StringValue(),
-            @processed = parser.WorkedStatistics().ProcessedAmount().Read().Read(),
-            @total_seconds = parser.WorkedStatistics().WorkedTime().Total().Read(),
-            @hours = parser.WorkedStatistics().WorkedTime().Hours().Read().Read(),
-            @minutes = parser.WorkedStatistics().WorkedTime().Minutes().Read().Read(),
-            @seconds = parser.WorkedStatistics().WorkedTime().Seconds().Read().Read(),
-            @wait_days = parser.WorkSchedule().WaitDays().Read(),
+            @id = (Guid)identification.ReadId(),
+            @name = (string)identification.ReadName().NameString(),
+            @type = (string)identification.ReadType().Read(),
+            @state = (string)parser.WorkState().Read(),
+            @domain = (string)parser.Domain().Read().NameString(),
+            @processed = (int)parser.WorkedStatistics().ProcessedAmount(),
+            @total_seconds = (long)parser.WorkedStatistics().WorkedTime().Total(),
+            @hours = (int)parser.WorkedStatistics().WorkedTime().Hours(),
+            @minutes = (int)parser.WorkedStatistics().WorkedTime().Minutes(),
+            @seconds = (int)parser.WorkedStatistics().WorkedTime().Seconds(),
+            @wait_days = (int)parser.WorkSchedule().WaitDays(),
             @next_run = parser.WorkSchedule().NextRun(),
             @last_run = parser.WorkSchedule().LastRun(),
         };

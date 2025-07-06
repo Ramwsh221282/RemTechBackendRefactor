@@ -19,7 +19,7 @@ public sealed class CompareLinkIdentityById : ICompare
 
     public CompareLinkIdentityById(IParserLink link, Guid id)
     {
-        Guid linkId = link.Identification().ReadId().GuidValue();
+        Guid linkId = link.Identification().ReadId();
         _compared = linkId == id;
     }
 

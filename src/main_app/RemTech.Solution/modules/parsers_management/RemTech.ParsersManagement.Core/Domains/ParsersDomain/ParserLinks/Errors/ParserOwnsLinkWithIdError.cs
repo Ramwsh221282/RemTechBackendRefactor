@@ -9,9 +9,12 @@ public sealed class ParserOwnsLinkWithIdError : IError
 
     public ParserOwnsLinkWithIdError(IParser parser, IParserLink link)
     {
-        _error = Error.Conflict(
-            $"Парсер с ID: {parser.Identification().ReadId().GuidValue()} и названием: {parser.Identification().ReadName().NameString()} уже содержит ссылку с ID: {link.Identification().ReadId().GuidValue()}"
-        );
+        Guid parserId = parser.Identification().ReadId();
+        string parserName = parser.Identification().ReadName();
+        Guid linkId = link.Identification().ReadId();
+        string message =
+            $"Парсер с ID: {parserId} и названием: {parserName} уже содержит ссылку с ID: {linkId}";
+        _error = (message, ErrorCodes.Conflict);
     }
 
     public Error Read() => _error;
