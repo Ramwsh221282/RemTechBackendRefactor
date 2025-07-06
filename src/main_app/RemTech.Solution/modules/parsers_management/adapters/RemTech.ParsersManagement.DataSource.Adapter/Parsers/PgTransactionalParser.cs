@@ -243,7 +243,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
         {
             next_activity = link.Activity().Read(),
             link_id = link.Identification().ReadId().GuidValue(),
-            parser_id = link.Identification().OwnerIdentification().ReadId().GuidValue(),
+            parser_link_id = link.Identification().OwnerIdentification().ReadId().GuidValue(),
         };
         _journal.AddOperation(
             new CommandDefinition(

@@ -2,6 +2,7 @@
 using RemTech.ParsersManagement.Core.Common.Primitives.Comparing;
 using RemTech.ParsersManagement.Core.Common.ValueObjects.WorkingStatistics;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects.ParserLinkActivities;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects.ParserLinkIdentities;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects.ParserLinkUrls;
 using RemTech.Result.Library;

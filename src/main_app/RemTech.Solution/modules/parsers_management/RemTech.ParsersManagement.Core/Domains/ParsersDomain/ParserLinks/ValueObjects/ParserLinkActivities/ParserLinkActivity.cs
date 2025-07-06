@@ -1,4 +1,4 @@
-﻿namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects;
+﻿namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects.ParserLinkActivities;
 
 public sealed class ParserLinkActivity
 {

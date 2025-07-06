@@ -10,6 +10,8 @@ using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.AddingParser
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.AddingParserLink.Async.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.AddingParserLink.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.ChangingLinkActivity;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.ChangingLinkActivity.Async;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.ChangingLinkActivity.Async.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.ChangingLinkActivity.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.DisablingParser;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.DisablingParser.Async;
@@ -661,6 +663,55 @@ public sealed class ParserTestingToolkit
         ).Asserted();
         return changed.Value;
     }
+
+    public async Task<IParserLink> ChangeLinkActivitySuccessAsync(
+        Guid? parserId,
+        Guid? linkId,
+        bool nextActivity
+    )
+    {
+        Status<IParserLink> link = await new AsyncAssertStatusSuccess<IParserLink>(
+            () =>
+                new AsyncLoggingChangedLinkActivity(
+                    _logger,
+                    new AsyncValidatingChangedLinkActivity(
+                        new AsyncSqlSpeakingChangedLinkActivity(
+                            _parsers,
+                            new AsyncChangedLinkActivity(
+                                new LoggingChangedLinkActivity(
+                                    _logger,
+                                    new ValidatingChangedLinkActivity(new ChangedLinkActivity())
+                                )
+                            )
+                        )
+                    )
+                ).AsyncChangedActivity(new AsyncChangeLinkActivity(parserId, linkId, nextActivity))
+        ).AsyncAsserted();
+        return link.Value;
+    }
+
+    public async Task ChangeLinkActivityFailureAsync(
+        Guid? parserId,
+        Guid? linkId,
+        bool nextActivity
+    ) =>
+        await new AsyncAssertStatusFailure<IParserLink>(
+            () =>
+                new AsyncLoggingChangedLinkActivity(
+                    _logger,
+                    new AsyncValidatingChangedLinkActivity(
+                        new AsyncSqlSpeakingChangedLinkActivity(
+                            _parsers,
+                            new AsyncChangedLinkActivity(
+                                new LoggingChangedLinkActivity(
+                                    _logger,
+                                    new ValidatingChangedLinkActivity(new ChangedLinkActivity())
+                                )
+                            )
+                        )
+                    )
+                ).AsyncChangedActivity(new AsyncChangeLinkActivity(parserId, linkId, nextActivity))
+        ).AsyncAsserted();
 
     public IParserLink ChangeLinkActivitySuccess(
         IParser parser,
