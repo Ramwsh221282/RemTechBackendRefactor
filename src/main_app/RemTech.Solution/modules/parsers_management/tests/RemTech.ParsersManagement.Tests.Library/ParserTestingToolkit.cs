@@ -32,6 +32,8 @@ using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.StartingPars
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.StartingParser.Async.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.StartingParser.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.StoppedParser;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.StoppedParser.Async;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.StoppedParser.Async.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.StoppedParser.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.UpdatingParser;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.UpdatingParser.Async;
@@ -856,6 +858,43 @@ public sealed class ParserTestingToolkit
                 )
         ).Asserted();
         return started.Value;
+    }
+
+    public async Task<IParser> AsyncStoppedParserSuccess(Guid? parserId)
+    {
+        Status<IParser> parser = await new AsyncAssertStatusSuccess<IParser>(
+            () =>
+                new AsyncLoggingStoppedParser(
+                    _logger,
+                    new AsyncValidatingStoppedParser(
+                        new AsyncSqlSpeakingStoppedParser(
+                            _parsers,
+                            new AsyncStoppedParser(
+                                new LoggingStoppedParser(_logger, new StoppedParser())
+                            )
+                        )
+                    )
+                ).AsyncStopped(new AsyncStopParser(parserId))
+        ).AsyncAsserted();
+        return parser.Value;
+    }
+
+    public async Task AsyncStoppedParserFailure(Guid? parserId)
+    {
+        await new AsyncAssertStatusFailure<IParser>(
+            () =>
+                new AsyncLoggingStoppedParser(
+                    _logger,
+                    new AsyncValidatingStoppedParser(
+                        new AsyncSqlSpeakingStoppedParser(
+                            _parsers,
+                            new AsyncStoppedParser(
+                                new LoggingStoppedParser(_logger, new StoppedParser())
+                            )
+                        )
+                    )
+                ).AsyncStopped(new AsyncStopParser(parserId))
+        ).AsyncAsserted();
     }
 
     public void StoppedParserFailure(IParser parser) =>

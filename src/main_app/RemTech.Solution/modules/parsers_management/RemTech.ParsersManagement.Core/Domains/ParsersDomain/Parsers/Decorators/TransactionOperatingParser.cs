@@ -3,7 +3,7 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Decorators;
 
-public sealed class OpeartingTransactionalParser
+public sealed class TransactionOperatingParser
 {
     private readonly IParsers _parsers;
     private readonly ITransactionalParsers _transactionalParsers;
@@ -11,16 +11,13 @@ public sealed class OpeartingTransactionalParser
     private Func<Task<Status<IParser>>>? _logicMethod;
     private IMaybeParser? _maybeParser;
 
-    public OpeartingTransactionalParser(
-        IParsers parsers,
-        ITransactionalParsers transactionalParsers
-    )
+    public TransactionOperatingParser(IParsers parsers, ITransactionalParsers transactionalParsers)
     {
         _parsers = parsers;
         _transactionalParsers = transactionalParsers;
     }
 
-    public OpeartingTransactionalParser WithReceivingMethod(
+    public TransactionOperatingParser WithReceivingMethod(
         Func<IParsers, Task<Status<IParser>>> receivingMethod
     )
     {
@@ -28,13 +25,13 @@ public sealed class OpeartingTransactionalParser
         return this;
     }
 
-    public OpeartingTransactionalParser WithLogicMethod(Func<Task<Status<IParser>>>? logicMethod)
+    public TransactionOperatingParser WithLogicMethod(Func<Task<Status<IParser>>>? logicMethod)
     {
         _logicMethod = logicMethod;
         return this;
     }
 
-    public OpeartingTransactionalParser WithPutting(IMaybeParser maybe)
+    public TransactionOperatingParser WithPutting(IMaybeParser maybe)
     {
         _maybeParser = maybe;
         return this;
