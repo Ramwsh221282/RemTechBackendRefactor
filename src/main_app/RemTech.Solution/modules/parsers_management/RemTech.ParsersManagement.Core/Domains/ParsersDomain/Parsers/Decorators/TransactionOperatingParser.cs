@@ -3,12 +3,12 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Decorators;
 
-public sealed class TransactionOperatingParser
+public sealed class TransactionOperatingParser<T>
 {
     private readonly IParsers _parsers;
     private readonly ITransactionalParsers _transactionalParsers;
     private Func<IParsers, Task<Status<IParser>>>? _receivingMethod;
-    private Func<Task<Status<IParser>>>? _logicMethod;
+    private Func<Task<Status<T>>>? _logicMethod;
     private IMaybeParser? _maybeParser;
 
     public TransactionOperatingParser(IParsers parsers, ITransactionalParsers transactionalParsers)
@@ -17,7 +17,7 @@ public sealed class TransactionOperatingParser
         _transactionalParsers = transactionalParsers;
     }
 
-    public TransactionOperatingParser WithReceivingMethod(
+    public TransactionOperatingParser<T> WithReceivingMethod(
         Func<IParsers, Task<Status<IParser>>> receivingMethod
     )
     {
@@ -25,19 +25,19 @@ public sealed class TransactionOperatingParser
         return this;
     }
 
-    public TransactionOperatingParser WithLogicMethod(Func<Task<Status<IParser>>>? logicMethod)
+    public TransactionOperatingParser<T> WithLogicMethod(Func<Task<Status<T>>>? logicMethod)
     {
         _logicMethod = logicMethod;
         return this;
     }
 
-    public TransactionOperatingParser WithPutting(IMaybeParser maybe)
+    public TransactionOperatingParser<T> WithPutting(IMaybeParser maybe)
     {
         _maybeParser = maybe;
         return this;
     }
 
-    public async Task<Status<IParser>> Process()
+    public async Task<Status<T>> Process()
     {
         ArgumentNullException.ThrowIfNull(_receivingMethod);
         ArgumentNullException.ThrowIfNull(_logicMethod);
@@ -52,11 +52,11 @@ public sealed class TransactionOperatingParser
                 CancellationToken.None
             );
             _maybeParser.Put(transactional);
-            Status<IParser> status = await _logicMethod();
+            Status<T> status = await _logicMethod();
             if (status.IsFailure)
                 return status.Error;
             Status commit = await transactional.Save(CancellationToken.None);
-            return commit.IsSuccess ? status : commit.Error;
+            return commit.IsSuccess ? status.Value : commit.Error;
         }
     }
 }

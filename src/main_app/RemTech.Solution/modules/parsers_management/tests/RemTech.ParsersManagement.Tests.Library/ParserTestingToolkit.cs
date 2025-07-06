@@ -26,6 +26,8 @@ using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.FinishingPar
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.IncreasingProcessed;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.IncreasingProcessed.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.RemovingParserLink;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.RemovingParserLink.Async;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.RemovingParserLink.Async.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.RemovingParserLink.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.StartingParser;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.StartingParser.Async;
@@ -581,6 +583,47 @@ public sealed class ParserTestingToolkit
         ).Asserted();
         return link.Value;
     }
+
+    public async Task<IParserLink> AsyncRemoveLinkSuccess(Guid? parserId, Guid? linkId)
+    {
+        Status<IParserLink> link = await new AsyncAssertStatusSuccess<IParserLink>(
+            () =>
+                new AsyncLoggingRemovedParserLink(
+                    _logger,
+                    new AsyncValidatingRemovedParserLink(
+                        new AsyncSqlSpeakingRemovedParserLink(
+                            _parsers,
+                            new AsyncRemovedParserLink(
+                                new LoggingRemovedParserLink(
+                                    _logger,
+                                    new ValidatingRemovedParserLink(new RemovedParserLink())
+                                )
+                            )
+                        )
+                    )
+                ).AsyncRemoved(new AsyncRemoveParserLink(parserId, linkId))
+        ).AsyncAsserted();
+        return link.Value;
+    }
+
+    public async Task AsyncRemoveLinkFailure(Guid? parserId, Guid? linkId) =>
+        await new AsyncAssertStatusFailure<IParserLink>(
+            () =>
+                new AsyncLoggingRemovedParserLink(
+                    _logger,
+                    new AsyncValidatingRemovedParserLink(
+                        new AsyncSqlSpeakingRemovedParserLink(
+                            _parsers,
+                            new AsyncRemovedParserLink(
+                                new LoggingRemovedParserLink(
+                                    _logger,
+                                    new ValidatingRemovedParserLink(new RemovedParserLink())
+                                )
+                            )
+                        )
+                    )
+                ).AsyncRemoved(new AsyncRemoveParserLink(parserId, linkId))
+        ).AsyncAsserted();
 
     public IParserLink RemoveLinkSuccess(IParser parser, IParserLink linkToRemove)
     {

@@ -17,7 +17,7 @@ public sealed class RemovedParserLink : IRemovedParserLink
             .OwnedLinks()
             .FindConcrete(l => new CompareLinkIdentityById(l, remove.RemovingId()));
         return link.Remove()
-            ? link.Link().Success()
+            ? parser.Drop(link.Link())
             : new ParserLinkWithIdNotFoundError(parser, remove.RemovingId());
     }
 }

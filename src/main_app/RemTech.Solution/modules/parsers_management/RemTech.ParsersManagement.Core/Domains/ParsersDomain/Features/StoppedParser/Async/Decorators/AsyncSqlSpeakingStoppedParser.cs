@@ -12,7 +12,7 @@ public sealed class AsyncSqlSpeakingStoppedParser(ParsersSource source, IAsyncSt
         AsyncStopParser stop,
         CancellationToken ct = default
     ) =>
-        await new TransactionOperatingParser(source, source)
+        await new TransactionOperatingParser<IParser>(source, source)
             .WithReceivingMethod(s => s.Find(stop.TakeWhomStopId(), ct))
             .WithLogicMethod(() => inner.AsyncStopped(stop, ct))
             .WithPutting(stop)
