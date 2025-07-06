@@ -1,4 +1,5 @@
-﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
+﻿using RemTech.ParsersManagement.Core.Common.Decorators;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.ChangingLinkActivity.Async.Decorators;
@@ -9,11 +10,5 @@ public sealed class AsyncValidatingChangedLinkActivity(IAsyncChangedLinkActivity
     public Task<Status<IParserLink>> AsyncChangedActivity(
         AsyncChangeLinkActivity change,
         CancellationToken ct = default
-    )
-    {
-        bool errored = change.Errored();
-        return errored
-            ? Task.FromResult(Status<IParserLink>.Failure(change.Error()))
-            : inner.AsyncChangedActivity(change, ct);
-    }
+    ) => new AsyncValidatingOperation(change).Process(inner.AsyncChangedActivity(change, ct));
 }

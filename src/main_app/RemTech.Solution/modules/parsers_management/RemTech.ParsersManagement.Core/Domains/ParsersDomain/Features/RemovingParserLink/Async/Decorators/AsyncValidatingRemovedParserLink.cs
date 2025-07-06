@@ -1,4 +1,5 @@
-﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
+﻿using RemTech.ParsersManagement.Core.Common.Decorators;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.RemovingParserLink.Async.Decorators;
@@ -9,8 +10,5 @@ public sealed class AsyncValidatingRemovedParserLink(IAsyncRemovedParserLink inn
     public Task<Status<IParserLink>> AsyncRemoved(
         AsyncRemoveParserLink remove,
         CancellationToken ct = default
-    ) =>
-        remove.Errored()
-            ? Task.FromResult(Status<IParserLink>.Failure(remove.Error()))
-            : inner.AsyncRemoved(remove, ct);
+    ) => new AsyncValidatingOperation(remove).Process(inner.AsyncRemoved(remove, ct));
 }

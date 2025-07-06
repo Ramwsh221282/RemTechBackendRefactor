@@ -25,7 +25,7 @@ public sealed class TransactionOperatingParser<T>
         return this;
     }
 
-    public TransactionOperatingParser<T> WithLogicMethod(Func<Task<Status<T>>>? logicMethod)
+    public TransactionOperatingParser<T> WithLogicMethod(Func<Task<Status<T>>> logicMethod)
     {
         _logicMethod = logicMethod;
         return this;

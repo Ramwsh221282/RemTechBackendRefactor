@@ -1,4 +1,5 @@
 ﻿using RemTech.Logging.Library;
+using RemTech.ParsersManagement.Core.Common.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.Result.Library;
 
@@ -10,11 +11,8 @@ public sealed class AsyncLoggingDisabledParser(ICustomLogger logger, IAsyncDisab
     public async Task<Status<IParser>> Disable(
         AsyncDisableParser disable,
         CancellationToken ct = default
-    )
-    {
-        logger.Info("Асинхронное выключение парсера.");
-        Status<IParser> disabled = await inner.Disable(disable, ct);
-        logger.Info("Асинхронное выключение парсера завершено.");
-        return disabled;
-    }
+    ) =>
+        await new AsyncLoggingOperation<Status<IParser>>(logger, "Выключение парсера").Log(
+            inner.Disable(disable, ct)
+        );
 }

@@ -1,4 +1,5 @@
 ﻿using RemTech.Logging.Library;
+using RemTech.ParsersManagement.Core.Common.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
 using RemTech.Result.Library;
 
@@ -10,11 +11,9 @@ public sealed class AsyncLoggingNewParserLink(ICustomLogger logger, IAsyncNewPar
     public async Task<Status<IParserLink>> AsyncNew(
         AsyncAddParserLink add,
         CancellationToken ct = default
-    )
-    {
-        logger.Info("Асинхронное добавление ссылки парсеру.");
-        Status<IParserLink> status = await inner.AsyncNew(add, ct);
-        logger.Info("Асинхронное добавление ссылки парсеру завершено.");
-        return status;
-    }
+    ) =>
+        await new AsyncLoggingOperation<Status<IParserLink>>(
+            logger,
+            "Добавление ссылки парсеру"
+        ).Log(inner.AsyncNew(add, ct));
 }

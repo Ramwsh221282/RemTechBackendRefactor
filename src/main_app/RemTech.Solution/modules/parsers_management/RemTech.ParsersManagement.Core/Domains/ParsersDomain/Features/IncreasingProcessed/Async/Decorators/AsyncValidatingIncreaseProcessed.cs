@@ -1,4 +1,5 @@
-﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
+﻿using RemTech.ParsersManagement.Core.Common.Decorators;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.IncreasingProcessed.Async.Decorators;
@@ -9,8 +10,5 @@ public sealed class AsyncValidatingIncreaseProcessed(IAsyncIncreaseProcessed inn
     public Task<Status<ParserStatisticsIncreasement>> Increase(
         AsyncIncreaseProcess increase,
         CancellationToken ct = default
-    ) =>
-        increase.Errored()
-            ? Task.FromResult(Status<ParserStatisticsIncreasement>.Failure(increase.Error()))
-            : inner.Increase(increase, ct);
+    ) => new AsyncValidatingOperation(increase).Process(inner.Increase(increase, ct));
 }

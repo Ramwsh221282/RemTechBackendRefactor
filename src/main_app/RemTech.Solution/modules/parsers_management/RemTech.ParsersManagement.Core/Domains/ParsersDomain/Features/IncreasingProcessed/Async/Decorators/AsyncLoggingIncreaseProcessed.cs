@@ -17,5 +17,5 @@ public sealed class AsyncLoggingIncreaseProcessed(
         await new AsyncLoggingOperation<Status<ParserStatisticsIncreasement>>(
             logger,
             "Увеличение количества обработанных ссылок у парсера"
-        ).Log(() => inner.Increase(increase, ct));
+        ).Log(inner.Increase(increase, ct));
 }

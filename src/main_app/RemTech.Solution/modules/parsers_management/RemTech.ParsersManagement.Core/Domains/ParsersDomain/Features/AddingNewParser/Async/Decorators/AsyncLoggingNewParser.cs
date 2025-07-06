@@ -1,4 +1,5 @@
 ﻿using RemTech.Logging.Library;
+using RemTech.ParsersManagement.Core.Common.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.Result.Library;
 
@@ -10,11 +11,8 @@ public sealed class AsyncLoggingNewParser(ICustomLogger logger, IAsyncNewParser 
     public async Task<Status<IParser>> Register(
         AsyncAddNewParser add,
         CancellationToken ct = default
-    )
-    {
-        logger.Info("Асинхронное добавление нового парсера.");
-        Status<IParser> parser = await inner.Register(add, ct);
-        logger.Info("Асинхронное добавление нового парсера завершено.");
-        return parser;
-    }
+    ) =>
+        await new AsyncLoggingOperation<Status<IParser>>(logger, "Добавление нового парсера").Log(
+            inner.Register(add, ct)
+        );
 }

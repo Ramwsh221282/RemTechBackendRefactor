@@ -17,5 +17,5 @@ public sealed class AsyncLoggingFinishedParserLink(
         await new AsyncLoggingOperation<Status<IParserLink>>(
             logger,
             "Остановка парсинга для ссылки."
-        ).Log(() => inner.AsyncFinished(finish, ct));
+        ).Log(inner.AsyncFinished(finish, ct));
 }

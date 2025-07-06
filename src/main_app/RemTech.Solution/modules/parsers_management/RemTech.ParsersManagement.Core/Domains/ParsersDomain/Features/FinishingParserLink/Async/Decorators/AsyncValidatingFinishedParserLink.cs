@@ -1,4 +1,5 @@
-﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
+﻿using RemTech.ParsersManagement.Core.Common.Decorators;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.FinishingParserLink.Async.Decorators;
@@ -9,8 +10,5 @@ public sealed class AsyncValidatingFinishedParserLink(IAsyncFinishedParserLink i
     public Task<Status<IParserLink>> AsyncFinished(
         AsyncFinishParserLink finish,
         CancellationToken ct = default
-    ) =>
-        finish.Errored()
-            ? Task.FromResult(Status<IParserLink>.Failure(finish.Error()))
-            : inner.AsyncFinished(finish, ct);
+    ) => new AsyncValidatingOperation(finish).Process(inner.AsyncFinished(finish, ct));
 }

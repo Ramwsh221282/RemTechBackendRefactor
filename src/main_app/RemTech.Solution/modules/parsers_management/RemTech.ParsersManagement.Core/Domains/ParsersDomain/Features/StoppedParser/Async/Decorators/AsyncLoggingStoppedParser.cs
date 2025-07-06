@@ -12,8 +12,7 @@ public sealed class AsyncLoggingStoppedParser(ICustomLogger logger, IAsyncStoppe
         AsyncStopParser stop,
         CancellationToken ct = default
     ) =>
-        await new AsyncLoggingOperation<Status<IParser>>(
-            logger,
-            "Асинхронная остановка парсера."
-        ).Log(() => inner.AsyncStopped(stop, ct));
+        await new AsyncLoggingOperation<Status<IParser>>(logger, "Остановка парсера.").Log(
+            inner.AsyncStopped(stop, ct)
+        );
 }
