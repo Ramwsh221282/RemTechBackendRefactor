@@ -10,4 +10,8 @@ public sealed class MokTransactionalParsers(MokValidParsers dataSource) : ITrans
         ITransactionalParser transactional = new MokTransactionalParser(parser, dataSource);
         return Task.FromResult(transactional);
     }
+
+    public void Dispose() { }
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

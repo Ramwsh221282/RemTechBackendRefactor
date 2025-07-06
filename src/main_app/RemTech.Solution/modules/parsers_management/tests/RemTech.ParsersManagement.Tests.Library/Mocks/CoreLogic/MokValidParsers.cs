@@ -38,4 +38,8 @@ public sealed class MokValidParsers(MokParsers inner) : IParsers
     public void SaveParser(IParser parser) => inner.SaveParser(parser);
 
     public bool ContainsParser(IParser parser) => inner.ContainsParser(parser);
+
+    public void Dispose() => inner.Dispose();
+
+    public async ValueTask DisposeAsync() => await inner.DisposeAsync();
 }

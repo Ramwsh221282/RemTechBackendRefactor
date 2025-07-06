@@ -20,29 +20,24 @@ public sealed class AsyncSqlSpeakingNewParser : IAsyncNewParser
         CancellationToken ct = default
     )
     {
-        Status<IParser> processed = await _inner.Register(add, ct);
-        if (processed.IsFailure)
+        await using (_parsers)
+        {
+            Status<IParser> processed = await _inner.Register(add, ct);
+            if (processed.IsFailure)
+                return processed;
+            Status<IParser> existing = await _parsers.Find(
+                processed.Value.Identification().ReadType(),
+                processed.Value.Domain(),
+                ct
+            );
+            if (existing.IsSuccess)
+                return Error.Conflict(
+                    $"Парсер с типом: {processed.Value.Identification().ReadType().Read().StringValue()} и доменом: {processed.Value.Domain().Read().NameString().StringValue()} уже существует"
+                );
+            Status adding = await _parsers.Add(processed.Value, ct);
+            if (adding.IsFailure)
+                return adding.Error;
             return processed;
-        Status<IParser> existing = await _parsers.Find(
-            processed.Value.Identification().ReadName(),
-            ct
-        );
-        if (existing.IsSuccess)
-            return Error.Conflict(
-                $"Парсер с названием: {processed.Value.Identification().ReadName().NameString()} уже присутствует."
-            );
-        existing = await _parsers.Find(
-            processed.Value.Identification().ReadType(),
-            processed.Value.Domain(),
-            ct
-        );
-        if (existing.IsSuccess)
-            return Error.Conflict(
-                $"Парсер с типом: {processed.Value.Identification().ReadType().Read().StringValue()} и доменом: {processed.Value.Domain().Read().NameString().StringValue()} уже существует"
-            );
-        Status adding = await _parsers.Add(processed.Value, ct);
-        if (adding.IsFailure)
-            return adding.Error;
-        return processed;
+        }
     }
 }

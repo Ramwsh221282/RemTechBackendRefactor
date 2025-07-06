@@ -4,6 +4,7 @@ using Npgsql;
 using RemTech.ParsersManagement.Core.Common.Primitives;
 using RemTech.ParsersManagement.Core.Common.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Errors;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
@@ -21,13 +22,15 @@ public sealed class PgParsers : IParsers
 
     public async Task<Status<IParser>> Find(Name name, CancellationToken ct = default)
     {
-        string sql = $"""
+        string sql = string.Intern(
+            $"""
             SELECT
                 {new SelectParserWithLeftJoinedLinks().Read()}
             FROM parsers p
             LEFT JOIN parser_links pl ON p.id = pl.parser_id
             WHERE p.name = @name
-            """;
+            """
+        );
         var parameters = new { name = name.NameString().StringValue() };
         CommandDefinition command = new(sql, parameters, cancellationToken: ct);
         await using NpgsqlConnection connection = await _engine.Connect(ct);
@@ -38,8 +41,9 @@ public sealed class PgParsers : IParsers
             IParser parser = await new ParserFromSqlRow(reader).Read();
             parsers.Add(parser);
         }
-
-        return parsers.Count == 0 ? new ParserWithNameNotFoundError(name) : parsers[0].Success();
+        return parsers.Count == 0
+            ? new ParserWithNameNotFoundError(name)
+            : new ValidParser(parsers[0]);
     }
 
     public async Task<Status<IParser>> Find(NotEmptyGuid id, CancellationToken ct = default)
@@ -62,7 +66,7 @@ public sealed class PgParsers : IParsers
             parsers.Add(parser);
         }
 
-        return parsers.Count == 0 ? new ParserWithIdNotFoundError(id) : parsers[0].Success();
+        return parsers.Count == 0 ? new ParserWithIdNotFoundError(id) : new ValidParser(parsers[0]);
     }
 
     public async Task<Status<IParser>> Find(
@@ -76,7 +80,7 @@ public sealed class PgParsers : IParsers
                 {new SelectParserWithLeftJoinedLinks().Read()}
             FROM parsers p
             LEFT JOIN parser_links pl ON p.id = pl.parser_id
-            WHERE p.type = type AND p.domain = @domain
+            WHERE p.type = @type AND p.domain = @domain
             """;
         var parameters = new { type = type.Read().StringValue(), domain = domain.StringValue() };
         CommandDefinition command = new(sql, parameters, cancellationToken: ct);
@@ -91,7 +95,7 @@ public sealed class PgParsers : IParsers
 
         return parsers.Count == 0
             ? new ParserWithTypeAndDomainNotFoundError(type, domain)
-            : parsers[0].Success();
+            : new ValidParser(parsers[0]);
     }
 
     public async Task<Status> Add(IParser parser, CancellationToken ct = default)
@@ -125,4 +129,8 @@ public sealed class PgParsers : IParsers
         await connection.ExecuteAsync(command);
         return parser.Success();
     }
+
+    public void Dispose() => _engine.Dispose();
+
+    public async ValueTask DisposeAsync() => await _engine.DisposeAsync();
 }

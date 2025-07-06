@@ -6,7 +6,7 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
 
-public interface IParsers
+public interface IParsers : IDisposable, IAsyncDisposable
 {
     Task<Status<IParser>> Find(Name name, CancellationToken ct = default);
     Task<Status<IParser>> Find(NotEmptyGuid id, CancellationToken ct = default);

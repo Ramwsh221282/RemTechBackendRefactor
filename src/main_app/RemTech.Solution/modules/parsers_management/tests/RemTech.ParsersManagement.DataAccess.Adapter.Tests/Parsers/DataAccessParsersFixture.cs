@@ -1,4 +1,6 @@
-﻿using RemTech.ParsersManagement.DataSource.Adapter;
+﻿using RemTech.Logging.Library;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
+using RemTech.ParsersManagement.DataSource.Adapter;
 using RemTech.ParsersManagement.DataSource.Adapter.DataAccessConfiguration;
 using RemTech.ParsersManagement.DataSource.Adapter.Parsers;
 using RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
@@ -9,30 +11,25 @@ public sealed class DataAccessParsersFixture : IDisposable
 {
     private readonly ParsersManagementDbUp _up;
     private readonly ParsersManagementDatabaseConfiguration _configuration;
-    private readonly PgParsers _parsers;
-    private readonly MokLogger _logger;
+    private readonly ICustomLogger _logger;
 
     public DataAccessParsersFixture()
     {
         _configuration = new ParsersManagementDatabaseConfiguration("appsettings.json");
         _up = new ParsersManagementDbUp(_configuration);
         _up.Up();
-        _parsers = new PgParsers(new PostgreSqlEngine(_configuration));
         _logger = new MokLogger();
     }
 
-    public PgParsers AccessPgParsers()
+    public ParsersSource ParsersSource()
     {
-        return _parsers;
+        PostgreSqlEngine engine = new(_configuration);
+        PgParsers parsers = new(engine);
+        PgTransactionalParsers transactional = new(engine);
+        return new ParsersSource(parsers, transactional);
     }
 
-    public MokLogger AccessMokLogger()
-    {
-        return _logger;
-    }
-
-    public MokTransactionalParsers AccessMokTransactionalParsers() =>
-        new(new MokValidParsers(new MokParsers()));
+    public ICustomLogger Logger() => _logger;
 
     public void Dispose()
     {
