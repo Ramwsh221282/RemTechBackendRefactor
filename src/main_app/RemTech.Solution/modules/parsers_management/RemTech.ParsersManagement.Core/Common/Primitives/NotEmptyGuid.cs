@@ -10,9 +10,7 @@ public sealed class NotEmptyGuid
 
     public bool Same(NotEmptyGuid other) => _value == other._value;
 
-    public Guid GuidValue() => _value;
-
-    public static NotEmptyGuid New() => new NotEmptyGuid(Guid.NewGuid());
+    public static NotEmptyGuid New() => new(Guid.NewGuid());
 
     public static Status<NotEmptyGuid> New(Guid? value) =>
         value switch
@@ -28,4 +26,13 @@ public sealed class NotEmptyGuid
     public static implicit operator Guid(NotEmptyGuid id) => id._value;
 
     public static implicit operator string(NotEmptyGuid id) => id._value.ToString();
+
+    public override bool Equals(object? obj) =>
+        obj switch
+        {
+            NotEmptyGuid other => other._value == _value,
+            _ => false,
+        };
+
+    public override int GetHashCode() => _value.GetHashCode();
 }

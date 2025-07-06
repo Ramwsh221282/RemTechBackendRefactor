@@ -14,4 +14,6 @@ public sealed class Seconds
     public PositiveInteger Read() => _seconds;
 
     private static int CalculateSecondsFromElapsedSeconds(long seconds) => (int)(seconds % 60);
+
+    public static implicit operator int(Seconds seconds) => seconds._seconds;
 }

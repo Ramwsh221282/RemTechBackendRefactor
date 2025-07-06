@@ -13,10 +13,10 @@ public sealed class LoggingFinishedParserLink(ICustomLogger logger, IFinishedPar
         IParser parser = finish.TakeOwner();
         logger.Info(
             "Завершение работы ссылки парсера ID: {0}, название: {1}, тип: {2}, домен: {3}.",
-            parser.Identification().ReadId().GuidValue(),
-            parser.Identification().ReadName().NameString().StringValue(),
-            parser.Identification().ReadType().Read().StringValue(),
-            parser.Domain().Read().NameString().StringValue()
+            (Guid)parser.Identification().ReadId(),
+            (string)parser.Identification().ReadName().NameString(),
+            (string)parser.Identification().ReadType().Read(),
+            (string)parser.Domain().Read().NameString()
         );
         Status<IParserLink> finished = inner.Finished(finish);
         if (finished.IsSuccess)

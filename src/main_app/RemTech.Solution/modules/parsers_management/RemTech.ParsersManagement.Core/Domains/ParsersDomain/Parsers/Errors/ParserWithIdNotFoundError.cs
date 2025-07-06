@@ -9,13 +9,16 @@ public sealed class ParserWithIdNotFoundError : IError
     private readonly Error _error;
 
     public ParserWithIdNotFoundError(NotEmptyGuid id)
-        : this(id.GuidValue()) { }
+        : this((Guid)id) { }
 
     public ParserWithIdNotFoundError(ParserIdentity identity)
         : this(identity.ReadId()) { }
 
-    private ParserWithIdNotFoundError(Guid id) =>
-        _error = Error.NotFound($"Парсер с ID: {id} не найден.");
+    private ParserWithIdNotFoundError(Guid id)
+    {
+        string message = $"Парсер с ID: {id} не найден.";
+        _error = (message, ErrorCodes.Conflict);
+    }
 
     public static implicit operator Status(ParserWithIdNotFoundError error) => error._error;
 

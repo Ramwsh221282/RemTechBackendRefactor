@@ -16,8 +16,8 @@ public sealed class LoggingNewParserLink(ICustomLogger logger, INewParserLink in
         ParserIdentity identification = parser.Identification();
         logger.Info(
             "Добавление ссылки парсеру ID: {0}, название: {1}.",
-            identification.ReadId().GuidValue(),
-            identification.ReadName().NameString()
+            (Guid)identification.ReadId(),
+            (string)identification.ReadName().NameString()
         );
         Status<IParserLink> addedLink = inner.Register(addLink);
         if (addedLink.IsSuccess)

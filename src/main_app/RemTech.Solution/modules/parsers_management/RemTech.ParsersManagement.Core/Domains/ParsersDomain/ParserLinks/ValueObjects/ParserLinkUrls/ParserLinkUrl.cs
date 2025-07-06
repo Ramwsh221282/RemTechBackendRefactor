@@ -13,4 +13,6 @@ public sealed class ParserLinkUrl
     public bool SameBy(NotEmptyString other) => _url.Same(other);
 
     public bool SameBy(ParserLinkUrl other) => SameBy(other._url);
+
+    public static implicit operator string(ParserLinkUrl url) => url._url;
 }

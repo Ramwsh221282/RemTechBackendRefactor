@@ -22,7 +22,7 @@ public sealed class CompareLinkIdentityByParserOwning : ICompare
         : this(relatedIdentity.ReadId(), parserIdentity.ReadId()) { }
 
     public CompareLinkIdentityByParserOwning(NotEmptyGuid parserId, NotEmptyGuid relatedId)
-        : this(parserId.GuidValue(), relatedId.GuidValue()) { }
+        : this((Guid)parserId, (Guid)relatedId) { }
 
     public CompareLinkIdentityByParserOwning(Guid parserId, Guid relatedId) =>
         _compared = parserId == relatedId;

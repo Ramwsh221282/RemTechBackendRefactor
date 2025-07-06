@@ -8,9 +8,13 @@ public sealed class StartingWhenHasNoActiveLinksError : IError
 
     public StartingWhenHasNoActiveLinksError(IParser parser)
     {
+        Guid id = parser.Identification().ReadId();
+        string name = parser.Identification().ReadName();
+        string type = parser.Identification().ReadType().Read();
+        string domain = parser.Domain().Read();
         string text =
-            $"Парсер с ID: {parser.Identification().ReadId().GuidValue()}, названием: {parser.Identification().ReadName().NameString()}, типом: {parser.Identification().ReadType().Read()}, доменом: {parser.Domain().Read().NameString()} не содержит активные ссылки. Нельзя начать парсинг.";
-        _error = Error.Conflict(text);
+            $"Парсер с ID: {id}, названием: {name}, типом: {type}, доменом: {domain} не содержит активные ссылки. Нельзя начать парсинг.";
+        _error = (text, ErrorCodes.Conflict);
     }
 
     public Error Read() => _error;

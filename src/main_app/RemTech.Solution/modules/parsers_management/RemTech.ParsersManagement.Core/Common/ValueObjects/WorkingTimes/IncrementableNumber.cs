@@ -19,4 +19,6 @@ public sealed class IncrementableNumber
     public IncrementableNumber Reset() => new(PositiveInteger.New());
 
     public PositiveInteger Read() => _number;
+
+    public static implicit operator int(IncrementableNumber number) => number._number;
 }

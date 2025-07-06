@@ -10,9 +10,10 @@ public sealed class ParserLinkIsNotFoundInParserError : IError
 
     public ParserLinkIsNotFoundInParserError(IParser parser)
     {
-        string text =
-            $"Парсер с ID: {parser.Identification().ReadId().GuidValue()} и с названием: {parser.Identification().ReadName().NameString().StringValue()} не содержит ссылку.";
-        _error = Error.NotFound(text);
+        Guid id = parser.Identification().ReadId();
+        string name = parser.Identification().ReadName();
+        string text = $"Парсер с ID: {id} и с названием: {name} не содержит ссылку.";
+        _error = (text, ErrorCodes.NotFound);
     }
 
     public Error Read() => _error;

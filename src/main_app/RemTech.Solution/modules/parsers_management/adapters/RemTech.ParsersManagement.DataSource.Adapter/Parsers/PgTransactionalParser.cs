@@ -88,7 +88,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
         var parameters = new
         {
             state = WorkState().Read().StringValue(),
-            id = Identification().ReadId().GuidValue(),
+            id = (Guid)Identification().ReadId(),
         };
         _journal.AddOperation(
             new CommandDefinition(
@@ -110,7 +110,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
         var parameters = new
         {
             state = WorkState().Read().StringValue(),
-            id = Identification().ReadId().GuidValue(),
+            id = (Guid)Identification().ReadId(),
         };
         _journal.AddOperation(
             new CommandDefinition(
@@ -132,7 +132,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
         var parameters = new
         {
             state = WorkState().Read().StringValue(),
-            id = Identification().ReadId().GuidValue(),
+            id = (Guid)Identification().ReadId(),
         };
         _journal.AddOperation(
             new CommandDefinition(
@@ -157,7 +157,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
         {
             wait_days = WorkSchedule().WaitDays().Read(),
             next_run = WorkSchedule().NextRun(),
-            id = Identification().ReadId().GuidValue(),
+            id = (Guid)Identification().ReadId(),
         };
         _journal.AddOperation(
             new CommandDefinition(
@@ -185,8 +185,8 @@ public sealed class PgTransactionalParser : ITransactionalParser
         );
         var parameters = new
         {
-            @link_id = link.Identification().ReadId().GuidValue(),
-            @parser_id = link.Identification().OwnerIdentification().ReadId().GuidValue(),
+            @link_id = (Guid)link.Identification().ReadId(),
+            @parser_id = (Guid)link.Identification().OwnerIdentification().ReadId(),
             @link_name = link.Identification().ReadName().NameString().StringValue(),
             @url = link.ReadUrl().Read().StringValue(),
             @activity = link.Activity().Read(),
@@ -217,8 +217,8 @@ public sealed class PgTransactionalParser : ITransactionalParser
         );
         var parameters = new
         {
-            link_id = link.Identification().ReadId().GuidValue(),
-            parser_link_id = link.Identification().OwnerIdentification().ReadId().GuidValue(),
+            link_id = (Guid)link.Identification().ReadId(),
+            parser_link_id = (Guid)link.Identification().OwnerIdentification().ReadId(),
         };
         _journal.AddOperation(
             new CommandDefinition(
@@ -242,8 +242,8 @@ public sealed class PgTransactionalParser : ITransactionalParser
         var parameters = new
         {
             next_activity = link.Activity().Read(),
-            link_id = link.Identification().ReadId().GuidValue(),
-            parser_link_id = link.Identification().OwnerIdentification().ReadId().GuidValue(),
+            link_id = (Guid)link.Identification().ReadId(),
+            parser_link_id = (Guid)link.Identification().OwnerIdentification().ReadId(),
         };
         _journal.AddOperation(
             new CommandDefinition(
@@ -279,8 +279,8 @@ public sealed class PgTransactionalParser : ITransactionalParser
             hours = link.WorkedStatistic().WorkedTime().Hours().Read().Read(),
             minutes = link.WorkedStatistic().WorkedTime().Minutes().Read().Read(),
             seconds = link.WorkedStatistic().WorkedTime().Seconds().Read().Read(),
-            link_id = link.Identification().ReadId().GuidValue(),
-            parser_link_id = link.Identification().OwnerIdentification().ReadId().GuidValue(),
+            link_id = (Guid)link.Identification().ReadId(),
+            parser_link_id = (Guid)link.Identification().OwnerIdentification().ReadId(),
         };
         _journal.AddOperation(
             new CommandDefinition(
@@ -302,7 +302,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
         var parameters = new
         {
             state = WorkState().Read().StringValue(),
-            id = Identification().ReadId().GuidValue(),
+            id = (Guid)Identification().ReadId(),
         };
         _journal.AddOperation(
             new CommandDefinition(
@@ -341,7 +341,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
             hours = WorkedStatistics().WorkedTime().Hours().Read().Read(),
             minutes = WorkedStatistics().WorkedTime().Minutes().Read().Read(),
             seconds = WorkedStatistics().WorkedTime().Seconds().Read().Read(),
-            id = Identification().ReadId().GuidValue(),
+            id = (Guid)Identification().ReadId(),
         };
         _journal.AddOperation(
             new CommandDefinition(

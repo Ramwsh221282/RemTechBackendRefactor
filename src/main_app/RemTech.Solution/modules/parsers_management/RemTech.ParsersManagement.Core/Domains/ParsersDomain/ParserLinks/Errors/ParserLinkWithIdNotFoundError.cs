@@ -9,13 +9,15 @@ public sealed class ParserLinkWithIdNotFoundError : IError
     private readonly Error _error;
 
     public ParserLinkWithIdNotFoundError(IParser parser, NotEmptyGuid linkId)
-        : this(parser, linkId.GuidValue()) { }
+        : this(parser, (Guid)linkId) { }
 
     public ParserLinkWithIdNotFoundError(IParser parser, Guid linkId)
     {
+        Guid parserId = parser.Identification().ReadId();
+        string name = parser.Identification().ReadName();
         string text =
-            $"Парсер с ID: {parser.Identification().ReadId().GuidValue()} и названием {parser.Identification().ReadName().NameString().StringValue()} не содержит ссылку с ID: {linkId}";
-        _error = Error.NotFound(text);
+            $"Парсер с ID: {parserId} и названием {name} не содержит ссылку с ID: {linkId}";
+        _error = (text, ErrorCodes.NotFound);
     }
 
     public Error Read() => _error;

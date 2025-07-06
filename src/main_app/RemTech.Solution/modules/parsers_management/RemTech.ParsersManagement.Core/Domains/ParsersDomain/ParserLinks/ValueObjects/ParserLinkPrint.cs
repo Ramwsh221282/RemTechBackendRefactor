@@ -8,9 +8,9 @@ public sealed class ParserLinkPrint
     {
         _text = $"""
             Информация о ссылке:
-            ID: {link.Identification().ReadId().GuidValue()},
-            Название: {link.Identification().ReadName().NameString()},
-            URL: {link.ReadUrl().Read().StringValue()},
+            ID: {(Guid)link.Identification().ReadId()},
+            Название: {(string)link.Identification().ReadName().NameString()},
+            URL: {(string)link.ReadUrl().Read()},
             Активна: {link.Activity().Read()}
             """;
     }
