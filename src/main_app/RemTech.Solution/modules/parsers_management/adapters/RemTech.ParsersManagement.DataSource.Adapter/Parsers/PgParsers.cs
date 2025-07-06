@@ -48,13 +48,15 @@ public sealed class PgParsers : IParsers
 
     public async Task<Status<IParser>> Find(NotEmptyGuid id, CancellationToken ct = default)
     {
-        string sql = $"""
+        string sql = string.Intern(
+            $"""
             SELECT
                 {new SelectParserWithLeftJoinedLinks().Read()}
             FROM parsers p
             LEFT JOIN parser_links pl ON p.id = pl.parser_id
             WHERE p.id = @id
-            """;
+            """
+        );
         var parameters = new { id = id.GuidValue() };
         CommandDefinition command = new(sql, parameters, cancellationToken: ct);
         await using NpgsqlConnection connection = await _engine.Connect(ct);
@@ -75,13 +77,15 @@ public sealed class PgParsers : IParsers
         CancellationToken ct = default
     )
     {
-        string sql = $"""
+        string sql = string.Intern(
+            $"""
             SELECT
                 {new SelectParserWithLeftJoinedLinks().Read()}
             FROM parsers p
             LEFT JOIN parser_links pl ON p.id = pl.parser_id
             WHERE p.type = @type AND p.domain = @domain
-            """;
+            """
+        );
         var parameters = new { type = type.Read().StringValue(), domain = domain.StringValue() };
         CommandDefinition command = new(sql, parameters, cancellationToken: ct);
         await using NpgsqlConnection connection = await _engine.Connect(ct);
@@ -100,13 +104,15 @@ public sealed class PgParsers : IParsers
 
     public async Task<Status> Add(IParser parser, CancellationToken ct = default)
     {
-        const string sql = """
+        string sql = string.Intern(
+            """
             INSERT 
             INTO
                 parsers (id, name, type, state, domain, processed, total_seconds, hours, minutes, seconds, wait_days, next_run, last_run)
             VALUES
                 (@id, @name, @type, @state, @domain, @processed, @total_seconds, @hours, @minutes, @seconds, @wait_days, @next_run, @last_run)
-            """;
+            """
+        );
         ParserIdentity identification = parser.Identification();
         var parameters = new
         {

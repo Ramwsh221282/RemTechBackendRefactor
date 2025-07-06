@@ -26,6 +26,8 @@ using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.FinishingPar
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.FinishingParserLink.Async.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.FinishingParserLink.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.IncreasingProcessed;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.IncreasingProcessed.Async;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.IncreasingProcessed.Async.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.IncreasingProcessed.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.RemovingParserLink;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.RemovingParserLink.Async;
@@ -669,6 +671,44 @@ public sealed class ParserTestingToolkit
             ).Asserted();
         return increasement.Value;
     }
+
+    public async Task AsyncIncreaseProcessedSuccess(Guid? parserId, Guid? linkId) =>
+        await new AsyncAssertStatusSuccess<ParserStatisticsIncreasement>(
+            () =>
+                new AsyncLoggingIncreaseProcessed(
+                    _logger,
+                    new AsyncValidatingIncreaseProcessed(
+                        new AsyncSqlSpeakingIncreaseProcessed(
+                            _parsers,
+                            new AsyncIncreaseProcessed(
+                                new LoggingIncreasedProcessed(
+                                    _logger,
+                                    new ValidatingIncreasedProcessed(new IncreasedProcessed())
+                                )
+                            )
+                        )
+                    )
+                ).Increase(new AsyncIncreaseProcess(parserId, linkId))
+        ).AsyncAsserted();
+
+    public async Task AsyncIncreaseProcessedFailure(Guid? parserId, Guid? linkId) =>
+        await new AsyncAssertStatusFailure<ParserStatisticsIncreasement>(
+            () =>
+                new AsyncLoggingIncreaseProcessed(
+                    _logger,
+                    new AsyncValidatingIncreaseProcessed(
+                        new AsyncSqlSpeakingIncreaseProcessed(
+                            _parsers,
+                            new AsyncIncreaseProcessed(
+                                new LoggingIncreasedProcessed(
+                                    _logger,
+                                    new ValidatingIncreasedProcessed(new IncreasedProcessed())
+                                )
+                            )
+                        )
+                    )
+                ).Increase(new AsyncIncreaseProcess(parserId, linkId))
+        ).AsyncAsserted();
 
     public ParserStatisticsIncreasement IncreaseProcessedSuccess(IParser parser, Guid? linkId)
     {
