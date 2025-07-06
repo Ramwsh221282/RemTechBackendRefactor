@@ -337,7 +337,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
         {
             state = WorkState().Read().StringValue(),
             processed = WorkedStatistics().ProcessedAmount().Read().Read(),
-            total_seconds = WorkedStatistics().WorkedTime().Total().Read(),
+            total = WorkedStatistics().WorkedTime().Total().Read(),
             hours = WorkedStatistics().WorkedTime().Hours().Read().Read(),
             minutes = WorkedStatistics().WorkedTime().Minutes().Read().Read(),
             seconds = WorkedStatistics().WorkedTime().Seconds().Read().Read(),
