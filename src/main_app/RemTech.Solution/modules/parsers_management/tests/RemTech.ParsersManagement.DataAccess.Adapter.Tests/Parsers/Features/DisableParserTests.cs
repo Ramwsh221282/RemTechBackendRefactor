@@ -2,6 +2,7 @@
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Compares;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.ParsersManagement.Tests.Library;
 using RemTech.Result.Library;
 

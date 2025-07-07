@@ -1,5 +1,6 @@
 ﻿using RemTech.Logging.Library;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.ParsersManagement.DataSource.Adapter;
 using RemTech.ParsersManagement.DataSource.Adapter.DataAccessConfiguration;
 using RemTech.ParsersManagement.DataSource.Adapter.Parsers;

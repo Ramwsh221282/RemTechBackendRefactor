@@ -19,7 +19,13 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\adapters\RemTech.ParserManagement.Cache.Adapter\RemTech.ParserManagement.Cache.Adapter.csproj" />
       <ProjectReference Include="..\..\RemTech.ParsersManagement.Core\RemTech.ParsersManagement.Core.csproj" />
+      <ProjectReference Include="..\RemTech.ParsersManagement.Tests.Library\RemTech.ParsersManagement.Tests.Library.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Features\" />
     </ItemGroup>
 
 </Project>

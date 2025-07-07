@@ -1,5 +1,6 @@
 ﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 
 namespace RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
