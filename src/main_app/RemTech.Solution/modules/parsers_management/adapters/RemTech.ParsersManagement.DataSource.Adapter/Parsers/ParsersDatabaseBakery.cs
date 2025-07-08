@@ -18,6 +18,9 @@ public sealed class ParsersDatabaseBakery
 
     public Task Down()
     {
-        return _bakery.Down("parsers", "parser_links");
+        return _bakery.Down(
+            "parsers_management_module.parsers",
+            "parsers_management_module.parser_links"
+        );
     }
 }

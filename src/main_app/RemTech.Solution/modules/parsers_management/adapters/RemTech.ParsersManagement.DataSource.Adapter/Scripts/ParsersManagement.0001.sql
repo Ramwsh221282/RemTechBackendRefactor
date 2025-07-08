@@ -1,4 +1,6 @@
-﻿CREATE TABLE IF NOT EXISTS parsers (
+﻿CREATE SCHEMA IF NOT EXISTS parsers_management_module;
+
+CREATE TABLE IF NOT EXISTS parsers_management_module.parsers (
     id              UUID PRIMARY KEY,
     name            varchar(150) NOT NULL,
     type            varchar(100) NOT NULL,
@@ -16,9 +18,9 @@
     UNIQUE (domain, type)
 );
 
-CREATE TABLE IF NOT EXISTS parser_links (
+CREATE TABLE IF NOT EXISTS parsers_management_module.parser_links (
     id              UUID PRIMARY KEY,
-    parser_id       UUID NOT NULL REFERENCES parsers(id) ON DELETE CASCADE,
+    parser_id       UUID NOT NULL REFERENCES parsers_management_module.parsers(id) ON DELETE CASCADE,
     name            varchar(150) NOT NULL,
     url             text NOT NULL,
     activity        boolean NOT NULL,
@@ -30,6 +32,8 @@ CREATE TABLE IF NOT EXISTS parser_links (
     UNIQUE (parser_id, name)
 );
 
-CREATE INDEX idx_parsers_name ON parsers(name);
+CREATE INDEX idx_parsers_name
+    ON parsers_management_module.parsers(name);
 
-CREATE INDEX idx_parser_links_name ON parser_links(name);
+CREATE INDEX idx_parser_links_name
+    ON parsers_management_module.parser_links(name);

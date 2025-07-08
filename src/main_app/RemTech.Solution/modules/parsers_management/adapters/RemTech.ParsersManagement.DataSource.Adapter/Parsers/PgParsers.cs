@@ -28,8 +28,8 @@ public sealed class PgParsers : IParsers
             $"""
             SELECT
                 {new SelectParserWithLeftJoinedLinks().Read()}
-            FROM parsers p
-            LEFT JOIN parser_links pl ON p.id = pl.parser_id
+            FROM parsers_management_module.parsers p
+            LEFT JOIN parsers_management_module.parser_links pl ON p.id = pl.parser_id
             WHERE p.name = @name
             """
         );
@@ -54,8 +54,8 @@ public sealed class PgParsers : IParsers
             $"""
             SELECT
                 {new SelectParserWithLeftJoinedLinks().Read()}
-            FROM parsers p
-            LEFT JOIN parser_links pl ON p.id = pl.parser_id
+            FROM parsers_management_module.parsers p
+            LEFT JOIN parsers_management_module.parser_links pl ON p.id = pl.parser_id
             WHERE p.id = @id
             """
         );
@@ -83,8 +83,8 @@ public sealed class PgParsers : IParsers
             $"""
             SELECT
                 {new SelectParserWithLeftJoinedLinks().Read()}
-            FROM parsers p
-            LEFT JOIN parser_links pl ON p.id = pl.parser_id
+            FROM parsers_management_module.parsers p
+            LEFT JOIN parsers_management_module.parser_links pl ON p.id = pl.parser_id
             WHERE p.type = @type AND p.domain = @domain
             """
         );
@@ -110,7 +110,7 @@ public sealed class PgParsers : IParsers
             """
             INSERT 
             INTO
-                parsers (id, name, type, state, domain, processed, total_seconds, hours, minutes, seconds, wait_days, next_run, last_run)
+                parsers_management_module.parsers (id, name, type, state, domain, processed, total_seconds, hours, minutes, seconds, wait_days, next_run, last_run)
             VALUES
                 (@id, @name, @type, @state, @domain, @processed, @total_seconds, @hours, @minutes, @seconds, @wait_days, @next_run, @last_run)
             """

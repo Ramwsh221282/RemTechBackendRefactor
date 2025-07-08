@@ -45,7 +45,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
         if (status.IsFailure)
             return status;
         string parserProcessedSql = string.Intern(
-            "UPDATE parsers SET processed = @parser_processed WHERE id = @parser_id"
+            "UPDATE parsers_management_module.parsers SET processed = @parser_processed WHERE id = @parser_id"
         );
         var parserProcessedParameters = new
         {
@@ -61,7 +61,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
             )
         );
         string linksSql = string.Intern(
-            "UPDATE parser_links SET processed = @link_processed WHERE id = @link_id AND parser_id = @parser_link_id"
+            "UPDATE parsers_management_module.parser_links SET processed = @link_processed WHERE id = @link_id AND parser_id = @parser_link_id"
         );
         var linkSqlParameters = new
         {
@@ -85,7 +85,9 @@ public sealed class PgTransactionalParser : ITransactionalParser
         Status status = _parser.ChangeState(stateString);
         if (status.IsFailure)
             return status;
-        string sql = string.Intern("UPDATE parsers SET state = @state where id = @id");
+        string sql = string.Intern(
+            "UPDATE parsers_management_module.parsers SET state = @state where id = @id"
+        );
         var parameters = new
         {
             state = WorkState().Read().StringValue(),
@@ -107,7 +109,9 @@ public sealed class PgTransactionalParser : ITransactionalParser
         Status status = _parser.Enable();
         if (status.IsFailure)
             return status;
-        string sql = string.Intern("UPDATE parsers SET state = @state where id = @id");
+        string sql = string.Intern(
+            "UPDATE parsers_management_module.parsers SET state = @state where id = @id"
+        );
         var parameters = new
         {
             state = WorkState().Read().StringValue(),
@@ -129,7 +133,9 @@ public sealed class PgTransactionalParser : ITransactionalParser
         Status status = _parser.Disable();
         if (status.IsFailure)
             return status;
-        string sql = string.Intern("UPDATE parsers SET state = @state where id = @id");
+        string sql = string.Intern(
+            "UPDATE parsers_management_module.parsers SET state = @state where id = @id"
+        );
         var parameters = new
         {
             state = WorkState().Read().StringValue(),
@@ -152,7 +158,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
         if (status.IsFailure)
             return status;
         string sql = string.Intern(
-            "UPDATE parsers SET wait_days = @wait_days, next_run = @next_run where id = @id"
+            "UPDATE parsers_management_module.parsers SET wait_days = @wait_days, next_run = @next_run where id = @id"
         );
         var parameters = new
         {
@@ -179,7 +185,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
         string sql = string.Intern(
             """
             INSERT INTO 
-                parser_links (id, parser_id, name, url, activity, processed, total_seconds, hours, minutes, seconds)
+                parsers_management_module.parser_links (id, parser_id, name, url, activity, processed, total_seconds, hours, minutes, seconds)
             VALUES
                 (@link_id, @parser_id, @link_name, @url, @activity, @link_processed, @link_total_seconds, @link_hours, @link_minutes, @link_seconds)
             """
@@ -214,7 +220,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
         if (status.IsFailure)
             return status;
         string sql = string.Intern(
-            "DELETE FROM parser_links WHERE id = @link_id AND parser_id = @parser_link_id"
+            "DELETE FROM parsers_management_module.parser_links WHERE id = @link_id AND parser_id = @parser_link_id"
         );
         var parameters = new
         {
@@ -238,7 +244,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
         if (status.IsFailure)
             return status;
         string sql = string.Intern(
-            "UPDATE parser_links SET activity = @next_activity where id = @link_id and parser_id = @parser_link_id"
+            "UPDATE parsers_management_module.parser_links SET activity = @next_activity where id = @link_id and parser_id = @parser_link_id"
         );
         var parameters = new
         {
@@ -264,7 +270,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
             return status;
         string sql = string.Intern(
             """
-            UPDATE parser_links 
+            UPDATE parsers_management_module.parser_links 
             SET 
                 total_seconds = @total, 
                 hours = @hours, 
@@ -299,7 +305,9 @@ public sealed class PgTransactionalParser : ITransactionalParser
         Status status = _parser.Stop();
         if (status.IsFailure)
             return status;
-        string sql = string.Intern("UPDATE parsers SET state = @state WHERE id = @id");
+        string sql = string.Intern(
+            "UPDATE parsers_management_module.parsers SET state = @state WHERE id = @id"
+        );
         var parameters = new
         {
             state = WorkState().Read().StringValue(),
@@ -323,7 +331,7 @@ public sealed class PgTransactionalParser : ITransactionalParser
             return status;
         string sql = string.Intern(
             """
-            UPDATE parsers 
+            UPDATE parsers_management_module.parsers 
             SET 
                 state = @state,
                 processed = @processed,
