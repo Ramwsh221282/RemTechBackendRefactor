@@ -14,7 +14,6 @@ public sealed class ParserStatisticsIncreasement
         _linkIncreasement = new ParserLinkStatisticIncreasement(link);
         _parserId = parser.Identification().ReadId();
         _parserStatistic = parser.WorkedStatistics();
-        _parserStatistic++;
     }
 
     public Guid IdOfIncreased() => _parserId;

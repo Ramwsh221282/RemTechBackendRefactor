@@ -12,7 +12,6 @@ public sealed class TransactionOperatingParser<T>(
     private Func<IParsers, Task<Status<IParser>>>? _receivingMethod;
     private Func<Task<Status<T>>>? _logicMethod;
     private IMaybeParser? _maybeParser;
-    private IParsersCache? _cache;
 
     public TransactionOperatingParser<T> WithReceivingMethod(
         Func<IParsers, Task<Status<IParser>>> receivingMethod
@@ -32,18 +31,6 @@ public sealed class TransactionOperatingParser<T>(
     {
         _maybeParser = maybe;
         return this;
-    }
-
-    public TransactionOperatingParser<T> WithCacheInvalidation(IParsersCache cache)
-    {
-        _cache = cache;
-        return this;
-    }
-
-    public async Task Invalidate(IParser parser)
-    {
-        if (_cache != null)
-            await _cache.Invalidate(new ParserCacheJson(parser));
     }
 
     public async Task<Status<T>> Process()
@@ -67,7 +54,6 @@ public sealed class TransactionOperatingParser<T>(
             Status commit = await transactional.Save(CancellationToken.None);
             if (commit.IsFailure)
                 return commit.Error;
-            await Invalidate(transactional);
             return status.Value;
         }
     }

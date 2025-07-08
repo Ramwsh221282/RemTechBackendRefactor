@@ -12,7 +12,7 @@ namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 public sealed class Parser : IParser
 {
     private readonly ParserIdentity _identity;
-    private readonly ParserStatistic _statistics;
+    private ParserStatistic _statistics;
     private ParserLinksBag _links;
     private ParserSchedule _schedule;
     private ParserState _state;
@@ -67,8 +67,12 @@ public sealed class Parser : IParser
 
     public ParserServiceDomain Domain() => _identity.Domain();
 
-    public Status<ParserStatisticsIncreasement> IncreaseProcessed(IParserLink link) =>
-        new ParserStatisticsIncreasement(this, link);
+    public Status<ParserStatisticsIncreasement> IncreaseProcessed(IParserLink link)
+    {
+        _statistics.IncreaseProcessed();
+        link.WorkedStatistic().IncreaseProcessed();
+        return new ParserStatisticsIncreasement(this, link);
+    }
 
     public Status<IParserLink> Put(IParserLink link)
     {
