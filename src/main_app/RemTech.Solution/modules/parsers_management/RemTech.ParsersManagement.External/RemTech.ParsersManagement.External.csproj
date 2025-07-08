@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\parsers_management\RemTech.ParsersManagement.External\RemTech.ParsersManagement.External.csproj" />
       <ProjectReference Include="..\..\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj" />
     </ItemGroup>
 
