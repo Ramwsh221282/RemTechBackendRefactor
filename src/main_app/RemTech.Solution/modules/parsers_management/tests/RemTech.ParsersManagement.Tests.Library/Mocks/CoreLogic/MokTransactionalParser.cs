@@ -1,4 +1,4 @@
-﻿using RemTech.ParsersManagement.Core.Common.Primitives;
+﻿using RemTech.Core.Shared.Primitives;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects.ParserLinksBags;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;

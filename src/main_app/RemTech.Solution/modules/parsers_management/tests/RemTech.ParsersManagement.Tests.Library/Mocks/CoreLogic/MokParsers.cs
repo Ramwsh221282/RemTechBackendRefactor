@@ -1,5 +1,5 @@
-﻿using RemTech.ParsersManagement.Core.Common.Extensions;
-using RemTech.ParsersManagement.Core.Common.Primitives;
+﻿using RemTech.Core.Shared.Extensions;
+using RemTech.Core.Shared.Primitives;
 using RemTech.ParsersManagement.Core.Common.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Errors;

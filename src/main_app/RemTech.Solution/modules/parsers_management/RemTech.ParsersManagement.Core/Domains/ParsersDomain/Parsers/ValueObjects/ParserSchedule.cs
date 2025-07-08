@@ -1,4 +1,4 @@
-﻿using RemTech.ParsersManagement.Core.Common.Primitives;
+﻿using RemTech.Core.Shared.Primitives;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 

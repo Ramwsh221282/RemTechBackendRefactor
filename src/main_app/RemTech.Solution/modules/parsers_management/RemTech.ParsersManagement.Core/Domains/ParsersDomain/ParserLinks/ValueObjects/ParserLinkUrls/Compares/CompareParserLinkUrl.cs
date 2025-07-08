@@ -1,5 +1,5 @@
-﻿using RemTech.ParsersManagement.Core.Common.Primitives;
-using RemTech.ParsersManagement.Core.Common.Primitives.Comparing;
+﻿using RemTech.Core.Shared.Primitives;
+using RemTech.Core.Shared.Primitives.Comparing;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks.ValueObjects.ParserLinkUrls.Compares;
 

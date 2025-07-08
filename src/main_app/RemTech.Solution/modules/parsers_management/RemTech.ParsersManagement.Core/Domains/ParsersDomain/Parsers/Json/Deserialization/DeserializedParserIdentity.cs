@@ -1,6 +1,6 @@
-﻿using RemTech.Json.Library.Deserialization;
+﻿using RemTech.Core.Shared.Primitives;
+using RemTech.Json.Library.Deserialization;
 using RemTech.Json.Library.Deserialization.Primitives;
-using RemTech.ParsersManagement.Core.Common.Primitives;
 using RemTech.ParsersManagement.Core.Common.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 

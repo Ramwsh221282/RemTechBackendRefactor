@@ -1,5 +1,5 @@
-﻿using RemTech.Logging.Library;
-using RemTech.ParsersManagement.Core.Common.Primitives;
+﻿using RemTech.Core.Shared.Primitives;
+using RemTech.Logging.Library;
 using RemTech.ParsersManagement.Core.Common.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.AddingNewParser;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.AddingNewParser.Async;

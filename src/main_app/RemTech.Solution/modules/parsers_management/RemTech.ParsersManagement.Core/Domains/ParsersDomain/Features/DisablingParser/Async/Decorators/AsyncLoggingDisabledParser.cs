@@ -1,5 +1,5 @@
-﻿using RemTech.Logging.Library;
-using RemTech.ParsersManagement.Core.Common.Decorators;
+﻿using RemTech.Core.Shared.Functional;
+using RemTech.Logging.Library;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.Result.Library;
 

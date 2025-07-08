@@ -1,6 +1,5 @@
-﻿using RemTech.ParsersManagement.Core.Common.Extensions;
-using RemTech.ParsersManagement.Core.Common.Primitives;
-using RemTech.ParsersManagement.Core.Common.Primitives.Comparing;
+﻿using RemTech.Core.Shared.Extensions;
+using RemTech.Core.Shared.Primitives;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
