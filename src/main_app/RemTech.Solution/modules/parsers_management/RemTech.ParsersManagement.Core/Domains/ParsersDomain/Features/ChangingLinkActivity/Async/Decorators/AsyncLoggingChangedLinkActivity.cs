@@ -17,5 +17,5 @@ public sealed class AsyncLoggingChangedLinkActivity(
         await new AsyncLoggingOperation<Status<IParserLink>>(
             logger,
             string.Intern("Асинхронное изменение активности ссылки.")
-        ).Log(inner.AsyncChangedActivity(change, ct));
+        ).Log(() => inner.AsyncChangedActivity(change, ct));
 }

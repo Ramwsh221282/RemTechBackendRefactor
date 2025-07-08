@@ -15,5 +15,5 @@ public sealed class AsyncLoggingUpdatedParser(ICustomLogger logger, IAsyncUpdate
         await new AsyncLoggingOperation<Status<IParser>>(
             logger,
             "обновление состояния и(или) дней ожидания парсера"
-        ).Log(inner.Update(update, ct));
+        ).Log(() => inner.Update(update, ct));
 }

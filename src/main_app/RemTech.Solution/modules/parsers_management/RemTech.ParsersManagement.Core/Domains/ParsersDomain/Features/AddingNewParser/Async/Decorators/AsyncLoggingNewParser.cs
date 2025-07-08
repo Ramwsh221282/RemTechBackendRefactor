@@ -13,6 +13,6 @@ public sealed class AsyncLoggingNewParser(ICustomLogger logger, IAsyncNewParser 
         CancellationToken ct = default
     ) =>
         await new AsyncLoggingOperation<Status<IParser>>(logger, "Добавление нового парсера").Log(
-            inner.Register(add, ct)
+            () => inner.Register(add, ct)
         );
 }

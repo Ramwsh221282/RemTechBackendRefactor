@@ -141,8 +141,15 @@ public sealed class TransactionalLoggingParser(ICustomLogger logger, ITransactio
         return origin.DisposeAsync();
     }
 
-    public Task<Status> Save(CancellationToken ct = default)
+    public async Task<Status> Save(CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        Status saving = await origin.Save(ct);
+        if (saving.IsFailure)
+        {
+            logger.Info("{0}. Транзакция с ошибкой. Инвалидация отменена.", Context);
+            return saving;
+        }
+        logger.Info("{0]. Транзакция окончена успешно.", Context);
+        return saving;
     }
 }
