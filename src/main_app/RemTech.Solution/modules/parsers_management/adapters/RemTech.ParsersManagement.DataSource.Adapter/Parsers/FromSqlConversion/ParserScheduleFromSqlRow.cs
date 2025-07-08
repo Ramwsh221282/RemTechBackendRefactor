@@ -1,5 +1,5 @@
 ﻿using System.Data.Common;
-using RemTech.ParsersManagement.Core.Common.Primitives;
+using RemTech.Core.Shared.Primitives;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 
 namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers.FromSqlConversion;

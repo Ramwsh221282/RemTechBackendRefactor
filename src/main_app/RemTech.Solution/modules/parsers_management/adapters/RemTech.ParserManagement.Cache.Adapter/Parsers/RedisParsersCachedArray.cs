@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using RemTech.ParsersManagement.Core.Common.Primitives;
+using RemTech.Core.Shared.Primitives;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Cache;
 
 namespace RemTech.ParserManagement.Cache.Adapter.Parsers;

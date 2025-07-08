@@ -1,4 +1,4 @@
-﻿using RemTech.ParsersManagement.Core.Common.Primitives.Comparing;
+﻿using RemTech.Core.Shared.Primitives.Comparing;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Compares;

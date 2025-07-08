@@ -1,7 +1,7 @@
 ﻿using System.Data.Common;
 using Dapper;
 using Npgsql;
-using RemTech.ParsersManagement.Core.Common.Primitives;
+using RemTech.Core.Shared.Primitives;
 using RemTech.ParsersManagement.Core.Common.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Decorators;
