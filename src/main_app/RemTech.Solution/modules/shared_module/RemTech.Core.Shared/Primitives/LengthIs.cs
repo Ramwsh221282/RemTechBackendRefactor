@@ -1,8 +1,8 @@
 ﻿namespace RemTech.Core.Shared.Primitives;
 
-public sealed class LengthIs
+public readonly record struct LengthIs
 {
-    private readonly bool _value;
+    private readonly bool _value = false;
 
     public LengthIs(Length length, Length related)
         : this((int)length, (int)related) { }

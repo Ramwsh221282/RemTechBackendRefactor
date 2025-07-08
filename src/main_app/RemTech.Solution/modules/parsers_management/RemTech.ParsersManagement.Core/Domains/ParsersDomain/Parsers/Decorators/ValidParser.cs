@@ -30,9 +30,9 @@ public sealed class ValidParser(IParser inner) : IParser
             return new IncreaseParserProcessedWhenNotWorking();
         if (!link.Activity())
             return new InactiveParserLinkProcessedIncreasementError(link);
-        if (!new CompareLinkIdentityByParserOwning(link, inner))
-            return new ParserLinkIsNotOfParserError(link, inner);
-        return inner.IncreaseProcessed(link);
+        return !new CompareLinkIdentityByParserOwning(link, inner)
+            ? new ParserLinkIsNotOfParserError(link, inner)
+            : inner.IncreaseProcessed(link);
     }
 
     public Status ChangeState(NotEmptyString stateString) =>
@@ -59,19 +59,16 @@ public sealed class ValidParser(IParser inner) : IParser
         return disabled ? new DisableDisabledParserError() : inner.Disable();
     }
 
-    public Status ChangeWaitDays(PositiveInteger waitDays) =>
-        waitDays switch
-        {
-            null => new WaitDaysEmptyError(),
-            not null when WorkSchedule().WaitDaysTooMuch(waitDays) => new WaitDaysTooMuchError(
-                waitDays
-            ),
-            not null when WorkSchedule().WaitDaysTooLess(waitDays) => new WaitDaysTooLessError(
-                waitDays
-            ),
-            not null when WorkState().AtWork() => new EditParserWhenWorkingError(),
-            _ => inner.ChangeWaitDays(waitDays),
-        };
+    public Status ChangeWaitDays(PositiveInteger waitDays)
+    {
+        if (WorkState().AtWork())
+            return new EditParserWhenWorkingError();
+        if (WorkSchedule().WaitDaysTooMuch(waitDays))
+            return new WaitDaysTooMuchError(waitDays);
+        return WorkSchedule().WaitDaysTooLess(waitDays)
+            ? new WaitDaysTooLessError(waitDays)
+            : inner.ChangeWaitDays(waitDays);
+    }
 
     public Status<IParserLink> Put(IParserLink link)
     {
@@ -86,9 +83,9 @@ public sealed class ValidParser(IParser inner) : IParser
             return new ParserOwnsLinkWithNameError(inner, link);
         if (links.FindConcrete(l => new CompareParserLinkUrl(l, link)).Any())
             return new ParserOwnsLinkWithUrlError(inner, link);
-        if (links.FindConcrete(l => new CompareLinkIdentityById(l, link)).Any())
-            return new ParserOwnsLinkWithIdError(inner, link);
-        return inner.Put(link);
+        return links.FindConcrete(l => new CompareLinkIdentityById(l, link)).Any()
+            ? new ParserOwnsLinkWithIdError(inner, link)
+            : inner.Put(link);
     }
 
     public Status<IParserLink> Drop(IParserLink link)
@@ -97,27 +94,27 @@ public sealed class ValidParser(IParser inner) : IParser
             return new EditParserWhenWorkingError();
         if (!new CompareLinkIdentityByParserOwning(link, inner))
             return new ParserLinkIsNotOfParserError(link, inner);
-        if (!new CompareLinkIdentityByParserServiceDomain(link, inner))
-            return new ParserLinkIsNotOfParserServiceDomainError(link, inner);
-        return inner.Drop(link);
+        return !new CompareLinkIdentityByParserServiceDomain(link, inner)
+            ? new ParserLinkIsNotOfParserServiceDomainError(link, inner)
+            : inner.Drop(link);
     }
 
     public Status<IParserLink> ChangeActivityOf(IParserLink link, bool nextActivity)
     {
         if (WorkState().AtWork())
             return new EditParserWhenWorkingError();
-        if (!new CompareLinkIdentityByParserOwning(link, inner))
-            return new ParserLinkIsNotOfParserError(link, inner);
-        return inner.ChangeActivityOf(link, nextActivity);
+        return !new CompareLinkIdentityByParserOwning(link, inner)
+            ? new ParserLinkIsNotOfParserError(link, inner)
+            : inner.ChangeActivityOf(link, nextActivity);
     }
 
     public Status<IParserLink> Finish(IParserLink link, PositiveLong elapsed)
     {
         if (!WorkState().AtWork())
             return new FinishLinkWhenNotWorkingError(inner);
-        if (!new CompareLinkIdentityByParserOwning(link, inner))
-            return new ParserLinkIsNotOfParserError(link, inner);
-        return inner.Finish(link, elapsed);
+        return !new CompareLinkIdentityByParserOwning(link, inner)
+            ? new ParserLinkIsNotOfParserError(link, inner)
+            : inner.Finish(link, elapsed);
     }
 
     public Status Stop() => !WorkState().AtWork() ? new StopWhenNotWorkingError() : inner.Stop();
@@ -128,8 +125,8 @@ public sealed class ValidParser(IParser inner) : IParser
             return new StartingWhenNotWaitingOrEnabledError();
         if (OwnedLinks().Amount().Same(PositiveInteger.New()))
             return new StartingWhenHasNoLinksError(inner);
-        if (new InactiveParserLinksBag(OwnedLinks()).Any())
-            return new StartingWhenHasNoActiveLinksError(inner);
-        return inner.Start();
+        return new InactiveParserLinksBag(OwnedLinks()).Any()
+            ? new StartingWhenHasNoActiveLinksError(inner)
+            : inner.Start();
     }
 }

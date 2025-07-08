@@ -1,8 +1,8 @@
 ﻿namespace RemTech.Core.Shared.Primitives;
 
-public sealed class IncrementableNumber
+public readonly record struct IncrementableNumber
 {
-    private readonly PositiveInteger _number;
+    private readonly PositiveInteger _number = new();
 
     public IncrementableNumber(PositiveInteger number) => _number = number;
 

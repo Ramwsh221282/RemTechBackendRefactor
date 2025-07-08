@@ -1,8 +1,8 @@
 ﻿namespace RemTech.Core.Shared.Primitives;
 
-public sealed class Length
+public readonly record struct Length
 {
-    private readonly int _value;
+    private readonly int _value = 0;
 
     public Length(NotEmptyStringLength nesLength) => _value = nesLength;
 

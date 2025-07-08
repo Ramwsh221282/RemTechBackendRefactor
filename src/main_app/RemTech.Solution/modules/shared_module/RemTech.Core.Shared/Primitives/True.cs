@@ -1,8 +1,8 @@
 ﻿namespace RemTech.Core.Shared.Primitives;
 
-public sealed class True
+public readonly record struct True
 {
-    private readonly bool _value;
+    private readonly bool _value = true;
 
     public True(bool value) => _value = value;
 

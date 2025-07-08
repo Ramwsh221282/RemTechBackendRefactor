@@ -2,9 +2,9 @@
 
 namespace RemTech.Core.Shared.Primitives;
 
-public sealed class PositiveLong
+public readonly record struct PositiveLong
 {
-    private readonly long _value;
+    private readonly long _value = 0;
 
     public long Read() => _value;
 
@@ -28,14 +28,6 @@ public sealed class PositiveLong
                 ErrorCodes.Validation
             ),
             _ => new PositiveLong(value.Value),
-        };
-
-    public override bool Equals(object? obj) =>
-        obj switch
-        {
-            null => false,
-            PositiveLong pl => pl._value == _value,
-            _ => false,
         };
 
     public override int GetHashCode() => _value.GetHashCode();

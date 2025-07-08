@@ -1,8 +1,8 @@
 ﻿namespace RemTech.Core.Shared.Primitives;
 
-public sealed class GreaterThan
+public readonly record struct GreaterThan
 {
-    private readonly bool _value;
+    private readonly bool _value = false;
 
     public GreaterThan(Length length, int related)
         : this((int)length, related) { }

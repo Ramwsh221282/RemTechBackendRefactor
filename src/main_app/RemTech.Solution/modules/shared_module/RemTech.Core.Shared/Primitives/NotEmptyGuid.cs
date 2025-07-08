@@ -2,13 +2,11 @@
 
 namespace RemTech.Core.Shared.Primitives;
 
-public sealed class NotEmptyGuid
+public readonly record struct NotEmptyGuid
 {
-    private readonly Guid _value;
+    private readonly Guid _value = Guid.NewGuid();
 
     public NotEmptyGuid(Guid? value) => _value = value ?? Guid.Empty;
-
-    public NotEmptyGuid() => _value = Guid.NewGuid();
 
     public bool Same(NotEmptyGuid other) => _value == other._value;
 
@@ -33,13 +31,6 @@ public sealed class NotEmptyGuid
     {
         return nguid._value != Guid.Empty;
     }
-
-    public override bool Equals(object? obj) =>
-        obj switch
-        {
-            NotEmptyGuid other => other._value == _value,
-            _ => false,
-        };
 
     public override int GetHashCode() => _value.GetHashCode();
 }

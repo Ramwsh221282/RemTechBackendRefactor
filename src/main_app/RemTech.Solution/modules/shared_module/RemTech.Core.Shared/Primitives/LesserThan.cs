@@ -1,8 +1,8 @@
 ﻿namespace RemTech.Core.Shared.Primitives;
 
-public sealed class LesserThan
+public readonly record struct LesserThan
 {
-    private readonly bool _value;
+    private readonly bool _value = false;
 
     public LesserThan(Length length, Length related)
         : this((int)length, (int)related) { }

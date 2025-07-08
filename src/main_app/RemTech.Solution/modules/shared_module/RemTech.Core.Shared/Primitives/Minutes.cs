@@ -1,8 +1,8 @@
 ﻿namespace RemTech.Core.Shared.Primitives;
 
-public sealed class Minutes
+public readonly record struct Minutes
 {
-    private readonly PositiveInteger _minutes;
+    private readonly PositiveInteger _minutes = new();
 
     public Minutes(PositiveInteger integer) => _minutes = integer;
 
