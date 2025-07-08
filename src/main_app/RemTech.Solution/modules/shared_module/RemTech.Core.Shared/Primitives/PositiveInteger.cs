@@ -6,7 +6,7 @@ public sealed class PositiveInteger
 {
     private readonly int _value;
 
-    private PositiveInteger(int value) => _value = value;
+    public PositiveInteger(int? value) => _value = value ?? -1;
 
     public bool Same(PositiveInteger other) => _value == other._value;
 
@@ -40,4 +40,9 @@ public sealed class PositiveInteger
         };
 
     public override int GetHashCode() => _value.GetHashCode();
+
+    public static implicit operator bool(PositiveInteger pos)
+    {
+        return pos >= 0;
+    }
 }

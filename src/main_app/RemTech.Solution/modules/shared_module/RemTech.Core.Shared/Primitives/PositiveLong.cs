@@ -8,7 +8,10 @@ public sealed class PositiveLong
 
     public long Read() => _value;
 
-    private PositiveLong(long value) => _value = value;
+    public PositiveLong(long? value)
+    {
+        _value = value ?? -1;
+    }
 
     public bool Same(PositiveLong other) => _value == other._value;
 
@@ -36,4 +39,9 @@ public sealed class PositiveLong
         };
 
     public override int GetHashCode() => _value.GetHashCode();
+
+    public static implicit operator bool(PositiveLong pos)
+    {
+        return pos._value >= 0;
+    }
 }

@@ -6,7 +6,9 @@ public sealed class NotEmptyGuid
 {
     private readonly Guid _value;
 
-    private NotEmptyGuid(Guid value) => _value = value;
+    public NotEmptyGuid(Guid? value) => _value = value ?? Guid.Empty;
+
+    public NotEmptyGuid() => _value = Guid.NewGuid();
 
     public bool Same(NotEmptyGuid other) => _value == other._value;
 
@@ -26,6 +28,11 @@ public sealed class NotEmptyGuid
     public static implicit operator Guid(NotEmptyGuid id) => id._value;
 
     public static implicit operator string(NotEmptyGuid id) => id._value.ToString();
+
+    public static implicit operator bool(NotEmptyGuid nguid)
+    {
+        return nguid._value != Guid.Empty;
+    }
 
     public override bool Equals(object? obj) =>
         obj switch
