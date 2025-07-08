@@ -43,6 +43,8 @@ public sealed class ParsedTransport
 
     public ParsedTransportIdentity Identify() => _identity;
 
+    public VehicleCharacteristic[] WhatCharacteristics() => _characteristics;
+
     public VehicleOfKind Specify(ParsedVehicleKind kind)
     {
         return kind.PutKindMark(this);

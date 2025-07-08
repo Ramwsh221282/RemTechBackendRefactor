@@ -1,13 +1,13 @@
 ﻿using Npgsql;
-using RemTech.ParsersManagement.DataSource.Adapter.DataAccessConfiguration;
+using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
 
-namespace RemTech.ParsersManagement.DataSource.Adapter;
+namespace RemTech.Postgres.Adapter.Library;
 
 public sealed class PostgreSqlEngine : IDisposable, IAsyncDisposable
 {
     private readonly NpgsqlDataSource _dataSource;
 
-    public PostgreSqlEngine(ParsersManagementDatabaseConfiguration configuration)
+    public PostgreSqlEngine(DatabaseConfiguration configuration)
     {
         string connectionString = configuration.ConnectionString;
         NpgsqlDataSourceBuilder builder = new(connectionString);

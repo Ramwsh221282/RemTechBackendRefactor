@@ -11,6 +11,7 @@ using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.ParsersManagement.DataSource.Adapter.Parsers.FromSqlConversion;
 using RemTech.ParsersManagement.DataSource.Adapter.Parsers.SelectConstants;
+using RemTech.Postgres.Adapter.Library;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers;

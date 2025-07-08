@@ -2,6 +2,7 @@
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
+using RemTech.Postgres.Adapter.Library;
 
 namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers;
 

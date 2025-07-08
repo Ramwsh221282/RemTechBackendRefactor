@@ -8,11 +8,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\shared_module\adapters\RemTech.Postgres.Adapter.Library\RemTech.Postgres.Adapter.Library.csproj" />
-      <ProjectReference Include="..\..\RemTech.ParsersManagement.Core\RemTech.ParsersManagement.Core.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Include="scripts\*.sql"/>
     </ItemGroup>
 
 </Project>

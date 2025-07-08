@@ -6,27 +6,28 @@ using RemTech.ParserManagement.Cache.Adapter.Parsers.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Cache;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.ParsersManagement.DataSource.Adapter;
-using RemTech.ParsersManagement.DataSource.Adapter.DataAccessConfiguration;
 using RemTech.ParsersManagement.DataSource.Adapter.Parsers;
 using RemTech.ParsersManagement.DataSource.Adapter.Parsers.Decorators;
 using RemTech.ParsersManagement.Tests.Library;
 using RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
+using RemTech.Postgres.Adapter.Library;
+using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
 
 namespace RemTech.ParsersManagement.Cache.Adapter.Tests;
 
 public sealed class CacheAdapterParsersFixture : IDisposable
 {
     private readonly RedisConfiguration _redisConf;
-    private readonly ParsersManagementDatabaseConfiguration _dbConf;
+    private readonly DatabaseConfiguration _dbConf;
     private readonly MokLogger _logger;
 
     public CacheAdapterParsersFixture()
     {
         string settingsPath = "appsettings.json";
         _redisConf = new RedisConfiguration(settingsPath);
-        _dbConf = new ParsersManagementDatabaseConfiguration(settingsPath);
+        _dbConf = new DatabaseConfiguration(settingsPath);
         _logger = new MokLogger();
-        ParsersManagementDbUp dbUp = new(_dbConf);
+        ParsersDatabaseBakery dbUp = new(_dbConf);
         dbUp.Up();
     }
 
@@ -67,7 +68,7 @@ public sealed class CacheAdapterParsersFixture : IDisposable
     {
         RedisParsers parsers = new(new RedisCacheEngine(_redisConf));
         parsers.DropArray().Wait();
-        ParsersManagementDbUp dbUp = new(_dbConf);
+        DatabaseBakery dbUp = new(_dbConf);
         dbUp.Down().Wait();
     }
 }
