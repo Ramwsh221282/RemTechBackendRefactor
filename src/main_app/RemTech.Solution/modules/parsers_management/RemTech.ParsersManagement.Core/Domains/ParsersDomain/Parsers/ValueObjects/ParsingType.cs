@@ -24,4 +24,14 @@ public sealed class ParsingType
             ? new Error("Неподдерживаемый тип парсинга.", ErrorCodes.Validation)
             : type;
     }
+
+    public override bool Equals(object? obj) =>
+        obj switch
+        {
+            null => false,
+            ParsingType pt => pt._type.Equals(_type),
+            _ => false,
+        };
+
+    public override int GetHashCode() => _type.GetHashCode();
 }

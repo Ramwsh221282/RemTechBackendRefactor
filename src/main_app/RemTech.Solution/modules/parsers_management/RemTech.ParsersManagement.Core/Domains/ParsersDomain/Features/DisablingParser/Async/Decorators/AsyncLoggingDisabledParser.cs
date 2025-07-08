@@ -13,6 +13,6 @@ public sealed class AsyncLoggingDisabledParser(ICustomLogger logger, IAsyncDisab
         CancellationToken ct = default
     ) =>
         await new AsyncLoggingOperation<Status<IParser>>(logger, "Выключение парсера").Log(
-            inner.Disable(disable, ct)
+            () => inner.Disable(disable, ct)
         );
 }

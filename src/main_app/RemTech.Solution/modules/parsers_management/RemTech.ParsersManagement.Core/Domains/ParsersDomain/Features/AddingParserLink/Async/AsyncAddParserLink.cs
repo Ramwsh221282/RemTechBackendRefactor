@@ -6,13 +6,13 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.AddingParserLink.Async;
 
-public sealed class AsyncAddParserLink : IMaybeError, IMaybeParser
+public sealed class AsyncAddParserLink : IMaybeError, IMaybeParser, IMaybeParserId
 {
     private readonly Status<NotEmptyGuid> _parserId;
     private readonly Status<NotEmptyString> _linkUrl;
     private readonly Status<NotEmptyString> _linkName;
     private readonly ErrorBag _error;
-    private ParserBag _parser;
+    private readonly ParserBag _parser;
 
     public AsyncAddParserLink(Guid? parserId, string? linkName, string? linkUrl)
     {
@@ -36,4 +36,10 @@ public sealed class AsyncAddParserLink : IMaybeError, IMaybeParser
     public void Put(IParser parser) => _parser.Put(parser);
 
     public IParser Take() => _parser.Take();
+
+    public void Put(NotEmptyGuid parserId) { }
+
+    public bool Has() => _parser.Has();
+
+    NotEmptyGuid IMaybeParserId.Take() => _parserId;
 }

@@ -15,5 +15,5 @@ public sealed class AsyncLoggingNewParserLink(ICustomLogger logger, IAsyncNewPar
         await new AsyncLoggingOperation<Status<IParserLink>>(
             logger,
             "Добавление ссылки парсеру"
-        ).Log(inner.AsyncNew(add, ct));
+        ).Log(() => inner.AsyncNew(add, ct));
 }

@@ -2,7 +2,7 @@
 
 namespace RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
-public sealed class MokLogger : ICustomLogger
+public sealed partial class MokLogger : ICustomLogger
 {
     public void Info(string template, params object[] arguments) =>
         WriteColoredTemplate(template, arguments, ConsoleColor.White, ConsoleColor.Cyan);

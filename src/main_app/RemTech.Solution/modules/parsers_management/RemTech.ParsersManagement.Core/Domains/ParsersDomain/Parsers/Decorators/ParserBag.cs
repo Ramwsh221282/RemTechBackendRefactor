@@ -19,5 +19,5 @@ public sealed class ParserBag : IMaybeParser
 
     public IParser Take() => _bag.Take();
 
-    public bool Any() => _bag.Any();
+    public bool Has() => _bag.Any();
 }

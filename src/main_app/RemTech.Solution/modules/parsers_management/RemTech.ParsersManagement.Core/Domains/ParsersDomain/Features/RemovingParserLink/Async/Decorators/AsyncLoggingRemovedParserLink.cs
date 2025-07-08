@@ -17,5 +17,5 @@ public sealed class AsyncLoggingRemovedParserLink(
         await new AsyncLoggingOperation<Status<IParserLink>>(
             logger,
             "Асинхронное удаление ссылки у парсера."
-        ).Log(inner.AsyncRemoved(remove, ct));
+        ).Log(() => inner.AsyncRemoved(remove, ct));
 }

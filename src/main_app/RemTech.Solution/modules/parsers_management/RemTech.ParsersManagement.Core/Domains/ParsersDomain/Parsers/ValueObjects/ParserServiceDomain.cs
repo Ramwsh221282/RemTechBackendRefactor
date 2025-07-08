@@ -22,4 +22,14 @@ public sealed class ParserServiceDomain
 
     public static implicit operator string(ParserServiceDomain domain) =>
         domain._domainName.NameString().StringValue();
+
+    public override bool Equals(object? obj) =>
+        obj switch
+        {
+            null => false,
+            ParserServiceDomain psd => psd._domainName.Equals(_domainName),
+            _ => false,
+        };
+
+    public override int GetHashCode() => _domainName.GetHashCode();
 }

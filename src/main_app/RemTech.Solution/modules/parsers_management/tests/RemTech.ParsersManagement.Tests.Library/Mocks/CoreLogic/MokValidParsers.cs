@@ -4,6 +4,7 @@ using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;

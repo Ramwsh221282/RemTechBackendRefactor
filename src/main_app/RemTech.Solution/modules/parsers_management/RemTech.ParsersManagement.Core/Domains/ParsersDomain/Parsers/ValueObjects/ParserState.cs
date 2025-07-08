@@ -66,4 +66,14 @@ public sealed class ParserState
     public static implicit operator NotEmptyString(ParserState state) => state._value;
 
     public static implicit operator string(ParserState state) => state._value;
+
+    public override bool Equals(object? obj) =>
+        obj switch
+        {
+            null => false,
+            ParserState ps => ps._value.Equals(_value),
+            _ => false,
+        };
+
+    public override int GetHashCode() => _value.GetHashCode();
 }

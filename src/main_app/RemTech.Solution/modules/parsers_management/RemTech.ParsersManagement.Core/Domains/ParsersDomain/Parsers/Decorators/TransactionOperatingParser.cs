@@ -1,21 +1,17 @@
-﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
+﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Cache;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Decorators;
 
-public sealed class TransactionOperatingParser<T>
+public sealed class TransactionOperatingParser<T>(
+    IParsers parsers,
+    ITransactionalParsers transactionalParsers
+)
 {
-    private readonly IParsers _parsers;
-    private readonly ITransactionalParsers _transactionalParsers;
     private Func<IParsers, Task<Status<IParser>>>? _receivingMethod;
     private Func<Task<Status<T>>>? _logicMethod;
     private IMaybeParser? _maybeParser;
-
-    public TransactionOperatingParser(IParsers parsers, ITransactionalParsers transactionalParsers)
-    {
-        _parsers = parsers;
-        _transactionalParsers = transactionalParsers;
-    }
 
     public TransactionOperatingParser<T> WithReceivingMethod(
         Func<IParsers, Task<Status<IParser>>> receivingMethod
@@ -42,13 +38,13 @@ public sealed class TransactionOperatingParser<T>
         ArgumentNullException.ThrowIfNull(_receivingMethod);
         ArgumentNullException.ThrowIfNull(_logicMethod);
         ArgumentNullException.ThrowIfNull(_maybeParser);
-        await using (_parsers)
+        await using (parsers)
         {
-            Status<IParser> fromDb = await _receivingMethod(_parsers);
-            if (fromDb.IsFailure)
-                return fromDb.Error;
-            await using ITransactionalParser transactional = await _transactionalParsers.Add(
-                fromDb.Value,
+            Status<IParser> fromDataSource = await _receivingMethod(parsers);
+            if (fromDataSource.IsFailure)
+                return fromDataSource.Error;
+            await using ITransactionalParser transactional = await transactionalParsers.Add(
+                fromDataSource.Value,
                 CancellationToken.None
             );
             _maybeParser.Put(transactional);
@@ -56,7 +52,9 @@ public sealed class TransactionOperatingParser<T>
             if (status.IsFailure)
                 return status.Error;
             Status commit = await transactional.Save(CancellationToken.None);
-            return commit.IsSuccess ? status.Value : commit.Error;
+            if (commit.IsFailure)
+                return commit.Error;
+            return status.Value;
         }
     }
 }

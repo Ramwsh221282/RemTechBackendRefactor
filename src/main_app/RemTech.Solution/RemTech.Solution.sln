@@ -36,6 +36,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsersManagement.D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsersManagement.Cache.Adapter.Tests", "modules\parsers_management\tests\RemTech.ParsersManagement.Cache.Adapter.Tests\RemTech.ParsersManagement.Cache.Adapter.Tests.csproj", "{29C8F3F6-CFAA-401E-B921-35185A17245C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParserManagement.Cache.Adapter", "modules\parsers_management\adapters\RemTech.ParserManagement.Cache.Adapter\RemTech.ParserManagement.Cache.Adapter.csproj", "{E543E4A9-3047-4E5C-80CC-415AEDC2C3C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Json.Library", "modules\shared_module\RemTech.Json.Library\RemTech.Json.Library.csproj", "{A844B68A-8C2D-4567-8A31-EA142AEC8CB0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +63,8 @@ Global
 		{5DDBDFC8-10CE-4CF3-ABA4-5933B35C5EB3} = {F39599E5-F4D6-4C39-937F-432FF82570F1}
 		{A2CE59F8-CB3A-4391-8111-98560C8FB1D7} = {F39599E5-F4D6-4C39-937F-432FF82570F1}
 		{29C8F3F6-CFAA-401E-B921-35185A17245C} = {F39599E5-F4D6-4C39-937F-432FF82570F1}
+		{E543E4A9-3047-4E5C-80CC-415AEDC2C3C6} = {9CC867B9-EB5E-4F06-818F-3603DAF8F043}
+		{A844B68A-8C2D-4567-8A31-EA142AEC8CB0} = {6F5C9BC2-2F61-40A4-B372-CCE7AA12358D}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -105,5 +111,13 @@ Global
 		{29C8F3F6-CFAA-401E-B921-35185A17245C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29C8F3F6-CFAA-401E-B921-35185A17245C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29C8F3F6-CFAA-401E-B921-35185A17245C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E543E4A9-3047-4E5C-80CC-415AEDC2C3C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E543E4A9-3047-4E5C-80CC-415AEDC2C3C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E543E4A9-3047-4E5C-80CC-415AEDC2C3C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E543E4A9-3047-4E5C-80CC-415AEDC2C3C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A844B68A-8C2D-4567-8A31-EA142AEC8CB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A844B68A-8C2D-4567-8A31-EA142AEC8CB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A844B68A-8C2D-4567-8A31-EA142AEC8CB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A844B68A-8C2D-4567-8A31-EA142AEC8CB0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

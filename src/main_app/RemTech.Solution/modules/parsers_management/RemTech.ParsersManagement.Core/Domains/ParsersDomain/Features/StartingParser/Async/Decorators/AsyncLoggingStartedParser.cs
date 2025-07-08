@@ -13,6 +13,6 @@ public sealed class AsyncLoggingStartedParser(ICustomLogger logger, IAsyncStarte
         CancellationToken ct = default
     ) =>
         await new AsyncLoggingOperation<Status<IParser>>(logger, "Запуск парсера.").Log(
-            inner.StartedAsync(start, ct)
+            () => inner.StartedAsync(start, ct)
         );
 }
