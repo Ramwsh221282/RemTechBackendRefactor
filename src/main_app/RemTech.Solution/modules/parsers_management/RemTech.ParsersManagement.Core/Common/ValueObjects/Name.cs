@@ -15,4 +15,14 @@ public sealed class Name
     public static implicit operator Name(NotEmptyString input) => new(input);
 
     public static implicit operator string(Name name) => name._name;
+
+    public override bool Equals(object? obj) =>
+        obj switch
+        {
+            null => false,
+            Name n => n._name.Equals(_name),
+            _ => false,
+        };
+
+    public override int GetHashCode() => _name.GetHashCode();
 }

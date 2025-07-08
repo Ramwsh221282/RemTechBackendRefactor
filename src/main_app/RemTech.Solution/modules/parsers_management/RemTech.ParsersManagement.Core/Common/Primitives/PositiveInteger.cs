@@ -30,4 +30,14 @@ public sealed class PositiveInteger
     public bool BiggerThan(PositiveInteger other) => _value > other._value;
 
     public bool LesserThan(PositiveInteger other) => _value < other._value;
+
+    public override bool Equals(object? obj) =>
+        obj switch
+        {
+            null => false,
+            PositiveInteger pi => pi._value == _value,
+            _ => false,
+        };
+
+    public override int GetHashCode() => _value.GetHashCode();
 }

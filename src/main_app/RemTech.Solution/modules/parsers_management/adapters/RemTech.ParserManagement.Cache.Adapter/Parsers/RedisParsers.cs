@@ -1,4 +1,7 @@
-﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
+﻿using RemTech.ParsersManagement.Core.Common.Primitives;
+using RemTech.ParsersManagement.Core.Common.ValueObjects;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Cache;
 using RemTech.Result.Library;
 
@@ -16,28 +19,29 @@ public sealed class RedisParsers(RedisCacheEngine engine) : IParsersCache
             await new RedisInitialParsersArray(_parsersArrayKey, json).Invalidate(engine);
             return;
         }
-        RedisParsersCachedArray current = await GetArray();
-        await new RedisUpdatedParsersArray(_parsersArrayKey, json, current).Invalidate(engine);
+        await new RedisUpdatedParsersArray(_parsersArrayKey, json, array).Invalidate(engine);
     }
 
-    public async Task<MaybeBag<IParser>> Get(ParserCacheKey key)
+    public Task<MaybeBag<IParser>> Get(ParserCacheKey key)
     {
-        RedisParsersCachedArray array = await GetArray();
-        return new MaybeSingleParserFromCache(array, key).Read();
+        return new MaybeSingleParserFromCache(key).Read(this);
+    }
+
+    public Task<MaybeBag<IParser>> Get(Name name)
+    {
+        return new MaybeSingleParserFromCacheByName(name).Read(this);
+    }
+
+    public Task<MaybeBag<IParser>> Get(ParsingType type, NotEmptyString domain)
+    {
+        return new MaybeSingleParserFromCacheByTypeAndDomain(type, domain).Read(this);
     }
 
     public async Task<IParser[]> Get()
     {
         RedisParsersCachedArray array = await GetArray();
-        IParser[] parsers = new IParser[array.Length()];
         string[] jsons = array.Copy();
-        for (int i = 0; i < array.Length(); i++)
-        {
-            string json = jsons[i];
-            IParser parser = new SingleParserFromCache(json).Read();
-            parsers[i] = parser;
-        }
-        return parsers;
+        return [.. jsons.Select(p => new SingleParserFromCache(p).Read())];
     }
 
     public async Task<RedisParsersCachedArray> GetArray()

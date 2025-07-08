@@ -4,10 +4,11 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParserManagement.Cache.Adapter.Parsers;
 
-public sealed class MaybeSingleParserFromCache(RedisParsersCachedArray array, ParserCacheKey key)
+public sealed class MaybeSingleParserFromCache(ParserCacheKey key)
 {
-    public MaybeBag<IParser> Read()
+    public async Task<MaybeBag<IParser>> Read(RedisParsers parsers)
     {
+        RedisParsersCachedArray array = await parsers.GetArray();
         string[] jsons = array.Copy();
         foreach (string json in jsons)
         {

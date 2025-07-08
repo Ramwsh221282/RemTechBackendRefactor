@@ -2,39 +2,72 @@
 using RemTech.ParserManagement.Cache.Adapter;
 using RemTech.ParserManagement.Cache.Adapter.Configuration;
 using RemTech.ParserManagement.Cache.Adapter.Parsers;
+using RemTech.ParserManagement.Cache.Adapter.Parsers.Decorators;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Cache;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
+using RemTech.ParsersManagement.DataSource.Adapter;
+using RemTech.ParsersManagement.DataSource.Adapter.DataAccessConfiguration;
+using RemTech.ParsersManagement.DataSource.Adapter.Parsers;
+using RemTech.ParsersManagement.DataSource.Adapter.Parsers.Decorators;
+using RemTech.ParsersManagement.Tests.Library;
 using RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
 namespace RemTech.ParsersManagement.Cache.Adapter.Tests;
 
 public sealed class CacheAdapterParsersFixture : IDisposable
 {
-    private readonly RedisParsers _cached;
-    private readonly ICustomLogger _logger;
-    private readonly ParsersSource _parsers;
+    private readonly RedisConfiguration _redisConf;
+    private readonly ParsersManagementDatabaseConfiguration _dbConf;
+    private readonly MokLogger _logger;
 
     public CacheAdapterParsersFixture()
     {
-        RedisConfiguration configuration = new("appsettings.json");
-        RedisCacheEngine engine = new(configuration);
-        _cached = new RedisParsers(engine);
+        string settingsPath = "appsettings.json";
+        _redisConf = new RedisConfiguration(settingsPath);
+        _dbConf = new ParsersManagementDatabaseConfiguration(settingsPath);
         _logger = new MokLogger();
-        MokParsers parsers = new();
-        MokValidParsers valid = new(parsers);
-        MokTransactionalParsers transactional = new(valid);
-        _parsers = new ParsersSource(valid, transactional);
+        ParsersManagementDbUp dbUp = new(_dbConf);
+        dbUp.Up();
+    }
+
+    public ParserTestingToolkit Toolkit()
+    {
+        return new ParserTestingToolkit(_logger, Parsers());
+    }
+
+    public ParsersSource Parsers()
+    {
+        PostgreSqlEngine dbEngine = new(_dbConf);
+        IParsersCache cached = CachedSource();
+        return new ParsersSource(
+            new PgLoggingParsers(
+                _logger,
+                new PgValidParsers(new PgCachingParsers(cached, new PgParsers(dbEngine)))
+            ),
+            new PgTransactionalLoggingParsers(
+                _logger,
+                new PgTransactionalCachingParsers(cached, new PgTransactionalParsers(dbEngine))
+            )
+        );
+    }
+
+    public IParsersCache CachedSource()
+    {
+        RedisCacheEngine engine = new(_redisConf);
+        IParsersCache cache = new LoggingRedisParsers(_logger, new RedisParsers(engine));
+        return cache;
+    }
+
+    public ICustomLogger Logger()
+    {
+        return _logger;
     }
 
     public void Dispose()
     {
-        _cached.DropArray().Wait();
+        RedisParsers parsers = new(new RedisCacheEngine(_redisConf));
+        parsers.DropArray().Wait();
+        ParsersManagementDbUp dbUp = new(_dbConf);
+        dbUp.Down().Wait();
     }
-
-    public ParsersSource Parsers() => _parsers;
-
-    public IParsersCache CachedParsers() =>
-        new LoggingParsersCache(_logger, new ParsersCache(_cached));
-
-    public ICustomLogger Logger() => _logger;
 }

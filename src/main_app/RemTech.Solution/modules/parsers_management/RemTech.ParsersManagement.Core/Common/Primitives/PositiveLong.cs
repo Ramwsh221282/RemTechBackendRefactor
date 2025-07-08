@@ -26,4 +26,14 @@ public sealed class PositiveLong
             ),
             _ => new PositiveLong(value.Value),
         };
+
+    public override bool Equals(object? obj) =>
+        obj switch
+        {
+            null => false,
+            PositiveLong pl => pl._value == _value,
+            _ => false,
+        };
+
+    public override int GetHashCode() => _value.GetHashCode();
 }
