@@ -1,13 +1,13 @@
-﻿using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.ValueObjects;
+﻿using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Common;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
-using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds;
 
 public sealed class ParsedVehicleKind
 {
     private readonly ParsedVehicleKindIdentity _identity;
-    private ParsedTransport[] _vehicles;
+    private VehicleOfKind[] _vehicles;
 
     public ParsedVehicleKind(ParsedVehicleKindText text)
         : this(new ParsedVehicleKindIdentity(text), []) { }
@@ -15,16 +15,17 @@ public sealed class ParsedVehicleKind
     public ParsedVehicleKind(ParsedVehicleKindId id, ParsedVehicleKindText text)
         : this(new ParsedVehicleKindIdentity(id, text), []) { }
 
-    public ParsedVehicleKind(ParsedVehicleKindIdentity identity, ParsedTransport[] vehicles)
+    public ParsedVehicleKind(ParsedVehicleKindIdentity identity, VehicleOfKind[] vehicles)
     {
         _vehicles = vehicles;
         _identity = identity;
     }
 
-    public Status<ParsedTransport> PutVehicle(ParsedTransport transport)
+    public VehicleOfKind PutKindMark(ParsedTransport transport)
     {
-        _vehicles = [.. _vehicles, transport];
-        return transport;
+        VehicleOfKind vehicle = new(transport, this);
+        _vehicles = [.. _vehicles, vehicle];
+        return vehicle;
     }
 
     public ParsedVehicleKindIdentity Identify() => _identity;

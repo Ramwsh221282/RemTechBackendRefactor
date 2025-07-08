@@ -1,15 +1,15 @@
-﻿using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.ValueObjects;
+﻿using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Common;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
-using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations;
 
 public sealed class ParsedGeoLocation
 {
     private readonly ParsedGeoLocationIdentity _identity;
-    private ParsedTransport[] _vehicles;
+    private VehicleOfGeo[] _vehicles;
 
-    public ParsedGeoLocation(ParsedGeoLocationIdentity identity, ParsedTransport[] vehicles)
+    public ParsedGeoLocation(ParsedGeoLocationIdentity identity, VehicleOfGeo[] vehicles)
     {
         _identity = identity;
         _vehicles = vehicles;
@@ -24,15 +24,16 @@ public sealed class ParsedGeoLocation
     public ParsedGeoLocation(
         ParsedGeolocationId id,
         ParsedGeolocationText text,
-        ParsedTransport[] vehicles
+        VehicleOfGeo[] vehicles
     )
         : this(new ParsedGeoLocationIdentity(id, text), vehicles) { }
 
-    public Status<ParsedTransport> Put(ParsedTransport transport)
-    {
-        _vehicles = [.. _vehicles, transport];
-        return transport;
-    }
-
     public ParsedGeoLocationIdentity Identify() => _identity;
+
+    public VehicleOfGeo PutGeoMark(ParsedTransport parsedTransport)
+    {
+        VehicleOfGeo vehicle = new(parsedTransport, this);
+        _vehicles = [.. _vehicles, vehicle];
+        return vehicle;
+    }
 }

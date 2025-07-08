@@ -1,13 +1,13 @@
 ﻿using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.ValueObjects;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Common;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
-using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
 
 public sealed class ParsedVehicleBrand
 {
     private readonly ParsedVehicleBrandIdentity _identity;
-    private ParsedTransport[] _vehicles;
+    private VehicleOfBrand[] _vehicles;
 
     public ParsedVehicleBrand(ParsedVehicleBrandText text)
         : this(new ParsedVehicleBrandIdentity(text), []) { }
@@ -15,19 +15,17 @@ public sealed class ParsedVehicleBrand
     public ParsedVehicleBrand(ParsedVehicleBrandId id, ParsedVehicleBrandText text)
         : this(new ParsedVehicleBrandIdentity(id, text), []) { }
 
-    public ParsedVehicleBrand(ParsedVehicleBrand brand, ParsedTransport transport)
-        : this(brand._identity, [.. brand._vehicles, transport]) { }
-
-    public ParsedVehicleBrand(ParsedVehicleBrandIdentity identity, ParsedTransport[] vehicles)
+    public ParsedVehicleBrand(ParsedVehicleBrandIdentity identity, VehicleOfBrand[] vehicles)
     {
         _vehicles = vehicles;
         _identity = identity;
     }
 
-    public Status<ParsedTransport> PutVehicle(ParsedTransport transport)
+    public VehicleOfBrand PutBrandMark(ParsedTransport transport)
     {
-        _vehicles = [.. _vehicles, transport];
-        return transport;
+        VehicleOfBrand vehicle = new(transport, this);
+        _vehicles = [.. _vehicles, vehicle];
+        return vehicle;
     }
 
     public ParsedVehicleBrandIdentity Identify() => _identity;
