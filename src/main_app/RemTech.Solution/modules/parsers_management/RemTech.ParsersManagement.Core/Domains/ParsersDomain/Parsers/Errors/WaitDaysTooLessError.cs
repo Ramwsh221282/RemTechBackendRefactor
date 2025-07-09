@@ -12,5 +12,5 @@ public sealed class WaitDaysTooLessError : IError
 
     public Error Read() => _error;
 
-    public static implicit operator Status(WaitDaysTooLessError error) => error._error;
+    public static implicit operator Status(WaitDaysTooLessError error) => new(error._error);
 }

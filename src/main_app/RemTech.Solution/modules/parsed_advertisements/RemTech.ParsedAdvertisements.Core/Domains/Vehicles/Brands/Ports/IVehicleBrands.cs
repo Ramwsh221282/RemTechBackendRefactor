@@ -2,5 +2,5 @@
 
 public interface IVehicleBrands
 {
-    Task<ParsedVehicleBrand> AddOrGet(ParsedVehicleBrand brand, CancellationToken ct = default);
+    Task<VehicleBrand> Similar(VehicleBrand brand, CancellationToken ct = default);
 }

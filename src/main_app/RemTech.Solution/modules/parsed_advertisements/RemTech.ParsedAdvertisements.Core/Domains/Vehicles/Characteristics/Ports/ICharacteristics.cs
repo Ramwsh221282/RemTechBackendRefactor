@@ -2,8 +2,8 @@
 
 public interface ICharacteristics
 {
-    Task<ParsedVehicleCharacteristic[]> AddOrGet(
-        ParsedVehicleCharacteristic[] characteristics,
+    Task<Characteristic[]> Similar(
+        Characteristic[] characteristics,
         CancellationToken ct = default
     );
 }

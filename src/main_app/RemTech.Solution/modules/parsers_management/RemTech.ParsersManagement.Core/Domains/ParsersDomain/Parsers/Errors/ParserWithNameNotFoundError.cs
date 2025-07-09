@@ -26,7 +26,7 @@ public sealed class ParserWithNameNotFoundError : IError
 
     public Error Read() => _error;
 
-    public static implicit operator Status(ParserWithNameNotFoundError error) => error._error;
+    public static implicit operator Status(ParserWithNameNotFoundError error) => new(error._error);
 
     public static implicit operator Status<IParser>(ParserWithNameNotFoundError error) =>
         error._error;

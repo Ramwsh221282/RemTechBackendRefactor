@@ -2,5 +2,5 @@
 
 public interface IVehicleKinds
 {
-    Task<ParsedVehicleKind> AddOrGet(ParsedVehicleKind kind, CancellationToken ct = default);
+    Task<VehicleKind> Similar(VehicleKind kind, CancellationToken ct = default);
 }

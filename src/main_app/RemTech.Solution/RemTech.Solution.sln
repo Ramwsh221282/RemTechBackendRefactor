@@ -52,6 +52,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adapters", "adapters", "{DE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsedAdvertisements.DataSource.Adapter", "modules\parsed_advertisements\adapters\RemTech.ParsedAdvertisements.DataSource.Adapter\RemTech.ParsedAdvertisements.DataSource.Adapter.csproj", "{6A64D9B0-F090-4C1C-B024-6B41B0345126}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{23BEBB73-45F0-42B3-8CF8-187E93CABA87}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsedAdvertisements.Core.Tests", "modules\parsed_advertisements\tests\RemTech.ParsedAdvertisements.Core.Tests\RemTech.ParsedAdvertisements.Core.Tests.csproj", "{AD9346FD-7F8C-47BE-8D85-FE7046AE4526}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +87,8 @@ Global
 		{C7FFAB88-617B-4DAE-A4D7-3E5A53FBBEC7} = {D8A8CDCA-3A8D-48EE-ABEF-D4DBABEEE2F5}
 		{DE03604C-5A61-4D67-9FD8-EAA0800D0F95} = {E099BD53-3575-4FAB-8048-FEBEBBB81ECB}
 		{6A64D9B0-F090-4C1C-B024-6B41B0345126} = {DE03604C-5A61-4D67-9FD8-EAA0800D0F95}
+		{23BEBB73-45F0-42B3-8CF8-187E93CABA87} = {E099BD53-3575-4FAB-8048-FEBEBBB81ECB}
+		{AD9346FD-7F8C-47BE-8D85-FE7046AE4526} = {23BEBB73-45F0-42B3-8CF8-187E93CABA87}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -153,5 +159,9 @@ Global
 		{6A64D9B0-F090-4C1C-B024-6B41B0345126}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A64D9B0-F090-4C1C-B024-6B41B0345126}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A64D9B0-F090-4C1C-B024-6B41B0345126}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD9346FD-7F8C-47BE-8D85-FE7046AE4526}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD9346FD-7F8C-47BE-8D85-FE7046AE4526}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD9346FD-7F8C-47BE-8D85-FE7046AE4526}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD9346FD-7F8C-47BE-8D85-FE7046AE4526}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

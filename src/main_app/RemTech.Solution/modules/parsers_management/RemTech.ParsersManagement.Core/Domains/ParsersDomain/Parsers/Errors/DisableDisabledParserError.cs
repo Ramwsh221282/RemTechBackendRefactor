@@ -8,5 +8,5 @@ public sealed class DisableDisabledParserError : IError
 
     public Error Read() => _error;
 
-    public static implicit operator Status(DisableDisabledParserError error) => error._error;
+    public static implicit operator Status(DisableDisabledParserError error) => new(error._error);
 }

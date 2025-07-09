@@ -11,7 +11,7 @@ public sealed class EditParserWhenWorkingError : IError
 
     public Error Read() => _error;
 
-    public static implicit operator Status(EditParserWhenWorkingError error) => error._error;
+    public static implicit operator Status(EditParserWhenWorkingError error) => new(error._error);
 
     public static implicit operator Status<IParserLink>(EditParserWhenWorkingError error) =>
         error._error;

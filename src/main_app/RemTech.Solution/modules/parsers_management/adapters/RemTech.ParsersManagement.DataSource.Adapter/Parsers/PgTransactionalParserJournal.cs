@@ -29,7 +29,7 @@ public sealed class PgTransactionalParserJournal : IDisposable, IAsyncDisposable
             }
             catch
             {
-                return new Error("Ошибка транзакции.", ErrorCodes.Conflict);
+                return new Error("Ошибка транзакции.", ErrorCodes.Conflict).Status();
             }
         }
 
@@ -41,7 +41,7 @@ public sealed class PgTransactionalParserJournal : IDisposable, IAsyncDisposable
         catch
         {
             await _transaction.RollbackAsync(ct);
-            return new Error("Ошибка транзакции.", ErrorCodes.Conflict);
+            return new Error("Ошибка транзакции.", ErrorCodes.Conflict).Status();
         }
     }
 

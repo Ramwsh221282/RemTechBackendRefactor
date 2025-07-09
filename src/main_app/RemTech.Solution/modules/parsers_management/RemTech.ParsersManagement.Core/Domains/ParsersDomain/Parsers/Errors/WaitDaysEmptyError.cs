@@ -8,5 +8,5 @@ public sealed class WaitDaysEmptyError : IError
 
     public Error Read() => _error;
 
-    public static implicit operator Status(WaitDaysEmptyError error) => error.Read();
+    public static implicit operator Status(WaitDaysEmptyError error) => new(error.Read());
 }

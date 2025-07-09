@@ -19,7 +19,7 @@ public sealed class ParserOwnsLinkWithNameError : IError
 
     public Error Read() => _error;
 
-    public static implicit operator Status(ParserOwnsLinkWithNameError error) => error._error;
+    public static implicit operator Status(ParserOwnsLinkWithNameError error) => new(error._error);
 
     public static implicit operator Status<IParserLink>(ParserOwnsLinkWithNameError error) =>
         error._error;

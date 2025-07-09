@@ -2,5 +2,5 @@
 
 public interface IGeoLocations
 {
-    Task<ParsedGeoLocation> AddOrGet(ParsedGeoLocation geoLocation, CancellationToken ct = default);
+    Task<GeoLocation> Similar(GeoLocation geoLocation, CancellationToken ct = default);
 }

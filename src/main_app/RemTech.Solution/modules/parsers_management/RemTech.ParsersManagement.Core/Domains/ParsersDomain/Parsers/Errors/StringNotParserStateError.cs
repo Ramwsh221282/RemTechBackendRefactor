@@ -12,5 +12,5 @@ public sealed class StringNotParserStateError : IError
 
     public Error Read() => _error;
 
-    public static implicit operator Status(StringNotParserStateError error) => error._error;
+    public static implicit operator Status(StringNotParserStateError error) => new(error._error);
 }

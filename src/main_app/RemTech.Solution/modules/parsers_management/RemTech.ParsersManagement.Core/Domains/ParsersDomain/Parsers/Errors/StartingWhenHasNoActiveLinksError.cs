@@ -19,5 +19,6 @@ public sealed class StartingWhenHasNoActiveLinksError : IError
 
     public Error Read() => _error;
 
-    public static implicit operator Status(StartingWhenHasNoActiveLinksError error) => error._error;
+    public static implicit operator Status(StartingWhenHasNoActiveLinksError error) =>
+        new(error._error);
 }

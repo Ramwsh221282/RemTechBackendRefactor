@@ -48,7 +48,7 @@ public sealed class ParserLink : IParserLink
     public Status OtherActivity(bool other)
     {
         if (other == _activity)
-            return Error.Conflict("У ссылки такая же активность, что и была.");
+            return new Status(Error.Conflict("У ссылки такая же активность, что и была."));
         _activity = new ParserLinkActivity(other);
         return Status.Success();
     }
@@ -56,7 +56,7 @@ public sealed class ParserLink : IParserLink
     public Status Finished(PositiveLong elapsed)
     {
         if (!_activity)
-            return Error.Conflict("Ссылка неактивна, нельзя закончить ей работу.");
+            return new Status(Error.Conflict("Ссылка неактивна, нельзя закончить ей работу."));
         _statistic += elapsed;
         return Status.Success();
     }

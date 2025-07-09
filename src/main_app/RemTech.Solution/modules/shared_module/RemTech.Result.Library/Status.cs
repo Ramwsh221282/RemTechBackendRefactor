@@ -20,21 +20,24 @@ public class Status
         }
     }
 
-    protected Status()
+    public Status()
     {
         IsSuccess = true;
         IsFailure = false;
         _error = null;
     }
 
-    protected Status(Error error)
+    public Status(Error error)
     {
         _error = error;
         IsSuccess = false;
         IsFailure = true;
     }
 
-    private Status(Status status)
+    public Status(ValidationError error)
+        : this((Error)error) { }
+
+    public Status(Status status)
     {
         _error = status._error;
         IsSuccess = status.IsSuccess;
@@ -76,22 +79,25 @@ public class Status<T> : Status
         }
     }
 
-    private Status(T value)
+    public Status(T value)
     {
         _value = value;
     }
 
-    private Status(Error error)
+    public Status(Error error)
         : base(error)
     {
         _value = default!;
     }
 
-    private Status(Status<T> status)
+    public Status(Status<T> status)
         : base(status.Error)
     {
         _value = status._value;
     }
+
+    public Status(ValidationError error)
+        : this((Error)error) { }
 
     public static Status<T> Failures(params Status<T>[] statuses)
     {

@@ -15,5 +15,5 @@ public sealed class StartingWhenNotWaitingOrEnabledError : IError
     public Error Read() => _error;
 
     public static implicit operator Status(StartingWhenNotWaitingOrEnabledError error) =>
-        error._error;
+        new(error._error);
 }
