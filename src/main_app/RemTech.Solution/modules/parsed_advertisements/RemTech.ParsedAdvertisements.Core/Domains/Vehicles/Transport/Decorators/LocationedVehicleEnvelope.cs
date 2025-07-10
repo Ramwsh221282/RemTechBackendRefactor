@@ -4,33 +4,33 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.Decorators;
 
-public sealed class LocationedEnvelope : VehicleEnvelope
+public sealed class LocationedVehicleEnvelope : VehicleEnvelope
 {
-    public LocationedEnvelope(NotEmptyGuid id, NotEmptyString text, IVehicle origin)
+    public LocationedVehicleEnvelope(NotEmptyGuid id, NotEmptyString text, IVehicle origin)
         : this(new ExistingGeoLocation(id, text), origin) { }
 
-    public LocationedEnvelope(NotEmptyGuid id, NotEmptyString text)
+    public LocationedVehicleEnvelope(NotEmptyGuid id, NotEmptyString text)
         : this(new ExistingGeoLocation(id, text), new VehicleBlueprint()) { }
 
-    public LocationedEnvelope(NotEmptyString text, IVehicle origin)
+    public LocationedVehicleEnvelope(NotEmptyString text, IVehicle origin)
         : this(new NewGeoLocation(text), origin) { }
 
-    public LocationedEnvelope(NotEmptyString text)
+    public LocationedVehicleEnvelope(NotEmptyString text)
         : this(new NewGeoLocation(text), new VehicleBlueprint()) { }
 
-    public LocationedEnvelope(Guid? id, string? text, IVehicle origin)
+    public LocationedVehicleEnvelope(Guid? id, string? text, IVehicle origin)
         : this(new NotEmptyGuid(id), new NotEmptyString(text), origin) { }
 
-    public LocationedEnvelope(Guid? id, string? text)
+    public LocationedVehicleEnvelope(Guid? id, string? text)
         : this(new NotEmptyGuid(id), new NotEmptyString(text), new VehicleBlueprint()) { }
 
-    public LocationedEnvelope(string? text, IVehicle origin)
+    public LocationedVehicleEnvelope(string? text, IVehicle origin)
         : this(new NotEmptyString(text), origin) { }
 
-    public LocationedEnvelope(string? text)
+    public LocationedVehicleEnvelope(string? text)
         : this(new NotEmptyString(text), new VehicleBlueprint()) { }
 
-    public LocationedEnvelope(IGeoLocation location, IVehicle origin)
+    public LocationedVehicleEnvelope(IGeoLocation location, IVehicle origin)
         : base(
             origin.Identity(),
             origin.Kind(),

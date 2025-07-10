@@ -6,6 +6,9 @@ namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.Decorator
 
 public sealed class KindedVehicle : VehicleEnvelope
 {
+    public KindedVehicle(VehicleKindEnvelope kind)
+        : this(kind.Identify().ReadId(), kind.Identify().ReadText()) { }
+
     public KindedVehicle(Guid? id, string? name, IVehicle origin)
         : this(new NotEmptyGuid(id), new NotEmptyString(name), origin) { }
 

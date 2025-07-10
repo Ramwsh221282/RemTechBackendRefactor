@@ -6,6 +6,9 @@ namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.Decorator
 
 public sealed class BrandedVehicle : VehicleEnvelope
 {
+    public BrandedVehicle(VehicleBrandEnvelope brand)
+        : this(brand.Identify().ReadId(), brand.Identify().ReadText()) { }
+
     public BrandedVehicle(NotEmptyGuid id, NotEmptyString name, IVehicle origin)
         : this(new ExistingVehicleBrand(id, name), origin) { }
 
