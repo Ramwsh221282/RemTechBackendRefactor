@@ -3,6 +3,7 @@
     source_id       UUID NOT NULL REFERENCES parsers_management_module.parser_links(id) ON DELETE SET NULL,
     date_created    DATE NOT NULL,
     is_new          BOOLEAN NOT NULL,
+    UNIQUE  (source_id)
 );
 
 CREATE SCHEMA IF NOT EXISTS parsers_management_module;
