@@ -1,6 +1,9 @@
-﻿namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Ports;
+﻿using RemTech.Result.Library;
+
+namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Ports;
 
 public interface IGeoLocations
 {
-    Task<GeoLocation> Similar(GeoLocation geoLocation, CancellationToken ct = default);
+    Status<GeoLocationEnvelope> Add(string? text);
+    MaybeBag<GeoLocationEnvelope> GetByText(string? text);
 }

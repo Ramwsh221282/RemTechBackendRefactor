@@ -1,6 +1,9 @@
-﻿namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.Ports;
+﻿using RemTech.Result.Library;
+
+namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.Ports;
 
 public interface IVehicles
 {
-    Task<Vehicle> Add(Vehicle transport, CancellationToken ct = default);
+    Status<VehicleEnvelope> Add(VehicleEnvelope vehicle);
+    MaybeBag<VehicleEnvelope> Get(Func<VehicleEnvelope, bool> predicate);
 }

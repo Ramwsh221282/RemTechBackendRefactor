@@ -1,4 +1,9 @@
-﻿namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects.Characteristics;
+﻿using RemTech.Core.Shared.Extensions;
+using RemTech.Core.Shared.Primitives;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics;
+using RemTech.Result.Library;
+
+namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects.Characteristics;
 
 public sealed record VehicleCharacteristics
 {
@@ -10,4 +15,24 @@ public sealed record VehicleCharacteristics
     }
 
     public VehicleCharacteristic[] Read() => [.. _characteristics];
+
+    public VehicleCharacteristic Characteristic(
+        ICharacteristic characteristic,
+        VehicleCharacteristicValue value
+    )
+    {
+        MaybeBag<VehicleCharacteristic> existing = _characteristics.Maybe(c =>
+            c.WhatCharacteristic()
+                .Identify()
+                .ReadText()
+                .Equals(characteristic.Identify().ReadText())
+        );
+        if (existing.Any())
+            return existing.Take();
+        VehicleCharacteristic created = new(characteristic, value);
+        _characteristics.Add(created);
+        return created;
+    }
+
+    public PositiveInteger Amount() => new(_characteristics.Count);
 }

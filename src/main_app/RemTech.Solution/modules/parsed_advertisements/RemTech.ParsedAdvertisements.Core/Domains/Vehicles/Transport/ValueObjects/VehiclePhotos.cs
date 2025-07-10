@@ -1,4 +1,6 @@
-﻿namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects;
+﻿using RemTech.Core.Shared.Primitives;
+
+namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects;
 
 public sealed record VehiclePhotos
 {
@@ -13,4 +15,11 @@ public sealed record VehiclePhotos
     {
         _photos = [];
     }
+
+    public PositiveInteger Amount()
+    {
+        return new PositiveInteger(_photos.Count);
+    }
+
+    public IEnumerable<VehiclePhoto> Read() => _photos;
 }

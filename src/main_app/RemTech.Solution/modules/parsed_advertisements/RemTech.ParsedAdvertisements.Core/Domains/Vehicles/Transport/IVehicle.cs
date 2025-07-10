@@ -1,14 +1,20 @@
-﻿using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects;
+﻿using RemTech.ParsedAdvertisements.Core.Domains.Common.ParsedItemPrices;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects.Characteristics;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects.Identities;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
 
 public interface IVehicle
 {
-    VehicleIdentity Identify();
-    VehiclePrice WhatCost();
+    IVehicleKind Kind();
+    IVehicleBrand Brand();
+    IGeoLocation Location();
+    VehicleIdentity Identity();
+    IItemPrice Cost();
     VehicleText TextInformation();
-    VehiclePhotos WatchPhotos();
-    VehicleCharacteristics WhatCharacteristics();
+    VehiclePhotos Photos();
+    VehicleCharacteristics Characteristics();
 }

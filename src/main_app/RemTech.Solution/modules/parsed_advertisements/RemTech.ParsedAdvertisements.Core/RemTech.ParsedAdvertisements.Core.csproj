@@ -13,7 +13,6 @@
 
     <ItemGroup>
       <Folder Include="Domains\Vehicles\Features\" />
-      <Folder Include="Domains\Vehicles\Transport\Bakery\Receipts\" />
     </ItemGroup>
 
 </Project>

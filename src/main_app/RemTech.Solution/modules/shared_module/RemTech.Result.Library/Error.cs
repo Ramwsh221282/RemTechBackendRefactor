@@ -82,4 +82,14 @@ public sealed record ValidationError<T> : ValidationError
         ValidationError upcated = validationError;
         return new Status(upcated);
     }
+
+    public static implicit operator Task<Status<T>>(ValidationError<T> error)
+    {
+        return Task.FromResult<Status<T>>(error);
+    }
+
+    public static implicit operator Task<Status>(ValidationError<T> error)
+    {
+        return Task.FromResult<Status>(error);
+    }
 }

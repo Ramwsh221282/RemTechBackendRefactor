@@ -19,4 +19,6 @@ public sealed record VehicleKindText
     public static implicit operator string(VehicleKindText text) => text._text;
 
     public static implicit operator NotEmptyString(VehicleKindText text) => text._text;
+
+    public static implicit operator bool(VehicleKindText text) => text._text;
 }

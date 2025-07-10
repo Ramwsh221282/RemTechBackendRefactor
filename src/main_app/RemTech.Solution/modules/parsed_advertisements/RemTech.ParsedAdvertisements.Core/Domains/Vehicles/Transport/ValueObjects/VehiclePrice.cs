@@ -4,12 +4,12 @@ namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObje
 
 public sealed class VehiclePrice
 {
-    private readonly ParsedItemPrice _price;
+    private readonly ItemPrice _price;
 
-    public VehiclePrice(ParsedItemPrice price)
+    public VehiclePrice(ItemPrice price)
     {
         _price = price;
     }
 
-    public ParsedItemPrice Read() => _price;
+    public ItemPrice Read() => _price;
 }

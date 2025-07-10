@@ -1,9 +1,9 @@
-﻿namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Ports;
+﻿using RemTech.Result.Library;
+
+namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Ports;
 
 public interface ICharacteristics
 {
-    Task<Characteristic[]> Similar(
-        Characteristic[] characteristics,
-        CancellationToken ct = default
-    );
+    Status<CharacteristicEnvelope> Add(string? name);
+    MaybeBag<CharacteristicEnvelope> GetByName(string? name);
 }

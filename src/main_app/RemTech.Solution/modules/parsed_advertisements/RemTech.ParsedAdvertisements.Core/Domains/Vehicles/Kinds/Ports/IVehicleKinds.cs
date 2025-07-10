@@ -1,6 +1,9 @@
-﻿namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Ports;
+﻿using RemTech.Result.Library;
+
+namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Ports;
 
 public interface IVehicleKinds
 {
-    Task<VehicleKind> Similar(VehicleKind kind, CancellationToken ct = default);
+    Status<VehicleKindEnvelope> Add(string? name);
+    MaybeBag<VehicleKindEnvelope> GetByName(string? name);
 }
