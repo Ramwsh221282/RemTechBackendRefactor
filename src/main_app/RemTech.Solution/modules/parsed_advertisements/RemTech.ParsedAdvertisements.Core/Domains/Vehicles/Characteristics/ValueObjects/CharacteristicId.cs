@@ -17,7 +17,10 @@ public readonly record struct CharacteristicId
         _id = id;
     }
 
-    public static implicit operator bool(CharacteristicId id) => id._id;
+    public static implicit operator bool(CharacteristicId? id)
+    {
+        return id == null ? false : id.Value._id;
+    }
 
     public static implicit operator Guid(CharacteristicId id) => id._id;
 

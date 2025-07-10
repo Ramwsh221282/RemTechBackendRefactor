@@ -22,4 +22,9 @@ public sealed record VehiclePhotos
     }
 
     public IEnumerable<VehiclePhoto> Read() => _photos;
+
+    public static implicit operator bool(VehiclePhotos? photos)
+    {
+        return photos != null && photos.Amount() > 0 && photos._photos.All(p => p);
+    }
 }

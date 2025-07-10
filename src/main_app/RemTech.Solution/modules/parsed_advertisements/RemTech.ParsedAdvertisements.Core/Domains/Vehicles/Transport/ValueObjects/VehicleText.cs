@@ -19,9 +19,9 @@ public sealed record VehicleText
         _title = new NotEmptyString(title);
     }
 
-    public static implicit operator bool(VehicleText text)
+    public static implicit operator bool(VehicleText? text)
     {
-        return text._description && text._title;
+        return text != null && text._description && text._title;
     }
 
     public NotEmptyString ReadTitle() => _title;

@@ -17,4 +17,9 @@ public sealed record GeoLocationIdentity
     public GeoLocationId ReadId() => _id;
 
     public GeolocationText ReadText() => _text;
+
+    public static implicit operator bool(GeoLocationIdentity? identity)
+    {
+        return identity != null && identity._text && identity._id;
+    }
 }

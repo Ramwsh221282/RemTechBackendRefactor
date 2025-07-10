@@ -20,4 +20,11 @@ public sealed record VehicleBrandIdentity
     public VehicleBrandId ReadId() => _id;
 
     public VehicleBrandText ReadText() => _text;
+
+    public static implicit operator bool(VehicleBrandIdentity? identity)
+    {
+        if (identity == null)
+            return false;
+        return identity._id && identity._text;
+    }
 }

@@ -25,5 +25,8 @@ public readonly record struct VehicleKindId
 
     public static implicit operator Guid(VehicleKindId id) => id._id;
 
-    public static implicit operator bool(VehicleKindId id) => id._id;
+    public static implicit operator bool(VehicleKindId? id)
+    {
+        return id != null && id.Value._id;
+    }
 }

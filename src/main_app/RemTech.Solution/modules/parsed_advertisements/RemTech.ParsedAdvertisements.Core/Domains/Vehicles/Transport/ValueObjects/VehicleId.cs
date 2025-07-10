@@ -2,7 +2,7 @@
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects;
 
-public readonly record struct VehicleId
+public sealed record VehicleId
 {
     private readonly NotEmptyString _id;
 
@@ -16,7 +16,10 @@ public readonly record struct VehicleId
 
     public static implicit operator string(VehicleId id) => id._id;
 
-    public static implicit operator bool(VehicleId id) => id._id;
+    public static implicit operator bool(VehicleId? id)
+    {
+        return id != null && id._id;
+    }
 
     public static implicit operator NotEmptyString(VehicleId id) => id._id;
 }

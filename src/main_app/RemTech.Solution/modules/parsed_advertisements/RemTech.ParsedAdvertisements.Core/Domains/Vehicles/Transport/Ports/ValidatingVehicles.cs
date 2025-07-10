@@ -1,4 +1,5 @@
 ﻿using RemTech.Core.Shared.Primitives;
+using RemTech.ParsedAdvertisements.Core.Domains.Common.ParsedItemPrices;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.ValueObjects;
@@ -60,6 +61,11 @@ public sealed class ValidatingVehicles(IVehicles origin) : IVehicles
                 "У техники не может не быть характеристик."
             );
         VehicleCharacteristic[] ctx = vehicle.Characteristics().Read();
+        IItemPrice price = vehicle.Cost();
+        if (!price.Value())
+            return new ValidationError<VehicleEnvelope>(
+                $"У техники некорректная цена: {(long)price.Value()}"
+            );
         foreach (VehicleCharacteristic entry in ctx)
         {
             CharacteristicIdentity ctxIdentity = entry.WhatCharacteristic().Identify();

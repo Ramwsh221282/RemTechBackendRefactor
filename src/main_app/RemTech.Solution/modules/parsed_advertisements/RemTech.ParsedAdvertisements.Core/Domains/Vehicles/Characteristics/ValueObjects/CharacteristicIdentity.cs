@@ -17,4 +17,9 @@ public sealed record CharacteristicIdentity
     public CharacteristicId ReadId() => _id;
 
     public CharacteristicText ReadText() => _text;
+
+    public static implicit operator bool(CharacteristicIdentity? identity)
+    {
+        return identity != null && (identity._text && identity._id);
+    }
 }

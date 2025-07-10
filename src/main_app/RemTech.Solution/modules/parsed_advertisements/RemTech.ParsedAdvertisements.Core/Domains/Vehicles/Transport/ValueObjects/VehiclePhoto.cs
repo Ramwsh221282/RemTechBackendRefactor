@@ -14,9 +14,9 @@ public sealed record VehiclePhoto
     public VehiclePhoto(string? source)
         : this(new NotEmptyString(source)) { }
 
-    public static implicit operator bool(VehiclePhoto photo)
+    public static implicit operator bool(VehiclePhoto? photo)
     {
-        return photo._source;
+        return photo != null && photo._source;
     }
 
     public static implicit operator string(VehiclePhoto photo)

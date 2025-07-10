@@ -16,7 +16,10 @@ public sealed record VehicleBrandText
         _text = new NotEmptyString(text);
     }
 
-    public static implicit operator bool(VehicleBrandText text) => text._text;
+    public static implicit operator bool(VehicleBrandText? text)
+    {
+        return text == null ? false : text._text;
+    }
 
     public static implicit operator NotEmptyString(VehicleBrandText text) => text._text;
 

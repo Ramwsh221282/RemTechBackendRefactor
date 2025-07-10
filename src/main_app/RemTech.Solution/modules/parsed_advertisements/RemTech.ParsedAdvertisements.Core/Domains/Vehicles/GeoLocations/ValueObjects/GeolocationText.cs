@@ -11,7 +11,10 @@ public sealed record GeolocationText
     public GeolocationText(string? text)
         : this(new NotEmptyString(text)) { }
 
-    public static implicit operator bool(GeolocationText text) => text._text;
+    public static implicit operator bool(GeolocationText? text)
+    {
+        return text != null && text._text;
+    }
 
     public static implicit operator string(GeolocationText text) => text._text;
 

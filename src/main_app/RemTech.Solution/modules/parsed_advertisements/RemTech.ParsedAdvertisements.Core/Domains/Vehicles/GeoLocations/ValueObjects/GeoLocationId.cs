@@ -16,7 +16,10 @@ public readonly record struct GeoLocationId
         _id = id;
     }
 
-    public static implicit operator bool(GeoLocationId id) => id._id;
+    public static implicit operator bool(GeoLocationId? id)
+    {
+        return id != null && id.Value._id;
+    }
 
     public static implicit operator Guid(GeoLocationId id) => id._id;
 }

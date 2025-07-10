@@ -14,7 +14,10 @@ public sealed record CharacteristicText
     public CharacteristicText(string? text)
         : this(new NotEmptyString(text)) { }
 
-    public static implicit operator bool(CharacteristicText text) => text._text;
+    public static implicit operator bool(CharacteristicText? text)
+    {
+        return text != null && text._text;
+    }
 
     public static implicit operator NotEmptyString(CharacteristicText text) => text._text;
 

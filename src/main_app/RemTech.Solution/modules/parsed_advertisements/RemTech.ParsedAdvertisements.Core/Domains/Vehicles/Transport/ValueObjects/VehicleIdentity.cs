@@ -7,4 +7,9 @@ public sealed record VehicleIdentity
     public VehicleIdentity(VehicleId id) => _id = id;
 
     public VehicleId Read() => _id;
+
+    public static implicit operator bool(VehicleIdentity? identity)
+    {
+        return identity != null && identity._id;
+    }
 }
