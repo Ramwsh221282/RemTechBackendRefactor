@@ -6,10 +6,7 @@ namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Ports;
 
 public sealed class DictionariedGeoLocations : IGeoLocations
 {
-    private readonly Dictionary<NotEmptyString, GeoLocationEnvelope> _items;
-
-    public DictionariedGeoLocations(Dictionary<NotEmptyString, GeoLocationEnvelope> items) =>
-        _items = items;
+    private readonly Dictionary<NotEmptyString, GeoLocationEnvelope> _items = [];
 
     public Status<GeoLocationEnvelope> Add(string? text)
     {

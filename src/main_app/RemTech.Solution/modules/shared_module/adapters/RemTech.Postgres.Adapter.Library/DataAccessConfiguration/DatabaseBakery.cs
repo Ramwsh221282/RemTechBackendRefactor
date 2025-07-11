@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Dapper;
 using DbUp;
 using DbUp.Engine;
 using Npgsql;
@@ -30,9 +29,13 @@ public sealed class DatabaseBakery
     {
         if (tables.Length == 0)
             throw new ApplicationException("Tables cannot be empty.");
-        await using PostgreSqlEngine engine = new(_configuration);
-        NpgsqlConnection connection = await engine.Connect();
+        await using NpgsqlDataSource dataSource = new NpgsqlDataSourceBuilder(
+            _configuration.ConnectionString
+        ).Build();
+        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync();
         string joinedTableNames = string.Join(", ", tables);
-        await connection.ExecuteAsync($"DROP TABLE IF EXISTS {joinedTableNames}, schemaversions");
+        await using NpgsqlCommand command = connection.CreateCommand();
+        command.CommandText = $"DROP TABLE IF EXISTS {joinedTableNames}, schemaversions CASCADE";
+        await command.ExecuteNonQueryAsync();
     }
 }

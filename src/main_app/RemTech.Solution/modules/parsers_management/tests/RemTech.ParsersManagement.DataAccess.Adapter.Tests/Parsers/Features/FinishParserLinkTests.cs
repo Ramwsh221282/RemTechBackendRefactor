@@ -28,15 +28,15 @@ public sealed class FinishParserLinkTests : IClassFixture<DataAccessParsersFixtu
         string workingState = ParserState.Working();
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         IParserLink link = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AddLinkSuccessAsync(parser.Identification().ReadId(), linkName, linkUrl);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).ChangeLinkActivitySuccessAsync(
             parser.Identification().ReadId(),
             link.Identification().ReadId(),
@@ -44,17 +44,17 @@ public sealed class FinishParserLinkTests : IClassFixture<DataAccessParsersFixtu
         );
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).UpdateParserAsyncSuccess(parser.Identification().ReadId(), state: workingState);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncFinishLinkSuccess(
             parser.Identification().ReadId(),
             link.Identification().ReadId(),
             elapsed
         );
-        await using ParsersSource source = _fixture.ParsersSource();
+        await using IParsers source = _fixture.Parsers();
         Status<IParser> fromDb = await source.Find(parser.Identification().ReadId());
         Assert.True(fromDb.IsSuccess);
         LinkFromParserBag linkFromBag = fromDb
@@ -83,15 +83,15 @@ public sealed class FinishParserLinkTests : IClassFixture<DataAccessParsersFixtu
         long elapsed = 60;
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         IParserLink link = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AddLinkSuccessAsync(parser.Identification().ReadId(), linkName, linkUrl);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).ChangeLinkActivitySuccessAsync(
             parser.Identification().ReadId(),
             link.Identification().ReadId(),
@@ -99,7 +99,7 @@ public sealed class FinishParserLinkTests : IClassFixture<DataAccessParsersFixtu
         );
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncFinishLinkFailure(
             parser.Identification().ReadId(),
             link.Identification().ReadId(),
@@ -118,15 +118,15 @@ public sealed class FinishParserLinkTests : IClassFixture<DataAccessParsersFixtu
         long elapsed = 60;
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         IParserLink link = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AddLinkSuccessAsync(parser.Identification().ReadId(), linkName, linkUrl);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncFinishLinkFailure(
             parser.Identification().ReadId(),
             link.Identification().ReadId(),
@@ -145,15 +145,16 @@ public sealed class FinishParserLinkTests : IClassFixture<DataAccessParsersFixtu
         long elapsed = 60;
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
+        await new ParserTestingToolkit(_fixture.Logger(), _fixture.Parsers()).AddLinkSuccessAsync(
+            parser.Identification().ReadId(),
+            linkName,
+            linkUrl
+        );
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
-        ).AddLinkSuccessAsync(parser.Identification().ReadId(), linkName, linkUrl);
-        await new ParserTestingToolkit(
-            _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncFinishLinkFailure(parser.Identification().ReadId(), Guid.NewGuid(), elapsed);
     }
 
@@ -169,15 +170,15 @@ public sealed class FinishParserLinkTests : IClassFixture<DataAccessParsersFixtu
         string workingState = ParserState.Working();
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         IParserLink link = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AddLinkSuccessAsync(parser.Identification().ReadId(), linkName, linkUrl);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).ChangeLinkActivitySuccessAsync(
             parser.Identification().ReadId(),
             link.Identification().ReadId(),
@@ -185,11 +186,11 @@ public sealed class FinishParserLinkTests : IClassFixture<DataAccessParsersFixtu
         );
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).UpdateParserAsyncSuccess(parser.Identification().ReadId(), state: workingState);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncFinishLinkFailure(
             parser.Identification().ReadId(),
             link.Identification().ReadId(),

@@ -34,12 +34,6 @@ CREATE INDEX IF NOT EXISTS idx_parsed_vehicles_description
 CREATE INDEX IF NOT EXISTS idx_parsed_vehicles_title
     ON parsed_advertisements_module.parsed_vehicles(title);
 
-CREATE INDEX IF NOT EXISTS idx_parsed_vehicles_title_trgm
-    ON parsed_advertisements_module.parsed_vehicles USING gin(title gin_trgm_ops);
-
-CREATE INDEX IF NOT EXISTS idx_parsed_vehicles_description_trgm
-    ON parsed_advertisements_module.parsed_vehicles USING gin(description gin_trgm_ops);
-
 CREATE INDEX IF NOT EXISTS idx_parsed_vehicle_characteristics_ctx_name
     ON parsed_advertisements_module.parsed_vehicle_characteristics(ctx_name);
 

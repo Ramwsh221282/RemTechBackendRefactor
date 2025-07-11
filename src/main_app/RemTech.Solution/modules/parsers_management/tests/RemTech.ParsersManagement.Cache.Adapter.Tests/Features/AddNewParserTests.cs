@@ -27,7 +27,7 @@ public sealed class AddNewParserTests : IClassFixture<CacheAdapterParsersFixture
         string domain2 = "Other";
         await _fixture.Toolkit().AsyncAddNewParserSuccess(name1, type1, domain1);
         await _fixture.Toolkit().AsyncAddNewParserSuccess(name2, type2, domain2);
-        await using ParsersSource parsers = _fixture.Parsers();
+        await using IParsers parsers = _fixture.Parsers();
         Status<IParser> created1 = await parsers.Find(new Name(NotEmptyString.New(name1)));
         Status<IParser> created2 = await parsers.Find(new Name(NotEmptyString.New(name2)));
         Assert.True(created1.IsSuccess);
@@ -76,7 +76,7 @@ public sealed class AddNewParserTests : IClassFixture<CacheAdapterParsersFixture
         string type = "Техника";
         string domain = "Test";
         await toolkit.AsyncAddNewParserSuccess(name, type, domain);
-        await using ParsersSource parsers = _fixture.Parsers();
+        await using IParsers parsers = _fixture.Parsers();
         Status<IParser> created = await parsers.Find(new Name(NotEmptyString.New(name)));
         Assert.True(created.IsSuccess);
         Assert.Equal(name, created.Value.Identification().ReadName().NameString().StringValue());
@@ -92,7 +92,7 @@ public sealed class AddNewParserTests : IClassFixture<CacheAdapterParsersFixture
         string type = "Техника";
         string domain = "Test";
         IParser parser = await toolkit.AsyncAddNewParserSuccess(name, type, domain);
-        await using ParsersSource parsers = _fixture.Parsers();
+        await using IParsers parsers = _fixture.Parsers();
         Status<IParser> created = await parsers.Find(parser.Identification().ReadId());
         Assert.True(created.IsSuccess);
         Assert.Equal(name, created.Value.Identification().ReadName().NameString().StringValue());

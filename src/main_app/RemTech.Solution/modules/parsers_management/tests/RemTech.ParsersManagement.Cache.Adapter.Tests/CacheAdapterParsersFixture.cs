@@ -1,4 +1,5 @@
-﻿using RemTech.Logging.Library;
+﻿using Npgsql;
+using RemTech.Logging.Library;
 using RemTech.ParserManagement.Cache.Adapter;
 using RemTech.ParserManagement.Cache.Adapter.Configuration;
 using RemTech.ParserManagement.Cache.Adapter.Parsers;
@@ -36,18 +37,14 @@ public sealed class CacheAdapterParsersFixture : IDisposable
         return new ParserTestingToolkit(_logger, Parsers());
     }
 
-    public ParsersSource Parsers()
+    public IParsers Parsers()
     {
-        PostgreSqlEngine dbEngine = new(_dbConf);
+        NpgsqlDataSource ds = new NpgsqlDataSourceBuilder(_dbConf.ConnectionString).Build();
         IParsersCache cached = CachedSource();
-        return new ParsersSource(
-            new PgLoggingParsers(
-                _logger,
-                new PgValidParsers(new PgCachingParsers(cached, new PgParsers(dbEngine)))
-            ),
-            new PgTransactionalLoggingParsers(
-                _logger,
-                new PgTransactionalCachingParsers(cached, new PgTransactionalParsers(dbEngine))
+        return new PgLoggingParsers(
+            _logger,
+            new PgValidParsers(
+                new PgCachingParsers(ds, cached, new PgTransactionalParsers(ds, new PgParsers(ds)))
             )
         );
     }
@@ -68,7 +65,7 @@ public sealed class CacheAdapterParsersFixture : IDisposable
     {
         RedisParsers parsers = new(new RedisCacheEngine(_redisConf));
         parsers.DropArray().Wait();
-        DatabaseBakery dbUp = new(_dbConf);
+        ParsersDatabaseBakery dbUp = new(_dbConf);
         dbUp.Down().Wait();
     }
 }

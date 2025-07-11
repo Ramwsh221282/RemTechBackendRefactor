@@ -8,6 +8,17 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\shared_module\adapters\RemTech.Postgres.Adapter.Library\RemTech.Postgres.Adapter.Library.csproj" />
+      <ProjectReference Include="..\..\RemTech.ParsedAdvertisements.Core\RemTech.ParsedAdvertisements.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Vehicles\Brands\" />
+      <Folder Include="Vehicles\Characteristics\" />
+      <Folder Include="Vehicles\GeoLocations\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="scripts\*.sql"/>
     </ItemGroup>
 
 </Project>

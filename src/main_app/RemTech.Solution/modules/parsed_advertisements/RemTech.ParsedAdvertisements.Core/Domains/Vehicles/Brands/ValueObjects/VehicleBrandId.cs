@@ -8,7 +8,7 @@ public readonly record struct VehicleBrandId
 
     public VehicleBrandId()
     {
-        _id = new NotEmptyGuid();
+        _id = new NewGuid();
     }
 
     public VehicleBrandId(NotEmptyGuid id)

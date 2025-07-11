@@ -1,5 +1,6 @@
 ﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.ParsersManagement.Tests.Library;
 using RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
@@ -14,41 +15,65 @@ public sealed class DisableParserTests : IClassFixture<ParsersFixture>
     [Fact]
     private void Disable_Parser_Success()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
+        IParsers parsers = _fixture.Parsers();
         string expectedState = ParserState.Disabled();
-        IParser parser = toolkit.CreateInitialParser();
-        IParser waiting = toolkit.UpdateParserSuccess(parser, ParserState.Waiting());
-        IParser disabled = toolkit.DisableParserSuccess(waiting);
+        IParser parser = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParser();
+        IParser waiting = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).UpdateParserSuccess(parser, ParserState.Waiting());
+        IParser disabled = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).DisableParserSuccess(waiting);
         Assert.Equal(expectedState, disabled.WorkState().Read().StringValue());
     }
 
     [Fact]
     private void Disable_Disabled_Parser_Failure()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        IParser parser = toolkit.CreateInitialParser();
-        toolkit.DisableParserFailure(parser);
+        IParsers parsers = _fixture.Parsers();
+        IParser parser = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParser();
+        new ParserTestingToolkit(_fixture.AccessLogger(), parsers).DisableParserFailure(parser);
     }
 
     [Fact]
     private async Task Disable_Parser_Success_Async()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
+        IParsers parsers = _fixture.Parsers();
         string waitingState = ParserState.Waiting();
         string expectedState = ParserState.Disabled();
-        IParser parser = await toolkit.CreateInitialParserAsync();
-        IParser waiting = await toolkit.UpdateParserAsyncSuccess(parser, waitingState);
-        IParser disabled = await toolkit.DisableParserSuccessAsync(
-            waiting.Identification().ReadId()
-        );
+        IParser parser = await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParserAsync();
+        IParser waiting = await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).UpdateParserAsyncSuccess(parser, waitingState);
+        IParser disabled = await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).DisableParserSuccessAsync(waiting.Identification().ReadId());
         Assert.Equal(expectedState, disabled.WorkState().Read().StringValue());
     }
 
     [Fact]
     private async Task Disable_Disabled_Parser_Failure_Async()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        IParser parser = await toolkit.CreateInitialParserAsync();
-        await toolkit.DisableParserFailureAsync(parser.Identification().ReadId());
+        IParsers parsers = _fixture.Parsers();
+        IParser parser = await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParserAsync();
+        await new ParserTestingToolkit(_fixture.AccessLogger(), parsers).DisableParserFailureAsync(
+            parser.Identification().ReadId()
+        );
     }
 }

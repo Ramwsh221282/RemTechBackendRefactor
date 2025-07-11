@@ -1,4 +1,15 @@
-﻿CREATE SCHEMA IF NOT EXISTS parsed_advertisements_module;
+﻿CREATE SCHEMA IF NOT EXISTS shared_advertisements_module;
+
+CREATE TABLE IF NOT EXISTS shared_advertisements_module.contained_items (
+    id              VARCHAR(50),
+    source_id       UUID NOT NULL REFERENCES parsers_management_module.parser_links(id) ON DELETE SET NULL,
+    date_created    DATE NOT NULL,
+    is_new          BOOLEAN NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE  (source_id)
+);
+
+CREATE SCHEMA IF NOT EXISTS parsed_advertisements_module;
 
 CREATE TABLE IF NOT EXISTS parsed_advertisements_module.vehicle_kinds(
     id              UUID PRIMARY KEY,
@@ -34,7 +45,7 @@ CREATE TABLE IF NOT EXISTS parsed_advertisements_module.parsed_vehicles(
     title                   VARCHAR(300) NOT NULL,
     photos                  JSONB NOT NULL,
     document_tsvector       TSVECTOR,
-    FOREIGN KEY (id) REFERENCES contained_items(id) ON DELETE CASCADE
+    FOREIGN KEY (id) REFERENCES shared_advertisements_module.contained_items(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS parsed_advertisements_module.parsed_vehicle_characteristics(

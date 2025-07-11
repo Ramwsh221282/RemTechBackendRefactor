@@ -129,4 +129,14 @@ public sealed class ValidParser(IParser inner) : IParser
             ? new StartingWhenHasNoActiveLinksError(inner)
             : inner.Start();
     }
+
+    public void Dispose()
+    {
+        inner.Dispose();
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        return inner.DisposeAsync();
+    }
 }

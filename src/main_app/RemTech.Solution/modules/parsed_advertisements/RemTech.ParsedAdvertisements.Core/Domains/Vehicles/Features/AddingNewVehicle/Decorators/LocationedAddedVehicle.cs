@@ -6,7 +6,7 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Features.AddingNewVehicle.Decorators;
 
-public sealed class LocationAddedVehicle(
+public sealed class LocationedAddedVehicle(
     IGeoLocations locations,
     string? locationName,
     IAddedVehicle origin

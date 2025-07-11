@@ -3,8 +3,7 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Ports;
 
-public sealed class ValidatingDictionariedCharacteristics(ICharacteristics origin)
-    : ICharacteristics
+public sealed class ValidatingCharacteristics(ICharacteristics origin) : ICharacteristics
 {
     public Status<CharacteristicEnvelope> Add(string? name)
     {

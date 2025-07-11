@@ -10,7 +10,7 @@ public readonly record struct CharacteristicId
         : this(new NotEmptyGuid(id)) { }
 
     public CharacteristicId()
-        : this(new NotEmptyGuid()) { }
+        : this(new NewGuid()) { }
 
     public CharacteristicId(NotEmptyGuid id)
     {

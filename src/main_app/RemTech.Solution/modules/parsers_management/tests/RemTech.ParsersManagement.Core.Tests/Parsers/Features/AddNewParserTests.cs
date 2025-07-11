@@ -1,4 +1,4 @@
-﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
+﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.ParsersManagement.Tests.Library;
 using RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
@@ -11,75 +11,67 @@ public class AddNewParserTests : IClassFixture<ParsersFixture>
     public AddNewParserTests(ParsersFixture fixture) => _fixture = fixture;
 
     [Fact]
-    private void Add_New_Parser_Non_Async_Success()
-    {
-        ParserTestingToolkit toolkit = new(_fixture);
-        toolkit.AddNewParserSuccess("Test Parser", "Техника", "Test");
-    }
+    private void Add_New_Parser_Non_Async_Success() =>
+        new ParserTestingToolkit(_fixture.AccessLogger(), _fixture.Parsers()).AddNewParserSuccess(
+            "Test Parser",
+            "Техника",
+            "Test"
+        );
 
     [Fact]
     private async Task Add_New_Parser_Async_Success()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        await toolkit.AsyncAddNewParserSuccess("Test Parser", "Техника", "Test");
-    }
-
-    [Fact]
-    private async Task Add_New_Parse_Async_Success_Ensure_Created_By_Name()
-    {
-        string name = "Test Parser";
-        string type = "Техника";
-        string domain = "Test";
-        ParserTestingToolkit toolkit = new(_fixture);
-        await toolkit.AsyncAddNewParserSuccess(name, type, domain);
-        await toolkit.ReadFromDataSource(name);
-    }
-
-    [Fact]
-    private async Task Add_New_Parser_Success_Ensure_Created_By_Id()
-    {
-        string name = "Test Parser";
-        string type = "Техника";
-        string domain = "Test";
-        ParserTestingToolkit toolkit = new(_fixture);
-        IParser parser = await toolkit.AsyncAddNewParserSuccess(name, type, domain);
-        Guid created = parser.Identification().ReadId();
-        await toolkit.ReadFromDataSource(created);
+        await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            _fixture.Parsers()
+        ).AsyncAddNewParserSuccess("Test Parser", "Техника", "Test");
     }
 
     [Fact]
     private void Add_New_Parser_Name_Failure()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        toolkit.AddNewParserFailure(string.Empty, "Техника", "Test");
+        new ParserTestingToolkit(_fixture.AccessLogger(), _fixture.Parsers()).AddNewParserFailure(
+            string.Empty,
+            "Техника",
+            "Test"
+        );
     }
 
     [Fact]
     private void Add_New_Parser_Type_Failure()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        toolkit.AddNewParserFailure("Test Parser", "Random Text", "Test");
+        new ParserTestingToolkit(_fixture.AccessLogger(), _fixture.Parsers()).AddNewParserFailure(
+            "Test Parser",
+            "Random Text",
+            "Test"
+        );
     }
 
     [Fact]
     private async Task Add_New_Parser_Async_Name_Failure()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        await toolkit.AsyncAddNewParserFailure(string.Empty, "Техника", "Test");
+        await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            _fixture.Parsers()
+        ).AsyncAddNewParserFailure(string.Empty, "Техника", "Test");
     }
 
     [Fact]
     private async Task Add_New_Parser_Async_Type_Failure()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        await toolkit.AsyncAddNewParserFailure("Test Parser", "Random Text", "Test");
+        await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            _fixture.Parsers()
+        ).AsyncAddNewParserFailure("Test Parser", "Random Text", "Test");
     }
 
     [Fact]
     private async Task Add_New_Parser_Domain_Failure()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        await toolkit.AsyncAddNewParserFailure("Test Parser", "Техника", string.Empty);
+        await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            _fixture.Parsers()
+        ).AsyncAddNewParserFailure("Test Parser", "Техника", string.Empty);
     }
 
     [Fact]
@@ -88,9 +80,17 @@ public class AddNewParserTests : IClassFixture<ParsersFixture>
         string name = "Test Parser";
         string type = "Техника";
         string domain = "Test";
-        ParserTestingToolkit toolkit = new(_fixture);
-        await toolkit.AsyncAddNewParserSuccess(name, type, domain);
-        await toolkit.AsyncAddNewParserFailure(name, type, domain);
+        IParsers parsers = _fixture.Parsers();
+        await new ParserTestingToolkit(_fixture.AccessLogger(), parsers).AsyncAddNewParserSuccess(
+            name,
+            type,
+            domain
+        );
+        await new ParserTestingToolkit(_fixture.AccessLogger(), parsers).AsyncAddNewParserFailure(
+            name,
+            type,
+            domain
+        );
     }
 
     [Fact]
@@ -99,9 +99,17 @@ public class AddNewParserTests : IClassFixture<ParsersFixture>
         string name = "Test Parser";
         string type = "Техника";
         string domain = "Test";
-        ParserTestingToolkit toolkit = new(_fixture);
-        await toolkit.AsyncAddNewParserSuccess(name, type, domain);
+        IParsers parsers = _fixture.Parsers();
+        await new ParserTestingToolkit(_fixture.AccessLogger(), parsers).AsyncAddNewParserSuccess(
+            name,
+            type,
+            domain
+        );
         string otherName = "Other name";
-        await toolkit.AsyncAddNewParserFailure(otherName, type, domain);
+        await new ParserTestingToolkit(_fixture.AccessLogger(), parsers).AsyncAddNewParserFailure(
+            otherName,
+            type,
+            domain
+        );
     }
 }

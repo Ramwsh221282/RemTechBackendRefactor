@@ -7,14 +7,14 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.AddingParserLink.Async.Decorators;
 
-public sealed class AsyncSqlSpeakingNewParserLink(ParsersSource parsers, IAsyncNewParserLink inner)
+public sealed class AsyncSqlSpeakingNewParserLink(IParsers parsers, IAsyncNewParserLink inner)
     : IAsyncNewParserLink
 {
     public async Task<Status<IParserLink>> AsyncNew(
         AsyncAddParserLink add,
         CancellationToken ct = default
     ) =>
-        await new TransactionOperatingParser<IParserLink>(parsers, parsers)
+        await new TransactionOperatingParser<IParserLink>(parsers)
             .WithReceivingMethod(s => s.Find(add.TakeOwnerId(), ct))
             .WithLogicMethod(() => inner.AsyncNew(add, ct))
             .WithPutting(add)

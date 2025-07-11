@@ -8,7 +8,7 @@ public readonly record struct GeoLocationId
 
     public GeoLocationId()
     {
-        _id = new NotEmptyGuid();
+        _id = new NewGuid();
     }
 
     public GeoLocationId(NotEmptyGuid id)

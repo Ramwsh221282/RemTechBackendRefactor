@@ -35,7 +35,7 @@ public sealed class AddParserLinkTests : IClassFixture<CacheAdapterParsersFixtur
             _fixture.Logger(),
             _fixture.Parsers()
         ).AddLinkSuccessAsync(parser.Identification().ReadId(), linkName, linkUrl);
-        await using ParsersSource source = _fixture.Parsers();
+        await using IParsers source = _fixture.Parsers();
         Status<IParser> fromDb = await source.Find(parser.Identification().ReadId());
         Assert.True(fromDb.IsSuccess);
         ParserLinksBag bag = fromDb.Value.OwnedLinks();

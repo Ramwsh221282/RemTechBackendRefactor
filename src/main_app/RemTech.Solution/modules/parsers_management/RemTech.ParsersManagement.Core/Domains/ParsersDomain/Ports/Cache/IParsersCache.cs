@@ -8,7 +8,8 @@ namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Cache;
 
 public interface IParsersCache
 {
-    public Task Invalidate(ParserCacheJson json);
+    public Task InvalidateAsync(ParserCacheJson json);
+    void Invalidate(ParserCacheJson json);
     public Task<MaybeBag<IParser>> Get(ParserCacheKey key);
     public Task<MaybeBag<IParser>> Get(Name name);
     public Task<MaybeBag<IParser>> Get(ParsingType type, NotEmptyString domain);

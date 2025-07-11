@@ -5,10 +5,8 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Ports;
 
-public sealed class LoggingDictionariedCharacteristics(
-    ICustomLogger logger,
-    ICharacteristics origin
-) : ICharacteristics
+public sealed class LoggingCharacteristics(ICustomLogger logger, ICharacteristics origin)
+    : ICharacteristics
 {
     public Status<CharacteristicEnvelope> Add(string? name)
     {

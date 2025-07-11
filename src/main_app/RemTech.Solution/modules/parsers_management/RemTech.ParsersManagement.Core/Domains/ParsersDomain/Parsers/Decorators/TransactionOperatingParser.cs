@@ -1,13 +1,10 @@
-﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Cache;
+﻿using System.Transactions;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Decorators;
 
-public sealed class TransactionOperatingParser<T>(
-    IParsers parsers,
-    ITransactionalParsers transactionalParsers
-)
+public sealed class TransactionOperatingParser<T>(IParsers parsers)
 {
     private Func<IParsers, Task<Status<IParser>>>? _receivingMethod;
     private Func<Task<Status<T>>>? _logicMethod;
@@ -38,23 +35,24 @@ public sealed class TransactionOperatingParser<T>(
         ArgumentNullException.ThrowIfNull(_receivingMethod);
         ArgumentNullException.ThrowIfNull(_logicMethod);
         ArgumentNullException.ThrowIfNull(_maybeParser);
-        await using (parsers)
+        try
         {
+            using TransactionScope txn = new(
+                TransactionScopeOption.Required,
+                new TransactionOptions(),
+                TransactionScopeAsyncFlowOption.Enabled
+            );
             Status<IParser> fromDataSource = await _receivingMethod(parsers);
             if (fromDataSource.IsFailure)
                 return fromDataSource.Error;
-            await using ITransactionalParser transactional = await transactionalParsers.Add(
-                fromDataSource.Value,
-                CancellationToken.None
-            );
-            _maybeParser.Put(transactional);
+            _maybeParser.Put(fromDataSource.Value);
             Status<T> status = await _logicMethod();
-            if (status.IsFailure)
-                return status.Error;
-            Status commit = await transactional.Save(CancellationToken.None);
-            if (commit.IsFailure)
-                return commit.Error;
-            return status.Value;
+            txn.Complete();
+            return status;
+        }
+        catch
+        {
+            return Error.Conflict("Ошибка транзакции.");
         }
     }
 }
