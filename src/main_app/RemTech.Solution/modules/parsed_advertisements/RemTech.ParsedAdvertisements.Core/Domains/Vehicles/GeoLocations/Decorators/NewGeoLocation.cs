@@ -12,7 +12,15 @@ public sealed class NewGeoLocation : GeoLocationEnvelope
                 new GeolocationText(
                     new Text(
                         new CapitalizedFirstLetterText(
-                            new TrimmedText(new TextWithoutPunctuation(new RawText(name)))
+                            new TrimmedText(
+                                new TextWithOnlyOneWhiteSpaces(
+                                    new TextWithOnlyRussianLetters(
+                                        new TextWithoutDigits(
+                                            new TextWithoutPunctuation(new RawText(name))
+                                        )
+                                    )
+                                )
+                            )
                         )
                     ).Read()
                 )

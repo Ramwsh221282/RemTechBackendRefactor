@@ -2,6 +2,7 @@
 using Npgsql;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.ValueObjects;
+using RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Brands.Decorators;
 using RemTech.Postgres.Adapter.Library.PgCommands;
 using RemTech.Result.Library;
 

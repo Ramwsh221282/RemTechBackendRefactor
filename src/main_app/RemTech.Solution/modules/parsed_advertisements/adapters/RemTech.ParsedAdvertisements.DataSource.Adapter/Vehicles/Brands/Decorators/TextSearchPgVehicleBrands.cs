@@ -5,7 +5,7 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.ValueObjects;
 using RemTech.Postgres.Adapter.Library.PgCommands;
 using RemTech.Result.Library;
 
-namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Brands;
+namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Brands.Decorators;
 
 public sealed class TextSearchPgVehicleBrands : IAsyncVehicleBrands
 {

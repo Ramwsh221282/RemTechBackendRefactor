@@ -3,7 +3,7 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.ValueObjects;
 using RemTech.Result.Library;
 
-namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Brands;
+namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Brands.Decorators;
 
 public sealed class LoggingPgVehicleBrands : IAsyncVehicleBrands
 {

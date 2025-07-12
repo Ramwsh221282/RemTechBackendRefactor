@@ -2,7 +2,7 @@
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.ValueObjects;
 using RemTech.Result.Library;
 
-namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Kinds;
+namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Kinds.Decorators;
 
 public sealed class ValidatingTextSearchVehicleKinds(IAsyncVehicleKinds origin) : IAsyncVehicleKinds
 {
