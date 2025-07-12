@@ -55,25 +55,25 @@ CREATE SCHEMA IF NOT EXISTS parsed_advertisements_module;
 
 CREATE TABLE IF NOT EXISTS parsed_advertisements_module.vehicle_kinds(
     id                   UUID PRIMARY KEY,
-    text                 VARCHAR(150) UNIQUE NOT NULL,
+    text                 VARCHAR(80) UNIQUE NOT NULL,
     document_tsvector    TSVECTOR
 );
 
 CREATE TABLE IF NOT EXISTS parsed_advertisements_module.vehicle_brands(
     id              UUID PRIMARY KEY,
-    text            VARCHAR(150) UNIQUE NOT NULL,
+    text            VARCHAR(80) UNIQUE NOT NULL,
     document_tsvector       TSVECTOR
 );
 
 CREATE TABLE IF NOT EXISTS parsed_advertisements_module.geos(
     id              UUID PRIMARY KEY,
-    text            VARCHAR(150) UNIQUE NOT NULL,
+    text            VARCHAR(80) UNIQUE NOT NULL,
     document_tsvector       TSVECTOR
 );
 
 CREATE TABLE IF NOT EXISTS parsed_advertisements_module.vehicle_characteristics(
     id              UUID PRIMARY KEY,
-    text            VARCHAR(100) UNIQUE NOT NULL,
+    text            VARCHAR(80) UNIQUE NOT NULL,
     document_tsvector       TSVECTOR
 );
 
@@ -93,8 +93,8 @@ CREATE TABLE IF NOT EXISTS parsed_advertisements_module.parsed_vehicles(
 CREATE TABLE IF NOT EXISTS parsed_advertisements_module.parsed_vehicle_characteristics(
     vehicle_id      VARCHAR(50),
     ctx_id          UUID,
-    ctx_name        VARCHAR(100) NOT NULL,
-    ctx_value       VARCHAR(50) NOT NULL,
+    ctx_name        VARCHAR(80) NOT NULL,
+    ctx_value       VARCHAR(30) NOT NULL,
     PRIMARY KEY (vehicle_id, ctx_id),
     FOREIGN KEY (vehicle_id) REFERENCES parsed_advertisements_module.parsed_vehicles(id) ON DELETE CASCADE,
     FOREIGN KEY (ctx_id) REFERENCES parsed_advertisements_module.vehicle_characteristics(id) ON DELETE CASCADE,
