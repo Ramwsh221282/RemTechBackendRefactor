@@ -5,7 +5,7 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Kinds;
 
-public interface ISqlSpeakingKinds : IDisposable, IAsyncDisposable
+public interface IAsyncVehicleKinds : IDisposable, IAsyncDisposable
 {
     Task<Status<IVehicleKind>> Add(IVehicleKind kind, CancellationToken ct = default);
     Task<MaybeBag<IVehicleKind>> Find(VehicleKindIdentity identity, CancellationToken ct = default);

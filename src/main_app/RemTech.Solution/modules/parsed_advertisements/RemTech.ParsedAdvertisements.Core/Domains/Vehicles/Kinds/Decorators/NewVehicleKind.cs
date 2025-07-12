@@ -15,7 +15,15 @@ public sealed class NewVehicleKind : VehicleKindEnvelope
                 new VehicleKindText(
                     new Text(
                         new CapitalizedFirstLetterText(
-                            new TrimmedText(new TextWithoutPunctuation(new RawText(name)))
+                            new TrimmedText(
+                                new TextWithOnlyOneWhiteSpaces(
+                                    new TextWithoutDigits(
+                                        new TextWithOnlyRussianLetters(
+                                            new TextWithoutPunctuation(new RawText(name))
+                                        )
+                                    )
+                                )
+                            )
                         )
                     ).Read()
                 )

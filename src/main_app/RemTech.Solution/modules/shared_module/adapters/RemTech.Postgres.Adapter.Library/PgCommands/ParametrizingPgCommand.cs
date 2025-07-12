@@ -16,4 +16,9 @@ public sealed class ParametrizingPgCommand(PgCommand command)
         _origin.Parameters.Add(new NpgsqlParameter<T>(name, value));
         return this;
     }
+
+    public ParametrizingPgCommand WithIf<T>(string name, T value, Func<T, bool> predicate)
+    {
+        return !predicate(value) ? this : With(name, value);
+    }
 }

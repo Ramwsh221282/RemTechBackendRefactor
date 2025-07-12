@@ -13,13 +13,19 @@ public sealed class TextWithoutPunctuation : IText
     {
         string text = _text.Read();
         if (text.Contains(','))
-            text = text.Replace(",", "");
+            text = text.Replace(",", " ");
         if (text.Contains('.'))
-            text = text.Replace(".", "");
+            text = text.Replace(".", " ");
         if (text.Contains('!'))
-            text = text.Replace("!", "");
+            text = text.Replace("!", " ");
         if (text.Contains('?'))
-            text = text.Replace("?", "");
+            text = text.Replace("?", " ");
+        if (text.Contains('-'))
+            text = text.Replace("-", " ");
+        if (text.Contains('+'))
+            text = text.Replace("+", " ");
+        if (text.Contains('='))
+            text = text.Replace("=", " ");
         return text;
     }
 }

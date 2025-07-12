@@ -4,8 +4,7 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Kinds;
 
-public sealed class TextSearchValidatingSqlSpeakingVehicleKinds(ISqlSpeakingKinds origin)
-    : ISqlSpeakingKinds
+public sealed class ValidatingTextSearchVehicleKinds(IAsyncVehicleKinds origin) : IAsyncVehicleKinds
 {
     public Task<Status<IVehicleKind>> Add(IVehicleKind kind, CancellationToken ct = default)
     {

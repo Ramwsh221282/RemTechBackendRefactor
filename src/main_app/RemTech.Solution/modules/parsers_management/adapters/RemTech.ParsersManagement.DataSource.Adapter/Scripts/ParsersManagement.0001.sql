@@ -32,10 +32,10 @@ CREATE TABLE IF NOT EXISTS parsers_management_module.parser_links (
     UNIQUE (parser_id, name)
 );
 
-CREATE INDEX idx_parsers_name
+CREATE INDEX IF NOT EXISTS idx_parsers_name
     ON parsers_management_module.parsers(name);
 
-CREATE INDEX idx_parser_links_name
+CREATE INDEX IF NOT EXISTS idx_parser_links_name
     ON parsers_management_module.parser_links(name);
 
 CREATE SCHEMA IF NOT EXISTS shared_advertisements_module;

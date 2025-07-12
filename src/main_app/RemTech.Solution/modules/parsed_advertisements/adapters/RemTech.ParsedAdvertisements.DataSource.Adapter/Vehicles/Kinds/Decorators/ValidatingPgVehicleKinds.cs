@@ -4,7 +4,7 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Kinds.Decorators;
 
-public sealed class ValidatingSqlSpeakingKindsEnvelope(ISqlSpeakingKinds origin) : ISqlSpeakingKinds
+public sealed class ValidatingPgVehicleKinds(IAsyncVehicleKinds origin) : IAsyncVehicleKinds
 {
     public Task<Status<IVehicleKind>> Add(IVehicleKind kind, CancellationToken ct = default)
     {
