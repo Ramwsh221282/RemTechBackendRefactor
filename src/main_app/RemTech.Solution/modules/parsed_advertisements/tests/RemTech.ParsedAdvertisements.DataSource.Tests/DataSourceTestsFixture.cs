@@ -1,4 +1,6 @@
 ﻿using Npgsql;
+using RemTech.ParsedAdvertisements.Core.Tests.Moks;
+using RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Brands;
 using RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Kinds;
 using RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Kinds.Decorators;
 using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
@@ -41,6 +43,18 @@ public sealed class DataSourceTestsFixture : IDisposable
             new TextSearchSqlSpeakingVehicleKinds(
                 source,
                 new ValidatingPgVehicleKinds(new PgVehicleKinds(source))
+            )
+        );
+    }
+
+    public IAsyncVehicleBrands VehicleBrands()
+    {
+        NpgsqlDataSource source = Engine();
+        return new LoggingPgVehicleBrands(
+            new MokLogger(),
+            new TextSearchPgVehicleBrands(
+                source,
+                new ValidatingPgVehicleBrands(new PgVehicleBrands(source))
             )
         );
     }

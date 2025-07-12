@@ -38,7 +38,7 @@ public sealed class TextSearchSqlSpeakingVehicleKinds(
             new AsyncPreparedCommand(
                 new ParametrizingPgCommand(
                     new PgCommand(await source.OpenConnectionAsync(ct), sql)
-                ).With("@name", new TsQuerySequenceStrongString(name).AsTsQueryString())
+                ).With("@name", new TsQuerySequenceSensitiveString(name).AsTsQueryString())
             )
         ).AsyncReader(ct);
         return !await reader.ReadAsync(ct)
@@ -49,20 +49,4 @@ public sealed class TextSearchSqlSpeakingVehicleKinds(
     public void Dispose() => origin.Dispose();
 
     public ValueTask DisposeAsync() => origin.DisposeAsync();
-}
-
-public sealed class TsQuerySequenceStrongString
-{
-    private readonly string _unformatted;
-
-    public TsQuerySequenceStrongString(string unformatted)
-    {
-        _unformatted = unformatted;
-    }
-
-    public string AsTsQueryString()
-    {
-        string[] parts = _unformatted.Split(' ', StringSplitOptions.TrimEntries);
-        return string.Join("<->", parts);
-    }
 }

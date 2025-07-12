@@ -20,6 +20,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\adapters\RemTech.ParsedAdvertisements.DataSource.Adapter\RemTech.ParsedAdvertisements.DataSource.Adapter.csproj" />
+      <ProjectReference Include="..\RemTech.ParsedAdvertisements.Core.Tests\RemTech.ParsedAdvertisements.Core.Tests.csproj" />
     </ItemGroup>
 
 </Project>

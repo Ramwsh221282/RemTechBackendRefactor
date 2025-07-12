@@ -12,7 +12,9 @@ public sealed class NewVehicleBrand : VehicleBrandEnvelope
                 new VehicleBrandText(
                     new Text(
                         new CapitalizedFirstLetterText(
-                            new TrimmedText(new TextWithoutPunctuation(new RawText(name)))
+                            new TextWithOnlyOneWhiteSpaces(
+                                new TrimmedText(new TextWithoutPunctuation(new RawText(name)))
+                            )
                         )
                     ).Read()
                 )
