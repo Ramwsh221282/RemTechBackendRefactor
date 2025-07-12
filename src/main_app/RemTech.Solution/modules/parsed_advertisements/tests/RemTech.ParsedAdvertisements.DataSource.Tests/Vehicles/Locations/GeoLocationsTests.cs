@@ -54,7 +54,7 @@ public sealed class GeoLocationsTests : IClassFixture<DataSourceTestsFixture>
         string created2Name = added2.Value.Identify().ReadText();
         string created3Name = added3.Value.Identify().ReadText();
         Assert.Equal(city1, created1Name);
-        Assert.Equal(city1, created2Name);
+        Assert.Equal(city2, created2Name);
         Assert.Equal(city3, created3Name);
     }
 }
