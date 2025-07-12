@@ -12,7 +12,13 @@ public sealed class NewCharacteristic : CharacteristicEnvelope
                 new CharacteristicText(
                     new Text(
                         new CapitalizedFirstLetterText(
-                            new TrimmedText(new TextWithoutPunctuation(new RawText(name)))
+                            new TrimmedText(
+                                new TextWithoutPunctuation(
+                                    new TextWithoutDigits(
+                                        new TextWithOnlyRussianLetters(new RawText(name))
+                                    )
+                                )
+                            )
                         )
                     ).Read()
                 )

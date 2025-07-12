@@ -2,6 +2,8 @@
 using RemTech.ParsedAdvertisements.Core.Tests.Moks;
 using RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Brands;
 using RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Brands.Decorators;
+using RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Characteristics;
+using RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Characteristics.Decorators;
 using RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.GeoLocations;
 using RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Kinds;
 using RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Kinds.Decorators;
@@ -67,6 +69,15 @@ public sealed class DataSourceTestsFixture : IDisposable
         return new TextSearchPgGeoLocations(
             source,
             new ValidatingPgGeoLocations(new PgGeoLocations(source))
+        );
+    }
+
+    public IAsyncCharacteristics Characteristics()
+    {
+        NpgsqlDataSource source = Engine();
+        return new TextSearchPgCharacteristics(
+            source,
+            new PgValidatingCharacteristics(new PgCharacteristics(source))
         );
     }
 

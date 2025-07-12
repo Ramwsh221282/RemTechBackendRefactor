@@ -12,10 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Vehicles\Characteristics\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <EmbeddedResource Include="scripts\*.sql"/>
     </ItemGroup>
 
