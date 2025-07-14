@@ -55,4 +55,25 @@ public sealed class BrandsTests : IClassFixture<DataSourceTestsFixture>
         Assert.Equal(brandName, related1Name);
         Assert.Equal(brandName, related2Name);
     }
+
+    [Fact]
+    private void Filter_Only_Unique()
+    {
+        HashSet<string> unique = [];
+        string fpath = "brands.txt";
+        using StreamReader reader = new(fpath);
+        string? line = string.Empty;
+        while ((line = reader.ReadLine()) != null)
+        {
+            string formatted = line.Split(',', StringSplitOptions.TrimEntries)[1]
+                .Replace("\'", string.Empty)
+                .Replace(")", string.Empty);
+            string insert = $"(uuid_generate_v4(), '{formatted}'),";
+            unique.Add(insert);
+        }
+
+        using StreamWriter writer = new("filtered_brands.txt");
+        foreach (string entry in unique)
+            writer.WriteLine(entry);
+    }
 }

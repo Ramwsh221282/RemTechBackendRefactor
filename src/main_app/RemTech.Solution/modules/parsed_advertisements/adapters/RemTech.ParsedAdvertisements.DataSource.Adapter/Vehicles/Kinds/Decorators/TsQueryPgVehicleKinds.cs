@@ -7,10 +7,8 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Kinds.Decorators;
 
-public sealed class TextSearchSqlSpeakingVehicleKinds(
-    NpgsqlDataSource source,
-    IAsyncVehicleKinds origin
-) : IAsyncVehicleKinds
+public sealed class TsQueryPgVehicleKinds(NpgsqlDataSource source, IAsyncVehicleKinds origin)
+    : IAsyncVehicleKinds
 {
     public async Task<Status<IVehicleKind>> Add(IVehicleKind kind, CancellationToken ct = default)
     {

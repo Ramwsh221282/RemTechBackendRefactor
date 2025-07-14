@@ -5,12 +5,13 @@ namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Ports;
 
 public sealed class ValidatingGeoLocations(IGeoLocations origin) : IGeoLocations
 {
-    public Status<GeoLocationEnvelope> Add(string? text)
+    public Status<GeoLocationEnvelope> Add(string? text, string? kind)
     {
-        NotEmptyString geoText = new(text);
-        return !geoText
-            ? new ValidationError<GeoLocationEnvelope>("Некорректное название геолокации.")
-            : origin.Add(geoText);
+        if (string.IsNullOrWhiteSpace(text))
+            return new ValidationError<GeoLocationEnvelope>("Название региона была пустым.");
+        if (string.IsNullOrWhiteSpace(kind))
+            return new ValidationError<GeoLocationEnvelope>("Название вида региона была пустым.");
+        return origin.Add(text, kind);
     }
 
     public MaybeBag<GeoLocationEnvelope> GetByText(string? text) =>

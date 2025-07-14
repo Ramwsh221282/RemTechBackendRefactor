@@ -27,6 +27,7 @@ public sealed class DataSourceTestsFixture : IDisposable
         DatabaseBakery bakery = new(_configuration);
         bakery
             .Down(
+                "parsed_advertisements_module.cities",
                 "parsed_advertisements_module.parsed_vehicle_characteristics",
                 "shared_advertisements_module.contained_items",
                 "parsed_advertisements_module.parsed_vehicles",
@@ -44,7 +45,7 @@ public sealed class DataSourceTestsFixture : IDisposable
     {
         NpgsqlDataSource source = Engine();
         return new ValidatingTextSearchVehicleKinds(
-            new TextSearchSqlSpeakingVehicleKinds(
+            new TsQueryPgVehicleKinds(
                 source,
                 new ValidatingPgVehicleKinds(new PgVehicleKinds(source))
             )
@@ -56,9 +57,12 @@ public sealed class DataSourceTestsFixture : IDisposable
         NpgsqlDataSource source = Engine();
         return new LoggingPgVehicleBrands(
             new MokLogger(),
-            new TextSearchPgVehicleBrands(
+            new TsQueryVehicleBrands(
                 source,
-                new ValidatingPgVehicleBrands(new PgVehicleBrands(source))
+                new PgTgrmVehicleBrands(
+                    source,
+                    new ValidatingPgVehicleBrands(new PgVehicleBrands(source))
+                )
             )
         );
     }
@@ -66,9 +70,9 @@ public sealed class DataSourceTestsFixture : IDisposable
     public IAsyncGeoLocations Locations()
     {
         NpgsqlDataSource source = Engine();
-        return new TextSearchPgGeoLocations(
+        return new TsQueryPgGeoLocations(
             source,
-            new ValidatingPgGeoLocations(new PgGeoLocations(source))
+            new TgrmPgGeoLocations(source, new ValidatingPgGeoLocations(new PgGeoLocations(source)))
         );
     }
 

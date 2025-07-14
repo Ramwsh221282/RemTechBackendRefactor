@@ -8,12 +8,12 @@ public sealed class DictionariedGeoLocations : IGeoLocations
 {
     private readonly Dictionary<NotEmptyString, GeoLocationEnvelope> _items = [];
 
-    public Status<GeoLocationEnvelope> Add(string? text)
+    public Status<GeoLocationEnvelope> Add(string? text, string? kind)
     {
         NotEmptyString geoText = new(text);
         if (_items.TryGetValue(geoText, out GeoLocationEnvelope? geo))
             return geo;
-        NewGeoLocation created = new(geoText);
+        NewGeoLocation created = new(geoText, kind);
         _items.Add(geoText, created);
         return created;
     }

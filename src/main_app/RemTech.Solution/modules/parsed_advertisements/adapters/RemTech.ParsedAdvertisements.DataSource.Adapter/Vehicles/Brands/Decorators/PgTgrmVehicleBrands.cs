@@ -7,24 +7,16 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Brands.Decorators;
 
-public sealed class TextSearchPgVehicleBrands : IAsyncVehicleBrands
+public sealed class PgTgrmVehicleBrands(NpgsqlDataSource source, IAsyncVehicleBrands origin)
+    : IAsyncVehicleBrands
 {
-    private readonly NpgsqlDataSource _source;
-    private readonly IAsyncVehicleBrands _origin;
-
-    public TextSearchPgVehicleBrands(NpgsqlDataSource source, IAsyncVehicleBrands origin)
-    {
-        _source = source;
-        _origin = origin;
-    }
-
     public async Task<Status<IVehicleBrand>> Add(
         IVehicleBrand brand,
         CancellationToken ct = default
     )
     {
-        MaybeBag<IVehicleBrand> bag = await Find(brand.Identify(), ct);
-        return bag.Any() ? bag.Take().Success() : await _origin.Add(brand, ct);
+        var existing = await Find(brand.Identify(), ct);
+        return existing.Any() ? existing.Take().Success() : await origin.Add(brand, ct);
     }
 
     public async Task<MaybeBag<IVehicleBrand>> Find(
@@ -37,35 +29,25 @@ public sealed class TextSearchPgVehicleBrands : IAsyncVehicleBrands
             return new MaybeBag<IVehicleBrand>();
         string sql = string.Intern(
             """
-            SELECT
-            	id,
-                text, 
-                word_similarity  (text, @input) AS rank
-            FROM 
-                parsed_advertisements_module.vehicle_brands
-            WHERE word_similarity  (text, @input) > 0.6
-            ORDER BY rank DESC
+            SELECT id, text, word_similarity(@input, text) as sml
+            FROM parsed_advertisements_module.vehicle_brands
+            WHERE word_similarity(@input, text) > 0.8
+            ORDER BY sml DESC
             LIMIT 1;
             """
         );
         await using DbDataReader reader = await new AsyncDbReaderCommand(
             new AsyncPreparedCommand(
                 new ParametrizingPgCommand(
-                    new PgCommand(await _source.OpenConnectionAsync(ct), sql)
+                    new PgCommand(await source.OpenConnectionAsync(ct), sql)
                 ).With("@input", input)
             )
         ).AsyncReader(ct);
         MaybeBag<IVehicleBrand> brand = await new SingleVehicleBrandSqlRow(reader).Read(ct);
-        return brand.Any() ? brand.Take().Success() : await _origin.Find(identity, ct);
+        return brand.Any() ? brand.Take().Success() : await origin.Find(identity, ct);
     }
 
-    public void Dispose()
-    {
-        _origin.Dispose();
-    }
+    public void Dispose() => origin.Dispose();
 
-    public async ValueTask DisposeAsync()
-    {
-        await _origin.DisposeAsync();
-    }
+    public ValueTask DisposeAsync() => origin.DisposeAsync();
 }

@@ -20,6 +20,7 @@ public sealed class MaybeSingleGeoLocationSqlRow
             return new MaybeBag<IGeoLocation>();
         Guid id = _reader.GetGuid(_reader.GetOrdinal("id"));
         string text = _reader.GetString(_reader.GetOrdinal("text"));
-        return new ExistingGeoLocation(id, text);
+        string kind = _reader.GetString(_reader.GetOrdinal("kind"));
+        return new ExistingGeoLocation(id, text, kind);
     }
 }

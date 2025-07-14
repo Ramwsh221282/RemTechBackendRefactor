@@ -7,7 +7,7 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.GeoLocations;
 
-public sealed class TextSearchPgGeoLocations(NpgsqlDataSource source, IAsyncGeoLocations locations)
+public sealed class TsQueryPgGeoLocations(NpgsqlDataSource source, IAsyncGeoLocations locations)
     : IAsyncGeoLocations
 {
     public void Dispose() => locations.Dispose();
@@ -33,13 +33,39 @@ public sealed class TextSearchPgGeoLocations(NpgsqlDataSource source, IAsyncGeoL
             return await locations.Find(identity, ct);
         string sql = string.Intern(
             """
-            SELECT 
-                id,
-                text,
-                word_similarity(text, @input) as sml 
-            FROM parsed_advertisements_module.geos
-            WHERE word_similarity(text, @input) > 0.5
-            ORDER BY sml DESC
+            WITH input_words AS (
+                SELECT
+                    unnest(string_to_array(
+                            lower(regexp_replace(@input, '[^a-zA-Z0-9А-Яа-я ]', '', 'g')),
+                            ' '
+                           )) AS input_word
+            )
+            SELECT
+                COALESCE(e.text, 'Не найдено') AS text,
+                COALESCE(max_sim.rank, 0) AS rank,
+                e.id AS id,
+                e.kind AS kind
+            FROM input_words iw
+                     LEFT JOIN LATERAL (
+                SELECT
+                    id,
+                    text,
+                    kind,
+                    ts_rank(geos.document_tsvector, to_tsquery('russian', lower(iw.input_word))) AS rank
+                FROM parsed_advertisements_module.geos
+                WHERE geos.document_tsvector @@ to_tsquery('russian', lower(iw.input_word))
+                ORDER BY rank DESC
+                LIMIT 1
+                ) e ON true
+                     LEFT JOIN LATERAL (
+                SELECT ts_rank(geos.document_tsvector, to_tsquery('russian', lower(iw.input_word))) AS rank
+                FROM parsed_advertisements_module.geos
+                WHERE geos.document_tsvector @@ to_tsquery('russian', lower(iw.input_word))
+                ORDER BY rank DESC
+                LIMIT 1
+                ) max_sim ON true
+            WHERE iw.input_word != '' AND max_sim.rank > 0
+            ORDER BY rank DESC
             LIMIT 1;
             """
         );

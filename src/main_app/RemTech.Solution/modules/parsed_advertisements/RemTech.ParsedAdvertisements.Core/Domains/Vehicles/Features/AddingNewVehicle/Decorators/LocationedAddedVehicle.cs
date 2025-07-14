@@ -9,12 +9,13 @@ namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Features.AddingNewV
 public sealed class LocationedAddedVehicle(
     IGeoLocations locations,
     string? locationName,
+    string? kind,
     IAddedVehicle origin
 ) : IAddedVehicle
 {
     public Status<VehicleEnvelope> Added(AddVehicle add)
     {
-        Status<GeoLocationEnvelope> location = locations.Add(locationName);
+        Status<GeoLocationEnvelope> location = locations.Add(locationName, kind);
         return location.IsFailure
             ? location.Error
             : origin.Added(

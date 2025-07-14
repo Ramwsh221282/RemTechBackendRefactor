@@ -1,7 +1,39 @@
-﻿CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+﻿CREATE TABLE IF NOT EXISTS parsed_advertisements_module.vehicle_kinds(
+    id                   UUID PRIMARY KEY,
+    text                 VARCHAR(80) UNIQUE NOT NULL,
+    document_tsvector    TSVECTOR
+);
+
+CREATE INDEX IF NOT EXISTS idx_vehicle_kinds_document_tsvector
+    ON parsed_advertisements_module.vehicle_kinds USING GIN(document_tsvector);
+
+CREATE INDEX IF NOT EXISTS idx_vehicle_kinds_text
+    ON parsed_advertisements_module.vehicle_kinds(text);
+
+CREATE OR REPLACE FUNCTION parsed_advertisements_module.update_text_document_tsvector()
+RETURNS trigger AS $$
+BEGIN
+  NEW.document_tsvector := to_tsvector('russian', COALESCE(NEW.text, ''));
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 DO $$
-    BEGIN
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger
+        WHERE tgname = 'trg_update_vehicle_kinds_document_tsvector'
+        AND tgrelid = 'parsed_advertisements_module.vehicle_kinds'::regclass
+    ) THEN
+CREATE TRIGGER trg_update_vehicle_kinds_document_tsvector
+    BEFORE INSERT OR UPDATE ON parsed_advertisements_module.vehicle_kinds
+                         FOR EACH ROW EXECUTE FUNCTION parsed_advertisements_module.update_text_document_tsvector();
+END IF;
+END
+$$;
+
+DO $$
+BEGIN
 INSERT INTO parsed_advertisements_module.vehicle_kinds(id, text) VALUES
                                                                      (uuid_generate_v4(), 'Валочно-пакетирующая машина'),
                                                                      (uuid_generate_v4(), 'Дровокол'),
@@ -155,10 +187,5 @@ INSERT INTO parsed_advertisements_module.vehicle_kinds(id, text) VALUES
                                                                      (uuid_generate_v4(), 'Хлыстовоз'),
                                                                      (uuid_generate_v4(), 'Сортиментовоз'),
                                                                      (uuid_generate_v4(), 'Мульчер')
-ON CONFLICT (text) DO NOTHING;
+    ON CONFLICT (text) DO NOTHING;
 END $$;
-
-
-
-
-

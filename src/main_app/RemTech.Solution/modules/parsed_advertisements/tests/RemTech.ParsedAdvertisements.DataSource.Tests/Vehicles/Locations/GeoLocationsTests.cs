@@ -18,7 +18,8 @@ public sealed class GeoLocationsTests : IClassFixture<DataSourceTestsFixture>
     private async Task Add_Location_Success()
     {
         string city = "Москва";
-        GeoLocationEnvelope location = new NewGeoLocation(city);
+        string kind = "Область";
+        GeoLocationEnvelope location = new NewGeoLocation(city, kind);
         await using IAsyncGeoLocations locations = _fixture.Locations();
         Status<IGeoLocation> added = await locations.Add(location);
         Assert.True(added.IsSuccess);
@@ -28,7 +29,8 @@ public sealed class GeoLocationsTests : IClassFixture<DataSourceTestsFixture>
     private async Task Add_Location_Name_Failure()
     {
         string city = string.Empty;
-        GeoLocationEnvelope location = new NewGeoLocation(city);
+        string kind = string.Empty;
+        GeoLocationEnvelope location = new NewGeoLocation(city, kind);
         await using IAsyncGeoLocations locations = _fixture.Locations();
         Status<IGeoLocation> added = await locations.Add(location);
         Assert.False(added.IsSuccess);
@@ -37,12 +39,18 @@ public sealed class GeoLocationsTests : IClassFixture<DataSourceTestsFixture>
     [Fact]
     private async Task Add_Similar_Location_Success()
     {
-        string city1 = "Москва";
+        string city1 = "Красноярск";
+        string kind1 = "Край";
         string city2 = "Московская область";
+        string kind2 = "Область";
         string city3 = "Калининград";
-        GeoLocationEnvelope location1 = new NewGeoLocation(city1);
-        GeoLocationEnvelope location2 = new NewGeoLocation(city2);
-        GeoLocationEnvelope location3 = new NewGeoLocation(city3);
+        string kind3 = "Область";
+        string expectedRegion1 = "Красноярский";
+        string expectedRegion2 = "Московская";
+        string expectedRegion3 = "Калининградская";
+        GeoLocationEnvelope location1 = new NewGeoLocation(city1, kind1);
+        GeoLocationEnvelope location2 = new NewGeoLocation(city2, kind2);
+        GeoLocationEnvelope location3 = new NewGeoLocation(city3, kind3);
         await using IAsyncGeoLocations locations = _fixture.Locations();
         Status<IGeoLocation> added1 = await locations.Add(location1);
         Status<IGeoLocation> added2 = await locations.Add(location2);
@@ -53,8 +61,8 @@ public sealed class GeoLocationsTests : IClassFixture<DataSourceTestsFixture>
         string created1Name = added1.Value.Identify().ReadText();
         string created2Name = added2.Value.Identify().ReadText();
         string created3Name = added3.Value.Identify().ReadText();
-        Assert.Equal(city1, created1Name);
-        Assert.Equal(city2, created2Name);
-        Assert.Equal(city3, created3Name);
+        Assert.Equal(expectedRegion1, created1Name);
+        Assert.Equal(expectedRegion2, created2Name);
+        Assert.Equal(expectedRegion3, created3Name);
     }
 }

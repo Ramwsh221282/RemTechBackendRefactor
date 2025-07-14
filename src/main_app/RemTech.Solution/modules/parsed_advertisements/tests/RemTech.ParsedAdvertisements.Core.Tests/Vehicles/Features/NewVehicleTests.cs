@@ -40,6 +40,7 @@ public sealed class NewVehicleTests
         string expectedKindName = "Погрузчик";
         string expectedBrandName = "Bulls";
         string expectedLocation = "Москва";
+        string expectedLocationKind = "Область";
         long expectedPrice = 1000;
         bool isNds = true;
         string expectedId = "p321321";
@@ -58,6 +59,7 @@ public sealed class NewVehicleTests
                     new LocationedAddedVehicle(
                         locations,
                         expectedLocation,
+                        expectedLocationKind,
                         new PricedAddedVehicle(
                             expectedPrice,
                             "НДС",

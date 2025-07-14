@@ -6,7 +6,7 @@ namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decora
 
 public sealed class NewGeoLocation : GeoLocationEnvelope
 {
-    public NewGeoLocation(NotEmptyString name)
+    public NewGeoLocation(NotEmptyString name, NotEmptyString kind)
         : base(
             new GeoLocationIdentity(
                 new GeolocationText(
@@ -23,10 +23,23 @@ public sealed class NewGeoLocation : GeoLocationEnvelope
                             )
                         )
                     ).Read()
+                ),
+                new GeolocationText(
+                    new Text(
+                        new TrimmedText(
+                            new TextWithOnlyOneWhiteSpaces(
+                                new TextWithOnlyRussianLetters(
+                                    new TextWithoutDigits(
+                                        new TextWithoutPunctuation(new RawText(kind))
+                                    )
+                                )
+                            )
+                        )
+                    ).Read()
                 )
             )
         ) { }
 
-    public NewGeoLocation(string? name)
-        : this(new NotEmptyString(name)) { }
+    public NewGeoLocation(string? name, string? kind)
+        : this(new NotEmptyString(name), new NotEmptyString(kind)) { }
 }
