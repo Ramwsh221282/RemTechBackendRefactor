@@ -7,15 +7,8 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsedAdvertisements.DataSource.Adapter.Vehicles.Kinds;
 
-public sealed class PgVehicleKinds : IAsyncVehicleKinds
+public sealed class PgVehicleKinds(NpgsqlDataSource source) : IAsyncVehicleKinds
 {
-    private readonly NpgsqlDataSource _source;
-
-    public PgVehicleKinds(NpgsqlDataSource source)
-    {
-        _source = source;
-    }
-
     public async Task<Status<IVehicleKind>> Add(IVehicleKind kind, CancellationToken ct = default)
     {
         string sql = string.Intern(
@@ -29,7 +22,7 @@ public sealed class PgVehicleKinds : IAsyncVehicleKinds
             await new AsyncExecutedCommand(
                 new AsyncPreparedCommand(
                     new ParametrizingPgCommand(
-                        new PgCommand(await _source.OpenConnectionAsync(ct), sql)
+                        new PgCommand(await source.OpenConnectionAsync(ct), sql)
                     )
                         .With<Guid>("@id", kind.Identify().ReadId())
                         .With<string>("@text", kind.Identify().ReadText())
@@ -61,9 +54,7 @@ public sealed class PgVehicleKinds : IAsyncVehicleKinds
         );
         await using DbDataReader reader = await new AsyncDbReaderCommand(
             new AsyncPreparedCommand(
-                new ParametrizingPgCommand(
-                    new PgCommand(await _source.OpenConnectionAsync(ct), sql)
-                )
+                new ParametrizingPgCommand(new PgCommand(await source.OpenConnectionAsync(ct), sql))
                     .WithIf(
                         "@text",
                         (string)identity.ReadText(),
@@ -72,12 +63,10 @@ public sealed class PgVehicleKinds : IAsyncVehicleKinds
                     .WithIf("@id", (Guid)identity.ReadId(), g => g != Guid.Empty)
             )
         ).AsyncReader(ct);
-        return !await reader.ReadAsync(ct)
-            ? new MaybeBag<IVehicleKind>()
-            : new VehicleKindSqlRow(reader).Read().Success();
+        return await new MaybeSingleVehicleKindSqlRow(reader).Read(ct);
     }
 
-    public void Dispose() => _source.Dispose();
+    public void Dispose() => source.Dispose();
 
-    public ValueTask DisposeAsync() => _source.DisposeAsync();
+    public ValueTask DisposeAsync() => source.DisposeAsync();
 }

@@ -47,7 +47,10 @@ public sealed class DataSourceTestsFixture : IDisposable
         return new ValidatingTextSearchVehicleKinds(
             new TsQueryPgVehicleKinds(
                 source,
-                new ValidatingPgVehicleKinds(new PgVehicleKinds(source))
+                new PgTgrmPgVehicleKinds(
+                    source,
+                    new ValidatingPgVehicleKinds(new PgVehicleKinds(source))
+                )
             )
         );
     }
