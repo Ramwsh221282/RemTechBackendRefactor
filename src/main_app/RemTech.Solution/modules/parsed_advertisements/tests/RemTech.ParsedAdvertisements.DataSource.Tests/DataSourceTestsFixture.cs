@@ -27,6 +27,8 @@ public sealed class DataSourceTestsFixture : IDisposable
         DatabaseBakery bakery = new(_configuration);
         bakery
             .Down(
+                "parsed_advertisements_module.vehicle_brand_models",
+                "parsed_advertisements_module.vehicle_models",
                 "parsed_advertisements_module.cities",
                 "parsed_advertisements_module.parsed_vehicle_characteristics",
                 "shared_advertisements_module.contained_items",
