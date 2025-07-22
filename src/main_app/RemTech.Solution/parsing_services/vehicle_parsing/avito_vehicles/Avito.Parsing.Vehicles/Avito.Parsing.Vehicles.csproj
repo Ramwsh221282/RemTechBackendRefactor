@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\common\common_avito\Parsing.Avito.Common\Parsing.Avito.Common.csproj" />
+      <ProjectReference Include="..\..\..\common\Parsing.SDK\Parsing.SDK.csproj" />
+      <ProjectReference Include="..\..\Parsing.Vehicles.Common\Parsing.Vehicles.Common.csproj" />
+    </ItemGroup>
+
+</Project>
