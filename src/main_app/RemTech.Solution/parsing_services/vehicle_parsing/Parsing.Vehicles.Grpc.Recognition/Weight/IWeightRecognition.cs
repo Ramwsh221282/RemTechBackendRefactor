@@ -1,3 +1,3 @@
-namespace Parsing.Vehicles.Grpc.Recognition.WeightRecognition;
+namespace Parsing.Vehicles.Grpc.Recognition.Weight;
 
 public interface IWeightRecognition : ICharacteristicRecognition;

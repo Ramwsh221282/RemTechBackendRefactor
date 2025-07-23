@@ -2,7 +2,7 @@
 
 namespace Parsing.Vehicles.Grpc.Recognition;
 
-public sealed class CommunicationChannel
+public sealed class CommunicationChannel : IDisposable
 {
     private readonly GrpcChannel _channel;
     private readonly Recognizer.Recognizer.RecognizerClient _client;

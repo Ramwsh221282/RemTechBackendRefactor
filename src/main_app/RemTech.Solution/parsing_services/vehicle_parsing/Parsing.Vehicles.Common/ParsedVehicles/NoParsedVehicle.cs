@@ -1,5 +1,6 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleBrands;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
+using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleGeo;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleIdentities;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleKinds;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleModels;
@@ -18,8 +19,8 @@ public sealed class NoParsedVehicle : IParsedVehicle
     public Task<ParsedVehicleBrand> Brand() =>
         Task.FromResult(new ParsedVehicleBrand(string.Empty));
 
-    public Task<KeyValueVehicleCharacteristics> Characteristics() =>
-        Task.FromResult(new KeyValueVehicleCharacteristics());
+    public Task<CharacteristicsDictionary> Characteristics() =>
+        Task.FromResult(new CharacteristicsDictionary());
 
     public Task<ParsedVehicleModel> Model() =>
         Task.FromResult(new ParsedVehicleModel(string.Empty));
@@ -35,4 +36,6 @@ public sealed class NoParsedVehicle : IParsedVehicle
 
     public Task<ParsedVehicleUrl> SourceUrl() =>
         Task.FromResult(new ParsedVehicleUrl(new NotEmptyString(string.Empty)));
+
+    public Task<ParsedVehicleGeo.ParsedVehicleGeo> Geo() => Task.FromResult(new ParsedVehicleGeo.ParsedVehicleGeo(new ParsedVehicleRegion(), new ParsedVehicleCity()));
 }

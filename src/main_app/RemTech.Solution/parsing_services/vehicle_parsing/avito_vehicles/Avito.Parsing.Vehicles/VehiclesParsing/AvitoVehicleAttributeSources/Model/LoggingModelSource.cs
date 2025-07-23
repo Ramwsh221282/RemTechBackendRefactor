@@ -1,14 +1,14 @@
-﻿using Parsing.SDK.Logging;
-using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleModels;
+﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleModels;
+using RemTech.Logging.Library;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Model;
 
 public sealed class LoggingModelSource : IParsedVehicleModelSource
 {
-    private readonly IParsingLog _log;
+    private readonly ICustomLogger _log;
     private readonly IParsedVehicleModelSource _origin;
 
-    public LoggingModelSource(IParsingLog log, IParsedVehicleModelSource origin)
+    public LoggingModelSource(ICustomLogger log, IParsedVehicleModelSource origin)
     {
         _log = log;
         _origin = origin;

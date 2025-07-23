@@ -1,5 +1,6 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleBrands;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
+using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleGeo;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleIdentities;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleKinds;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleModels;
@@ -20,6 +21,7 @@ public sealed class ParsedVehicle : IParsedVehicle
     private readonly IKeyValuedCharacteristicsSource _ctxSource;
     private readonly IParsedVehiclePhotos _photosSource;
     private readonly IParsedVehicleUrlSource _urlSource;
+    private readonly IParsedVehicleGeoSource _geoSource;
 
     
     public ParsedVehicle(
@@ -30,7 +32,8 @@ public sealed class ParsedVehicle : IParsedVehicle
         IParsedVehiclePriceSource priceSource,
         IKeyValuedCharacteristicsSource ctxSource,
         IParsedVehiclePhotos photosSource,
-        IParsedVehicleUrlSource urlSource)
+        IParsedVehicleUrlSource urlSource,
+        IParsedVehicleGeoSource geoSource)
     {
         _brandSource = brandSource;
         _modelSource = modelSource;
@@ -40,13 +43,14 @@ public sealed class ParsedVehicle : IParsedVehicle
         _ctxSource = ctxSource;
         _photosSource = photosSource;
         _urlSource = urlSource;
+        _geoSource = geoSource;
     }
     
     public Task<ParsedVehicleIdentity> Identity() => _identitySource.Read();
 
     public Task<ParsedVehicleBrand> Brand() => _brandSource.Read();
 
-    public Task<KeyValueVehicleCharacteristics> Characteristics() => _ctxSource.Read();
+    public Task<CharacteristicsDictionary> Characteristics() => _ctxSource.Read();
 
     public Task<ParsedVehicleModel> Model() => _modelSource.Read();
 
@@ -57,4 +61,5 @@ public sealed class ParsedVehicle : IParsedVehicle
     public Task<ParsedVehiclePrice> Price() => _priceSource.Read();
 
     public Task<ParsedVehicleUrl> SourceUrl() => _urlSource.Read();
+    public Task<ParsedVehicleGeo.ParsedVehicleGeo> Geo() => _geoSource.Read();
 }

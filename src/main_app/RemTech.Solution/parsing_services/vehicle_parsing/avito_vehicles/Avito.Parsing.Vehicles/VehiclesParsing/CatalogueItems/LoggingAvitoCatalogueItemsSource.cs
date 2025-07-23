@@ -1,9 +1,9 @@
-using Parsing.SDK.Logging;
+using RemTech.Logging.Library;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.CatalogueItems;
 
 public sealed class LoggingAvitoCatalogueItemsSource(
-    IParsingLog log, 
+    ICustomLogger log, 
     IAvitoCatalogueItemsSource items)
     : IAvitoCatalogueItemsSource
 {

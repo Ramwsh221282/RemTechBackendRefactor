@@ -1,8 +1,8 @@
-using Parsing.SDK.Logging;
+using RemTech.Logging.Library;
 
 namespace Parsing.Avito.Common.BypassFirewall;
 
-public sealed class AvitoBypassFirewallLogging(IParsingLog log, IAvitoBypassFirewall origin) : IAvitoBypassFirewall
+public sealed class AvitoBypassFirewallLogging(ICustomLogger log, IAvitoBypassFirewall origin) : IAvitoBypassFirewall
 {
     public async Task<bool> Read()
     {
@@ -11,7 +11,7 @@ public sealed class AvitoBypassFirewallLogging(IParsingLog log, IAvitoBypassFire
         if (result)
             log.Info("Firewall resolved: {0}.", result);
         else
-            log.Warning("Firewall resolved: {0}.", result);
+            log.Warn("Firewall resolved: {0}.", result);
         return result;
     }
 }

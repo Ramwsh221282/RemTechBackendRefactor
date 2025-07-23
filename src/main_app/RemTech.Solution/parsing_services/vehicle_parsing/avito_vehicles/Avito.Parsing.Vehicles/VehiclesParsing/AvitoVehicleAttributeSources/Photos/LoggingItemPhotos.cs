@@ -1,14 +1,14 @@
-﻿using Parsing.SDK.Logging;
-using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePhotos;
+﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePhotos;
+using RemTech.Logging.Library;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Photos;
 
 public sealed class LoggingItemPhotos : IParsedVehiclePhotos
 {
-    private readonly IParsingLog _log;
+    private readonly ICustomLogger _log;
     private readonly IParsedVehiclePhotos _photos;
 
-    public LoggingItemPhotos(IParsingLog log, IParsedVehiclePhotos photos)
+    public LoggingItemPhotos(ICustomLogger log, IParsedVehiclePhotos photos)
     {
         _log = log;
         _photos = photos;

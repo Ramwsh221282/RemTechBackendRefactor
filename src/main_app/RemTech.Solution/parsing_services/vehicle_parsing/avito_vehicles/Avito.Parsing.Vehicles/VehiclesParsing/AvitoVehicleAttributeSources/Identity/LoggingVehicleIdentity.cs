@@ -1,14 +1,14 @@
-﻿using Parsing.SDK.Logging;
-using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleIdentities;
+﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleIdentities;
+using RemTech.Logging.Library;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Identity;
 
 public sealed class LoggingVehicleIdentity : IParsedVehicleIdentitySource
 {
-    private readonly IParsingLog _log;
+    private readonly ICustomLogger _log;
     private readonly IParsedVehicleIdentitySource _origin;
 
-    public LoggingVehicleIdentity(IParsingLog log, IParsedVehicleIdentitySource origin)
+    public LoggingVehicleIdentity(ICustomLogger log, IParsedVehicleIdentitySource origin)
     {
         _log = log;
         _origin = origin;
@@ -20,7 +20,7 @@ public sealed class LoggingVehicleIdentity : IParsedVehicleIdentitySource
         if (identity)
             _log.Info("Vehicle ID: {0}.", (string)identity);
         else
-            _log.Warning("Unable to read vehicle ID");
+            _log.Warn("Unable to read vehicle ID");
         return identity;
     }
 }

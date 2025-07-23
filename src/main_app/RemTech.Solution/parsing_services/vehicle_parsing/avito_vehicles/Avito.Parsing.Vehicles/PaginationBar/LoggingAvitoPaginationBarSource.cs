@@ -1,9 +1,9 @@
-using Parsing.SDK.Logging;
+using RemTech.Logging.Library;
 
 namespace Avito.Parsing.Vehicles.PaginationBar;
 
 public sealed class LoggingAvitoPaginationBarSource(
-    IParsingLog log,
+    ICustomLogger log,
     IAvitoPaginationBarSource origin) 
     : IAvitoPaginationBarSource
 {

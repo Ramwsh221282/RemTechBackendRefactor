@@ -1,14 +1,14 @@
-using Parsing.SDK.Logging;
 using PuppeteerSharp;
+using RemTech.Logging.Library;
 
 namespace Parsing.SDK.ElementSources;
 
 public sealed class LoggingSingleElementSource : ISingleElementSource
 {
-    private readonly IParsingLog _log;
+    private readonly ICustomLogger _log;
     private readonly ISingleElementSource _source;
 
-    public LoggingSingleElementSource(IParsingLog log, ISingleElementSource source)
+    public LoggingSingleElementSource(ICustomLogger log, ISingleElementSource source)
     {
         _log = log;
         _source = source;

@@ -6,22 +6,33 @@ namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Ch
 
 public sealed class KeyValuedAvitoCharacteristics(IPage page) : IKeyValuedCharacteristicsSource 
 {
-    public async Task<KeyValueVehicleCharacteristics> Read()
+    private readonly StringComparison _comparison = StringComparison.InvariantCultureIgnoreCase;
+    private readonly StringSplitOptions _splitOptions = StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries;
+    
+    public async Task<CharacteristicsDictionary> Read()
     {
-        IElementHandle[] ctxes = await new AvitoCharacteristicsSource(page).Read();
-        KeyValueVehicleCharacteristics keyValued = new();
+        IElementHandle[] ctxes = await new DefaultOnErrorAvitoCharacteristics(
+                new AvitoCharacteristicsSource(page))
+            .Read();
+        CharacteristicsDictionary keyValued = new();
         foreach (IElementHandle ctxe in ctxes)
         {
             string pair = await new TextFromWebElement(ctxe).Read();
-            string[] parts = pair.Split(':', StringSplitOptions.TrimEntries);
+            string[] parts = pair.Split(':', _splitOptions);
             string name = parts[0];
             string value = parts[1];
-            if (name.Contains("марка", StringComparison.CurrentCultureIgnoreCase) ||
-                name.Contains("модель", StringComparison.CurrentCultureIgnoreCase) ||
-                name.Contains("тип техники", StringComparison.CurrentCultureIgnoreCase))
+            if (name.Contains("марка", _comparison) ||
+                name.Contains("модель", _comparison) ||
+                name.Contains("тип техники", _comparison))
                 continue;
-                
-            keyValued = keyValued.With((name, value));
+            if (name.Equals("состояние", _comparison))
+            {
+                keyValued = value.Contains("новое", _comparison)
+                    ? keyValued = keyValued.With(new VehicleCharacteristic("Б/у", "Да"))
+                    : keyValued = keyValued.With(new VehicleCharacteristic("Б/у", "Нет"));
+                continue;
+            }
+            keyValued = keyValued.With(new VehicleCharacteristic(name, value));
         }
         
         return keyValued;

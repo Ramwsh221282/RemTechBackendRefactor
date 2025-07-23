@@ -1,30 +1,30 @@
-﻿using Parsing.SDK.Logging;
-using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
+﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
+using RemTech.Logging.Library;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Characteristics;
 
 public sealed class LoggingCharacteristics : IKeyValuedCharacteristicsSource
 {
-    private readonly IParsingLog _log;
+    private readonly ICustomLogger _log;
     private readonly IKeyValuedCharacteristicsSource _origin;
 
-    public LoggingCharacteristics(IParsingLog log, IKeyValuedCharacteristicsSource origin)
+    public LoggingCharacteristics(ICustomLogger log, IKeyValuedCharacteristicsSource origin)
     {
         _log = log;
         _origin = origin;
     }
     
-    public async Task<KeyValueVehicleCharacteristics> Read()
+    public async Task<CharacteristicsDictionary> Read()
     {
-        KeyValueVehicleCharacteristics ctxes = await _origin.Read();
+        CharacteristicsDictionary ctxes = await _origin.Read();
         if (ctxes)
         {
             foreach (var ctx in ctxes.Read())
-                _log.Info("Characteristic. {0}:{1}.", ctx.key, ctx.value);
+                _log.Info("Characteristic. {0}:{1}.", ctx.Name(), ctx.Value());
         }
         else
         {
-            _log.Warning("Unable to read characteristics.");
+            _log.Warn("Unable to read characteristics.");
         }
         
         return ctxes;

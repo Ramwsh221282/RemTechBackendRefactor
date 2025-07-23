@@ -1,4 +1,4 @@
-﻿using Parsing.SDK.Logging;
+﻿using RemTech.Logging.Library;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicle;
 
@@ -6,9 +6,9 @@ public sealed class ExceptionLoggingVehicle : IAvitoVehicle
 {
     private readonly string _itemUrl;
     private readonly IAvitoVehicle _origin;
-    private readonly IParsingLog _log;
+    private readonly ICustomLogger _log;
 
-    public ExceptionLoggingVehicle(string itemUrl, IParsingLog log,  IAvitoVehicle origin)
+    public ExceptionLoggingVehicle(string itemUrl, ICustomLogger log,  IAvitoVehicle origin)
     {
         _itemUrl = itemUrl;
         _log = log;

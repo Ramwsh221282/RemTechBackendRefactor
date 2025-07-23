@@ -11,7 +11,7 @@ public sealed class DefaultOnErrorCharacteristics : IKeyValuedCharacteristicsSou
         _origin = origin;
     }
     
-    public async Task<KeyValueVehicleCharacteristics> Read()
+    public async Task<CharacteristicsDictionary> Read()
     {
         try
         {
@@ -19,7 +19,7 @@ public sealed class DefaultOnErrorCharacteristics : IKeyValuedCharacteristicsSou
         }
         catch
         {
-            return new KeyValueVehicleCharacteristics();
+            return new CharacteristicsDictionary();
         }
     }
 }

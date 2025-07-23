@@ -1,6 +1,7 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleBrands;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
+using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleGeo;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleIdentities;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleKinds;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleModels;
@@ -17,10 +18,11 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
     private readonly ParsedVehicleBrand _brand;
     private readonly ParsedVehicleKind _kind;
     private readonly ParsedVehicleModel _model;
-    private readonly KeyValueVehicleCharacteristics _ctx;
+    private readonly CharacteristicsDictionary _ctx;
     private readonly UniqueParsedVehiclePhotos _photos;
     private readonly ParsedVehiclePrice _price;
     private readonly ParsedVehicleUrl _urlSource;
+    private readonly ParsedVehicleGeo _geo;
 
     public AvitoVehicleEnvelope()
     {
@@ -28,10 +30,11 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
         _brand = new ParsedVehicleBrand(new NotEmptyString(string.Empty));
         _kind = new ParsedVehicleKind(new NotEmptyString(string.Empty));
         _model = new ParsedVehicleModel(new NotEmptyString(string.Empty));
-        _ctx = new KeyValueVehicleCharacteristics();
+        _ctx = new CharacteristicsDictionary();
         _photos = new UniqueParsedVehiclePhotos();
         _price = new ParsedVehiclePrice(-1, string.Empty);
         _urlSource = new ParsedVehicleUrl(new NotEmptyString(string.Empty));
+        _geo = new ParsedVehicleGeo(new ParsedVehicleRegion(), new ParsedVehicleCity());
     }
 
     public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin)
@@ -44,6 +47,7 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
         _photos = origin._photos;
         _price = origin._price;
         _urlSource = origin._urlSource;
+        _geo = origin._geo;
     }
 
     public AvitoVehicleEnvelope(
@@ -81,9 +85,13 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
 
     public AvitoVehicleEnvelope(
         AvitoVehicleEnvelope origin,
-        KeyValueVehicleCharacteristics ctx)
+        CharacteristicsDictionary ctx)
         : this(origin) => _ctx = ctx;
 
+    public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin, ParsedVehicleGeo geo) 
+        : this(origin) =>
+        _geo = geo;
+    
     public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin, ParsedVehicleUrl url)
         : this(origin) => _urlSource = url;
     
@@ -94,7 +102,7 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
     public Task<ParsedVehicleBrand> Brand() =>
         Task.FromResult(_brand);
 
-    public Task<KeyValueVehicleCharacteristics> Characteristics() =>
+    public Task<CharacteristicsDictionary> Characteristics() =>
         Task.FromResult(_ctx);
 
     public Task<ParsedVehicleModel> Model() =>
@@ -111,4 +119,9 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
 
     public Task<ParsedVehicleUrl> SourceUrl() =>
         Task.FromResult(_urlSource);
+
+    public Task<ParsedVehicleGeo> Geo()
+    {
+        throw new NotImplementedException();
+    }
 }

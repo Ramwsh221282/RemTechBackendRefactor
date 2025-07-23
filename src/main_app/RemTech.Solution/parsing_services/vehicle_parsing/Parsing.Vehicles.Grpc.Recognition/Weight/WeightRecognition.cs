@@ -1,10 +1,10 @@
-namespace Parsing.Vehicles.Grpc.Recognition.WeightRecognition;
+namespace Parsing.Vehicles.Grpc.Recognition.Weight;
 
 public sealed class WeightRecognition : IWeightRecognition
 {
     private readonly CommunicationChannel _channel;
     private readonly string _ctxKey = string.Intern("WEIGHT");
-    private readonly string _ctxName = string.Intern("Масса");
+    private readonly string _ctxName = string.Intern("Эксплуатационная масса");
 
     public WeightRecognition(CommunicationChannel channel)
     {

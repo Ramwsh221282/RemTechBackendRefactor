@@ -1,14 +1,14 @@
-using Parsing.SDK.Logging;
 using PuppeteerSharp;
+using RemTech.Logging.Library;
 
 namespace Parsing.SDK.ElementSources;
 
 public sealed class LoggingManyElementsSource : IManyElementsSource
 {
-    private readonly IParsingLog _log;
+    private readonly ICustomLogger _log;
     private readonly IManyElementsSource _source;
 
-    public LoggingManyElementsSource(IParsingLog log, IManyElementsSource source)
+    public LoggingManyElementsSource(ICustomLogger log, IManyElementsSource source)
     {
         _log = log;
         _source = source;

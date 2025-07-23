@@ -12,6 +12,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\modules\shared_module\adapters\RemTech.Logging.Adapter\RemTech.Logging.Adapter.csproj" />
+      <ProjectReference Include="..\..\..\modules\shared_module\ports\RemTech.Logging.Port\RemTech.Logging.Port.csproj" />
+      <ProjectReference Include="..\..\..\modules\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj" />
       <ProjectReference Include="..\..\vehicle_parsing\Parsing.Vehicles.Grpc.Recognition\Parsing.Vehicles.Grpc.Recognition.csproj" />
     </ItemGroup>
 

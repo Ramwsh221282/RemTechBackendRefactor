@@ -1,9 +1,9 @@
-using Parsing.SDK.Logging;
+using RemTech.Logging.Library;
 
 namespace Parsing.SDK.ScrapingActions;
 
 public sealed class LoggingPageNavigating(
-    IParsingLog log, 
+    ICustomLogger log, 
     string url, 
     IPageNavigating origin) : IPageNavigating
 {

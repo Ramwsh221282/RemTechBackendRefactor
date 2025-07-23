@@ -82,6 +82,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsing.Avito.Common", "par
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsing.Vehicles.Grpc.Recognition", "parsing_services\vehicle_parsing\Parsing.Vehicles.Grpc.Recognition\Parsing.Vehicles.Grpc.Recognition.csproj", "{07EC2AF8-B9D9-4728-BAE4-3212D15AB32C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsing.Vehicles.DbSearch", "parsing_services\vehicle_parsing\Parsing.Vehicles.DbSearch\Parsing.Vehicles.DbSearch.csproj", "{82F82399-E16C-4735-A6BB-2B7FD6672281}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -127,6 +129,7 @@ Global
 		{8F03D7E1-539A-40BD-977E-D85A243D3A0F} = {B98D490E-E1FC-4672-BF66-B9A5234C6DE1}
 		{039A9A45-D7C7-4F5B-BA43-F4CDDE4B6E9B} = {8F03D7E1-539A-40BD-977E-D85A243D3A0F}
 		{07EC2AF8-B9D9-4728-BAE4-3212D15AB32C} = {5C612390-D5EF-443F-9E9F-2406DCFD732C}
+		{82F82399-E16C-4735-A6BB-2B7FD6672281} = {5C612390-D5EF-443F-9E9F-2406DCFD732C}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -229,5 +232,9 @@ Global
 		{07EC2AF8-B9D9-4728-BAE4-3212D15AB32C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07EC2AF8-B9D9-4728-BAE4-3212D15AB32C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07EC2AF8-B9D9-4728-BAE4-3212D15AB32C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82F82399-E16C-4735-A6BB-2B7FD6672281}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82F82399-E16C-4735-A6BB-2B7FD6672281}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82F82399-E16C-4735-A6BB-2B7FD6672281}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82F82399-E16C-4735-A6BB-2B7FD6672281}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

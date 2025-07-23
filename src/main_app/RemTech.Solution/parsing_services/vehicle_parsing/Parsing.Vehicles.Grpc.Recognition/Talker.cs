@@ -1,3 +1,4 @@
+using Google.Protobuf.Collections;
 using Recognizer;
 
 namespace Parsing.Vehicles.Grpc.Recognition;
@@ -13,6 +14,8 @@ public sealed class Talker
 
     public async Task<RecognizeResponse> Tell(string text)
     {
+        if (string.IsNullOrWhiteSpace(text))
+            throw new ArgumentNullException(nameof(text));
         RecognizeRequest request = new() { Text = text };
         return await _client.RecognizeAsync(request);
     }
