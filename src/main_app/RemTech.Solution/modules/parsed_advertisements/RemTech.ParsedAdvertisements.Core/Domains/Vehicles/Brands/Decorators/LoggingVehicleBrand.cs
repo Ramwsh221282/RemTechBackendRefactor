@@ -3,10 +3,10 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.ValueObjects;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators;
 
-public sealed class LoggingVehicleBrand(ICustomLogger logger, VehicleBrandEnvelope brand)
-    : VehicleBrandEnvelope(brand.Identify())
+public sealed class LoggingVehicleBrand(ICustomLogger logger, VehicleBrand brand)
+    : VehicleBrand(brand.Identify())
 {
-    public VehicleBrandEnvelope Log()
+    public VehicleBrand Log()
     {
         LogIdentity(Identify());
         return this;

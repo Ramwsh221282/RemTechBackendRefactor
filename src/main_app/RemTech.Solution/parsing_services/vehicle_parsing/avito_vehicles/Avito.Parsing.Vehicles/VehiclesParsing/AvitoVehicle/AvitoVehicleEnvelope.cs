@@ -120,8 +120,5 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
     public Task<ParsedVehicleUrl> SourceUrl() =>
         Task.FromResult(_urlSource);
 
-    public Task<ParsedVehicleGeo> Geo()
-    {
-        throw new NotImplementedException();
-    }
+    public Task<ParsedVehicleGeo> Geo() => Task.FromResult(_geo);
 }

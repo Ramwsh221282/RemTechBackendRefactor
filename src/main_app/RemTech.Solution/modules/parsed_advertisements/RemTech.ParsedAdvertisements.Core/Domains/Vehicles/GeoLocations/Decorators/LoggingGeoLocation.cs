@@ -3,10 +3,10 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.ValueObjec
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators;
 
-public sealed class LoggingGeoLocation(ICustomLogger logger, GeoLocationEnvelope location)
-    : GeoLocationEnvelope(location.Identify())
+public sealed class LoggingGeoLocation(ICustomLogger logger, GeoLocation location)
+    : GeoLocation(location.Identify())
 {
-    public GeoLocationEnvelope Log()
+    public GeoLocation Log()
     {
         LogIdentity(Identify());
         return this;

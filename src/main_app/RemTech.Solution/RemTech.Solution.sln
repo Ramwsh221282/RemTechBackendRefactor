@@ -48,15 +48,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsersManagement.E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Postgres.Adapter.Library", "modules\shared_module\adapters\RemTech.Postgres.Adapter.Library\RemTech.Postgres.Adapter.Library.csproj", "{C7FFAB88-617B-4DAE-A4D7-3E5A53FBBEC7}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adapters", "adapters", "{DE03604C-5A61-4D67-9FD8-EAA0800D0F95}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsedAdvertisements.DataSource.Adapter", "modules\parsed_advertisements\adapters\RemTech.ParsedAdvertisements.DataSource.Adapter\RemTech.ParsedAdvertisements.DataSource.Adapter.csproj", "{6A64D9B0-F090-4C1C-B024-6B41B0345126}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{23BEBB73-45F0-42B3-8CF8-187E93CABA87}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsedAdvertisements.Core.Tests", "modules\parsed_advertisements\tests\RemTech.ParsedAdvertisements.Core.Tests\RemTech.ParsedAdvertisements.Core.Tests.csproj", "{AD9346FD-7F8C-47BE-8D85-FE7046AE4526}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsedAdvertisements.DataSource.Tests", "modules\parsed_advertisements\tests\RemTech.ParsedAdvertisements.DataSource.Tests\RemTech.ParsedAdvertisements.DataSource.Tests.csproj", "{383E1968-BE89-4EB5-BBC1-C672C97AD588}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "parsing_services", "parsing_services", "{33ED6847-9F92-420E-AA37-D7EB229DB765}"
 EndProject
@@ -83,6 +77,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsing.Vehicles.Grpc.Recognition", "parsing_services\vehicle_parsing\Parsing.Vehicles.Grpc.Recognition\Parsing.Vehicles.Grpc.Recognition.csproj", "{07EC2AF8-B9D9-4728-BAE4-3212D15AB32C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsing.Vehicles.DbSearch", "parsing_services\vehicle_parsing\Parsing.Vehicles.DbSearch\Parsing.Vehicles.DbSearch.csproj", "{82F82399-E16C-4735-A6BB-2B7FD6672281}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsing.Vehicles.RabbitMq", "parsing_services\vehicle_parsing\Parsing.Vehicles.RabbitMq\Parsing.Vehicles.RabbitMq.csproj", "{C7D08F75-E0B2-49F0-8702-3C6C5EDAE34D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Configuration.Library", "modules\shared_module\RemTech.Configuration.Library\RemTech.Configuration.Library.csproj", "{9530E9EB-43B1-4820-AAC2-35F7A2457AF3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -113,11 +111,8 @@ Global
 		{841081F2-8939-4059-B298-046EABCC2A04} = {E099BD53-3575-4FAB-8048-FEBEBBB81ECB}
 		{CCA51931-3C9A-4CB7-BC43-952BF39B4EA3} = {6B8D6325-D3A6-4237-8582-31B031468D76}
 		{C7FFAB88-617B-4DAE-A4D7-3E5A53FBBEC7} = {D8A8CDCA-3A8D-48EE-ABEF-D4DBABEEE2F5}
-		{DE03604C-5A61-4D67-9FD8-EAA0800D0F95} = {E099BD53-3575-4FAB-8048-FEBEBBB81ECB}
-		{6A64D9B0-F090-4C1C-B024-6B41B0345126} = {DE03604C-5A61-4D67-9FD8-EAA0800D0F95}
 		{23BEBB73-45F0-42B3-8CF8-187E93CABA87} = {E099BD53-3575-4FAB-8048-FEBEBBB81ECB}
 		{AD9346FD-7F8C-47BE-8D85-FE7046AE4526} = {23BEBB73-45F0-42B3-8CF8-187E93CABA87}
-		{383E1968-BE89-4EB5-BBC1-C672C97AD588} = {23BEBB73-45F0-42B3-8CF8-187E93CABA87}
 		{5C612390-D5EF-443F-9E9F-2406DCFD732C} = {33ED6847-9F92-420E-AA37-D7EB229DB765}
 		{073A917A-9813-44E9-B0F5-B1FB9CBCB57A} = {33ED6847-9F92-420E-AA37-D7EB229DB765}
 		{B98D490E-E1FC-4672-BF66-B9A5234C6DE1} = {33ED6847-9F92-420E-AA37-D7EB229DB765}
@@ -130,6 +125,8 @@ Global
 		{039A9A45-D7C7-4F5B-BA43-F4CDDE4B6E9B} = {8F03D7E1-539A-40BD-977E-D85A243D3A0F}
 		{07EC2AF8-B9D9-4728-BAE4-3212D15AB32C} = {5C612390-D5EF-443F-9E9F-2406DCFD732C}
 		{82F82399-E16C-4735-A6BB-2B7FD6672281} = {5C612390-D5EF-443F-9E9F-2406DCFD732C}
+		{C7D08F75-E0B2-49F0-8702-3C6C5EDAE34D} = {5C612390-D5EF-443F-9E9F-2406DCFD732C}
+		{9530E9EB-43B1-4820-AAC2-35F7A2457AF3} = {6F5C9BC2-2F61-40A4-B372-CCE7AA12358D}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -196,18 +193,10 @@ Global
 		{C7FFAB88-617B-4DAE-A4D7-3E5A53FBBEC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7FFAB88-617B-4DAE-A4D7-3E5A53FBBEC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7FFAB88-617B-4DAE-A4D7-3E5A53FBBEC7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6A64D9B0-F090-4C1C-B024-6B41B0345126}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6A64D9B0-F090-4C1C-B024-6B41B0345126}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6A64D9B0-F090-4C1C-B024-6B41B0345126}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6A64D9B0-F090-4C1C-B024-6B41B0345126}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AD9346FD-7F8C-47BE-8D85-FE7046AE4526}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AD9346FD-7F8C-47BE-8D85-FE7046AE4526}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD9346FD-7F8C-47BE-8D85-FE7046AE4526}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD9346FD-7F8C-47BE-8D85-FE7046AE4526}.Release|Any CPU.Build.0 = Release|Any CPU
-		{383E1968-BE89-4EB5-BBC1-C672C97AD588}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{383E1968-BE89-4EB5-BBC1-C672C97AD588}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{383E1968-BE89-4EB5-BBC1-C672C97AD588}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{383E1968-BE89-4EB5-BBC1-C672C97AD588}.Release|Any CPU.Build.0 = Release|Any CPU
 		{76B9778C-915B-4C5C-992D-88F5CEFD1842}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{76B9778C-915B-4C5C-992D-88F5CEFD1842}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76B9778C-915B-4C5C-992D-88F5CEFD1842}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -236,5 +225,13 @@ Global
 		{82F82399-E16C-4735-A6BB-2B7FD6672281}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82F82399-E16C-4735-A6BB-2B7FD6672281}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82F82399-E16C-4735-A6BB-2B7FD6672281}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7D08F75-E0B2-49F0-8702-3C6C5EDAE34D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7D08F75-E0B2-49F0-8702-3C6C5EDAE34D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7D08F75-E0B2-49F0-8702-3C6C5EDAE34D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7D08F75-E0B2-49F0-8702-3C6C5EDAE34D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9530E9EB-43B1-4820-AAC2-35F7A2457AF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9530E9EB-43B1-4820-AAC2-35F7A2457AF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9530E9EB-43B1-4820-AAC2-35F7A2457AF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9530E9EB-43B1-4820-AAC2-35F7A2457AF3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

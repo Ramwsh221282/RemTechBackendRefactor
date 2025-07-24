@@ -3,7 +3,7 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.ValueObjec
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators;
 
-public sealed class ExistingGeoLocation : GeoLocationEnvelope
+public sealed class ExistingGeoLocation : GeoLocation
 {
     public ExistingGeoLocation(NotEmptyGuid id, NotEmptyString name, NotEmptyString kind)
         : base(

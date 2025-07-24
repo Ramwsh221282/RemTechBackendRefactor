@@ -4,7 +4,7 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.ValueObjects;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators;
 
-public sealed class NewVehicleBrand : VehicleBrandEnvelope
+public sealed class NewVehicleBrand : VehicleBrand
 {
     public NewVehicleBrand(NotEmptyString name)
         : base(

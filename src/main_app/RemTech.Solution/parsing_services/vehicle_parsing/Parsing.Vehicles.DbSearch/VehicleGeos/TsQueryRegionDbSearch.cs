@@ -1,12 +1,14 @@
 ﻿using System.Data.Common;
+using Npgsql;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleGeo;
+using RemTech.Postgres.Adapter.Library;
 using RemTech.Postgres.Adapter.Library.PgCommands;
 
 namespace Parsing.Vehicles.DbSearch.VehicleGeos;
 
 public sealed class TsQueryRegionDbSearch : IVehicleGeoDbSearch
 {
-    private readonly ConnectionSource _connectionSource;
+    private readonly PgConnectionSource _pgConnectionSource;
     private readonly string _sql = string.Intern("""
                                                  WITH input_words AS (
                                                      SELECT
@@ -42,17 +44,18 @@ public sealed class TsQueryRegionDbSearch : IVehicleGeoDbSearch
                                                  LIMIT 1;
                                                  """);
 
-    public TsQueryRegionDbSearch(ConnectionSource connectionSource)
+    public TsQueryRegionDbSearch(PgConnectionSource pgConnectionSource)
     {
-        _connectionSource = connectionSource;
+        _pgConnectionSource = pgConnectionSource;
     }
     
     public async Task<ParsedVehicleGeo> Search(string text)
     {
+        await using NpgsqlConnection connection = await _pgConnectionSource.Connect();
         await using DbDataReader reader = await new AsyncDbReaderCommand(
                 new AsyncPreparedCommand(
                     new ParametrizingPgCommand(
-                            new PgCommand(await _connectionSource.Connect(), _sql))
+                            new PgCommand(connection, _sql))
                         .With("@input", text)))
             .AsyncReader();
         return await new SearchedVehicleGeoOnlyRegion(reader).Read();

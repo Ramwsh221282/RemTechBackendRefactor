@@ -1,4 +1,6 @@
-﻿namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.ValueObjects;
+﻿using RemTech.Core.Shared.Primitives;
+
+namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.ValueObjects;
 
 public sealed record GeoLocationIdentity
 {
@@ -6,6 +8,13 @@ public sealed record GeoLocationIdentity
     private readonly GeolocationText _text;
     private readonly GeolocationText _kind;
 
+    public GeoLocationIdentity()
+    {
+        _id = new GeoLocationId(new NotEmptyGuid(Guid.Empty));
+        _text = new GeolocationText(new NotEmptyGuid(Guid.Empty));
+        _kind = new GeolocationText(new NotEmptyGuid(Guid.Empty));
+    }
+    
     public GeoLocationIdentity(GeolocationText text, GeolocationText kind)
         : this(new GeoLocationId(), text, kind) { }
 

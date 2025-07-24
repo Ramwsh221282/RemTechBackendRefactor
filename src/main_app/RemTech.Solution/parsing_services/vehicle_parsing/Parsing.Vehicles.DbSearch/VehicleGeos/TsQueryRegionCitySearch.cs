@@ -1,5 +1,7 @@
 ﻿using System.Data.Common;
+using Npgsql;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleGeo;
+using RemTech.Postgres.Adapter.Library;
 using RemTech.Postgres.Adapter.Library.PgCommands;
 
 namespace Parsing.Vehicles.DbSearch.VehicleGeos;
@@ -7,7 +9,7 @@ namespace Parsing.Vehicles.DbSearch.VehicleGeos;
 public sealed class TsQueryRegionCitySearch : IVehicleGeoDbSearch
 {
     private readonly IVehicleGeoDbSearch _regionSearch;
-    private readonly ConnectionSource _connectionSource;
+    private readonly PgConnectionSource _pgConnectionSource;
     private readonly string _sql = 
         string.Intern(
             """
@@ -25,20 +27,20 @@ public sealed class TsQueryRegionCitySearch : IVehicleGeoDbSearch
             FROM input_words iw
                      LEFT JOIN LATERAL (
                 SELECT
-                    id,
-                    text,
-                    ts_rank(cities.document_tsvector, to_tsquery('russian', lower(iw.input_word))) AS rank
-                FROM parsed_advertisements_module.cities
-                INNER JOIN parsed_advertisements_module.geos ON parsed_advertisements_module.cities.region_id = parsed_advertisements_module.geos.id
-                WHERE cities.document_tsvector @@ to_tsquery('russian', lower(iw.input_word))
-                AND parsed_advertisements_module.geos.text = @region
+                    c.id,
+                    c.text,
+                    ts_rank(c.document_tsvector, to_tsquery('russian', lower(iw.input_word))) AS rank
+                FROM parsed_advertisements_module.cities c
+                INNER JOIN parsed_advertisements_module.geos g ON c.region_id = g.id
+                WHERE c.document_tsvector @@ to_tsquery('russian', lower(iw.input_word))
+                AND g.text = @region
                 ORDER BY rank DESC
                 LIMIT 1
                 ) e ON true
                      LEFT JOIN LATERAL (
-                SELECT ts_rank(cities.document_tsvector, to_tsquery('russian', lower(iw.input_word))) AS rank
-                FROM parsed_advertisements_module.cities
-                WHERE cities.document_tsvector @@ to_tsquery('russian', lower(iw.input_word))
+                SELECT ts_rank(c.document_tsvector, to_tsquery('russian', lower(iw.input_word))) AS rank
+                FROM parsed_advertisements_module.cities c
+                WHERE c.document_tsvector @@ to_tsquery('russian', lower(iw.input_word))
                 ORDER BY rank DESC
                 LIMIT 1
                 ) max_sim ON true
@@ -47,10 +49,10 @@ public sealed class TsQueryRegionCitySearch : IVehicleGeoDbSearch
             LIMIT 1;                                     
             """);
 
-    public TsQueryRegionCitySearch(ConnectionSource connectionSource, IVehicleGeoDbSearch regionSearch)
+    public TsQueryRegionCitySearch(PgConnectionSource pgConnectionSource, IVehicleGeoDbSearch regionSearch)
     {
         _regionSearch = regionSearch;
-        _connectionSource = connectionSource;
+        _pgConnectionSource = pgConnectionSource;
     }
     
     public async Task<ParsedVehicleGeo> Search(string text)
@@ -58,10 +60,11 @@ public sealed class TsQueryRegionCitySearch : IVehicleGeoDbSearch
         ParsedVehicleGeo withRegion = await _regionSearch.Search(text);
         if (!withRegion)
             return withRegion;
+        await using NpgsqlConnection connection = await _pgConnectionSource.Connect();
         await using DbDataReader reader = await new AsyncDbReaderCommand(
                 new AsyncPreparedCommand(
                     new ParametrizingPgCommand(
-                            new PgCommand(await _connectionSource.Connect(), _sql))
+                            new PgCommand(connection, _sql))
                         .With("@input", text)
                         .With("@region", (string)withRegion.Region())))
             .AsyncReader();

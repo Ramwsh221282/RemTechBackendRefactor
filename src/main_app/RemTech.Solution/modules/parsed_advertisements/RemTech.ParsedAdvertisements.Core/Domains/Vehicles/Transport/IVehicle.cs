@@ -14,7 +14,6 @@ public interface IVehicle
     IGeoLocation Location();
     VehicleIdentity Identity();
     IItemPrice Cost();
-    VehicleText TextInformation();
     VehiclePhotos Photos();
     VehicleCharacteristics Characteristics();
 }

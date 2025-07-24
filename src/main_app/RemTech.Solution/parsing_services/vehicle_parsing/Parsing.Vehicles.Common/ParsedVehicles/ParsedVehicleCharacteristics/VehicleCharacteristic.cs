@@ -1,5 +1,15 @@
 namespace Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
 
+public interface IVehicleCharacteristic
+{
+    string Name();
+    string Value();
+    string Measurement();
+}
+
+
+
+
 public sealed class VehicleCharacteristic
 {
     private readonly string _name;
@@ -20,3 +30,4 @@ public sealed class VehicleCharacteristic
     public string Name() => _name;
     public string Value() => _value;
 }
+

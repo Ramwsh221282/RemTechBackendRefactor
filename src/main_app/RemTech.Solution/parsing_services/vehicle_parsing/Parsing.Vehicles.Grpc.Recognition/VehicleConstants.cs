@@ -21,4 +21,6 @@ public static class VehicleConstants
     public const string BRAND_MODEL = "Модель";
     public const string VIN = "VIN";
     public const string WEIGHT = "Эксплуатационная масса";
+    public const string REGION = "REGION";
+    public const string CITY = "CITY";
 }

@@ -21,6 +21,7 @@ using Parsing.Vehicles.Grpc.Recognition.UnloadingHeight;
 using Parsing.Vehicles.Grpc.Recognition.Vin;
 using Parsing.Vehicles.Grpc.Recognition.Weight;
 using PuppeteerSharp;
+using RemTech.Core.Shared.Primitives;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Characteristics;
 
@@ -109,14 +110,12 @@ public sealed class AvitoDescriptionParts : IAvitoDescriptionParts
 public sealed class GrpcRecognizedCharacteristicsFromDescription : IKeyValuedCharacteristicsSource
 {
     private readonly IPage _page;
-    private readonly ITextWrite _write;
     private readonly CommunicationChannel _channel;
 
-    public GrpcRecognizedCharacteristicsFromDescription(IPage page, ITextWrite write,  CommunicationChannel channel)
+    public GrpcRecognizedCharacteristicsFromDescription(IPage page, CommunicationChannel channel)
     {
         _page = page;
         _channel = channel;
-        _write = write;
     }
     
     public async Task<CharacteristicsDictionary> Read()
@@ -125,7 +124,6 @@ public sealed class GrpcRecognizedCharacteristicsFromDescription : IKeyValuedCha
         CharacteristicsDictionary dictionary = new CharacteristicsDictionary();
         foreach (string text in textParts)
         {
-            await _write.WriteAsync(text);
             dictionary = dictionary.FromEnumerable(await Recognize(text));
         }
 
@@ -135,22 +133,22 @@ public sealed class GrpcRecognizedCharacteristicsFromDescription : IKeyValuedCha
     public async Task<IEnumerable<VehicleCharacteristic>> Recognize(string text)
     {
         DictionariedRecognitions recognitions = await new DictionariedRecognitions()
-            .With(new BucketCapacityRecognition(_channel))
-            .With(new BucketControlTypeRecognition(_channel))
+            .With(new MeasuringBucketCapacityRecognition(new BucketCapacityRecognition(_channel)))
+            .With(new MeasurementBucketControlTypeRecognition(new BucketControlTypeRecognition(_channel)))
             .With(new BuRecognition(_channel))
             .With(new EngineModelRecognition(_channel))
-            .With(new EnginePowerRecognition(_channel))
+            .With(new MeasuringEnginePowerRecognition(new EnginePowerRecognition(_channel)))
             .With(new EngineTypeRecognition(_channel))
             .With(new EngineVolumeRecognition(_channel))
             .With(new FuelTankCapacityRecognition(_channel))
             .With(new LoadingHeightRecognition(_channel))
-            .With(new OnlyDigitsLoadingWeightRecognition(new LoadingWeightRecognition(_channel)))
+            .With(new LoadingWeightRecognition(_channel))
             .With(new ReleaseYearRecognition(_channel))
             .With(new TorqueRecognition(_channel))
             .With(new TransportHoursRecognition(_channel))
             .With(new UnloadingHeightRecognition(_channel))
             .With(new VinRecognition(_channel))
-            .With(new OnlyDigitsWeightRecognition(new WeightRecognition(_channel)))
+            .With(new WeightRecognition(_channel))
             .Processed(text);
         return recognitions.All().Select(r => new VehicleCharacteristic(r.ReadName(), r.ReadValue()));
     }

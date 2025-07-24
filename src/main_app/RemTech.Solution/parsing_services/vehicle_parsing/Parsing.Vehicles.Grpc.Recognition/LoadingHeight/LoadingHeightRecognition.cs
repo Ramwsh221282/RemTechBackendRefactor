@@ -4,7 +4,7 @@ public sealed class LoadingHeightRecognition : ILoadingHeightRecognition
 {
     private readonly CommunicationChannel _channel;
     private readonly string _ctxKey = string.Intern("LOADING_HEIGHT");
-    private readonly string _ctxName = string.Intern("Высота погрузки");
+    private readonly string _ctxName = string.Intern("Высота подъёма");
 
     public LoadingHeightRecognition(CommunicationChannel channel)
     {

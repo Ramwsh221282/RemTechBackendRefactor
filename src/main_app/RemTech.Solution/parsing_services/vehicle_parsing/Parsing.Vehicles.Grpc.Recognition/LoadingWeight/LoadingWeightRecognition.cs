@@ -1,22 +1,4 @@
-using Parsing.Vehicles.Grpc.Recognition.Weight;
-
 namespace Parsing.Vehicles.Grpc.Recognition.LoadingWeight;
-
-public sealed class OnlyDigitsLoadingWeightRecognition : ILoadingWeightRecognition
-{
-    private readonly ILoadingWeightRecognition _origin;
-
-    public OnlyDigitsLoadingWeightRecognition(ILoadingWeightRecognition origin)
-    {
-        _origin = origin;
-    }
-
-    public async Task<Characteristic> Recognize(string text)
-    {
-        Characteristic result = await _origin.Recognize(text);
-        return !result ? result : new Characteristic(result.ReadName(), new OnlyDigitsString(result.ReadValue()));
-    }
-}
 
 public sealed class LoadingWeightRecognition : ILoadingWeightRecognition
 {

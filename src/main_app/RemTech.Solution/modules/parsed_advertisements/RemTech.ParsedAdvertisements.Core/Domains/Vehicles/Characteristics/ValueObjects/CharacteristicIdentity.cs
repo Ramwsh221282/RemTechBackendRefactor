@@ -1,10 +1,18 @@
-﻿namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.ValueObjects;
+﻿using RemTech.Core.Shared.Primitives;
+
+namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.ValueObjects;
 
 public sealed record CharacteristicIdentity
 {
     private readonly CharacteristicId _id;
     private readonly CharacteristicText _text;
 
+    public CharacteristicIdentity()
+    {
+        _id = new CharacteristicId();
+        _text = new CharacteristicText(new NotEmptyString(string.Empty));
+    }
+    
     public CharacteristicIdentity(CharacteristicText text)
         : this(new CharacteristicId(), text) { }
 

@@ -1,96 +1,102 @@
-﻿using Avito.Parsing.Vehicles.PaginationBar;
-using Avito.Parsing.Vehicles.VehiclesParsing;
-using Parsing.Avito.Common.BypassFirewall;
+﻿using Avito.Parsing.Vehicles.VehiclesParsing;
 using Parsing.SDK.Browsers;
 using Parsing.SDK.Browsers.BrowserLoadings;
 using Parsing.SDK.Browsers.InstantiationModes;
 using Parsing.SDK.Browsers.InstantiationOptions;
 using Parsing.SDK.Browsers.PageSources;
-using Parsing.SDK.ScrapingActions;
+using Parsing.Vehicles.Common.Json;
 using Parsing.Vehicles.Common.ParsedVehicles;
 using Parsing.Vehicles.Common.TextWriting;
-using Parsing.Vehicles.DbSearch;
 using Parsing.Vehicles.Grpc.Recognition;
 using PuppeteerSharp;
 using RemTech.Logging.Adapter;
 using RemTech.Logging.Library;
+using RemTech.Postgres.Adapter.Library;
 using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
 
 namespace Avito.Parsing.Vehicles.Tests;
 
 public class VehicleParsingTests
 {
-    [Fact]
-    private async Task Invoke_Catalogue_Parser()
+    [Theory]
+    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/ekskavatory/kobelco-ASgBAgICAkRU5k3Qxg3KrD4?cd=1", "GEOS_ML_1.txt")]
+    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/ekskavatory/ekskavator-pogruzchik/amir-ASgBAgICA0RU5k3Qxg2MpvYR1MYNvrA~?cd=1", "GEOS_ML_2.txt")]
+    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/pogruzchiki-ASgBAgICAURU4E0?cd=1&f=ASgBAgICA0RU4E3cxg3s~F3gxg2azk0", "GEOS_ML_3.txt")]
+    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/tehnika_dlya_lesozagotovki/ponsse-ASgBAgICAkRUsiyexw346j8?cd=1", "GEOS_ML_4.txt")]
+    private async Task Invoke_Catalogue_Parser(string url, string textFile)
     {
-        string[] urls =
-        [
-            "https://www.avito.ru/all/gruzoviki_i_spetstehnika/ekskavatory/kobelco-ASgBAgICAkRU5k3Qxg3KrD4?cd=1",
-            "https://www.avito.ru/all/gruzoviki_i_spetstehnika/pogruzchiki/granit-ASgBAgICAkRU4E3cxg3Kwm4?cd=1",
-            "https://www.avito.ru/all/gruzoviki_i_spetstehnika/ekskavatory/ekskavator-pogruzchik/amir-ASgBAgICA0RU5k3Qxg2MpvYR1MYNvrA~?cd=1",
-            "https://www.avito.ru/all/gruzoviki_i_spetstehnika/pogruzchiki-ASgBAgICAURU4E0?cd=1&f=ASgBAgICA0RU4E3cxg3s~F3gxg2azk0",
-            // "https://www.avito.ru/all/gruzoviki_i_spetstehnika/tehnika_dlya_lesozagotovki/komatsu-ASgBAgICAkRUsiyexw3g6j8?cd=1",
-            // "https://www.avito.ru/all/gruzoviki_i_spetstehnika/tehnika_dlya_lesozagotovki/ponsse-ASgBAgICAkRUsiyexw346j8?cd=1",
-            // "https://www.avito.ru/all/gruzoviki_i_spetstehnika/tehnika_dlya_lesozagotovki/john_deere-ASgBAgICAkRUsiyexw3W6j8?cd=1",
-        ];
-
-        foreach (string url in urls)
-        {
-            await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
+        await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
                 await new DefaultBrowserInstantiation(
                     new HeadlessBrowserInstantiationOptions(),
                     new BasicBrowserLoading()).Instantiation(),
                 url);
-            using CommunicationChannel channel = new CommunicationChannel("http://localhost:5051");
-            await using ITextWrite write = new LoggingTextWrite(new TextWrite(AppDomain.CurrentDomain.BaseDirectory)
-                .WithDirectory("ML_TEXTS")
-                .WithTextFile("ML_TEXTS.txt"));
-            DatabaseConfiguration configuration = new DatabaseConfiguration("appsettings.json");
-            ICustomLogger logger = new ConsoleLogger();
-            await using ConnectionSource dbConnection = new(configuration);
-            await using IBrowserPagesSource pagesSource = await browser.AccessPages();
-            try
+        using CommunicationChannel channel = new CommunicationChannel("http://localhost:5051");
+        DatabaseConfiguration configuration = new DatabaseConfiguration("appsettings.json");
+        ICustomLogger logger = new ConsoleLogger();
+        await using PgConnectionSource dbPgConnection = new(configuration);
+        await using IBrowserPagesSource pagesSource = await browser.AccessPages();
+        await using ITextWrite write = new LoggingTextWrite(logger, new TextWrite(AppDomain.CurrentDomain.BaseDirectory)
+            .WithDirectory("GEOS_ML")
+            .WithTextFile(textFile));
+        List<IParsedVehicle> results = [];
+        foreach (IPage page in pagesSource.Iterate())
+        {
+            IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
+                page,
+                write,
+                logger,
+                dbPgConnection,
+                channel,
+                url);
+            await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
             {
-                foreach (IPage page in pagesSource.Iterate())
-                {
-                    IPageAction bottomScrolling = new PageBottomScrollingAction(page);
-                    IAvitoBypassFirewall bypass =
-                        new AvitoBypassFirewallLogging(logger,
-                            new AvitoBypassWebsiteIsNotAvailable(page,
-                                new AvitoBypassRepetetive(
-                                    page,
-                                    new AvitoBypassFirewallLazy(
-                                        page,
-                                        new AvitoBypassFirewallExceptionSupressing(
-                                            new AvitoBypassFirewall(page))))));
-                    IAvitoPaginationBarSource barSource =
-                        new LoggingAvitoPaginationBarSource(logger,
-                            new BottomScrollingAvitoPaginationBarSource(page,
-                                new AvitoPaginationBarSource(page)));
-                    IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
-                        page,
-                        bypass,
-                        barSource,
-                        bottomScrolling,
-                        write,
-                        logger,
-                        dbConnection,
-                        channel,
-                        url);
-                    await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
-                    {
-                        IParsedVehicle temp = vehicle;
-                    }
-                }
+                IParsedVehicle temp = vehicle;
+                if (await new ValidatingParsedVehicle(temp).IsValid())
+                    results.Add(temp);
             }
-            catch(Exception ex)
+        }
+    }
+
+    [Theory]
+    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/tehnika_dlya_lesozagotovki/ponsse-ASgBAgICAkRUsiyexw346j8?cd=1")]
+    private async Task Parsed_Vehicle_Json_Success(string url)
+    {
+        await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
+            await new DefaultBrowserInstantiation(
+                new HeadlessBrowserInstantiationOptions(),
+                new BasicBrowserLoading()).Instantiation(),
+            url);
+        using CommunicationChannel channel = new CommunicationChannel("http://localhost:5051");
+        DatabaseConfiguration configuration = new DatabaseConfiguration("appsettings.json");
+        ICustomLogger logger = new ConsoleLogger();
+        await using PgConnectionSource dbPgConnection = new(configuration);
+        await using IBrowserPagesSource pagesSource = await browser.AccessPages();
+        foreach (IPage page in pagesSource.Iterate())
+        {
+            IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
+                page,
+                new NoTextWrite(),
+                logger,
+                dbPgConnection,
+                channel,
+                url);
+            await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
             {
-                string directoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BrowsingCrashes");
-                if (!Directory.Exists(directoryPath))
-                    Directory.CreateDirectory(directoryPath);
-                string fileName = $"{Guid.NewGuid()}.txt";
-                string filePath = Path.Combine(directoryPath, fileName);
-                await File.WriteAllTextAsync(filePath, ex.ToString());
+                IParsedVehicle temp = vehicle;
+                if (!await new ValidatingParsedVehicle(temp).IsValid())
+                    continue;
+                ParsedVehicleInfo info = new(
+                    await temp.Identity(),
+                    await temp.Kind(),
+                    await temp.Brand(),
+                    await temp.Model(),
+                    await temp.Price(),
+                    await temp.Characteristics(),
+                    await temp.Photos(),
+                    await temp.Geo(),
+                    new ParsedVehicleParser("Test Parser", "Test Type", "Test Link")
+                );
+                string json = info.Json().Read();
             }
         }
     }

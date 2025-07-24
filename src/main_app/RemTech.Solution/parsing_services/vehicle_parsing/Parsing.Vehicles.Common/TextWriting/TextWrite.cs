@@ -23,6 +23,8 @@ public sealed class TextWrite : ITextWrite
         string newPath = filePath.Contains(".txt", StringComparison.OrdinalIgnoreCase) ?
             Path.Combine(_path, filePath)
             : Path.Combine(_path, filePath + ".txt");
+        if (File.Exists(newPath))
+            File.Delete(newPath);
         return new TextWrite(newPath);
     }
 

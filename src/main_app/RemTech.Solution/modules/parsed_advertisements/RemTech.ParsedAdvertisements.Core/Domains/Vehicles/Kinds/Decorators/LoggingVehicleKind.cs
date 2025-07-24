@@ -3,8 +3,8 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.ValueObjects;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators;
 
-public sealed class LoggingVehicleKind(ICustomLogger logger, VehicleKindEnvelope kind)
-    : VehicleKindEnvelope(kind.Identify())
+public sealed class LoggingVehicleKind(ICustomLogger logger, VehicleKind kind)
+    : VehicleKind(kind.Identify())
 {
     public LoggingVehicleKind Log()
     {

@@ -4,7 +4,7 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.ValueObjects;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators;
 
-public sealed class NewVehicleKind : VehicleKindEnvelope
+public sealed class NewVehicleKind : VehicleKind
 {
     public NewVehicleKind(string? name)
         : this(new NotEmptyString(name)) { }

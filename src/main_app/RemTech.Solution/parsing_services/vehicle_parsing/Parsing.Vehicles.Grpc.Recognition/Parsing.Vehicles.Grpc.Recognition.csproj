@@ -23,4 +23,8 @@
         <Protobuf Include="protos\recognizer.proto" GrpcServices="Client" />
     </ItemGroup>
     
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\modules\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj" />
+    </ItemGroup>
+    
 </Project>

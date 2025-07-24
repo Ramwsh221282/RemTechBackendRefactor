@@ -8,7 +8,7 @@ using PuppeteerSharp;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Kind;
 
-public sealed class GrpcVehicleKindFromTitle(CommunicationChannel channel, ITextWrite write, IPage page) : IParsedVehicleKindSource
+public sealed class GrpcVehicleKindFromTitle(CommunicationChannel channel, IPage page) : IParsedVehicleKindSource
 {
     private readonly string _titleSelector = string.Intern("h1[data-marker='item-view/title-info']");
     
@@ -16,7 +16,6 @@ public sealed class GrpcVehicleKindFromTitle(CommunicationChannel channel, IText
     {
         string text = await new TextFromWebElement(await new PageElementSource(page).Read(_titleSelector)).Read();
         text = text.Replace(",", string.Empty).Trim();
-        await write.WriteAsync(text);
         Characteristic ctx = await new VehicleKindRecognition(channel).Recognize(text);
         return ctx
             ? new ParsedVehicleKind(ctx.ReadValue())

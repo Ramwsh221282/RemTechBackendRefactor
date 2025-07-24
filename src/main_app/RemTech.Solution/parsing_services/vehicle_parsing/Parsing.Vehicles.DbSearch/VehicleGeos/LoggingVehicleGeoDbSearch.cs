@@ -17,8 +17,10 @@ public sealed class LoggingVehicleGeoDbSearch : IVehicleGeoDbSearch
     public async Task<ParsedVehicleGeo> Search(string text)
     {
         ParsedVehicleGeo geo = await  _search.Search(text);
+        string region = geo.Region();
+        string city = geo.City();
         if (geo)
-            _logger.Info("Vehicle geo search result: Region - {0}. City - {1]. Parameter - {2}.", (string)geo.Region(), (string)geo.City(), text);
+            _logger.Info("Vehicle geo search result: Region - {0}. City - {1}. Parameter - {2}.", region, city, text);
         else
             _logger.Warn("Unable to search vehicle geo. Parameter: {0}.", text);
         return geo;

@@ -1,10 +1,18 @@
-﻿namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.ValueObjects;
+﻿using RemTech.Core.Shared.Primitives;
 
-public sealed record VehicleBrandIdentity
+namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.ValueObjects;
+
+public sealed class VehicleBrandIdentity
 {
     private readonly VehicleBrandId _id;
     private readonly VehicleBrandText _text;
 
+    public VehicleBrandIdentity()
+    {
+        _id = new VehicleBrandId(new NotEmptyGuid(Guid.Empty));
+        _text = new VehicleBrandText(new NotEmptyString(string.Empty));
+    }
+    
     public VehicleBrandIdentity(VehicleBrandId id, VehicleBrandText text)
     {
         _id = id;

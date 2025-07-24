@@ -19,7 +19,7 @@ public sealed class SearchedRegionCity
         if (!await _reader.ReadAsync())
             return _withRegion;
         string region = _withRegion.Region();
-        string city = _reader.GetString(_reader.GetOrdinal("city"));
+        string city = _reader.GetString(_reader.GetOrdinal("text"));
         return new ParsedVehicleGeo(new ParsedVehicleRegion(region), new ParsedVehicleCity(city));
     }
 }

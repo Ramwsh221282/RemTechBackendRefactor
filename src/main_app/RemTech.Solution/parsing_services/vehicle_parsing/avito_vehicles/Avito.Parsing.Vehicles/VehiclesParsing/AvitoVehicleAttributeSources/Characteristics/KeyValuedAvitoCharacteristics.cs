@@ -28,8 +28,8 @@ public sealed class KeyValuedAvitoCharacteristics(IPage page) : IKeyValuedCharac
             if (name.Equals("состояние", _comparison))
             {
                 keyValued = value.Contains("новое", _comparison)
-                    ? keyValued = keyValued.With(new VehicleCharacteristic("Б/у", "Да"))
-                    : keyValued = keyValued.With(new VehicleCharacteristic("Б/у", "Нет"));
+                    ? keyValued.With(new VehicleCharacteristic("Б/у", "Да"))
+                    : keyValued.With(new VehicleCharacteristic("Б/у", "Нет"));
                 continue;
             }
             keyValued = keyValued.With(new VehicleCharacteristic(name, value));

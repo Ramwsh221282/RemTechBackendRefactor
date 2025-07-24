@@ -1,5 +1,7 @@
 ﻿using System.Data.Common;
+using Npgsql;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleGeo;
+using RemTech.Postgres.Adapter.Library;
 using RemTech.Postgres.Adapter.Library.PgCommands;
 
 namespace Parsing.Vehicles.DbSearch.VehicleGeos;
@@ -7,22 +9,21 @@ namespace Parsing.Vehicles.DbSearch.VehicleGeos;
 public sealed class PgTgrmRegionCityDbSearch : IVehicleGeoDbSearch
 {
     private readonly IVehicleGeoDbSearch _regionSearch;
-    private readonly ConnectionSource _connectionSource;
+    private readonly PgConnectionSource _pgConnectionSource;
     private readonly string _sql = string.Intern("""
-                                                 SELECT r.text, c.text as city, word_similarity(@input, c.text) as sml
+                                                 SELECT r.text, c.text as text, word_similarity(@input, c.text) as sml
                                                  FROM parsed_advertisements_module.cities c
+                                                 INNER JOIN parsed_advertisements_module.geos r ON c.region_id = r.id
                                                  WHERE word_similarity(@input, c.text) > 0.8
                                                  AND r.text = @region
-                                                 INNER JOIN parsed_advertisements_module.geos r ON
-                                                 r.id = c.region_id
                                                  ORDER BY sml DESC
                                                  LIMIT 1;
                                                  """);
     
-    public PgTgrmRegionCityDbSearch(ConnectionSource connectionSource, IVehicleGeoDbSearch regionSearch)
+    public PgTgrmRegionCityDbSearch(PgConnectionSource pgConnectionSource, IVehicleGeoDbSearch regionSearch)
     {
         _regionSearch = regionSearch;
-        _connectionSource = connectionSource;
+        _pgConnectionSource = pgConnectionSource;
     }
     
     public async Task<ParsedVehicleGeo> Search(string text)
@@ -30,10 +31,11 @@ public sealed class PgTgrmRegionCityDbSearch : IVehicleGeoDbSearch
         ParsedVehicleGeo withRegion = await _regionSearch.Search(text);
         if (!withRegion)
             return withRegion;
+        await using NpgsqlConnection connection = await _pgConnectionSource.Connect();
         await using DbDataReader reader = await new AsyncDbReaderCommand(
                 new AsyncPreparedCommand(
                     new ParametrizingPgCommand(
-                            new PgCommand(await _connectionSource.Connect(), _sql))
+                            new PgCommand(connection, _sql))
                         .With("@input", text)
                         .With("@region", (string)withRegion.Region())))
             .AsyncReader();
