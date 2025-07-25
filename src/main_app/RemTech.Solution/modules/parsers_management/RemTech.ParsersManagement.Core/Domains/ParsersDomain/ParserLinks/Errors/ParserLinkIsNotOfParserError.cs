@@ -23,7 +23,7 @@ public sealed class ParserLinkIsNotOfParserError : IError
 
     public static implicit operator Error(ParserLinkIsNotOfParserError error) => error._error;
 
-    public static implicit operator Status(ParserLinkIsNotOfParserError error) => error._error;
+    public static implicit operator Status(ParserLinkIsNotOfParserError error) => new(error._error);
 
     public static implicit operator Status<IParserLink>(ParserLinkIsNotOfParserError error) =>
         error._error;

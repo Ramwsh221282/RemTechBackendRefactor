@@ -1,12 +1,11 @@
-﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
-using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.Decorators;
-using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
+﻿using System.Transactions;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.AddingNewParser.Async.Decorators;
 
-public sealed class AsyncSqlSpeakingNewParser(ParsersSource parsers, IAsyncNewParser inner)
+public sealed class AsyncSqlSpeakingNewParser(IParsers parsers, IAsyncNewParser inner)
     : IAsyncNewParser
 {
     private readonly IParsers _parsers = parsers;
@@ -16,8 +15,13 @@ public sealed class AsyncSqlSpeakingNewParser(ParsersSource parsers, IAsyncNewPa
         CancellationToken ct = default
     )
     {
-        await using (_parsers)
+        try
         {
+            using TransactionScope scope = new(
+                TransactionScopeOption.Required,
+                new TransactionOptions(),
+                TransactionScopeAsyncFlowOption.Enabled
+            );
             Status<IParser> processed = await inner.Register(add, ct);
             if (processed.IsFailure)
                 return processed;
@@ -33,7 +37,12 @@ public sealed class AsyncSqlSpeakingNewParser(ParsersSource parsers, IAsyncNewPa
             Status adding = await _parsers.Add(processed.Value, ct);
             if (adding.IsFailure)
                 return adding.Error;
+            scope.Complete();
             return processed;
+        }
+        catch (Exception ex)
+        {
+            return Error.Conflict("Ошибка транзакции");
         }
     }
 }

@@ -7,7 +7,7 @@ using RemTech.Result.Library;
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.ChangingLinkActivity.Async.Decorators;
 
 public sealed class AsyncSqlSpeakingChangedLinkActivity(
-    ParsersSource source,
+    IParsers parsers,
     IAsyncChangedLinkActivity inner
 ) : IAsyncChangedLinkActivity
 {
@@ -15,7 +15,7 @@ public sealed class AsyncSqlSpeakingChangedLinkActivity(
         AsyncChangeLinkActivity change,
         CancellationToken ct = default
     ) =>
-        await new TransactionOperatingParser<IParserLink>(source, source)
+        await new TransactionOperatingParser<IParserLink>(parsers)
             .WithReceivingMethod(s => s.Find(change.OwnerId(), ct))
             .WithLogicMethod(() => inner.AsyncChangedActivity(change, ct))
             .WithPutting(change)

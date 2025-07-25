@@ -36,4 +36,9 @@ public readonly record struct PositiveLong
     {
         return pos._value >= 0;
     }
+
+    public static implicit operator bool(PositiveLong? pos)
+    {
+        return false;
+    }
 }

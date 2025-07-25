@@ -11,7 +11,7 @@ public sealed class RedisParsers(RedisCacheEngine engine) : IParsersCache
 {
     private const string _parsersArrayKey = "rem_tech_parsers_array";
 
-    public async Task Invalidate(ParserCacheJson json)
+    public async Task InvalidateAsync(ParserCacheJson json)
     {
         RedisParsersCachedArray array = await GetArray();
         if (!array.Any())
@@ -20,6 +20,11 @@ public sealed class RedisParsers(RedisCacheEngine engine) : IParsersCache
             return;
         }
         await new RedisUpdatedParsersArray(_parsersArrayKey, json, array).Invalidate(engine);
+    }
+
+    public void Invalidate(ParserCacheJson json)
+    {
+        InvalidateAsync(json).Wait();
     }
 
     public Task<MaybeBag<IParser>> Get(ParserCacheKey key)

@@ -25,13 +25,13 @@ public sealed class UpdateParserTests : IClassFixture<DataAccessParsersFixture>
         int expectedWaitDays = 4;
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).UpdateParserAsyncSuccess(parser, waitDays: expectedWaitDays);
-        await using ParsersSource source = _fixture.ParsersSource();
+        await using IParsers source = _fixture.Parsers();
         Status<IParser> fromDb = await source.Find(parser.Identification().ReadName());
         Assert.True(fromDb.IsSuccess);
         Assert.True(new CompareParserWaitDays(fromDb.Value, expectedWaitDays));
@@ -46,13 +46,13 @@ public sealed class UpdateParserTests : IClassFixture<DataAccessParsersFixture>
         string expectedState = ParserState.Waiting();
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).UpdateParserAsyncSuccess(parser, state: expectedState);
-        await using ParsersSource source = _fixture.ParsersSource();
+        await using IParsers source = _fixture.Parsers();
         Status<IParser> fromDb = await source.Find(parser.Identification().ReadName());
         Assert.True(fromDb.IsSuccess);
         Assert.True(new CompareParserState(fromDb.Value, expectedState));
@@ -67,11 +67,11 @@ public sealed class UpdateParserTests : IClassFixture<DataAccessParsersFixture>
         string invalidState = "Random text";
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).UpdateParserAsyncFailure(parser, state: invalidState);
     }
 
@@ -84,11 +84,11 @@ public sealed class UpdateParserTests : IClassFixture<DataAccessParsersFixture>
         int invalidWaitDays = 10;
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).UpdateParserAsyncFailure(parser, waitDays: invalidWaitDays);
     }
 
@@ -102,11 +102,11 @@ public sealed class UpdateParserTests : IClassFixture<DataAccessParsersFixture>
         string invalidState = "Random text";
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).UpdateParserAsyncFailure(parser, state: invalidState, waitDays: invalidWaitDays);
     }
 
@@ -119,15 +119,15 @@ public sealed class UpdateParserTests : IClassFixture<DataAccessParsersFixture>
         string invalidState = ParserState.Working();
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).UpdateParserAsyncSuccess(parser, state: invalidState);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).UpdateParserAsyncFailure(parser, state: invalidState);
     }
 }

@@ -7,7 +7,7 @@ using RemTech.Result.Library;
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.FinishingParserLink.Async.Decorators;
 
 public sealed class AsyncSqlSpeakingFinishedParserLink(
-    ParsersSource parsers,
+    IParsers parsers,
     IAsyncFinishedParserLink inner
 ) : IAsyncFinishedParserLink
 {
@@ -15,7 +15,7 @@ public sealed class AsyncSqlSpeakingFinishedParserLink(
         AsyncFinishParserLink finish,
         CancellationToken ct = default
     ) =>
-        await new TransactionOperatingParser<IParserLink>(parsers, parsers)
+        await new TransactionOperatingParser<IParserLink>(parsers)
             .WithReceivingMethod(s => s.Find(finish.WhatOwnerId(), ct))
             .WithLogicMethod(() => inner.AsyncFinished(finish, ct))
             .WithPutting(finish)

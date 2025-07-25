@@ -8,5 +8,5 @@ public sealed class StateEmptyError : IError
 
     public Error Read() => _error;
 
-    public static implicit operator Status(StateEmptyError error) => error._error;
+    public static implicit operator Status(StateEmptyError error) => new(error._error);
 }

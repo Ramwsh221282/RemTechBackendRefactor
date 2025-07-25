@@ -12,5 +12,5 @@ public class WaitDaysTooMuchError : IError
 
     public Error Read() => _error;
 
-    public static implicit operator Status(WaitDaysTooMuchError error) => error._error;
+    public static implicit operator Status(WaitDaysTooMuchError error) => new(error._error);
 }

@@ -1,5 +1,6 @@
 ﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.ParsersManagement.Tests.Library;
 using RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
@@ -17,58 +18,98 @@ public sealed class EnableParserTests : IClassFixture<ParsersFixture>
     [Fact]
     private void Enable_Parser_Success()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
+        IParsers parsers = _fixture.Parsers();
         string expectedState = ParserState.Waiting();
-        IParser parser = toolkit.CreateInitialParser();
-        IParser enabled = toolkit.EnableParserSuccess(parser);
+        IParser parser = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParser();
+        IParser enabled = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).EnableParserSuccess(parser);
         Assert.Equal(expectedState, enabled.WorkState().Read().StringValue());
     }
 
     [Fact]
     private void Enable_Enabled_Parser_Failure()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        IParser parser = toolkit.CreateInitialParser();
-        IParser enabled = toolkit.EnableParserSuccess(parser);
-        toolkit.EnableParserFailure(enabled);
+        IParsers parsers = _fixture.Parsers();
+        IParser parser = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParser();
+        IParser enabled = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).EnableParserSuccess(parser);
+        new ParserTestingToolkit(_fixture.AccessLogger(), parsers).EnableParserFailure(enabled);
     }
 
     [Fact]
     private void Enable_Working_Parser_Failure()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        IParser parser = toolkit.CreateInitialParser();
+        IParsers parsers = _fixture.Parsers();
+        IParser parser = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParser();
         string workingState = ParserState.Working();
-        IParser working = toolkit.UpdateParserSuccess(parser, workingState);
-        toolkit.EnableParserFailure(working);
+        IParser working = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).UpdateParserSuccess(parser, workingState);
+        new ParserTestingToolkit(_fixture.AccessLogger(), parsers).EnableParserFailure(working);
     }
 
     [Fact]
     private async Task Enable_Parser_Async_Success()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        IParser parser = await toolkit.CreateInitialParserAsync();
+        IParsers parsers = _fixture.Parsers();
+        IParser parser = await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParserAsync();
         string expectedState = ParserState.Waiting();
-        IParser enabled = await toolkit.EnableParserSuccessAsync(parser);
+        IParser enabled = await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).EnableParserSuccessAsync(parser);
         Assert.Equal(expectedState, enabled.WorkState().Read().StringValue());
     }
 
     [Fact]
     private async Task Enable_Enabled_Parser_Async_Failure()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        IParser parser = await toolkit.CreateInitialParserAsync();
-        IParser enabled = await toolkit.EnableParserSuccessAsync(parser);
-        await toolkit.EnableParserFailureAsync(enabled);
+        IParsers parsers = _fixture.Parsers();
+        IParser parser = await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParserAsync();
+        IParser enabled = await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).EnableParserSuccessAsync(parser);
+        await new ParserTestingToolkit(_fixture.AccessLogger(), parsers).EnableParserFailureAsync(
+            enabled
+        );
     }
 
     [Fact]
     private async Task Enable_Working_Parser_Async_Failure()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
+        IParsers parsers = _fixture.Parsers();
         string workingState = ParserState.Working();
-        IParser parser = await toolkit.CreateInitialParserAsync();
-        IParser working = await toolkit.UpdateParserAsyncSuccess(parser, workingState);
-        await toolkit.EnableParserFailureAsync(working);
+        IParser parser = await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParserAsync();
+        IParser working = await new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).UpdateParserAsyncSuccess(parser, workingState);
+        await new ParserTestingToolkit(_fixture.AccessLogger(), parsers).EnableParserFailureAsync(
+            working
+        );
     }
 }

@@ -32,5 +32,21 @@ public readonly record struct NotEmptyGuid
         return nguid._value != Guid.Empty;
     }
 
+    public static implicit operator bool(NotEmptyGuid? nguid)
+    {
+        return false;
+    }
+
     public override int GetHashCode() => _value.GetHashCode();
+}
+
+public readonly record struct NewGuid
+{
+    private readonly NotEmptyGuid _value;
+
+    public NewGuid() => _value = new NotEmptyGuid(Guid.NewGuid());
+
+    public static implicit operator Guid(NewGuid guid) => guid._value;
+
+    public static implicit operator NotEmptyGuid(NewGuid guid) => guid._value;
 }

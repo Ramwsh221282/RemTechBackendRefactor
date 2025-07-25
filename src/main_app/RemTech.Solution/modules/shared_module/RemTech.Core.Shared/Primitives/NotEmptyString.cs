@@ -38,6 +38,16 @@ public sealed class NotEmptyString
 
     public bool Same(NotEmptyString other) => other._value == _value;
 
+    public bool Contains(string value, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+    {
+        return _value.Contains(value, comparison);
+    }
+
+    public bool Contains(NotEmptyString value, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+    {
+        return Contains(value._value, comparison);
+    }
+    
     public override string ToString() => _value;
 
     public static Status<NotEmptyString> New(string? input) =>

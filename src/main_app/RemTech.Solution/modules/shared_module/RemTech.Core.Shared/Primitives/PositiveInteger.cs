@@ -37,4 +37,9 @@ public readonly record struct PositiveInteger
     {
         return pos >= 0;
     }
+
+    public static implicit operator bool(PositiveInteger? pos)
+    {
+        return false;
+    }
 }

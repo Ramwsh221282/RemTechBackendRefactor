@@ -7,7 +7,7 @@ using RemTech.Result.Library;
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.IncreasingProcessed.Async.Decorators;
 
 public sealed class AsyncSqlSpeakingIncreaseProcessed(
-    ParsersSource parsers,
+    IParsers parsers,
     IAsyncIncreaseProcessed inner
 ) : IAsyncIncreaseProcessed
 {
@@ -15,7 +15,7 @@ public sealed class AsyncSqlSpeakingIncreaseProcessed(
         AsyncIncreaseProcess increase,
         CancellationToken ct = default
     ) =>
-        await new TransactionOperatingParser<ParserStatisticsIncreasement>(parsers, parsers)
+        await new TransactionOperatingParser<ParserStatisticsIncreasement>(parsers)
             .WithReceivingMethod(s => s.Find(increase.TakeOwnerId(), ct))
             .WithLogicMethod(() => inner.Increase(increase, ct))
             .WithPutting(increase)

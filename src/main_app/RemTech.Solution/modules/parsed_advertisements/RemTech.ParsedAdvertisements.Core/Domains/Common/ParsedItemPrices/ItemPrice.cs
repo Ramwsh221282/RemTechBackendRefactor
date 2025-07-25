@@ -1,0 +1,21 @@
+﻿namespace RemTech.ParsedAdvertisements.Core.Domains.Common.ParsedItemPrices;
+
+public readonly record struct ItemPrice : IItemPrice
+{
+    private readonly IItemPrice _price;
+
+    public ItemPrice(IItemPrice price)
+    {
+        _price = price;
+    }
+
+    public PriceValue Value()
+    {
+        return _price.Value();
+    }
+
+    public bool UnderNds()
+    {
+        return _price.UnderNds();
+    }
+}

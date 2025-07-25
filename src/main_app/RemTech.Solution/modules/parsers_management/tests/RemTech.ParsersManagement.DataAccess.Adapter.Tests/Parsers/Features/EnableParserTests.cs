@@ -26,13 +26,13 @@ public sealed class EnableParserTests : IClassFixture<DataAccessParsersFixture>
         string expectedState = ParserState.Waiting();
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).EnableParserSuccessAsync(parser);
-        await using ParsersSource source = _fixture.ParsersSource();
+        await using IParsers source = _fixture.Parsers();
         Status<IParser> fromDb = await source.Find(parser.Identification().ReadId());
         Assert.True(new CompareParserState(fromDb.Value, expectedState));
     }
@@ -45,15 +45,15 @@ public sealed class EnableParserTests : IClassFixture<DataAccessParsersFixture>
         string parserDomain = "Test";
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).EnableParserSuccessAsync(parser);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).EnableParserFailureAsync(parser);
     }
 
@@ -65,15 +65,15 @@ public sealed class EnableParserTests : IClassFixture<DataAccessParsersFixture>
         string parserDomain = "Test";
         IParser parser = await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).AsyncAddNewParserSuccess(parserName, parserType, parserDomain);
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).UpdateParserAsyncSuccess(parser, state: ParserState.Working());
         await new ParserTestingToolkit(
             _fixture.Logger(),
-            _fixture.ParsersSource()
+            _fixture.Parsers()
         ).EnableParserFailureAsync(parser);
     }
 }

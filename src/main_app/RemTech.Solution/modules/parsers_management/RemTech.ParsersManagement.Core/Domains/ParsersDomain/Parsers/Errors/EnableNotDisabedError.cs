@@ -8,5 +8,5 @@ public sealed class EnableNotDisabedError : IError
 
     public Error Read() => _error;
 
-    public static implicit operator Status(EnableNotDisabedError error) => error._error;
+    public static implicit operator Status(EnableNotDisabedError error) => new(error._error);
 }

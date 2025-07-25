@@ -8,7 +8,7 @@ using RemTech.Result.Library;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 
-public interface IParser
+public interface IParser : IDisposable, IAsyncDisposable
 {
     ParserIdentity Identification();
 

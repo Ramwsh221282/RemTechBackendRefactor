@@ -12,11 +12,16 @@ public sealed class LoggingRedisParsers(ICustomLogger logger, IParsersCache cach
 {
     private const string Context = "REDIS PARSERS";
 
-    public async Task Invalidate(ParserCacheJson json)
+    public async Task InvalidateAsync(ParserCacheJson json)
     {
         logger.Info("{0}. {1}. Начата.", Context, "Инвалидция.");
-        await cache.Invalidate(json);
+        await cache.InvalidateAsync(json);
         logger.Info("{0}. {1}. Закончена.", Context, "Инвалидция.");
+    }
+
+    public void Invalidate(ParserCacheJson json)
+    {
+        cache.Invalidate(json);
     }
 
     public async Task<MaybeBag<IParser>> Get(ParserCacheKey key)

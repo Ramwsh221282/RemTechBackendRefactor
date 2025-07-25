@@ -59,15 +59,9 @@ namespace RemTech.ParsersManagement.Tests.Library;
 public sealed class ParserTestingToolkit
 {
     private readonly ICustomLogger _logger;
-    private readonly ParsersSource _parsers;
+    private readonly IParsers _parsers;
 
-    public ParserTestingToolkit(ParsersFixture fixture)
-    {
-        _logger = fixture.AccessLogger();
-        _parsers = fixture.AccessParsersSource();
-    }
-
-    public ParserTestingToolkit(ICustomLogger logger, ParsersSource source)
+    public ParserTestingToolkit(ICustomLogger logger, IParsers source)
     {
         _logger = logger;
         _parsers = source;
@@ -115,24 +109,28 @@ public sealed class ParserTestingToolkit
     {
         Status<IParser> created = await new AsyncAssertStatusSuccess<IParser>(
             () =>
-                new AsyncStatusCachingNewParser(
-                    new AsyncLoggingNewParser(
-                        _logger,
-                        new AsyncValidatingNewParser(
-                            new AsyncSqlSpeakingNewParser(
-                                _parsers,
-                                new AsyncNewParser(
-                                    new StatusCachingNewParser(
-                                        new LoggingNewParser(
-                                            _logger,
-                                            new ValidatingNewParser(new NewParser())
+                new ResourceDisposingNewParser(
+                    new AsyncStatusCachingNewParser(
+                        new AsyncLoggingNewParser(
+                            _logger,
+                            new AsyncValidatingNewParser(
+                                new AsyncSqlSpeakingNewParser(
+                                    _parsers,
+                                    new AsyncNewParser(
+                                        new StatusCachingNewParser(
+                                            new LoggingNewParser(
+                                                _logger,
+                                                new ValidatingNewParser(new NewParser())
+                                            )
                                         )
                                     )
                                 )
                             )
                         )
                     )
-                ).Register(new AsyncAddNewParser(name, type, domain))
+                )
+                    .With(_parsers)
+                    .Register(new AsyncAddNewParser(name, type, domain))
         ).AsyncAsserted();
         return created.Value;
     }
@@ -140,24 +138,28 @@ public sealed class ParserTestingToolkit
     public async Task AsyncAddNewParserFailure(string name, string type, string domain) =>
         await new AsyncAssertStatusFailure<IParser>(
             () =>
-                new AsyncStatusCachingNewParser(
-                    new AsyncLoggingNewParser(
-                        _logger,
-                        new AsyncValidatingNewParser(
-                            new AsyncSqlSpeakingNewParser(
-                                _parsers,
-                                new AsyncNewParser(
-                                    new StatusCachingNewParser(
-                                        new LoggingNewParser(
-                                            _logger,
-                                            new ValidatingNewParser(new NewParser())
+                new ResourceDisposingNewParser(
+                    new AsyncStatusCachingNewParser(
+                        new AsyncLoggingNewParser(
+                            _logger,
+                            new AsyncValidatingNewParser(
+                                new AsyncSqlSpeakingNewParser(
+                                    _parsers,
+                                    new AsyncNewParser(
+                                        new StatusCachingNewParser(
+                                            new LoggingNewParser(
+                                                _logger,
+                                                new ValidatingNewParser(new NewParser())
+                                            )
                                         )
                                     )
                                 )
                             )
                         )
                     )
-                ).Register(new AsyncAddNewParser(name, type, domain))
+                )
+                    .With(_parsers)
+                    .Register(new AsyncAddNewParser(name, type, domain))
         ).AsyncAsserted();
 
     public IParser CreateInitialParser()
@@ -192,18 +194,20 @@ public sealed class ParserTestingToolkit
     {
         Status<IParser> created = await new AsyncAssertStatusSuccess<IParser>(
             () =>
-                new AsyncStatusCachingNewParser(
-                    new AsyncLoggingNewParser(
-                        _logger,
-                        new AsyncValidatingNewParser(
-                            new AsyncSqlSpeakingNewParser(
-                                _parsers,
-                                new AsyncNewParser(
-                                    new StatusCachingNewParser(
-                                        new LoggingNewParser(
-                                            _logger,
-                                            new ValidatingNewParser(
-                                                new ValidNewParser(new NewParser())
+                new ResourceDisposingNewParser(
+                    new AsyncStatusCachingNewParser(
+                        new AsyncLoggingNewParser(
+                            _logger,
+                            new AsyncValidatingNewParser(
+                                new AsyncSqlSpeakingNewParser(
+                                    _parsers,
+                                    new AsyncNewParser(
+                                        new StatusCachingNewParser(
+                                            new LoggingNewParser(
+                                                _logger,
+                                                new ValidatingNewParser(
+                                                    new ValidNewParser(new NewParser())
+                                                )
                                             )
                                         )
                                     )
@@ -211,7 +215,9 @@ public sealed class ParserTestingToolkit
                             )
                         )
                     )
-                ).Register(new AsyncAddNewParser("Test Parser", "Техника", "Test"))
+                )
+                    .With(_parsers)
+                    .Register(new AsyncAddNewParser("Test Parser", "Техника", "Test"))
         ).AsyncAsserted();
         return created.Value;
     }
@@ -220,24 +226,28 @@ public sealed class ParserTestingToolkit
     {
         Status<IParser> created = await new AsyncAssertStatusSuccess<IParser>(
             () =>
-                new AsyncStatusCachingNewParser(
-                    new AsyncLoggingNewParser(
-                        _logger,
-                        new AsyncValidatingNewParser(
-                            new AsyncSqlSpeakingNewParser(
-                                _parsers,
-                                new AsyncNewParser(
-                                    new StatusCachingNewParser(
-                                        new LoggingNewParser(
-                                            _logger,
-                                            new ValidatingNewParser(new NewParser())
+                new ResourceDisposingNewParser(
+                    new AsyncStatusCachingNewParser(
+                        new AsyncLoggingNewParser(
+                            _logger,
+                            new AsyncValidatingNewParser(
+                                new AsyncSqlSpeakingNewParser(
+                                    _parsers,
+                                    new AsyncNewParser(
+                                        new StatusCachingNewParser(
+                                            new LoggingNewParser(
+                                                _logger,
+                                                new ValidatingNewParser(new NewParser())
+                                            )
                                         )
                                     )
                                 )
                             )
                         )
                     )
-                ).Register(new AsyncAddNewParser(name, type, domain))
+                )
+                    .With(_parsers)
+                    .Register(new AsyncAddNewParser(name, type, domain))
         ).AsyncAsserted();
         return created.Value;
     }
@@ -249,24 +259,30 @@ public sealed class ParserTestingToolkit
     ) =>
         await new AsyncAssertStatusFailure<IParser>(
             () =>
-                new AsyncLoggingUpdatedParser(
-                    _logger,
-                    new AsyncStatusCachingUpdatedParser(
-                        new AsyncValidatingUpdatedParser(
-                            new AsyncSqlSpeakingUpdatedParser(
-                                _parsers,
-                                new AsyncUpdatedParser(
-                                    new LoggingUpdatedParser(
-                                        _logger,
-                                        new StatusCachingUpdatedParser(
-                                            new ValidatingUpdatedParser(new UpdatedParser())
+                new ResourceDisposingUpdatedParser(
+                    new AsyncLoggingUpdatedParser(
+                        _logger,
+                        new AsyncStatusCachingUpdatedParser(
+                            new AsyncValidatingUpdatedParser(
+                                new AsyncSqlSpeakingUpdatedParser(
+                                    _parsers,
+                                    new AsyncUpdatedParser(
+                                        new LoggingUpdatedParser(
+                                            _logger,
+                                            new StatusCachingUpdatedParser(
+                                                new ValidatingUpdatedParser(new UpdatedParser())
+                                            )
                                         )
                                     )
                                 )
                             )
                         )
                     )
-                ).Update(new AsyncUpdateParser(parser.Identification().ReadId(), state, waitDays))
+                )
+                    .With(_parsers)
+                    .Update(
+                        new AsyncUpdateParser(parser.Identification().ReadId(), state, waitDays)
+                    )
         ).AsyncAsserted();
 
     public async Task<IParser> UpdateParserAsyncSuccess(
@@ -277,24 +293,30 @@ public sealed class ParserTestingToolkit
     {
         Status<IParser> updated = await new AsyncAssertStatusSuccess<IParser>(
             () =>
-                new AsyncLoggingUpdatedParser(
-                    _logger,
-                    new AsyncStatusCachingUpdatedParser(
-                        new AsyncValidatingUpdatedParser(
-                            new AsyncSqlSpeakingUpdatedParser(
-                                _parsers,
-                                new AsyncUpdatedParser(
-                                    new LoggingUpdatedParser(
-                                        _logger,
-                                        new StatusCachingUpdatedParser(
-                                            new ValidatingUpdatedParser(new UpdatedParser())
+                new ResourceDisposingUpdatedParser(
+                    new AsyncLoggingUpdatedParser(
+                        _logger,
+                        new AsyncStatusCachingUpdatedParser(
+                            new AsyncValidatingUpdatedParser(
+                                new AsyncSqlSpeakingUpdatedParser(
+                                    _parsers,
+                                    new AsyncUpdatedParser(
+                                        new LoggingUpdatedParser(
+                                            _logger,
+                                            new StatusCachingUpdatedParser(
+                                                new ValidatingUpdatedParser(new UpdatedParser())
+                                            )
                                         )
                                     )
                                 )
                             )
                         )
                     )
-                ).Update(new AsyncUpdateParser(parser.Identification().ReadId(), state, waitDays))
+                )
+                    .With(_parsers)
+                    .Update(
+                        new AsyncUpdateParser(parser.Identification().ReadId(), state, waitDays)
+                    )
         ).AsyncAsserted();
         return updated.Value;
     }
@@ -307,24 +329,28 @@ public sealed class ParserTestingToolkit
     {
         Status<IParser> updated = await new AsyncAssertStatusSuccess<IParser>(
             () =>
-                new AsyncLoggingUpdatedParser(
-                    _logger,
-                    new AsyncStatusCachingUpdatedParser(
-                        new AsyncValidatingUpdatedParser(
-                            new AsyncSqlSpeakingUpdatedParser(
-                                _parsers,
-                                new AsyncUpdatedParser(
-                                    new LoggingUpdatedParser(
-                                        _logger,
-                                        new StatusCachingUpdatedParser(
-                                            new ValidatingUpdatedParser(new UpdatedParser())
+                new ResourceDisposingUpdatedParser(
+                    new AsyncLoggingUpdatedParser(
+                        _logger,
+                        new AsyncStatusCachingUpdatedParser(
+                            new AsyncValidatingUpdatedParser(
+                                new AsyncSqlSpeakingUpdatedParser(
+                                    _parsers,
+                                    new AsyncUpdatedParser(
+                                        new LoggingUpdatedParser(
+                                            _logger,
+                                            new StatusCachingUpdatedParser(
+                                                new ValidatingUpdatedParser(new UpdatedParser())
+                                            )
                                         )
                                     )
                                 )
                             )
                         )
                     )
-                ).Update(new AsyncUpdateParser(parserId, state, waitDays))
+                )
+                    .With(_parsers)
+                    .Update(new AsyncUpdateParser(parserId, state, waitDays))
         ).AsyncAsserted();
         return updated.Value;
     }
@@ -336,24 +362,28 @@ public sealed class ParserTestingToolkit
     ) =>
         await new AsyncAssertStatusFailure<IParser>(
             () =>
-                new AsyncLoggingUpdatedParser(
-                    _logger,
-                    new AsyncStatusCachingUpdatedParser(
-                        new AsyncValidatingUpdatedParser(
-                            new AsyncSqlSpeakingUpdatedParser(
-                                _parsers,
-                                new AsyncUpdatedParser(
-                                    new LoggingUpdatedParser(
-                                        _logger,
-                                        new StatusCachingUpdatedParser(
-                                            new ValidatingUpdatedParser(new UpdatedParser())
+                new ResourceDisposingUpdatedParser(
+                    new AsyncLoggingUpdatedParser(
+                        _logger,
+                        new AsyncStatusCachingUpdatedParser(
+                            new AsyncValidatingUpdatedParser(
+                                new AsyncSqlSpeakingUpdatedParser(
+                                    _parsers,
+                                    new AsyncUpdatedParser(
+                                        new LoggingUpdatedParser(
+                                            _logger,
+                                            new StatusCachingUpdatedParser(
+                                                new ValidatingUpdatedParser(new UpdatedParser())
+                                            )
                                         )
                                     )
                                 )
                             )
                         )
                     )
-                ).Update(new AsyncUpdateParser(parserId, state, waitDays))
+                )
+                    .With(_parsers)
+                    .Update(new AsyncUpdateParser(parserId, state, waitDays))
         ).AsyncAsserted();
 
     public IParser UpdateParserSuccess(IParser parser, string? state = null, int? waitDays = null)
@@ -402,25 +432,29 @@ public sealed class ParserTestingToolkit
     {
         Status<IParser> status = await new AsyncAssertStatusSuccess<IParser>(
             () =>
-                new AsyncLoggingEnabledParser(
-                    _logger,
-                    new AsyncStatusCachingEnabledParser(
-                        new AsyncValidatingEnabledParser(
-                            new AsyncSqlSpeakingEnabledParser(
-                                _parsers,
-                                new AsyncEnabledParser(
-                                    new LoggingEnabledParser(
-                                        _logger,
-                                        new StatusCachingEnabledParser(new EnabledParser())
+                new ResourceDisposingEnabledParser(
+                    new AsyncLoggingEnabledParser(
+                        _logger,
+                        new AsyncStatusCachingEnabledParser(
+                            new AsyncValidatingEnabledParser(
+                                new AsyncSqlSpeakingEnabledParser(
+                                    _parsers,
+                                    new AsyncEnabledParser(
+                                        new LoggingEnabledParser(
+                                            _logger,
+                                            new StatusCachingEnabledParser(new EnabledParser())
+                                        )
                                     )
                                 )
                             )
                         )
                     )
-                ).EnableAsync(
-                    new AsyncEnableParser(parser.Identification().ReadId()),
-                    CancellationToken.None
                 )
+                    .With(_parsers)
+                    .EnableAsync(
+                        new AsyncEnableParser(parser.Identification().ReadId()),
+                        CancellationToken.None
+                    )
         ).AsyncAsserted();
         return status.Value;
     }
@@ -428,25 +462,29 @@ public sealed class ParserTestingToolkit
     public async Task EnableParserFailureAsync(IParser parser) =>
         await new AsyncAssertStatusFailure<IParser>(
             () =>
-                new AsyncLoggingEnabledParser(
-                    _logger,
-                    new AsyncStatusCachingEnabledParser(
-                        new AsyncValidatingEnabledParser(
-                            new AsyncSqlSpeakingEnabledParser(
-                                _parsers,
-                                new AsyncEnabledParser(
-                                    new LoggingEnabledParser(
-                                        _logger,
-                                        new StatusCachingEnabledParser(new EnabledParser())
+                new ResourceDisposingEnabledParser(
+                    new AsyncLoggingEnabledParser(
+                        _logger,
+                        new AsyncStatusCachingEnabledParser(
+                            new AsyncValidatingEnabledParser(
+                                new AsyncSqlSpeakingEnabledParser(
+                                    _parsers,
+                                    new AsyncEnabledParser(
+                                        new LoggingEnabledParser(
+                                            _logger,
+                                            new StatusCachingEnabledParser(new EnabledParser())
+                                        )
                                     )
                                 )
                             )
                         )
                     )
-                ).EnableAsync(
-                    new AsyncEnableParser(parser.Identification().ReadId()),
-                    CancellationToken.None
                 )
+                    .With(_parsers)
+                    .EnableAsync(
+                        new AsyncEnableParser(parser.Identification().ReadId()),
+                        CancellationToken.None
+                    )
         ).AsyncAsserted();
 
     public IParser DisableParserSuccess(IParser parser)
@@ -474,22 +512,26 @@ public sealed class ParserTestingToolkit
     {
         Status<IParser> parser = await new AsyncAssertStatusSuccess<IParser>(
             () =>
-                new AsyncLoggingDisabledParser(
-                    _logger,
-                    new AsyncStatusCachingDisabledParser(
-                        new AsyncValidatingDisabledParser(
-                            new AsyncSqlSpeakingDisabledParser(
-                                _parsers,
-                                new AsyncDisabledParser(
-                                    new LoggingDisabledParser(
-                                        _logger,
-                                        new StatusCachingDisabledParser(new DisabledParser())
+                new ResourceDisposingDisabledParser(
+                    new AsyncLoggingDisabledParser(
+                        _logger,
+                        new AsyncStatusCachingDisabledParser(
+                            new AsyncValidatingDisabledParser(
+                                new AsyncSqlSpeakingDisabledParser(
+                                    _parsers,
+                                    new AsyncDisabledParser(
+                                        new LoggingDisabledParser(
+                                            _logger,
+                                            new StatusCachingDisabledParser(new DisabledParser())
+                                        )
                                     )
                                 )
                             )
                         )
                     )
-                ).Disable(new AsyncDisableParser(id), CancellationToken.None)
+                )
+                    .With(_parsers)
+                    .Disable(new AsyncDisableParser(id), CancellationToken.None)
         ).AsyncAsserted();
         return parser.Value;
     }
@@ -497,22 +539,26 @@ public sealed class ParserTestingToolkit
     public async Task DisableParserFailureAsync(Guid id) =>
         await new AsyncAssertStatusFailure<IParser>(
             () =>
-                new AsyncLoggingDisabledParser(
-                    _logger,
-                    new AsyncStatusCachingDisabledParser(
-                        new AsyncValidatingDisabledParser(
-                            new AsyncSqlSpeakingDisabledParser(
-                                _parsers,
-                                new AsyncDisabledParser(
-                                    new LoggingDisabledParser(
-                                        _logger,
-                                        new StatusCachingDisabledParser(new DisabledParser())
+                new ResourceDisposingDisabledParser(
+                    new AsyncLoggingDisabledParser(
+                        _logger,
+                        new AsyncStatusCachingDisabledParser(
+                            new AsyncValidatingDisabledParser(
+                                new AsyncSqlSpeakingDisabledParser(
+                                    _parsers,
+                                    new AsyncDisabledParser(
+                                        new LoggingDisabledParser(
+                                            _logger,
+                                            new StatusCachingDisabledParser(new DisabledParser())
+                                        )
                                     )
                                 )
                             )
                         )
                     )
-                ).Disable(new AsyncDisableParser(id), CancellationToken.None)
+                )
+                    .With(_parsers)
+                    .Disable(new AsyncDisableParser(id), CancellationToken.None)
         ).AsyncAsserted();
 
     public IParserLink AddLinkSuccess(IParser parser, string? name, string? url)
@@ -531,20 +577,24 @@ public sealed class ParserTestingToolkit
     {
         Status<IParserLink> link = await new AsyncAssertStatusSuccess<IParserLink>(
             () =>
-                new AsyncLoggingNewParserLink(
-                    _logger,
-                    new AsyncValidatingNewParserLink(
-                        new AsyncSqlSpeakingNewParserLink(
-                            _parsers,
-                            new AsyncNewParserLink(
-                                new LoggingNewParserLink(
-                                    _logger,
-                                    new ValidatingNewParserLink(new NewParserLink())
+                new ResourceDisposingNewParserLink(
+                    new AsyncLoggingNewParserLink(
+                        _logger,
+                        new AsyncValidatingNewParserLink(
+                            new AsyncSqlSpeakingNewParserLink(
+                                _parsers,
+                                new AsyncNewParserLink(
+                                    new LoggingNewParserLink(
+                                        _logger,
+                                        new ValidatingNewParserLink(new NewParserLink())
+                                    )
                                 )
                             )
                         )
                     )
-                ).AsyncNew(new AsyncAddParserLink(parserId, name, url))
+                )
+                    .With(_parsers)
+                    .AsyncNew(new AsyncAddParserLink(parserId, name, url))
         ).AsyncAsserted();
         return link.Value;
     }
@@ -552,20 +602,24 @@ public sealed class ParserTestingToolkit
     public async Task AddLinkFailureAsync(Guid? parserId, string? name, string? url) =>
         await new AsyncAssertStatusFailure<IParserLink>(
             () =>
-                new AsyncLoggingNewParserLink(
-                    _logger,
-                    new AsyncValidatingNewParserLink(
-                        new AsyncSqlSpeakingNewParserLink(
-                            _parsers,
-                            new AsyncNewParserLink(
-                                new LoggingNewParserLink(
-                                    _logger,
-                                    new ValidatingNewParserLink(new NewParserLink())
+                new ResourceDisposingNewParserLink(
+                    new AsyncLoggingNewParserLink(
+                        _logger,
+                        new AsyncValidatingNewParserLink(
+                            new AsyncSqlSpeakingNewParserLink(
+                                _parsers,
+                                new AsyncNewParserLink(
+                                    new LoggingNewParserLink(
+                                        _logger,
+                                        new ValidatingNewParserLink(new NewParserLink())
+                                    )
                                 )
                             )
                         )
                     )
-                ).AsyncNew(new AsyncAddParserLink(parserId, name, url))
+                )
+                    .With(_parsers)
+                    .AsyncNew(new AsyncAddParserLink(parserId, name, url))
         ).AsyncAsserted();
 
     public Status<IParserLink> AddLinkFailure(IParser parser, string? name, string? url) =>
@@ -593,20 +647,24 @@ public sealed class ParserTestingToolkit
     {
         Status<IParserLink> link = await new AsyncAssertStatusSuccess<IParserLink>(
             () =>
-                new AsyncLoggingRemovedParserLink(
-                    _logger,
-                    new AsyncValidatingRemovedParserLink(
-                        new AsyncSqlSpeakingRemovedParserLink(
-                            _parsers,
-                            new AsyncRemovedParserLink(
-                                new LoggingRemovedParserLink(
-                                    _logger,
-                                    new ValidatingRemovedParserLink(new RemovedParserLink())
+                new ResourceDisposingRemovedParserLink(
+                    new AsyncLoggingRemovedParserLink(
+                        _logger,
+                        new AsyncValidatingRemovedParserLink(
+                            new AsyncSqlSpeakingRemovedParserLink(
+                                _parsers,
+                                new AsyncRemovedParserLink(
+                                    new LoggingRemovedParserLink(
+                                        _logger,
+                                        new ValidatingRemovedParserLink(new RemovedParserLink())
+                                    )
                                 )
                             )
                         )
                     )
-                ).AsyncRemoved(new AsyncRemoveParserLink(parserId, linkId))
+                )
+                    .With(_parsers)
+                    .AsyncRemoved(new AsyncRemoveParserLink(parserId, linkId))
         ).AsyncAsserted();
         return link.Value;
     }
@@ -614,20 +672,24 @@ public sealed class ParserTestingToolkit
     public async Task AsyncRemoveLinkFailure(Guid? parserId, Guid? linkId) =>
         await new AsyncAssertStatusFailure<IParserLink>(
             () =>
-                new AsyncLoggingRemovedParserLink(
-                    _logger,
-                    new AsyncValidatingRemovedParserLink(
-                        new AsyncSqlSpeakingRemovedParserLink(
-                            _parsers,
-                            new AsyncRemovedParserLink(
-                                new LoggingRemovedParserLink(
-                                    _logger,
-                                    new ValidatingRemovedParserLink(new RemovedParserLink())
+                new ResourceDisposingRemovedParserLink(
+                    new AsyncLoggingRemovedParserLink(
+                        _logger,
+                        new AsyncValidatingRemovedParserLink(
+                            new AsyncSqlSpeakingRemovedParserLink(
+                                _parsers,
+                                new AsyncRemovedParserLink(
+                                    new LoggingRemovedParserLink(
+                                        _logger,
+                                        new ValidatingRemovedParserLink(new RemovedParserLink())
+                                    )
                                 )
                             )
                         )
                     )
-                ).AsyncRemoved(new AsyncRemoveParserLink(parserId, linkId))
+                )
+                    .With(_parsers)
+                    .AsyncRemoved(new AsyncRemoveParserLink(parserId, linkId))
         ).AsyncAsserted();
 
     public IParserLink RemoveLinkSuccess(IParser parser, IParserLink linkToRemove)
@@ -676,39 +738,47 @@ public sealed class ParserTestingToolkit
     public async Task AsyncIncreaseProcessedSuccess(Guid? parserId, Guid? linkId) =>
         await new AsyncAssertStatusSuccess<ParserStatisticsIncreasement>(
             () =>
-                new AsyncLoggingIncreaseProcessed(
-                    _logger,
-                    new AsyncValidatingIncreaseProcessed(
-                        new AsyncSqlSpeakingIncreaseProcessed(
-                            _parsers,
-                            new AsyncIncreaseProcessed(
-                                new LoggingIncreasedProcessed(
-                                    _logger,
-                                    new ValidatingIncreasedProcessed(new IncreasedProcessed())
+                new ResourceDisposingIncreaseProcessed(
+                    new AsyncLoggingIncreaseProcessed(
+                        _logger,
+                        new AsyncValidatingIncreaseProcessed(
+                            new AsyncSqlSpeakingIncreaseProcessed(
+                                _parsers,
+                                new AsyncIncreaseProcessed(
+                                    new LoggingIncreasedProcessed(
+                                        _logger,
+                                        new ValidatingIncreasedProcessed(new IncreasedProcessed())
+                                    )
                                 )
                             )
                         )
                     )
-                ).Increase(new AsyncIncreaseProcess(parserId, linkId))
+                )
+                    .With(_parsers)
+                    .Increase(new AsyncIncreaseProcess(parserId, linkId))
         ).AsyncAsserted();
 
     public async Task AsyncIncreaseProcessedFailure(Guid? parserId, Guid? linkId) =>
         await new AsyncAssertStatusFailure<ParserStatisticsIncreasement>(
             () =>
-                new AsyncLoggingIncreaseProcessed(
-                    _logger,
-                    new AsyncValidatingIncreaseProcessed(
-                        new AsyncSqlSpeakingIncreaseProcessed(
-                            _parsers,
-                            new AsyncIncreaseProcessed(
-                                new LoggingIncreasedProcessed(
-                                    _logger,
-                                    new ValidatingIncreasedProcessed(new IncreasedProcessed())
+                new ResourceDisposingIncreaseProcessed(
+                    new AsyncLoggingIncreaseProcessed(
+                        _logger,
+                        new AsyncValidatingIncreaseProcessed(
+                            new AsyncSqlSpeakingIncreaseProcessed(
+                                _parsers,
+                                new AsyncIncreaseProcessed(
+                                    new LoggingIncreasedProcessed(
+                                        _logger,
+                                        new ValidatingIncreasedProcessed(new IncreasedProcessed())
+                                    )
                                 )
                             )
                         )
                     )
-                ).Increase(new AsyncIncreaseProcess(parserId, linkId))
+                )
+                    .With(_parsers)
+                    .Increase(new AsyncIncreaseProcess(parserId, linkId))
         ).AsyncAsserted();
 
     public ParserStatisticsIncreasement IncreaseProcessedSuccess(IParser parser, Guid? linkId)
@@ -762,20 +832,26 @@ public sealed class ParserTestingToolkit
     {
         Status<IParserLink> link = await new AsyncAssertStatusSuccess<IParserLink>(
             () =>
-                new AsyncLoggingChangedLinkActivity(
-                    _logger,
-                    new AsyncValidatingChangedLinkActivity(
-                        new AsyncSqlSpeakingChangedLinkActivity(
-                            _parsers,
-                            new AsyncChangedLinkActivity(
-                                new LoggingChangedLinkActivity(
-                                    _logger,
-                                    new ValidatingChangedLinkActivity(new ChangedLinkActivity())
+                new ResourceDisposingChangedLinkActivity(
+                    new AsyncLoggingChangedLinkActivity(
+                        _logger,
+                        new AsyncValidatingChangedLinkActivity(
+                            new AsyncSqlSpeakingChangedLinkActivity(
+                                _parsers,
+                                new AsyncChangedLinkActivity(
+                                    new LoggingChangedLinkActivity(
+                                        _logger,
+                                        new ValidatingChangedLinkActivity(new ChangedLinkActivity())
+                                    )
                                 )
                             )
                         )
                     )
-                ).AsyncChangedActivity(new AsyncChangeLinkActivity(parserId, linkId, nextActivity))
+                )
+                    .With(_parsers)
+                    .AsyncChangedActivity(
+                        new AsyncChangeLinkActivity(parserId, linkId, nextActivity)
+                    )
         ).AsyncAsserted();
         return link.Value;
     }
@@ -787,20 +863,26 @@ public sealed class ParserTestingToolkit
     ) =>
         await new AsyncAssertStatusFailure<IParserLink>(
             () =>
-                new AsyncLoggingChangedLinkActivity(
-                    _logger,
-                    new AsyncValidatingChangedLinkActivity(
-                        new AsyncSqlSpeakingChangedLinkActivity(
-                            _parsers,
-                            new AsyncChangedLinkActivity(
-                                new LoggingChangedLinkActivity(
-                                    _logger,
-                                    new ValidatingChangedLinkActivity(new ChangedLinkActivity())
+                new ResourceDisposingChangedLinkActivity(
+                    new AsyncLoggingChangedLinkActivity(
+                        _logger,
+                        new AsyncValidatingChangedLinkActivity(
+                            new AsyncSqlSpeakingChangedLinkActivity(
+                                _parsers,
+                                new AsyncChangedLinkActivity(
+                                    new LoggingChangedLinkActivity(
+                                        _logger,
+                                        new ValidatingChangedLinkActivity(new ChangedLinkActivity())
+                                    )
                                 )
                             )
                         )
                     )
-                ).AsyncChangedActivity(new AsyncChangeLinkActivity(parserId, linkId, nextActivity))
+                )
+                    .With(_parsers)
+                    .AsyncChangedActivity(
+                        new AsyncChangeLinkActivity(parserId, linkId, nextActivity)
+                    )
         ).AsyncAsserted();
 
     public IParserLink ChangeLinkActivitySuccess(
@@ -857,20 +939,24 @@ public sealed class ParserTestingToolkit
     {
         Status<IParserLink> link = await new AsyncAssertStatusSuccess<IParserLink>(
             () =>
-                new AsyncLoggingFinishedParserLink(
-                    _logger,
-                    new AsyncValidatingFinishedParserLink(
-                        new AsyncSqlSpeakingFinishedParserLink(
-                            _parsers,
-                            new AsyncFinishedParserLink(
-                                new LoggingFinishedParserLink(
-                                    _logger,
-                                    new ValidatingFinishedParserLink(new FinishedParserLink())
+                new ResourceDisposingFinishedParserLink(
+                    new AsyncLoggingFinishedParserLink(
+                        _logger,
+                        new AsyncValidatingFinishedParserLink(
+                            new AsyncSqlSpeakingFinishedParserLink(
+                                _parsers,
+                                new AsyncFinishedParserLink(
+                                    new LoggingFinishedParserLink(
+                                        _logger,
+                                        new ValidatingFinishedParserLink(new FinishedParserLink())
+                                    )
                                 )
                             )
                         )
                     )
-                ).AsyncFinished(new AsyncFinishParserLink(parserId, linkId, elapsed))
+                )
+                    .With(_parsers)
+                    .AsyncFinished(new AsyncFinishParserLink(parserId, linkId, elapsed))
         ).AsyncAsserted();
         return link.Value;
     }
@@ -878,20 +964,24 @@ public sealed class ParserTestingToolkit
     public async Task AsyncFinishLinkFailure(Guid? parserId, Guid? linkId, long? elapsed) =>
         await new AsyncAssertStatusFailure<IParserLink>(
             () =>
-                new AsyncLoggingFinishedParserLink(
-                    _logger,
-                    new AsyncValidatingFinishedParserLink(
-                        new AsyncSqlSpeakingFinishedParserLink(
-                            _parsers,
-                            new AsyncFinishedParserLink(
-                                new LoggingFinishedParserLink(
-                                    _logger,
-                                    new ValidatingFinishedParserLink(new FinishedParserLink())
+                new ResourceDisposingFinishedParserLink(
+                    new AsyncLoggingFinishedParserLink(
+                        _logger,
+                        new AsyncValidatingFinishedParserLink(
+                            new AsyncSqlSpeakingFinishedParserLink(
+                                _parsers,
+                                new AsyncFinishedParserLink(
+                                    new LoggingFinishedParserLink(
+                                        _logger,
+                                        new ValidatingFinishedParserLink(new FinishedParserLink())
+                                    )
                                 )
                             )
                         )
                     )
-                ).AsyncFinished(new AsyncFinishParserLink(parserId, linkId, elapsed))
+                )
+                    .With(_parsers)
+                    .AsyncFinished(new AsyncFinishParserLink(parserId, linkId, elapsed))
         ).AsyncAsserted();
 
     public IParserLink FinishLinkSuccess(IParser parser, Guid? linkId, long? elapsed)
@@ -939,17 +1029,21 @@ public sealed class ParserTestingToolkit
     {
         Status<IParser> started = await new AsyncAssertStatusSuccess<IParser>(
             () =>
-                new AsyncLoggingStartedParser(
-                    _logger,
-                    new AsyncValidatingStartedParser(
-                        new AsyncSqlSpeakingStartedParser(
-                            _parsers,
-                            new AsyncStartedParser(
-                                new LoggingStartedParser(_logger, new StartedParser())
+                new ResourceDisposingStartedParser(
+                    new AsyncLoggingStartedParser(
+                        _logger,
+                        new AsyncValidatingStartedParser(
+                            new AsyncSqlSpeakingStartedParser(
+                                _parsers,
+                                new AsyncStartedParser(
+                                    new LoggingStartedParser(_logger, new StartedParser())
+                                )
                             )
                         )
                     )
-                ).StartedAsync(new AsyncStartParser(parserId))
+                )
+                    .With(_parsers)
+                    .StartedAsync(new AsyncStartParser(parserId))
         ).AsyncAsserted();
         return started.Value;
     }
@@ -958,17 +1052,21 @@ public sealed class ParserTestingToolkit
     {
         await new AsyncAssertStatusFailure<IParser>(
             () =>
-                new AsyncLoggingStartedParser(
-                    _logger,
-                    new AsyncValidatingStartedParser(
-                        new AsyncSqlSpeakingStartedParser(
-                            _parsers,
-                            new AsyncStartedParser(
-                                new LoggingStartedParser(_logger, new StartedParser())
+                new ResourceDisposingStartedParser(
+                    new AsyncLoggingStartedParser(
+                        _logger,
+                        new AsyncValidatingStartedParser(
+                            new AsyncSqlSpeakingStartedParser(
+                                _parsers,
+                                new AsyncStartedParser(
+                                    new LoggingStartedParser(_logger, new StartedParser())
+                                )
                             )
                         )
                     )
-                ).StartedAsync(new AsyncStartParser(parserId))
+                )
+                    .With(_parsers)
+                    .StartedAsync(new AsyncStartParser(parserId))
         ).AsyncAsserted();
     }
 
@@ -995,17 +1093,21 @@ public sealed class ParserTestingToolkit
     {
         Status<IParser> parser = await new AsyncAssertStatusSuccess<IParser>(
             () =>
-                new AsyncLoggingStoppedParser(
-                    _logger,
-                    new AsyncValidatingStoppedParser(
-                        new AsyncSqlSpeakingStoppedParser(
-                            _parsers,
-                            new AsyncStoppedParser(
-                                new LoggingStoppedParser(_logger, new StoppedParser())
+                new ResourceDisposingStoppedParser(
+                    new AsyncLoggingStoppedParser(
+                        _logger,
+                        new AsyncValidatingStoppedParser(
+                            new AsyncSqlSpeakingStoppedParser(
+                                _parsers,
+                                new AsyncStoppedParser(
+                                    new LoggingStoppedParser(_logger, new StoppedParser())
+                                )
                             )
                         )
                     )
-                ).AsyncStopped(new AsyncStopParser(parserId))
+                )
+                    .With(_parsers)
+                    .AsyncStopped(new AsyncStopParser(parserId))
         ).AsyncAsserted();
         return parser.Value;
     }
@@ -1014,17 +1116,21 @@ public sealed class ParserTestingToolkit
     {
         await new AsyncAssertStatusFailure<IParser>(
             () =>
-                new AsyncLoggingStoppedParser(
-                    _logger,
-                    new AsyncValidatingStoppedParser(
-                        new AsyncSqlSpeakingStoppedParser(
-                            _parsers,
-                            new AsyncStoppedParser(
-                                new LoggingStoppedParser(_logger, new StoppedParser())
+                new ResourceDisposingStoppedParser(
+                    new AsyncLoggingStoppedParser(
+                        _logger,
+                        new AsyncValidatingStoppedParser(
+                            new AsyncSqlSpeakingStoppedParser(
+                                _parsers,
+                                new AsyncStoppedParser(
+                                    new LoggingStoppedParser(_logger, new StoppedParser())
+                                )
                             )
                         )
                     )
-                ).AsyncStopped(new AsyncStopParser(parserId))
+                )
+                    .With(_parsers)
+                    .AsyncStopped(new AsyncStopParser(parserId))
         ).AsyncAsserted();
     }
 

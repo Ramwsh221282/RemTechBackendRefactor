@@ -14,5 +14,5 @@ public sealed class StopWhenNotWorkingError : IError
 
     public Error Read() => _error;
 
-    public static implicit operator Status(StopWhenNotWorkingError error) => error._error;
+    public static implicit operator Status(StopWhenNotWorkingError error) => new(error._error);
 }

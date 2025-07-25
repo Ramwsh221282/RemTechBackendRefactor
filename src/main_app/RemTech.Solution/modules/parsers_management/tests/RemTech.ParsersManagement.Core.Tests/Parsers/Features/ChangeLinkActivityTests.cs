@@ -1,6 +1,7 @@
 ﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
+using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.ParsersManagement.Tests.Library;
 using RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
@@ -15,12 +16,21 @@ public sealed class ChangeLinkActivityTests : IClassFixture<ParsersFixture>
     [Fact]
     private void Change_Link_Activity_Success()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        IParser parser = toolkit.CreateInitialParser("Test Parser", "Техника", "Test");
-        IParserLink link = toolkit.AddLinkSuccess(parser, "Test Link", "Test Url");
+        IParsers parsers = _fixture.Parsers();
+        IParser parser = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParser("Test Parser", "Техника", "Test");
+        IParserLink link = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).AddLinkSuccess(parser, "Test Link", "Test Url");
         bool currentActivity = link.Activity();
         Assert.False(currentActivity);
-        IParserLink active = toolkit.ChangeLinkActivitySuccess(parser, link, true);
+        IParserLink active = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).ChangeLinkActivitySuccess(parser, link, true);
         bool nextActivity = active.Activity();
         Assert.True(nextActivity);
         Assert.NotEqual(currentActivity, nextActivity);
@@ -29,21 +39,48 @@ public sealed class ChangeLinkActivityTests : IClassFixture<ParsersFixture>
     [Fact]
     private void Change_Link_Activity_Same_Failure()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        IParser parser = toolkit.CreateInitialParser("Test Parser", "Техника", "Test");
-        IParserLink link = toolkit.AddLinkSuccess(parser, "Test Link", "Test Url");
-        toolkit.ChangeLinkActivitySuccess(parser, link, true);
-        toolkit.ChangeLinkActivityFailure(parser, link, true);
+        var parsers = _fixture.Parsers();
+        IParser parser = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParser("Test Parser", "Техника", "Test");
+        IParserLink link = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).AddLinkSuccess(parser, "Test Link", "Test Url");
+        new ParserTestingToolkit(_fixture.AccessLogger(), parsers).ChangeLinkActivitySuccess(
+            parser,
+            link,
+            true
+        );
+        new ParserTestingToolkit(_fixture.AccessLogger(), parsers).ChangeLinkActivityFailure(
+            parser,
+            link,
+            true
+        );
     }
 
     [Fact]
     private void Change_Link_Activity_WorkingParser_Failure()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
-        IParser parser = toolkit.CreateInitialParser("Test Parser", "Техника", "Test");
+        IParsers parsers = _fixture.Parsers();
+        IParser parser = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).CreateInitialParser("Test Parser", "Техника", "Test");
         string workingState = ParserState.Working();
-        IParserLink link = toolkit.AddLinkSuccess(parser, "Test Link", "Test Url");
-        IParser working = toolkit.UpdateParserSuccess(parser, workingState);
-        toolkit.ChangeLinkActivityFailure(working, link, true);
+        IParserLink link = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).AddLinkSuccess(parser, "Test Link", "Test Url");
+        IParser working = new ParserTestingToolkit(
+            _fixture.AccessLogger(),
+            parsers
+        ).UpdateParserSuccess(parser, workingState);
+        new ParserTestingToolkit(_fixture.AccessLogger(), parsers).ChangeLinkActivityFailure(
+            working,
+            link,
+            true
+        );
     }
 }

@@ -12,7 +12,7 @@ namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 public sealed class Parser : IParser
 {
     private readonly ParserIdentity _identity;
-    private ParserStatistic _statistics;
+    private readonly ParserStatistic _statistics;
     private ParserLinksBag _links;
     private ParserSchedule _schedule;
     private ParserState _state;
@@ -134,5 +134,12 @@ public sealed class Parser : IParser
     {
         _schedule = _schedule.OtherWaitDays(waitDays);
         return Status.Success();
+    }
+
+    public void Dispose() { }
+
+    public ValueTask DisposeAsync()
+    {
+        return ValueTask.CompletedTask;
     }
 }

@@ -7,17 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Dapper" Version="2.1.66" />
-      <PackageReference Include="dbup-core" Version="6.0.4" />
-      <PackageReference Include="dbup-postgresql" Version="6.0.3" />
-      <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.6" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.6" />
-      <PackageReference Include="Npgsql" Version="9.0.3" />
-    </ItemGroup>
-
-    <ItemGroup>
+      <ProjectReference Include="..\..\..\shared_module\adapters\RemTech.Postgres.Adapter.Library\RemTech.Postgres.Adapter.Library.csproj" />
       <ProjectReference Include="..\..\RemTech.ParsersManagement.Core\RemTech.ParsersManagement.Core.csproj" />
     </ItemGroup>
 

@@ -24,7 +24,7 @@ public sealed class ParserJsonTests : IClassFixture<ParsersFixture>
     [Fact]
     private void Serealize_Deserialize_Parser_Success()
     {
-        ParserTestingToolkit toolkit = new(_fixture);
+        ParserTestingToolkit toolkit = new(_fixture.AccessLogger(), _fixture.Parsers());
         IParser parser = toolkit.CreateInitialParser();
         for (int index = 0; index < 3; index++)
         {

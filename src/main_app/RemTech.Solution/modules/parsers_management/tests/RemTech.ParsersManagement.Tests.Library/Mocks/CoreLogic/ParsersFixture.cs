@@ -1,17 +1,15 @@
 ﻿using RemTech.Logging.Library;
-using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 
 namespace RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
 public sealed class ParsersFixture
 {
-    public ParsersSource AccessParsersSource()
+    public IParsers Parsers()
     {
         MokParsers parsers = new();
         MokValidParsers valid = new(parsers);
-        MokTransactionalParsers transactional = new(valid);
-        return new ParsersSource(valid, transactional);
+        return valid;
     }
 
     public ICustomLogger AccessLogger() => new MokLogger();
