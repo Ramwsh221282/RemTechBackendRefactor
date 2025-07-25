@@ -17,10 +17,8 @@ public sealed class BrandsPgTests(PgTestsFixture fixture) : IClassFixture<PgTest
     {
         await using PgConnectionSource connectionSource = new(fixture.DbConfig());
         IPgVehicleBrandsStorage storage = new PgVarietVehicleBrandsStorage()
-            .With(new PgLoggingVehicleBrandsStorage(fixture.Logger(), 
-                new PgVehicleBrandsStore(connectionSource)))
-            .With(new PgLoggingVehicleBrandsStorage(fixture.Logger(), 
-                new PgDuplicateResolvingVehicleBrandsStore(connectionSource)));
+            .With(new PgVehicleBrandsStore(connectionSource))
+            .With(new PgDuplicateResolvingVehicleBrandsStore(connectionSource));
         VehicleBrand brand = new NewVehicleBrand(name);
         await storage.Get(brand, CancellationToken.None);
     }
@@ -30,10 +28,8 @@ public sealed class BrandsPgTests(PgTestsFixture fixture) : IClassFixture<PgTest
     {
         await using PgConnectionSource connectionSource = new(fixture.DbConfig());
         IPgVehicleBrandsStorage storage = new PgVarietVehicleBrandsStorage()
-            .With(new PgLoggingVehicleBrandsStorage(fixture.Logger(), 
-                new PgVehicleBrandsStore(connectionSource)))
-            .With(new PgLoggingVehicleBrandsStorage(fixture.Logger(), 
-                new PgDuplicateResolvingVehicleBrandsStore(connectionSource)));
+            .With(new PgVehicleBrandsStore(connectionSource))
+            .With(new PgDuplicateResolvingVehicleBrandsStore(connectionSource));
         VehicleBrand brand = new NewVehicleBrand(string.Empty);
         await Assert.ThrowsAsync<UnreachableException>(() =>  storage.Get(brand, CancellationToken.None));
     }

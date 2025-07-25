@@ -1,4 +1,4 @@
-﻿using Parsing.Vehicles.Grpc.Recognition.Measurements;
+﻿using Parsing.Vehicles.Grpc.Recognition;
 
 namespace Parsing.Vehicles.Grpc.Recognition;
 
@@ -6,5 +6,4 @@ public interface IRecognizedCharacteristic
 {
     string ReadName();
     string ReadValue();
-    IMeasurement Measurement();
 }

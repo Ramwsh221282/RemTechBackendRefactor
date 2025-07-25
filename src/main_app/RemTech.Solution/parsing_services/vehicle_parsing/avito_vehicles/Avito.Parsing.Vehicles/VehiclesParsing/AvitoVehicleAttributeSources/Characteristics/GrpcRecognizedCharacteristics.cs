@@ -41,11 +41,11 @@ public sealed class GrpcRecognizedCharacteristics : IKeyValuedCharacteristicsSou
         string ctxRawText = string.Join(' ', await CharacteristicTexts(ctxes));
         CharacteristicsDictionary dictionary = new CharacteristicsDictionary();
         DictionariedRecognitions recognitions = await new DictionariedRecognitions()
-            .With(new MeasuringBucketCapacityRecognition(new BucketCapacityRecognition(_channel)))
-            .With(new MeasurementBucketControlTypeRecognition(new BucketControlTypeRecognition(_channel)))
+            .With(new BucketCapacityRecognition(_channel))
+            .With(new BucketControlTypeRecognition(_channel))
             .With(new BuRecognition(_channel))
             .With(new EngineModelRecognition(_channel))
-            .With(new MeasuringEnginePowerRecognition(new EnginePowerRecognition(_channel)))
+            .With(new EnginePowerRecognition(_channel))
             .With(new EngineTypeRecognition(_channel))
             .With(new EngineVolumeRecognition(_channel))
             .With(new FuelTankCapacityRecognition(_channel))

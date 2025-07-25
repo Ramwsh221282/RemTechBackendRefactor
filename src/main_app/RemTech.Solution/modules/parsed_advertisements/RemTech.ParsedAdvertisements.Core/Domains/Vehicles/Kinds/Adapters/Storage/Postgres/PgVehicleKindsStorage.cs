@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Ports.Storage.Postgres;
 using RemTech.Postgres.Adapter.Library;
 
@@ -10,7 +11,7 @@ public sealed class PgVehicleKindsStorage(PgConnectionSource connectionSource) :
     {
         await using NpgsqlConnection connection = await connectionSource.Connect(ct);
         return await kind.ToStoreCommand().Execute(connection, ct) != 1
-            ? throw new ArgumentException($"Duplicate vehicle kind with name: {kind.Identify().ReadText()}")
+            ? throw new OperationException($"Дубликат техники с названием: {kind.Identify().ReadText()}")
             : kind;
     }
 }

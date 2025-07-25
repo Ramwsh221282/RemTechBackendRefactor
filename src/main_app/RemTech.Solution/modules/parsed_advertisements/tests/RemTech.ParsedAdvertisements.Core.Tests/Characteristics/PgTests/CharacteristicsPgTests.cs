@@ -20,10 +20,9 @@ public sealed class CharacteristicsPgTests(PgTestsFixture fixture) : IClassFixtu
     {
         await using PgConnectionSource source = new PgConnectionSource(fixture.DbConfig());
         IPgCharacteristicsStorage storage = new PgVarietCharacteristicsStorage()
-            .With(new PgLoggingCharacteristicsStorage(fixture.Logger(), new PgCharacteristicsStorage(source)))
-            .With(new PgLoggingCharacteristicsStorage(fixture.Logger(),
-                new PgDuplicateResolvingCharacteristicsStorage(source)));
-        await storage.Stored(new UnstructuredCharacteristic(new NotEmptyString(name), new NotEmptyString(value)),
+            .With(new PgCharacteristicsStorage(source))
+            .With(new PgDuplicateResolvingCharacteristicsStorage(source));
+        await storage.Stored(new CharacteristicVeil(new NotEmptyString(name), new NotEmptyString(value)).Characteristic(),
             CancellationToken.None);
     }
 
@@ -32,11 +31,10 @@ public sealed class CharacteristicsPgTests(PgTestsFixture fixture) : IClassFixtu
     {
         await using PgConnectionSource source = new PgConnectionSource(fixture.DbConfig());
         IPgCharacteristicsStorage storage = new PgVarietCharacteristicsStorage()
-            .With(new PgLoggingCharacteristicsStorage(fixture.Logger(), new PgCharacteristicsStorage(source)))
-            .With(new PgLoggingCharacteristicsStorage(fixture.Logger(),
-                new PgDuplicateResolvingCharacteristicsStorage(source)));
+            .With(new PgCharacteristicsStorage(source))
+            .With(new PgDuplicateResolvingCharacteristicsStorage(source));
         await Assert.ThrowsAnyAsync<UnreachableException>(() => 
-            storage.Stored(new UnstructuredCharacteristic(new NotEmptyString(string.Empty), new NotEmptyString(string.Empty)),
+            storage.Stored(new CharacteristicVeil(new NotEmptyString(string.Empty), new NotEmptyString(string.Empty)).Characteristic(),
             CancellationToken.None));
     }
 }

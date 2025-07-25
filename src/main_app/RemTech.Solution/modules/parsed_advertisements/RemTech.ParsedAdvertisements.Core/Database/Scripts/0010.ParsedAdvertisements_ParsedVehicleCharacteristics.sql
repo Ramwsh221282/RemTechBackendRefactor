@@ -6,8 +6,7 @@
     ctx_measure     VARCHAR(30) NOT NULL,
     PRIMARY KEY (vehicle_id, ctx_id),
     FOREIGN KEY (vehicle_id) REFERENCES parsed_advertisements_module.parsed_vehicles(id) ON DELETE CASCADE,
-    FOREIGN KEY (ctx_id) REFERENCES parsed_advertisements_module.vehicle_characteristics(id) ON DELETE CASCADE,
-    UNIQUE (vehicle_id, ctx_id, ctx_name, ctx_value)
+    FOREIGN KEY (ctx_id) REFERENCES parsed_advertisements_module.vehicle_characteristics(id) ON DELETE CASCADE    
 );
 
 CREATE INDEX IF NOT EXISTS idx_parsed_vehicle_characteristics_ctx_name

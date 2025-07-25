@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using RemTech.Core.Shared.Exceptions;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.Adapters.Storage.Postgres;
 
@@ -14,7 +15,7 @@ public sealed class PgSingleRiddenVehicleModelFromStore
     public async Task<VehicleModel> Read()
     {
         if (!await _reader.ReadAsync())
-            throw new ApplicationException("No vehicle models found.");
+            throw new OperationException("Модель техники не найдена.");
         Guid id = _reader.GetGuid(_reader.GetOrdinal("id"));
         string name = _reader.GetString(_reader.GetOrdinal("text"));
         return new VehicleModel(new VehicleModelIdentity(id), new VehicleModelName(name));

@@ -45,16 +45,8 @@ public sealed class PgCharacteristicsSavingVehicle(Vehicle vehicle) : Vehicle(ve
         for (int index = 0; index < ctxes.Length; index++)
         {
             VehicleCharacteristic ctx = ctxes[index];
-            Guid ctxId = ctx.WhatCharacteristic().Identify().ReadId();
-            string ctxName = ctx.WhatCharacteristic().Identify().ToString();
-            string ctxValue = ctx.WhatCharacteristic().Identify().ReadText();
-            string measure = ctx.WhatCharacteristic().Measure().Read();
-            parametrized = parametrized
-                .With($"@vehicle_id_{index}", vehicleId)
-                .With($"@ctx_id_{index}", ctxId)
-                .With($"@ctx_name_{index}", ctxName)
-                .With($"@ctx_value_{index}", ctxValue)
-                .With($"@ctx_measure_{index}", measure);
+            parametrized = ctx.CtxPgCommand(index, parametrized)
+                .With($"@vehicle_id_{index}", vehicleId);
         }
 
         return parametrized;

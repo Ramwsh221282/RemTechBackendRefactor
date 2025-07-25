@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.Ports.Storage.Postgres;
 using RemTech.Postgres.Adapter.Library;
 
@@ -10,7 +11,7 @@ public sealed class PgVehicleModelsStorage(PgConnectionSource connectionSource) 
     {
         await using NpgsqlConnection connection = await connectionSource.Connect(ct);
         return await model.ToStoreCommand().Execute(connection, ct) != 1
-            ? throw new ApplicationException("Unable to store vehicle model. Duplicate by name")
+            ? throw new OperationException("Невозможно добавить новую модель техники. Дубликат по имени.")
             : model;
     }
 }

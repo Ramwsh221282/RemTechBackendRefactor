@@ -17,9 +17,8 @@ public sealed class KindsPgTests(PgTestsFixture fixture) : IClassFixture<PgTests
     {
         await using PgConnectionSource source = new(fixture.DbConfig());
         IPgVehicleKindsStorage storage = new PgVarietVehicleKindStorage()
-            .With(new PgLoggingVehicleKindStorage(fixture.Logger(), new PgVehicleKindsStorage(source)))
-            .With(new PgLoggingVehicleKindStorage(fixture.Logger(),
-                new PgDuplicateResolvingVehicleKindStorage(source)));
+            .With(new PgVehicleKindsStorage(source))
+            .With(new PgDuplicateResolvingVehicleKindStorage(source));
         VehicleKind kind = new NewVehicleKind(kindName);
         await storage.Read(kind, CancellationToken.None);
     }
@@ -29,9 +28,8 @@ public sealed class KindsPgTests(PgTestsFixture fixture) : IClassFixture<PgTests
     {
         await using PgConnectionSource source = new(fixture.DbConfig());
         IPgVehicleKindsStorage storage = new PgVarietVehicleKindStorage()
-            .With(new PgLoggingVehicleKindStorage(fixture.Logger(), new PgVehicleKindsStorage(source)))
-            .With(new PgLoggingVehicleKindStorage(fixture.Logger(),
-                new PgDuplicateResolvingVehicleKindStorage(source)));
+            .With(new PgVehicleKindsStorage(source))
+            .With(new PgDuplicateResolvingVehicleKindStorage(source));
         VehicleKind kind = new NewVehicleKind(string.Empty);
         await Assert.ThrowsAnyAsync<UnreachableException>(() => storage.Read(kind, CancellationToken.None));
     }

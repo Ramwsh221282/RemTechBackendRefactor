@@ -78,9 +78,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsing.Vehicles.Grpc.Recog
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsing.Vehicles.DbSearch", "parsing_services\vehicle_parsing\Parsing.Vehicles.DbSearch\Parsing.Vehicles.DbSearch.csproj", "{82F82399-E16C-4735-A6BB-2B7FD6672281}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsing.Vehicles.RabbitMq", "parsing_services\vehicle_parsing\Parsing.Vehicles.RabbitMq\Parsing.Vehicles.RabbitMq.csproj", "{C7D08F75-E0B2-49F0-8702-3C6C5EDAE34D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Configuration.Library", "modules\shared_module\RemTech.Configuration.Library\RemTech.Configuration.Library.csproj", "{9530E9EB-43B1-4820-AAC2-35F7A2457AF3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.RabbitMq.Adapter", "modules\shared_module\adapters\RemTech.RabbitMq.Adapter\RemTech.RabbitMq.Adapter.csproj", "{E265C631-08D5-4930-A671-D56613240550}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.DependencyInjection.Library", "modules\shared_module\adapters\RemTech.DependencyInjection.Library\RemTech.DependencyInjection.Library.csproj", "{F570FC87-EB52-4238-9887-0D5F15C57EB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -125,8 +127,9 @@ Global
 		{039A9A45-D7C7-4F5B-BA43-F4CDDE4B6E9B} = {8F03D7E1-539A-40BD-977E-D85A243D3A0F}
 		{07EC2AF8-B9D9-4728-BAE4-3212D15AB32C} = {5C612390-D5EF-443F-9E9F-2406DCFD732C}
 		{82F82399-E16C-4735-A6BB-2B7FD6672281} = {5C612390-D5EF-443F-9E9F-2406DCFD732C}
-		{C7D08F75-E0B2-49F0-8702-3C6C5EDAE34D} = {5C612390-D5EF-443F-9E9F-2406DCFD732C}
 		{9530E9EB-43B1-4820-AAC2-35F7A2457AF3} = {6F5C9BC2-2F61-40A4-B372-CCE7AA12358D}
+		{E265C631-08D5-4930-A671-D56613240550} = {D8A8CDCA-3A8D-48EE-ABEF-D4DBABEEE2F5}
+		{F570FC87-EB52-4238-9887-0D5F15C57EB2} = {6F5C9BC2-2F61-40A4-B372-CCE7AA12358D}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -225,13 +228,17 @@ Global
 		{82F82399-E16C-4735-A6BB-2B7FD6672281}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82F82399-E16C-4735-A6BB-2B7FD6672281}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82F82399-E16C-4735-A6BB-2B7FD6672281}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C7D08F75-E0B2-49F0-8702-3C6C5EDAE34D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7D08F75-E0B2-49F0-8702-3C6C5EDAE34D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C7D08F75-E0B2-49F0-8702-3C6C5EDAE34D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7D08F75-E0B2-49F0-8702-3C6C5EDAE34D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9530E9EB-43B1-4820-AAC2-35F7A2457AF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9530E9EB-43B1-4820-AAC2-35F7A2457AF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9530E9EB-43B1-4820-AAC2-35F7A2457AF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9530E9EB-43B1-4820-AAC2-35F7A2457AF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E265C631-08D5-4930-A671-D56613240550}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E265C631-08D5-4930-A671-D56613240550}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E265C631-08D5-4930-A671-D56613240550}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E265C631-08D5-4930-A671-D56613240550}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F570FC87-EB52-4238-9887-0D5F15C57EB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F570FC87-EB52-4238-9887-0D5F15C57EB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F570FC87-EB52-4238-9887-0D5F15C57EB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F570FC87-EB52-4238-9887-0D5F15C57EB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

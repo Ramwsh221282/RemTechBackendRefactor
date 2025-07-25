@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Ports.Storage;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Adapters.Storage.Postgres;
@@ -28,6 +29,6 @@ public sealed class PgVarietVehicleBrandsStorage : IPgVehicleBrandsStorage
             }
         }
 
-        throw new UnreachableException("Unable to process vehicle brand into storage.");
+        throw new OperationException("Невозможно добавить бренд техники.");
     }
 }

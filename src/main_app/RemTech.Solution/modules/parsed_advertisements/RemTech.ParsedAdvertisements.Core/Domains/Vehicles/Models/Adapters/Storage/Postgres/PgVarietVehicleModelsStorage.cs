@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.Ports.Storage.Postgres;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.Adapters.Storage.Postgres;
@@ -28,6 +29,6 @@ public sealed class PgVarietVehicleModelsStorage : IPgVehicleModelsStorage
             }
         }
 
-        throw new UnreachableException("Unable to store vehicle model.");
+        throw new OperationException("Невозможно добавить модель техники.");
     }
 }

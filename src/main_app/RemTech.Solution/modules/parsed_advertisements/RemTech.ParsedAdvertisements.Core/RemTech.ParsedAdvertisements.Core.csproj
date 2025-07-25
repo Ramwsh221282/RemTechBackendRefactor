@@ -10,12 +10,21 @@
       <ProjectReference Include="..\..\parsers_management\RemTech.ParsersManagement.External\RemTech.ParsersManagement.External.csproj" />
       <ProjectReference Include="..\..\shared_module\adapters\RemTech.Logging.Adapter\RemTech.Logging.Adapter.csproj" />
       <ProjectReference Include="..\..\shared_module\adapters\RemTech.Postgres.Adapter.Library\RemTech.Postgres.Adapter.Library.csproj" />
+      <ProjectReference Include="..\..\shared_module\adapters\RemTech.RabbitMq.Adapter\RemTech.RabbitMq.Adapter.csproj" />
       <ProjectReference Include="..\..\shared_module\RemTech.Configuration.Library\RemTech.Configuration.Library.csproj" />
       <ProjectReference Include="..\..\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <EmbeddedResource Include="Database\Scripts\*.sql"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Domains\Vehicles\Ports\Sinking\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.3" />
     </ItemGroup>
 
 </Project>

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Features.Structuring;
+﻿using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Ports.Storage;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Adapters.Storage.Postgres;
@@ -14,14 +13,14 @@ public sealed class PgVarietCharacteristicsStorage : IPgCharacteristicsStorage
         return this;
     }
     
-    public async Task<ICharacteristic> Stored(UnstructuredCharacteristic unstructured, CancellationToken ct = default)
+    public async Task<Characteristic> Stored(Characteristic ctx, CancellationToken ct = default)
     {
         while (_storages.Count > 0)
         {
             IPgCharacteristicsStorage storage = _storages.Dequeue();
             try
             {
-                return await storage.Stored(unstructured, ct);
+                return await storage.Stored(ctx, ct);
             }
             catch
             {
@@ -29,6 +28,6 @@ public sealed class PgVarietCharacteristicsStorage : IPgCharacteristicsStorage
             }
         }
 
-        throw new UnreachableException("Unable to store characteristic.");
+        throw new OperationException("Невозможно добавить характеристику.");
     }
 }

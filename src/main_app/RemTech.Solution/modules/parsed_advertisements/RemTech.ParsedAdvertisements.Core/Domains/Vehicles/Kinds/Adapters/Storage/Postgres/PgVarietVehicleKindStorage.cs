@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Ports.Storage.Postgres;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Adapters.Storage.Postgres;
@@ -28,6 +29,6 @@ public sealed class PgVarietVehicleKindStorage : IPgVehicleKindsStorage
             }
         }
 
-        throw new UnreachableException("Unable to read vehicle kind from variet storages.");
+        throw new OperationException("Невозможно добавить тип техники.");
     }
 }

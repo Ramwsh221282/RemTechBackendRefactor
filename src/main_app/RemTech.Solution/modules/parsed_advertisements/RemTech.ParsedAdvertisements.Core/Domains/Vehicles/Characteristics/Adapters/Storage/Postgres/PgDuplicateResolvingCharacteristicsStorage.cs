@@ -9,11 +9,10 @@ namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Ada
 public sealed class PgDuplicateResolvingCharacteristicsStorage(PgConnectionSource connectionSource)
     : IPgCharacteristicsStorage
 {
-    public async Task<ICharacteristic> Stored(UnstructuredCharacteristic unstructured, CancellationToken ct = default)
+    public async Task<Characteristic> Stored(Characteristic ctx, CancellationToken ct = default)
     {
-        NotEmptyString name = new(unstructured.Name());
-        PgCharacteristicFromStoreCommand pgCharacteristicFrom = new(name);
+        PgCharacteristicFromStoreCommand command = ctx.FromStoreCommand();
         await using NpgsqlConnection connection = await connectionSource.Connect(ct);
-        return await pgCharacteristicFrom.Fetch(connection, ct);
+        return await command.Fetch(connection, ct);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Ports.Storage;
 using RemTech.Postgres.Adapter.Library;
 
@@ -10,7 +11,7 @@ public sealed class PgVehicleBrandsStore(PgConnectionSource connectionSource) : 
     {
         await using NpgsqlConnection connection = await connectionSource.Connect(ct);
         return await brand.StoreCommand().Execute(connection, ct) != 1
-            ? throw new ApplicationException($"Unable to store brand. Duplicate by name: {brand.Identify().ReadText()}")
+            ? throw new OperationException($"Нельзя добавить бренд. Бренд с названием уже присутствует: {brand.Identify().ReadText()}")
             : brand;
     }
 }

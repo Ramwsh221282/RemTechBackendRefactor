@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Ports.Storage;
 using RemTech.Postgres.Adapter.Library.PgCommands;
 
@@ -16,11 +17,11 @@ public sealed class PgCharacteristicToStoreCommand(Guid id, string text, string 
     public async Task<int> Execute(NpgsqlConnection connection, CancellationToken ct = default)
     {
         if (id == Guid.Empty)
-            throw new ArgumentException("Characteristic id is empty");
+            throw new OperationException("Нельзя добавить характеристику. Идентификатор пустой.");
         if (string.IsNullOrWhiteSpace(measuring))
-            throw new ArgumentException("Characteristic measure is empty");
+            throw new OperationException("Нельзя добавить характеристику. Единица измерения пустая.");
         if (string.IsNullOrWhiteSpace(text))
-            throw new ArgumentException("Characteristic name is empty");
+            throw new OperationException("Нельзя добавить характеристику. Название пустое.");
         return await new AsyncExecutedCommand
             (new AsyncPreparedCommand(
                 new ParametrizingPgCommand(new PgCommand(connection, _sql))

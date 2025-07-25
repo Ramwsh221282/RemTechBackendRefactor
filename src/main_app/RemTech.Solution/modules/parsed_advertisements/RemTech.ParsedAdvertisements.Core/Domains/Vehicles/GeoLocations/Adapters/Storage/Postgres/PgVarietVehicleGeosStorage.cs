@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Ports.Storage.Postgres;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Adapters.Storage.Postgres;
@@ -28,6 +29,6 @@ public sealed class PgVarietVehicleGeosStorage : IPgVehicleGeosStorage
             }
         }
 
-        throw new UnreachableException("Unable to store location.");
+        throw new OperationException("Невозможно добавить геолокацию.");
     }
 }

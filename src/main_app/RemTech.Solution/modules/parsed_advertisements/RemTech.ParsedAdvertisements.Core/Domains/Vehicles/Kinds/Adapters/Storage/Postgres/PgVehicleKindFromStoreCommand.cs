@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using Npgsql;
+using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Ports.Storage.Postgres;
 using RemTech.Postgres.Adapter.Library.PgCommands;
 
@@ -15,7 +16,7 @@ public sealed class PgVehicleKindFromStoreCommand(string text) : IPgVehicleKindF
     public async Task<VehicleKind> Fetch(NpgsqlConnection connection, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(text))
-            throw new ArgumentException("Vehicle kind name is empty.");
+            throw new OperationException("Невозможно получить тип техники поиском. Параметр названия был пустым.");
         await using DbDataReader reader = await new AsyncDbReaderCommand(
             new AsyncPreparedCommand(
                 new ParametrizingPgCommand(

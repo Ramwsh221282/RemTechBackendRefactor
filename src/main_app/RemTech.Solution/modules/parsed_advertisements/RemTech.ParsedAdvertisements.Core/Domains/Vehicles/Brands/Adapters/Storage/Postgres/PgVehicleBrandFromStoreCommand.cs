@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using Npgsql;
+using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Ports.Storage;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.ValueObjects;
 using RemTech.Postgres.Adapter.Library.PgCommands;
@@ -16,7 +17,7 @@ public sealed class PgVehicleBrandFromStoreCommand(VehicleBrandIdentity identity
     public async Task<VehicleBrand> Fetch(NpgsqlConnection connection, CancellationToken ct = default)
     {
         if (!identity.ReadText())
-            throw new ArgumentException("Vehicle brand identity name is empty");
+            throw new OperationException("Параметр Названия бренда для поиска из БД был пустым.");
         await using DbDataReader reader = await new AsyncDbReaderCommand(
             new AsyncPreparedCommand(
                 new ParametrizingPgCommand(

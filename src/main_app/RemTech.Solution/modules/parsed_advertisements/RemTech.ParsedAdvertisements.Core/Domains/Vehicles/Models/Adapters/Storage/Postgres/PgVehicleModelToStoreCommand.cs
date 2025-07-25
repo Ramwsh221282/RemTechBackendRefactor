@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.Ports.Storage.Postgres;
 using RemTech.Postgres.Adapter.Library.PgCommands;
 
@@ -15,9 +16,9 @@ public sealed class PgVehicleModelToStoreCommand(Guid id, string name) : IPgVehi
     public async Task<int> Execute(NpgsqlConnection connection, CancellationToken ct = default)
     {
         if (id == Guid.Empty)
-            throw new ArgumentException("Vehicle model id is empty");
+            throw new OperationException("Невозможно добавить модель техники. Идентификатор пустой.");
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Vehicle model name is empty");
+            throw new OperationException("Невозможно добавить модель техники. Название пустое.");
         return await new AsyncExecutedCommand(
                 new AsyncPreparedCommand(
                     new ParametrizingPgCommand(new PgCommand(connection, _sql))

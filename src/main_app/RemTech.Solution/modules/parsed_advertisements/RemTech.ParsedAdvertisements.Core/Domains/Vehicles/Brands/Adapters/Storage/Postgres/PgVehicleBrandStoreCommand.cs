@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Ports.Storage;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.ValueObjects;
 using RemTech.Postgres.Adapter.Library.PgCommands;
@@ -15,9 +16,9 @@ public sealed class PgVehicleBrandStoreCommand(VehicleBrandIdentity identity) : 
     public async  Task<int> Execute(NpgsqlConnection connection, CancellationToken ct = default)
     {
         if (!identity.ReadText())
-            throw new ArgumentException("Vehicle identity name is empty");
+            throw new OperationException("Нельзя добавить бренд. Название бренда пустое.");
         if (!identity.ReadId())
-            throw new ArgumentException("Vehicle identity ID is empty");
+            throw new OperationException("Нельзя добавить бренд. Идентификатор бренда пустой.");
         return await new AsyncExecutedCommand(new AsyncPreparedCommand(
             new ParametrizingPgCommand(new PgCommand(connection, _sql))
                 .With("@id", (Guid)identity.ReadId())

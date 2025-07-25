@@ -38,10 +38,8 @@ CREATE INDEX IF NOT EXISTS idx_parsers_name
 CREATE INDEX IF NOT EXISTS idx_parser_links_name
     ON parsers_management_module.parser_links(name);
 
-CREATE SCHEMA IF NOT EXISTS shared_advertisements_module;
-
-CREATE TABLE IF NOT EXISTS shared_advertisements_module.contained_items (
-    id              VARCHAR(50),
+CREATE TABLE IF NOT EXISTS parsers_management_module.contained_items (
+    id              VARCHAR(100),
     source_id       UUID NOT NULL REFERENCES parsers_management_module.parser_links(id) ON DELETE SET NULL,
     date_created    DATE NOT NULL,
     is_new          BOOLEAN NOT NULL,

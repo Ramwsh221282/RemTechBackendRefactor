@@ -13,7 +13,7 @@ public sealed class JsonCursor : IConfigCursor
     
     public string GetOption(string key)
     {
-        string? option = _section.GetSection(nameof(key)).Value;
+        string? option = _section.GetSection(key).Value;
         return option ?? throw new ArgumentException($"Option {key} does not exist or not specified.");
     }
 }

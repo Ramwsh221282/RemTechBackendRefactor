@@ -16,7 +16,7 @@ public sealed class LocationsPgTests(PgTestsFixture fixture) : IClassFixture<PgT
     {
         await using PgConnectionSource source = new(fixture.DbConfig());
         IPgVehicleGeosStorage storage = new PgVarietVehicleGeosStorage()
-            .With(new PgLoggingVehicleGeosStorage(fixture.Logger(), new PgVehicleGeosStorage(source)));
+            .With(new PgVehicleGeosStorage(source));
         GeoLocation location = new NewGeoLocation(name, kind);
         await storage.Get(location, CancellationToken.None);
     }
@@ -26,7 +26,7 @@ public sealed class LocationsPgTests(PgTestsFixture fixture) : IClassFixture<PgT
     {
         await using PgConnectionSource source = new(fixture.DbConfig());
         IPgVehicleGeosStorage storage = new PgVarietVehicleGeosStorage()
-            .With(new PgLoggingVehicleGeosStorage(fixture.Logger(), new PgVehicleGeosStorage(source)));
+            .With(new PgVehicleGeosStorage(source));
         GeoLocation location = new NewGeoLocation(string.Empty, string.Empty);
         await Assert.ThrowsAnyAsync<UnreachableException>(() => storage.Get(location, CancellationToken.None));
     }

@@ -96,21 +96,6 @@ public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
             VehicleCharacteristics characteristics = base.Characteristics;
             if (characteristics.Amount() == 0)
                 throw new ValueNotValidException("Характеристики техники", "не заданы.");
-            foreach (VehicleCharacteristic ctx in characteristics.Read())
-            {
-                string measure = ctx.WhatCharacteristic().Measure().Read();
-                if (string.IsNullOrWhiteSpace(measure))
-                    throw new ValueNotValidException("Измерение характеристики техники", "не заданое");
-                Guid id = ctx.WhatCharacteristic().Identify().ReadId();
-                if (id == Guid.Empty)
-                    throw new ValueNotValidException("ID характеристики техники", "не заданое");
-                string name = ctx.WhatCharacteristic().Identify().ReadText();
-                if (string.IsNullOrWhiteSpace(name))
-                    throw new ValueNotValidException("Название характеристики техники", "не заданое");
-                string value = ctx.WhatValue();
-                if (string.IsNullOrWhiteSpace(value))
-                    throw new ValueNotValidException("Значение характеристики", "не заданое");
-            }
             _ctxesPassed = true;
             return characteristics;
         }

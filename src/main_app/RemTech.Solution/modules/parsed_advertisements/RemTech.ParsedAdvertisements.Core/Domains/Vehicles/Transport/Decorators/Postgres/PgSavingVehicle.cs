@@ -15,6 +15,7 @@ public sealed class PgSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
                                    (id, kind_id, brand_id, geo_id, model_id, price, is_nds, photos, document_tsvector)
                                    VALUES
                                    (@id, @kind_id, @brand_id, @geo_id, @model_id, @price, @is_nds, @photos, to_tsvector('russian', @document_tsvector))
+                                   ON CONFLICT(id) DO NOTHING;
                                    """);
         int affected = await
             new AsyncExecutedCommand(
@@ -60,15 +61,14 @@ public sealed class PgSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
         string kindName = Kind.Identify().ReadText();
         string brandName = Brand.Identify().ReadText();
         string modelName = Model.Name();
-        IEnumerable<(string, string)> ctxes = Characteristics.Read()
-            .Select(c => ((string)c.WhatCharacteristic().Identify().ReadText(), (string)c.WhatValue()));
+        IEnumerable<string> ctxes = Characteristics.Read().Select(c => c.NameValued());
         string[] texts =
         [
             kindName,
             brandName,
             modelName,
         ];
-        texts = [..texts, ..ctxes.Select(c => $"{c.Item1} {c.Item2}")];
+        texts = [..texts, ..ctxes];
         string tsVectorText = string.Join(" ", texts);
         return tsVectorText;
     }

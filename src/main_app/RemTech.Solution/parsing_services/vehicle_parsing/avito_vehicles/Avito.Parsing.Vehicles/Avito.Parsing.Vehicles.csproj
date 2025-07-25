@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\..\modules\shared_module\adapters\RemTech.RabbitMq.Adapter\RemTech.RabbitMq.Adapter.csproj" />
       <ProjectReference Include="..\..\..\common\common_avito\Parsing.Avito.Common\Parsing.Avito.Common.csproj" />
       <ProjectReference Include="..\..\..\common\Parsing.SDK\Parsing.SDK.csproj" />
       <ProjectReference Include="..\..\Parsing.Vehicles.Common\Parsing.Vehicles.Common.csproj" />

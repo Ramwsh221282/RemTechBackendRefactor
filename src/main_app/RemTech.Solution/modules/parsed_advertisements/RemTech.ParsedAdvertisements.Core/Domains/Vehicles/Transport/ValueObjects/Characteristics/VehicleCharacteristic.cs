@@ -1,19 +1,25 @@
 ﻿using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics;
+using RemTech.Postgres.Adapter.Library.PgCommands;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects.Characteristics;
 
 public sealed record VehicleCharacteristic
 {
-    private readonly ICharacteristic _characteristic;
+    private readonly Characteristic _characteristic;
     private readonly VehicleCharacteristicValue _value;
 
-    public VehicleCharacteristic(ICharacteristic characteristic, VehicleCharacteristicValue value)
+    public VehicleCharacteristic(Characteristic characteristic, VehicleCharacteristicValue value)
     {
         _characteristic = characteristic;
         _value = value;
     }
 
     public VehicleCharacteristicValue WhatValue() => _value;
+    public Characteristic WhatCharacteristic() => _characteristic;
+    public string NameValued() => _characteristic.NameValueString(_value);
 
-    public ICharacteristic WhatCharacteristic() => _characteristic;
+    public ParametrizingPgCommand CtxPgCommand(int index, ParametrizingPgCommand cmd)
+    {
+        return _characteristic.VehicleCtxPgCommand(_value, index, cmd);
+    }
 }

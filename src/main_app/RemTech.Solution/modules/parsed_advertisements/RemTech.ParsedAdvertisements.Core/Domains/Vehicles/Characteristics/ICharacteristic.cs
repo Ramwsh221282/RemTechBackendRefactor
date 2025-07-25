@@ -4,6 +4,5 @@ namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics;
 
 public interface ICharacteristic
 {
-    public CharacteristicIdentity Identify();
-    public CharacteristicMeasure Measure();
+    
 }

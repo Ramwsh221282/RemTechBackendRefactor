@@ -40,9 +40,7 @@ public sealed class VehiclePgTests(PgTestsFixture fixture) : IClassFixture<PgTes
         IItemPrice price = new ItemPriceWithNds(new PriceValue(10000));
         VehicleIdentity identity = new VehicleIdentity(new VehicleId("A123123231312321"));
         VehiclePhotos photos = new VehiclePhotos([new VehiclePhoto("http://localhost")]);
-        Assert.ThrowsAny<ValueNotValidException>(() => new LoggingVehicle(fixture.Logger(),
-            new ValidVehicle(
-                new Vehicle(identity, price, photos))));
+        Assert.ThrowsAny<ValueNotValidException>(() => new ValidVehicle(new Vehicle(identity, price, photos)));
     }
 
     [Fact]
@@ -50,59 +48,54 @@ public sealed class VehiclePgTests(PgTestsFixture fixture) : IClassFixture<PgTes
     {
         await using PgConnectionSource connectionSource = new(fixture.DbConfig());
         IPgVehicleBrandsStorage brands = new PgVarietVehicleBrandsStorage()
-            .With(new PgLoggingVehicleBrandsStorage(fixture.Logger(), 
-                new PgVehicleBrandsStore(connectionSource)))
-            .With(new PgLoggingVehicleBrandsStorage(fixture.Logger(), 
-                new PgDuplicateResolvingVehicleBrandsStore(connectionSource)));
+            .With(new PgVehicleBrandsStore(connectionSource))
+            .With(new PgDuplicateResolvingVehicleBrandsStore(connectionSource));
         IPgVehicleKindsStorage kinds = new PgVarietVehicleKindStorage()
-            .With(new PgLoggingVehicleKindStorage(fixture.Logger(), new PgVehicleKindsStorage(connectionSource)))
-            .With(new PgLoggingVehicleKindStorage(fixture.Logger(),
-                new PgDuplicateResolvingVehicleKindStorage(connectionSource)));
+            .With(new PgVehicleKindsStorage(connectionSource))
+            .With(new PgDuplicateResolvingVehicleKindStorage(connectionSource));
         IPgVehicleGeosStorage locations = new PgVarietVehicleGeosStorage()
-            .With(new PgLoggingVehicleGeosStorage(fixture.Logger(), new PgVehicleGeosStorage(connectionSource)));
+            .With(new PgVehicleGeosStorage(connectionSource));
         IPgVehicleModelsStorage models = new PgVarietVehicleModelsStorage()
-            .With(new PgLoggingVehicleModelsStorage(fixture.Logger(), new PgVehicleModelsStorage(connectionSource)))
-            .With(new PgLoggingVehicleModelsStorage(fixture.Logger(), new PgDuplicateResolvingVehicleModelsStorage(connectionSource)));
+            .With(new PgVehicleModelsStorage(connectionSource))
+            .With(new PgDuplicateResolvingVehicleModelsStorage(connectionSource));
         IPgCharacteristicsStorage ctxes = new PgVarietCharacteristicsStorage()
-            .With(new PgLoggingCharacteristicsStorage(fixture.Logger(), new PgCharacteristicsStorage(connectionSource)))
-            .With(new PgLoggingCharacteristicsStorage(fixture.Logger(),
-                new PgDuplicateResolvingCharacteristicsStorage(connectionSource)));
-        VehicleBrand brand = await brands.Get(new LoggingVehicleBrand(
-            fixture.Logger(),
+            .With(new PgCharacteristicsStorage(connectionSource))
+            .With(new PgDuplicateResolvingCharacteristicsStorage(connectionSource));
+        VehicleBrand brand = await brands.Get(
             new ValidVehicleBrand(
                 new VehicleBrand(
                     new VehicleBrandIdentity(new VehicleBrandId(Guid.NewGuid()), new VehicleBrandText("Ponsse"))
-                ))), CancellationToken.None);
-        VehicleKind kind = await kinds.Read(new LoggingVehicleKind(
-                fixture.Logger(),
+                )), CancellationToken.None);
+        VehicleKind kind = await kinds.Read(
                 new ValidVehicleKind(
                     new VehicleKind(
-                        new VehicleKindIdentity(new VehicleKindId(Guid.NewGuid()), new VehicleKindText("Форвардер"))))),
-            CancellationToken.None);
-        GeoLocation location = await locations.Get(new LoggingGeoLocation(fixture.Logger(),
+                        new VehicleKindIdentity(new VehicleKindId(Guid.NewGuid()), new VehicleKindText("Форвардер")))),
+            CancellationToken.None
+            );
+        GeoLocation location = await locations.Get(
             new ValidGeoLocation(
                 new GeoLocation(
                     new GeoLocationIdentity(
                         new GeoLocationId(new NotEmptyGuid(Guid.NewGuid())),
                         new GeolocationText(new NotEmptyString("Красноярский")),
-                        new GeolocationText(new NotEmptyString("край")))))), CancellationToken.None);
+                        new GeolocationText(new NotEmptyString("край"))))), CancellationToken.None);
+        
         VehicleModel model = await models.Get(
             new VehicleModel(
                 new VehicleModelIdentity(Guid.NewGuid()),
                 new VehicleModelName(new NotEmptyString("Buffalo"))), CancellationToken.None);
-        UnstructuredCharacteristic unstructured = new UnstructuredCharacteristic(
+        CharacteristicVeil unstructured = new CharacteristicVeil(
             new NotEmptyString("Грузоподъёмность"),
             new NotEmptyString("3300 кг"));
-        ICharacteristic stored = await ctxes.Stored(unstructured);
+        Characteristic stored = await ctxes.Stored(unstructured.Characteristic());
         IItemPrice price = new ItemPriceWithNds(new PriceValue(10000));
         VehicleIdentity identity = new VehicleIdentity(new VehicleId("A123123231312321"));
         VehiclePhotos photos = new VehiclePhotos([new VehiclePhoto("http://localhost")]);
-        Vehicle vehicle = unstructured.TryPut(model.Print(
+        Vehicle vehicle = new ValidVehicle(stored.ToVehicle(model.Print(
             location.Print(
                 kind.Print(
                     brand.Print(
-                        new Vehicle(identity, price, photos))))));
-        vehicle = new LoggingVehicle(fixture.Logger(), new ValidVehicle(vehicle));
+                        new Vehicle(identity, price, photos)))))));
         await new PgTransactionalVehicle(connectionSource, vehicle).SaveAsync(CancellationToken.None);
     }
 }

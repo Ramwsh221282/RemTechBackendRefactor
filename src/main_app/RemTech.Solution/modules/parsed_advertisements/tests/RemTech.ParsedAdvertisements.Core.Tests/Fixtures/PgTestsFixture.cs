@@ -30,14 +30,11 @@ public sealed class PgTestsFixture : IDisposable
                 "parsed_advertisements_module.vehicle_models",
                 "parsed_advertisements_module.cities",
                 "parsed_advertisements_module.parsed_vehicle_characteristics",
-                "shared_advertisements_module.contained_items",
                 "parsed_advertisements_module.parsed_vehicles",
                 "parsed_advertisements_module.vehicle_kinds",
                 "parsed_advertisements_module.vehicle_brands",
                 "parsed_advertisements_module.geos",
-                "parsed_advertisements_module.vehicle_characteristics",
-                "parsers_management_module.parser_links",
-                "parsers_management_module.parsers"
+                "parsed_advertisements_module.vehicle_characteristics"
             )
             .Wait();
     }
