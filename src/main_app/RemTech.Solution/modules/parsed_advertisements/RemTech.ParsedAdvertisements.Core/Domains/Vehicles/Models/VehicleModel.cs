@@ -1,4 +1,5 @@
 ﻿using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.Adapters.Storage.Postgres;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models;
 
@@ -23,6 +24,14 @@ public sealed class VehicleModel
     {
         return new BrandedVehicleModel(branded, _identity);
     }
+
+    public Vehicle Print(Vehicle vehicle)
+    {
+        return new Vehicle(vehicle, this);
+    }
+
+    public VehicleModelIdentity Identity() => _identity;
+    public VehicleModelName Name() => _name;
 
     public PgVehicleModelFromStoreCommand FromStoreCommand() =>
         new(_name);

@@ -5,8 +5,5 @@
     UNIQUE(text, measuring)
 );
 
--- CREATE INDEX IF NOT EXISTS idx_vehicle_characteristics_tsvector
---     ON parsed_advertisements_module.vehicle_characteristics USING GIN(document_tsvector);
-
 CREATE INDEX IF NOT EXISTS idx_vehicle_characteristics_text
     ON parsed_advertisements_module.vehicle_characteristics(text);

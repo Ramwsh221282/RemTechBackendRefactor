@@ -1,6 +1,8 @@
 ﻿using RemTech.Core.Shared.Primitives;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Adapters.Storage.Postgres;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.ValueObjects;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects.Characteristics;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics;
 
@@ -26,4 +28,11 @@ public sealed class ValuedCharacteristic : ICharacteristic
 
     public PgCharacteristicFromStoreCommand FromStoreCommand() =>
         new(_origin.Identify().ReadText());
+
+    public Vehicle ToVehicle(Vehicle vehicle)
+    {
+        return new Vehicle(vehicle, 
+            new VehicleCharacteristic(this,
+                new VehicleCharacteristicValue(_value)));
+    }
 }

@@ -8,11 +8,13 @@ public sealed class StructuringEngineModelCharacteristic : IStructuringCharacter
 {
     private readonly NotEmptyString _name;
     private readonly NotEmptyString _value;
+    private readonly NotEmptyGuid _id;
 
-    public StructuringEngineModelCharacteristic(NotEmptyString name, NotEmptyString value)
+    public StructuringEngineModelCharacteristic(NotEmptyString name, NotEmptyString value, NotEmptyGuid id)
     {
         _name = name;
         _value = value;
+        _id = id;
     }
     
     public bool Structure([NotNullWhen(true)] out ValuedCharacteristic? ctx)
@@ -20,7 +22,7 @@ public sealed class StructuringEngineModelCharacteristic : IStructuringCharacter
         ctx = null;
         if (_name != "Двигатель") return false;
         CharacteristicMeasure measure = new("модель двигателя");
-        CharacteristicIdentity identity = new(new CharacteristicId(Guid.NewGuid()), new CharacteristicText(_name));
+        CharacteristicIdentity identity = new(new CharacteristicId(_id), new CharacteristicText(_name));
         ctx = new Characteristic(identity, measure).Print(new NotEmptyString(_value));
         return true;
     }

@@ -4,25 +4,17 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.ValueOb
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Features.Structuring;
 
-public sealed class StructuringTorqueCharacteristic : IStructuringCharacteristic
+public sealed class StructuringTorqueCharacteristic(NotEmptyString name, NotEmptyString value, NotEmptyGuid id)
+    : IStructuringCharacteristic
 {
-    private readonly NotEmptyString _name;
-    private readonly NotEmptyString _value;
-
-    public StructuringTorqueCharacteristic(NotEmptyString name, NotEmptyString value)
-    {
-        _name = name;
-        _value = value;
-    }
-    
     public bool Structure([NotNullWhen(true)] out ValuedCharacteristic? ctx)
     {
         ctx = null;
-        if (_name != "Крутящий момент") return false;
+        if (name != "Крутящий момент") return false;
         CharacteristicMeasure measure = new("нм");
-        string value = new OnlyDigitsString(_value).Read();
-        CharacteristicIdentity identity = new(new CharacteristicId(Guid.NewGuid()), new CharacteristicText(_name));
-        ctx = new Characteristic(identity, measure).Print(new NotEmptyString(value));
+        string value1 = new OnlyDigitsString(value).Read();
+        CharacteristicIdentity identity = new(new CharacteristicId(id), new CharacteristicText(name));
+        ctx = new Characteristic(identity, measure).Print(new NotEmptyString(value1));
         return true;
     }
 }

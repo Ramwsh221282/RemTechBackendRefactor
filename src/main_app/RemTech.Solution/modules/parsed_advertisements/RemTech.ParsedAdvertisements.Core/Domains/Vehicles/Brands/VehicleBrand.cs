@@ -5,18 +5,21 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
 
-public abstract class VehicleBrand : IVehicleBrand
+public class VehicleBrand : IVehicleBrand
 {
-    private readonly VehicleBrandIdentity _identity;
+    protected readonly VehicleBrandIdentity Identity;
     
-    public VehicleBrand() => _identity = new VehicleBrandIdentity();
-    public VehicleBrand(VehicleBrandIdentity identity) => _identity = identity;
-    public VehicleBrandIdentity Identify() => _identity;
-    
-    public BrandedVehicleModel Print(BrandedVehicleModel branded) => new(branded, _identity);
-    
-    public Vehicle Print(Vehicle vehicle) => new(vehicle, this);
+    public VehicleBrand(VehicleBrandIdentity identity) => Identity = identity;
 
-    public PgVehicleBrandFromStoreCommand FromStoreCommand() => new(_identity);
-    public PgVehicleBrandStoreCommand StoreCommand() => new(_identity);
+    public VehicleBrand(VehicleBrand origin) => Identity = origin.Identity;
+
+    public virtual VehicleBrandIdentity Identify() => Identity;
+
+    public virtual BrandedVehicleModel Print(BrandedVehicleModel branded) => new(branded, Identity);
+
+    public virtual Vehicle Print(Vehicle vehicle) => new(vehicle, this);
+
+    public virtual PgVehicleBrandFromStoreCommand FromStoreCommand() => new(Identity);
+
+    public virtual PgVehicleBrandStoreCommand StoreCommand() => new(Identity);
 }

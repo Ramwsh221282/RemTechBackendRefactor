@@ -5,102 +5,62 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects.Characteristics;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
 
-public sealed class Vehicle : IVehicle
+public class Vehicle : IVehicle
 {
-    private readonly VehicleIdentity _identity;
-    private readonly IVehicleKind _kind;
-    private readonly IVehicleBrand _brand;
-    private readonly IGeoLocation _location;
-    private readonly IItemPrice _price;
-    private readonly VehiclePhotos _photos;
-    private readonly VehicleCharacteristics _characteristics;
-    
-    public IVehicleKind Kind() => _kind;
-
-    public IVehicleBrand Brand() => _brand;
-
-    public IGeoLocation Location() => _location;
-
-    public VehicleIdentity Identity() => _identity;
-
-    public IItemPrice Cost() => _price;
-
-    public VehiclePhotos Photos() => _photos;
-
-    public VehicleCharacteristics Characteristics() => _characteristics;
-    
-    public Vehicle(Vehicle origin, IVehicleKind kind)
-    : this (origin) => _kind = kind;
-
-    public Vehicle(Vehicle origin, IVehicleBrand brand)
-    : this(origin) => _brand = brand;
-
-    public Vehicle(Vehicle origin, IGeoLocation location)
-    : this(origin) => _location = location;
+    protected virtual VehicleIdentity Identity { get; }
+    protected virtual IVehicleKind Kind { get; }
+    protected virtual IVehicleBrand Brand { get; }
+    protected virtual IGeoLocation Location { get; }
+    protected virtual IItemPrice Price { get; }
+    protected virtual VehiclePhotos Photos { get; }
+    protected virtual VehicleCharacteristics Characteristics { get; }
+    protected virtual VehicleModel Model { get; }
 
     public Vehicle(VehicleIdentity identity, IItemPrice price, VehiclePhotos photos)
     {
-        _identity = identity;
-        _price = price;
-        _photos = photos;
-        _characteristics = new VehicleCharacteristics([]);
-        _kind = new UnknownVehicleKind();
-        _brand = new UnknownVehicleBrand();
-        _location = new UnknownGeolocation();
+        Identity = identity;
+        Price = price;
+        Photos = photos;
+        Characteristics = new VehicleCharacteristics([]);
+        Kind = new UnknownVehicleKind();
+        Brand = new UnknownVehicleBrand();
+        Location = new UnknownGeolocation();
+        Model = new VehicleModel();
     }
+
+    public Vehicle(Vehicle origin, VehicleKind kind) : this(origin) =>
+        Kind = kind;
     
-    public Vehicle(VehicleIdentity identity, IItemPrice price, VehiclePhotos photos, VehicleCharacteristics characteristics)
+    public Vehicle(Vehicle origin, VehicleBrand brand) : this(origin) =>
+        Brand = brand;
+    
+    public Vehicle(Vehicle origin, GeoLocation location) : this(origin) =>
+        Location = location;
+
+    public Vehicle(Vehicle origin, VehicleModel model) : this(origin) =>
+        Model = model;
+
+    public Vehicle(Vehicle origin, VehicleCharacteristic ctx) : this(origin)
     {
-        _identity = identity;
-        _price = price;
-        _photos = photos;
-        _characteristics = characteristics;
-        _kind = new UnknownVehicleKind();
-        _brand = new UnknownVehicleBrand();
-        _location = new UnknownGeolocation();
+        VehicleCharacteristic[] current = origin.Characteristics.Read();
+        Characteristics = new VehicleCharacteristics([..current, ctx]);
     }
-    
-    public Vehicle(VehicleIdentity identity,
-        IVehicleKind kind,
-        IVehicleBrand brand,
-        IGeoLocation location,
-        IItemPrice price,
-        VehiclePhotos photos,
-        VehicleCharacteristics characteristics)
-    {
-        _identity = identity;
-        _kind = kind;
-        _brand = brand;
-        _price = price;
-        _photos = photos;
-        _characteristics = characteristics;
-        _location = location;
-    }
-    
-    public Vehicle(IVehicle origin)
-        : this(
-            origin.Identity(),
-            origin.Kind(),
-            origin.Brand(),
-            origin.Location(),
-            origin.Cost(),
-            origin.Photos(),
-            origin.Characteristics()
-        ) { }
     
     public Vehicle(Vehicle origin)
     {
-        _identity = origin._identity;
-        _kind = origin._kind;
-        _brand = origin._brand;
-        _location = origin._location;
-        _price = origin._price;
-        _photos = origin._photos;
-        _characteristics = origin._characteristics;
+        Identity = origin.Identity;
+        Kind = origin.Kind;
+        Brand = origin.Brand;
+        Location = origin.Location;
+        Price = origin.Price;
+        Photos = origin.Photos;
+        Characteristics = origin.Characteristics;
+        Model = origin.Model;
     }
 }

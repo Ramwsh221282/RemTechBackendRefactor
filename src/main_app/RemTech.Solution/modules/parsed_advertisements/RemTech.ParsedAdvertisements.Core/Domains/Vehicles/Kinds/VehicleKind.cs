@@ -4,17 +4,27 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds;
 
-public abstract class VehicleKind(VehicleKindIdentity identity) : IVehicleKind
+public class VehicleKind : IVehicleKind
 {
-    private readonly VehicleKindIdentity _identity = identity;
+    protected virtual VehicleKindIdentity Identity { get; }
+
+    public VehicleKind(VehicleKindIdentity identity)
+    {
+        Identity = identity;
+    }
+
+    public VehicleKind(VehicleKind origin)
+    {
+        Identity = origin.Identity;
+    }
     
-    public VehicleKindIdentity Identify() => _identity;
+    public VehicleKindIdentity Identify() => Identity;
     
-    public Vehicle Print(Vehicle vehicle) => new(vehicle, this);
+    public Vehicle Print(Vehicle vehicle) => new Vehicle(vehicle, this);
 
     public PgVehicleKindToStoreCommand ToStoreCommand() =>
-        new(_identity.ReadText(), _identity.ReadId());
+        new(Identity.ReadText(), Identity.ReadId());
 
     public PgVehicleKindFromStoreCommand FromStoreCommand() =>
-        new(_identity.ReadText());
+        new(Identity.ReadText());
 }

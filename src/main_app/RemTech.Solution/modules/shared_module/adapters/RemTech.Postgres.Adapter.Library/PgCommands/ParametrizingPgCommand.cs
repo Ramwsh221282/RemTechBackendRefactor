@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using NpgsqlTypes;
 
 namespace RemTech.Postgres.Adapter.Library.PgCommands;
 
@@ -17,6 +18,15 @@ public sealed class ParametrizingPgCommand(PgCommand command)
     public ParametrizingPgCommand With<T>(string name, T value)
     {
         _origin.Parameters.Add(new NpgsqlParameter<T>(name, value));
+        _parametersProvided++;
+        return this;
+    }
+    
+    public ParametrizingPgCommand With<T>(string name, T value, NpgsqlDbType type)
+    {
+        NpgsqlParameter<T> parameter = new(name, value);
+        parameter.NpgsqlDbType = type;
+        _origin.Parameters.Add(parameter);
         _parametersProvided++;
         return this;
     }

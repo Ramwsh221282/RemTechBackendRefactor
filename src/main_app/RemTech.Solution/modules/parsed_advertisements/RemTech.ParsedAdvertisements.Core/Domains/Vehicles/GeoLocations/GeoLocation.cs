@@ -4,17 +4,20 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations;
 
-public abstract class GeoLocation : IGeoLocation
+public class GeoLocation : IGeoLocation
 {
-    private readonly GeoLocationIdentity _identity;
+    protected virtual GeoLocationIdentity Identity { get; }
 
     public GeoLocation(GeoLocationIdentity identity) =>
-        _identity = identity;
+        Identity = identity;
 
-    public GeoLocationIdentity Identify() => _identity;
+    public GeoLocation(GeoLocation origin) =>
+        Identity = origin.Identity;
+
+    public GeoLocationIdentity Identify() => Identity;
     
     public Vehicle Print(Vehicle vehicle) => new(vehicle, this);
 
     public PgVehicleGeoFromStoreCommand FromStoreCommand() =>
-        new(_identity.ReadText());
+        new(Identity.ReadText());
 }

@@ -4,25 +4,19 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.ValueOb
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Features.Structuring;
 
-public sealed class StructuringFuelTankCapacityCharacteristic : IStructuringCharacteristic
+public sealed class StructuringFuelTankCapacityCharacteristic(
+    NotEmptyString name,
+    NotEmptyString value,
+    NotEmptyGuid id) : IStructuringCharacteristic
 {
-    private readonly NotEmptyString _name;
-    private readonly NotEmptyString _value;
-
-    public StructuringFuelTankCapacityCharacteristic(NotEmptyString name, NotEmptyString value)
-    {
-        _name = name;
-        _value = value;
-    }
-
     public bool Structure([NotNullWhen(true)] out ValuedCharacteristic? ctx)
     {
         ctx = null;
-        if (_name != "Объём топливного бака") return false;
-        string value = new OnlyDigitsString(_value).Read();
+        if (name != "Объём топливного бака") return false;
+        string value1 = new OnlyDigitsString(value).Read();
         CharacteristicMeasure measure = new("л");
-        CharacteristicIdentity identity = new(new CharacteristicId(Guid.NewGuid()), new CharacteristicText(_name));
-        ctx = new Characteristic(identity, measure).Print(new NotEmptyString(value));
+        CharacteristicIdentity identity = new(new CharacteristicId(id), new CharacteristicText(name));
+        ctx = new Characteristic(identity, measure).Print(new NotEmptyString(value1));
         return true;
     }
 }

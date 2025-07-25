@@ -4,24 +4,16 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.ValueOb
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Features.Structuring;
 
-public sealed class StructuringVinCharacteristic : IStructuringCharacteristic
+public sealed class StructuringVinCharacteristic(NotEmptyString name, NotEmptyString value, NotEmptyGuid id)
+    : IStructuringCharacteristic
 {
-    private readonly NotEmptyString _name;
-    private readonly NotEmptyString _value;
-
-    public StructuringVinCharacteristic(NotEmptyString name, NotEmptyString value)
-    {
-        _name = name;
-        _value = value;
-    }
-    
     public bool Structure([NotNullWhen(true)] out ValuedCharacteristic? ctx)
     {
         ctx = null;
-        if (_name != "VIN") return false;
+        if (name != "VIN") return false;
         CharacteristicMeasure measure = new CharacteristicMeasure("номер");
-        CharacteristicIdentity identity = new(new CharacteristicId(Guid.NewGuid()), new CharacteristicText(_name));
-        ctx = new Characteristic(identity, measure).Print(new NotEmptyString(_value));
+        CharacteristicIdentity identity = new(new CharacteristicId(id), new CharacteristicText(name));
+        ctx = new Characteristic(identity, measure).Print(new NotEmptyString(value));
         return true;
     }
 }

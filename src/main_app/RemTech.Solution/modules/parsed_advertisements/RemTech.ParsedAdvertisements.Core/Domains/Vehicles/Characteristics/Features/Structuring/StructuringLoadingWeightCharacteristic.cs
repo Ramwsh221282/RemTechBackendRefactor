@@ -4,28 +4,20 @@ using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.ValueOb
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Features.Structuring;
 
-public sealed class StructuringLoadingWeightCharacteristic : IStructuringCharacteristic
+public sealed class StructuringLoadingWeightCharacteristic(NotEmptyString name, NotEmptyString value, NotEmptyGuid id)
+    : IStructuringCharacteristic
 {
-    private readonly NotEmptyString _name;
-    private readonly NotEmptyString _value;
-
-    public StructuringLoadingWeightCharacteristic(NotEmptyString name, NotEmptyString value)
-    {
-        _name = name;
-        _value = value;
-    }
-    
     public bool Structure([NotNullWhen(true)] out ValuedCharacteristic? ctx)
     {
         ctx = null;
-        if (_name != "Грузоподъёмность") return false;
-        NotEmptyStringLength length = new(_value);
-        string value = length > 3
-            ? new OnlyDigitsString(_value).Read()
-            : (int.Parse(new OnlyDigitsString(_value).Read()) * 1000).ToString();
+        if (name != "Грузоподъёмность") return false;
+        NotEmptyStringLength length = new(value);
+        string value1 = length > 3
+            ? new OnlyDigitsString(value).Read()
+            : (int.Parse(new OnlyDigitsString(value).Read()) * 1000).ToString();
         CharacteristicMeasure measure = new("кг");
-        CharacteristicIdentity identity = new(new CharacteristicId(Guid.NewGuid()), new CharacteristicText(_name));
-        ctx = new Characteristic(identity, measure).Print(new NotEmptyString(value));
+        CharacteristicIdentity identity = new(new CharacteristicId(id), new CharacteristicText(name));
+        ctx = new Characteristic(identity, measure).Print(new NotEmptyString(value1));
         return true;
     }
 }
