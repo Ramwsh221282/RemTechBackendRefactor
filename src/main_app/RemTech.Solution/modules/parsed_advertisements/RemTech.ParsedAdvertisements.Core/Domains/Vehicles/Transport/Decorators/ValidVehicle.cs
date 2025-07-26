@@ -1,12 +1,12 @@
 ﻿using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Common.ParsedItemPrices;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators.Logic;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators.Logic;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators.Logic;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects.Characteristics;
 
@@ -35,12 +35,12 @@ public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
         }
     }
 
-    protected override IVehicleKind Kind
+    protected override VehicleKind Kind
     {
         get
         {
             if (_kindPassed) return base.Kind;
-            IVehicleKind kind = base.Kind;
+            VehicleKind kind = base.Kind;
             if (kind is UnknownVehicleKind)
                 throw new ValueNotValidException("Тип техники", "не задан.");
             _kindPassed = true;
@@ -48,12 +48,12 @@ public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
         }
     }
 
-    protected override IVehicleBrand Brand
+    protected override VehicleBrand Brand
     {
         get
         {
             if (_brandPassed) return base.Brand;
-            IVehicleBrand brand = base.Brand;
+            VehicleBrand brand = base.Brand;
             if (brand is UnknownVehicleBrand)
                 throw new ValueNotValidException("Бренд техники", "не задан.");
             _brandPassed = true;
@@ -61,12 +61,12 @@ public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
         }
     }
 
-    protected override IGeoLocation Location
+    protected override GeoLocation Location
     {
         get
         {
             if (_locationPassed) return base.Location;
-            IGeoLocation location = base.Location;
+            GeoLocation location = base.Location;
             if (location is UnknownGeolocation)
                 throw new ValueNotValidException("Локация техники", "не задана.");
             _locationPassed = true;

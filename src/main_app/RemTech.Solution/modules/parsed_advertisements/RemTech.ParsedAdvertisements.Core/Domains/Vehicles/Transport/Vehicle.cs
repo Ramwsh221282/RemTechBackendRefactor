@@ -1,10 +1,13 @@
 ﻿using RemTech.ParsedAdvertisements.Core.Domains.Common.ParsedItemPrices;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators.Logic;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators.Logic;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators.Logic;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects.Characteristics;
@@ -14,9 +17,9 @@ namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
 public class Vehicle : IVehicle
 {
     protected virtual VehicleIdentity Identity { get; }
-    protected virtual IVehicleKind Kind { get; }
-    protected virtual IVehicleBrand Brand { get; }
-    protected virtual IGeoLocation Location { get; }
+    protected virtual VehicleKind Kind { get; }
+    protected virtual VehicleBrand Brand { get; }
+    protected virtual GeoLocation Location { get; }
     protected virtual IItemPrice Price { get; }
     protected virtual VehiclePhotos Photos { get; }
     protected virtual VehicleCharacteristics Characteristics { get; }
@@ -33,7 +36,7 @@ public class Vehicle : IVehicle
         Location = new UnknownGeolocation();
         Model = new VehicleModel();
     }
-
+    
     public Vehicle(Vehicle origin, VehicleKind kind) : this(origin) =>
         Kind = kind;
     

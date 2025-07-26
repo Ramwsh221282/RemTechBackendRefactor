@@ -1,8 +1,8 @@
-﻿using RemTech.Logging.Library;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds;
+﻿using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators.Logic;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators.Logic;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators.Logic;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.Decorators.Logic;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.Decorators;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.Decorators.Postgres;
@@ -18,17 +18,13 @@ public sealed class PgVehicleSinking(
 {
     public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
     {
-        VehicleBrand brand = sink.Brand();
-        VehicleKind kind = sink.Kind();
-        VehicleModel model = sink.Model();
-        GeoLocation location = sink.Location();
-        Vehicle vehicle = location.Print(
-            model.Print(
-                kind.Print(
-                    brand.Print(
-                        sink.Vehicle()))));
-        await new PgTransactionalVehicle(connection, new ValidVehicle(vehicle))
-            .SaveAsync(ct);
+        Vehicle vehicle = sink.Vehicle();
+        Vehicle locationed = new LocationingGeoLocation(sink.Location()).Locatate(vehicle);
+        Vehicle kinded = new KindingVehicleKind(sink.Kind()).KindVehicle(locationed);
+        Vehicle branded = new BrandingVehicleBrand(sink.Brand()).BrandVehicle(kinded);
+        Vehicle modeled = new ModelingVehicleModel(sink.Model()).ModeledVehicle(branded);
+        Vehicle valid = new ValidVehicle(modeled);
+        await new PgTransactionalVehicle(connection, valid).SaveAsync(ct);
         return await sinking.Sink(sink, ct);
     }
 }

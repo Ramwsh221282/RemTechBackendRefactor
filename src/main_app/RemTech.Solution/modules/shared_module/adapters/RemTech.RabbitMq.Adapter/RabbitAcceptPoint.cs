@@ -26,15 +26,15 @@ public sealed class RabbitAcceptPoint : IDisposable, IAsyncDisposable
         await _channel.BasicAckAsync(ea.DeliveryTag, false, ct);
     }
     
-    public async Task StartConsuming()
+    public async Task StartConsuming(CancellationToken ct = default)
     {
         await _channel.QueueDeclareAsync(
             queue: _queueName,
             durable: false,
             exclusive: false,
-            autoDelete: false);
+            autoDelete: false, cancellationToken: ct);
         _consumer.ReceivedAsync += _handler;
-        await _channel.BasicConsumeAsync(queue: _queueName, autoAck: false, consumer: _consumer);
+        await _channel.BasicConsumeAsync(queue: _queueName, autoAck: false, consumer: _consumer, cancellationToken: ct);
     }
 
     public void Dispose()

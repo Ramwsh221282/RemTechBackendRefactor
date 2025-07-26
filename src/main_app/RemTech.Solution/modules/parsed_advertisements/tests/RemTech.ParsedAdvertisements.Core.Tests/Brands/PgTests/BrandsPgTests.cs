@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
+﻿using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Adapters.Storage.Postgres;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Ports.Storage;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators.Logic;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators.Postgres;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators.Validation;
 using RemTech.ParsedAdvertisements.Core.Tests.Fixtures;
 using RemTech.Postgres.Adapter.Library;
 
@@ -16,21 +16,19 @@ public sealed class BrandsPgTests(PgTestsFixture fixture) : IClassFixture<PgTest
     private async Task Add_New_Pg_Brand_Success(string name)
     {
         await using PgConnectionSource connectionSource = new(fixture.DbConfig());
-        IPgVehicleBrandsStorage storage = new PgVarietVehicleBrandsStorage()
-            .With(new PgVehicleBrandsStore(connectionSource))
-            .With(new PgDuplicateResolvingVehicleBrandsStore(connectionSource));
-        VehicleBrand brand = new NewVehicleBrand(name);
-        await storage.Get(brand, CancellationToken.None);
+        await new PgVarietVehicleBrand(connectionSource,
+                new ValidVehicleBrand(
+                    new NewVehicleBrand(name)))
+            .SaveAsync(CancellationToken.None);
     }
     
     [Fact]
     private async Task Add_New_Pg_Brand_Failure()
     {
         await using PgConnectionSource connectionSource = new(fixture.DbConfig());
-        IPgVehicleBrandsStorage storage = new PgVarietVehicleBrandsStorage()
-            .With(new PgVehicleBrandsStore(connectionSource))
-            .With(new PgDuplicateResolvingVehicleBrandsStore(connectionSource));
-        VehicleBrand brand = new NewVehicleBrand(string.Empty);
-        await Assert.ThrowsAsync<UnreachableException>(() =>  storage.Get(brand, CancellationToken.None));
+        await Assert.ThrowsAsync<ValueNotValidException>(() => new PgVarietVehicleBrand(connectionSource,
+            new ValidVehicleBrand(
+                new NewVehicleBrand(string.Empty)))
+            .SaveAsync(CancellationToken.None));
     }
 }
