@@ -14,15 +14,15 @@ public sealed class RabbitVehicleSink : IDisposable, IAsyncDisposable
         _origin = origin;
     }
 
-    public async Task OpenQueue(string queueName)
+    public async Task OpenQueue(string queueName, CancellationToken ct = default)
     {
-        _acceptPoint ??= await _channel.MakeAcceptPoint(queueName, async (sender, @event)  =>
+        _acceptPoint ??= await _channel.MakeAcceptPoint(queueName, async (_, @event)  =>
         {
             using VehicleJsonSink sink = new VehicleJsonSink(@event.Body);
-            await _origin.Sink(sink);
-            await _acceptPoint!.Acknowledge(@event);
+            await _origin.Sink(sink, ct);
+            await _acceptPoint!.Acknowledge(@event, ct);
         });
-        await _acceptPoint.StartConsuming();
+        await _acceptPoint.StartConsuming(ct);
     }
 
     public void Dispose()

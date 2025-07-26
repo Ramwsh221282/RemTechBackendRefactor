@@ -1,6 +1,6 @@
-﻿using RemTech.Logging.Library;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Adapters.Storage.Postgres;
+﻿using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators.Postgres;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators.Validation;
 using RemTech.Postgres.Adapter.Library;
 using RemTech.Result.Library;
 
@@ -12,10 +12,8 @@ public sealed class PgVehicleBrandSinking(PgConnectionSource connection, ITransp
     public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
     {
         VehicleBrand brand = sink.Brand();
-        VehicleBrand saved = await new PgVarietVehicleBrandsStorage()
-            .With(new PgVehicleBrandsStore(connection))
-            .With(new PgDuplicateResolvingVehicleBrandsStore(connection))
-            .Get(brand, ct);
+        VehicleBrand valid = new ValidVehicleBrand(brand);
+        VehicleBrand saved = await new PgVarietVehicleBrand(connection, valid).SaveAsync(ct);
         return await sinking.Sink(new CachedVehicleJsonSink(sink, saved), ct);
     }
 }

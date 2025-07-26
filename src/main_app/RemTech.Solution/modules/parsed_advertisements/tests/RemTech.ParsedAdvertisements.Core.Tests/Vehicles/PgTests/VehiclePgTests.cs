@@ -2,27 +2,28 @@
 using RemTech.Core.Shared.Primitives;
 using RemTech.ParsedAdvertisements.Core.Domains.Common.ParsedItemPrices;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Adapters.Storage.Postgres;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Ports.Storage;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators.Logic;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators.Postgres;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators.Validation;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Adapters.Storage.Postgres;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Features.Structuring;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Ports.Storage;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Adapters.Storage.Postgres;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Ports.Storage.Postgres;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators.Logic;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators.Postgres;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators.Validation;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Adapters.Storage.Postgres;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Ports.Storage.Postgres;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators.Logic;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators.Postgres;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators.Validation;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.Adapters.Storage.Postgres;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.Ports.Storage.Postgres;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.Decorators.Logic;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.Decorators.Postgres;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.Decorators;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.Decorators.Postgres;
@@ -47,43 +48,32 @@ public sealed class VehiclePgTests(PgTestsFixture fixture) : IClassFixture<PgTes
     private async Task Save_Vehicle_Success()
     {
         await using PgConnectionSource connectionSource = new(fixture.DbConfig());
-        IPgVehicleBrandsStorage brands = new PgVarietVehicleBrandsStorage()
-            .With(new PgVehicleBrandsStore(connectionSource))
-            .With(new PgDuplicateResolvingVehicleBrandsStore(connectionSource));
-        IPgVehicleKindsStorage kinds = new PgVarietVehicleKindStorage()
-            .With(new PgVehicleKindsStorage(connectionSource))
-            .With(new PgDuplicateResolvingVehicleKindStorage(connectionSource));
-        IPgVehicleGeosStorage locations = new PgVarietVehicleGeosStorage()
-            .With(new PgVehicleGeosStorage(connectionSource));
-        IPgVehicleModelsStorage models = new PgVarietVehicleModelsStorage()
-            .With(new PgVehicleModelsStorage(connectionSource))
-            .With(new PgDuplicateResolvingVehicleModelsStorage(connectionSource));
         IPgCharacteristicsStorage ctxes = new PgVarietCharacteristicsStorage()
             .With(new PgCharacteristicsStorage(connectionSource))
             .With(new PgDuplicateResolvingCharacteristicsStorage(connectionSource));
-        VehicleBrand brand = await brands.Get(
+        VehicleBrand brand = await new PgVarietVehicleBrand(connectionSource,
             new ValidVehicleBrand(
                 new VehicleBrand(
-                    new VehicleBrandIdentity(new VehicleBrandId(Guid.NewGuid()), new VehicleBrandText("Ponsse"))
-                )), CancellationToken.None);
-        VehicleKind kind = await kinds.Read(
+                    new VehicleBrandIdentity(
+                        new VehicleBrandId(Guid.NewGuid()), 
+                        new VehicleBrandText("Ponsse")))))
+            .SaveAsync(CancellationToken.None);
+        VehicleKind kind = await new PgVarietVehicleKind(connectionSource,
                 new ValidVehicleKind(
                     new VehicleKind(
-                        new VehicleKindIdentity(new VehicleKindId(Guid.NewGuid()), new VehicleKindText("Форвардер")))),
-            CancellationToken.None
-            );
-        GeoLocation location = await locations.Get(
+                        new VehicleKindIdentity(new VehicleKindId(Guid.NewGuid()), new VehicleKindText("Форвардер"))))
+            ).SaveAsync(CancellationToken.None);
+        GeoLocation location = await new PgGeoLocation(connectionSource,
             new ValidGeoLocation(
                 new GeoLocation(
                     new GeoLocationIdentity(
                         new GeoLocationId(new NotEmptyGuid(Guid.NewGuid())),
                         new GeolocationText(new NotEmptyString("Красноярский")),
-                        new GeolocationText(new NotEmptyString("край"))))), CancellationToken.None);
+                        new GeolocationText(new NotEmptyString("край")))))).SaveAsync(CancellationToken.None);
         
-        VehicleModel model = await models.Get(
-            new VehicleModel(
-                new VehicleModelIdentity(Guid.NewGuid()),
-                new VehicleModelName(new NotEmptyString("Buffalo"))), CancellationToken.None);
+        VehicleModel model = await new PgVarietVehicleModel(connectionSource, new VehicleModel(
+            new VehicleModelIdentity(Guid.NewGuid()),
+            new VehicleModelName(new NotEmptyString("Buffalo")))).SaveAsync(CancellationToken.None);
         CharacteristicVeil unstructured = new CharacteristicVeil(
             new NotEmptyString("Грузоподъёмность"),
             new NotEmptyString("3300 кг"));
@@ -91,10 +81,11 @@ public sealed class VehiclePgTests(PgTestsFixture fixture) : IClassFixture<PgTes
         IItemPrice price = new ItemPriceWithNds(new PriceValue(10000));
         VehicleIdentity identity = new VehicleIdentity(new VehicleId("A123123231312321"));
         VehiclePhotos photos = new VehiclePhotos([new VehiclePhoto("http://localhost")]);
-        Vehicle vehicle = new ValidVehicle(stored.ToVehicle(model.Print(
-            location.Print(
-                kind.Print(
-                    brand.Print(
+        Vehicle vehicle = new ValidVehicle(stored.ToVehicle(
+            new ModelingVehicleModel(model).ModeledVehicle(
+            new LocationingGeoLocation(location).Locatate(
+                new KindingVehicleKind(kind).KindVehicle(
+                    new BrandingVehicleBrand(brand).BrandVehicle(
                         new Vehicle(identity, price, photos)))))));
         await new PgTransactionalVehicle(connectionSource, vehicle).SaveAsync(CancellationToken.None);
     }

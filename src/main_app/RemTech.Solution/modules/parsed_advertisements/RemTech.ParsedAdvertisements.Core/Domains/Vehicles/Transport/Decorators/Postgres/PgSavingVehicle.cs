@@ -30,10 +30,10 @@ public sealed class PgSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
     private ParametrizingPgCommand MakeParametrizedCommand(NpgsqlConnection connection, string sql)
     {
         string id = Identity.Read();
-        Guid kindId = Kind.Identify().ReadId();
-        Guid brandId = Brand.Identify().ReadId();
-        Guid geoId = Location.Identify().ReadId();
-        Guid modelId = Model.Identity();
+        Guid kindId = Kind.Id();
+        Guid brandId = Brand.Id();
+        Guid geoId = Location.Id();
+        Guid modelId = Model.Id();
         long price = Price.Value();
         bool nds = Price.UnderNds();
         string photosJson = MakePhotosJsonb();
@@ -58,9 +58,9 @@ public sealed class PgSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
 
     private string MakeTsVectorString()
     {
-        string kindName = Kind.Identify().ReadText();
-        string brandName = Brand.Identify().ReadText();
-        string modelName = Model.Name();
+        string kindName = Kind.Name();
+        string brandName = Brand.Name();
+        string modelName = Model.NameString();
         IEnumerable<string> ctxes = Characteristics.Read().Select(c => c.NameValued());
         string[] texts =
         [

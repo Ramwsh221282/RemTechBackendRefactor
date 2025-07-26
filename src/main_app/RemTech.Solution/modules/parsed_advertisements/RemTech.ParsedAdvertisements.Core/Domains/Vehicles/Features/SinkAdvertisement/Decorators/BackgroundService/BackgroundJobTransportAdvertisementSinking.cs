@@ -32,7 +32,7 @@ public sealed class BackgroundJobTransportAdvertisementSinking : Microsoft.Exten
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.Info("Background job {0} is starting...", nameof(BackgroundJobTransportAdvertisementSinking));
-        await _rabbitSink.OpenQueue("vehicles_sink");
+        await _rabbitSink.OpenQueue("vehicles_sink", cancellationToken);
         _logger.Info("Background job {0} has been started.", nameof(BackgroundJobTransportAdvertisementSinking));
     }
 

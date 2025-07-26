@@ -3,7 +3,7 @@ using NpgsqlTypes;
 
 namespace RemTech.Postgres.Adapter.Library.PgCommands;
 
-public sealed class ParametrizingPgCommand(PgCommand command)
+public sealed class ParametrizingPgCommand(PgCommand command) : IPgCommandSource
 {
     private readonly NpgsqlCommand _origin = command.Command();
     private int _parametersProvided = 0;

@@ -5,13 +5,17 @@ using RemTech.Json.Library.Deserialization.Primitives;
 using RemTech.ParsedAdvertisements.Core.Domains.Common.ParsedItemPrices;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Brands.Decorators.Logic;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Features.Structuring;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.GeoLocations.Decorators.Logic;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators.Logic;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.ValueObjects;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects;
 

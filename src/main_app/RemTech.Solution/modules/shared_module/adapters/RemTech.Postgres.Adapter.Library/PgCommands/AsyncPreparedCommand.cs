@@ -2,7 +2,7 @@
 
 namespace RemTech.Postgres.Adapter.Library.PgCommands;
 
-public sealed class AsyncPreparedCommand(ParametrizingPgCommand command)
+public sealed class AsyncPreparedCommand(IPgCommandSource command)
 {
     private readonly NpgsqlCommand _command = command.Command();
     private bool _prepared;

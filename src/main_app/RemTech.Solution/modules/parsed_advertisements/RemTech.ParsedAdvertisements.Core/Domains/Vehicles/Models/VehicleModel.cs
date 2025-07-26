@@ -1,49 +1,30 @@
-﻿using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.Adapters.Storage.Postgres;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport;
+﻿using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models.ValueObjects;
 
 namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Models;
 
-public sealed class VehicleModel
+public class VehicleModel
 {
-    private readonly VehicleModelIdentity _identity;
-    private readonly VehicleModelName _name;
+    protected virtual VehicleModelIdentity Identity { get; }
+    protected virtual VehicleModelName Name { get; }
 
     public VehicleModel(VehicleModelIdentity identity, VehicleModelName name)
     {
-        _identity = identity;
-        _name = name;
+        Identity = identity;
+        Name = name;
     }
 
     public VehicleModel()
     {
-        _identity = new VehicleModelIdentity();
-        _name = new VehicleModelName();
+        Identity = new VehicleModelIdentity();
+        Name = new VehicleModelName();
     }
 
-    public BrandedVehicleModel Print(BrandedVehicleModel branded)
+    public VehicleModel(VehicleModel origin)
     {
-        return new BrandedVehicleModel(branded, _identity);
+        Identity = origin.Identity;
+        Name = origin.Name;
     }
 
-    public Vehicle Print(Vehicle vehicle)
-    {
-        return new Vehicle(vehicle, this);
-    }
-
-    public VehicleModelIdentity Identity() => _identity;
-    public VehicleModelName Name() => _name;
-
-    public PgVehicleModelFromStoreCommand FromStoreCommand() =>
-        new(_name);
-
-    public PgVehicleModelToStoreCommand ToStoreCommand() =>
-        new(_identity, _name);
-
-    public string LogString()
-    {
-        return $"""
-               ID: {(Guid)_identity}
-               Name: {(string)_name}
-               """;
-    }
+    public Guid Id() => Identity;
+    public string NameString() => Name;
 }

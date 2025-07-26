@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
+﻿using RemTech.Core.Shared.Exceptions;
 using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Adapters.Storage.Postgres;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Ports.Storage.Postgres;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators.Logic;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators.Postgres;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Kinds.Decorators.Validation;
 using RemTech.ParsedAdvertisements.Core.Tests.Fixtures;
 using RemTech.Postgres.Adapter.Library;
 
@@ -16,21 +16,19 @@ public sealed class KindsPgTests(PgTestsFixture fixture) : IClassFixture<PgTests
     private async Task Add_Kind_Success(string kindName)
     {
         await using PgConnectionSource source = new(fixture.DbConfig());
-        IPgVehicleKindsStorage storage = new PgVarietVehicleKindStorage()
-            .With(new PgVehicleKindsStorage(source))
-            .With(new PgDuplicateResolvingVehicleKindStorage(source));
-        VehicleKind kind = new NewVehicleKind(kindName);
-        await storage.Read(kind, CancellationToken.None);
+        await new PgVarietVehicleKind(source, 
+                new ValidVehicleKind(
+                    new VehicleKind(new NewVehicleKind(kindName))))
+            .SaveAsync(CancellationToken.None); ;
     }
 
     [Fact]
     private async Task Add_Kind_Failure()
     {
         await using PgConnectionSource source = new(fixture.DbConfig());
-        IPgVehicleKindsStorage storage = new PgVarietVehicleKindStorage()
-            .With(new PgVehicleKindsStorage(source))
-            .With(new PgDuplicateResolvingVehicleKindStorage(source));
-        VehicleKind kind = new NewVehicleKind(string.Empty);
-        await Assert.ThrowsAnyAsync<UnreachableException>(() => storage.Read(kind, CancellationToken.None));
+        await Assert.ThrowsAnyAsync<ValueNotValidException>(() => new PgVarietVehicleKind(source, 
+                new ValidVehicleKind(
+                    new VehicleKind(new NewVehicleKind(string.Empty))))
+            .SaveAsync(CancellationToken.None));
     }
 }
