@@ -1,18 +1,17 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleKinds;
-using Parsing.Vehicles.DbSearch;
 using Parsing.Vehicles.DbSearch.VehicleKinds;
-using RemTech.Logging.Library;
 using RemTech.Postgres.Adapter.Library;
+using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Identity;
 
 public sealed class DbOrParsedVehicleKindSource : IParsedVehicleKindSource
 {
     private readonly IParsedVehicleKindSource _source;
-    private readonly ICustomLogger _logger;
+    private readonly ILogger _logger;
     private readonly PgConnectionSource _pgConnection;
 
-    public DbOrParsedVehicleKindSource(PgConnectionSource pgConnection, ICustomLogger logger, IParsedVehicleKindSource source)
+    public DbOrParsedVehicleKindSource(PgConnectionSource pgConnection, ILogger logger, IParsedVehicleKindSource source)
     {
         _source = source;
         _logger = logger;

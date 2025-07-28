@@ -1,5 +1,4 @@
 ﻿using RemTech.Core.Shared.Primitives;
-using RemTech.Logging.Library;
 using RemTech.ParsersManagement.Core.Common.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.AddingNewParser;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.AddingNewParser.Async;
@@ -53,15 +52,16 @@ using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.ParsersManagement.Tests.Library.Asserts;
 using RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 using RemTech.Result.Library;
+using Serilog;
 
 namespace RemTech.ParsersManagement.Tests.Library;
 
 public sealed class ParserTestingToolkit
 {
-    private readonly ICustomLogger _logger;
+    private readonly ILogger _logger;
     private readonly IParsers _parsers;
 
-    public ParserTestingToolkit(ICustomLogger logger, IParsers source)
+    public ParserTestingToolkit(ILogger logger, IParsers source)
     {
         _logger = logger;
         _parsers = source;

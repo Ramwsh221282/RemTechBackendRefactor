@@ -1,19 +1,17 @@
-﻿using Npgsql;
-using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleGeo;
-using Parsing.Vehicles.DbSearch;
+﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleGeo;
 using Parsing.Vehicles.DbSearch.VehicleGeos;
-using RemTech.Logging.Library;
 using RemTech.Postgres.Adapter.Library;
+using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Geos;
 
 public sealed class DbSearchedVehicleGeoSource : IParsedVehicleGeoSource
 {
     private readonly PgConnectionSource _pgConnection;
-    private readonly ICustomLogger _logger;
+    private readonly ILogger _logger;
     private readonly IParsedVehicleGeoSource _origin;
 
-    public DbSearchedVehicleGeoSource(PgConnectionSource pgConnection, ICustomLogger logger, IParsedVehicleGeoSource origin)
+    public DbSearchedVehicleGeoSource(PgConnectionSource pgConnection, ILogger logger, IParsedVehicleGeoSource origin)
     {
         _pgConnection = pgConnection;
         _logger = logger;
@@ -23,12 +21,10 @@ public sealed class DbSearchedVehicleGeoSource : IParsedVehicleGeoSource
     public async Task<ParsedVehicleGeo> Read()
     {
         ParsedVehicleGeo geo = await _origin.Read();
-        ParsedVehicleGeo fromDb = await new LoggingVehicleGeoDbSearch(_logger,
+        ParsedVehicleGeo fromDb = await new LoggingVehicleGeoDbSearch(_logger, 
                 new VarietGeoDbSearch()
-                    .With(new TsQueryRegionCitySearch(_pgConnection,
-                        new LazyVehicleGeoDbSearch(new PgTgrmRegionGeoDbSearch(_pgConnection))))
-                    .With(new PgTgrmRegionCityDbSearch(_pgConnection,
-                        new LazyVehicleGeoDbSearch(new TsQueryRegionDbSearch(_pgConnection)))))
+                    .With(new LazyVehicleGeoDbSearch(new TsQueryRegionDbSearch(_pgConnection)))
+                    .With(new LazyVehicleGeoDbSearch(new PgTgrmRegionGeoDbSearch(_pgConnection))))
             .Search(geo.Region());
         return fromDb ? fromDb : geo;
     }

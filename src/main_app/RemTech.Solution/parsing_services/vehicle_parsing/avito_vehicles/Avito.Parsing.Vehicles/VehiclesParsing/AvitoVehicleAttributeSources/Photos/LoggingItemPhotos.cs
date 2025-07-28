@@ -1,14 +1,14 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePhotos;
-using RemTech.Logging.Library;
+using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Photos;
 
 public sealed class LoggingItemPhotos : IParsedVehiclePhotos
 {
-    private readonly ICustomLogger _log;
+    private readonly ILogger _log;
     private readonly IParsedVehiclePhotos _photos;
 
-    public LoggingItemPhotos(ICustomLogger log, IParsedVehiclePhotos photos)
+    public LoggingItemPhotos(ILogger log, IParsedVehiclePhotos photos)
     {
         _log = log;
         _photos = photos;
@@ -17,7 +17,7 @@ public sealed class LoggingItemPhotos : IParsedVehiclePhotos
     public async Task<UniqueParsedVehiclePhotos> Read()
     {
         UniqueParsedVehiclePhotos photos = await _photos.Read();
-        _log.Info("Photos amount: {0}.", photos.Amount());
+        _log.Information("Photos amount: {0}.", photos.Amount());
         return photos;
     }
 }

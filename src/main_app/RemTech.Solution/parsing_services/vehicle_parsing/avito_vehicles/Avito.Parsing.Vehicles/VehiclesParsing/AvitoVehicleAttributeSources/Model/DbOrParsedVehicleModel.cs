@@ -1,8 +1,7 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleModels;
-using Parsing.Vehicles.DbSearch;
 using Parsing.Vehicles.DbSearch.VehicleModels;
-using RemTech.Logging.Library;
 using RemTech.Postgres.Adapter.Library;
+using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Model;
 
@@ -10,9 +9,9 @@ public sealed class DbOrParsedVehicleModel : IParsedVehicleModelSource
 {
     private readonly IParsedVehicleModelSource _origin;
     private readonly PgConnectionSource _pgConnectionSource;
-    private readonly ICustomLogger _logger;
+    private readonly ILogger _logger;
 
-    public DbOrParsedVehicleModel(PgConnectionSource pgConnection, ICustomLogger logger, IParsedVehicleModelSource origin)
+    public DbOrParsedVehicleModel(PgConnectionSource pgConnection, ILogger logger, IParsedVehicleModelSource origin)
     {
         _origin = origin;
         _pgConnectionSource = pgConnection;

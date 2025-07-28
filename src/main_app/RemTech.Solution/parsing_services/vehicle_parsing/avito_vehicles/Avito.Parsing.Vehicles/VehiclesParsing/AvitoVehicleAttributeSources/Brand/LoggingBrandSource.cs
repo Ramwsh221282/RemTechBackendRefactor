@@ -1,14 +1,14 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleBrands;
-using RemTech.Logging.Library;
+using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Brand;
 
 public sealed class LoggingBrandSource : IParsedVehicleBrandSource
 {
-    private readonly ICustomLogger _log;
+    private readonly ILogger _log;
     private readonly IParsedVehicleBrandSource _origin;
 
-    public LoggingBrandSource(ICustomLogger log, IParsedVehicleBrandSource origin)
+    public LoggingBrandSource(ILogger log, IParsedVehicleBrandSource origin)
     {
         _log = log; 
         _origin = origin;
@@ -18,9 +18,9 @@ public sealed class LoggingBrandSource : IParsedVehicleBrandSource
     {
         ParsedVehicleBrand brand = await _origin.Read();
         if (brand)
-            _log.Info("Vehicle brand: {0}.", (string)brand);
+            _log.Information("Vehicle brand: {0}.", (string)brand);
         else
-            _log.Warn("Unable to read vehicle brand.");
+            _log.Warning("Unable to read vehicle brand.");
         return brand;
     }
 }

@@ -13,4 +13,5 @@ public class GeoLocation
 
     public Guid Id() => Identity.ReadId();
     public string Name() => Identity.ReadText();
+    public string Kind() => Identity.Kind();
 }

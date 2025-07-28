@@ -23,19 +23,18 @@ using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePhotos;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePrices;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleSources;
 using Parsing.Vehicles.Common.TextWriting;
-using Parsing.Vehicles.DbSearch;
 using Parsing.Vehicles.Grpc.Recognition;
 using PuppeteerSharp;
 using RemTech.Core.Shared.Decorating;
-using RemTech.Logging.Library;
 using RemTech.Postgres.Adapter.Library;
+using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing;
 
 public sealed class AvitoVehiclesParser : IParsedVehicleSource
 {
     private readonly IPage _page;
-    private readonly ICustomLogger _logger;
+    private readonly ILogger _logger;
     private readonly string _originUrl;
     private readonly IPageAction _bottomScroll;
     private readonly PgConnectionSource _pgConnectionSource;
@@ -45,7 +44,7 @@ public sealed class AvitoVehiclesParser : IParsedVehicleSource
     public AvitoVehiclesParser(
         IPage page,
         ITextWrite write,
-        ICustomLogger logger,
+        ILogger logger,
         PgConnectionSource pgConnectionSource,
         CommunicationChannel channel,
         string originUrl)
@@ -152,7 +151,7 @@ public sealed class AvitoVehiclesParser : IParsedVehicleSource
                     .WrapBy(v => new BottomScrollingAvitoVehicle(_bottomScroll, v))
                     .WrapBy(v => new BlockBypassingAvitoVehicle(bypass, v))
                     .WrapBy(v => new NavigatingAvitoVehicle(itemNavigating, v))
-                    // .WrapBy(v => new ExceptionLoggingVehicle(item.ReadUrl(), _logger, v))
+                    .WrapBy(v => new ExceptionLoggingVehicle(item.ReadUrl(), _logger, v))
                     .VehicleSource();
             }
         }

@@ -1,18 +1,20 @@
-﻿using RemTech.Core.Shared.Functional;
-using RemTech.Logging.Library;
-using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
+﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.Result.Library;
+using Serilog;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.StoppedParser.Async.Decorators;
 
-public sealed class AsyncLoggingStoppedParser(ICustomLogger logger, IAsyncStoppedParser inner)
+public sealed class AsyncLoggingStoppedParser(ILogger logger, IAsyncStoppedParser inner)
     : IAsyncStoppedParser
 {
     public async Task<Status<IParser>> AsyncStopped(
         AsyncStopParser stop,
         CancellationToken ct = default
-    ) =>
-        await new AsyncLoggingOperation<Status<IParser>>(logger, "Остановка парсера.").Log(
-            () => inner.AsyncStopped(stop, ct)
-        );
+    )
+    {
+        logger.Information("Асинхронная остановка парсера начата.");
+        Status<IParser> parser = await inner.AsyncStopped(stop, ct);
+        logger.Information("Асинхронная остановка парсера закончена.");
+        return parser;
+    }
 }

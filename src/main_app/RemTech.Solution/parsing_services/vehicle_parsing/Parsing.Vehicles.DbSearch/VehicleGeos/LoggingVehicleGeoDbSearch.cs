@@ -1,14 +1,14 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleGeo;
-using RemTech.Logging.Library;
+using Serilog;
 
 namespace Parsing.Vehicles.DbSearch.VehicleGeos;
 
 public sealed class LoggingVehicleGeoDbSearch : IVehicleGeoDbSearch
 {
-    private readonly ICustomLogger _logger;
+    private readonly ILogger _logger;
     private readonly IVehicleGeoDbSearch _search;
 
-    public LoggingVehicleGeoDbSearch(ICustomLogger logger, IVehicleGeoDbSearch search)
+    public LoggingVehicleGeoDbSearch(ILogger logger, IVehicleGeoDbSearch search)
     {
         _logger = logger;
         _search = search;
@@ -20,9 +20,9 @@ public sealed class LoggingVehicleGeoDbSearch : IVehicleGeoDbSearch
         string region = geo.Region();
         string city = geo.City();
         if (geo)
-            _logger.Info("Vehicle geo search result: Region - {0}. City - {1}. Parameter - {2}.", region, city, text);
+            _logger.Information("Vehicle geo search result: Region - {0}. City - {1}. Parameter - {2}.", region, city, text);
         else
-            _logger.Warn("Unable to search vehicle geo. Parameter: {0}.", text);
+            _logger.Warning("Unable to search vehicle geo. Parameter: {0}.", text);
         return geo;
     }
 }

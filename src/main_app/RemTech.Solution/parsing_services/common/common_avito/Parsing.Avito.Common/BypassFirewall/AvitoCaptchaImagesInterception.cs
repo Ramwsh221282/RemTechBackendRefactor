@@ -31,6 +31,7 @@ public sealed class AvitoCaptchaImagesInterception
             return _images;
         }
 
+        await button.ClickAsync();
         Task imagesTask = _tcs.Task;
         Task timeOutTask = Task.Delay(TimeSpan.FromSeconds(10));
         Task completed = await Task.WhenAny(imagesTask, timeOutTask);

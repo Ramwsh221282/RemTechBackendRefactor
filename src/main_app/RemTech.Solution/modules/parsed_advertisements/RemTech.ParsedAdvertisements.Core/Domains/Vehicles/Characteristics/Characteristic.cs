@@ -61,6 +61,8 @@ public sealed class Characteristic : ICharacteristic
         _measure = measure;
     }
 
+    public CharacteristicIdentity Identity => _identity;
+    
     public Vehicle ToVehicle(Vehicle vehicle)
     {
         return !_value
@@ -91,6 +93,8 @@ public sealed class Characteristic : ICharacteristic
             .With($"@ctx_value_{index}", ctxValue)
             .With($"@ctx_measure_{index}", measure);
     }
+    
+    public string Measure() => _measure.Read();
     
     public string NameValueString(NotEmptyString value)
     {

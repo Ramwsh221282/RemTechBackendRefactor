@@ -19,7 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\shared_module\ports\RemTech.Logging.Port\RemTech.Logging.Port.csproj" />
       <ProjectReference Include="..\..\RemTech.ParsersManagement.Core\RemTech.ParsersManagement.Core.csproj" />
     </ItemGroup>
 

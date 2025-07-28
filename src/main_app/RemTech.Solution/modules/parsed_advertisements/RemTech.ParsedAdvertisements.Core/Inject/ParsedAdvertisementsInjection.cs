@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Features.SinkAdvertisement.Decorators.BackgroundService;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Features.SinkVehicles.Decorators.BackgroundService;
 using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
 
 namespace RemTech.ParsedAdvertisements.Core.Inject;

@@ -1,14 +1,14 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePrices;
-using RemTech.Logging.Library;
+using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Price;
 
 public sealed class LoggingVehiclePriceSource : IParsedVehiclePriceSource
 {
-    private readonly ICustomLogger _log;
+    private readonly ILogger _log;
     private readonly IParsedVehiclePriceSource _origin;
 
-    public LoggingVehiclePriceSource(ICustomLogger log, IParsedVehiclePriceSource origin)
+    public LoggingVehiclePriceSource(ILogger log, IParsedVehiclePriceSource origin)
     {
         _log = log;
         _origin = origin;
@@ -16,13 +16,13 @@ public sealed class LoggingVehiclePriceSource : IParsedVehiclePriceSource
     
     public async Task<ParsedVehiclePrice> Read()
     {
-        _log.Info("Reading avito vehicle price.");
+        _log.Information("Reading avito vehicle price.");
         ParsedVehiclePrice price = await _origin.Read();
         
         if (price)
-            _log.Info("Vehicle price value: {0}. Vehicle price NDS: {1}.", (long)price, price.IsNds());
+            _log.Information("Vehicle price value: {0}. Vehicle price NDS: {1}.", (long)price, price.IsNds());
         else
-            _log.Warn("Unable to read vehicle price.");
+            _log.Warning("Unable to read vehicle price.");
         
         return price;
     }
