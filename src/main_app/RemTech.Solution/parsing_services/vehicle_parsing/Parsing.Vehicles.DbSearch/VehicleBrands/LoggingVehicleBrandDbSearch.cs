@@ -1,14 +1,14 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleBrands;
-using RemTech.Logging.Library;
+using Serilog;
 
 namespace Parsing.Vehicles.DbSearch.VehicleBrands;
 
 public sealed class LoggingVehicleBrandDbSearch : IVehicleBrandDbSearch
 {
-    private readonly ICustomLogger _logger;
+    private readonly ILogger _logger;
     private readonly IVehicleBrandDbSearch _origin;
 
-    public LoggingVehicleBrandDbSearch(ICustomLogger logger, IVehicleBrandDbSearch origin)
+    public LoggingVehicleBrandDbSearch(ILogger logger, IVehicleBrandDbSearch origin)
     {
         _logger = logger;
         _origin = origin;
@@ -18,9 +18,9 @@ public sealed class LoggingVehicleBrandDbSearch : IVehicleBrandDbSearch
     {
         ParsedVehicleBrand brand = await _origin.Search(text);
         if (brand)
-            _logger.Info("Db search vehicle brand: {0}. Parameter: {1}.", (string)brand, text);
+            _logger.Information("Db search vehicle brand: {0}. Parameter: {1}.", (string)brand, text);
         else
-            _logger.Warn("Unable to search vehicle brand from Db. Parameter: {0}.", text);
+            _logger.Warning("Unable to search vehicle brand from Db. Parameter: {0}.", text);
         return brand;
     }
 }

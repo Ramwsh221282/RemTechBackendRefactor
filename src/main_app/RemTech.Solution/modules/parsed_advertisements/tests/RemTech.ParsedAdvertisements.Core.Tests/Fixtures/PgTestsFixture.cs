@@ -1,22 +1,22 @@
 ﻿using RemTech.Logging.Adapter;
-using RemTech.Logging.Library;
 using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
+using Serilog;
 
 namespace RemTech.ParsedAdvertisements.Core.Tests.Fixtures;
 
 public sealed class PgTestsFixture
 {
     private readonly DatabaseConfiguration _configuration;
-    private readonly ICustomLogger _logger;
+    private readonly ILogger _logger;
 
     public PgTestsFixture()
     {
         _configuration = new DatabaseConfiguration("appsettings.json");
-        _logger = new ConsoleLogger();
+        _logger = new LoggerSource().Logger();
         // DatabaseBakery bakery = new(_configuration);
         // bakery.Up(typeof(Vehicle).Assembly);
     }
 
     public DatabaseConfiguration DbConfig() => _configuration;
-    public ICustomLogger Logger() => _logger;
+    public ILogger Logger() => _logger;
 }

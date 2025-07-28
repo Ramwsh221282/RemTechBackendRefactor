@@ -18,8 +18,8 @@ public sealed class AvitoCaptchaImages
     public int Amount() => _bytes.Count;
     
     public byte[] ReadMin() => 
-        Amount() < 2 ? [] : _bytes.OrderBy(b => b.Length).First();
+        Amount() < 2 ? [] : _bytes.MinBy(b => b.Length)!;
     
     public byte[] ReadMax() => 
-        Amount() < 2 ? [] : _bytes.OrderByDescending(b => b.Length).First();
+        Amount() < 2 ? [] : _bytes.MaxBy(b => b.Length)!;
 }

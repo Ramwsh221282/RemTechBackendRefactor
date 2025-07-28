@@ -1,15 +1,15 @@
 ﻿using RemTech.Core.Shared.Functional;
 using RemTech.Core.Shared.Primitives;
-using RemTech.Logging.Library;
 using RemTech.ParsersManagement.Core.Common.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers.ValueObjects;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.Result.Library;
+using Serilog;
 
 namespace RemTech.ParsersManagement.DataSource.Adapter.Parsers.Decorators;
 
-public sealed class PgLoggingParsers(ICustomLogger logger, IParsers origin) : IParsers
+public sealed class PgLoggingParsers(ILogger logger, IParsers origin) : IParsers
 {
     private const string Context = "PG Parsers";
 
@@ -26,25 +26,25 @@ public sealed class PgLoggingParsers(ICustomLogger logger, IParsers origin) : IP
     public void OnParserFound(Status<IParser> parser)
     {
         if (parser.IsSuccess)
-            logger.Info("{0}. Парсер найден: {1}.", Context, true);
+            logger.Information("{0}. Парсер найден: {1}.", Context, true);
     }
 
     public void OnParserNotFound(Status<IParser> parser)
     {
         if (parser.IsFailure)
-            logger.Warn("{0}. Парсер найден: {1}.", Context, false);
+            logger.Warning("{0}. Парсер найден: {1}.", Context, false);
     }
 
     public void OnParserAdded(Status status)
     {
         if (status.IsSuccess)
-            logger.Info("{0}. Парсер добавлен: {1}.", Context, true);
+            logger.Information("{0}. Парсер добавлен: {1}.", Context, true);
     }
 
     public void OnParserNotAdded(Status status)
     {
         if (status.IsFailure)
-            logger.Warn("{0}. Парсер добавлен: {1}.", Context, false);
+            logger.Warning("{0}. Парсер добавлен: {1}.", Context, false);
     }
 
     public bool ParserAdded(Status status)
@@ -76,7 +76,7 @@ public sealed class PgLoggingParsers(ICustomLogger logger, IParsers origin) : IP
     public async Task<Status<IParser>> Find(Name name, CancellationToken ct = default)
     {
         string nameString = name;
-        logger.Info("{0}. Получение парсера с названием: {1}.", Context, nameString);
+        logger.Information("{0}. Получение парсера с названием: {1}.", Context, nameString);
         return new ActionPipeline<Status<IParser>>(await origin.Find(name, ct))
             .With(ParserFound, ParserDiscoveryLog)
             .With(ParserNotFound, ParserDiscoveryLog)
@@ -86,7 +86,7 @@ public sealed class PgLoggingParsers(ICustomLogger logger, IParsers origin) : IP
     public async Task<Status<IParser>> Find(NotEmptyGuid id, CancellationToken ct = default)
     {
         Guid logId = id;
-        logger.Info("{0}. Получение парсера с ID: {1}.", Context, logId);
+        logger.Information("{0}. Получение парсера с ID: {1}.", Context, logId);
         return new ActionPipeline<Status<IParser>>(await origin.Find(id, ct))
             .With(ParserFound, ParserDiscoveryLog)
             .With(ParserNotFound, ParserDiscoveryLog)
@@ -101,7 +101,7 @@ public sealed class PgLoggingParsers(ICustomLogger logger, IParsers origin) : IP
     {
         string logType = type.Read();
         string logDomain = domain;
-        logger.Info(
+        logger.Information(
             "{0}. Получение парсера с типом: {1} и доменом: {2}.",
             Context,
             logType,
@@ -119,7 +119,7 @@ public sealed class PgLoggingParsers(ICustomLogger logger, IParsers origin) : IP
         string logName = parser.Identification().ReadName();
         string logType = parser.Identification().ReadType().Read();
         string logDomain = parser.Domain();
-        logger.Info(
+        logger.Information(
             "{0}. Добавление парсера с ID: {1}, названием: {2}, типом: {3} доменом: {4}.",
             Context,
             logId,

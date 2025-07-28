@@ -1,28 +1,20 @@
-﻿using RemTech.Logging.Library;
-using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
+﻿using RemTech.ParsersManagement.Core.Domains.ParsersDomain.ParserLinks;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Parsers;
 using RemTech.Result.Library;
+using Serilog;
 
 namespace RemTech.ParsersManagement.Core.Domains.ParsersDomain.Features.FinishingParserLink.Decorators;
 
-public sealed class LoggingFinishedParserLink(ICustomLogger logger, IFinishedParserLink inner)
+public sealed class LoggingFinishedParserLink(ILogger logger, IFinishedParserLink inner)
     : IFinishedParserLink
 {
     public Status<IParserLink> Finished(FinishParserLink finish)
     {
-        IParser parser = finish.TakeOwner();
-        logger.Info(
-            "Завершение работы ссылки парсера ID: {0}, название: {1}, тип: {2}, домен: {3}.",
-            (Guid)parser.Identification().ReadId(),
-            (string)parser.Identification().ReadName().NameString(),
-            (string)parser.Identification().ReadType().Read(),
-            (string)parser.Domain().Read().NameString()
-        );
         Status<IParserLink> finished = inner.Finished(finish);
         if (finished.IsSuccess)
         {
             IParserLink link = finished.Value;
-            logger.Info(
+            logger.Information(
                 "Работа ссылки завершена. Затрачено: {0} ч. {1} м. {2} с.",
                 link.WorkedStatistic().WorkedTime().Hours().Read().Read(),
                 link.WorkedStatistic().WorkedTime().Minutes().Read().Read(),

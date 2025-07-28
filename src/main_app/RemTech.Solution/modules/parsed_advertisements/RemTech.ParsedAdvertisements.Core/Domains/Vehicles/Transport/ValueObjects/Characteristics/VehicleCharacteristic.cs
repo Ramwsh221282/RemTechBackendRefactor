@@ -6,6 +6,7 @@ namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObje
 public sealed record VehicleCharacteristic
 {
     private readonly Characteristic _characteristic;
+    
     private readonly VehicleCharacteristicValue _value;
 
     public VehicleCharacteristic(Characteristic characteristic, VehicleCharacteristicValue value)

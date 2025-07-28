@@ -1,5 +1,6 @@
-﻿using RemTech.Logging.Library;
+﻿using RemTech.Logging.Adapter;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
+
 
 namespace RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 
@@ -12,5 +13,5 @@ public sealed class ParsersFixture
         return valid;
     }
 
-    public ICustomLogger AccessLogger() => new MokLogger();
+    public Serilog.ILogger AccessLogger() => new LoggerSource().Logger();
 }

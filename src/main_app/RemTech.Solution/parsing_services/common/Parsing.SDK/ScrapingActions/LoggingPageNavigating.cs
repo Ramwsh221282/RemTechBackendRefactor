@@ -1,16 +1,16 @@
-using RemTech.Logging.Library;
+using Serilog;
 
 namespace Parsing.SDK.ScrapingActions;
 
 public sealed class LoggingPageNavigating(
-    ICustomLogger log, 
+    ILogger log, 
     string url, 
     IPageNavigating origin) : IPageNavigating
 {
     public async Task Do()
     {
-        log.Info("Navigating page: {0}.", url);
+        log.Information("Navigating page: {0}.", url);
         await origin.Do();
-        log.Info("Navigated on: {0}.", url);
+        log.Information("Navigated on: {0}.", url);
     }
 }

@@ -6,58 +6,96 @@ public sealed class AvitoCaptchaSliderMovementPosition(AvitoCaptchaImages images
 {
     public int CenterPoint()
     {
-        using DecodedCaptchaImage background = new(images.ReadMax());
-        using DecodedCaptchaImage puzzle = new(images.ReadMin());
-        return CalculateCenterPoint(background, puzzle);
+        byte[] backGround = images.ReadMax();
+        byte[] puzzlePiece = images.ReadMin();
+        return CalculateCenterPointForBackground(CreateBackgroundImage(backGround), CreatePuzzleImage(puzzlePiece));
     }
 
-    private int CalculateCenterPoint(DecodedCaptchaImage background, DecodedCaptchaImage puzzle)
+    private static int CalculateCenterPointForBackground(Mat background, Mat puzzlePiece)
     {
         try
         {
-            using Mat edgePuzzle = Edges(puzzle.Read());
-            using Mat edgeBackground = Edges(background.Read());
-            using Mat rgbPuzzle = MatBgr2Rgb(edgePuzzle);
-            using Mat rgbBackground = MatBgr2Rgb(edgeBackground);
-            int centerPoint = Calculate(rgbBackground, edgePuzzle, edgePuzzle);
+            Mat edgePuzzlePiece = CreateEdgePuzzlePiece(puzzlePiece);
+            Mat edgeBackground = CreateEdgeBackground(background);
+            Mat edgePuzzlePieceRgb = CreateEdgePuzzlePieceRgb(edgePuzzlePiece);
+            Mat edgeBackgroundRgb = CreateEdgeBackgroundRgb(edgeBackground);
+            int centerPoint = GetCenterPoint(edgeBackgroundRgb, edgePuzzlePieceRgb, edgePuzzlePieceRgb);
+            edgePuzzlePiece.Dispose();
+            edgeBackgroundRgb.Dispose();
+            edgePuzzlePieceRgb.Dispose();
+            edgeBackgroundRgb.Dispose();
+            background.Dispose();
+            puzzlePiece.Dispose();
             return centerPoint;
         }
         catch
         {
-            return 1;
+            background.Dispose();
+            puzzlePiece.Dispose();
+            throw;
         }
     }
 
-    private Mat Edges(Mat mat)
+    private Mat CreateBackgroundImage(byte[] bytes)
     {
-        Mat edges = new();
-        Cv2.Canny(mat, edges, 100, 200);
-        return edges;
+        Mat result = Cv2.ImDecode(bytes, ImreadModes.Color);
+        return result;
+    }
+    
+    private Mat CreatePuzzleImage(byte[] bytes)
+    {
+        Mat result = Cv2.ImDecode(bytes, ImreadModes.Color);
+        return result;
+    }
+    
+    private static Mat CreateEdgePuzzlePiece(Mat puzzlePiece)
+    {
+        Mat edgePuzzlePiece = new();
+        Cv2.Canny(puzzlePiece, edgePuzzlePiece, 100, 200);
+        return edgePuzzlePiece;
     }
 
-    private Mat MatBgr2Rgb(Mat edged)
+    private static Mat CreateEdgeBackground(Mat background)
     {
-        Mat bgr2Rgb = new();
-        Cv2.CvtColor(edged, bgr2Rgb, ColorConversionCodes.BGR2RGB);
-        return bgr2Rgb;
+        Mat edgeBackground = new();
+        Cv2.Canny(background, edgeBackground, 100, 200);
+        return edgeBackground;
     }
 
-    private int Calculate(
+    private static Mat CreateEdgePuzzlePieceRgb(Mat edgePuzzlePiece)
+    {
+        Mat edgePuzzlePieceRgb = new();
+        Cv2.CvtColor(edgePuzzlePiece, edgePuzzlePieceRgb, ColorConversionCodes.BGR2RGB);
+        return edgePuzzlePieceRgb;
+    }
+
+    private static Mat CreateEdgeBackgroundRgb(Mat edgeBackground)
+    {
+        Mat edgeBackgroundRgb = new();
+        Cv2.CvtColor(edgeBackground, edgeBackgroundRgb, ColorConversionCodes.BGR2RGB);
+        return edgeBackgroundRgb;
+    }
+    
+    private static int GetCenterPoint(
         Mat edgeBackgroundRgb,
-        Mat edgePuzzleRgb,
-        Mat edgePuzzle
-    )
+        Mat edgePuzzlePieceRgb,
+        Mat edgePuzzlePiece)
     {
         Mat result = new();
+
         Cv2.MatchTemplate(
             edgeBackgroundRgb,
-            edgePuzzleRgb,
+            edgePuzzlePieceRgb,
             result,
             TemplateMatchModes.CCoeffNormed);
+
         Cv2.MinMaxLoc(result, out _, out _, out _, out Point maxLoc);
-        int w = edgePuzzle.Cols;
-        int center = maxLoc.X + w / 2;
+
+        int w = edgePuzzlePiece.Cols;
+        
+        int centerX = maxLoc.X + (w / 2);
+
         result.Dispose();
-        return center;
+        return centerX;
     }
 }

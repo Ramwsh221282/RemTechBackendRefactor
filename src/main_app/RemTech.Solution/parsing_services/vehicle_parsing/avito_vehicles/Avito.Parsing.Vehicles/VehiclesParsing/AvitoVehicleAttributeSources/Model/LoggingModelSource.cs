@@ -1,14 +1,14 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleModels;
-using RemTech.Logging.Library;
+using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Model;
 
 public sealed class LoggingModelSource : IParsedVehicleModelSource
 {
-    private readonly ICustomLogger _log;
+    private readonly ILogger _log;
     private readonly IParsedVehicleModelSource _origin;
 
-    public LoggingModelSource(ICustomLogger log, IParsedVehicleModelSource origin)
+    public LoggingModelSource(ILogger log, IParsedVehicleModelSource origin)
     {
         _log = log;
         _origin = origin;
@@ -18,9 +18,9 @@ public sealed class LoggingModelSource : IParsedVehicleModelSource
     {
         ParsedVehicleModel model = await _origin.Read();
         if (model)
-            _log.Info("Vehicle model: {0}.", (string)model);
+            _log.Information("Vehicle model: {0}.", (string)model);
         else
-            _log.Info("Unable to get vehicle model.");
+            _log.Warning("Unable to get vehicle model.");
         return model;
     }
 }

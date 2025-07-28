@@ -1,14 +1,14 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleGeo;
-using RemTech.Logging.Library;
+using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Geos;
 
 public sealed class LoggingVehicleGeoSource : IParsedVehicleGeoSource
 {
-    private readonly ICustomLogger _logger;
+    private readonly ILogger _logger;
     private readonly IParsedVehicleGeoSource _origin;
 
-    public LoggingVehicleGeoSource(ICustomLogger logger, IParsedVehicleGeoSource origin)
+    public LoggingVehicleGeoSource(ILogger logger, IParsedVehicleGeoSource origin)
     {
         _logger = logger;
         _origin = origin;
@@ -18,9 +18,9 @@ public sealed class LoggingVehicleGeoSource : IParsedVehicleGeoSource
     {
         ParsedVehicleGeo geo = await _origin.Read();
         if (geo)
-            _logger.Info("Vehicle geo info: Region - {0}. City - {1}.", (string)geo.Region(),  (string)geo.City());
+            _logger.Information("Vehicle geo info: Region - {0}. City - {1}.", (string)geo.Region(),  (string)geo.City());
         else
-            _logger.Warn("Unable to read vehicle geo.");
+            _logger.Warning("Unable to read vehicle geo.");
         return geo;
     }
 }

@@ -17,8 +17,8 @@ public sealed class AvitoCaptchaSliderMovement(IPage page, int centerPoint) : IP
         await Task.Delay(TimeSpan.FromSeconds(5));
         MoveOptions moveOptions = new() { Steps = 25 };
         BoundingBox bbox = await slider.BoundingBoxAsync();
-        decimal xPosition = bbox.X + bbox.Width / 2;
-        decimal yPosition = bbox.Y + bbox.Height / 2;
+        decimal xPosition = bbox.X + (bbox.Width / 2);
+        decimal yPosition = bbox.Y + (bbox.Height / 2);
         await page.Mouse.MoveAsync(xPosition, yPosition, moveOptions);
         await page.Mouse.DownAsync();
         decimal xPositionN = bbox.X + centerPoint;

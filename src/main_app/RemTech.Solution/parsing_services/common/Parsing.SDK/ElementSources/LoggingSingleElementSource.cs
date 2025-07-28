@@ -1,14 +1,14 @@
 using PuppeteerSharp;
-using RemTech.Logging.Library;
+using Serilog;
 
 namespace Parsing.SDK.ElementSources;
 
 public sealed class LoggingSingleElementSource : ISingleElementSource
 {
-    private readonly ICustomLogger _log;
+    private readonly ILogger _log;
     private readonly ISingleElementSource _source;
 
-    public LoggingSingleElementSource(ICustomLogger log, ISingleElementSource source)
+    public LoggingSingleElementSource(ILogger log, ISingleElementSource source)
     {
         _log = log;
         _source = source;
@@ -16,7 +16,7 @@ public sealed class LoggingSingleElementSource : ISingleElementSource
     
     public Task<IElementHandle> Read(string path)
     {
-        _log.Info("Reading element with path: {0}. Path mode is: {1}.", path, new ElementPathMode(path).Mode());
+        _log.Information("Reading element with path: {0}. Path mode is: {1}.", path, new ElementPathMode(path).Mode());
         return _source.Read(path);
     }
 }

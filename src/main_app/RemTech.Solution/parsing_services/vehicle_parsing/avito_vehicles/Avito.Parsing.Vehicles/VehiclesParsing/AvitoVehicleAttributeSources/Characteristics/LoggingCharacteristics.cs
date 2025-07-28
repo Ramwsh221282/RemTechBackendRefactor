@@ -1,14 +1,14 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
-using RemTech.Logging.Library;
+using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Characteristics;
 
 public sealed class LoggingCharacteristics : IKeyValuedCharacteristicsSource
 {
-    private readonly ICustomLogger _log;
+    private readonly ILogger _log;
     private readonly IKeyValuedCharacteristicsSource _origin;
 
-    public LoggingCharacteristics(ICustomLogger log, IKeyValuedCharacteristicsSource origin)
+    public LoggingCharacteristics(ILogger log, IKeyValuedCharacteristicsSource origin)
     {
         _log = log;
         _origin = origin;
@@ -20,11 +20,11 @@ public sealed class LoggingCharacteristics : IKeyValuedCharacteristicsSource
         if (ctxes)
         {
             foreach (var ctx in ctxes.Read())
-                _log.Info("Characteristic. {0}:{1}.", ctx.Name(), ctx.Value());
+                _log.Information("Characteristic. {0}:{1}.", ctx.Name(), ctx.Value());
         }
         else
         {
-            _log.Warn("Unable to read characteristics.");
+            _log.Warning("Unable to read characteristics.");
         }
         
         return ctxes;

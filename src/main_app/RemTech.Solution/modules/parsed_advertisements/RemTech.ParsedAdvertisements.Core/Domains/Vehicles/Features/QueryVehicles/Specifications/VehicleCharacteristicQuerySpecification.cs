@@ -1,0 +1,48 @@
+﻿using Npgsql;
+using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Transport.ValueObjects.Characteristics;
+
+namespace RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Features.QueryVehicles.Specifications;
+
+public sealed class VehicleCharacteristicQuerySpecification : IQueryVehiclesSpecification
+{
+    private readonly IEnumerable<VehicleCharacteristic> _characteristic;
+
+    public VehicleCharacteristicQuerySpecification(
+        IEnumerable<VehicleCharacteristic> characteristic
+    )
+    {
+        _characteristic = characteristic;
+    }
+
+    public void ApplyTo(VehiclesSqlQuery query)
+    {
+        int number = 1;
+        foreach (VehicleCharacteristic characteristic in _characteristic)
+        {
+            Guid id = characteristic.WhatCharacteristic().Identity.ReadId();
+            string name = characteristic.WhatCharacteristic().Identity.ReadText();
+            string value = characteristic.WhatValue();
+            NpgsqlParameter[] parameters =
+            [
+                new NpgsqlParameter<Guid>($"@modCtxId_{number}", id),
+                new NpgsqlParameter<string>($"@modCtxName_{number}", name),
+                new NpgsqlParameter<string>($"@modCtxValue_{number}", value),
+            ];
+            query.AcceptFilter(
+                string.Intern(
+                    $"""
+                     EXISTS (
+                     SELECT 1 FROM parsed_advertisements_module.parsed_vehicle_characteristics sub_ctx
+                     WHERE sub_ctx.vehicle_id = v.id 
+                     AND sub_ctx.ctx_id = @modCtxId_{number}
+                     AND sub_ctx.ctx_name = @modCtxName_{number}
+                     AND sub_ctx.ctx_value = @modCtxValue_{number}
+                     )
+                     """
+                ),
+                parameters
+            );
+            number++;
+        }
+    }
+}

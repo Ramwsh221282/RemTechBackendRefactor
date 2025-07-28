@@ -1,14 +1,14 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleSources;
-using RemTech.Logging.Library;
+using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Url;
 
 public sealed class LoggingVehicleUrl : IParsedVehicleUrlSource
 {
-    private readonly ICustomLogger _log;
+    private readonly ILogger _log;
     private readonly IParsedVehicleUrlSource _source;
 
-    public LoggingVehicleUrl(ICustomLogger log, IParsedVehicleUrlSource source)
+    public LoggingVehicleUrl(ILogger log, IParsedVehicleUrlSource source)
     {
         _log = log;
         _source = source;
@@ -18,9 +18,9 @@ public sealed class LoggingVehicleUrl : IParsedVehicleUrlSource
     {
         ParsedVehicleUrl url = await _source.Read();
         if (url)
-            _log.Info("Vehicle url: {0}.", (string)url);
+            _log.Information("Vehicle url: {0}.", (string)url);
         else
-            _log.Warn("Unable to read vehicle url.");
+            _log.Warning("Unable to read vehicle url.");
         return url;
     }
 }

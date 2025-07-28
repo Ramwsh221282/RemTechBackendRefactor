@@ -1,9 +1,9 @@
 ﻿using Npgsql;
-using RemTech.Logging.Library;
+using RemTech.Logging.Adapter;
 using RemTech.ParsersManagement.Core.Domains.ParsersDomain.Ports.Database;
 using RemTech.ParsersManagement.DataSource.Adapter.Parsers;
-using RemTech.ParsersManagement.Tests.Library.Mocks.CoreLogic;
 using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
+using Serilog;
 
 namespace RemTech.ParsersManagement.DataAccess.Adapter.Tests.Parsers;
 
@@ -11,14 +11,14 @@ public sealed class DataAccessParsersFixture : IDisposable
 {
     private readonly ParsersDatabaseBakery _up;
     private readonly DatabaseConfiguration _configuration;
-    private readonly ICustomLogger _logger;
+    private readonly ILogger _logger;
 
     public DataAccessParsersFixture()
     {
         _configuration = new DatabaseConfiguration("appsettings.json");
         _up = new ParsersDatabaseBakery(_configuration);
         _up.Up();
-        _logger = new MokLogger();
+        _logger = new LoggerSource().Logger();
     }
 
     public IParsers Parsers()
@@ -30,7 +30,7 @@ public sealed class DataAccessParsersFixture : IDisposable
         return transactional;
     }
 
-    public ICustomLogger Logger() => _logger;
+    public ILogger Logger() => _logger;
 
     public void Dispose()
     {

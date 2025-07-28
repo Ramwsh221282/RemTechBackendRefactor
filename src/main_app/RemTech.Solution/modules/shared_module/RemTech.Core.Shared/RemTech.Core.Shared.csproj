@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ports\RemTech.Logging.Port\RemTech.Logging.Port.csproj" />
       <ProjectReference Include="..\RemTech.Json.Library\RemTech.Json.Library.csproj" />
       <ProjectReference Include="..\RemTech.Result.Library\RemTech.Result.Library.csproj" />
     </ItemGroup>

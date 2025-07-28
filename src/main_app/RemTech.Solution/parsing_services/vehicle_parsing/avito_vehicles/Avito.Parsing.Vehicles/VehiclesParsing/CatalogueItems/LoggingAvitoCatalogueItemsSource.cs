@@ -1,17 +1,17 @@
-using RemTech.Logging.Library;
+using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.CatalogueItems;
 
 public sealed class LoggingAvitoCatalogueItemsSource(
-    ICustomLogger log, 
+    ILogger log, 
     IAvitoCatalogueItemsSource items)
     : IAvitoCatalogueItemsSource
 {
     public async Task<CatalogueItemsList> Read()
     {
-        log.Info("Extracting avito catalogue items.");
+        log.Information("Extracting avito catalogue items.");
         CatalogueItemsList extracted = await items.Read();
-        log.Info("Extracted amount: {0}.", extracted.Amount());
+        log.Information("Extracted amount: {0}.", extracted.Amount());
         return extracted;
     }
 }

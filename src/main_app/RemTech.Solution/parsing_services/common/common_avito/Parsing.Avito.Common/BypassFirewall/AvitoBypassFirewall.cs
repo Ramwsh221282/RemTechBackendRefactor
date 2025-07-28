@@ -17,6 +17,7 @@ public sealed class AvitoBypassFirewall : IAvitoBypassFirewall
         AvitoCaptchaImagesInterception interception = new(_page, form);
         AvitoCaptchaImages images = await interception.Intercept();
         AvitoCaptchaSliderMovementPosition position = new(images);
+        await new AvitoCaptchaSliderMovement(_page, position.CenterPoint()).Do();
         return false;
     }
 }
