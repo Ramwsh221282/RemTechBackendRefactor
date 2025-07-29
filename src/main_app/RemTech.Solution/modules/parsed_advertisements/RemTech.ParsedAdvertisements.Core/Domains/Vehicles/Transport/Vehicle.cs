@@ -22,7 +22,7 @@ public class Vehicle : IVehicle
     protected virtual GeoLocation Location { get; }
     protected virtual IItemPrice Price { get; }
     protected virtual VehiclePhotos Photos { get; }
-    protected virtual VehicleCharacteristics Characteristics { get; }
+    public virtual VehicleCharacteristics Characteristics { get; }
     protected virtual VehicleModel Model { get; }
 
     public Vehicle(VehicleIdentity identity, IItemPrice price, VehiclePhotos photos)
@@ -36,25 +36,34 @@ public class Vehicle : IVehicle
         Location = new UnknownGeolocation();
         Model = new VehicleModel();
     }
-    
-    public Vehicle(Vehicle origin, VehicleKind kind) : this(origin) =>
-        Kind = kind;
-    
-    public Vehicle(Vehicle origin, VehicleBrand brand) : this(origin) =>
-        Brand = brand;
-    
-    public Vehicle(Vehicle origin, GeoLocation location) : this(origin) =>
-        Location = location;
 
-    public Vehicle(Vehicle origin, VehicleModel model) : this(origin) =>
-        Model = model;
+    public string Id() => Identity.Read();
 
-    public Vehicle(Vehicle origin, VehicleCharacteristic ctx) : this(origin)
+    public Vehicle(Vehicle origin, IEnumerable<VehicleCharacteristic> characteristics)
+        : this(origin)
+    {
+        Characteristics = new VehicleCharacteristics(characteristics);
+    }
+
+    public Vehicle(Vehicle origin, VehicleKind kind)
+        : this(origin) => Kind = kind;
+
+    public Vehicle(Vehicle origin, VehicleBrand brand)
+        : this(origin) => Brand = brand;
+
+    public Vehicle(Vehicle origin, GeoLocation location)
+        : this(origin) => Location = location;
+
+    public Vehicle(Vehicle origin, VehicleModel model)
+        : this(origin) => Model = model;
+
+    public Vehicle(Vehicle origin, VehicleCharacteristic ctx)
+        : this(origin)
     {
         VehicleCharacteristic[] current = origin.Characteristics.Read();
-        Characteristics = new VehicleCharacteristics([..current, ctx]);
+        Characteristics = new VehicleCharacteristics([.. current, ctx]);
     }
-    
+
     public Vehicle(Vehicle origin)
     {
         Identity = origin.Identity;

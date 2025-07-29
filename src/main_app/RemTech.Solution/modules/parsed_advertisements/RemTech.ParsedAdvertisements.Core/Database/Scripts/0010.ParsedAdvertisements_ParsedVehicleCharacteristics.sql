@@ -12,6 +12,12 @@
 CREATE INDEX IF NOT EXISTS idx_parsed_vehicle_characteristics_ctx_name
     ON parsed_advertisements_module.parsed_vehicle_characteristics(ctx_name);
 
+CREATE INDEX IF NOT EXISTS idx_pvc_vehicle_id
+    ON parsed_advertisements_module.parsed_vehicle_characteristics(vehicle_id);
+
+CREATE INDEX IF NOT EXISTS idx_pvc_ctx_id
+    ON parsed_advertisements_module.parsed_vehicle_characteristics(ctx_id);
+
 CREATE INDEX IF NOT EXISTS idx_parsed_vehicle_characteristics_ctx_value
     ON parsed_advertisements_module.parsed_vehicle_characteristics(ctx_value);
 

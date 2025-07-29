@@ -21,12 +21,13 @@ public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
     private bool _pricePassed;
     private bool _photosPassed;
     private bool _ctxesPassed;
-    
+
     protected override VehicleIdentity Identity
     {
         get
         {
-            if (_identityPassed) return base.Identity;
+            if (_identityPassed)
+                return base.Identity;
             VehicleIdentity identity = base.Identity;
             if (!identity)
                 throw new ValueNotValidException("Идентификатор техники");
@@ -39,7 +40,8 @@ public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
     {
         get
         {
-            if (_kindPassed) return base.Kind;
+            if (_kindPassed)
+                return base.Kind;
             VehicleKind kind = base.Kind;
             if (kind is UnknownVehicleKind)
                 throw new ValueNotValidException("Тип техники", "не задан.");
@@ -52,7 +54,8 @@ public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
     {
         get
         {
-            if (_brandPassed) return base.Brand;
+            if (_brandPassed)
+                return base.Brand;
             VehicleBrand brand = base.Brand;
             if (brand is UnknownVehicleBrand)
                 throw new ValueNotValidException("Бренд техники", "не задан.");
@@ -65,7 +68,8 @@ public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
     {
         get
         {
-            if (_locationPassed) return base.Location;
+            if (_locationPassed)
+                return base.Location;
             GeoLocation location = base.Location;
             if (location is UnknownGeolocation)
                 throw new ValueNotValidException("Локация техники", "не задана.");
@@ -78,7 +82,8 @@ public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
     {
         get
         {
-            if (_pricePassed) return base.Price;
+            if (_pricePassed)
+                return base.Price;
             IItemPrice price = base.Price;
             PriceValue value = price.Value();
             if (!value)
@@ -88,11 +93,12 @@ public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
         }
     }
 
-    protected override VehicleCharacteristics Characteristics
+    public override VehicleCharacteristics Characteristics
     {
         get
         {
-            if (_ctxesPassed) return base.Characteristics;
+            if (_ctxesPassed)
+                return base.Characteristics;
             VehicleCharacteristics characteristics = base.Characteristics;
             if (characteristics.Amount() == 0)
                 throw new ValueNotValidException("Характеристики техники", "не заданы.");
@@ -105,12 +111,16 @@ public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
     {
         get
         {
-            if (_photosPassed) return base.Photos;
+            if (_photosPassed)
+                return base.Photos;
             VehiclePhotos photos = base.Photos;
             IEnumerable<VehiclePhoto> photo = photos.Read();
             foreach (string entry in photo)
                 if (string.IsNullOrWhiteSpace(entry))
-                    throw new ValueNotValidException("Список фотографий содержит", "пустую фотографию");
+                    throw new ValueNotValidException(
+                        "Список фотографий содержит",
+                        "пустую фотографию"
+                    );
             _photosPassed = true;
             return photos;
         }

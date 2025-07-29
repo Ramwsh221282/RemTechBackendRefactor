@@ -80,6 +80,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.RabbitMq.Adapter", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.DependencyInjection.Library", "modules\shared_module\adapters\RemTech.DependencyInjection.Library\RemTech.DependencyInjection.Library.csproj", "{F570FC87-EB52-4238-9887-0D5F15C57EB2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Endpoints.Adapter", "modules\shared_module\adapters\RemTech.Endpoints.Adapter\RemTech.Endpoints.Adapter.csproj", "{48C0FDF4-5235-4973-85AB-8BA2CC893E69}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared_kernel_modules", "shared_kernel_modules", "{F257E012-BAB4-4AB7-AB5D-E6A19BB2C8CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -124,6 +128,8 @@ Global
 		{9530E9EB-43B1-4820-AAC2-35F7A2457AF3} = {6F5C9BC2-2F61-40A4-B372-CCE7AA12358D}
 		{E265C631-08D5-4930-A671-D56613240550} = {D8A8CDCA-3A8D-48EE-ABEF-D4DBABEEE2F5}
 		{F570FC87-EB52-4238-9887-0D5F15C57EB2} = {6F5C9BC2-2F61-40A4-B372-CCE7AA12358D}
+		{48C0FDF4-5235-4973-85AB-8BA2CC893E69} = {D8A8CDCA-3A8D-48EE-ABEF-D4DBABEEE2F5}
+		{F257E012-BAB4-4AB7-AB5D-E6A19BB2C8CE} = {6F5C9BC2-2F61-40A4-B372-CCE7AA12358D}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -230,5 +236,9 @@ Global
 		{F570FC87-EB52-4238-9887-0D5F15C57EB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F570FC87-EB52-4238-9887-0D5F15C57EB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F570FC87-EB52-4238-9887-0D5F15C57EB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48C0FDF4-5235-4973-85AB-8BA2CC893E69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48C0FDF4-5235-4973-85AB-8BA2CC893E69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48C0FDF4-5235-4973-85AB-8BA2CC893E69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48C0FDF4-5235-4973-85AB-8BA2CC893E69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
