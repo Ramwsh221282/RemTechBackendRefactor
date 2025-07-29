@@ -1,5 +1,0 @@
-﻿using RemTech.ParsedAdvertisements.Core.Features.QueryVehiclesCatalogue.QueryVehicleCharacteristicsDictionary.Types;
-
-namespace RemTech.ParsedAdvertisements.Core.Features.QueryVehiclesCatalogue.Delegates;
-
-public delegate Task<VehicleCharacteristicsDictionary> CharacteristicsOfCatalogue();

@@ -1,8 +1,8 @@
 using RemTech.Logging.Adapter;
-using RemTech.ParsedAdvertisements.Core.Injection;
 using RemTech.Postgres.Adapter.Library;
 using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
 using RemTech.RabbitMq.Adapter;
+using RemTech.Vehicles.Module.Injection;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton(new DatabaseConfiguration("appsettings.json"));

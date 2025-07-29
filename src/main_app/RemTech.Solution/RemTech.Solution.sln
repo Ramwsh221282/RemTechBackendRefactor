@@ -38,7 +38,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Core.Shared", "modu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "parsed_advertisements", "parsed_advertisements", "{E099BD53-3575-4FAB-8048-FEBEBBB81ECB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsedAdvertisements.Core", "modules\parsed_advertisements\RemTech.ParsedAdvertisements.Core\RemTech.ParsedAdvertisements.Core.csproj", "{841081F2-8939-4059-B298-046EABCC2A04}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Vehicles.Module", "modules\parsed_advertisements\RemTech.Vehicles.Module\RemTech.Vehicles.Module.csproj", "{841081F2-8939-4059-B298-046EABCC2A04}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsersManagement.External", "modules\parsers_management\RemTech.ParsersManagement.External\RemTech.ParsersManagement.External.csproj", "{CCA51931-3C9A-4CB7-BC43-952BF39B4EA3}"
 EndProject
@@ -46,7 +46,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Postgres.Adapter.Li
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{23BEBB73-45F0-42B3-8CF8-187E93CABA87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.ParsedAdvertisements.Core.Tests", "modules\parsed_advertisements\tests\RemTech.ParsedAdvertisements.Core.Tests\RemTech.ParsedAdvertisements.Core.Tests.csproj", "{AD9346FD-7F8C-47BE-8D85-FE7046AE4526}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Vehicles.Module.Tests", "modules\parsed_advertisements\tests\RemTech.Vehicles.Module.Tests\RemTech.Vehicles.Module.Tests.csproj", "{AD9346FD-7F8C-47BE-8D85-FE7046AE4526}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "parsing_services", "parsing_services", "{33ED6847-9F92-420E-AA37-D7EB229DB765}"
 EndProject
