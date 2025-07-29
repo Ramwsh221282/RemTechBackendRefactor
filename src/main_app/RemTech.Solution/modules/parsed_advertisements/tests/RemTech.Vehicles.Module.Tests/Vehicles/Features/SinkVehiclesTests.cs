@@ -41,9 +41,8 @@ public sealed class SinkVehiclesTests(PgTestsFixture fixture) : IClassFixture<Pg
         IItemPrice price = new ItemPriceWithNds(new PriceValue(10000));
         VehicleIdentity identity = new VehicleIdentity(new VehicleId("A123123231312321"));
         VehiclePhotos photos = new VehiclePhotos([new VehiclePhoto("http://localhost")]);
-        Assert.ThrowsAny<ValueNotValidException>(() =>
-            new ValidVehicle(new Vehicle(identity, price, photos))
-        );
+        Vehicle vehicle = new ValidVehicle(new Vehicle(identity, price, photos));
+        Assert.ThrowsAny<ValueNotValidException>(() => vehicle.Characteristics);
     }
 
     [Fact]

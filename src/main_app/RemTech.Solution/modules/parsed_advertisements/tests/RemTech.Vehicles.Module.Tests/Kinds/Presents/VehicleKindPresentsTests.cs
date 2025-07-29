@@ -1,5 +1,7 @@
-﻿using RemTech.Postgres.Adapter.Library;
-using RemTech.Vehicles.Module.Features.VehicleKindsPresentation;
+﻿using Npgsql;
+using RemTech.Postgres.Adapter.Library;
+using RemTech.Vehicles.Module.Features.QueryVehicleKinds;
+using RemTech.Vehicles.Module.Features.QueryVehicleKinds.Types;
 using RemTech.Vehicles.Module.Tests.Fixtures;
 
 namespace RemTech.Vehicles.Module.Tests.Kinds.Presents;
@@ -9,12 +11,14 @@ public sealed class VehicleKindPresentsTests(PgTestsFixture fixture) : IClassFix
     [Fact]
     private async Task ReadPresents()
     {
-        await using PgConnectionSource connectionSource = new PgConnectionSource(
-            fixture.DbConfig()
+        await using PgConnectionSource source = new PgConnectionSource(fixture.DbConfig());
+        await using NpgsqlConnection connection = await source.Connect();
+        IEnumerable<VehicleKindPresentation> kinds = await connection.Provide(
+            VehicleKindsPresentationSource.VehicleKindsCommand,
+            VehicleKindsPresentationSource.VehicleKindsReader,
+            VehicleKindsPresentationSource.VehicleKindsReading,
+            CancellationToken.None
         );
-        IEnumerable<VehicleKindPresent> presents = await new VehicleKindPresentsSource(
-            connectionSource
-        ).ReadAsync();
-        Assert.NotNull(presents);
+        Assert.NotEmpty(kinds);
     }
 }

@@ -1,11 +1,14 @@
 ﻿using Npgsql;
 using RemTech.Postgres.Adapter.Library;
+using RemTech.Vehicles.Module.Features.QueryVehicleBrands;
+using RemTech.Vehicles.Module.Features.QueryVehicleBrands.Types;
+using RemTech.Vehicles.Module.Features.QueryVehicleKinds;
+using RemTech.Vehicles.Module.Features.QueryVehicleKinds.Types;
+using RemTech.Vehicles.Module.Features.QueryVehicleModels;
+using RemTech.Vehicles.Module.Features.QueryVehicleModels.Types;
 using RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue;
 using RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue.QueryVehicles.Arguments;
 using RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue.QueryVehiclesAggregatedData.Types;
-using RemTech.Vehicles.Module.Features.VehicleBrandPresentation;
-using RemTech.Vehicles.Module.Features.VehicleKindsPresentation;
-using RemTech.Vehicles.Module.Features.VehicleModelsPresentation;
 using RemTech.Vehicles.Module.Tests.Fixtures;
 
 namespace RemTech.Vehicles.Module.Tests.Vehicles.Features.QueryVehiclesCatalogueTests;
@@ -16,36 +19,38 @@ public sealed class QueryVehiclesAggregatedDataTests(PgTestsFixture fixture)
     [Fact]
     private async Task Query_Vehicles_Aggregated_Data_Standard()
     {
-        await using PgConnectionSource connectionSource = new PgConnectionSource(
-            fixture.DbConfig()
+        await using PgConnectionSource source = new PgConnectionSource(fixture.DbConfig());
+        await using NpgsqlConnection connection = await source.Connect();
+        IEnumerable<VehicleKindPresentation> kinds = await connection.Provide(
+            VehicleKindsPresentationSource.VehicleKindsCommand,
+            VehicleKindsPresentationSource.VehicleKindsReader,
+            VehicleKindsPresentationSource.VehicleKindsReading,
+            CancellationToken.None
         );
-        IEnumerable<VehicleKindPresent> kinds = await new VehicleKindPresentsSource(
-            connectionSource
-        ).ReadAsync();
-        VehicleKindPresent firstKind = kinds.First();
+        VehicleKindPresentation firstKind = kinds.First();
         Guid kindId = firstKind.Id;
-        IEnumerable<VehicleBrandPresent> brands = await new VehicleBrandPresentsSource(
+        IEnumerable<VehicleBrandPresentation> brands = await connection.Provide(
             kindId,
-            connectionSource
-        ).ReadAsync();
-        VehicleBrandPresent firstBrand = brands.First();
+            VehicleBrandPresentationSource.CreateCommand,
+            VehicleBrandPresentationSource.CreateReader,
+            VehicleBrandPresentationSource.ProcessWithReader
+        );
+        VehicleBrandPresentation firstBrand = brands.First();
         Guid brandId = firstBrand.Id;
-        IEnumerable<VehicleModelPresent> models = await new VehicleModelPresentsSource(
-            brandId,
+        IEnumerable<VehicleModelPresentation> models = await connection.Provide(
             kindId,
-            connectionSource
-        ).ReadAsync(CancellationToken.None);
-        VehicleModelPresent firstModel = models.First();
-        Guid modelId = firstModel.Id;
+            brandId,
+            VehicleModelPresentationSource.VehicleModelsCommandSource,
+            VehicleModelPresentationSource.VehicleModelsReaderSource,
+            VehicleModelPresentationSource.VehicleModelsReadingSource
+        );
+        Guid modelId = models.First().Id;
         int page = 1;
         var request = new VehiclesQueryRequest(
             new VehicleKindIdQueryFilterArgument(kindId),
             new VehicleBrandIdQueryFilterArgument(brandId),
             new VehicleModelIdQueryFilterArgument(modelId),
             new VehiclePaginationQueryFilterArgument(page)
-        );
-        await using NpgsqlConnection connection = await connectionSource.Connect(
-            CancellationToken.None
         );
         VehiclesAggregatedDataPresentation data = await connection.AggregatedDataOfCatalogue(
             request,
@@ -61,27 +66,32 @@ public sealed class QueryVehiclesAggregatedDataTests(PgTestsFixture fixture)
     [Fact]
     private async Task Query_Vehicles_Aggregated_Data_With_Location()
     {
-        await using PgConnectionSource connectionSource = new PgConnectionSource(
-            fixture.DbConfig()
+        await using PgConnectionSource source = new PgConnectionSource(fixture.DbConfig());
+        await using NpgsqlConnection connection = await source.Connect();
+        IEnumerable<VehicleKindPresentation> kinds = await connection.Provide(
+            VehicleKindsPresentationSource.VehicleKindsCommand,
+            VehicleKindsPresentationSource.VehicleKindsReader,
+            VehicleKindsPresentationSource.VehicleKindsReading,
+            CancellationToken.None
         );
-        IEnumerable<VehicleKindPresent> kinds = await new VehicleKindPresentsSource(
-            connectionSource
-        ).ReadAsync();
-        VehicleKindPresent firstKind = kinds.First();
+        VehicleKindPresentation firstKind = kinds.First();
         Guid kindId = firstKind.Id;
-        IEnumerable<VehicleBrandPresent> brands = await new VehicleBrandPresentsSource(
+        IEnumerable<VehicleBrandPresentation> brands = await connection.Provide(
             kindId,
-            connectionSource
-        ).ReadAsync();
-        VehicleBrandPresent firstBrand = brands.First();
+            VehicleBrandPresentationSource.CreateCommand,
+            VehicleBrandPresentationSource.CreateReader,
+            VehicleBrandPresentationSource.ProcessWithReader
+        );
+        VehicleBrandPresentation firstBrand = brands.First();
         Guid brandId = firstBrand.Id;
-        IEnumerable<VehicleModelPresent> models = await new VehicleModelPresentsSource(
-            brandId,
+        IEnumerable<VehicleModelPresentation> models = await connection.Provide(
             kindId,
-            connectionSource
-        ).ReadAsync(CancellationToken.None);
-        VehicleModelPresent firstModel = models.First();
-        Guid modelId = firstModel.Id;
+            brandId,
+            VehicleModelPresentationSource.VehicleModelsCommandSource,
+            VehicleModelPresentationSource.VehicleModelsReaderSource,
+            VehicleModelPresentationSource.VehicleModelsReadingSource
+        );
+        Guid modelId = models.First().Id;
         int page = 1;
         var request = new VehiclesQueryRequest(
             new VehicleKindIdQueryFilterArgument(kindId),
@@ -91,9 +101,6 @@ public sealed class QueryVehiclesAggregatedDataTests(PgTestsFixture fixture)
             RegionId: new VehicleRegionIdQueryFilterArgument(
                 Guid.Parse("74487d05-0066-4528-8524-b3eca2b28624")
             )
-        );
-        await using NpgsqlConnection connection = await connectionSource.Connect(
-            CancellationToken.None
         );
         VehiclesAggregatedDataPresentation data = await connection.AggregatedDataOfCatalogue(
             request,
@@ -109,27 +116,32 @@ public sealed class QueryVehiclesAggregatedDataTests(PgTestsFixture fixture)
     [Fact]
     private async Task Query_Vehicles_Aggregated_Data_With_Price_To()
     {
-        await using PgConnectionSource connectionSource = new PgConnectionSource(
-            fixture.DbConfig()
+        await using PgConnectionSource source = new PgConnectionSource(fixture.DbConfig());
+        await using NpgsqlConnection connection = await source.Connect();
+        IEnumerable<VehicleKindPresentation> kinds = await connection.Provide(
+            VehicleKindsPresentationSource.VehicleKindsCommand,
+            VehicleKindsPresentationSource.VehicleKindsReader,
+            VehicleKindsPresentationSource.VehicleKindsReading,
+            CancellationToken.None
         );
-        IEnumerable<VehicleKindPresent> kinds = await new VehicleKindPresentsSource(
-            connectionSource
-        ).ReadAsync();
-        VehicleKindPresent firstKind = kinds.First();
+        VehicleKindPresentation firstKind = kinds.First();
         Guid kindId = firstKind.Id;
-        IEnumerable<VehicleBrandPresent> brands = await new VehicleBrandPresentsSource(
+        IEnumerable<VehicleBrandPresentation> brands = await connection.Provide(
             kindId,
-            connectionSource
-        ).ReadAsync();
-        VehicleBrandPresent firstBrand = brands.First();
+            VehicleBrandPresentationSource.CreateCommand,
+            VehicleBrandPresentationSource.CreateReader,
+            VehicleBrandPresentationSource.ProcessWithReader
+        );
+        VehicleBrandPresentation firstBrand = brands.First();
         Guid brandId = firstBrand.Id;
-        IEnumerable<VehicleModelPresent> models = await new VehicleModelPresentsSource(
-            brandId,
+        IEnumerable<VehicleModelPresentation> models = await connection.Provide(
             kindId,
-            connectionSource
-        ).ReadAsync(CancellationToken.None);
-        VehicleModelPresent firstModel = models.First();
-        Guid modelId = firstModel.Id;
+            brandId,
+            VehicleModelPresentationSource.VehicleModelsCommandSource,
+            VehicleModelPresentationSource.VehicleModelsReaderSource,
+            VehicleModelPresentationSource.VehicleModelsReadingSource
+        );
+        Guid modelId = models.First().Id;
         int page = 1;
         var request = new VehiclesQueryRequest(
             new VehicleKindIdQueryFilterArgument(kindId),
@@ -137,9 +149,6 @@ public sealed class QueryVehiclesAggregatedDataTests(PgTestsFixture fixture)
             new VehicleModelIdQueryFilterArgument(modelId),
             new VehiclePaginationQueryFilterArgument(page),
             Price: new VehiclePriceQueryFilterArgument(true, 1684900)
-        );
-        await using NpgsqlConnection connection = await connectionSource.Connect(
-            CancellationToken.None
         );
         VehiclesAggregatedDataPresentation data = await connection.AggregatedDataOfCatalogue(
             request,
@@ -155,27 +164,32 @@ public sealed class QueryVehiclesAggregatedDataTests(PgTestsFixture fixture)
     [Fact]
     private async Task Query_Vehicles_Aggregated_Data_With_Price_From()
     {
-        await using PgConnectionSource connectionSource = new PgConnectionSource(
-            fixture.DbConfig()
+        await using PgConnectionSource source = new PgConnectionSource(fixture.DbConfig());
+        await using NpgsqlConnection connection = await source.Connect();
+        IEnumerable<VehicleKindPresentation> kinds = await connection.Provide(
+            VehicleKindsPresentationSource.VehicleKindsCommand,
+            VehicleKindsPresentationSource.VehicleKindsReader,
+            VehicleKindsPresentationSource.VehicleKindsReading,
+            CancellationToken.None
         );
-        IEnumerable<VehicleKindPresent> kinds = await new VehicleKindPresentsSource(
-            connectionSource
-        ).ReadAsync();
-        VehicleKindPresent firstKind = kinds.First();
+        VehicleKindPresentation firstKind = kinds.First();
         Guid kindId = firstKind.Id;
-        IEnumerable<VehicleBrandPresent> brands = await new VehicleBrandPresentsSource(
+        IEnumerable<VehicleBrandPresentation> brands = await connection.Provide(
             kindId,
-            connectionSource
-        ).ReadAsync();
-        VehicleBrandPresent firstBrand = brands.First();
+            VehicleBrandPresentationSource.CreateCommand,
+            VehicleBrandPresentationSource.CreateReader,
+            VehicleBrandPresentationSource.ProcessWithReader
+        );
+        VehicleBrandPresentation firstBrand = brands.First();
         Guid brandId = firstBrand.Id;
-        IEnumerable<VehicleModelPresent> models = await new VehicleModelPresentsSource(
-            brandId,
+        IEnumerable<VehicleModelPresentation> models = await connection.Provide(
             kindId,
-            connectionSource
-        ).ReadAsync(CancellationToken.None);
-        VehicleModelPresent firstModel = models.First();
-        Guid modelId = firstModel.Id;
+            brandId,
+            VehicleModelPresentationSource.VehicleModelsCommandSource,
+            VehicleModelPresentationSource.VehicleModelsReaderSource,
+            VehicleModelPresentationSource.VehicleModelsReadingSource
+        );
+        Guid modelId = models.First().Id;
         int page = 1;
         var request = new VehiclesQueryRequest(
             new VehicleKindIdQueryFilterArgument(kindId),
@@ -183,9 +197,6 @@ public sealed class QueryVehiclesAggregatedDataTests(PgTestsFixture fixture)
             new VehicleModelIdQueryFilterArgument(modelId),
             new VehiclePaginationQueryFilterArgument(page),
             Price: new VehiclePriceQueryFilterArgument(PriceFrom: 1648900)
-        );
-        await using NpgsqlConnection connection = await connectionSource.Connect(
-            CancellationToken.None
         );
         VehiclesAggregatedDataPresentation data = await connection.AggregatedDataOfCatalogue(
             request,
@@ -201,27 +212,32 @@ public sealed class QueryVehiclesAggregatedDataTests(PgTestsFixture fixture)
     [Fact]
     private async Task Query_Vehicles_Aggregated_Data_With_Price_Range()
     {
-        await using PgConnectionSource connectionSource = new PgConnectionSource(
-            fixture.DbConfig()
+        await using PgConnectionSource source = new PgConnectionSource(fixture.DbConfig());
+        await using NpgsqlConnection connection = await source.Connect();
+        IEnumerable<VehicleKindPresentation> kinds = await connection.Provide(
+            VehicleKindsPresentationSource.VehicleKindsCommand,
+            VehicleKindsPresentationSource.VehicleKindsReader,
+            VehicleKindsPresentationSource.VehicleKindsReading,
+            CancellationToken.None
         );
-        IEnumerable<VehicleKindPresent> kinds = await new VehicleKindPresentsSource(
-            connectionSource
-        ).ReadAsync();
-        VehicleKindPresent firstKind = kinds.First();
+        VehicleKindPresentation firstKind = kinds.First();
         Guid kindId = firstKind.Id;
-        IEnumerable<VehicleBrandPresent> brands = await new VehicleBrandPresentsSource(
+        IEnumerable<VehicleBrandPresentation> brands = await connection.Provide(
             kindId,
-            connectionSource
-        ).ReadAsync();
-        VehicleBrandPresent firstBrand = brands.First();
+            VehicleBrandPresentationSource.CreateCommand,
+            VehicleBrandPresentationSource.CreateReader,
+            VehicleBrandPresentationSource.ProcessWithReader
+        );
+        VehicleBrandPresentation firstBrand = brands.First();
         Guid brandId = firstBrand.Id;
-        IEnumerable<VehicleModelPresent> models = await new VehicleModelPresentsSource(
-            brandId,
+        IEnumerable<VehicleModelPresentation> models = await connection.Provide(
             kindId,
-            connectionSource
-        ).ReadAsync(CancellationToken.None);
-        VehicleModelPresent firstModel = models.First();
-        Guid modelId = firstModel.Id;
+            brandId,
+            VehicleModelPresentationSource.VehicleModelsCommandSource,
+            VehicleModelPresentationSource.VehicleModelsReaderSource,
+            VehicleModelPresentationSource.VehicleModelsReadingSource
+        );
+        Guid modelId = models.First().Id;
         int page = 1;
         var request = new VehiclesQueryRequest(
             new VehicleKindIdQueryFilterArgument(kindId),
@@ -229,9 +245,6 @@ public sealed class QueryVehiclesAggregatedDataTests(PgTestsFixture fixture)
             new VehicleModelIdQueryFilterArgument(modelId),
             new VehiclePaginationQueryFilterArgument(page),
             Price: new VehiclePriceQueryFilterArgument(PriceFrom: 1648900, PriceTo: 1684900)
-        );
-        await using NpgsqlConnection connection = await connectionSource.Connect(
-            CancellationToken.None
         );
         VehiclesAggregatedDataPresentation data = await connection.AggregatedDataOfCatalogue(
             request,
@@ -247,27 +260,32 @@ public sealed class QueryVehiclesAggregatedDataTests(PgTestsFixture fixture)
     [Fact]
     private async Task Query_Vehicles_Aggregated_Data_With_Characteristics()
     {
-        await using PgConnectionSource connectionSource = new PgConnectionSource(
-            fixture.DbConfig()
+        await using PgConnectionSource source = new PgConnectionSource(fixture.DbConfig());
+        await using NpgsqlConnection connection = await source.Connect();
+        IEnumerable<VehicleKindPresentation> kinds = await connection.Provide(
+            VehicleKindsPresentationSource.VehicleKindsCommand,
+            VehicleKindsPresentationSource.VehicleKindsReader,
+            VehicleKindsPresentationSource.VehicleKindsReading,
+            CancellationToken.None
         );
-        IEnumerable<VehicleKindPresent> kinds = await new VehicleKindPresentsSource(
-            connectionSource
-        ).ReadAsync();
-        VehicleKindPresent firstKind = kinds.First();
+        VehicleKindPresentation firstKind = kinds.First();
         Guid kindId = firstKind.Id;
-        IEnumerable<VehicleBrandPresent> brands = await new VehicleBrandPresentsSource(
+        IEnumerable<VehicleBrandPresentation> brands = await connection.Provide(
             kindId,
-            connectionSource
-        ).ReadAsync();
-        VehicleBrandPresent firstBrand = brands.First();
+            VehicleBrandPresentationSource.CreateCommand,
+            VehicleBrandPresentationSource.CreateReader,
+            VehicleBrandPresentationSource.ProcessWithReader
+        );
+        VehicleBrandPresentation firstBrand = brands.First();
         Guid brandId = firstBrand.Id;
-        IEnumerable<VehicleModelPresent> models = await new VehicleModelPresentsSource(
-            brandId,
+        IEnumerable<VehicleModelPresentation> models = await connection.Provide(
             kindId,
-            connectionSource
-        ).ReadAsync(CancellationToken.None);
-        VehicleModelPresent firstModel = models.First();
-        Guid modelId = firstModel.Id;
+            brandId,
+            VehicleModelPresentationSource.VehicleModelsCommandSource,
+            VehicleModelPresentationSource.VehicleModelsReaderSource,
+            VehicleModelPresentationSource.VehicleModelsReadingSource
+        );
+        Guid modelId = models.First().Id;
         int page = 1;
         var request = new VehiclesQueryRequest(
             new VehicleKindIdQueryFilterArgument(kindId),
@@ -283,9 +301,6 @@ public sealed class QueryVehiclesAggregatedDataTests(PgTestsFixture fixture)
                     ),
                 ]
             )
-        );
-        await using NpgsqlConnection connection = await connectionSource.Connect(
-            CancellationToken.None
         );
         VehiclesAggregatedDataPresentation data = await connection.AggregatedDataOfCatalogue(
             request,
