@@ -1,5 +1,5 @@
 using RemTech.Logging.Adapter;
-using RemTech.ParsedAdvertisements.Core.Inject;
+using RemTech.ParsedAdvertisements.Core.Injection;
 using RemTech.Postgres.Adapter.Library;
 using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
 using RemTech.RabbitMq.Adapter;

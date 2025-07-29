@@ -1,11 +1,11 @@
 ﻿using Npgsql;
 using RemTech.Logging.Adapter;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Features.QueryVehiclesCatalogue;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Features.QueryVehiclesCatalogue.QueryVehicles.Arguments;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Features.QueryVehiclesCatalogue.QueryVehicles.Presenting;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Features.VehicleBrandPresentation;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Features.VehicleKindsPresentation;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Features.VehicleModelsPresentation;
+using RemTech.ParsedAdvertisements.Core.Features.QueryVehiclesCatalogue;
+using RemTech.ParsedAdvertisements.Core.Features.QueryVehiclesCatalogue.QueryVehicles.Arguments;
+using RemTech.ParsedAdvertisements.Core.Features.QueryVehiclesCatalogue.QueryVehicles.Presenting;
+using RemTech.ParsedAdvertisements.Core.Features.VehicleBrandPresentation;
+using RemTech.ParsedAdvertisements.Core.Features.VehicleKindsPresentation;
+using RemTech.ParsedAdvertisements.Core.Features.VehicleModelsPresentation;
 using RemTech.ParsedAdvertisements.Core.Tests.Fixtures;
 using RemTech.Postgres.Adapter.Library;
 using Serilog;

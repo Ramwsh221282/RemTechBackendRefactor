@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using RemTech.Core.Shared.Primitives;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Adapters.Storage.Postgres;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Features.Structuring;
-using RemTech.ParsedAdvertisements.Core.Domains.Vehicles.Characteristics.Ports.Storage;
 using RemTech.ParsedAdvertisements.Core.Tests.Fixtures;
+using RemTech.ParsedAdvertisements.Core.Types.Characteristics.Adapters.Storage.Postgres;
+using RemTech.ParsedAdvertisements.Core.Types.Characteristics.Features.Structuring;
+using RemTech.ParsedAdvertisements.Core.Types.Characteristics.Ports.Storage;
 using RemTech.Postgres.Adapter.Library;
 
 namespace RemTech.ParsedAdvertisements.Core.Tests.Characteristics.PgTests;
@@ -22,8 +22,13 @@ public sealed class CharacteristicsPgTests(PgTestsFixture fixture) : IClassFixtu
         IPgCharacteristicsStorage storage = new PgVarietCharacteristicsStorage()
             .With(new PgCharacteristicsStorage(source))
             .With(new PgDuplicateResolvingCharacteristicsStorage(source));
-        await storage.Stored(new CharacteristicVeil(new NotEmptyString(name), new NotEmptyString(value)).Characteristic(),
-            CancellationToken.None);
+        await storage.Stored(
+            new CharacteristicVeil(
+                new NotEmptyString(name),
+                new NotEmptyString(value)
+            ).Characteristic(),
+            CancellationToken.None
+        );
     }
 
     [Fact]
@@ -33,8 +38,14 @@ public sealed class CharacteristicsPgTests(PgTestsFixture fixture) : IClassFixtu
         IPgCharacteristicsStorage storage = new PgVarietCharacteristicsStorage()
             .With(new PgCharacteristicsStorage(source))
             .With(new PgDuplicateResolvingCharacteristicsStorage(source));
-        await Assert.ThrowsAnyAsync<UnreachableException>(() => 
-            storage.Stored(new CharacteristicVeil(new NotEmptyString(string.Empty), new NotEmptyString(string.Empty)).Characteristic(),
-            CancellationToken.None));
+        await Assert.ThrowsAnyAsync<UnreachableException>(() =>
+            storage.Stored(
+                new CharacteristicVeil(
+                    new NotEmptyString(string.Empty),
+                    new NotEmptyString(string.Empty)
+                ).Characteristic(),
+                CancellationToken.None
+            )
+        );
     }
 }
