@@ -6,14 +6,15 @@ using Npgsql;
 using RemTech.Postgres.Adapter.Library;
 using RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue.QueryVehicles.Arguments;
 
-namespace RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue;
+namespace RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue.Http;
 
 public static class VehiclesCatalogueHttpEndpoint
 {
-    public static void Map(this RouteGroupBuilder group)
-    {
-        group.MapPost("{kindId:Guid}/{brandId:Guid}/{modelId:Guid}/catalogue", Handle);
-    }
+    public static void CatalogueEndpoint(this RouteGroupBuilder group) =>
+        group.MapPost(
+            "kinds/{kindId:Guid}/brands/{brandId:Guid}/models/{modelId:Guid}/catalogue",
+            Handle
+        );
 
     private static async Task<IResult> Handle(
         [FromServices] PgConnectionSource connectionSource,
