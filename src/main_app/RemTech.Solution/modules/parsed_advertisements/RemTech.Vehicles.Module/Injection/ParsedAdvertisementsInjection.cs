@@ -26,7 +26,7 @@ public static class ParsedAdvertisementsInjection
 
     public static void MapVehiclesModuleEndpoints(this IEndpointRouteBuilder builder)
     {
-        RouteGroupBuilder group = builder.MapGroup("api/vehicles");
+        RouteGroupBuilder group = builder.MapGroup("api/vehicles").RequireCors("FRONTEND");
         group.CatalogueEndpoint();
         group.BrandsEndpoint();
         group.KindsEndpoint();

@@ -9,9 +9,17 @@ public static class VehicleKindsPresentationSource
 {
     private static readonly string Sql = string.Intern(
         """
-        SELECT DISTINCT k.text, k.id
+        SELECT DISTINCT 
+        k.text as kind_name, 
+        k.id as kind_id, 
+        COUNT(DISTINCT b.id) as brands_count, 
+        COUNT(DISTINCT m.id) as models_count, 
+        COUNT(v.id) AS vehicles_count
         FROM parsed_advertisements_module.parsed_vehicles v
         INNER JOIN parsed_advertisements_module.vehicle_kinds k ON v.kind_id = k.id
+        INNER JOIN parsed_advertisements_module.vehicle_brands b ON  v.brand_id = b.id
+        INNER JOIN parsed_advertisements_module.vehicle_models m ON v.model_id = m.id
+        GROUP BY k.text, k.id
         """
     );
 
@@ -23,7 +31,10 @@ public static class VehicleKindsPresentationSource
         CancellationToken ct = default
     )
     {
-        VehicleKindPresentationReader reader = await readerSource(commandSource(connection), ct);
+        await using VehicleKindPresentationReader reader = await readerSource(
+            commandSource(connection),
+            ct
+        );
         return await readingSource(reader, ct);
     }
 
@@ -38,18 +49,5 @@ public static class VehicleKindsPresentationSource
             );
 
     public static VehicleKindsReading VehicleKindsReading =>
-        async (reader, ct) =>
-        {
-            LinkedList<VehicleKindPresentation> presents = [];
-            await using (reader.Reader)
-            {
-                while (await reader.Reader.ReadAsync(ct))
-                {
-                    string text = reader.Reader.GetString(reader.Reader.GetOrdinal("text"));
-                    Guid id = reader.Reader.GetGuid(reader.Reader.GetOrdinal("id"));
-                    presents.AddFirst(new VehicleKindPresentation(id, text));
-                }
-            }
-            return presents.OrderBy(v => v.Name);
-        };
+        async (reader, ct) => await reader.Read(ct);
 }

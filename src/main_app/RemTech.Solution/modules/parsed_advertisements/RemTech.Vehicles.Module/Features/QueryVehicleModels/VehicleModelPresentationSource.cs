@@ -9,13 +9,15 @@ public static class VehicleModelPresentationSource
 {
     private static readonly string Sql = string.Intern(
         """
-        SELECT DISTINCT m.text, m.id
+        SELECT DISTINCT
+        m.text as model_name,
+        m.id as model_id,
+        COUNT(v.id) as vehicles_count
         FROM parsed_advertisements_module.vehicle_models m
         INNER JOIN parsed_advertisements_module.parsed_vehicles v ON m.id = v.model_id
-        WHERE
-            v.kind_id = @kind_id
-        AND
-            v.brand_id = @brand_id
+        WHERE v.kind_id = @kind_id
+        AND v.brand_id = @brand_id
+        GROUP BY m.text, m.id;
         """
     );
 
@@ -50,19 +52,5 @@ public static class VehicleModelPresentationSource
         async (command, ct) => new VehicleModelPresentationReader(await command.AsyncReader(ct));
 
     public static VehicleModelsReadingSource VehicleModelsReadingSource =>
-        async (reader, ct) =>
-        {
-            LinkedList<VehicleModelPresentation> presents = [];
-            await using (reader.Reader)
-            {
-                while (await reader.Reader.ReadAsync(ct))
-                {
-                    Guid id = reader.Reader.GetGuid(reader.Reader.GetOrdinal("id"));
-                    string text = reader.Reader.GetString(reader.Reader.GetOrdinal("text"));
-                    presents.AddFirst(new VehicleModelPresentation(id, text));
-                }
-            }
-
-            return presents.OrderBy(x => x.Name);
-        };
+        (reader, ct) => reader.ReadAsync(ct);
 }
