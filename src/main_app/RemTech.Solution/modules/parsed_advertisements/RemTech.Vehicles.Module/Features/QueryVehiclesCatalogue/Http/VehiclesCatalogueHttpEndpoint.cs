@@ -37,7 +37,8 @@ public static class VehiclesCatalogueHttpEndpoint
             await VehiclesCatalogueProvider.VehiclesCatalogue()(
                 connection.VehiclesOfCatalogue(logger, request, ct),
                 connection.CharacteristicsOfCatalogue(request, ct),
-                connection.AggregatedDataOfCatalogue(request, ct)
+                connection.AggregatedDataOfCatalogue(request, ct),
+                connection.GeoLocationsOfCatalogue(request, ct)
             )
         );
     }

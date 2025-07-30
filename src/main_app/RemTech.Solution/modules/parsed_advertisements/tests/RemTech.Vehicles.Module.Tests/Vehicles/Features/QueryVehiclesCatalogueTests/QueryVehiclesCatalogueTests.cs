@@ -59,8 +59,10 @@ public sealed class QueryVehiclesCatalogueTests(PgTestsFixture fixture)
             await VehiclesCatalogueProvider.VehiclesCatalogue()(
                 connection.VehiclesOfCatalogue(logger, request, CancellationToken.None),
                 connection.CharacteristicsOfCatalogue(request, CancellationToken.None),
-                connection.AggregatedDataOfCatalogue(request, CancellationToken.None)
+                connection.AggregatedDataOfCatalogue(request, CancellationToken.None),
+                connection.GeoLocationsOfCatalogue(request, CancellationToken.None)
             );
+        Assert.NotEmpty(catalogue.GeoLocations);
         Assert.NotEmpty(catalogue.Vehicles);
         Assert.NotEmpty(catalogue.Characteristics.Characteristics);
         Assert.True(catalogue.AggregatedData.TotalCount > 0);
@@ -114,8 +116,10 @@ public sealed class QueryVehiclesCatalogueTests(PgTestsFixture fixture)
             await VehiclesCatalogueProvider.VehiclesCatalogue()(
                 connection.VehiclesOfCatalogue(logger, request, CancellationToken.None),
                 connection.CharacteristicsOfCatalogue(request, CancellationToken.None),
-                connection.AggregatedDataOfCatalogue(request, CancellationToken.None)
+                connection.AggregatedDataOfCatalogue(request, CancellationToken.None),
+                connection.GeoLocationsOfCatalogue(request, CancellationToken.None)
             );
+        Assert.NotEmpty(catalogue.GeoLocations);
         Assert.NotEmpty(catalogue.Vehicles);
         Assert.NotEmpty(catalogue.Characteristics.Characteristics);
         Assert.True(catalogue.AggregatedData.TotalCount > 0);
@@ -167,8 +171,10 @@ public sealed class QueryVehiclesCatalogueTests(PgTestsFixture fixture)
             await VehiclesCatalogueProvider.VehiclesCatalogue()(
                 connection.VehiclesOfCatalogue(logger, request, CancellationToken.None),
                 connection.CharacteristicsOfCatalogue(request, CancellationToken.None),
-                connection.AggregatedDataOfCatalogue(request, CancellationToken.None)
+                connection.AggregatedDataOfCatalogue(request, CancellationToken.None),
+                connection.GeoLocationsOfCatalogue(request, CancellationToken.None)
             );
+        Assert.NotEmpty(catalogue.GeoLocations);
         Assert.NotEmpty(catalogue.Vehicles);
         Assert.NotEmpty(catalogue.Characteristics.Characteristics);
         Assert.True(catalogue.AggregatedData.TotalCount > 0);
@@ -220,8 +226,10 @@ public sealed class QueryVehiclesCatalogueTests(PgTestsFixture fixture)
             await VehiclesCatalogueProvider.VehiclesCatalogue()(
                 connection.VehiclesOfCatalogue(logger, request, CancellationToken.None),
                 connection.CharacteristicsOfCatalogue(request, CancellationToken.None),
-                connection.AggregatedDataOfCatalogue(request, CancellationToken.None)
+                connection.AggregatedDataOfCatalogue(request, CancellationToken.None),
+                connection.GeoLocationsOfCatalogue(request, CancellationToken.None)
             );
+        Assert.NotEmpty(catalogue.GeoLocations);
         Assert.NotEmpty(catalogue.Vehicles);
         Assert.NotEmpty(catalogue.Characteristics.Characteristics);
         Assert.True(catalogue.AggregatedData.TotalCount > 0);
@@ -273,8 +281,10 @@ public sealed class QueryVehiclesCatalogueTests(PgTestsFixture fixture)
             await VehiclesCatalogueProvider.VehiclesCatalogue()(
                 connection.VehiclesOfCatalogue(logger, request, CancellationToken.None),
                 connection.CharacteristicsOfCatalogue(request, CancellationToken.None),
-                connection.AggregatedDataOfCatalogue(request, CancellationToken.None)
+                connection.AggregatedDataOfCatalogue(request, CancellationToken.None),
+                connection.GeoLocationsOfCatalogue(request, CancellationToken.None)
             );
+        Assert.NotEmpty(catalogue.GeoLocations);
         Assert.NotEmpty(catalogue.Vehicles);
         Assert.NotEmpty(catalogue.Characteristics.Characteristics);
         Assert.True(catalogue.AggregatedData.TotalCount > 0);
@@ -334,8 +344,10 @@ public sealed class QueryVehiclesCatalogueTests(PgTestsFixture fixture)
             await VehiclesCatalogueProvider.VehiclesCatalogue()(
                 connection.VehiclesOfCatalogue(logger, request, CancellationToken.None),
                 connection.CharacteristicsOfCatalogue(request, CancellationToken.None),
-                connection.AggregatedDataOfCatalogue(request, CancellationToken.None)
+                connection.AggregatedDataOfCatalogue(request, CancellationToken.None),
+                connection.GeoLocationsOfCatalogue(request, CancellationToken.None)
             );
+        Assert.NotEmpty(catalogue.GeoLocations);
         Assert.NotEmpty(catalogue.Vehicles);
         Assert.NotEmpty(catalogue.Characteristics.Characteristics);
         Assert.True(catalogue.AggregatedData.TotalCount > 0);

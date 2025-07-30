@@ -31,7 +31,7 @@ public static class VehicleModelPresentationSource
         CancellationToken ct = default
     )
     {
-        VehicleModelPresentationReader reader = await readerSource(
+        await using VehicleModelPresentationReader reader = await readerSource(
             commandSource(connection, kindId, brandId),
             CancellationToken.None
         );
