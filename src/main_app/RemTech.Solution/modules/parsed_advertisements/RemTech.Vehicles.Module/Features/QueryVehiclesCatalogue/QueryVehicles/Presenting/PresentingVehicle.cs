@@ -1,4 +1,7 @@
-﻿using RemTech.Vehicles.Module.Types.Transport;
+﻿using RemTech.Vehicles.Module.Features.QueryVehicleBrands.Types;
+using RemTech.Vehicles.Module.Features.QueryVehicleKinds.Types;
+using RemTech.Vehicles.Module.Features.QueryVehicleModels.Types;
+using RemTech.Vehicles.Module.Types.Transport;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue.QueryVehicles.Presenting;
 

@@ -9,10 +9,16 @@ public static class VehicleBrandPresentationSource
 {
     private static readonly string Sql = string.Intern(
         """
-        SELECT DISTINCT b.text, b.id 
+        SELECT DISTINCT 
+        b.text as brand_name,
+        b.id as brand_id,
+        COUNT (DISTINCT m.id) as models_count,
+        COUNT (v.id) as vehicles_count
         FROM parsed_advertisements_module.parsed_vehicles v
         INNER JOIN parsed_advertisements_module.vehicle_brands b ON v.brand_id = b.id
-        WHERE v.kind_id = @kind_id;
+        INNER JOIN parsed_advertisements_module.vehicle_models m ON v.model_id = m.id
+        WHERE v.kind_id = @kind_id
+        GROUP BY b.text, b.id;
         """
     );
 
@@ -25,7 +31,7 @@ public static class VehicleBrandPresentationSource
         CancellationToken ct = default
     )
     {
-        VehicleBrandPresentationReader reader = await readerSource(
+        await using VehicleBrandPresentationReader reader = await readerSource(
             connection,
             kindId,
             commandSource,
@@ -47,18 +53,5 @@ public static class VehicleBrandPresentationSource
             new VehicleBrandPresentationReader(await source(npgsqlConnection, id).AsyncReader(ct));
 
     public static QueriedVehicleBrands ProcessWithReader =>
-        async (reader, ct) =>
-        {
-            LinkedList<VehicleBrandPresentation> presents = [];
-            await using (reader.Reader)
-            {
-                while (await reader.Reader.ReadAsync(ct))
-                {
-                    Guid id = reader.Reader.GetGuid(reader.Reader.GetOrdinal("id"));
-                    string name = reader.Reader.GetString(reader.Reader.GetOrdinal("text"));
-                    presents.AddFirst(new VehicleBrandPresentation(id, name));
-                }
-            }
-            return presents.OrderBy(p => p.Name);
-        };
+        async (reader, ct) => await reader.ReadAsync(ct);
 }

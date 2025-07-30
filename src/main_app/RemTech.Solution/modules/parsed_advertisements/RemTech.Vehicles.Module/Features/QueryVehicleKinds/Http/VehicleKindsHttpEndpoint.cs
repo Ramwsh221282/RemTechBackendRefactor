@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
 using RemTech.Postgres.Adapter.Library;
+using RemTech.Vehicles.Module.Features.QueryVehicleKinds.Types;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicleKinds.Http;
 
@@ -18,13 +19,12 @@ public static class VehicleKindsHttpEndpoint
     )
     {
         await using NpgsqlConnection connection = await connectionSource.Connect(ct);
-        return Results.Ok(
-            await connection.Provide(
-                VehicleKindsPresentationSource.VehicleKindsCommand,
-                VehicleKindsPresentationSource.VehicleKindsReader,
-                VehicleKindsPresentationSource.VehicleKindsReading,
-                ct
-            )
+        IEnumerable<VehicleKindPresentation> kinds = await connection.Provide(
+            VehicleKindsPresentationSource.VehicleKindsCommand,
+            VehicleKindsPresentationSource.VehicleKindsReader,
+            VehicleKindsPresentationSource.VehicleKindsReading,
+            ct
         );
+        return Results.Ok(kinds);
     }
 }

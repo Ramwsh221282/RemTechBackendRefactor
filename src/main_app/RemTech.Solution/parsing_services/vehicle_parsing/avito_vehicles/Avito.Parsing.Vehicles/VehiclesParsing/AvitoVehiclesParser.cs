@@ -47,7 +47,8 @@ public sealed class AvitoVehiclesParser : IParsedVehicleSource
         ILogger logger,
         PgConnectionSource pgConnectionSource,
         CommunicationChannel channel,
-        string originUrl)
+        string originUrl
+    )
     {
         _page = page;
         _logger = logger;
@@ -57,8 +58,7 @@ public sealed class AvitoVehiclesParser : IParsedVehicleSource
         _write = write;
         _bottomScroll = new PageBottomScrollingAction(page);
     }
-    
-    
+
     public async IAsyncEnumerable<IParsedVehicle> Iterate()
     {
         IAvitoBypassFirewall bypass = new AvitoBypassFirewall(_page)
@@ -75,8 +75,9 @@ public sealed class AvitoVehiclesParser : IParsedVehicleSource
         AvitoPaginationBarElement bar = await pagination.Read();
         foreach (string url in bar.Iterate(_originUrl))
         {
-            IPageNavigating catalogueNavigating = new PageNavigating(_page, url)
-                .WrapBy(n => new LoggingPageNavigating(_logger, url, n));
+            IPageNavigating catalogueNavigating = new PageNavigating(_page, url).WrapBy(
+                n => new LoggingPageNavigating(_logger, url, n)
+            );
             CatalogueItemsList items = await new EmptyAvitoCatalogueItemsSource()
                 .WrapBy(s => new NavigatingCatalogueItems(catalogueNavigating, s))
                 .WrapBy(s => new ImageHoveringAvitoCatalogueItemsSource(_page, s))
@@ -87,57 +88,78 @@ public sealed class AvitoVehiclesParser : IParsedVehicleSource
             foreach (CatalogueItem item in items.Iterate())
             {
                 IParsedVehiclePriceSource priceSource = new AvitoPriceFromContainer(_page)
-                    .WrapBy(_ => new VarietAvitoVehiclePriceSource()
-                        .With(new AvitoVehiclePriceSource(_page))
-                        .With(new AvitoPriceFromContainer(_page)))
+                    .WrapBy(_ =>
+                        new VarietAvitoVehiclePriceSource()
+                            .With(new AvitoVehiclePriceSource(_page))
+                            .With(new AvitoPriceFromContainer(_page))
+                    )
                     .WrapBy(p => new DefaultVehiclePriceOnErrorSource(p))
                     .WrapBy(p => new LoggingVehiclePriceSource(_logger, p));
 
                 IParsedVehicleGeoSource geoSource = new VarietWebElementGeoSource()
                     .With(new DefaultOnErroVehicleGeo(new GrpcVehicleGeoSource(_page, _channel)))
-                    .With(new DefaultOnErroVehicleGeo(new WebElementVehicleGeoSource(_page, _write)))
+                    .With(
+                        new DefaultOnErroVehicleGeo(new WebElementVehicleGeoSource(_page, _write))
+                    )
                     .WrapBy(g => new DbSearchedVehicleGeoSource(_pgConnectionSource, _logger, g))
                     .WrapBy(g => new LoggingVehicleGeoSource(_logger, g));
-                
+
                 IParsedVehicleModelSource modelSource = new FromCharacteristicsModelSource(_page)
                     .WrapBy(c => new DefaultOnErrorModel(c))
                     .WrapBy(c => new DbOrParsedVehicleModel(_pgConnectionSource, _logger, c))
                     .WrapBy(c => new LoggingModelSource(_logger, c));
-                
+
                 IParsedVehicleKindSource kindSource = new VariantVehicleKind()
                     .With(new FromCharacteristicsKindSource(_page))
-                    .With(new DefaultOnErrorKindSource(new GrpcVehicleKindFromTitle(_channel, _page)))
-                    .With(new DefaultOnErrorKindSource(new GrpcVehicleKindFromDescription(_channel, _page)))
+                    .With(
+                        new DefaultOnErrorKindSource(new GrpcVehicleKindFromTitle(_channel, _page))
+                    )
+                    .With(
+                        new DefaultOnErrorKindSource(
+                            new GrpcVehicleKindFromDescription(_channel, _page)
+                        )
+                    )
                     .WrapBy(v => new DefaultOnErrorKindSource(v))
                     .WrapBy(v => new DbOrParsedVehicleKindSource(_pgConnectionSource, _logger, v))
                     .WrapBy(v => new LoggingKindSource(_logger, v));
-                
+
                 IParsedVehicleBrandSource brandSource = new FromCharacteristicsBrandSource(_page)
                     .WrapBy(b => new DefaultOnErrorBrandSource(b))
                     .WrapBy(b => new DbOrParsedVehicleBrandSource(_pgConnectionSource, _logger, b))
                     .WrapBy(b => new LoggingBrandSource(_logger, b));
-                
+
                 IKeyValuedCharacteristicsSource ctxSource = new VariantVehicleCharacteristics()
-                    .With(new DefaultOnErrorCharacteristics(new KeyValuedAvitoCharacteristics(_page)))
-                    .With(new DefaultOnErrorCharacteristics(new GrpcRecognizedCharacteristics(_page, _channel)))
-                    .With(new DefaultOnErrorCharacteristics(new GrpcRecognizedCharacteristicsFromDescription(_page, _channel)))
+                    .With(
+                        new DefaultOnErrorCharacteristics(new KeyValuedAvitoCharacteristics(_page))
+                    )
+                    .With(
+                        new DefaultOnErrorCharacteristics(
+                            new GrpcRecognizedCharacteristics(_page, _channel)
+                        )
+                    )
+                    .With(
+                        new DefaultOnErrorCharacteristics(
+                            new GrpcRecognizedCharacteristicsFromDescription(_page, _channel)
+                        )
+                    )
                     .WrapBy(c => new LoggingCharacteristics(_logger, c));
-                
-                IPageNavigating itemNavigating = new PageNavigating(_page, item.ReadUrl())
-                    .WrapBy(n => new LoggingPageNavigating(_logger, item.ReadUrl(), n));
-                
+
+                IPageNavigating itemNavigating = new PageNavigating(_page, item.ReadUrl()).WrapBy(
+                    n => new LoggingPageNavigating(_logger, item.ReadUrl(), n)
+                );
+
                 IParsedVehiclePhotos photos = new FromCatalogueItemPhotos(item)
                     .WrapBy(p => new DefaultOnErrorItemPhotos(p))
                     .WrapBy(p => new LoggingItemPhotos(_logger, p));
-                
+
                 IParsedVehicleUrlSource source = new FromCatalogueUrl(item)
                     .WrapBy(u => new DefaultOnErrorVehicleUrl(u))
                     .WrapBy(u => new LoggingVehicleUrl(_logger, u));
-                
+
                 IParsedVehicleIdentitySource identity = new FromCatalogueIdentity(item)
                     .WrapBy(i => new DefaultOnErrorVehicleIdentity(i))
                     .WrapBy(i => new LoggingVehicleIdentity(_logger, i));
-                
+
                 yield return await new EmptyAvitoVehicle()
                     .WrapBy(v => new AvitoVehicleWithPrice(priceSource, v))
                     .WrapBy(v => new AvitoVehicleWithGeo(geoSource, v))

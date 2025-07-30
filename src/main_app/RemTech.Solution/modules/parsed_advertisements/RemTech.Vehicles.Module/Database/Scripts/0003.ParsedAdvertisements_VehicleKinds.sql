@@ -52,9 +52,9 @@ INSERT INTO parsed_advertisements_module.vehicle_kinds(id, text) VALUES
                                                                      (uuid_generate_v4(), 'Колёсно-гусеничный экскаватор'),
                                                                      (uuid_generate_v4(), 'Мини-экскаватор'),
                                                                      (uuid_generate_v4(), 'Траншейный экскаватор'),
-                                                                     (uuid_generate_v4(), 'Экскаватор-амфибия'),
-                                                                     (uuid_generate_v4(), 'Экскаватор-планировщик'),
-                                                                     (uuid_generate_v4(), 'Экскаватор-погрузчик'),
+                                                                     (uuid_generate_v4(), 'Экскаватор амфибия'),
+                                                                     (uuid_generate_v4(), 'Экскаватор планировщик'),
+                                                                     (uuid_generate_v4(), 'Экскаватор погрузчик'),
                                                                      (uuid_generate_v4(), 'Боковой погрузчик'),
                                                                      (uuid_generate_v4(), 'Вилочный погрузчик'),
                                                                      (uuid_generate_v4(), 'Грейферный погрузчик (перегружатель)'),
@@ -84,7 +84,7 @@ INSERT INTO parsed_advertisements_module.vehicle_kinds(id, text) VALUES
                                                                      (uuid_generate_v4(), 'Грохот'),
                                                                      (uuid_generate_v4(), 'Гудронатор'),
                                                                      (uuid_generate_v4(), 'Гусеничный кран'),
-                                                                     (uuid_generate_v4(), 'Дизель-молот'),
+                                                                     (uuid_generate_v4(), 'Дизель молот'),
                                                                      (uuid_generate_v4(), 'Дорожная фреза'),
                                                                      (uuid_generate_v4(), 'Дорожный каток'),
                                                                      (uuid_generate_v4(), 'Дробильно-сортировочное оборудование'),
@@ -186,6 +186,14 @@ INSERT INTO parsed_advertisements_module.vehicle_kinds(id, text) VALUES
                                                                      (uuid_generate_v4(), 'Лесовоз'),
                                                                      (uuid_generate_v4(), 'Хлыстовоз'),
                                                                      (uuid_generate_v4(), 'Сортиментовоз'),
-                                                                     (uuid_generate_v4(), 'Мульчер')
-    ON CONFLICT (text) DO NOTHING;
+                                                                     (uuid_generate_v4(), 'Мульчер'),
+                                                                     (uuid_generate_v4(), 'Мини экскаватор'),
+                                                                     (uuid_generate_v4(), 'Экскаватор амфибия'),
+                                                                     (uuid_generate_v4(), 'Экскаватор погрузчик'),
+                                                                     (uuid_generate_v4(), 'Мини думпер'),
+                                                                     (uuid_generate_v4(), 'Траншейный экскаватор'),
+                                                                     (uuid_generate_v4(), 'Гусеничный экскаватор'),
+                                                                     (uuid_generate_v4(), 'Колёсно-гусеничный экскаватор'),
+                                                                     (uuid_generate_v4(), 'Экскаватор планировщик')
+ON CONFLICT (text) DO NOTHING;
 END $$;
