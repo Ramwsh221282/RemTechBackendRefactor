@@ -12,17 +12,23 @@ public sealed class VarietVehicleKindDbSearch : IVehicleKindDbSearch
         _searches.Enqueue(search);
         return this;
     }
-    
+
     public async Task<ParsedVehicleKind> Search(string text)
     {
         while (_searches.Count > 0)
         {
-            IVehicleKindDbSearch search = _searches.Dequeue();
-            ParsedVehicleKind kind = await search.Search(text);
-            if (kind)
+            try
+            {
+                IVehicleKindDbSearch search = _searches.Dequeue();
+                ParsedVehicleKind kind = await search.Search(text);
                 return kind;
+            }
+            catch (Exception ex)
+            {
+                continue;
+            }
         }
 
-        return new ParsedVehicleKind(new NotEmptyString(string.Empty));
+        throw new ArgumentException("Unable to fetch vehicle kind from db");
     }
 }

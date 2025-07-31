@@ -11,15 +11,21 @@ public sealed class VariantVehicleKind : IParsedVehicleKindSource
         _sources.Enqueue(source);
         return this;
     }
-    
+
     public async Task<ParsedVehicleKind> Read()
     {
         while (_sources.Count > 0)
         {
-            IParsedVehicleKindSource source = _sources.Dequeue();
-            ParsedVehicleKind kind = await source.Read();
-            if (kind)
+            try
+            {
+                IParsedVehicleKindSource source = _sources.Dequeue();
+                ParsedVehicleKind kind = await source.Read();
                 return kind;
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         throw new ArgumentException("Vehicle kind was not recognized in variant vehicle kind.");

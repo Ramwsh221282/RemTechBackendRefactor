@@ -104,28 +104,20 @@ public sealed class AvitoVehiclesParser : IParsedVehicleSource
                     .WrapBy(g => new DbSearchedVehicleGeoSource(_pgConnectionSource, _logger, g))
                     .WrapBy(g => new LoggingVehicleGeoSource(_logger, g));
 
-                IParsedVehicleModelSource modelSource = new FromCharacteristicsModelSource(_page)
-                    .WrapBy(c => new DefaultOnErrorModel(c))
-                    .WrapBy(c => new DbOrParsedVehicleModel(_pgConnectionSource, _logger, c))
+                IParsedVehicleModelSource modelSource = new VarietVehicleModelSource()
+                    .With(new VehicleModelFromBreadcrumbsSource(_page))
+                    .With(new FromCharacteristicsModelSource(_page))
                     .WrapBy(c => new LoggingModelSource(_logger, c));
 
-                IParsedVehicleKindSource kindSource = new VariantVehicleKind()
-                    .With(new FromCharacteristicsKindSource(_page))
-                    .With(
-                        new DefaultOnErrorKindSource(new GrpcVehicleKindFromTitle(_channel, _page))
-                    )
-                    .With(
-                        new DefaultOnErrorKindSource(
-                            new GrpcVehicleKindFromDescription(_channel, _page)
-                        )
-                    )
-                    .WrapBy(v => new DefaultOnErrorKindSource(v))
-                    .WrapBy(v => new DbOrParsedVehicleKindSource(_pgConnectionSource, _logger, v))
-                    .WrapBy(v => new LoggingKindSource(_logger, v));
+                IParsedVehicleKindSource kindSource = new DbOrParsedVehicleKindSource(
+                    _pgConnectionSource,
+                    _page,
+                    _channel
+                ).WrapBy(v => new LoggingKindSource(_logger, v));
 
-                IParsedVehicleBrandSource brandSource = new FromCharacteristicsBrandSource(_page)
-                    .WrapBy(b => new DefaultOnErrorBrandSource(b))
-                    .WrapBy(b => new DbOrParsedVehicleBrandSource(_pgConnectionSource, _logger, b))
+                IParsedVehicleBrandSource brandSource = new VarietVehicleBrandSource()
+                    .With(new VehicleBrandFromBreadcrumbsSource(_page))
+                    .With(new FromCharacteristicsBrandSource(_page))
                     .WrapBy(b => new LoggingBrandSource(_logger, b));
 
                 IKeyValuedCharacteristicsSource ctxSource = new VariantVehicleCharacteristics()

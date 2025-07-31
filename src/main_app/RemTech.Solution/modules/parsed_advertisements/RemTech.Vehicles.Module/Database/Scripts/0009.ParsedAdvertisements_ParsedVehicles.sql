@@ -6,8 +6,7 @@
     model_id                UUID NOT NULL REFERENCES parsed_advertisements_module.vehicle_models(id) ON DELETE CASCADE,
     price                   BIGINT NOT NULL,
     is_nds                  BOOLEAN NOT NULL,
-    characteristics         JSONB NOT NULL,
-    photos                  JSONB NOT NULL,
+    object                  JSONB NOT NULL,    
     document_tsvector       TSVECTOR    
 );
 

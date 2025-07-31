@@ -14,7 +14,7 @@ public sealed class BucketControlTypeCharacteristicMeasureInspection(
         return name != "Тип управления копательным ковшом"
             ? throw new OperationException("Характеристика не совместима.")
             : new Characteristic(
-                new Characteristic(ctx, new CharacteristicMeasure("управление ковшом")),
+                new Characteristic(ctx, new CharacteristicMeasure("тип")),
                 new VehicleCharacteristicValue(value)
             );
     }

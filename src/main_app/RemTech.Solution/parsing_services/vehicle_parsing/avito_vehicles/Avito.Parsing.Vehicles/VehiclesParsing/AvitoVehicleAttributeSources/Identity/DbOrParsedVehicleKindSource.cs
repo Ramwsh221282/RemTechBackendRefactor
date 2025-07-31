@@ -1,30 +1,48 @@
-﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleKinds;
+﻿using Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Kind;
+using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleKinds;
 using Parsing.Vehicles.DbSearch.VehicleKinds;
+using Parsing.Vehicles.Grpc.Recognition;
+using PuppeteerSharp;
 using RemTech.Postgres.Adapter.Library;
-using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Identity;
 
-public sealed class DbOrParsedVehicleKindSource : IParsedVehicleKindSource
+public sealed class DbOrParsedVehicleKindSource(
+    PgConnectionSource pgConnection,
+    IPage page,
+    CommunicationChannel channel
+) : IParsedVehicleKindSource
 {
-    private readonly IParsedVehicleKindSource _source;
-    private readonly ILogger _logger;
-    private readonly PgConnectionSource _pgConnection;
-
-    public DbOrParsedVehicleKindSource(PgConnectionSource pgConnection, ILogger logger, IParsedVehicleKindSource source)
-    {
-        _source = source;
-        _logger = logger;
-        _pgConnection = pgConnection;
-    }
-    
     public async Task<ParsedVehicleKind> Read()
     {
-        ParsedVehicleKind kind = await _source.Read();
+        try
+        {
+            return await TryGetFromParsing();
+        }
+        catch
+        {
+            return await TryGetSimilarFromDb();
+        }
+    }
+
+    private async Task<ParsedVehicleKind> TryGetSimilarFromDb()
+    {
+        VariantVehicleKind variant = new VariantVehicleKind()
+            .With(new GrpcVehicleKindFromTitle(channel, page))
+            .With(new GrpcVehicleKindFromDescription(channel, page));
+        ParsedVehicleKind kind = await variant.Read();
         ParsedVehicleKind fromDb = await new VarietVehicleKindDbSearch()
-            .With(new LoggingVehicleKindSearch(_logger, new TsQueryVehicleKindSearch(_pgConnection)))
-            .With(new LoggingVehicleKindSearch(_logger, new PgTgrmVehicleKindSearch(_pgConnection)))
+            .With(new TsQueryVehicleKindSearch(pgConnection))
+            .With(new PgTgrmVehicleKindSearch(pgConnection))
             .Search(kind);
-        return fromDb ? fromDb : kind;
+        return fromDb;
+    }
+
+    private async Task<ParsedVehicleKind> TryGetFromParsing()
+    {
+        VariantVehicleKind kind = new VariantVehicleKind()
+            .With(new FromCharacteristicsKindSource(page))
+            .With(new VehicleKindFromBreadcrumbsSource(page));
+        return await kind.Read();
     }
 }

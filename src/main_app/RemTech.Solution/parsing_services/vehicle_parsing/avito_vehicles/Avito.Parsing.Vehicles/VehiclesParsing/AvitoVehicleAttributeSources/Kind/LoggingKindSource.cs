@@ -1,4 +1,5 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleKinds;
+using RemTech.Core.Shared.Primitives;
 using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Kind;
@@ -13,14 +14,19 @@ public sealed class LoggingKindSource : IParsedVehicleKindSource
         _log = log;
         _origin = origin;
     }
-    
+
     public async Task<ParsedVehicleKind> Read()
     {
-        ParsedVehicleKind kind = await _origin.Read();
-        if (kind)
+        try
+        {
+            ParsedVehicleKind kind = await _origin.Read();
             _log.Information("Vehicle kind: {0}.", (string)kind);
-        else
-            _log.Warning("Unable to read vehicle kind.");
-        return kind;
+            return kind;
+        }
+        catch
+        {
+            _log.Warning("Returning default kind.");
+            return new ParsedVehicleKind(new NotEmptyString(string.Empty));
+        }
     }
 }

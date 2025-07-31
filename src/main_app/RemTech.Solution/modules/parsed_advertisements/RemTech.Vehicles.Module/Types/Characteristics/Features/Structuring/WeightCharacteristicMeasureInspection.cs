@@ -1,5 +1,6 @@
 ﻿using RemTech.Core.Shared.Exceptions;
 using RemTech.Core.Shared.Primitives;
+using RemTech.Vehicles.Module.Types.Characteristics.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
@@ -11,8 +12,9 @@ public sealed class WeightCharacteristicMeasureInspection(NotEmptyString name, N
     {
         if (name != "Эксплуатационная масса")
             throw new OperationException("Характеристика не совместима.");
+        Characteristic withOtherName = new(ctx, new CharacteristicText("Масса"));
         return new Characteristic(
-            new Characteristic(ctx, new CharacteristicMeasure("кг")),
+            new Characteristic(withOtherName, new CharacteristicMeasure("кг")),
             new VehicleCharacteristicValue(new OnlyDigitsString(value).Read())
         );
     }

@@ -35,6 +35,12 @@ public abstract class PrimitiveSerJson : ISerJson
         _artifact = $"\"{key}\":{value}";
     }
 
+    public PrimitiveSerJson(string key, double value)
+    {
+        _key = key;
+        _artifact = $"\"{key}\":{value}";
+    }
+
     public PrimitiveSerJson(string key, string value)
     {
         _key = key;

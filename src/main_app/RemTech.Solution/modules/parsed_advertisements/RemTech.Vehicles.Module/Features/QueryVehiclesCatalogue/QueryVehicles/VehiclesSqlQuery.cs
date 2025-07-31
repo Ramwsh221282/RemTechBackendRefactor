@@ -2,7 +2,7 @@
 using System.Text;
 using Npgsql;
 using RemTech.Postgres.Adapter.Library.PgCommands;
-using RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue.QueryVehicles.Parsing;
+using RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue.QueryVehicles.Presenting;
 using RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue.QueryVehicles.Specifications;
 using RemTech.Vehicles.Module.Types.Transport;
 using Serilog;
@@ -22,25 +22,14 @@ public sealed class VehiclesSqlQuery(ILogger logger) : IVehiclesSqlQuery
         SELECT DISTINCT ON (v.id)
         v.id as vehicle_id,
         v.price as vehicle_price,
-        v.photos as vehicle_photos,
         v.is_nds as vehicle_nds,
-        k.id as kind_id,
-        k.text as kind_name,
-        b.id as brand_id,
-        b.text as brand_name,
-        m.id as model_id,
-        m.text as model_name,
-        g.id as geo_id,
-        g.text as geo_text,
-        g.kind as geo_kind,
-        v.characteristics as characteristics
+        v.brand_id as brand_id,
+        v.kind_id as kind_id,
+        v.model_id as model_id,
+        v.geo_id as geo_id,
+        v.object as object_data
         FROM parsed_advertisements_module.parsed_vehicles v        
-        INNER JOIN parsed_advertisements_module.vehicle_kinds k ON k.id = v.kind_id
-        INNER JOIN parsed_advertisements_module.vehicle_brands b ON b.id = v.brand_id
-        INNER JOIN parsed_advertisements_module.vehicle_models m ON m.id = v.model_id
-        INNER JOIN parsed_advertisements_module.geos g on v.geo_id = g.id
         INNER JOIN parsed_advertisements_module.parsed_vehicle_characteristics pvc ON v.id = pvc.vehicle_id
-        INNER JOIN parsed_advertisements_module.vehicle_characteristics vc ON pvc.ctx_id = vc.id
         """
     );
 
@@ -52,7 +41,7 @@ public sealed class VehiclesSqlQuery(ILogger logger) : IVehiclesSqlQuery
         return this;
     }
 
-    public async Task<IEnumerable<Vehicle>> Retrieve(
+    public async Task<IEnumerable<VehiclePresentation>> Retrieve(
         NpgsqlConnection connection,
         CancellationToken ct = default
     )
@@ -61,7 +50,7 @@ public sealed class VehiclesSqlQuery(ILogger logger) : IVehiclesSqlQuery
         await using DbDataReader reader = await new AsyncDbReaderCommand(
             new AsyncPreparedCommand(prepared)
         ).AsyncReader(ct);
-        return await new SqlParsedVehicles(reader).Read(ct);
+        return await new VehiclePresentsReader(reader).Read(ct);
     }
 
     public void AcceptFilter(string filter, NpgsqlParameter parameter)

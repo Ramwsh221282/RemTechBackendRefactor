@@ -28,8 +28,10 @@ public class VehicleParsingTests
         await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
             await new DefaultBrowserInstantiation(
                 new NonHeadlessBrowserInstantiationOptions(),
-                new BasicBrowserLoading()).Instantiation(),
-            url);
+                new BasicBrowserLoading()
+            ).Instantiation(),
+            url
+        );
         await using IBrowserPagesSource pagesSource = await browser.AccessPages();
         ILogger logger = new LoggerSource().Logger();
         foreach (IPage page in pagesSource.Iterate())
@@ -43,27 +45,44 @@ public class VehicleParsingTests
             Assert.True(await bypass.Read());
         }
     }
-    
+
     [Theory]
-    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/ekskavatory/kobelco-ASgBAgICAkRU5k3Qxg3KrD4?cd=1", "GEOS_ML_1.txt")]
-    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/ekskavatory/ekskavator-pogruzchik/amir-ASgBAgICA0RU5k3Qxg2MpvYR1MYNvrA~?cd=1", "GEOS_ML_2.txt")]
-    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/pogruzchiki-ASgBAgICAURU4E0?cd=1&f=ASgBAgICA0RU4E3cxg3s~F3gxg2azk0", "GEOS_ML_3.txt")]
-    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/tehnika_dlya_lesozagotovki/ponsse-ASgBAgICAkRUsiyexw346j8?cd=1", "GEOS_ML_4.txt")]
+    [InlineData(
+        "https://www.avito.ru/all/gruzoviki_i_spetstehnika/ekskavatory/kobelco-ASgBAgICAkRU5k3Qxg3KrD4?cd=1",
+        "GEOS_ML_1.txt"
+    )]
+    [InlineData(
+        "https://www.avito.ru/all/gruzoviki_i_spetstehnika/ekskavatory/ekskavator-pogruzchik/amir-ASgBAgICA0RU5k3Qxg2MpvYR1MYNvrA~?cd=1",
+        "GEOS_ML_2.txt"
+    )]
+    [InlineData(
+        "https://www.avito.ru/all/gruzoviki_i_spetstehnika/pogruzchiki-ASgBAgICAURU4E0?cd=1&f=ASgBAgICA0RU4E3cxg3s~F3gxg2azk0",
+        "GEOS_ML_3.txt"
+    )]
+    [InlineData(
+        "https://www.avito.ru/all/gruzoviki_i_spetstehnika/tehnika_dlya_lesozagotovki/ponsse-ASgBAgICAkRUsiyexw346j8?cd=1",
+        "GEOS_ML_4.txt"
+    )]
     private async Task Invoke_Catalogue_Parser(string url, string textFile)
     {
         await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
-                await new DefaultBrowserInstantiation(
-                    new HeadlessBrowserInstantiationOptions(),
-                    new BasicBrowserLoading()).Instantiation(),
-                url);
+            await new DefaultBrowserInstantiation(
+                new HeadlessBrowserInstantiationOptions(),
+                new BasicBrowserLoading()
+            ).Instantiation(),
+            url
+        );
         using CommunicationChannel channel = new CommunicationChannel("http://localhost:5051");
         DatabaseConfiguration configuration = new DatabaseConfiguration("appsettings.json");
         ILogger logger = new LoggerSource().Logger();
         await using PgConnectionSource dbPgConnection = new(configuration);
         await using IBrowserPagesSource pagesSource = await browser.AccessPages();
-        await using ITextWrite write = new LoggingTextWrite(logger, new TextWrite(AppDomain.CurrentDomain.BaseDirectory)
-            .WithDirectory("GEOS_ML")
-            .WithTextFile(textFile));
+        await using ITextWrite write = new LoggingTextWrite(
+            logger,
+            new TextWrite(AppDomain.CurrentDomain.BaseDirectory)
+                .WithDirectory("GEOS_ML")
+                .WithTextFile(textFile)
+        );
         List<IParsedVehicle> results = [];
         foreach (IPage page in pagesSource.Iterate())
         {
@@ -73,7 +92,8 @@ public class VehicleParsingTests
                 logger,
                 dbPgConnection,
                 channel,
-                url);
+                url
+            );
             await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
             {
                 IParsedVehicle temp = vehicle;
@@ -84,17 +104,27 @@ public class VehicleParsingTests
     }
 
     [Theory]
-    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/ekskavatory/kobelco-ASgBAgICAkRU5k3Qxg3KrD4?cd=1")]
-    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/ekskavatory/ekskavator-pogruzchik/amir-ASgBAgICA0RU5k3Qxg2MpvYR1MYNvrA~?cd=1")]
-    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/pogruzchiki-ASgBAgICAURU4E0?cd=1&f=ASgBAgICA0RU4E3cxg3s~F3gxg2azk0")]
-    [InlineData("https://www.avito.ru/all/gruzoviki_i_spetstehnika/tehnika_dlya_lesozagotovki/ponsse-ASgBAgICAkRUsiyexw346j8?cd=1")]
+    [InlineData(
+        "https://www.avito.ru/all/gruzoviki_i_spetstehnika/ekskavatory/kobelco-ASgBAgICAkRU5k3Qxg3KrD4?cd=1"
+    )]
+    [InlineData(
+        "https://www.avito.ru/all/gruzoviki_i_spetstehnika/ekskavatory/ekskavator-pogruzchik/amir-ASgBAgICA0RU5k3Qxg2MpvYR1MYNvrA~?cd=1"
+    )]
+    [InlineData(
+        "https://www.avito.ru/all/gruzoviki_i_spetstehnika/pogruzchiki-ASgBAgICAURU4E0?cd=1&f=ASgBAgICA0RU4E3cxg3s~F3gxg2azk0"
+    )]
+    [InlineData(
+        "https://www.avito.ru/all/gruzoviki_i_spetstehnika/tehnika_dlya_lesozagotovki/ponsse-ASgBAgICAkRUsiyexw346j8?cd=1"
+    )]
     private async Task Parsed_Vehicle_Json_Success(string url)
     {
         await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
             await new DefaultBrowserInstantiation(
-                new NonHeadlessBrowserInstantiationOptions(),
-                new BasicBrowserLoading()).Instantiation(),
-            url);
+                new HeadlessBrowserInstantiationOptions(),
+                new BasicBrowserLoading()
+            ).Instantiation(),
+            url
+        );
         using CommunicationChannel channel = new CommunicationChannel("http://localhost:5051");
         DatabaseConfiguration configuration = new DatabaseConfiguration("appsettings.json");
         RabbitMqConnectionOptions rabbitOptions = new("appsettings.json");
@@ -102,20 +132,26 @@ public class VehicleParsingTests
         await using PgConnectionSource dbPgConnection = new(configuration);
         await using IBrowserPagesSource pagesSource = await browser.AccessPages();
         await using RabbitMqChannel rabbitChannel = new(rabbitOptions);
-        await using RabbitSendPoint rabbitSendPoint = await rabbitChannel.MakeSendPoint("vehicles_sink");
+        await using RabbitSendPoint rabbitSendPoint = await rabbitChannel.MakeSendPoint(
+            "vehicles_sink"
+        );
         foreach (IPage page in pagesSource.Iterate())
         {
-            
             IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
                 page,
                 new NoTextWrite(),
                 logger,
                 dbPgConnection,
                 channel,
-                url);
+                url
+            );
             await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
             {
-                await new RabbitPublishingParsedVehicle(logger, vehicle, rabbitSendPoint).SendAsync();
+                await new RabbitPublishingParsedVehicle(
+                    logger,
+                    vehicle,
+                    rabbitSendPoint
+                ).SendAsync();
             }
         }
     }

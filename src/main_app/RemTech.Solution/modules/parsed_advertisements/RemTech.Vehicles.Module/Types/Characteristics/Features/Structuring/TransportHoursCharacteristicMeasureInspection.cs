@@ -14,7 +14,7 @@ public sealed class TransportHoursCharacteristicMeasureInspection(
         return name != "Моточасы"
             ? throw new OperationException("Характеристика не совместима.")
             : new Characteristic(
-                new Characteristic(ctx, new CharacteristicMeasure("моточасы")),
+                new Characteristic(ctx, new CharacteristicMeasure("ч")),
                 new VehicleCharacteristicValue(new OnlyDigitsString(value).Read())
             );
     }

@@ -16,7 +16,7 @@ public sealed class SearchedVehicleKind
     public async Task<ParsedVehicleKind> Read()
     {
         if (!await _reader.ReadAsync())
-            return new ParsedVehicleKind(new NotEmptyString(string.Empty));
+            throw new ArgumentException("No vehicle kinds found.");
         string text = _reader.GetString(_reader.GetOrdinal("text"));
         return new ParsedVehicleKind(text);
     }

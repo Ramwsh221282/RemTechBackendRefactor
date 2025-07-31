@@ -1,9 +1,8 @@
-﻿using System.Text.Json;
-using Npgsql;
+﻿using Npgsql;
 using NpgsqlTypes;
 using RemTech.Core.Shared.Exceptions;
 using RemTech.Postgres.Adapter.Library.PgCommands;
-using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
+using RemTech.Vehicles.Module.Types.Transport.Decorators.Json;
 
 namespace RemTech.Vehicles.Module.Types.Transport.Decorators.Postgres;
 
@@ -14,9 +13,9 @@ public sealed class PgSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
         string sql = string.Intern(
             """
             INSERT INTO parsed_advertisements_module.parsed_vehicles
-            (id, kind_id, brand_id, geo_id, model_id, price, is_nds, photos, document_tsvector, characteristics)
+            (id, kind_id, brand_id, geo_id, model_id, price, is_nds, object, document_tsvector)
             VALUES
-            (@id, @kind_id, @brand_id, @geo_id, @model_id, @price, @is_nds, @photos, to_tsvector('russian', @document_tsvector), @characteristics)
+            (@id, @kind_id, @brand_id, @geo_id, @model_id, @price, @is_nds, @object, to_tsvector('russian', @document_tsvector))
             ON CONFLICT(id) DO NOTHING;
             """
         );
@@ -39,7 +38,6 @@ public sealed class PgSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
         Guid modelId = Model.Id();
         long price = Price.Value();
         bool nds = Price.UnderNds();
-        string photosJson = MakePhotosJsonb();
         return new ParametrizingPgCommand(new PgCommand(connection, sql))
             .With("@id", id)
             .With("@kind_id", kindId)
@@ -48,26 +46,8 @@ public sealed class PgSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
             .With("@model_id", modelId)
             .With("@price", price)
             .With("@is_nds", nds)
-            .With("@photos", photosJson, NpgsqlDbType.Jsonb)
-            .With("@document_tsvector", MakeTsVectorString(), NpgsqlDbType.Text)
-            .With("@characteristics", MakeCharacteristicsJson(), NpgsqlDbType.Jsonb);
-    }
-
-    private string MakeCharacteristicsJson()
-    {
-        VehicleCharacteristic[] characteristics = Characteristics.Read();
-        PgVehicleCharacteristic[] pgCharacteristics = characteristics
-            .Select(c => c.MakePgCharacteristic())
-            .ToArray();
-        string json = JsonSerializer.Serialize(pgCharacteristics);
-        return json;
-    }
-
-    private string MakePhotosJsonb()
-    {
-        string[] photos = Photos.Read().Select(p => (string)p).ToArray();
-        string json = JsonSerializer.Serialize(photos);
-        return json;
+            .With("@object", new JsonVehicle(this).Read(), NpgsqlDbType.Jsonb)
+            .With("@document_tsvector", MakeTsVectorString(), NpgsqlDbType.Text);
     }
 
     private string MakeTsVectorString()

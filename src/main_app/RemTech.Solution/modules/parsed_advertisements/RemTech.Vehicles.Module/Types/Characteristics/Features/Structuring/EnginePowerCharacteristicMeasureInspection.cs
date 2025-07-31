@@ -24,7 +24,7 @@ public sealed class EnginePowerCharacteristicMeasureInspection(
             if (value.Contains("квт"))
             {
                 double doubleValue = double.Parse(formattedValue) * LsModifier;
-                formattedValue = doubleValue.ToString(CultureInfo.InvariantCulture);
+                formattedValue = doubleValue.ToString("F2", CultureInfo.InvariantCulture);
             }
 
             Characteristic renamed = new Characteristic(

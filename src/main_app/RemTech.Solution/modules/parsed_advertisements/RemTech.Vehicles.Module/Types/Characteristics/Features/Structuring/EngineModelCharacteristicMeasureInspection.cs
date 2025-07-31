@@ -14,7 +14,7 @@ public sealed class EngineModelCharacteristicMeasureInspection(
         return name != "Двигатель"
             ? throw new OperationException("Характеристика не совместима.")
             : new Characteristic(
-                new Characteristic(ctx, new CharacteristicMeasure("модель двигателя")),
+                new Characteristic(ctx, new CharacteristicMeasure("модель")),
                 new VehicleCharacteristicValue(value)
             );
     }

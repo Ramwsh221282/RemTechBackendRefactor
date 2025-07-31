@@ -14,7 +14,7 @@ public sealed class ReleaseYearCharacteristicMeasureInspection(
         return name != "Год выпуска"
             ? throw new OperationException("Характеристика не совместима.")
             : new Characteristic(
-                new Characteristic(ctx, new CharacteristicMeasure("год")),
+                new Characteristic(ctx, new CharacteristicMeasure("г")),
                 new VehicleCharacteristicValue(new OnlyDigitsString(value).Read())
             );
     }
