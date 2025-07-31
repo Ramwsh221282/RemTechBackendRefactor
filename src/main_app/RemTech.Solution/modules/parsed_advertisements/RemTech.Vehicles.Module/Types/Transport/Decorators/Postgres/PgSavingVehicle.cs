@@ -3,6 +3,7 @@ using Npgsql;
 using NpgsqlTypes;
 using RemTech.Core.Shared.Exceptions;
 using RemTech.Postgres.Adapter.Library.PgCommands;
+using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 
 namespace RemTech.Vehicles.Module.Types.Transport.Decorators.Postgres;
 
@@ -13,9 +14,9 @@ public sealed class PgSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
         string sql = string.Intern(
             """
             INSERT INTO parsed_advertisements_module.parsed_vehicles
-            (id, kind_id, brand_id, geo_id, model_id, price, is_nds, photos, document_tsvector)
+            (id, kind_id, brand_id, geo_id, model_id, price, is_nds, photos, document_tsvector, characteristics)
             VALUES
-            (@id, @kind_id, @brand_id, @geo_id, @model_id, @price, @is_nds, @photos, to_tsvector('russian', @document_tsvector))
+            (@id, @kind_id, @brand_id, @geo_id, @model_id, @price, @is_nds, @photos, to_tsvector('russian', @document_tsvector), @characteristics)
             ON CONFLICT(id) DO NOTHING;
             """
         );
@@ -48,7 +49,18 @@ public sealed class PgSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
             .With("@price", price)
             .With("@is_nds", nds)
             .With("@photos", photosJson, NpgsqlDbType.Jsonb)
-            .With("@document_tsvector", MakeTsVectorString(), NpgsqlDbType.Text);
+            .With("@document_tsvector", MakeTsVectorString(), NpgsqlDbType.Text)
+            .With("@characteristics", MakeCharacteristicsJson(), NpgsqlDbType.Jsonb);
+    }
+
+    private string MakeCharacteristicsJson()
+    {
+        VehicleCharacteristic[] characteristics = Characteristics.Read();
+        PgVehicleCharacteristic[] pgCharacteristics = characteristics
+            .Select(c => c.MakePgCharacteristic())
+            .ToArray();
+        string json = JsonSerializer.Serialize(pgCharacteristics);
+        return json;
     }
 
     private string MakePhotosJsonb()

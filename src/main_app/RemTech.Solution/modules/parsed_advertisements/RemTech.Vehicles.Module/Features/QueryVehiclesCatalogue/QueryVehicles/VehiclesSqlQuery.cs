@@ -19,7 +19,7 @@ public sealed class VehiclesSqlQuery(ILogger logger) : IVehiclesSqlQuery
 
     private readonly string _sql = string.Intern(
         """
-        SELECT
+        SELECT DISTINCT ON (v.id)
         v.id as vehicle_id,
         v.price as vehicle_price,
         v.photos as vehicle_photos,
@@ -33,10 +33,7 @@ public sealed class VehiclesSqlQuery(ILogger logger) : IVehiclesSqlQuery
         g.id as geo_id,
         g.text as geo_text,
         g.kind as geo_kind,
-        vc.text as ctx_name,
-        vc.id as ctx_id,
-        pvc.ctx_value as ctx_value,
-        pvc.ctx_measure as ctx_measure
+        v.characteristics as characteristics
         FROM parsed_advertisements_module.parsed_vehicles v        
         INNER JOIN parsed_advertisements_module.vehicle_kinds k ON k.id = v.kind_id
         INNER JOIN parsed_advertisements_module.vehicle_brands b ON b.id = v.brand_id

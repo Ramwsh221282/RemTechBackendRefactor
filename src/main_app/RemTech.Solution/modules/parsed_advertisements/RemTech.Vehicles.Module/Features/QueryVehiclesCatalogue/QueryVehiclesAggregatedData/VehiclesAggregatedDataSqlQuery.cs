@@ -12,10 +12,10 @@ public sealed class VehiclesAggregatedDataSqlQuery : IVehiclesSqlQuery
     private readonly string _sql = string.Intern(
         """
         SELECT
-            COUNT(*) as total_count,
-            AVG(v.price) as average_price,
-            MIN(v.price) as min_price,
-            MAX(v.price) as max_price    
+        COUNT(*) as total_count,
+        AVG(v.price) as average_price,
+        MIN(v.price) as min_price,
+        MAX(v.price) as max_price    
         FROM parsed_advertisements_module.parsed_vehicles v                                    
         INNER JOIN parsed_advertisements_module.parsed_vehicle_characteristics pvc ON v.id = pvc.vehicle_id
         INNER JOIN parsed_advertisements_module.vehicle_characteristics vc ON pvc.ctx_id = vc.id

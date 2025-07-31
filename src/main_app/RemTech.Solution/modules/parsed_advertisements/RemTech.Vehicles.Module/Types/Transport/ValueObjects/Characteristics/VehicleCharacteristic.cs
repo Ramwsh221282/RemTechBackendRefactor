@@ -25,4 +25,13 @@ public sealed record VehicleCharacteristic
     {
         return _characteristic.VehicleCtxPgCommand(_value, index, cmd);
     }
+
+    public PgVehicleCharacteristic MakePgCharacteristic()
+    {
+        Guid ctxId = _characteristic.Identity.ReadId();
+        string ctxName = _characteristic.Identity.ReadText();
+        string ctxMeasure = _characteristic.Measure();
+        string ctxValue = _value;
+        return new PgVehicleCharacteristic(ctxId, ctxName, ctxValue, ctxMeasure);
+    }
 }
