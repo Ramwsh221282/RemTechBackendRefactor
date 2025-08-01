@@ -22,6 +22,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Features\QueryVehicles\QueryVehicles\" />
     <Folder Include="Types\" />
   </ItemGroup>
 </Project>
