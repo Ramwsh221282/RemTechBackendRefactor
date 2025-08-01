@@ -17,8 +17,7 @@ public sealed class VehiclesAggregatedDataSqlQuery : IVehiclesSqlQuery
         MIN(v.price) as min_price,
         MAX(v.price) as max_price    
         FROM parsed_advertisements_module.parsed_vehicles v                                    
-        INNER JOIN parsed_advertisements_module.parsed_vehicle_characteristics pvc ON v.id = pvc.vehicle_id
-        INNER JOIN parsed_advertisements_module.vehicle_characteristics vc ON pvc.ctx_id = vc.id
+        INNER JOIN parsed_advertisements_module.parsed_vehicle_characteristics pvc ON pvc.vehicle_id = v.id
         """
     );
 

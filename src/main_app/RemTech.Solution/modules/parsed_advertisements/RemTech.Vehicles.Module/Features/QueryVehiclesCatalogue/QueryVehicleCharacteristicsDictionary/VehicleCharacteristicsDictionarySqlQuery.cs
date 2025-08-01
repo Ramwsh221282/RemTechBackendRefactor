@@ -13,13 +13,12 @@ public sealed class VehicleCharacteristicsDictionarySqlQuery : IVehiclesSqlQuery
     private readonly string _sql = string.Intern(
         """
         SELECT
-        vc.id as ctx_id,
-        vc.text as ctx_text,
-        vc.measuring as ctx_measure,
+        pvc.ctx_id as ctx_id,
+        pvc.ctx_name as ctx_text,
+        pvc.ctx_measure as ctx_measure,
         pvc.ctx_value as ctx_value
         FROM parsed_advertisements_module.parsed_vehicles v     
         INNER JOIN parsed_advertisements_module.parsed_vehicle_characteristics pvc ON v.id = pvc.vehicle_id
-        INNER JOIN parsed_advertisements_module.vehicle_characteristics vc ON pvc.ctx_id = vc.id
         """
     );
 

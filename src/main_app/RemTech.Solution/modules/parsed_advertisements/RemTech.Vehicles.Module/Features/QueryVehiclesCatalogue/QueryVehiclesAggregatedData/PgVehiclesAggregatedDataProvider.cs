@@ -8,10 +8,19 @@ public sealed class PgVehiclesAggregatedDataProvider(NpgsqlConnection connection
     public async Task<VehiclesAggregatedDataPresentation> Provide(
         VehiclesQueryRequest request,
         CancellationToken ct
-    ) =>
-        await VehiclesAggregatedDataPresentation.Read(
-            new VehiclesAggregatedDataSqlQuery().AcceptRequest(request),
-            connection,
-            ct
-        );
+    )
+    {
+        try
+        {
+            return await VehiclesAggregatedDataPresentation.Read(
+                new VehiclesAggregatedDataSqlQuery().AcceptRequest(request),
+                connection,
+                ct
+            );
+        }
+        catch
+        {
+            return new VehiclesAggregatedDataPresentation(0, 0, 0, 0, 0);
+        }
+    }
 }

@@ -1,8 +1,9 @@
-﻿using Parsing.SDK.ScrapingArtifacts;
+﻿using Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Kind;
+using Parsing.SDK.ScrapingArtifacts;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleModels;
 using PuppeteerSharp;
 
-namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Kind;
+namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Model;
 
 public sealed class VehicleModelFromBreadcrumbsSource : IParsedVehicleModelSource
 {
