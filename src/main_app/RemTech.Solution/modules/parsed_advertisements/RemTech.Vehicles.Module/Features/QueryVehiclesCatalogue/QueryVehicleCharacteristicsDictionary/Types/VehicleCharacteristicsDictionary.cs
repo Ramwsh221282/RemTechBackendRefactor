@@ -1,6 +1,4 @@
 ﻿using System.Data.Common;
-using Npgsql;
-using RemTech.Postgres.Adapter.Library.PgCommands;
 using RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue.QueryVehicleCharacteristicsDictionary.Delegates;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue.QueryVehicleCharacteristicsDictionary.Types;
@@ -10,15 +8,11 @@ public sealed record VehicleCharacteristicsDictionary(
 )
 {
     public static async Task<VehicleCharacteristicsDictionary> Read(
-        NpgsqlConnection connection,
-        VehicleCharacteristicsDictionarySqlQuery query,
+        DbDataReader reader,
         ReadVehicleCharacteristicsDictionary dictionary,
         CancellationToken ct = default
     )
     {
-        await using DbDataReader reader = await new AsyncDbReaderCommand(
-            new AsyncPreparedCommand(query.PrepareCommand(connection))
-        ).AsyncReader(ct);
         return await dictionary(reader, ct);
     }
 

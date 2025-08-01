@@ -5,11 +5,8 @@ using RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue.QueryVehicles.Spec
 
 namespace RemTech.Vehicles.Module.Features.QueryVehiclesCatalogue.QueryVehicleCharacteristicsDictionary;
 
-public sealed class VehicleCharacteristicsDictionarySqlQuery : IVehiclesSqlQuery
+public sealed class VehicleCharacteristicsDictionarySqlQuery
 {
-    private readonly List<string> _filters = [];
-    private readonly List<NpgsqlParameter> _parameters = [];
-
     private readonly string _sql = string.Intern(
         """
         SELECT
@@ -19,45 +16,24 @@ public sealed class VehicleCharacteristicsDictionarySqlQuery : IVehiclesSqlQuery
         pvc.ctx_value as ctx_value
         FROM parsed_advertisements_module.parsed_vehicles v     
         INNER JOIN parsed_advertisements_module.parsed_vehicle_characteristics pvc ON v.id = pvc.vehicle_id
+        WHERE v.kind_id = @kindId AND v.brand_id = @brandId AND v.model_id = @modelId;
         """
     );
 
-    public VehicleCharacteristicsDictionarySqlQuery ApplyRequest(VehiclesQueryRequest request)
+    public AsyncDbReaderCommand CreateCommand(
+        Guid kindId,
+        Guid brandId,
+        Guid modelId,
+        NpgsqlConnection connection
+    )
     {
-        CompositeVehicleSpeicification speicification = new();
-        speicification = request.ApplyTo(speicification);
-        speicification.ApplyTo(this);
-        return this;
+        return new AsyncDbReaderCommand(
+            new AsyncPreparedCommand(
+                new ParametrizingPgCommand(new PgCommand(connection, _sql))
+                    .With("@kindId", kindId)
+                    .With("@brandId", brandId)
+                    .With("@modelId", modelId)
+            )
+        );
     }
-
-    public void AcceptFilter(string filter, NpgsqlParameter parameter)
-    {
-        _filters.Add(filter);
-        _parameters.Add(parameter);
-    }
-
-    public void AcceptFilter(string filter, IEnumerable<NpgsqlParameter> parameters)
-    {
-        _filters.Add(filter);
-        _parameters.AddRange(parameters);
-    }
-
-    public IPgCommandSource PrepareCommand(NpgsqlConnection connection)
-    {
-        NpgsqlCommand command = connection.CreateCommand();
-        SqlGeneration generation = SqlGenerator
-            .SourceSql(_sql)
-            .ApplyFilters(new SqlFilters(_filters));
-        SqlGenerated generated = generation();
-        command.CommandText = generated.Sql;
-        foreach (NpgsqlParameter parameter in _parameters)
-            command.Parameters.Add(parameter);
-        return new DefaultPgCommandSource(command);
-    }
-
-    public void AcceptAscending(string orderingField) { }
-
-    public void AcceptDescending(string orderingField) { }
-
-    public void AcceptPagination(int page) { }
 }

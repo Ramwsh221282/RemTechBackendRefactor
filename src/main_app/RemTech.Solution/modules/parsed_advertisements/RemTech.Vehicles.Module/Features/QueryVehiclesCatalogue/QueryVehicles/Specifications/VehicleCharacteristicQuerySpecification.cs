@@ -10,45 +10,26 @@ public sealed class VehicleCharacteristicQuerySpecification(
     public void ApplyTo(IVehiclesSqlQuery query)
     {
         int number = 1;
-        foreach (VehicleCharacteristic characteristic1 in characteristic)
+        foreach (VehicleCharacteristic ctx in characteristic)
         {
-            ApplyId(characteristic1, query, ref number);
-            ApplyName(characteristic1, query, ref number);
-            ApplyValue(characteristic1, query, ref number);
+            Guid id = ctx.WhatCharacteristic().Identity.ReadId();
+            string value = ctx.WhatValue();
+            string existsSubQuery = $"""
+                EXISTS 
+                ( 
+                SELECT 1 FROM parsed_advertisements_module.parsed_vehicle_characteristics pvc{number}
+                WHERE pvc{number}.vehicle_id = v.id
+                AND pvc{number}.ctx_id = @ctxId_{number}
+                AND pvc{number}.ctx_value = @ctxValue_{number}   
+                )
+                """;
+            NpgsqlParameter<Guid> idParam = new NpgsqlParameter<Guid>($"@ctxId_{number}", id);
+            NpgsqlParameter<string> valueParam = new NpgsqlParameter<string>(
+                $"@ctxValue_{number}",
+                value
+            );
+            query.AcceptFilter(existsSubQuery, [idParam, valueParam]);
             number++;
         }
-    }
-
-    private static void ApplyId(
-        VehicleCharacteristic characteristic,
-        IVehiclesSqlQuery query,
-        ref int number
-    )
-    {
-        Guid id = characteristic.WhatCharacteristic().Identity.ReadId();
-        NpgsqlParameter<Guid> parameter = new($"@modCtxId_{number}", id);
-        query.AcceptFilter($"vc.id = @modCtxId_{number}", parameter);
-    }
-
-    private static void ApplyName(
-        VehicleCharacteristic characteristic,
-        IVehiclesSqlQuery query,
-        ref int number
-    )
-    {
-        string name = characteristic.WhatCharacteristic().Identity.ReadText();
-        NpgsqlParameter<string> parameter = new($"@modCtxName_{number}", name);
-        query.AcceptFilter($"vc.text = @modCtxName_{number}", parameter);
-    }
-
-    private static void ApplyValue(
-        VehicleCharacteristic characteristic,
-        IVehiclesSqlQuery query,
-        ref int number
-    )
-    {
-        string value = characteristic.WhatValue();
-        NpgsqlParameter<string> parameter = new($"@modCtxValue_{number}", value);
-        query.AcceptFilter($"pvc.ctx_value = @modCtxValue_{number}", parameter);
     }
 }
