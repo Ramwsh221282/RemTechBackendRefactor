@@ -7,9 +7,9 @@ public sealed class TestEmailSenderSource : IEmailSendersSource
 {
     private readonly Dictionary<string, IEmailSender> _senders = new();
 
-    public Task<IEmailSender> Get(string name, CancellationToken ct = default)
+    public Task<IEmailSender> Get(string email, CancellationToken ct = default)
     {
-        return Task.FromResult(_senders[name]);
+        return Task.FromResult(_senders[email]);
     }
 
     public Task<bool> Save(IEmailSender sender, CancellationToken ct = default)
@@ -37,10 +37,10 @@ public sealed class TestEmailSenderSource : IEmailSendersSource
         return Task.FromResult(_senders.Values.AsEnumerable());
     }
 
-    public TestEmailSenderSource Add(string serviceName, string email, string password)
+    public TestEmailSenderSource Add(string email, string password)
     {
-        EmailSender sender = new(serviceName, email, password);
-        _senders.Add(serviceName, sender);
+        EmailSender sender = new(email, password);
+        _senders.Add(email, sender);
         return this;
     }
 }

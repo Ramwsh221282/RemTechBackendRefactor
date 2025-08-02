@@ -6,7 +6,8 @@ using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
 using RemTech.RabbitMq.Adapter;
 using RemTech.Vehicles.Module.Injection;
 using Scalar.AspNetCore;
-using Users.Module.Inject;
+using Users.Module.Injection;
+using Users.Module.Options;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 MailingModuleOptions mailingOptions = new("mailing_module.json");
@@ -23,9 +24,9 @@ builder.Services.AddSingleton<PgConnectionSource>();
 builder.Services.InjectVehiclesModule();
 builder.Services.AddOpenApi();
 WebApplication app = builder.Build();
-app.ApplyUsersModuleMigrations().Wait();
 app.UseCors();
 app.Services.UpVehiclesDatabase();
+userOptions.UpUsersModulePersistance();
 mailingOptions.UpMailingModuleDatabase();
 if (app.Environment.IsDevelopment())
 {
@@ -35,5 +36,5 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapMailingModuleEndpoints();
 app.MapVehiclesModuleEndpoints();
-app.MapIdentityApi();
+app.MapUsersModuleEndpoints();
 app.Run();

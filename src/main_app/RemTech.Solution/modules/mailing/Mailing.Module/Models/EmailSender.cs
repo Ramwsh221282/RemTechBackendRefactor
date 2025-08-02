@@ -4,11 +4,13 @@ using Mailing.Module.Contracts;
 
 namespace Mailing.Module.Models;
 
-internal sealed class EmailSender(string name, string email, string password) : IEmailSender
+internal sealed class EmailSender(string email, string password) : IEmailSender
 {
     private const int SmtpPort = 587;
 
-    private readonly string _serviceHost = new ServiceHostFromNameResolver(email).Resolve();
+    private readonly string _name = new ServiceNameResolver(email).Resolved();
+
+    private readonly string _serviceHost = new ServiceHostFromNameResolver(email).Resolved();
 
     public IEmailMessage FormEmailMessage()
     {
@@ -22,18 +24,10 @@ internal sealed class EmailSender(string name, string email, string password) : 
         );
     }
 
-    public IEmailSender ChangeEmail(string newEmail) => new EmailSender(name, newEmail, password);
-
-    public IEmailSender ChangePassword(string newPassword) =>
-        new EmailSender(name, newPassword, password);
-
-    public EmailSenderOutput Print() => new(name, email, password);
+    public EmailSenderOutput Print() => new(_name, email, password);
 
     public async Task<bool> Save(IEmailSendersSource source, CancellationToken ct = default) =>
         await source.Save(this, ct);
-
-    public async Task<bool> Update(IEmailSendersSource source, CancellationToken ct = default) =>
-        await source.Update(this, ct);
 
     public async Task<bool> Remove(IEmailSendersSource source, CancellationToken ct = default) =>
         await source.Remove(this, ct);

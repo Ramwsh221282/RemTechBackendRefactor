@@ -13,13 +13,13 @@ public static class RemoveMailingSender
     public static void Map(RouteGroupBuilder builder) => builder.MapDelete(string.Empty, Handle);
 
     private static async Task<IResult> Handle(
-        [FromQuery] string name,
+        [FromQuery] string email,
         [FromServices] IEmailSendersSource senders,
         [FromServices] Serilog.ILogger logger,
         CancellationToken ct
     )
     {
-        EmailSenderOutput output = await Process(senders, name, ct);
+        EmailSenderOutput output = await Process(senders, email, ct);
         RemoveMailingSenderResponse response = new(output.Name, output.Email);
         logger.Information("Removed mailing sender {Name} - {Email}.", output.Name, output.Email);
         return Results.Ok(response);
@@ -27,11 +27,11 @@ public static class RemoveMailingSender
 
     private static async Task<EmailSenderOutput> Process(
         IEmailSendersSource senders,
-        string name,
+        string email,
         CancellationToken ct = default
     )
     {
-        IEmailSender sender = await senders.Get(name, ct);
+        IEmailSender sender = await senders.Get(email, ct);
         await sender.Remove(senders, ct);
         return sender.Print();
     }

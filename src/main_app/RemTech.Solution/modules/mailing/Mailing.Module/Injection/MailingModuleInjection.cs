@@ -1,5 +1,7 @@
-﻿using DbUp;
+﻿using System.Threading.Channels;
+using DbUp;
 using DbUp.Engine;
+using Mailing.Module.Bus;
 using Mailing.Module.Configuration;
 using Mailing.Module.Contracts;
 using Mailing.Module.Features;
@@ -18,6 +20,9 @@ public static class MailingModuleInjection
     )
     {
         services.AddSingleton<IEmailSendersSource>(new NpgSqlEmailSendersSource(options));
+        services.AddSingleton(Channel.CreateUnbounded<MailingBusMessage>());
+        services.AddSingleton<MailingBusPublisher>();
+        services.AddHostedService<MailingBusReceiver>();
     }
 
     public static void MapMailingModuleEndpoints(this WebApplication app)
@@ -25,7 +30,7 @@ public static class MailingModuleInjection
         RouteGroupBuilder builder = app.MapGroup("api/mailing").RequireCors("FRONTEND");
         CreateMailingSender.Map(builder);
         RemoveMailingSender.Map(builder);
-        UpdateMailingSender.Map(builder);
+        PingMailingSender.Map(builder);
         ReadMailingSenders.Map(builder);
     }
 

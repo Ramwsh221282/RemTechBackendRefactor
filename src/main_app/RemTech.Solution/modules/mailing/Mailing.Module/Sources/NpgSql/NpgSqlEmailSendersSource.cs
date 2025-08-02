@@ -19,24 +19,23 @@ internal sealed class NpgSqlEmailSendersSource(MailingModuleOptions options)
 
     public async ValueTask DisposeAsync() => await _source.DisposeAsync();
 
-    public async Task<IEmailSender> Get(string name, CancellationToken ct = default)
+    public async Task<IEmailSender> Get(string email, CancellationToken ct = default)
     {
         string sql = string.Intern(
             """
             SELECT name, email, key FROM mailing_module.senders
-            WHERE name = @name
+            WHERE email = @email
             """
         );
         await using NpgsqlConnection connection = await _source.OpenConnectionAsync(ct);
         await using NpgsqlCommand command = connection.CreateCommand();
         command.CommandText = sql;
-        command.Parameters.Add(new NpgsqlParameter<string>("@name", name));
+        command.Parameters.Add(new NpgsqlParameter<string>("@email", email));
         await command.PrepareAsync(ct);
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
         if (!await reader.ReadAsync(ct))
-            throw new InvalidOperationException($"Почтовый сервис {name} не существует.");
+            throw new InvalidOperationException($"Почтовый сервис {email} не существует.");
         return new EmailSender(
-            reader.GetString(reader.GetOrdinal("name")),
             reader.GetString(reader.GetOrdinal("email")),
             reader.GetString(reader.GetOrdinal("key"))
         );
@@ -98,10 +97,9 @@ internal sealed class NpgSqlEmailSendersSource(MailingModuleOptions options)
         List<IEmailSender> senders = [];
         while (await reader.ReadAsync(ct))
         {
-            string name = reader.GetString(reader.GetOrdinal("name"));
             string email = reader.GetString(reader.GetOrdinal("email"));
             string key = reader.GetString(reader.GetOrdinal("key"));
-            senders.Add(new EmailSender(name, email, key));
+            senders.Add(new EmailSender(email, key));
         }
         return senders;
     }

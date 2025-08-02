@@ -10,22 +10,23 @@ namespace Mailing.Module.Features;
 
 public static class CreateMailingSender
 {
-    public sealed record CreateMailingSenderRequest(string Name, string Email, string Password);
+    public sealed record CreateMailingSenderRequest(string Email, string Password);
 
     public sealed record CreateMailingSenderResponse(string Name, string Email);
 
     public static void Map(RouteGroupBuilder builder) => builder.MapPost(string.Empty, Handle);
 
     private static async Task<IResult> Handle(
-        [FromQuery] string name,
-        [FromQuery] string email,
-        [FromHeader] string password,
+        [FromBody] CreateMailingSenderRequest request,
         [FromServices] IEmailSendersSource senders,
         [FromServices] ILogger logger,
         CancellationToken ct
     )
     {
-        CreateMailingSenderRequest request = new(name, email, password);
+        if (string.IsNullOrWhiteSpace(request.Email))
+            throw new InvalidOperationException("Email is required.");
+        if (string.IsNullOrWhiteSpace(request.Password))
+            throw new InvalidOperationException("Password is required.");
         IEmailSender sender = await Create(senders, request, ct);
         EmailSenderOutput output = sender.Print();
         CreateMailingSenderResponse response = new(output.Name, output.Email);
@@ -39,7 +40,7 @@ public static class CreateMailingSender
         CancellationToken ct = default
     )
     {
-        IEmailSender sender = new EmailSender(request.Name, request.Email, request.Password);
+        IEmailSender sender = new EmailSender(request.Email, request.Password);
         await sender.Save(senders, ct);
         return sender;
     }
