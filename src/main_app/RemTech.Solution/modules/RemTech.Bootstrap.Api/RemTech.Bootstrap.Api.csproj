@@ -9,6 +9,8 @@
     <PackageReference Include="Scalar.AspNetCore" Version="2.6.4" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\mailing\Mailing.Module\Mailing.Module.csproj" />
     <ProjectReference Include="..\parsed_advertisements\RemTech.Vehicles.Module\RemTech.Vehicles.Module.csproj" />
+    <ProjectReference Include="..\users\Users.Module\Users.Module.csproj" />
   </ItemGroup>
 </Project>

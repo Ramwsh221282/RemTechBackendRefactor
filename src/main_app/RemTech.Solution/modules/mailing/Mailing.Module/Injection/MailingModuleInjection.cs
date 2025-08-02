@@ -1,0 +1,45 @@
+﻿using DbUp;
+using DbUp.Engine;
+using Mailing.Module.Configuration;
+using Mailing.Module.Contracts;
+using Mailing.Module.Features;
+using Mailing.Module.Sources.NpgSql;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Mailing.Module.Injection;
+
+public static class MailingModuleInjection
+{
+    public static void InjectMailingModule(
+        this IServiceCollection services,
+        MailingModuleOptions options
+    )
+    {
+        services.AddSingleton<IEmailSendersSource>(new NpgSqlEmailSendersSource(options));
+    }
+
+    public static void MapMailingModuleEndpoints(this WebApplication app)
+    {
+        RouteGroupBuilder builder = app.MapGroup("api/mailing").RequireCors("FRONTEND");
+        CreateMailingSender.Map(builder);
+        RemoveMailingSender.Map(builder);
+        UpdateMailingSender.Map(builder);
+        ReadMailingSenders.Map(builder);
+    }
+
+    public static void UpMailingModuleDatabase(this MailingModuleOptions options)
+    {
+        string connectionString = options.Database.ToConnectionString();
+        EnsureDatabase.For.PostgresqlDatabase(connectionString);
+        UpgradeEngine upgrader = DeployChanges
+            .To.PostgresqlDatabase(connectionString)
+            .WithScriptsEmbeddedInAssembly(typeof(NpgSqlEmailSendersSource).Assembly)
+            .LogToConsole()
+            .Build();
+        DatabaseUpgradeResult result = upgrader.PerformUpgrade();
+        if (!result.Successful)
+            throw new ApplicationException("Failed to create parsers management database.");
+    }
+}
