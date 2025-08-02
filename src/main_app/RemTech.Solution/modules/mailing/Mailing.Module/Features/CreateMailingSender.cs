@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Serilog;
 
 namespace Mailing.Module.Features;
 
@@ -20,6 +21,7 @@ public static class CreateMailingSender
         [FromQuery] string email,
         [FromHeader] string password,
         [FromServices] IEmailSendersSource senders,
+        [FromServices] ILogger logger,
         CancellationToken ct
     )
     {
@@ -27,6 +29,7 @@ public static class CreateMailingSender
         IEmailSender sender = await Create(senders, request, ct);
         EmailSenderOutput output = sender.Print();
         CreateMailingSenderResponse response = new(output.Name, output.Email);
+        logger.Information("Created mailing sender: {Name} - {Email}", output.Name, output.Email);
         return Results.Ok(response);
     }
 

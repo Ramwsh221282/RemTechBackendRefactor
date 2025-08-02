@@ -15,11 +15,13 @@ public static class RemoveMailingSender
     private static async Task<IResult> Handle(
         [FromQuery] string name,
         [FromServices] IEmailSendersSource senders,
+        [FromServices] Serilog.ILogger logger,
         CancellationToken ct
     )
     {
         EmailSenderOutput output = await Process(senders, name, ct);
         RemoveMailingSenderResponse response = new(output.Name, output.Email);
+        logger.Information("Removed mailing sender {Name} - {Email}.", output.Name, output.Email);
         return Results.Ok(response);
     }
 

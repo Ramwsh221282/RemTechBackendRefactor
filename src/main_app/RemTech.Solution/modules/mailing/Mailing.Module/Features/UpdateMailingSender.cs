@@ -17,11 +17,13 @@ public static class UpdateMailingSender
     private static async Task<IResult> Handle(
         [FromBody] UpdateMailingSenderRequest request,
         [FromServices] IEmailSendersSource source,
+        [FromServices] Serilog.ILogger logger,
         CancellationToken ct
     )
     {
         EmailSenderOutput output = await Process(source, request, ct);
         UpdateMailingSenderResponse response = new(output.Name, output.Email);
+        logger.Information("Updated mailing sender. {Name} - {Email}.", output.Name, output.Email);
         return Results.Ok(response);
     }
 
