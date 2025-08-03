@@ -4,5 +4,5 @@ namespace Users.Module.Features.RegisteringUser;
 
 internal interface IUserToRegister
 {
-    Task<bool> Register(IUsersStorage storage, CancellationToken ct = default);
+    Task<bool> Register(INewUsersStorage storage, CancellationToken ct = default);
 }

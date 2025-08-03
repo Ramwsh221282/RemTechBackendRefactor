@@ -7,7 +7,7 @@ namespace Users.Module.Features.RegisteringUser;
 
 internal sealed class HttpApiUserRegistration(
     IUserToRegister user,
-    IUsersStorage storage,
+    INewUsersStorage storage,
     ILogger logger
 )
 {

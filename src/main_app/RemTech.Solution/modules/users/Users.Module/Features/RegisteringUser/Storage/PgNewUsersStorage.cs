@@ -4,7 +4,7 @@ using Users.Module.Features.RegisteringUser.Exceptions;
 
 namespace Users.Module.Features.RegisteringUser.Storage;
 
-internal sealed class PgUsersStorage(PgConnectionSource connectionSource) : IUsersStorage
+internal sealed class PgNewUsersStorage(PgConnectionSource connectionSource) : INewUsersStorage
 {
     public void Dispose() => connectionSource.Dispose();
 

@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Users.Module.CommonAbstractions;
+using Users.Module.Features.AuthenticateUser.Endpoint;
+using Users.Module.Features.AuthenticateUser.Jwt;
 using Users.Module.Features.RegisteringUser;
-using Users.Module.Features.RegisteringUser.Inject;
+using Users.Module.Features.RegisteringUser.Endpoint;
 using Users.Module.Options;
 
 namespace Users.Module.Injection;
@@ -19,12 +21,15 @@ public static class UsersModuleInjection
     {
         services.AddSingleton(new PgConnectionSource(options));
         services.AddSingleton(new StringHash());
+        services.AddSingleton(new SecurityKeySource());
+        services.AddSingleton<IJsonWebTokensStorage, RedisJsonWebTokensStorage>();
     }
 
     public static void MapUsersModuleEndpoints(this WebApplication app)
     {
         RouteGroupBuilder builder = app.MapGroup("api/users").RequireCors("FRONTEND");
-        RegisterUserFeatureInject.Inject(builder);
+        RegisterUserFeatureEndpoint.Map(builder);
+        AuthenticateUserFeatureEndpoint.Map(builder);
     }
 
     public static void UpUsersModulePersistance(this UsersModuleOptions options)

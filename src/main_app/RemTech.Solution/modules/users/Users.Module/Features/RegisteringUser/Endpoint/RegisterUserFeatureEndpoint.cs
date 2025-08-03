@@ -8,11 +8,11 @@ using Users.Module.Features.RegisteringUser.Exceptions;
 using Users.Module.Features.RegisteringUser.Storage;
 using Users.Module.Features.RegisteringUser.Validating;
 
-namespace Users.Module.Features.RegisteringUser.Inject;
+namespace Users.Module.Features.RegisteringUser.Endpoint;
 
-internal static class RegisterUserFeatureInject
+internal static class RegisterUserFeatureEndpoint
 {
-    public static void Inject(RouteGroupBuilder builder) => builder.MapPost(string.Empty, Handle);
+    public static void Map(RouteGroupBuilder builder) => builder.MapPost(string.Empty, Handle);
 
     private static async Task<IResult> Handle(
         [FromServices] PgConnectionSource source,
@@ -24,11 +24,11 @@ internal static class RegisterUserFeatureInject
     ) =>
         await new HttpApiUserRegistration(
             new UserToRegister(request.Name, request.Email, request.Password),
-            new LoggingUsersStorage(
+            new LoggingNewUsersStorage(
                 logger,
-                new MailPublishingUsersStorage(
+                new MailPublishingNewUsersStorage(
                     publisher,
-                    new ValidatingUsersStorage(
+                    new ValidatingNewUsersStorage(
                         new ComposableValidation()
                             .With(
                                 new NotEmptyStringValidation(
@@ -64,9 +64,9 @@ internal static class RegisterUserFeatureInject
                                     )
                                 )
                             ),
-                        new PasswordHashingUsersStorage(
+                        new PasswordHashingNewUsersStorage(
                             new StringHash(),
-                            new PgUsersStorage(source)
+                            new PgNewUsersStorage(source)
                         )
                     )
                 )

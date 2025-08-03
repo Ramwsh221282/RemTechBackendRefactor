@@ -6,6 +6,7 @@ using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
 using RemTech.RabbitMq.Adapter;
 using RemTech.Vehicles.Module.Injection;
 using Scalar.AspNetCore;
+using StackExchange.Redis;
 using Users.Module.Injection;
 using Users.Module.Options;
 
@@ -15,8 +16,18 @@ UsersModuleOptions userOptions = new("users_module.json");
 builder.Services.InjectMailingModule(mailingOptions);
 builder.Services.InjectUsersModule(userOptions);
 builder.Services.AddCors(options =>
-    options.AddPolicy("FRONTEND", conf => conf.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod())
+    options.AddPolicy(
+        "FRONTEND",
+        conf =>
+            conf.WithExposedHeaders("Authorization")
+                .AllowAnyHeader()
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+    )
 );
+
+builder.Services.AddSingleton(ConnectionMultiplexer.Connect("localhost"));
+
 builder.Services.AddSingleton(new DatabaseConfiguration("appsettings.json"));
 builder.Services.AddSingleton(new RabbitMqConnectionOptions("appsettings.json"));
 builder.Services.AddSingleton(new LoggerSource().Logger());

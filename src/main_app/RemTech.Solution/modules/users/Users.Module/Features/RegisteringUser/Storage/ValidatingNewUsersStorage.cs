@@ -2,8 +2,8 @@
 
 namespace Users.Module.Features.RegisteringUser.Storage;
 
-internal sealed class PasswordHashingUsersStorage(StringHash hash, IUsersStorage origin)
-    : IUsersStorage
+internal sealed class ValidatingNewUsersStorage(IValidation validation, INewUsersStorage origin)
+    : INewUsersStorage
 {
     public Task<bool> Save(
         string name,
@@ -12,7 +12,7 @@ internal sealed class PasswordHashingUsersStorage(StringHash hash, IUsersStorage
         CancellationToken ct = default
     )
     {
-        string hashedPassword = hash.Hash(password);
-        return origin.Save(name, email, hashedPassword, ct);
+        validation.Check();
+        return origin.Save(name, email, password, ct);
     }
 }

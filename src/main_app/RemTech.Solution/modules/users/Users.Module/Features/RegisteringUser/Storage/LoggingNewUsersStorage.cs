@@ -2,7 +2,8 @@
 
 namespace Users.Module.Features.RegisteringUser.Storage;
 
-internal sealed class LoggingUsersStorage(ILogger logger, IUsersStorage origin) : IUsersStorage
+internal sealed class LoggingNewUsersStorage(ILogger logger, INewUsersStorage origin)
+    : INewUsersStorage
 {
     public async Task<bool> Save(
         string name,

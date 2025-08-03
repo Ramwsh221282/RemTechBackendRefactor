@@ -2,10 +2,10 @@
 
 namespace Users.Module.Features.RegisteringUser.Storage;
 
-internal sealed class MailPublishingUsersStorage(
+internal sealed class MailPublishingNewUsersStorage(
     MailingBusPublisher publisher,
-    IUsersStorage storage
-) : IUsersStorage
+    INewUsersStorage storage
+) : INewUsersStorage
 {
     public async Task<bool> Save(
         string name,
