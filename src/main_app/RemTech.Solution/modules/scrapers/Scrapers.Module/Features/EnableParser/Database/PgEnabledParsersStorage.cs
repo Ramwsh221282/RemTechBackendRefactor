@@ -1,6 +1,8 @@
 ﻿using Npgsql;
+using Scrapers.Module.Features.EnableParser.Exceptions;
+using Scrapers.Module.Features.EnableParser.Models;
 
-namespace Scrapers.Module.Features.EnableParser.Models;
+namespace Scrapers.Module.Features.EnableParser.Database;
 
 internal sealed class PgEnabledParsersStorage(NpgsqlDataSource dataSource) : IEnabledParsersStorage
 {

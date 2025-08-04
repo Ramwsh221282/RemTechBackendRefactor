@@ -2,7 +2,7 @@
 using Npgsql;
 using RemTech.Vehicles.Module.Types.Brands.ValueObjects;
 
-namespace RemTech.Vehicles.Module.Types.Brands.Decorators.Postgres;
+namespace RemTech.Vehicles.Module.Types.Brands.Storage;
 
 internal sealed class RawByNameVehicleBrandsStorage(NpgsqlDataSource dataSource)
     : IVehicleBrandsStorage

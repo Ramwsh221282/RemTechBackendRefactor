@@ -1,4 +1,6 @@
-﻿namespace Scrapers.Module.Features.DisablingParser.Models;
+﻿using Scrapers.Module.Features.DisablingParser.Exceptions;
+
+namespace Scrapers.Module.Features.DisablingParser.Models;
 
 internal sealed record ParserToDisable(string Name, string Type, string State)
 {

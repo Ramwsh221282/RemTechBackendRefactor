@@ -1,9 +1,11 @@
 ﻿using System.Text.Json;
 using Scrapers.Module.Features.CreateNewParser.Cache;
+using Scrapers.Module.Features.DisablingParser.Database;
+using Scrapers.Module.Features.DisablingParser.Exceptions;
 using Scrapers.Module.Features.DisablingParser.Models;
 using StackExchange.Redis;
 
-namespace Scrapers.Module.Features.DisablingParser.Database;
+namespace Scrapers.Module.Features.DisablingParser.Cache;
 
 internal sealed class CacheDisabledParsersStorage(
     ConnectionMultiplexer multiplexer,

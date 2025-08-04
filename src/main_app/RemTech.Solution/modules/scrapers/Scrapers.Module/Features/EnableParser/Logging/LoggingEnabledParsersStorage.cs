@@ -1,4 +1,6 @@
-﻿using Scrapers.Module.Features.EnableParser.Models;
+﻿using Scrapers.Module.Features.EnableParser.Database;
+using Scrapers.Module.Features.EnableParser.Exceptions;
+using Scrapers.Module.Features.EnableParser.Models;
 
 namespace Scrapers.Module.Features.EnableParser.Logging;
 

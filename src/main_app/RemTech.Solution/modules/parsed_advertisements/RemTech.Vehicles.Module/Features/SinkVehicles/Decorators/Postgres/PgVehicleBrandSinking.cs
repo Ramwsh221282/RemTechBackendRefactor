@@ -1,8 +1,8 @@
 ﻿using Npgsql;
 using RemTech.Result.Library;
 using RemTech.Vehicles.Module.Types.Brands;
-using RemTech.Vehicles.Module.Types.Brands.Decorators.Postgres;
 using RemTech.Vehicles.Module.Types.Brands.Decorators.Validation;
+using RemTech.Vehicles.Module.Types.Brands.Storage;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 

@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using RabbitMQ.Client;
+using Scrapers.Module.Features.EnableParser.Cache;
+using Scrapers.Module.Features.EnableParser.Database;
+using Scrapers.Module.Features.EnableParser.Exceptions;
 using Scrapers.Module.Features.EnableParser.Logging;
 using Scrapers.Module.Features.EnableParser.Models;
 using Scrapers.Module.Features.EnableParser.RabbitMq;

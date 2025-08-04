@@ -1,4 +1,6 @@
-﻿namespace Scrapers.Module.Features.EnableParser.Models;
+﻿using Scrapers.Module.Features.EnableParser.Exceptions;
+
+namespace Scrapers.Module.Features.EnableParser.Models;
 
 internal sealed record ParserToEnable(string Name, string State, string Type)
 {

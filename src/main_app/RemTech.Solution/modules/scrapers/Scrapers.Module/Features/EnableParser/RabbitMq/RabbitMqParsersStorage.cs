@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using RabbitMQ.Client;
+using Scrapers.Module.Features.EnableParser.Database;
 using Scrapers.Module.Features.EnableParser.Models;
 
 namespace Scrapers.Module.Features.EnableParser.RabbitMq;

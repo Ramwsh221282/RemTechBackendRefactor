@@ -1,7 +1,7 @@
 ﻿using System.Data.Common;
 using Npgsql;
 using RemTech.Core.Shared.Primitives;
-using RemTech.Vehicles.Module.Types.Brands.Decorators.Postgres;
+using RemTech.Vehicles.Module.Types.Brands.Storage;
 using RemTech.Vehicles.Module.Types.GeoLocations.ValueObjects;
 
 namespace RemTech.Vehicles.Module.Types.GeoLocations.Storage;

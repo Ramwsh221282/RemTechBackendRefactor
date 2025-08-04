@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 using Npgsql;
-using RemTech.Vehicles.Module.Types.Brands.Decorators.Postgres;
+using RemTech.Vehicles.Module.Types.Brands.Storage;
 using RemTech.Vehicles.Module.Types.Kinds.ValueObjects;
 
 namespace RemTech.Vehicles.Module.Types.Kinds.Storage;

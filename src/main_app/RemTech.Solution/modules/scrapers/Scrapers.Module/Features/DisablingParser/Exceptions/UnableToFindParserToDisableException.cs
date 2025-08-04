@@ -1,4 +1,4 @@
-﻿namespace Scrapers.Module.Features.DisablingParser.Models;
+﻿namespace Scrapers.Module.Features.DisablingParser.Exceptions;
 
 internal sealed class UnableToFindParserToDisableException : Exception
 {

@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using Scrapers.Module.Features.DisablingParser.Exceptions;
 using Scrapers.Module.Features.DisablingParser.Models;
 
 namespace Scrapers.Module.Features.DisablingParser.Database;

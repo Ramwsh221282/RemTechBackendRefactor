@@ -6,7 +6,7 @@ internal sealed record CachedParserLink(
     string Url,
     bool Activity,
     int Processed,
-    int TotalSeconds,
+    long TotalSeconds,
     int Hours,
     int Minutes,
     int Seconds

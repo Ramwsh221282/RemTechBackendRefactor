@@ -1,4 +1,4 @@
-﻿namespace Scrapers.Module.Features.EnableParser.Models;
+﻿namespace Scrapers.Module.Features.EnableParser.Exceptions;
 
 internal sealed class UnableToEnableWaitingParserException : Exception
 {

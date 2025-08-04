@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS scrapers_module.scrapers (
 
 CREATE TABLE IF NOT EXISTS scrapers_module.scraper_links (
     name            VARCHAR(75) NOT NULL,
-    parser_name     VARCHAR(20) NOT NULL,        
-    url             text NOT NULL,
+    parser_name     VARCHAR(20) NOT NULL,          
+    url             text NOT NULL UNIQUE,
     activity        boolean NOT NULL,
     processed       integer NOT NULL,
     total_seconds   bigint NOT NULL,
