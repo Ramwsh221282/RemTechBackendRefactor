@@ -13,7 +13,7 @@ internal sealed class CachedParsersWithLinkStorage(
 ) : IParsersWithNewLinkStorage
 {
     private const string ArrayKey = "parsers_array";
-    private const string EntryKey = "parser_{0}";
+    private const string EntryKey = "parser_{0}_{1}";
 
     public async Task<ParserWithNewLink> Save(
         ParserWithNewLink parser,
@@ -21,7 +21,7 @@ internal sealed class CachedParsersWithLinkStorage(
     )
     {
         IDatabase db = multiplexer.GetDatabase();
-        string cachedKey = string.Format(EntryKey, parser.Link.ParserName);
+        string cachedKey = string.Format(EntryKey, parser.Link.ParserName, parser.Parser.Type);
         string? cachedJson = await db.StringGetAsync(cachedKey);
         string? arrayJson = await db.StringGetAsync(ArrayKey);
         if (string.IsNullOrEmpty(cachedJson) || arrayJson == null)
@@ -34,7 +34,7 @@ internal sealed class CachedParsersWithLinkStorage(
         for (int i = 0; i < array.Length; i++)
         {
             CachedParser entry = array[i];
-            if (entry.Name != parser.Link.ParserName)
+            if (entry.Name != parser.Link.ParserName && entry.Type != parser.Parser.Type)
                 continue;
             entry = entry with { Links = cached.Links };
             array[i] = entry;

@@ -13,7 +13,7 @@ internal sealed class CacheDisabledParsersStorage(
 ) : IDisabledParsersStorage
 {
     private const string ArrayKey = "parsers_array";
-    private const string EntryKey = "parser_{0}";
+    private const string EntryKey = "parser_{0}_{1}";
 
     public async Task<DisabledParser> SaveAsync(
         DisabledParser parser,
@@ -22,7 +22,7 @@ internal sealed class CacheDisabledParsersStorage(
     {
         DisabledParser disabled = await origin.SaveAsync(parser, ct);
         IDatabase db = multiplexer.GetDatabase();
-        string cachedKey = string.Format(EntryKey, disabled.Name);
+        string cachedKey = string.Format(EntryKey, disabled.Name, disabled.Type);
         string? cachedJson = await db.StringGetAsync(cachedKey);
         string? arrayJson = await db.StringGetAsync(ArrayKey);
         if (string.IsNullOrEmpty(cachedJson) || arrayJson == null)
@@ -35,7 +35,7 @@ internal sealed class CacheDisabledParsersStorage(
         for (int i = 0; i < array.Length; i++)
         {
             CachedParser entry = array[i];
-            if (entry.Name != disabled.Name)
+            if (entry.Name != disabled.Name && entry.Type != disabled.Type)
                 continue;
             entry = entry with { State = disabled.State };
             array[i] = entry;

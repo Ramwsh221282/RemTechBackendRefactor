@@ -31,14 +31,17 @@ internal sealed class LoggingCachedNewParsers(ILogger logger, ICachedNewParsers 
 internal sealed class CachedNewParsers(ConnectionMultiplexer multiplexer) : ICachedNewParsers
 {
     private const string ArrayKey = "parsers_array";
-    private const string EntryKey = "parser_{0}";
+    private const string EntryKey = "parser_{0}_{1}";
 
     public async Task Save(NewParser parser, CancellationToken ct = default)
     {
         CachedParser cached = parser.Cached();
         string serialized = cached.Serialized();
         IDatabase database = multiplexer.GetDatabase();
-        await database.StringSetAsync(string.Format(EntryKey, cached.Name), serialized);
+        await database.StringSetAsync(
+            string.Format(EntryKey, cached.Name, cached.Type),
+            serialized
+        );
         string? array = await database.StringGetAsync(ArrayKey);
         if (string.IsNullOrWhiteSpace(array))
             await SaveNewArray(cached, database);
