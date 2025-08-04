@@ -1,4 +1,5 @@
-﻿using RemTech.Postgres.Adapter.Library;
+﻿using Npgsql;
+using RemTech.Postgres.Adapter.Library;
 using RemTech.RabbitMq.Adapter;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Logging;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
@@ -15,7 +16,7 @@ public sealed class BackgroundJobTransportAdvertisementSinking
 
     public BackgroundJobTransportAdvertisementSinking(
         RabbitMqConnectionOptions options,
-        PgConnectionSource connection,
+        NpgsqlDataSource connection,
         ILogger logger
     )
     {

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using DbUp;
+using DbUp.Engine;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
@@ -23,11 +25,19 @@ public static class ParsedAdvertisementsInjection
         services.AddHostedService<BackgroundJobTransportAdvertisementSinking>();
     }
 
-    public static void UpVehiclesDatabase(this IServiceProvider provider)
+    public static void UpVehiclesDatabase(string connectionString)
     {
-        DatabaseConfiguration config = provider.GetRequiredService<DatabaseConfiguration>();
-        DatabaseBakery bakery = new(config);
-        bakery.Up(typeof(ParsedAdvertisementsInjection).Assembly);
+        EnsureDatabase.For.PostgresqlDatabase(connectionString);
+        UpgradeEngine upgrader = DeployChanges
+            .To.PostgresqlDatabase(connectionString)
+            .WithScriptsEmbeddedInAssembly(
+                typeof(BackgroundJobTransportAdvertisementSinking).Assembly
+            )
+            .LogToConsole()
+            .Build();
+        DatabaseUpgradeResult result = upgrader.PerformUpgrade();
+        if (!result.Successful)
+            throw new ApplicationException("Failed to create parsers management database.");
     }
 
     public static void MapVehiclesModuleEndpoints(this IEndpointRouteBuilder builder)

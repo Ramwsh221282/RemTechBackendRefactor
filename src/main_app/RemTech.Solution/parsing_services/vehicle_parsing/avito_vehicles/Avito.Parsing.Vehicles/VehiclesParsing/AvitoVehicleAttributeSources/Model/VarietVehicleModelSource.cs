@@ -1,5 +1,4 @@
 ﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleModels;
-using Parsing.Vehicles.DbSearch.VehicleModels;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing.AvitoVehicleAttributeSources.Model;
 

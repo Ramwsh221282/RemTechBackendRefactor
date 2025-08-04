@@ -10,7 +10,18 @@ public class VehicleKind
 
     public VehicleKind(VehicleKind origin) => Identity = origin.Identity;
 
+    private VehicleKind(VehicleKind origin, VehicleKindIdentity identity)
+        : this(origin)
+    {
+        Identity = identity;
+    }
+
     public string Name() => Identity.ReadText();
 
     public Guid Id() => Identity.ReadId();
+
+    public VehicleKind ChangeIdentity(VehicleKindIdentity identity)
+    {
+        return new VehicleKind(this, identity);
+    }
 }

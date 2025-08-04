@@ -10,9 +10,20 @@ public class GeoLocation
 
     public GeoLocation(GeoLocation origin) => Identity = origin.Identity;
 
+    private GeoLocation(GeoLocation origin, GeoLocationIdentity identity)
+        : this(origin)
+    {
+        Identity = identity;
+    }
+
     public Guid Id() => Identity.ReadId();
 
     public string Name() => Identity.ReadText();
 
     public string Kind() => Identity.Kind();
+
+    public GeoLocation ChangeIdentity(GeoLocationIdentity identity)
+    {
+        return new GeoLocation(this, identity);
+    }
 }

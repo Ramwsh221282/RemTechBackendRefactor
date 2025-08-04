@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using RemTech.Postgres.Adapter.Library;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicleModels.Http;
 
@@ -13,13 +12,15 @@ public static class VehicleModelsHttpEndpoint
         group.MapGet("kinds/{kindId:Guid}/brands/{brandId:Guid}/models", Handle);
 
     private static async Task<IResult> Handle(
-        [FromServices] PgConnectionSource connectionSource,
+        [FromServices] NpgsqlDataSource connectionSource,
         [FromRoute] Guid kindId,
         [FromRoute] Guid brandId,
         CancellationToken cancellation
     )
     {
-        await using NpgsqlConnection connection = await connectionSource.Connect(cancellation);
+        await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(
+            cancellation
+        );
         return Results.Ok(
             await connection.Provide(
                 kindId,

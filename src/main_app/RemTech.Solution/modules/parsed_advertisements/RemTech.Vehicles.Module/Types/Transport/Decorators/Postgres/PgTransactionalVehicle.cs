@@ -5,12 +5,12 @@ using IsolationLevel = System.Data.IsolationLevel;
 
 namespace RemTech.Vehicles.Module.Types.Transport.Decorators.Postgres;
 
-public sealed class PgTransactionalVehicle(PgConnectionSource connectionSource, Vehicle origin)
+public sealed class PgTransactionalVehicle(NpgsqlDataSource connectionSource, Vehicle origin)
     : Vehicle(origin)
 {
     public async Task SaveAsync(CancellationToken ct = default)
     {
-        await using NpgsqlConnection connection = await connectionSource.Connect(ct);
+        await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(ct);
         await using NpgsqlTransaction txn = await connection.BeginTransactionAsync(
             IsolationLevel.ReadCommitted,
             ct

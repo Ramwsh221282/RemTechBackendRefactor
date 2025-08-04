@@ -1,4 +1,4 @@
-﻿using RemTech.Postgres.Adapter.Library;
+﻿using Npgsql;
 using RemTech.Result.Library;
 using RemTech.Vehicles.Module.Types.Brands;
 using RemTech.Vehicles.Module.Types.Brands.Decorators.Postgres;
@@ -7,7 +7,7 @@ using RemTech.Vehicles.Module.Types.Brands.Decorators.Validation;
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 
 public sealed class PgVehicleBrandSinking(
-    PgConnectionSource connection,
+    NpgsqlDataSource connection,
     ITransportAdvertisementSinking sinking
 ) : ITransportAdvertisementSinking
 {
@@ -15,7 +15,12 @@ public sealed class PgVehicleBrandSinking(
     {
         VehicleBrand brand = sink.Brand();
         VehicleBrand valid = new ValidVehicleBrand(brand);
-        VehicleBrand saved = await new PgVarietVehicleBrand(connection, valid).SaveAsync(ct);
+        VehicleBrand saved = await new VarietVehicleBrandsStorage()
+            .With(new RawByNameVehicleBrandsStorage(connection))
+            .With(new TsQueryVehicleBrandsStorage(connection))
+            .With(new PgTgrmVehicleBrandsStorage(connection))
+            .With(new NewVehicleBrandsStorage(connection))
+            .Store(valid);
         return await sinking.Sink(new CachedVehicleJsonSink(sink, saved), ct);
     }
 }

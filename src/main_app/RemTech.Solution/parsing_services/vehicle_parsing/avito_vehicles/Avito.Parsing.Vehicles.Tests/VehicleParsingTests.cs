@@ -11,8 +11,6 @@ using Parsing.Vehicles.Grpc.Recognition;
 using PuppeteerSharp;
 using RemTech.Core.Shared.Decorating;
 using RemTech.Logging.Adapter;
-using RemTech.Postgres.Adapter.Library;
-using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
 using RemTech.RabbitMq.Adapter;
 using Serilog;
 
@@ -73,9 +71,7 @@ public class VehicleParsingTests
             url
         );
         using CommunicationChannel channel = new CommunicationChannel("http://localhost:5051");
-        DatabaseConfiguration configuration = new DatabaseConfiguration("appsettings.json");
         ILogger logger = new LoggerSource().Logger();
-        await using PgConnectionSource dbPgConnection = new(configuration);
         await using IBrowserPagesSource pagesSource = await browser.AccessPages();
         await using ITextWrite write = new LoggingTextWrite(
             logger,
@@ -90,7 +86,6 @@ public class VehicleParsingTests
                 page,
                 write,
                 logger,
-                dbPgConnection,
                 channel,
                 url
             );
@@ -123,10 +118,8 @@ public class VehicleParsingTests
             url
         );
         using CommunicationChannel channel = new CommunicationChannel("http://localhost:5051");
-        DatabaseConfiguration configuration = new DatabaseConfiguration("appsettings.json");
         RabbitMqConnectionOptions rabbitOptions = new("appsettings.json");
         ILogger logger = new LoggerSource().Logger();
-        await using PgConnectionSource dbPgConnection = new(configuration);
         await using IBrowserPagesSource pagesSource = await browser.AccessPages();
         await using RabbitMqChannel rabbitChannel = new(rabbitOptions);
         await using RabbitSendPoint rabbitSendPoint = await rabbitChannel.MakeSendPoint(
@@ -138,7 +131,6 @@ public class VehicleParsingTests
                 page,
                 new NoTextWrite(),
                 logger,
-                dbPgConnection,
                 channel,
                 url
             );

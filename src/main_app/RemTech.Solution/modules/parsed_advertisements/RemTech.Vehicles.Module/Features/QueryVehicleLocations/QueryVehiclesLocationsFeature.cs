@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using RemTech.Postgres.Adapter.Library;
 using RemTech.Postgres.Adapter.Library.PgCommands;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicleLocations;
@@ -28,7 +27,7 @@ public static class QueryVehiclesLocationsFeature
         builder.MapGet("api/locations", Handle).RequireCors("FRONTEND");
 
     private static async Task<IResult> Handle(
-        [FromServices] PgConnectionSource connectionSource,
+        [FromServices] NpgsqlDataSource connectionSource,
         [FromQuery] Guid kindId,
         [FromQuery] Guid brandId,
         [FromQuery] Guid modelId,
@@ -37,7 +36,7 @@ public static class QueryVehiclesLocationsFeature
     {
         if (kindId == Guid.Empty || brandId == Guid.Empty || modelId == Guid.Empty)
             return Results.NoContent();
-        await using NpgsqlConnection connection = await connectionSource.Connect(ct);
+        await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(ct);
         IEnumerable<QueryVehiclesLocationsResult> result = await ExecuteQuery(
             connection,
             kindId,

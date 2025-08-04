@@ -14,12 +14,8 @@ namespace Users.Module.Injection;
 
 public static class UsersModuleInjection
 {
-    public static void InjectUsersModule(
-        this IServiceCollection services,
-        UsersModuleOptions options
-    )
+    public static void InjectUsersModule(this IServiceCollection services)
     {
-        services.AddSingleton(new PgConnectionSource(options));
         services.AddSingleton(new StringHash());
         services.AddSingleton(new SecurityKeySource());
         services.AddSingleton<IJsonWebTokensStorage, RedisJsonWebTokensStorage>();
@@ -32,9 +28,8 @@ public static class UsersModuleInjection
         AuthenticateUserFeatureEndpoint.Map(builder);
     }
 
-    public static void UpUsersModulePersistance(this UsersModuleOptions options)
+    public static void UpUsersModuleDatabase(string connectionString)
     {
-        string connectionString = options.Database.ToConnectionString();
         EnsureDatabase.For.PostgresqlDatabase(connectionString);
         UpgradeEngine upgrader = DeployChanges
             .To.PostgresqlDatabase(connectionString)

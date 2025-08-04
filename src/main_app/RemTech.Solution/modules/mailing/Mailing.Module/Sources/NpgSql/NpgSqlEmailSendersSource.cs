@@ -1,24 +1,12 @@
 ﻿using System.Data.Common;
-using Mailing.Module.Configuration;
 using Mailing.Module.Contracts;
 using Mailing.Module.Models;
 using Npgsql;
 
 namespace Mailing.Module.Sources.NpgSql;
 
-internal sealed class NpgSqlEmailSendersSource(MailingModuleOptions options)
-    : IDisposable,
-        IAsyncDisposable,
-        IEmailSendersSource
+internal sealed class NpgSqlEmailSendersSource(NpgsqlDataSource dataSource) : IEmailSendersSource
 {
-    private readonly NpgsqlDataSource _source = new NpgsqlDataSourceBuilder(
-        options.Database.ToConnectionString()
-    ).Build();
-
-    public void Dispose() => _source.Dispose();
-
-    public async ValueTask DisposeAsync() => await _source.DisposeAsync();
-
     public async Task<IEmailSender> Get(string email, CancellationToken ct = default)
     {
         string sql = string.Intern(
@@ -27,7 +15,7 @@ internal sealed class NpgSqlEmailSendersSource(MailingModuleOptions options)
             WHERE email = @email
             """
         );
-        await using NpgsqlConnection connection = await _source.OpenConnectionAsync(ct);
+        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         await using NpgsqlCommand command = connection.CreateCommand();
         command.CommandText = sql;
         command.Parameters.Add(new NpgsqlParameter<string>("@email", email));
@@ -41,28 +29,6 @@ internal sealed class NpgSqlEmailSendersSource(MailingModuleOptions options)
         );
     }
 
-    public async Task<bool> Update(IEmailSender sender, CancellationToken ct = default)
-    {
-        string sql = string.Intern(
-            """
-            UPDATE mailing_module.senders
-            SET email = @email, key = @key
-            ON CONFLICT(email) DO NOTHING;
-            """
-        );
-        EmailSenderOutput output = sender.Print();
-        await using NpgsqlConnection connection = await _source.OpenConnectionAsync(ct);
-        await using NpgsqlCommand command = connection.CreateCommand();
-        command.CommandText = sql;
-        command.Parameters.Add(new NpgsqlParameter<string>("@email", output.Email));
-        command.Parameters.Add(new NpgsqlParameter<string>("@key", output.Key));
-        await command.PrepareAsync(ct);
-        int affected = await command.ExecuteNonQueryAsync(ct);
-        return affected == 1
-            ? true
-            : throw new InvalidOperationException($"Сервис с почтой {output.Email} уже занят.");
-    }
-
     public async Task<bool> Remove(IEmailSender sender, CancellationToken ct = default)
     {
         string sql = string.Intern(
@@ -72,7 +38,7 @@ internal sealed class NpgSqlEmailSendersSource(MailingModuleOptions options)
             """
         );
         EmailSenderOutput output = sender.Print();
-        await using NpgsqlConnection connection = await _source.OpenConnectionAsync(ct);
+        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         await using NpgsqlCommand command = connection.CreateCommand();
         command.CommandText = sql;
         command.Parameters.Add(new NpgsqlParameter<string>("@name", output.Name));
@@ -90,7 +56,7 @@ internal sealed class NpgSqlEmailSendersSource(MailingModuleOptions options)
             SELECT name, email, key FROM mailing_module.senders
             """
         );
-        await using NpgsqlConnection connection = await _source.OpenConnectionAsync(ct);
+        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         await using NpgsqlCommand command = connection.CreateCommand();
         command.CommandText = sql;
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
@@ -115,7 +81,7 @@ internal sealed class NpgSqlEmailSendersSource(MailingModuleOptions options)
             """
         );
         EmailSenderOutput output = sender.Print();
-        await using NpgsqlConnection connection = await _source.OpenConnectionAsync(ct);
+        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         await using NpgsqlCommand command = connection.CreateCommand();
         command.CommandText = sql;
         command.Parameters.Add(new NpgsqlParameter<string>("@name", output.Name));
