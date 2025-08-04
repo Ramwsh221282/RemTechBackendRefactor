@@ -16,7 +16,12 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Features\FinishParserLink\" />
+    <Folder Include="Features\FinishParser\" />
+    <Folder Include="Features\InstantlyDisableParser\" />
     <Folder Include="Features\RemovingParserLink\Endpoint\" />
     <Folder Include="Features\RemovingParserLink\Logging\" />
+    <Folder Include="Features\StartParser\" />
+    <Folder Include="Features\UpdateWaitDays\Models\" />
   </ItemGroup>
 </Project>
