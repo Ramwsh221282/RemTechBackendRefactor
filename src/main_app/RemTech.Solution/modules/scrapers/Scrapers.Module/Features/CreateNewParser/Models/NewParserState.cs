@@ -8,7 +8,7 @@ internal sealed record NewParserState
 
     public static NewParserState Create()
     {
-        string state = "Неактивен";
+        string state = "Отключен";
         return new NewParserState(state);
     }
 }
