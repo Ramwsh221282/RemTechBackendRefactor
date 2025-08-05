@@ -18,12 +18,10 @@ public sealed record RemTechRabbitMqSettings
     public static RemTechRabbitMqSettings CreateFromJson(string jsonPath)
     {
         IConfigurationRoot root = new ConfigurationBuilder().AddJsonFile(jsonPath).Build();
-        IConfigurationSection section = root.GetSection(nameof(RemTechApplicationSettings))
-            .GetSection(nameof(RemTechRabbitMqSettings));
-        string? host = section.GetValue<string>("Host");
-        string? port = section.GetValue<string>("Port");
-        string? userName = section.GetValue<string>("UserName");
-        string? password = section.GetValue<string>("Password");
+        string? host = root.GetSection(ConfigurationConstants.RABBIT_HOST_NAME_KEY).Value;
+        string? port = root.GetSection(ConfigurationConstants.RABBIT_PORT_KEY).Value;
+        string? userName = root.GetSection(ConfigurationConstants.RABBIT_USER_NAME_KEY).Value;
+        string? password = root.GetSection(ConfigurationConstants.RABBIT_PASSWORD_KEY).Value;
         if (string.IsNullOrWhiteSpace(host))
             throw new ApplicationException(
                 $"{nameof(RemTechDatabaseSettings)} empty host rabbitmq value."

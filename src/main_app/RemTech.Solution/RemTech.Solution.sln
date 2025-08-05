@@ -92,6 +92,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scrapers", "scrapers", "{29
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scrapers.Module", "modules\scrapers\Scrapers.Module\Scrapers.Module.csproj", "{088EF7F3-DD63-44EB-9576-670D77F6DCE5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsing.RabbitMq", "parsing_services\common\Parsing.RabbitMq\Parsing.RabbitMq.csproj", "{6FD8BD09-82B0-4D86-8CF9-5713F55F1E0A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avito.Vehicles.Service", "parsing_services\vehicle_parsing\avito_vehicles\Avito.Vehicles.Service\Avito.Vehicles.Service.csproj", "{39195E9C-3899-4D49-BA2C-A8B1DEFD1469}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -142,6 +146,8 @@ Global
 		{D23FC681-E685-479B-9433-6FEE585B5328} = {B5E778FE-6E21-4D96-A023-FE888D2D893E}
 		{29BC353A-286C-4324-B189-D16797EFE0F5} = {79472554-9950-4B72-8B55-F32E46914B0B}
 		{088EF7F3-DD63-44EB-9576-670D77F6DCE5} = {29BC353A-286C-4324-B189-D16797EFE0F5}
+		{6FD8BD09-82B0-4D86-8CF9-5713F55F1E0A} = {B98D490E-E1FC-4672-BF66-B9A5234C6DE1}
+		{39195E9C-3899-4D49-BA2C-A8B1DEFD1469} = {7274B1A0-8FA0-4C96-9F33-D4DC4A512C06}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -260,5 +266,13 @@ Global
 		{088EF7F3-DD63-44EB-9576-670D77F6DCE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{088EF7F3-DD63-44EB-9576-670D77F6DCE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{088EF7F3-DD63-44EB-9576-670D77F6DCE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FD8BD09-82B0-4D86-8CF9-5713F55F1E0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FD8BD09-82B0-4D86-8CF9-5713F55F1E0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FD8BD09-82B0-4D86-8CF9-5713F55F1E0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FD8BD09-82B0-4D86-8CF9-5713F55F1E0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39195E9C-3899-4D49-BA2C-A8B1DEFD1469}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39195E9C-3899-4D49-BA2C-A8B1DEFD1469}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39195E9C-3899-4D49-BA2C-A8B1DEFD1469}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39195E9C-3899-4D49-BA2C-A8B1DEFD1469}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

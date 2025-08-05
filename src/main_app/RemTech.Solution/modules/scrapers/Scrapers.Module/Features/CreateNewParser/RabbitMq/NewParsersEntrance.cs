@@ -5,6 +5,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Scrapers.Module.Features.CreateNewParser.Cache;
 using Scrapers.Module.Features.CreateNewParser.Database;
+using Scrapers.Module.Features.CreateNewParser.Exceptions;
 using Scrapers.Module.Features.CreateNewParser.Extensions;
 using Scrapers.Module.Features.CreateNewParser.Models;
 using StackExchange.Redis;
@@ -23,7 +24,7 @@ internal sealed class NewParsersEntrance(
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
-        await base.StartAsync(cancellationToken);
+        logger.Information("{Service} starting...", nameof(NewParsersEntrance));
         _connection = await connectionFactory.CreateConnectionAsync(cancellationToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
         await _channel.QueueDeclareAsync(
@@ -33,20 +34,30 @@ internal sealed class NewParsersEntrance(
             autoDelete: false,
             cancellationToken: cancellationToken
         );
+        await _channel.QueuePurgeAsync("new_parsers", cancellationToken);
+        await base.StartAsync(cancellationToken);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
+        logger.Information("{Service} stopping.", nameof(NewParsersEntrance));
         if (_channel == null)
-            return;
+            throw new ApplicationException($"{nameof(NewParsersEntrance)} Channel was null.");
+        if (_connection == null)
+            throw new ApplicationException($"{nameof(NewParsersEntrance)} Connection was null.");
         await _channel.QueuePurgeAsync("new_parsers", cancellationToken);
         await _channel.QueueDeleteAsync("new_parsers", cancellationToken: cancellationToken);
+        await _channel.DisposeAsync();
+        await _connection.DisposeAsync();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        logger.Information("{Service} has been starting.", nameof(NewParsersEntrance));
         if (_channel == null)
-            throw new ApplicationException("New parsers entrance consuming channel is null.");
+            throw new ApplicationException($"{nameof(NewParsersEntrance)} Channel was null.");
+        if (_connection == null)
+            throw new ApplicationException($"{nameof(NewParsersEntrance)} Connection was null.");
         AsyncEventingBasicConsumer consumer = new(_channel);
         consumer.ReceivedAsync += ProcessMessage;
         await _channel.BasicConsumeAsync(
@@ -61,7 +72,9 @@ internal sealed class NewParsersEntrance(
     private async Task ProcessMessage(object sender, BasicDeliverEventArgs ea)
     {
         if (_channel == null)
-            throw new ApplicationException("New parsers entrance consuming channel is null.");
+            throw new ApplicationException($"{nameof(NewParsersEntrance)} Channel was null.");
+        if (_connection == null)
+            throw new ApplicationException($"{nameof(NewParsersEntrance)} Connection was null.");
         byte[] body = ea.Body.ToArray();
         NewParsersMessage? message = JsonSerializer.Deserialize<NewParsersMessage>(body);
         if (message != null)
@@ -80,7 +93,7 @@ internal sealed class NewParsersEntrance(
                 await newParser.Store(storage);
                 await newParser.Store(cached);
             }
-            catch (Exception ex)
+            catch (ParserNameAndTypeDuplicateException ex)
             {
                 logger.Error(
                     "Error at {Entrance}. {Error}.",
@@ -88,8 +101,19 @@ internal sealed class NewParsersEntrance(
                     ex.Message
                 );
             }
-
-            await _channel.BasicAckAsync(ea.DeliveryTag, false);
+            catch (Exception ex)
+            {
+                logger.Fatal(
+                    "{Entrance} fatal error: {Ex}.",
+                    nameof(NewParsersEntrance),
+                    ex.Message
+                );
+                throw;
+            }
+            finally
+            {
+                await _channel.BasicAckAsync(ea.DeliveryTag, false);
+            }
         }
     }
 }

@@ -34,13 +34,11 @@ public sealed record RemTechDatabaseSettings
     public static RemTechDatabaseSettings CreateFromJson(string jsonPath)
     {
         IConfigurationRoot root = new ConfigurationBuilder().AddJsonFile(jsonPath).Build();
-        IConfigurationSection section = root.GetSection(nameof(RemTechApplicationSettings))
-            .GetSection(nameof(RemTechDatabaseSettings));
-        string? host = section.GetValue<string>("Host");
-        string? port = section.GetValue<string>("Port");
-        string? database = section.GetValue<string>("Database");
-        string? userName = section.GetValue<string>("UserName");
-        string? password = section.GetValue<string>("Password");
+        string? host = root.GetSection(ConfigurationConstants.PG_HOST_NAME_KEY).Value;
+        string? port = root.GetSection(ConfigurationConstants.PG_PORT_KEY).Value;
+        string? database = root.GetSection(ConfigurationConstants.PG_DATABASE_NAME_KEY).Value;
+        string? userName = root.GetSection(ConfigurationConstants.PG_USER_NAME_KEY).Value;
+        string? password = root.GetSection(ConfigurationConstants.PG_PASSWORD_KEY).Value;
         if (string.IsNullOrWhiteSpace(host))
             throw new ApplicationException(
                 $"{nameof(RemTechDatabaseSettings)} empty host database value."

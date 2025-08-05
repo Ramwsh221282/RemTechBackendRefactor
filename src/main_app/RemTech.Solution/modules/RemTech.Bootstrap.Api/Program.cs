@@ -3,6 +3,7 @@ using RemTech.Bootstrap.Api.Configuration;
 using RemTech.Bootstrap.Api.Injection;
 using RemTech.Vehicles.Module.Injection;
 using Scalar.AspNetCore;
+using Scrapers.Module.Inject;
 using Users.Module.Injection;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -10,7 +11,9 @@ RemTechApplicationSettings settings = RemTechApplicationSettings.CreateFromJson(
 UsersModuleInjection.UpUsersModuleDatabase(settings.Database.ToConnectionString());
 MailingModuleInjection.UpMailingModuleDatabase(settings.Database.ToConnectionString());
 ParsedAdvertisementsInjection.UpVehiclesDatabase(settings.Database.ToConnectionString());
+ScrapersModuleInjection.UpScrapersModuleDatabase(settings.Database.ToConnectionString());
 builder.Services.InjectCommonInfrastructure(settings);
+builder.Services.InjectScrapersModule();
 builder.Services.InjectMailingModule();
 builder.Services.InjectUsersModule();
 builder.Services.InjectVehiclesModule();

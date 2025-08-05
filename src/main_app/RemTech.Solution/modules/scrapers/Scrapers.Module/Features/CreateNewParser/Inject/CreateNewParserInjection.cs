@@ -3,7 +3,7 @@ using Scrapers.Module.Features.CreateNewParser.RabbitMq;
 
 namespace Scrapers.Module.Features.CreateNewParser.Inject;
 
-public static class CreateNewParserInjection
+internal static class CreateNewParserInjection
 {
     public static void Inject(IServiceCollection services)
     {

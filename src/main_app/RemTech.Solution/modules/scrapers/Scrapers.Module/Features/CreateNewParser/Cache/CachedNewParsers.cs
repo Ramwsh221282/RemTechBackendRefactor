@@ -58,7 +58,7 @@ internal sealed class CachedNewParsers(ConnectionMultiplexer multiplexer) : ICac
 
     private static async Task UpdateArray(string array, CachedParser parser, IDatabase database)
     {
-        CachedParser[]? deserialized = JsonSerializer.Deserialize<CachedParser[]>(ArrayKey);
+        CachedParser[]? deserialized = JsonSerializer.Deserialize<CachedParser[]>(array);
         if (deserialized == null)
             throw new ApplicationException("Deserialized parser cached array is null.");
         for (int i = 0; i < deserialized.Length; i++)

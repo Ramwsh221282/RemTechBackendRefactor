@@ -13,13 +13,14 @@ CREATE TABLE IF NOT EXISTS scrapers_module.scrapers (
     wait_days       integer NOT NULL,
     next_run        DATE NOT NULL,
     last_run        DATE NOT NULL,
-    UNIQUE (name, type),
+    PRIMARY KEY(name, type),
     UNIQUE (domain, type)
 );
 
 CREATE TABLE IF NOT EXISTS scrapers_module.scraper_links (
     name            VARCHAR(75) NOT NULL,
-    parser_name     VARCHAR(20) NOT NULL,          
+    parser_name     VARCHAR(20) NOT NULL,   
+    parser_type     VARCHAR(20) NOT NULL,
     url             text NOT NULL UNIQUE,
     activity        boolean NOT NULL,
     processed       integer NOT NULL,
@@ -28,14 +29,7 @@ CREATE TABLE IF NOT EXISTS scrapers_module.scraper_links (
     minutes         integer NOT NULL,
     seconds         integer NOT NULL,
     PRIMARY KEY(name, parser_name),
-    FOREIGN KEY(parser_name) REFERENCES scrapers_module.scrapers(name) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS scrapers_module.scraper_links (
-    id              VARCHAR(100),
-    source_url      TEXT,
-    source_domain   VARCHAR(20),    
-    PRIMARY KEY (id)
+    FOREIGN KEY(parser_name, parser_type) REFERENCES scrapers_module.scrapers(name, type) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_parsers_name

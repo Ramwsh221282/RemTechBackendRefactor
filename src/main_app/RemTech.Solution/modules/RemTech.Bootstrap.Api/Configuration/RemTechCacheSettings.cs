@@ -12,11 +12,11 @@ public sealed record RemTechCacheSettings
     public static RemTechCacheSettings CreateFromJson(string jsonPath)
     {
         IConfigurationRoot root = new ConfigurationBuilder().AddJsonFile(jsonPath).Build();
-        IConfigurationSection section = root.GetSection(nameof(RemTechApplicationSettings))
-            .GetSection(nameof(RemTechCacheSettings));
-        string? host = section.GetValue<string>("Host");
-        if (string.IsNullOrWhiteSpace(host))
-            throw new ApplicationException($"{nameof(RemTechCacheSettings)} host string is empty.");
-        return new RemTechCacheSettings(host);
+        string? host = root.GetSection(ConfigurationConstants.REDIS_HOST_KEY).Value;
+        return string.IsNullOrWhiteSpace(host)
+            ? throw new ApplicationException(
+                $"{ConfigurationConstants.REDIS_HOST_KEY} is not provided."
+            )
+            : new RemTechCacheSettings(host);
     }
 }

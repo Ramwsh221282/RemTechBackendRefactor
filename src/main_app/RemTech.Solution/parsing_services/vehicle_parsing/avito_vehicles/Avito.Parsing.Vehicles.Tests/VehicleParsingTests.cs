@@ -9,6 +9,7 @@ using Parsing.Vehicles.Common.ParsedVehicles;
 using Parsing.Vehicles.Common.TextWriting;
 using Parsing.Vehicles.Grpc.Recognition;
 using PuppeteerSharp;
+using RabbitMQ.Client;
 using RemTech.Core.Shared.Decorating;
 using RemTech.Logging.Adapter;
 using RemTech.RabbitMq.Adapter;
@@ -118,10 +119,12 @@ public class VehicleParsingTests
             url
         );
         using CommunicationChannel channel = new CommunicationChannel("http://localhost:5051");
-        RabbitMqConnectionOptions rabbitOptions = new("appsettings.json");
+        ConnectionFactory factory = new ConnectionFactory();
+        IConnection rabbitMqConnection = await factory.CreateConnectionAsync();
+        IChannel rabbitMqChannel = await rabbitMqConnection.CreateChannelAsync();
         ILogger logger = new LoggerSource().Logger();
         await using IBrowserPagesSource pagesSource = await browser.AccessPages();
-        await using RabbitMqChannel rabbitChannel = new(rabbitOptions);
+        await using RabbitMqChannel rabbitChannel = new(rabbitMqConnection, rabbitMqChannel);
         await using RabbitSendPoint rabbitSendPoint = await rabbitChannel.MakeSendPoint(
             "vehicles_sink"
         );

@@ -20,4 +20,7 @@
     <Folder Include="Features\RemovingParserLink\Logging\" />
     <Folder Include="Features\UpdateWaitDays\Models\" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Database\*.sql" />
+  </ItemGroup>
 </Project>

@@ -5,50 +5,42 @@ namespace RemTech.RabbitMq.Adapter;
 
 public sealed class RabbitMqChannel : IDisposable, IAsyncDisposable
 {
-    private readonly RabbitMqConnectionOptions _options;
-    private IConnection? _connection;
-    private IChannel? _channel;
+    private readonly IConnection _connection;
+    private readonly IChannel _channel;
 
-    public RabbitMqChannel(RabbitMqConnectionOptions options)
+    public RabbitMqChannel(IConnection connection, IChannel channel)
     {
-        _options = options;
+        _connection = connection;
+        _channel = channel;
     }
 
-    public async Task<IChannel> Access()
+    public IChannel Access()
     {
-        ConnectionFactory connectionFactory = new ConnectionFactory()
-        {
-            HostName = _options.HostName,
-            UserName = _options.UserName,
-            Password = _options.Password,
-            Port = int.Parse(_options.Port),
-        };
-        _connection ??= await connectionFactory.CreateConnectionAsync();
-        _channel ??= await _connection.CreateChannelAsync();
         return _channel;
     }
 
     public void Dispose()
     {
-        _connection?.Dispose();
-        _channel?.Dispose();
+        _channel.Dispose();
+        _connection.Dispose();
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_channel != null)
-            await _channel.DisposeAsync();
-        if (_connection != null)
-            await _connection.DisposeAsync();
+        await _channel.DisposeAsync();
+        await _connection.DisposeAsync();
     }
 
-    public async Task<RabbitAcceptPoint> MakeAcceptPoint(string queueName, AsyncEventHandler<BasicDeliverEventArgs> handler)
+    public async Task<RabbitAcceptPoint> MakeAcceptPoint(
+        string queueName,
+        AsyncEventHandler<BasicDeliverEventArgs> handler
+    )
     {
-        return new RabbitAcceptPoint(await Access(), queueName, handler);
+        return new RabbitAcceptPoint(_channel, queueName, handler);
     }
 
     public async Task<RabbitSendPoint> MakeSendPoint(string queueName)
     {
-        return new RabbitSendPoint(await Access(), queueName);
+        return new RabbitSendPoint(_channel, queueName);
     }
 }

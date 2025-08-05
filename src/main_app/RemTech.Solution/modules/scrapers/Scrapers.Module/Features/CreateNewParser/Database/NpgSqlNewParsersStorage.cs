@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using Scrapers.Module.Features.CreateNewParser.Exceptions;
 using Scrapers.Module.Features.CreateNewParser.Models;
 
 namespace Scrapers.Module.Features.CreateNewParser.Database;
@@ -38,5 +39,14 @@ internal sealed class NpgSqlNewParsersStorage(NpgsqlDataSource dataSource) : INe
         command.Parameters.Add(new NpgsqlParameter<int>("@wait_days", parser.Schedule.WaitDays));
         command.Parameters.Add(new NpgsqlParameter<DateTime>("@next_run", parser.Schedule.NextRun));
         command.Parameters.Add(new NpgsqlParameter<DateTime>("@last_run", parser.Schedule.LastRun));
+        try
+        {
+            await command.ExecuteNonQueryAsync(ct);
+        }
+        catch (NpgsqlException ex)
+        {
+            if (ex.Message.Contains("scrapers_name_type_key"))
+                throw new ParserNameAndTypeDuplicateException(parser.Name, parser.Type.Type);
+        }
     }
 }
