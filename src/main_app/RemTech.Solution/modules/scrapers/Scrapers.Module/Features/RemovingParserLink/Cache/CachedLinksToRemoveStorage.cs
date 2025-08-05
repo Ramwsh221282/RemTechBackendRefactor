@@ -30,33 +30,33 @@ internal sealed class CachedLinksToRemoveStorage(
         CancellationToken ct = default
     )
     {
+        RemovedParserLink removed = await origin.Save(parserLink, ct);
         IDatabase db = multiplexer.GetDatabase();
-        string cachedKey = string.Format(EntryKey, parserLink.ParserName, parserLink.ParserType);
+        string cachedKey = string.Format(EntryKey, removed.ParserName, removed.ParserType);
         string? cachedJson = await db.StringGetAsync(cachedKey);
         string? arrayJson = await db.StringGetAsync(ArrayKey);
         if (string.IsNullOrEmpty(cachedJson) || arrayJson == null)
             throw new ParserLinkToRemoveNotFoundException(
-                parserLink.Name,
-                parserLink.ParserName,
-                parserLink.ParserType
+                removed.Name,
+                removed.ParserName,
+                removed.ParserType
             );
         CachedParser? cached = JsonSerializer.Deserialize<CachedParser>(cachedJson);
         CachedParser[]? array = JsonSerializer.Deserialize<CachedParser[]>(arrayJson);
         if (cached == null || array == null)
             throw new ParserLinkToRemoveNotFoundException(
-                parserLink.Name,
-                parserLink.ParserName,
-                parserLink.ParserType
+                removed.Name,
+                removed.ParserName,
+                removed.ParserType
             );
-
         CachedParserLink[] cachedLinks = cached
-            .Links.Where(l => l.Name != parserLink.Name && l.ParserName != parserLink.ParserName)
+            .Links.Where(l => l.Name != removed.Name && l.ParserName != removed.ParserName)
             .ToArray();
         cached = cached with { Links = cachedLinks };
         for (int i = 0; i < array.Length; i++)
         {
             CachedParser entry = array[i];
-            if (entry.Name != parserLink.ParserName && entry.Type != parserLink.ParserType)
+            if (entry.Name != removed.ParserName && entry.Type != removed.ParserType)
                 continue;
             entry = entry with { Links = cachedLinks };
             array[i] = entry;
@@ -64,6 +64,6 @@ internal sealed class CachedLinksToRemoveStorage(
         }
         await db.StringSetAsync(cachedKey, JsonSerializer.Serialize(cached));
         await db.StringSetAsync(arrayJson, JsonSerializer.Serialize(array));
-        return parserLink;
+        return removed;
     }
 }

@@ -30,35 +30,43 @@ internal sealed class CachedLinksActivityToChangeStorage(
         CancellationToken ct = default
     )
     {
+        LinkWithChangedActivity witchChanged = await storage.Save(link, ct);
         IDatabase db = multiplexer.GetDatabase();
-        string cachedKey = string.Format(EntryKey, link.ParserName, link.ParserType);
+        string cachedKey = string.Format(
+            EntryKey,
+            witchChanged.ParserName,
+            witchChanged.ParserType
+        );
         string? cachedJson = await db.StringGetAsync(cachedKey);
         string? arrayJson = await db.StringGetAsync(ArrayKey);
         if (string.IsNullOrEmpty(cachedJson) || arrayJson == null)
             throw new LinkActivityToChangeNotFoundException(
-                link.Name,
-                link.ParserName,
-                link.ParserType
+                witchChanged.Name,
+                witchChanged.ParserName,
+                witchChanged.ParserType
             );
         CachedParser? cached = JsonSerializer.Deserialize<CachedParser>(cachedJson);
         CachedParser[]? array = JsonSerializer.Deserialize<CachedParser[]>(arrayJson);
         if (cached == null || array == null)
             throw new LinkActivityToChangeNotFoundException(
-                link.Name,
-                link.ParserName,
-                link.ParserType
+                witchChanged.Name,
+                witchChanged.ParserName,
+                witchChanged.ParserType
             );
         CachedParserLink[] cachedLinks = cached.Links.ToArray();
         for (int i = 0; i < cachedLinks.Length; i++)
         {
-            if (cachedLinks[i].Name == link.Name && cachedLinks[i].ParserName == link.ParserName)
-                cachedLinks[i] = cachedLinks[i] with { Activity = link.CurrentActivity };
+            if (
+                cachedLinks[i].Name == witchChanged.Name
+                && cachedLinks[i].ParserName == witchChanged.ParserName
+            )
+                cachedLinks[i] = cachedLinks[i] with { Activity = witchChanged.CurrentActivity };
         }
         cached = cached with { Links = cachedLinks };
         for (int i = 0; i < array.Length; i++)
         {
             CachedParser entry = array[i];
-            if (entry.Name != link.ParserName && entry.Type != link.ParserType)
+            if (entry.Name != witchChanged.ParserName && entry.Type != witchChanged.ParserType)
                 continue;
             entry = entry with { Links = cachedLinks };
             array[i] = entry;
@@ -66,6 +74,6 @@ internal sealed class CachedLinksActivityToChangeStorage(
         }
         await db.StringSetAsync(cachedKey, JsonSerializer.Serialize(cached));
         await db.StringSetAsync(arrayJson, JsonSerializer.Serialize(array));
-        return link;
+        return witchChanged;
     }
 }

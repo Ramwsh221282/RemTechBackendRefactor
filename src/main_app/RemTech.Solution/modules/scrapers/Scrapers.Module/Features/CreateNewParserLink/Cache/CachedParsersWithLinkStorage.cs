@@ -20,21 +20,28 @@ internal sealed class CachedParsersWithLinkStorage(
         CancellationToken ct = default
     )
     {
+        ParserWithNewLink withLink = await storage.Save(parser, ct);
         IDatabase db = multiplexer.GetDatabase();
-        string cachedKey = string.Format(EntryKey, parser.Link.ParserName, parser.Parser.Type);
+        string cachedKey = string.Format(EntryKey, withLink.Link.ParserName, withLink.Parser.Type);
         string? cachedJson = await db.StringGetAsync(cachedKey);
         string? arrayJson = await db.StringGetAsync(ArrayKey);
         if (string.IsNullOrEmpty(cachedJson) || arrayJson == null)
-            throw new ParserWhereToPutLinkNotFoundException(parser.Parser.Name, parser.Parser.Type);
+            throw new ParserWhereToPutLinkNotFoundException(
+                withLink.Parser.Name,
+                withLink.Parser.Type
+            );
         CachedParser? cached = JsonSerializer.Deserialize<CachedParser>(cachedJson);
         CachedParser[]? array = JsonSerializer.Deserialize<CachedParser[]>(arrayJson);
         if (cached == null || array == null)
-            throw new ParserWhereToPutLinkNotFoundException(parser.Parser.Name, parser.Parser.Type);
-        cached = cached with { Links = [.. cached.Links, CreateLink(parser)] };
+            throw new ParserWhereToPutLinkNotFoundException(
+                withLink.Parser.Name,
+                withLink.Parser.Type
+            );
+        cached = cached with { Links = [.. cached.Links, CreateLink(withLink)] };
         for (int i = 0; i < array.Length; i++)
         {
             CachedParser entry = array[i];
-            if (entry.Name != parser.Link.ParserName && entry.Type != parser.Parser.Type)
+            if (entry.Name != withLink.Link.ParserName && entry.Type != withLink.Parser.Type)
                 continue;
             entry = entry with { Links = cached.Links };
             array[i] = entry;

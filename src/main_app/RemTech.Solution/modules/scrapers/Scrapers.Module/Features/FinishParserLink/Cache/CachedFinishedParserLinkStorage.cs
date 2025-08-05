@@ -30,37 +30,37 @@ internal sealed class CachedFinishedParserLinkStorage(
         CancellationToken ct = default
     )
     {
+        FinishedParserLink finished = await origin.Save(link, ct);
         IDatabase db = multiplexer.GetDatabase();
-        string cachedKey = string.Format(EntryKey, link.ParserName, link.ParserType);
-
+        string cachedKey = string.Format(EntryKey, finished.ParserName, finished.ParserType);
         string? cachedJson = await db.StringGetAsync(cachedKey);
         string? arrayJson = await db.StringGetAsync(ArrayKey);
         if (string.IsNullOrEmpty(cachedJson) || arrayJson == null)
             throw new ParserLinkToFinishNotFoundException(
-                link.ParserName,
-                link.LinkName,
-                link.ParserType
+                finished.ParserName,
+                finished.LinkName,
+                finished.ParserType
             );
         CachedParser? cached = JsonSerializer.Deserialize<CachedParser>(cachedJson);
         CachedParser[]? array = JsonSerializer.Deserialize<CachedParser[]>(arrayJson);
         if (cached == null || array == null)
             throw new ParserLinkToFinishNotFoundException(
-                link.ParserName,
-                link.LinkName,
-                link.ParserType
+                finished.ParserName,
+                finished.LinkName,
+                finished.ParserType
             );
         CachedParserLink[] links = cached.Links.ToArray();
         for (int i = 0; i < links.Length; i++)
         {
             CachedParserLink entry = links[i];
-            if (entry.ParserName != link.ParserName || entry.Name != link.LinkName)
+            if (entry.ParserName != finished.ParserName || entry.Name != finished.LinkName)
                 continue;
             entry = entry with
             {
-                TotalSeconds = link.TotalElapsedSeconds,
-                Hours = link.Hours,
-                Minutes = link.Minutes,
-                Seconds = link.Seconds,
+                TotalSeconds = finished.TotalElapsedSeconds,
+                Hours = finished.Hours,
+                Minutes = finished.Minutes,
+                Seconds = finished.Seconds,
             };
             links[i] = entry;
             break;
@@ -70,7 +70,7 @@ internal sealed class CachedFinishedParserLinkStorage(
         for (int i = 0; i < array.Length; i++)
         {
             CachedParser entry = array[i];
-            if (entry.Name != link.ParserName && entry.Type != link.ParserType)
+            if (entry.Name != finished.ParserName && entry.Type != finished.ParserType)
                 continue;
             entry = entry with { Links = links };
             array[i] = entry;
@@ -78,6 +78,6 @@ internal sealed class CachedFinishedParserLinkStorage(
         }
         await db.StringSetAsync(cachedKey, JsonSerializer.Serialize(cached));
         await db.StringSetAsync(arrayJson, JsonSerializer.Serialize(array));
-        return link;
+        return finished;
     }
 }

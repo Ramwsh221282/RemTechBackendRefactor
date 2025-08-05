@@ -20,23 +20,24 @@ internal sealed class CacheEnabledParsersStorage(
         CancellationToken cancellationToken = default
     )
     {
+        EnabledParser enabled = await origin.Save(parser, cancellationToken);
         IDatabase db = multiplexer.GetDatabase();
-        string cachedKey = string.Format(EntryKey, parser.Name, parser.Type);
+        string cachedKey = string.Format(EntryKey, enabled.Name, enabled.Type);
         string? cachedJson = await db.StringGetAsync(cachedKey);
         string? arrayJson = await db.StringGetAsync(ArrayKey);
         if (string.IsNullOrEmpty(cachedJson) || arrayJson == null)
-            throw new ParserToEnableWasNotFoundException(parser);
+            throw new ParserToEnableWasNotFoundException(enabled);
         CachedParser? cached = JsonSerializer.Deserialize<CachedParser>(cachedJson);
         CachedParser[]? array = JsonSerializer.Deserialize<CachedParser[]>(arrayJson);
         if (cached == null || array == null)
-            throw new ParserToEnableWasNotFoundException(parser);
-        cached = cached with { State = parser.State };
+            throw new ParserToEnableWasNotFoundException(enabled);
+        cached = cached with { State = enabled.State };
         for (int i = 0; i < array.Length; i++)
         {
             CachedParser entry = array[i];
-            if (entry.Name != parser.Name && entry.Type != parser.Type)
+            if (entry.Name != enabled.Name && entry.Type != enabled.Type)
                 continue;
-            entry = entry with { State = parser.State };
+            entry = entry with { State = enabled.State };
             array[i] = entry;
             break;
         }

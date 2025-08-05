@@ -29,28 +29,35 @@ internal sealed class CacheParserWaitDaysToUpdateStorage(
         CancellationToken ct = default
     )
     {
+        ParserWithUpdatedWaitDays withUpdated = await storage.Save(parser, ct);
         IDatabase db = multiplexer.GetDatabase();
-        string cachedKey = string.Format(EntryKey, parser.ParserName, parser.ParserType);
+        string cachedKey = string.Format(EntryKey, withUpdated.ParserName, withUpdated.ParserType);
         string? cachedJson = await db.StringGetAsync(cachedKey);
         string? arrayJson = await db.StringGetAsync(ArrayKey);
         if (string.IsNullOrEmpty(cachedJson) || arrayJson == null)
-            throw new ParserToUpdateWaitDaysNotFoundException(parser.ParserName, parser.ParserType);
+            throw new ParserToUpdateWaitDaysNotFoundException(
+                withUpdated.ParserName,
+                withUpdated.ParserType
+            );
         CachedParser? cached = JsonSerializer.Deserialize<CachedParser>(cachedJson);
         CachedParser[]? array = JsonSerializer.Deserialize<CachedParser[]>(arrayJson);
         if (cached == null || array == null)
-            throw new ParserToUpdateWaitDaysNotFoundException(parser.ParserName, parser.ParserType);
-        cached = cached with { NextRun = parser.NextRun, WaitDays = parser.WaitDays };
+            throw new ParserToUpdateWaitDaysNotFoundException(
+                withUpdated.ParserName,
+                withUpdated.ParserType
+            );
+        cached = cached with { NextRun = withUpdated.NextRun, WaitDays = withUpdated.WaitDays };
         for (int i = 0; i < array.Length; i++)
         {
             CachedParser entry = array[i];
-            if (entry.Name != parser.ParserName && entry.Type != parser.ParserType)
+            if (entry.Name != withUpdated.ParserName && entry.Type != withUpdated.ParserType)
                 continue;
-            entry = entry with { NextRun = parser.NextRun, WaitDays = parser.WaitDays };
+            entry = entry with { NextRun = withUpdated.NextRun, WaitDays = withUpdated.WaitDays };
             array[i] = entry;
             break;
         }
         await db.StringSetAsync(cachedKey, JsonSerializer.Serialize(cached));
         await db.StringSetAsync(arrayJson, JsonSerializer.Serialize(array));
-        return parser;
+        return withUpdated;
     }
 }

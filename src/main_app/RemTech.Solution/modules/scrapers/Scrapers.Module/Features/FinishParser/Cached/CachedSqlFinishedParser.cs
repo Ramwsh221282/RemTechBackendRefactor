@@ -26,40 +26,41 @@ internal sealed class CachedSqlFinishedParser(
 
     public async Task<FinishedParser> Save(FinishedParser parser, CancellationToken ct = default)
     {
+        FinishedParser finished = await storage.Save(parser, ct);
         IDatabase db = multiplexer.GetDatabase();
-        string cachedKey = string.Format(EntryKey, parser.ParserName, parser.ParserType);
+        string cachedKey = string.Format(EntryKey, finished.ParserName, finished.ParserType);
         string? cachedJson = await db.StringGetAsync(cachedKey);
         string? arrayJson = await db.StringGetAsync(ArrayKey);
         if (string.IsNullOrEmpty(cachedJson) || arrayJson == null)
-            throw new CannotFindParserToFinishException(parser.ParserName, parser.ParserType);
+            throw new CannotFindParserToFinishException(finished.ParserName, finished.ParserType);
         CachedParser? cached = JsonSerializer.Deserialize<CachedParser>(cachedJson);
         CachedParser[]? array = JsonSerializer.Deserialize<CachedParser[]>(arrayJson);
         if (cached == null || array == null)
-            throw new CannotFindParserToFinishException(parser.ParserName, parser.ParserType);
+            throw new CannotFindParserToFinishException(finished.ParserName, finished.ParserType);
         cached = cached with
         {
-            TotalSeconds = parser.TotalElapsedSeconds,
-            Hours = parser.Hours,
-            Minutes = parser.Minutes,
-            Seconds = parser.Seconds,
+            TotalSeconds = finished.TotalElapsedSeconds,
+            Hours = finished.Hours,
+            Minutes = finished.Minutes,
+            Seconds = finished.Seconds,
         };
         for (int i = 0; i < array.Length; i++)
         {
             CachedParser entry = array[i];
-            if (entry.Name != parser.ParserName && entry.Type != parser.ParserType)
+            if (entry.Name != finished.ParserName && entry.Type != finished.ParserType)
                 continue;
             entry = entry with
             {
-                TotalSeconds = parser.TotalElapsedSeconds,
-                Hours = parser.Hours,
-                Minutes = parser.Minutes,
-                Seconds = parser.Seconds,
+                TotalSeconds = finished.TotalElapsedSeconds,
+                Hours = finished.Hours,
+                Minutes = finished.Minutes,
+                Seconds = finished.Seconds,
             };
             array[i] = entry;
             break;
         }
         await db.StringSetAsync(cachedKey, JsonSerializer.Serialize(cached));
         await db.StringSetAsync(arrayJson, JsonSerializer.Serialize(array));
-        return parser;
+        return finished;
     }
 }
