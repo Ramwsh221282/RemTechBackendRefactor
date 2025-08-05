@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
 using Scrapers.Module.Features.CreateNewParser.Cache;
 using Scrapers.Module.Features.UpdateWaitDays.Database;
-using Scrapers.Module.Features.UpdateWaitDays.Endpoint;
 using Scrapers.Module.Features.UpdateWaitDays.Exceptions;
+using Scrapers.Module.Features.UpdateWaitDays.Models;
 using StackExchange.Redis;
 
 namespace Scrapers.Module.Features.UpdateWaitDays.Cache;

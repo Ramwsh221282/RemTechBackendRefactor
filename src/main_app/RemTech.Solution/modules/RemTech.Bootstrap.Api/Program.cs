@@ -20,16 +20,12 @@ builder.Services.InjectVehiclesModule();
 builder.Services.AddCors(options =>
     options.AddPolicy(
         "FRONTEND",
-        conf =>
-            conf.WithExposedHeaders("Authorization")
-                .AllowAnyHeader()
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
+        conf => conf.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod()
     )
 );
 builder.Services.AddOpenApi();
 WebApplication app = builder.Build();
-app.UseCors();
+app.UseCors("FRONTEND");
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -39,4 +35,5 @@ app.UseHttpsRedirection();
 app.MapMailingModuleEndpoints();
 app.MapVehiclesModuleEndpoints();
 app.MapUsersModuleEndpoints();
+app.MapScrapersModuleEndpoints();
 app.Run();

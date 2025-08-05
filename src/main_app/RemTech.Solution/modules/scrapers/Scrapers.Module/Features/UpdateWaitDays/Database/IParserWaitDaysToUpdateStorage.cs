@@ -1,4 +1,4 @@
-﻿using Scrapers.Module.Features.UpdateWaitDays.Endpoint;
+﻿using Scrapers.Module.Features.UpdateWaitDays.Models;
 
 namespace Scrapers.Module.Features.UpdateWaitDays.Database;
 

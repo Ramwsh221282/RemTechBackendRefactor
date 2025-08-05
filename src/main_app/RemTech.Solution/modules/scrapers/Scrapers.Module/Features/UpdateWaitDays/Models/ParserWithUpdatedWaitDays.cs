@@ -1,4 +1,4 @@
-﻿namespace Scrapers.Module.Features.UpdateWaitDays.Endpoint;
+﻿namespace Scrapers.Module.Features.UpdateWaitDays.Models;
 
 internal sealed record ParserWithUpdatedWaitDays(
     string ParserName,

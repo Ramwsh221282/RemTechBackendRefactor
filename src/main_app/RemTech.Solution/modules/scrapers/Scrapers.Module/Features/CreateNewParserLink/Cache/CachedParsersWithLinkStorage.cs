@@ -57,6 +57,7 @@ internal sealed class CachedParsersWithLinkStorage(
         return new CachedParserLink(
             parser.Link.Name,
             parser.Link.ParserName,
+            parser.Link.ParserType,
             parser.Link.Url,
             parser.Link.Active,
             parser.Link.Statistics.ParsedAmount,

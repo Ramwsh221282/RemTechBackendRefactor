@@ -1,6 +1,6 @@
-﻿namespace Scrapers.Module.Features.CreateNewParser.Cache;
+﻿namespace Scrapers.Module.Features.ReadAllTransportParsers.Endpoint;
 
-internal sealed record CachedParserLink(
+public sealed record ParserLinkResult(
     string Name,
     string ParserName,
     string ParserType,

@@ -4,6 +4,7 @@ internal sealed record NewParserLink
 {
     public string Name { get; }
     public string ParserName { get; }
+    public string ParserType { get; }
     public string Url { get; }
     public bool Active { get; }
     public NewParserLinkStatistics Statistics { get; }
@@ -11,12 +12,14 @@ internal sealed record NewParserLink
     private NewParserLink(
         string name,
         string parserName,
+        string parserType,
         string url,
         bool active,
         NewParserLinkStatistics statistics
     )
     {
         Name = name;
+        ParserType = parserType;
         ParserName = parserName;
         Url = url;
         Active = active;
@@ -26,6 +29,6 @@ internal sealed record NewParserLink
     public static NewParserLink Create(string name, string url, ParserWhereToPutLink parser)
     {
         NewParserLinkStatistics statistics = NewParserLinkStatistics.Create();
-        return new NewParserLink(name, parser.Name, url, false, statistics);
+        return new NewParserLink(name, parser.Name, parser.Type, url, false, statistics);
     }
 }

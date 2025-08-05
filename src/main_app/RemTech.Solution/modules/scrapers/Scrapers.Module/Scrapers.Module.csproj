@@ -18,7 +18,6 @@
   <ItemGroup>
     <Folder Include="Features\RemovingParserLink\Endpoint\" />
     <Folder Include="Features\RemovingParserLink\Logging\" />
-    <Folder Include="Features\UpdateWaitDays\Models\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Database\*.sql" />
