@@ -26,6 +26,8 @@ internal sealed class NpgSqlParserStateToChange(NpgsqlDataSource dataSource)
         command.Parameters.Add(new NpgsqlParameter<string>("@name", parserName));
         command.Parameters.Add(new NpgsqlParameter<string>("@type", parserType));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
+        if (!reader.HasRows)
+            throw new ParserStateToChangeNotFoundException(parserName, parserType);
         if (!await reader.ReadAsync(ct))
             throw new ParserStateToChangeNotFoundException(parserName, parserType);
         return new ParserStateToChange(

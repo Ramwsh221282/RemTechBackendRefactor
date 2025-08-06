@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using Scrapers.Module.Features.RemovingParserLink.Cache;
 using Scrapers.Module.Features.RemovingParserLink.Database;
 using Scrapers.Module.Features.RemovingParserLink.Exceptions;
 using Scrapers.Module.Features.RemovingParserLink.Logging;

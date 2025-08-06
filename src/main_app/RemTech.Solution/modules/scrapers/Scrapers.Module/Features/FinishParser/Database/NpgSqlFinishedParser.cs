@@ -25,6 +25,8 @@ internal sealed class NpgSqlFinishedParser(NpgsqlDataSource dataSource) : IParse
         command.Parameters.Add(new NpgsqlParameter<string>("@name", parserName));
         command.Parameters.Add(new NpgsqlParameter<string>("@type", parserType));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
+        if (!reader.HasRows)
+            throw new CannotFindParserToFinishException(parserName, parserType);
         if (!await reader.ReadAsync(ct))
             throw new CannotFindParserToFinishException(parserName, parserType);
         return new ParserToFinish(

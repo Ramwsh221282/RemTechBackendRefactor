@@ -30,6 +30,8 @@ internal sealed class NpgSqlFinishedParserLinkStorage(NpgsqlDataSource dataSourc
         command.Parameters.Add(new NpgsqlParameter<string>("@parserName", parserName));
         command.Parameters.Add(new NpgsqlParameter<string>("@parserType", parserType));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
+        if (!reader.HasRows)
+            throw new ParserLinkToFinishNotFoundException(parserName, linkName, parserType);
         if (!await reader.ReadAsync(ct))
             throw new ParserLinkToFinishNotFoundException(parserName, linkName, parserType);
         return new ParserLinkToFinish(

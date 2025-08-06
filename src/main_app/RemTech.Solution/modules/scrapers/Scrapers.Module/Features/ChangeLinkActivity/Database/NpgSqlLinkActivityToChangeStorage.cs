@@ -36,6 +36,8 @@ internal sealed class NpgSqlLinkActivityToChangeStorage(NpgsqlDataSource dataSou
         command.Parameters.Add(new NpgsqlParameter<string>("@parser_name", parserName));
         command.Parameters.Add(new NpgsqlParameter<string>("@type", parserType));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
+        if (!reader.HasRows)
+            throw new LinkActivityToChangeNotFoundException(name, parserName, parserType);
         if (!await reader.ReadAsync(ct))
             throw new LinkActivityToChangeNotFoundException(name, parserName, parserType);
         string linkName = reader.GetString(reader.GetOrdinal("link_name"));
@@ -61,7 +63,7 @@ internal sealed class NpgSqlLinkActivityToChangeStorage(NpgsqlDataSource dataSou
         string sql = string.Intern(
             """
             UPDATE scrapers_module.scraper_links
-            SET acitivty = @activity
+            SET activity = @activity
             WHERE name = @name AND parser_name = @parser_name;
             """
         );
@@ -70,6 +72,7 @@ internal sealed class NpgSqlLinkActivityToChangeStorage(NpgsqlDataSource dataSou
         command.CommandText = sql;
         command.Parameters.Add(new NpgsqlParameter<string>("@name", link.Name));
         command.Parameters.Add(new NpgsqlParameter<string>("@parser_name", link.ParserName));
+        command.Parameters.Add(new NpgsqlParameter<bool>("@activity", link.CurrentActivity));
         int affected = await command.ExecuteNonQueryAsync(ct);
         return affected == 0
             ? throw new LinkActivityToChangeNotFoundException(

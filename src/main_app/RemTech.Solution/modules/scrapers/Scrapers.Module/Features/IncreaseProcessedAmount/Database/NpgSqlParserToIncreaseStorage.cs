@@ -36,6 +36,12 @@ internal sealed class NpgSqlParserToIncreaseStorage(NpgsqlDataSource dataSource)
         command.Parameters.Add(new NpgsqlParameter<string>("@parserType", parserType));
         command.Parameters.Add(new NpgsqlParameter<string>("@linkName", linkName));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
+        if (!reader.HasRows)
+            throw new UnableToFindIncreaseProcessedParserException(
+                parserName,
+                parserType,
+                linkName
+            );
         if (!await reader.ReadAsync(ct))
             throw new UnableToFindIncreaseProcessedParserException(
                 parserName,

@@ -27,6 +27,8 @@ internal sealed class NpgSqlParserWaitDaysToUpdateStorage(NpgsqlDataSource dataS
         command.Parameters.Add(new NpgsqlParameter<string>("@name", parserName));
         command.Parameters.Add(new NpgsqlParameter<string>("@type", parserType));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
+        if (!reader.HasRows)
+            throw new ParserToUpdateWaitDaysNotFoundException(parserName, parserType);
         if (!await reader.ReadAsync(ct))
             throw new ParserToUpdateWaitDaysNotFoundException(parserName, parserType);
         return new ParserWaitDaysToUpdate(

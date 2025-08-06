@@ -3,12 +3,14 @@ using DbUp.Engine;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Scrapers.Module.Features.ChangeLinkActivity.Endpoint;
 using Scrapers.Module.Features.ChangeParserState.Endpoint;
 using Scrapers.Module.Features.CreateNewParser.Inject;
 using Scrapers.Module.Features.CreateNewParserLink.Endpoint;
 using Scrapers.Module.Features.ReadAllTransportParsers.Endpoint;
 using Scrapers.Module.Features.ReadConcreteScraper.Endpoint;
 using Scrapers.Module.Features.RemovingParserLink.Endpoint;
+using Scrapers.Module.Features.UpdateParserLink.Endpoint;
 using Scrapers.Module.Features.UpdateWaitDays.Endpoint;
 
 namespace Scrapers.Module.Inject;
@@ -42,5 +44,7 @@ public static class ScrapersModuleInjection
         ParserWaitDaysUpdateEndpoint.Map(group);
         CreateNewParserLinkEndpoint.Map(group);
         RemoveParserLinkEndpoint.Map(group);
+        UpdateParserLinkEndpoint.Map(group);
+        ChangeLinkActivityEndpoint.Map(group);
     }
 }

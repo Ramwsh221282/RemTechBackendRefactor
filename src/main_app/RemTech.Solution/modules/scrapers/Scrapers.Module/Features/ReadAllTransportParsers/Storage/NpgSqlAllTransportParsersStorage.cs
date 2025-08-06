@@ -35,7 +35,7 @@ internal sealed class NpgSqlAllTransportParsersStorage(NpgsqlDataSource dataSour
             l.minutes as link_minutes,
             l.seconds as link_seconds
             FROM scrapers_module.scrapers p
-            INNER JOIN scrapers_module.scraper_links l ON l.parser_name = p.name
+            LEFT JOIN scrapers_module.scraper_links l ON l.parser_name = p.name
             ORDER BY p.name ASC;
             """
         );
@@ -43,7 +43,7 @@ internal sealed class NpgSqlAllTransportParsersStorage(NpgsqlDataSource dataSour
         await using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
         command.CommandText = sql;
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
-        if (!await reader.ReadAsync(ct))
+        if (!reader.HasRows)
             return [];
         Dictionary<string, ParserResult> entries = [];
         while (await reader.ReadAsync(ct))
@@ -69,25 +69,27 @@ internal sealed class NpgSqlAllTransportParsersStorage(NpgsqlDataSource dataSour
                 entries.Add(parserName, parserResult);
             }
 
+            if (await reader.IsDBNullAsync(reader.GetOrdinal("link_name"), ct))
+                continue;
+
             string linkName = reader.GetString(reader.GetOrdinal("link_name"));
             string linkParserName = reader.GetString(reader.GetOrdinal("link_parser_name"));
             string linkParserType = reader.GetString(reader.GetOrdinal("link_parser_type"));
-            if (parserResult.Name == linkParserName && parserResult.Type == linkParserType)
-            {
-                ParserLinkResult parserLink = new ParserLinkResult(
-                    linkName,
-                    linkParserName,
-                    linkParserType,
-                    reader.GetString(reader.GetOrdinal("link_url")),
-                    reader.GetBoolean(reader.GetOrdinal("link_activity")),
-                    reader.GetInt32(reader.GetOrdinal("link_processed")),
-                    reader.GetInt64(reader.GetOrdinal("link_total_seconds")),
-                    reader.GetInt32(reader.GetOrdinal("link_hours")),
-                    reader.GetInt32(reader.GetOrdinal("link_minutes")),
-                    reader.GetInt32(reader.GetOrdinal("link_seconds"))
-                );
-                entries[parserName].Links.Add(parserLink);
-            }
+            if (parserResult.Name != linkParserName || parserResult.Type != linkParserType)
+                continue;
+            ParserLinkResult parserLink = new ParserLinkResult(
+                linkName,
+                linkParserName,
+                linkParserType,
+                reader.GetString(reader.GetOrdinal("link_url")),
+                reader.GetBoolean(reader.GetOrdinal("link_activity")),
+                reader.GetInt32(reader.GetOrdinal("link_processed")),
+                reader.GetInt64(reader.GetOrdinal("link_total_seconds")),
+                reader.GetInt32(reader.GetOrdinal("link_hours")),
+                reader.GetInt32(reader.GetOrdinal("link_minutes")),
+                reader.GetInt32(reader.GetOrdinal("link_seconds"))
+            );
+            entries[parserName].Links.Add(parserLink);
         }
         return entries.Values;
     }

@@ -20,7 +20,7 @@ internal sealed class NpgSqlParsersToStartStorage(NpgsqlDataSource dataSource)
                 l.url as parser_link_url
             FROM scrapers_module.scrapers p
             INNER JOIN scrapers_module.scraper_links l ON p.name = l.parser_name
-            WHERE p.state = 'Ожидает' AND l.activity = TRUE                
+            WHERE p.state = 'Ожидает' AND l.activity = TRUE              
             """
         );
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
@@ -28,7 +28,7 @@ internal sealed class NpgSqlParsersToStartStorage(NpgsqlDataSource dataSource)
         command.CommandText = sql;
         Dictionary<string, ParserToStart> entries = [];
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
-        if (!await reader.ReadAsync(ct))
+        if (!reader.HasRows)
             return [];
         while (await reader.ReadAsync(ct))
         {

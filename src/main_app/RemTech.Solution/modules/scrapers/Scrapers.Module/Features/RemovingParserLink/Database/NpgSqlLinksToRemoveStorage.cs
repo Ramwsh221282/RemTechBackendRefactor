@@ -32,6 +32,8 @@ internal sealed class NpgSqlLinksToRemoveStorage(NpgsqlDataSource dataSource)
         command.Parameters.Add(new NpgsqlParameter<string>("@parserName", parserName));
         command.Parameters.Add(new NpgsqlParameter<string>("@parserType", parserType));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
+        if (!reader.HasRows)
+            throw new ParserLinkToRemoveNotFoundException(linkName, parserName, parserType);
         if (!await reader.ReadAsync(ct))
             throw new ParserLinkToRemoveNotFoundException(linkName, parserName, parserType);
         return new ParserLinkToRemove(

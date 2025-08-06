@@ -26,6 +26,8 @@ internal sealed class NpgSqlParsersToInstantlyDisableStorage(NpgsqlDataSource da
         command.Parameters.Add(new NpgsqlParameter<string>("@name", parserName));
         command.Parameters.Add(new NpgsqlParameter<string>("@type", parserType));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
+        if (!reader.HasRows)
+            throw new UnableToFindParserToInstantlyDisableException(parserName, parserType);
         if (!await reader.ReadAsync(ct))
             throw new UnableToFindParserToInstantlyDisableException(parserName, parserType);
         return new ParserToInstantlyDisable(

@@ -10,10 +10,12 @@ internal sealed record LinkActivityToChange(
     string ParserState
 )
 {
-    public LinkWithChangedActivity Change()
+    public LinkWithChangedActivity Change(bool activity)
     {
         if (ParserState == "Работает")
             throw new UnableToChangeLinkActivityOfWorkingParserException();
-        return new LinkWithChangedActivity(Name, ParserName, ParserType, CurrentActivity);
+        return CurrentActivity == activity
+            ? throw new LinkActivitySameException(Name)
+            : new LinkWithChangedActivity(Name, ParserName, ParserType, activity);
     }
 }
