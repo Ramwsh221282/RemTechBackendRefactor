@@ -13,12 +13,12 @@ public static class VehicleBrandsHttpEndpoint
         group.MapGet("kinds/{kindId:Guid}/brands", Handle);
 
     private static async Task<IResult> Handle(
-        [FromServices] PgConnectionSource connectionSource,
+        [FromServices] NpgsqlDataSource connectionSource,
         [FromRoute] Guid kindId,
         CancellationToken ct
     )
     {
-        await using NpgsqlConnection connection = await connectionSource.Connect(ct);
+        await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(ct);
         return Results.Ok(
             await connection.Provide(
                 kindId,

@@ -1,4 +1,5 @@
-﻿using RemTech.RabbitMq.Adapter;
+﻿using RabbitMQ.Client;
+using RemTech.RabbitMq.Adapter;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;
 
@@ -9,11 +10,13 @@ public sealed class RabbitVehicleSink : IDisposable, IAsyncDisposable
     private RabbitAcceptPoint? _acceptPoint;
 
     public RabbitVehicleSink(
-        RabbitMqConnectionOptions options,
+        ConnectionFactory connectionFactory,
         ITransportAdvertisementSinking origin
     )
     {
-        _channel = new RabbitMqChannel(options);
+        IConnection connection = connectionFactory.CreateConnectionAsync().Result;
+        IChannel channel = connection.CreateChannelAsync().Result;
+        _channel = new RabbitMqChannel(connection, channel);
         _origin = origin;
     }
 

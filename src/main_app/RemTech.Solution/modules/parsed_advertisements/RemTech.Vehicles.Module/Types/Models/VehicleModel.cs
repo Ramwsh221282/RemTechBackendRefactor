@@ -25,6 +25,28 @@ public class VehicleModel
         Name = origin.Name;
     }
 
+    private VehicleModel(VehicleModel origin, VehicleModelIdentity identity)
+        : this(origin)
+    {
+        Identity = identity;
+    }
+
+    private VehicleModel(VehicleModel origin, VehicleModelName name)
+        : this(origin)
+    {
+        Name = name;
+    }
+
+    public VehicleModel Rename(VehicleModelName name)
+    {
+        return new VehicleModel(this, name);
+    }
+
+    public VehicleModel ChangeIdentity(VehicleModelIdentity identity)
+    {
+        return new VehicleModel(this, identity);
+    }
+
     public Guid Id() => Identity;
 
     public string NameString() => Name;

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using RemTech.Postgres.Adapter.Library;
 using RemTech.Postgres.Adapter.Library.PgCommands;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehiclesCharacteristicsDictionary;
@@ -35,7 +34,7 @@ public static class QueryVehiclesCharacteristicsDictionaryFeature
         builder.MapGet("api/vehicle-characteristics", Handle).RequireCors("FRONTEND");
 
     private static async Task<IResult> Handle(
-        [FromServices] PgConnectionSource connectionSource,
+        [FromServices] NpgsqlDataSource connectionSource,
         [FromQuery] Guid kindId,
         [FromQuery] Guid brandId,
         [FromQuery] Guid modelId,
@@ -55,14 +54,14 @@ public static class QueryVehiclesCharacteristicsDictionaryFeature
     }
 
     private static async Task<IEnumerable<Characteristic>> ExecuteQuery(
-        PgConnectionSource connectionSource,
+        NpgsqlDataSource connectionSource,
         Guid kindId,
         Guid brandId,
         Guid modelId,
         CancellationToken ct
     )
     {
-        await using NpgsqlConnection connection = await connectionSource.Connect(ct);
+        await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(ct);
         AsyncDbReaderCommand command = CreateCommand(connection, kindId, brandId, modelId);
         return await ExecuteCommand(command, ct);
     }

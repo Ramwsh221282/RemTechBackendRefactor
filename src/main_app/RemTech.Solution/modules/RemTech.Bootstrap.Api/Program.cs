@@ -1,44 +1,31 @@
-using Mailing.Module.Configuration;
 using Mailing.Module.Injection;
-using RemTech.Logging.Adapter;
-using RemTech.Postgres.Adapter.Library;
-using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
-using RemTech.RabbitMq.Adapter;
+using RemTech.Bootstrap.Api.Configuration;
+using RemTech.Bootstrap.Api.Injection;
 using RemTech.Vehicles.Module.Injection;
 using Scalar.AspNetCore;
-using StackExchange.Redis;
+using Scrapers.Module.Inject;
 using Users.Module.Injection;
-using Users.Module.Options;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-MailingModuleOptions mailingOptions = new("mailing_module.json");
-UsersModuleOptions userOptions = new("users_module.json");
-builder.Services.InjectMailingModule(mailingOptions);
-builder.Services.InjectUsersModule(userOptions);
+RemTechApplicationSettings settings = RemTechApplicationSettings.CreateFromJson("appsettings.json");
+UsersModuleInjection.UpUsersModuleDatabase(settings.Database.ToConnectionString());
+MailingModuleInjection.UpMailingModuleDatabase(settings.Database.ToConnectionString());
+ParsedAdvertisementsInjection.UpVehiclesDatabase(settings.Database.ToConnectionString());
+ScrapersModuleInjection.UpScrapersModuleDatabase(settings.Database.ToConnectionString());
+builder.Services.InjectCommonInfrastructure(settings);
+builder.Services.InjectScrapersModule();
+builder.Services.InjectMailingModule();
+builder.Services.InjectUsersModule();
+builder.Services.InjectVehiclesModule();
 builder.Services.AddCors(options =>
     options.AddPolicy(
         "FRONTEND",
-        conf =>
-            conf.WithExposedHeaders("Authorization")
-                .AllowAnyHeader()
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
+        conf => conf.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod()
     )
 );
-
-builder.Services.AddSingleton(ConnectionMultiplexer.Connect("localhost"));
-
-builder.Services.AddSingleton(new DatabaseConfiguration("appsettings.json"));
-builder.Services.AddSingleton(new RabbitMqConnectionOptions("appsettings.json"));
-builder.Services.AddSingleton(new LoggerSource().Logger());
-builder.Services.AddSingleton<PgConnectionSource>();
-builder.Services.InjectVehiclesModule();
 builder.Services.AddOpenApi();
 WebApplication app = builder.Build();
-app.UseCors();
-app.Services.UpVehiclesDatabase();
-userOptions.UpUsersModulePersistance();
-mailingOptions.UpMailingModuleDatabase();
+app.UseCors("FRONTEND");
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -48,4 +35,5 @@ app.UseHttpsRedirection();
 app.MapMailingModuleEndpoints();
 app.MapVehiclesModuleEndpoints();
 app.MapUsersModuleEndpoints();
+app.MapScrapersModuleEndpoints();
 app.Run();

@@ -1,4 +1,5 @@
-﻿using RemTech.Postgres.Adapter.Library;
+﻿using Npgsql;
+using RemTech.Postgres.Adapter.Library;
 using RemTech.Result.Library;
 using RemTech.Vehicles.Module.Types.Characteristics;
 using RemTech.Vehicles.Module.Types.Characteristics.Adapters.Storage.Postgres;
@@ -10,7 +11,7 @@ using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Prices;
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 
 public sealed class PgCharacteristicsSinking(
-    PgConnectionSource connection,
+    NpgsqlDataSource connection,
     ITransportAdvertisementSinking sinking
 ) : ITransportAdvertisementSinking
 {

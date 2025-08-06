@@ -26,7 +26,6 @@ using Parsing.Vehicles.Common.TextWriting;
 using Parsing.Vehicles.Grpc.Recognition;
 using PuppeteerSharp;
 using RemTech.Core.Shared.Decorating;
-using RemTech.Postgres.Adapter.Library;
 using Serilog;
 
 namespace Avito.Parsing.Vehicles.VehiclesParsing;
@@ -37,7 +36,6 @@ public sealed class AvitoVehiclesParser : IParsedVehicleSource
     private readonly ILogger _logger;
     private readonly string _originUrl;
     private readonly IPageAction _bottomScroll;
-    private readonly PgConnectionSource _pgConnectionSource;
     private readonly CommunicationChannel _channel;
     private readonly ITextWrite _write;
 
@@ -45,7 +43,6 @@ public sealed class AvitoVehiclesParser : IParsedVehicleSource
         IPage page,
         ITextWrite write,
         ILogger logger,
-        PgConnectionSource pgConnectionSource,
         CommunicationChannel channel,
         string originUrl
     )
@@ -53,7 +50,6 @@ public sealed class AvitoVehiclesParser : IParsedVehicleSource
         _page = page;
         _logger = logger;
         _originUrl = originUrl;
-        _pgConnectionSource = pgConnectionSource;
         _channel = channel;
         _write = write;
         _bottomScroll = new PageBottomScrollingAction(page);
@@ -101,7 +97,6 @@ public sealed class AvitoVehiclesParser : IParsedVehicleSource
                     .With(
                         new DefaultOnErroVehicleGeo(new WebElementVehicleGeoSource(_page, _write))
                     )
-                    .WrapBy(g => new DbSearchedVehicleGeoSource(_pgConnectionSource, _logger, g))
                     .WrapBy(g => new LoggingVehicleGeoSource(_logger, g));
 
                 IParsedVehicleModelSource modelSource = new VarietVehicleModelSource()
@@ -110,7 +105,6 @@ public sealed class AvitoVehiclesParser : IParsedVehicleSource
                     .WrapBy(c => new LoggingModelSource(_logger, c));
 
                 IParsedVehicleKindSource kindSource = new DbOrParsedVehicleKindSource(
-                    _pgConnectionSource,
                     _page,
                     _channel
                 ).WrapBy(v => new LoggingKindSource(_logger, v));

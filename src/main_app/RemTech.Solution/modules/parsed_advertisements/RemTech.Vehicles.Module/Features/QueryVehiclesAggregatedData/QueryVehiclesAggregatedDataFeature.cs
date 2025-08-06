@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using RemTech.Postgres.Adapter.Library;
 using RemTech.Postgres.Adapter.Library.PgCommands;
 using RemTech.Vehicles.Module.Database.SqlStringGeneration;
 using RemTech.Vehicles.Module.Features.QueryVehicles;
@@ -59,7 +58,7 @@ public static class QueryVehiclesAggregatedDataFeature
         );
 
     private static async Task<IResult> Handle(
-        [FromServices] PgConnectionSource connectionSource,
+        [FromServices] NpgsqlDataSource connectionSource,
         [FromRoute] Guid kindId,
         [FromRoute] Guid brandId,
         [FromRoute] Guid modelId,
@@ -80,12 +79,12 @@ public static class QueryVehiclesAggregatedDataFeature
     }
 
     private static async Task<VehiclesAggregatedDataResult> ExecuteQuery(
-        PgConnectionSource connectionSource,
+        NpgsqlDataSource connectionSource,
         VehiclesAggregatedDataQueryRequest request,
         CancellationToken ct
     )
     {
-        await using NpgsqlConnection connection = await connectionSource.Connect(ct);
+        await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(ct);
         AsyncDbReaderCommand command = CreateCommand(connection, request);
         VehiclesAggregatedDataResult result = await ExecuteCommand(command, ct);
         return result;

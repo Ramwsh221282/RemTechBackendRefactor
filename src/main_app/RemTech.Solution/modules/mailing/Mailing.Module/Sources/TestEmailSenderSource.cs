@@ -19,13 +19,6 @@ public sealed class TestEmailSenderSource : IEmailSendersSource
         return Task.FromResult(true);
     }
 
-    public Task<bool> Update(IEmailSender sender, CancellationToken ct = default)
-    {
-        EmailSenderOutput output = sender.Print();
-        _senders[output.Name] = sender;
-        return Task.FromResult(true);
-    }
-
     public Task<bool> Remove(IEmailSender sender, CancellationToken ct = default)
     {
         EmailSenderOutput output = sender.Print();

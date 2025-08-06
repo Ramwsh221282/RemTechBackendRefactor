@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using RemTech.Postgres.Adapter.Library;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Arguments;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Presenting;
 
@@ -18,7 +17,7 @@ public static class VehiclesCatalogueHttpEndpoint
         );
 
     private static async Task<IResult> Handle(
-        [FromServices] PgConnectionSource connectionSource,
+        [FromServices] NpgsqlDataSource connectionSource,
         [FromServices] Serilog.ILogger logger,
         [FromBody] VehiclesQueryRequest request,
         [FromRoute] Guid kindId,
@@ -33,7 +32,7 @@ public static class VehiclesCatalogueHttpEndpoint
             KindId = new VehicleKindIdQueryFilterArgument(kindId),
             ModelId = new VehicleModelIdQueryFilterArgument(modelId),
         };
-        await using NpgsqlConnection connection = await connectionSource.Connect(ct);
+        await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(ct);
         IEnumerable<VehiclePresentation> vehicles = await new PgVehiclesProvider(
             connection,
             logger

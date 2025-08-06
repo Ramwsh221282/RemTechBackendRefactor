@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using RemTech.Postgres.Adapter.Library;
 using RemTech.Postgres.Adapter.Library.PgCommands;
 
 namespace RemTech.Vehicles.Module.Features.QueryAllKindBrands;
@@ -24,14 +23,14 @@ public static class QueryAllKindBrandsFeature
         builder.MapGet("api/brands", Handle).RequireCors("FRONTEND");
 
     private static async Task<IResult> Handle(
-        [FromServices] PgConnectionSource connectionSource,
+        [FromServices] NpgsqlDataSource connectionSource,
         [FromQuery] Guid kindId,
         CancellationToken ct
     )
     {
         if (kindId == Guid.Empty)
             return Results.NoContent();
-        await using NpgsqlConnection connection = await connectionSource.Connect(ct);
+        await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(ct);
         IEnumerable<QueryAllKindBrandResult> results = await connection.Query(kindId, ct);
         return Results.Ok(results);
     }

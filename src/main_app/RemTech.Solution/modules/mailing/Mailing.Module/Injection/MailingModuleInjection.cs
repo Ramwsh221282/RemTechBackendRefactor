@@ -2,7 +2,6 @@
 using DbUp;
 using DbUp.Engine;
 using Mailing.Module.Bus;
-using Mailing.Module.Configuration;
 using Mailing.Module.Contracts;
 using Mailing.Module.Features;
 using Mailing.Module.Sources.NpgSql;
@@ -14,12 +13,9 @@ namespace Mailing.Module.Injection;
 
 public static class MailingModuleInjection
 {
-    public static void InjectMailingModule(
-        this IServiceCollection services,
-        MailingModuleOptions options
-    )
+    public static void InjectMailingModule(this IServiceCollection services)
     {
-        services.AddSingleton<IEmailSendersSource>(new NpgSqlEmailSendersSource(options));
+        services.AddSingleton<IEmailSendersSource, NpgSqlEmailSendersSource>();
         services.AddSingleton(Channel.CreateUnbounded<MailingBusMessage>());
         services.AddSingleton<MailingBusPublisher>();
         services.AddHostedService<MailingBusReceiver>();
@@ -34,9 +30,8 @@ public static class MailingModuleInjection
         ReadMailingSenders.Map(builder);
     }
 
-    public static void UpMailingModuleDatabase(this MailingModuleOptions options)
+    public static void UpMailingModuleDatabase(string connectionString)
     {
-        string connectionString = options.Database.ToConnectionString();
         EnsureDatabase.For.PostgresqlDatabase(connectionString);
         UpgradeEngine upgrader = DeployChanges
             .To.PostgresqlDatabase(connectionString)
