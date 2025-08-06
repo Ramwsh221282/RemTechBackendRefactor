@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Parsing.RabbitMq.FinishParser;
+using Parsing.RabbitMq.FinishParserLink;
 using Parsing.RabbitMq.StartParsing;
 
 namespace Avito.Vehicles.Service;
@@ -7,7 +8,8 @@ namespace Avito.Vehicles.Service;
 public class Worker(
     Serilog.ILogger logger,
     IStartParsingListener listener,
-    IParserFinishMessagePublisher finishedPublisher
+    IParserFinishMessagePublisher finishedPublisher,
+    IParserLinkFinishedMessagePublisher linkFinishedPublisher
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -33,6 +35,18 @@ public class Worker(
                 );
                 await finishedPublisher.Publish(finished);
                 logger.Information("Sended message to publish.");
+                foreach (ParserLinkStartedRabbitMqMessage link in parserStarted.Links)
+                {
+                    await linkFinishedPublisher.Publish(
+                        new FinishedParserLinkMessage(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            link.LinkName,
+                            100000
+                        )
+                    );
+                    logger.Information("Sended link publisher");
+                }
             }
             await listener.Acknowledge(args, stoppingToken);
         };

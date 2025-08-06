@@ -5,6 +5,7 @@ namespace Scrapers.Module.Features.FinishParser.Models;
 internal sealed record FinishedParser(
     string ParserName,
     string ParserType,
+    string ParserState,
     DateTime LastRun,
     DateTime NextRun,
     long TotalElapsedSeconds,

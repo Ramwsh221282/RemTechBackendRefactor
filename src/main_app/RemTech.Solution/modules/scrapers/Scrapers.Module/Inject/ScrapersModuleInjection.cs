@@ -9,6 +9,7 @@ using Scrapers.Module.Features.ChangeParserState.Endpoint;
 using Scrapers.Module.Features.CreateNewParser.Inject;
 using Scrapers.Module.Features.CreateNewParserLink.Endpoint;
 using Scrapers.Module.Features.FinishParser.Entrance;
+using Scrapers.Module.Features.FinishParserLink.Entrance;
 using Scrapers.Module.Features.ReadAllTransportParsers.Endpoint;
 using Scrapers.Module.Features.ReadConcreteScraper.Endpoint;
 using Scrapers.Module.Features.RemovingParserLink.Endpoint;
@@ -26,6 +27,7 @@ public static class ScrapersModuleInjection
         CreateNewParserInjection.Inject(services);
         services.InjectStartParserBackgroundJob();
         services.AddHostedService<FinishParserEntrance>();
+        services.AddHostedService<FinishedParserLinkEntrance>();
         services.AddSingleton<IParserStartedPublisher, RabbitMqParserStartedPublisher>();
     }
 

@@ -36,7 +36,6 @@ internal sealed class NpgSqlFinishedParserLinkStorage(NpgsqlDataSource dataSourc
             throw new ParserLinkToFinishNotFoundException(parserName, linkName, parserType);
         return new ParserLinkToFinish(
             reader.GetString(reader.GetOrdinal("parser_name")),
-            reader.GetString(reader.GetOrdinal("parser_state")),
             reader.GetString(reader.GetOrdinal("parser_type")),
             reader.GetString(reader.GetOrdinal("link_name"))
         );
@@ -54,7 +53,7 @@ internal sealed class NpgSqlFinishedParserLinkStorage(NpgsqlDataSource dataSourc
                 hours = @hours,
                 minutes = @minutes,
                 seconds = @seconds
-            WHERE name = @name AND parser_name = @parserName;
+            WHERE name = @name AND parser_name = @parser_name;
             """
         );
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);

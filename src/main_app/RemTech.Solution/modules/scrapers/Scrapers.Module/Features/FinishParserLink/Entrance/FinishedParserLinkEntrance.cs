@@ -3,30 +3,30 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Scrapers.Module.Features.CreateNewParser.RabbitMq;
-using Scrapers.Module.Features.FinishParser.Database;
-using Scrapers.Module.Features.FinishParser.Models;
+using Scrapers.Module.Features.FinishParser.Entrance;
+using Scrapers.Module.Features.FinishParserLink.Database;
+using Scrapers.Module.Features.FinishParserLink.Models;
 
-namespace Scrapers.Module.Features.FinishParser.Entrance;
+namespace Scrapers.Module.Features.FinishParserLink.Entrance;
 
-internal sealed class FinishParserEntrance(
+internal sealed class FinishedParserLinkEntrance(
     Serilog.ILogger logger,
-    NpgsqlDataSource dataSource,
-    ConnectionFactory connectionFactory
+    ConnectionFactory connectionFactory,
+    NpgsqlDataSource dataSource
 ) : BackgroundService
 {
     private const string Exchange = "scrapers";
-    private const string Queue = "finish_scraper";
+    private const string Queue = "finish_scraper_link";
     private IConnection? _connection;
     private IChannel? _channel;
 
     public override async Task StartAsync(CancellationToken stoppingToken)
     {
-        logger.Information("{Service} starting...", nameof(FinishParserEntrance));
+        logger.Information("{Service} starting...", nameof(FinishedParserLinkEntrance));
         _connection = await connectionFactory.CreateConnectionAsync(stoppingToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
         await _channel.ExchangeDeclareAsync(
-            "scrapers",
+            Exchange,
             ExchangeType.Direct,
             false,
             false,
@@ -34,16 +34,16 @@ internal sealed class FinishParserEntrance(
             cancellationToken: stoppingToken
         );
         await _channel.QueueDeclareAsync(
-            "finish_scraper",
+            Queue,
             durable: false,
             exclusive: false,
             autoDelete: false,
             cancellationToken: stoppingToken
         );
         await _channel.QueueBindAsync(
-            "finish_scraper",
-            "scrapers",
-            "finish_scraper",
+            Queue,
+            Exchange,
+            Queue,
             null,
             cancellationToken: stoppingToken
         );
@@ -52,15 +52,19 @@ internal sealed class FinishParserEntrance(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.Information("{Service} has been starting.", nameof(FinishParserEntrance));
+        logger.Information("{Service} has been starting.", nameof(FinishedParserLinkEntrance));
         if (_channel == null)
-            throw new ApplicationException($"{nameof(FinishParserEntrance)} Channel was null.");
+            throw new ApplicationException(
+                $"{nameof(FinishedParserLinkEntrance)} Channel was null."
+            );
         if (_connection == null)
-            throw new ApplicationException($"{nameof(FinishParserEntrance)} Connection was null.");
+            throw new ApplicationException(
+                $"{nameof(FinishedParserLinkEntrance)} Connection was null."
+            );
         AsyncEventingBasicConsumer consumer = new(_channel);
         consumer.ReceivedAsync += ProcessMessage;
         await _channel.BasicConsumeAsync(
-            queue: "finish_scraper",
+            queue: Queue,
             autoAck: false,
             consumer: consumer,
             cancellationToken: stoppingToken
@@ -71,23 +75,36 @@ internal sealed class FinishParserEntrance(
     private async Task ProcessMessage(object sender, BasicDeliverEventArgs ea)
     {
         if (_channel == null)
-            throw new ApplicationException($"{nameof(NewParsersEntrance)} Channel was null.");
+            throw new ApplicationException(
+                $"{nameof(FinishedParserLinkEntrance)} Channel was null."
+            );
         if (_connection == null)
-            throw new ApplicationException($"{nameof(NewParsersEntrance)} Connection was null.");
+            throw new ApplicationException(
+                $"{nameof(FinishedParserLinkEntrance)} Connection was null."
+            );
         byte[] body = ea.Body.ToArray();
-        ParserFinishedMessage? message = JsonSerializer.Deserialize<ParserFinishedMessage>(body);
+        FinishedParserLinkMessage? message = JsonSerializer.Deserialize<FinishedParserLinkMessage>(
+            body
+        );
         if (message != null)
         {
             try
             {
-                IParserToFinishStorage storage = new NpgSqlFinishedParser(dataSource);
-                ParserToFinish parser = await storage.Fetch(message.ParserName, message.ParserType);
-                FinishedParser finished = parser.Finish(message.TotalElapsedSeconds);
+                IFinishedParserLinkStorage storage = new NpgSqlFinishedParserLinkStorage(
+                    dataSource
+                );
+                ParserLinkToFinish link = await storage.Fetch(
+                    message.ParserName,
+                    message.LinkName,
+                    message.ParserType
+                );
+                FinishedParserLink finished = link.Finish(message.TotalElapsedSeconds);
                 await finished.Save(storage);
                 logger.Information(
-                    "Finish parser: {Name} {Type}.",
-                    finished.ParserName,
-                    finished.ParserType
+                    "Finish parser link: {Name} {Type} {ParserName}.",
+                    finished.LinkName,
+                    finished.ParserType,
+                    finished.ParserName
                 );
             }
             catch (Exception ex)

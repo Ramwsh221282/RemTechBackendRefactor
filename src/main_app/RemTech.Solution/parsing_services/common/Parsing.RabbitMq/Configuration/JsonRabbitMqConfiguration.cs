@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Parsing.RabbitMq.CreateParser;
 using Parsing.RabbitMq.FinishParser;
+using Parsing.RabbitMq.FinishParserLink;
 using Parsing.RabbitMq.PublishVehicle;
 using Parsing.RabbitMq.StartParsing;
 using RabbitMQ.Client;
@@ -43,5 +44,9 @@ public sealed class JsonRabbitMqConfiguration(
         services.AddSingleton<ICreateNewParserPublisher, CreateNewParserPublisher>();
         services.AddSingleton<IStartParsingListener, StartParsingListener>();
         services.AddSingleton<IParserFinishMessagePublisher, ParserFinishMessagePublisher>();
+        services.AddSingleton<
+            IParserLinkFinishedMessagePublisher,
+            ParserLinkFinishedMessagePublisher
+        >();
     }
 }

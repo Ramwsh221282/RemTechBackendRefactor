@@ -1,18 +1,9 @@
-﻿using Scrapers.Module.Features.FinishParserLink.Exceptions;
+﻿namespace Scrapers.Module.Features.FinishParserLink.Models;
 
-namespace Scrapers.Module.Features.FinishParserLink.Models;
-
-internal sealed record ParserLinkToFinish(
-    string ParserName,
-    string ParserState,
-    string ParserType,
-    string LinkName
-)
+internal sealed record ParserLinkToFinish(string ParserName, string ParserType, string LinkName)
 {
     public FinishedParserLink Finish(long totalElapsedSeconds)
     {
-        if (ParserState != "Работает")
-            throw new CannotFinishParserLinkFromNotWorkingParserException(ParserName, ParserType);
         int hours = CalculateHoursFromElapsedSeconds(totalElapsedSeconds);
         int minutes = CalculateMinutesFromElapsedSeconds(totalElapsedSeconds);
         int seconds = CalculateSecondsFromElapsedSeconds(totalElapsedSeconds);

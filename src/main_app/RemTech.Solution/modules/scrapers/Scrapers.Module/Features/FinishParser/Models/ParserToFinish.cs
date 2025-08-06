@@ -12,6 +12,7 @@ internal sealed record ParserToFinish(string ParserName, string ParserType, int 
         return new FinishedParser(
             ParserName,
             ParserType,
+            "Ожидает",
             newLastRun,
             newNextRun,
             totalElapsedSeconds,

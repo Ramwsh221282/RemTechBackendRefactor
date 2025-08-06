@@ -7,4 +7,5 @@ public static class RabbitMqScraperConstants
     public const string AdvertisementsExchange = "advertisements";
     public const string VehiclesCreateQueue = "vehicles";
     public const string ScrapersFinishQueue = "finish_scraper";
+    public const string ScrapersFinishLinkQueue = "finish_scraper_link";
 }

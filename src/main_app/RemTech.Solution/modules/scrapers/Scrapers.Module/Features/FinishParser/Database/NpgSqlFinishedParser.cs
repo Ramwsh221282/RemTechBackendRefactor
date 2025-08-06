@@ -44,13 +44,15 @@ internal sealed class NpgSqlFinishedParser(NpgsqlDataSource dataSource) : IParse
                 minutes = @minutes,
                 seconds = @seconds,
                 last_run = @last_run,
-                next_run = @next_run
+                next_run = @next_run,
+                state = @state
             WHERE name = @name AND type = @type;
             """
         );
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         await using NpgsqlCommand command = connection.CreateCommand();
         command.CommandText = sql;
+        command.Parameters.Add(new NpgsqlParameter<string>("@state", parser.ParserState));
         command.Parameters.Add(new NpgsqlParameter<string>("@name", parser.ParserName));
         command.Parameters.Add(new NpgsqlParameter<string>("@type", parser.ParserType));
         command.Parameters.Add(new NpgsqlParameter<long>("@total", parser.TotalElapsedSeconds));
