@@ -24,6 +24,14 @@ internal sealed class NewParsersEntrance(
         logger.Information("{Service} starting...", nameof(NewParsersEntrance));
         _connection = await connectionFactory.CreateConnectionAsync(cancellationToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
+        await _channel.ExchangeDeclareAsync(
+            "scrapers",
+            ExchangeType.Direct,
+            false,
+            false,
+            null,
+            cancellationToken: cancellationToken
+        );
         await _channel.QueueDeclareAsync(
             "new_parsers",
             durable: false,
@@ -31,7 +39,13 @@ internal sealed class NewParsersEntrance(
             autoDelete: false,
             cancellationToken: cancellationToken
         );
-        await _channel.QueuePurgeAsync("new_parsers", cancellationToken);
+        await _channel.QueueBindAsync(
+            "new_parsers",
+            "scrapers",
+            "new_parsers",
+            null,
+            cancellationToken: cancellationToken
+        );
         await base.StartAsync(cancellationToken);
     }
 
@@ -42,8 +56,6 @@ internal sealed class NewParsersEntrance(
             throw new ApplicationException($"{nameof(NewParsersEntrance)} Channel was null.");
         if (_connection == null)
             throw new ApplicationException($"{nameof(NewParsersEntrance)} Connection was null.");
-        await _channel.QueuePurgeAsync("new_parsers", cancellationToken);
-        await _channel.QueueDeleteAsync("new_parsers", cancellationToken: cancellationToken);
         await _channel.DisposeAsync();
         await _connection.DisposeAsync();
     }
@@ -109,5 +121,3 @@ internal sealed class NewParsersEntrance(
         }
     }
 }
-
-internal sealed record NewParsersMessage(string Name, string Type, string Domain);

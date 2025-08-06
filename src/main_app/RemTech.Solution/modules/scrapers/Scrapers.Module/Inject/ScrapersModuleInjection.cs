@@ -8,10 +8,12 @@ using Scrapers.Module.Features.ChangeLinkActivity.Endpoint;
 using Scrapers.Module.Features.ChangeParserState.Endpoint;
 using Scrapers.Module.Features.CreateNewParser.Inject;
 using Scrapers.Module.Features.CreateNewParserLink.Endpoint;
+using Scrapers.Module.Features.FinishParser.Entrance;
 using Scrapers.Module.Features.ReadAllTransportParsers.Endpoint;
 using Scrapers.Module.Features.ReadConcreteScraper.Endpoint;
 using Scrapers.Module.Features.RemovingParserLink.Endpoint;
 using Scrapers.Module.Features.StartParser.Entrance;
+using Scrapers.Module.Features.StartParser.RabbitMq;
 using Scrapers.Module.Features.UpdateParserLink.Endpoint;
 using Scrapers.Module.Features.UpdateWaitDays.Endpoint;
 
@@ -23,6 +25,8 @@ public static class ScrapersModuleInjection
     {
         CreateNewParserInjection.Inject(services);
         services.InjectStartParserBackgroundJob();
+        services.AddHostedService<FinishParserEntrance>();
+        services.AddSingleton<IParserStartedPublisher, RabbitMqParserStartedPublisher>();
     }
 
     public static void UpScrapersModuleDatabase(string connectionString)
@@ -62,7 +66,7 @@ public static class ScrapersModuleInjection
                     trigger
                         .ForJob(jobKey)
                         .WithSimpleSchedule(schedule =>
-                            schedule.WithIntervalInSeconds(5).RepeatForever()
+                            schedule.WithIntervalInMinutes(1).RepeatForever()
                         )
                 );
         });

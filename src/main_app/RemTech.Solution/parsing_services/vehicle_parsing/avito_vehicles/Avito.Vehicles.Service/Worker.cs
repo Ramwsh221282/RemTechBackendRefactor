@@ -1,24 +1,43 @@
+using System.Text.Json;
+using Parsing.RabbitMq.FinishParser;
+using Parsing.RabbitMq.StartParsing;
+
 namespace Avito.Vehicles.Service;
 
-public class Worker : BackgroundService
+public class Worker(
+    Serilog.ILogger logger,
+    IStartParsingListener listener,
+    IParserFinishMessagePublisher finishedPublisher
+) : BackgroundService
 {
-    private readonly ILogger<Worker> _logger;
-
-    public Worker(ILogger<Worker> logger)
+    public override async Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger = logger;
+        await listener.Prepare(cancellationToken);
+        logger.Information("Worker service started.");
+        await base.StartAsync(cancellationToken);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        listener.Consumer.ReceivedAsync += async (sender, args) =>
         {
-            if (_logger.IsEnabled(LogLevel.Information))
+            logger.Information("Message received");
+            ParserStartedRabbitMqMessage? parserStarted =
+                JsonSerializer.Deserialize<ParserStartedRabbitMqMessage>(args.Body.ToArray());
+            if (parserStarted != null)
             {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                ParserFinishedMessage finished = new ParserFinishedMessage(
+                    parserStarted.ParserName,
+                    parserStarted.ParserType,
+                    10000
+                );
+                await finishedPublisher.Publish(finished);
+                logger.Information("Sended message to publish.");
             }
-
-            await Task.Delay(1000, stoppingToken);
-        }
+            await listener.Acknowledge(args, stoppingToken);
+        };
+        await listener.StartConsuming(stoppingToken);
+        logger.Information("Worker service started consuming.");
+        stoppingToken.ThrowIfCancellationRequested();
     }
 }

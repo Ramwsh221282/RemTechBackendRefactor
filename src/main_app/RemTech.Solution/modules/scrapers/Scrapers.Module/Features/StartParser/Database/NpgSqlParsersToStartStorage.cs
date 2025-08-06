@@ -15,6 +15,7 @@ internal sealed class NpgSqlParsersToStartStorage(NpgsqlDataSource dataSource)
                 p.name as parser_name, 
                 p.type as parser_type, 
                 p.domain as parser_domain,
+                p.state as parser_state,
                 l.name as link_name,
                 l.parser_type as parser_link_type,
                 l.parser_name as parser_link_name, 
@@ -59,17 +60,7 @@ internal sealed class NpgSqlParsersToStartStorage(NpgsqlDataSource dataSource)
         return entries.Values;
     }
 
-    private ParserToStart ReadParserToStart(string parserName, DbDataReader reader)
-    {
-        return new ParserToStart(
-            reader.GetString(reader.GetOrdinal("parser_name")),
-            reader.GetString(reader.GetOrdinal("parser_type")),
-            reader.GetString(reader.GetOrdinal("parser_domain")),
-            []
-        );
-    }
-
-    public async Task<StartedParser> Start(StartedParser parser, CancellationToken ct = default)
+    public async Task<StartedParser> Save(StartedParser parser, CancellationToken ct = default)
     {
         string sql = string.Intern(
             """
@@ -82,7 +73,19 @@ internal sealed class NpgSqlParsersToStartStorage(NpgsqlDataSource dataSource)
         command.CommandText = sql;
         command.Parameters.Add(new NpgsqlParameter<string>("@name", parser.ParserName));
         command.Parameters.Add(new NpgsqlParameter<string>("@type", parser.ParserType));
+        command.Parameters.Add(new NpgsqlParameter<string>("@state", parser.ParserState));
         await command.ExecuteNonQueryAsync(ct);
         return parser;
+    }
+
+    private static ParserToStart ReadParserToStart(string parserName, DbDataReader reader)
+    {
+        return new ParserToStart(
+            reader.GetString(reader.GetOrdinal("parser_name")),
+            reader.GetString(reader.GetOrdinal("parser_type")),
+            reader.GetString(reader.GetOrdinal("parser_domain")),
+            reader.GetString(reader.GetOrdinal("parser_state")),
+            []
+        );
     }
 }
