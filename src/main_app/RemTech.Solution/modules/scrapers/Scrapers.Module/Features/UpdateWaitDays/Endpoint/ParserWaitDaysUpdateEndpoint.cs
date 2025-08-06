@@ -39,10 +39,7 @@ internal static class ParserWaitDaysUpdateEndpoint
         {
             IParserWaitDaysToUpdateStorage storage = new LoggingParserWaitDaysToChangeStorage(
                 logger,
-                new CacheParserWaitDaysToUpdateStorage(
-                    multiplexer,
-                    new NpgSqlParserWaitDaysToUpdateStorage(dataSource)
-                )
+                new NpgSqlParserWaitDaysToUpdateStorage(dataSource)
             );
             ParserWaitDaysToUpdate parser = await storage.Fetch(name, type, ct);
             ParserWithUpdatedWaitDays changed = parser.Update(request.NewWaitDays);

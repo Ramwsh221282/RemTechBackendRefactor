@@ -19,7 +19,7 @@ internal sealed class NpgSqlAllTransportParsersStorage(NpgsqlDataSource dataSour
             p.processed as parser_processed, 
             p.total_seconds as parser_total_seconds, 
             p.hours as parser_hours,
-            p.minutes, as parser_minutes,
+            p.minutes as parser_minutes,
             p.seconds as parser_seconds,
             p.wait_days as parser_wait_days,
             p.next_run as parser_next_run,

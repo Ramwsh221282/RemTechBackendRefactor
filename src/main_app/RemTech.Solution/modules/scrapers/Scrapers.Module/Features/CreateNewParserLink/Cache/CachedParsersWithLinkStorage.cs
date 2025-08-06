@@ -15,6 +15,15 @@ internal sealed class CachedParsersWithLinkStorage(
     private const string ArrayKey = "parsers_array";
     private const string EntryKey = "parser_{0}_{1}";
 
+    public Task<ParserWhereToPutLink> Fetch(
+        string parserName,
+        string parserType,
+        CancellationToken ct = default
+    )
+    {
+        return storage.Fetch(parserName, parserType, ct);
+    }
+
     public async Task<ParserWithNewLink> Save(
         ParserWithNewLink parser,
         CancellationToken ct = default

@@ -18,10 +18,7 @@ internal static class ReadAllTransportParsersEndpoint
         CancellationToken ct
     )
     {
-        IAllTransportParsersStorage storage = new CachedAllTransportParsersStorage(
-            multiplexer,
-            new NpgSqlAllTransportParsersStorage(dataSource)
-        );
+        IAllTransportParsersStorage storage = new NpgSqlAllTransportParsersStorage(dataSource);
         IEnumerable<ParserResult> result = await storage.Read(ct);
         return Results.Ok(result);
     }

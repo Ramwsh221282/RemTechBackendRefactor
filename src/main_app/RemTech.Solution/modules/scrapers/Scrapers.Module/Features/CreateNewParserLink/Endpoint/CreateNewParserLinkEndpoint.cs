@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Npgsql;
 using Scrapers.Module.Features.CreateNewParserLink.Cache;
 using Scrapers.Module.Features.CreateNewParserLink.Database;
@@ -18,6 +20,7 @@ public static class CreateNewParserLinkEndpoint
         string Name,
         string Url,
         string ParserName,
+        string ParserType,
         int ProcessedAmount,
         long TotalElapsedSeconds,
         int ElapsedHours,
@@ -26,37 +29,39 @@ public static class CreateNewParserLinkEndpoint
         bool Activity
     );
 
+    public static void Map(RouteGroupBuilder builder) => builder.MapPost("scraper-link", Handle);
+
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource dataSource,
         [FromServices] ConnectionMultiplexer multiplexer,
         [FromServices] Serilog.ILogger logger,
         [FromQuery] string name,
         [FromQuery] string type,
-        [FromQuery] string state,
-        [FromBody] CreateNewParserLinkRequest request
+        [FromBody] CreateNewParserLinkRequest request,
+        CancellationToken cancellationToken
     )
     {
-        ParserWhereToPutLink parser = new(name, type, state);
         try
         {
-            ParserWithNewLink withLink = await new LoggingParsersWithLinkStorage(
+            IParsersWithNewLinkStorage storage = new LoggingParsersWithLinkStorage(
                 logger,
-                new CachedParsersWithLinkStorage(
-                    multiplexer,
-                    new NpgSqlParsersWithLinkStorage(dataSource)
-                )
-            ).Save(parser.Put(request.Name, request.Url));
+                new NpgSqlParsersWithLinkStorage(dataSource)
+            );
+            ParserWhereToPutLink parser = await storage.Fetch(name, type, cancellationToken);
+            ParserWithNewLink withLink = parser.Put(request.Name, request.Url);
+            ParserWithNewLink saved = await storage.Save(withLink, cancellationToken);
             return Results.Ok(
                 new CreateNewParserLinkResponse(
-                    withLink.Link.Name,
-                    withLink.Link.Url,
-                    withLink.Link.ParserName,
-                    withLink.Link.Statistics.ParsedAmount,
-                    withLink.Link.Statistics.TotalElapsedSeconds,
-                    withLink.Link.Statistics.ElapsedHours,
-                    withLink.Link.Statistics.ElapsedMinutes,
-                    withLink.Link.Statistics.ElapsedSeconds,
-                    withLink.Link.Active
+                    saved.Link.Name,
+                    saved.Link.Url,
+                    saved.Link.ParserName,
+                    saved.Link.ParserType,
+                    saved.Link.Statistics.ParsedAmount,
+                    saved.Link.Statistics.TotalElapsedSeconds,
+                    saved.Link.Statistics.ElapsedHours,
+                    saved.Link.Statistics.ElapsedMinutes,
+                    saved.Link.Statistics.ElapsedSeconds,
+                    saved.Link.Active
                 )
             );
         }
@@ -85,6 +90,10 @@ public static class CreateNewParserLinkEndpoint
             return Results.BadRequest(new { message = ex.Message });
         }
         catch (UnkownParserStateException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+        catch (ParserLinkDomainDoesntMatchException ex)
         {
             return Results.BadRequest(new { message = ex.Message });
         }

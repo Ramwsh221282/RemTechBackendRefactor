@@ -29,10 +29,7 @@ public static class DisableParserEndpoint
         {
             DisabledParser disabled = await new LoggingDisabledParsersStorage(
                 logger,
-                new CacheDisabledParsersStorage(
-                    multiplexer,
-                    new NpgSqlDisabledParsersStorage(dataSource)
-                )
+                new NpgSqlDisabledParsersStorage(dataSource)
             ).SaveAsync(toDisable.Disable(), ct);
             return Results.Ok(new DisableParserResult(disabled.Name, disabled.State));
         }

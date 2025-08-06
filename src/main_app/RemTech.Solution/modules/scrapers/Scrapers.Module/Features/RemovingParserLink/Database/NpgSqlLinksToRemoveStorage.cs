@@ -17,7 +17,7 @@ internal sealed class NpgSqlLinksToRemoveStorage(NpgsqlDataSource dataSource)
     {
         string sql = string.Intern(
             """
-            SELECT l.name as link_name, l.parser_name as parser_name, p.type as parser_type, p.state as parser_state
+            SELECT l.name as link_name, l.parser_name as parser_name, l.url as link_url, p.type as parser_type, p.state as parser_state
             FROM scrapers_module.scraper_links l
             INNER JOIN scrapers_module.scrapers p ON l.parser_name = p.name
             WHERE l.name = @linkName
@@ -30,7 +30,7 @@ internal sealed class NpgSqlLinksToRemoveStorage(NpgsqlDataSource dataSource)
         command.CommandText = sql;
         command.Parameters.Add(new NpgsqlParameter<string>("@linkName", linkName));
         command.Parameters.Add(new NpgsqlParameter<string>("@parserName", parserName));
-        command.Parameters.Add(new NpgsqlParameter<string>("@parerType", parserType));
+        command.Parameters.Add(new NpgsqlParameter<string>("@parserType", parserType));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
         if (!await reader.ReadAsync(ct))
             throw new ParserLinkToRemoveNotFoundException(linkName, parserName, parserType);
@@ -38,7 +38,8 @@ internal sealed class NpgSqlLinksToRemoveStorage(NpgsqlDataSource dataSource)
             reader.GetString(reader.GetOrdinal("link_name")),
             reader.GetString(reader.GetOrdinal("parser_name")),
             reader.GetString(reader.GetOrdinal("parser_type")),
-            reader.GetString(reader.GetOrdinal("state"))
+            reader.GetString(reader.GetOrdinal("parser_state")),
+            reader.GetString(reader.GetOrdinal("link_url"))
         );
     }
 
@@ -50,7 +51,7 @@ internal sealed class NpgSqlLinksToRemoveStorage(NpgsqlDataSource dataSource)
         string sql = string.Intern(
             """
             DELETE FROM scrapers_module.scraper_links
-            WHERE name = @name AND parser_name = @parserName;
+            WHERE name = @name AND parser_name = @parserName AND parser_type = @parserType AND url = @url;
             """
         );
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
@@ -58,6 +59,8 @@ internal sealed class NpgSqlLinksToRemoveStorage(NpgsqlDataSource dataSource)
         command.CommandText = sql;
         command.Parameters.Add(new NpgsqlParameter<string>("@name", parserLink.Name));
         command.Parameters.Add(new NpgsqlParameter<string>("@parserName", parserLink.ParserName));
+        command.Parameters.Add(new NpgsqlParameter<string>("@parserType", parserLink.ParserType));
+        command.Parameters.Add(new NpgsqlParameter<string>("@url", parserLink.Url));
         int affected = await command.ExecuteNonQueryAsync(ct);
         return affected == 0
             ? throw new ParserLinkToRemoveNotFoundException(

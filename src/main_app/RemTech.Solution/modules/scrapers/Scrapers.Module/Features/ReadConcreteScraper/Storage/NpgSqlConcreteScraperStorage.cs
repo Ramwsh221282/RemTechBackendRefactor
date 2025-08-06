@@ -19,7 +19,7 @@ internal sealed class NpgSqlConcreteScraperStorage(NpgsqlDataSource dataSource)
             p.processed as parser_processed, 
             p.total_seconds as parser_total_seconds, 
             p.hours as parser_hours,
-            p.minutes, as parser_minutes,
+            p.minutes as parser_minutes,
             p.seconds as parser_seconds,
             p.wait_days as parser_wait_days,
             p.next_run as parser_next_run,
@@ -45,8 +45,6 @@ internal sealed class NpgSqlConcreteScraperStorage(NpgsqlDataSource dataSource)
         command.Parameters.Add(new NpgsqlParameter("@name", name));
         command.Parameters.Add(new NpgsqlParameter("@type", type));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
-        if (!await reader.ReadAsync(ct))
-            return null;
         Dictionary<string, ParserResult> entries = [];
         while (await reader.ReadAsync(ct))
         {
@@ -91,6 +89,6 @@ internal sealed class NpgSqlConcreteScraperStorage(NpgsqlDataSource dataSource)
                 entries[parserName].Links.Add(parserLink);
             }
         }
-        return entries[name];
+        return entries.TryGetValue(name, out ParserResult? value) ? value : null;
     }
 }

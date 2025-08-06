@@ -16,10 +16,6 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Features\RemovingParserLink\Endpoint\" />
-    <Folder Include="Features\RemovingParserLink\Logging\" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Database\*.sql" />
   </ItemGroup>
 </Project>

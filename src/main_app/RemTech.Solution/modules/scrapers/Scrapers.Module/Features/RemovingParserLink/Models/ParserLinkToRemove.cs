@@ -6,13 +6,14 @@ internal sealed record ParserLinkToRemove(
     string LinkName,
     string ParserName,
     string ParserType,
-    string State
+    string State,
+    string Url
 )
 {
     public RemovedParserLink Remove()
     {
-        if (State == "Работает")
-            throw new UnableToRemoveParserLinkWhenWorkingException();
-        return new RemovedParserLink(LinkName, ParserName, ParserType);
+        return State == "Работает"
+            ? throw new UnableToRemoveParserLinkWhenWorkingException()
+            : new RemovedParserLink(LinkName, ParserName, ParserType, Url);
     }
 }

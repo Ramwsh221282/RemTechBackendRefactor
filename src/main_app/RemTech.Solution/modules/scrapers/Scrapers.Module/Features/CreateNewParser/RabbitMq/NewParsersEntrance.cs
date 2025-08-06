@@ -14,7 +14,6 @@ namespace Scrapers.Module.Features.CreateNewParser.RabbitMq;
 
 internal sealed class NewParsersEntrance(
     ConnectionFactory connectionFactory,
-    ConnectionMultiplexer connectionMultiplexer,
     NpgsqlDataSource dataSource,
     Serilog.ILogger logger
 ) : BackgroundService
@@ -84,14 +83,9 @@ internal sealed class NewParsersEntrance(
                 logger,
                 new NpgSqlNewParsersStorage(dataSource)
             );
-            ICachedNewParsers cached = new LoggingCachedNewParsers(
-                logger,
-                new CachedNewParsers(connectionMultiplexer)
-            );
             try
             {
                 await newParser.Store(storage);
-                await newParser.Store(cached);
             }
             catch (ParserNameAndTypeDuplicateException ex)
             {

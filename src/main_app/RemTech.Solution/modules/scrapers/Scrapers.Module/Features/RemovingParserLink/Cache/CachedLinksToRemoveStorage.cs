@@ -50,7 +50,7 @@ internal sealed class CachedLinksToRemoveStorage(
                 removed.ParserType
             );
         CachedParserLink[] cachedLinks = cached
-            .Links.Where(l => l.Name != removed.Name && l.ParserName != removed.ParserName)
+            .Links.Where(l => l.Name != removed.Name && l.Url != removed.Url)
             .ToArray();
         cached = cached with { Links = cachedLinks };
         for (int i = 0; i < array.Length; i++)

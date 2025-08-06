@@ -22,10 +22,7 @@ internal static class ConcreteScraperEndpoint
         CancellationToken ct
     )
     {
-        IConcreteScraperStorage storage = new CachedConcreteScraperStorage(
-            multiplexer,
-            new NpgSqlConcreteScraperStorage(dataSource)
-        );
+        IConcreteScraperStorage storage = new NpgSqlConcreteScraperStorage(dataSource);
         ParserResult? parser = await storage.Read(name, type, ct);
         return parser != null
             ? Results.Ok(parser)

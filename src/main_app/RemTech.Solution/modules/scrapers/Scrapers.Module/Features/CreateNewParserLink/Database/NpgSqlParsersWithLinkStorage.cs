@@ -1,4 +1,5 @@
-﻿using Npgsql;
+﻿using System.Data.Common;
+using Npgsql;
 using Scrapers.Module.Features.CreateNewParserLink.Exceptions;
 using Scrapers.Module.Features.CreateNewParserLink.Models;
 
@@ -7,19 +8,45 @@ namespace Scrapers.Module.Features.CreateNewParserLink.Database;
 internal sealed class NpgSqlParsersWithLinkStorage(NpgsqlDataSource dataSource)
     : IParsersWithNewLinkStorage
 {
+    public async Task<ParserWhereToPutLink> Fetch(
+        string parserName,
+        string parserType,
+        CancellationToken ct = default
+    )
+    {
+        string sql = string.Intern(
+            """
+            SELECT name, type, state, domain FROM scrapers_module.scrapers
+            WHERE name = @name AND type = @type;
+            """
+        );
+        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
+        await using NpgsqlCommand command = connection.CreateCommand();
+        command.CommandText = sql;
+        command.Parameters.Add(new NpgsqlParameter<string>("@name", parserName));
+        command.Parameters.Add(new NpgsqlParameter<string>("@type", parserType));
+        await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
+        return !await reader.ReadAsync(ct)
+            ? throw new ParserWhereToPutLinkNotFoundException(parserName, parserType)
+            : new ParserWhereToPutLink(
+                reader.GetString(reader.GetOrdinal("name")),
+                reader.GetString(reader.GetOrdinal("type")),
+                reader.GetString(reader.GetOrdinal("state")),
+                reader.GetString(reader.GetOrdinal("domain"))
+            );
+    }
+
     public async Task<ParserWithNewLink> Save(
         ParserWithNewLink parser,
         CancellationToken ct = default
     )
     {
-        if (!await EnsureParserExists(parser, ct))
-            throw new ParserWhereToPutLinkNotFoundException(parser.Parser.Name, parser.Parser.Type);
         string sql = string.Intern(
             """
             INSERT INTO scrapers_module.scraper_links
-            (name, parser_name, url, activity, processed, total_seconds, hours, minutes, seconds)
+            (name, parser_name, parser_type, url, activity, processed, total_seconds, hours, minutes, seconds)
             VALUES
-            (@name, @parser_name, @url, @activity, @processed, @total_seconds, @hours, @minutes, @seconds)
+            (@name, @parser_name, @parser_type, @url, @activity, @processed, @total_seconds, @hours, @minutes, @seconds)
             ON CONFLICT (name, parser_name) DO NOTHING;
             """
         );
@@ -45,29 +72,17 @@ internal sealed class NpgSqlParsersWithLinkStorage(NpgsqlDataSource dataSource)
         command.Parameters.Add(
             new NpgsqlParameter<int>("@seconds", parser.Link.Statistics.ElapsedSeconds)
         );
-        int affected = await command.ExecuteNonQueryAsync(ct);
-        return affected == 0
-            ? throw new ParserLinkAlreadyExistsInParserException(parser.Parser, parser.Link)
-            : parser;
-    }
-
-    private async Task<bool> EnsureParserExists(
-        ParserWithNewLink parser,
-        CancellationToken ct = default
-    )
-    {
-        string sql = string.Intern(
-            """
-            SELECT 1 FROM scrapers_module.scrapers
-            WHERE name = @name AND type = @type;
-            """
-        );
-        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
-        await using NpgsqlCommand command = connection.CreateCommand();
-        command.CommandText = sql;
-        command.Parameters.Add(new NpgsqlParameter<string>("@name", parser.Parser.Name));
-        command.Parameters.Add(new NpgsqlParameter<string>("@type", parser.Parser.Type));
-        int affected = await command.ExecuteNonQueryAsync(ct);
-        return affected == 1;
+        command.Parameters.Add(new NpgsqlParameter<string>("@parser_type", parser.Link.ParserType));
+        try
+        {
+            await command.ExecuteNonQueryAsync(ct);
+            return parser;
+        }
+        catch (NpgsqlException ex)
+        {
+            if (ex.Message.Contains("scraper_links_url_key"))
+                throw new ParserLinkAlreadyExistsInParserException(parser.Parser, parser.Link);
+            throw new Exception("Invalid error resolve.");
+        }
     }
 }

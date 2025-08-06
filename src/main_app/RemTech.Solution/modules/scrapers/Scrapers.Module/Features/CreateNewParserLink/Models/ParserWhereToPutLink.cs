@@ -1,8 +1,9 @@
-﻿using Scrapers.Module.Features.CreateNewParserLink.Exceptions;
+﻿using System.Text.RegularExpressions;
+using Scrapers.Module.Features.CreateNewParserLink.Exceptions;
 
 namespace Scrapers.Module.Features.CreateNewParserLink.Models;
 
-internal sealed record ParserWhereToPutLink(string Name, string Type, string State)
+internal sealed record ParserWhereToPutLink(string Name, string Type, string State, string Domain)
 {
     public ParserWithNewLink Put(string name, string url)
     {
@@ -12,6 +13,8 @@ internal sealed record ParserWhereToPutLink(string Name, string Type, string Sta
             throw new ParserWhereToPutLinkNameEmptyException();
         if (string.IsNullOrWhiteSpace(State))
             throw new UnkownParserStateException();
+        if (!url.Contains(Domain))
+            throw new ParserLinkDomainDoesntMatchException(url, Domain);
         if (State == "Работает")
             throw new CannotPutLinkToWorkingParserException();
         if (Type == "Техника" || Type == "Запчасти")

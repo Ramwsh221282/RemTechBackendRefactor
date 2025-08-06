@@ -34,10 +34,7 @@ public static class EnableParserEndpoint
                 logger,
                 new RabbitMqParsersStorage(
                     connectionFactory,
-                    new CacheEnabledParsersStorage(
-                        multiplexer,
-                        new PgEnabledParsersStorage(dataSource)
-                    )
+                    new PgEnabledParsersStorage(dataSource)
                 )
             ).Save(toEnable.Enable(), ct);
             return Results.Ok(new EnabledParserResult(enabled.Name, enabled.State));

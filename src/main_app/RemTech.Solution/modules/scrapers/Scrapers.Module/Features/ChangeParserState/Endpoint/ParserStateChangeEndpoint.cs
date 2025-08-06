@@ -38,10 +38,7 @@ internal static class ParserStateChangeEndpoint
         {
             IParserStateToChangeStorage storage = new LoggingParserStateStorage(
                 logger,
-                new CachedParserStateToChangeStorage(
-                    multiplexer,
-                    new NpgSqlParserStateToChange(dataSource)
-                )
+                new NpgSqlParserStateToChange(dataSource)
             );
             ParserStateToChange parser = await storage.Fetch(name, type, ct);
             ParserWithChangedState changed = parser.Change(request.StateSwitch);

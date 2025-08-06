@@ -33,10 +33,7 @@ public static class ChangeLinkActivityEndpoint
         {
             ILinkActivityToChangeStorage storage = new LoggingLinkActivityToChange(
                 logger,
-                new CachedLinksActivityToChangeStorage(
-                    multiplexer,
-                    new NpgSqlLinkActivityToChangeStorage(source)
-                )
+                new NpgSqlLinkActivityToChangeStorage(source)
             );
             LinkActivityToChange link = await storage.Fetch(linkName, parserName, parserType, ct);
             LinkWithChangedActivity changed = await storage.Save(link.Change(), ct);

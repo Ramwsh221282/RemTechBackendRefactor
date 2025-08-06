@@ -9,6 +9,23 @@ internal sealed class LoggingParsersWithLinkStorage(
     IParsersWithNewLinkStorage origin
 ) : IParsersWithNewLinkStorage
 {
+    public Task<ParserWhereToPutLink> Fetch(
+        string parserName,
+        string parserType,
+        CancellationToken ct = default
+    )
+    {
+        try
+        {
+            return origin.Fetch(parserName, parserType, ct);
+        }
+        catch (ParserWhereToPutLinkNotFoundException ex)
+        {
+            logger.Error("{Ex}", ex.Message);
+            throw;
+        }
+    }
+
     public async Task<ParserWithNewLink> Save(
         ParserWithNewLink parser,
         CancellationToken ct = default
