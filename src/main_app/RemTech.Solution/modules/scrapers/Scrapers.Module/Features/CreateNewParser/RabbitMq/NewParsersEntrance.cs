@@ -3,12 +3,10 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Scrapers.Module.Features.CreateNewParser.Cache;
 using Scrapers.Module.Features.CreateNewParser.Database;
 using Scrapers.Module.Features.CreateNewParser.Exceptions;
 using Scrapers.Module.Features.CreateNewParser.Extensions;
 using Scrapers.Module.Features.CreateNewParser.Models;
-using StackExchange.Redis;
 
 namespace Scrapers.Module.Features.CreateNewParser.RabbitMq;
 

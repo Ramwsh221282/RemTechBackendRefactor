@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
-using Scrapers.Module.Features.DisablingParser.Cache;
 using Scrapers.Module.Features.DisablingParser.Database;
 using Scrapers.Module.Features.DisablingParser.Exceptions;
 using Scrapers.Module.Features.DisablingParser.Logging;
 using Scrapers.Module.Features.DisablingParser.Models;
-using StackExchange.Redis;
 
 namespace Scrapers.Module.Features.DisablingParser.Endpoint;
 
@@ -18,7 +16,6 @@ public static class DisableParserEndpoint
         [FromQuery] string name,
         [FromQuery] string type,
         [FromQuery] string state,
-        [FromServices] ConnectionMultiplexer multiplexer,
         [FromServices] NpgsqlDataSource dataSource,
         [FromServices] Serilog.ILogger logger,
         CancellationToken ct

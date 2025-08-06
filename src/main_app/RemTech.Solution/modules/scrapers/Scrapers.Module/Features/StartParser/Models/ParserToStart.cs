@@ -3,7 +3,7 @@
 internal sealed record ParserToStart(
     string ParserName,
     string ParserType,
-    string State,
+    string ParserDomain,
     HashSet<ParserLinksToStart> Links
 )
 {

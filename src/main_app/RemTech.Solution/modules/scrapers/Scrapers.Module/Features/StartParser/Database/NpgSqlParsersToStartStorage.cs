@@ -14,17 +14,18 @@ internal sealed class NpgSqlParsersToStartStorage(NpgsqlDataSource dataSource)
             SELECT 
                 p.name as parser_name, 
                 p.type as parser_type, 
-                p.state as parser_state, 
-                l.name as link_name, 
+                p.domain as parser_domain,
+                l.name as link_name,
+                l.parser_type as parser_link_type,
                 l.parser_name as parser_link_name, 
                 l.url as parser_link_url
             FROM scrapers_module.scrapers p
-            INNER JOIN scrapers_module.scraper_links l ON p.name = l.parser_name
+            LEFT JOIN scrapers_module.scraper_links l ON p.name = l.parser_name AND p.type = l.parser_type
             WHERE p.state = 'Ожидает' AND l.activity = TRUE              
             """
         );
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
-        NpgsqlCommand command = new NpgsqlCommand(sql, connection);
+        await using NpgsqlCommand command = connection.CreateCommand();
         command.CommandText = sql;
         Dictionary<string, ParserToStart> entries = [];
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
@@ -35,24 +36,37 @@ internal sealed class NpgSqlParsersToStartStorage(NpgsqlDataSource dataSource)
             string parserName = reader.GetString(reader.GetOrdinal("parser_name"));
             if (!entries.TryGetValue(parserName, out ParserToStart? entry))
             {
-                entry = new ParserToStart(
-                    reader.GetString(reader.GetOrdinal("parser_name")),
-                    reader.GetString(reader.GetOrdinal("parser_type")),
-                    reader.GetString(reader.GetOrdinal("parser_state")),
-                    []
-                );
+                entry = ReadParserToStart(parserName, reader);
                 entries.Add(parserName, entry);
             }
 
-            string linkName = reader.GetString(reader.GetOrdinal("link_name"));
+            if (await reader.IsDBNullAsync(reader.GetOrdinal("link_name"), ct))
+                continue;
+            string linkParserType = reader.GetString(reader.GetOrdinal("parser_link_type"));
             string parserLinkName = reader.GetString(reader.GetOrdinal("parser_link_name"));
+            if (entry.ParserName != parserLinkName && entry.ParserType != linkParserType)
+                continue;
+            string linkName = reader.GetString(reader.GetOrdinal("link_name"));
             string parserLinkUrl = reader.GetString(reader.GetOrdinal("parser_link_url"));
-            ParserLinksToStart linkToStart = new(linkName, parserLinkUrl, parserLinkName);
-            if (linkToStart.LinkParserName == entry.ParserName)
-                entry.Links.Add(linkToStart);
+            ParserLinksToStart linkToStart = new(
+                linkName,
+                parserLinkUrl,
+                parserLinkName,
+                linkParserType
+            );
+            entry.Links.Add(linkToStart);
         }
-
         return entries.Values;
+    }
+
+    private ParserToStart ReadParserToStart(string parserName, DbDataReader reader)
+    {
+        return new ParserToStart(
+            reader.GetString(reader.GetOrdinal("parser_name")),
+            reader.GetString(reader.GetOrdinal("parser_type")),
+            reader.GetString(reader.GetOrdinal("parser_domain")),
+            []
+        );
     }
 
     public async Task<StartedParser> Start(StartedParser parser, CancellationToken ct = default)

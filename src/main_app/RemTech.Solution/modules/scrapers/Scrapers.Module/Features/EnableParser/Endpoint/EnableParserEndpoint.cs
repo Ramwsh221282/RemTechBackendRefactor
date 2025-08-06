@@ -2,13 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using RabbitMQ.Client;
-using Scrapers.Module.Features.EnableParser.Cache;
 using Scrapers.Module.Features.EnableParser.Database;
 using Scrapers.Module.Features.EnableParser.Exceptions;
 using Scrapers.Module.Features.EnableParser.Logging;
 using Scrapers.Module.Features.EnableParser.Models;
 using Scrapers.Module.Features.EnableParser.RabbitMq;
-using StackExchange.Redis;
 
 namespace Scrapers.Module.Features.EnableParser.Endpoint;
 
@@ -20,7 +18,6 @@ public static class EnableParserEndpoint
         [FromQuery] string name,
         [FromQuery] string state,
         [FromQuery] string type,
-        [FromServices] ConnectionMultiplexer multiplexer,
         [FromServices] NpgsqlDataSource dataSource,
         [FromServices] ConnectionFactory connectionFactory,
         [FromServices] Serilog.ILogger logger,

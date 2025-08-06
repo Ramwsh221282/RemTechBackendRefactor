@@ -7,7 +7,6 @@ using Scrapers.Module.Features.RemovingParserLink.Database;
 using Scrapers.Module.Features.RemovingParserLink.Exceptions;
 using Scrapers.Module.Features.RemovingParserLink.Logging;
 using Scrapers.Module.Features.RemovingParserLink.Models;
-using StackExchange.Redis;
 
 namespace Scrapers.Module.Features.RemovingParserLink.Endpoint;
 
@@ -26,7 +25,6 @@ internal static class RemoveParserLinkEndpoint
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource dataSource,
-        [FromServices] ConnectionMultiplexer multiplexer,
         [FromServices] Serilog.ILogger logger,
         [FromQuery] string name,
         [FromQuery] string type,

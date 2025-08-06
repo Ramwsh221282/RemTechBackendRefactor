@@ -3,12 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using Scrapers.Module.Features.UpdateWaitDays.Cache;
 using Scrapers.Module.Features.UpdateWaitDays.Database;
 using Scrapers.Module.Features.UpdateWaitDays.Exceptions;
 using Scrapers.Module.Features.UpdateWaitDays.Logging;
 using Scrapers.Module.Features.UpdateWaitDays.Models;
-using StackExchange.Redis;
 
 namespace Scrapers.Module.Features.UpdateWaitDays.Endpoint;
 
@@ -27,7 +25,6 @@ internal static class ParserWaitDaysUpdateEndpoint
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource dataSource,
-        [FromServices] ConnectionMultiplexer multiplexer,
         [FromServices] Serilog.ILogger logger,
         [FromQuery] string name,
         [FromQuery] string type,

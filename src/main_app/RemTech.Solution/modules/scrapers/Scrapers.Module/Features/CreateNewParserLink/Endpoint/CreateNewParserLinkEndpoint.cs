@@ -3,12 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using Scrapers.Module.Features.CreateNewParserLink.Cache;
 using Scrapers.Module.Features.CreateNewParserLink.Database;
 using Scrapers.Module.Features.CreateNewParserLink.Exceptions;
 using Scrapers.Module.Features.CreateNewParserLink.Logging;
 using Scrapers.Module.Features.CreateNewParserLink.Models;
-using StackExchange.Redis;
 
 namespace Scrapers.Module.Features.CreateNewParserLink.Endpoint;
 
@@ -33,7 +31,6 @@ public static class CreateNewParserLinkEndpoint
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource dataSource,
-        [FromServices] ConnectionMultiplexer multiplexer,
         [FromServices] Serilog.ILogger logger,
         [FromQuery] string name,
         [FromQuery] string type,
