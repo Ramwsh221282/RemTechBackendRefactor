@@ -7,7 +7,7 @@ using PuppeteerSharp;
 
 namespace Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Kind;
 
-public sealed class GrpcVehicleKindFromTitle(CommunicationChannel channel, IPage page)
+public sealed class GrpcVehicleKindFromTitle(ICommunicationChannel channel, IPage page)
     : IParsedVehicleKindSource
 {
     private readonly string _titleSelector = string.Intern(

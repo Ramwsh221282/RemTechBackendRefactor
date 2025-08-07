@@ -6,23 +6,15 @@ using PuppeteerSharp;
 
 namespace Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Kind;
 
-public sealed class GrpcVehicleKindFromDescription : IParsedVehicleKindSource
+public sealed class GrpcVehicleKindFromDescription(ICommunicationChannel channel, IPage page)
+    : IParsedVehicleKindSource
 {
-    private readonly CommunicationChannel _channel;
-    private readonly IPage _page;
-
-    public GrpcVehicleKindFromDescription(CommunicationChannel channel, IPage page)
-    {
-        _channel = channel;
-        _page = page;
-    }
-
     public async Task<ParsedVehicleKind> Read()
     {
         string[] textParts = await new EmptyOnErrorDescriptionParts(
-            new AvitoDescriptionParts(_page)
+            new AvitoDescriptionParts(page)
         ).Read();
-        VehicleKindRecognition recognition = new(_channel);
+        VehicleKindRecognition recognition = new(channel);
         foreach (string text in textParts)
         {
             Characteristic kind = await recognition.Recognize(text);

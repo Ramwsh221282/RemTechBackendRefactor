@@ -1,5 +1,4 @@
 ﻿using Npgsql;
-using RemTech.Postgres.Adapter.Library;
 using RemTech.Result.Library;
 using RemTech.Vehicles.Module.Types.Characteristics;
 using RemTech.Vehicles.Module.Types.Characteristics.Adapters.Storage.Postgres;
@@ -22,7 +21,9 @@ public sealed class PgCharacteristicsSinking(
         VehicleIdentity identity = sink.VehicleId();
         IItemPrice price = sink.VehiclePrice();
         VehiclePhotos photos = sink.VehiclePhotos();
-        Vehicle vehicle = new(identity, price, photos);
+        string sourceUrl = sink.SourceUrl();
+        string sourceDomain = sink.SourceDomain();
+        Vehicle vehicle = new(identity, price, photos, sourceUrl, sourceDomain);
         foreach (Characteristic entry in stored)
         {
             try

@@ -5,7 +5,7 @@ using PuppeteerSharp;
 
 namespace Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Identity;
 
-public sealed class DbOrParsedVehicleKindSource(IPage page, CommunicationChannel channel)
+public sealed class DbOrParsedVehicleKindSource(IPage page, ICommunicationChannel channel)
     : IParsedVehicleKindSource
 {
     public async Task<ParsedVehicleKind> Read()

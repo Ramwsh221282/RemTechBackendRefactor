@@ -8,6 +8,7 @@ internal sealed record StartedParser(
     string ParserType,
     string ParserDomain,
     string ParserState,
+    int Processed,
     HashSet<StartedParserLink> Links
 )
 {

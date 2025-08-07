@@ -23,7 +23,8 @@ internal sealed class NewVehicleModelsStorage(NpgsqlDataSource dataSource) : IVe
         int affected = await command.ExecuteNonQueryAsync();
         return affected == 0
             ? throw new UnableToStoreVehicleModelException(
-                $"Не удается сохранить модель техники. Дубликат по имени {text}"
+                "Не удается сохранить модель техники. Дубликат по имени",
+                text
             )
             : vehicleModel;
     }

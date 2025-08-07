@@ -2,28 +2,16 @@
 
 namespace Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Geos;
 
-public sealed class LoggingVehicleGeoSource : IParsedVehicleGeoSource
+public sealed class LoggingVehicleGeoSource(Serilog.ILogger logger, IParsedVehicleGeoSource origin)
+    : IParsedVehicleGeoSource
 {
-    private readonly Serilog.ILogger _logger;
-    private readonly IParsedVehicleGeoSource _origin;
-
-    public LoggingVehicleGeoSource(Serilog.ILogger logger, IParsedVehicleGeoSource origin)
-    {
-        _logger = logger;
-        _origin = origin;
-    }
-
     public async Task<ParsedVehicleGeo> Read()
     {
-        ParsedVehicleGeo geo = await _origin.Read();
+        ParsedVehicleGeo geo = await origin.Read();
         if (geo)
-            _logger.Information(
-                "Vehicle geo info: Region - {0}. City - {1}.",
-                (string)geo.Region(),
-                (string)geo.City()
-            );
+            logger.Information("Vehicle geo info: Region - {0}.", (string)geo);
         else
-            _logger.Warning("Unable to read vehicle geo.");
+            logger.Warning("Unable to read vehicle geo.");
         return geo;
     }
 }

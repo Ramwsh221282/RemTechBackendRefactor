@@ -15,7 +15,7 @@ internal sealed class StartingParsersEntrance(
     public async Task Execute(IJobExecutionContext context)
     {
         IParsersToStartStorage storage = new NpgSqlParsersToStartStorage(dataSource);
-        IEnumerable<ParserToStart> parsers = await storage.Fetch();
+        IEnumerable<ParserToStart> parsers = await storage.Fetch(DateTime.UtcNow);
         ParserToStart[] array = parsers.ToArray();
         foreach (ParserToStart parser in array)
         {

@@ -9,7 +9,7 @@ using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Prices;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles;
 
-public interface IVehicleJsonSink : IDisposable
+public interface IVehicleJsonSink
 {
     VehicleKind Kind();
     VehicleBrand Brand();
@@ -23,4 +23,6 @@ public interface IVehicleJsonSink : IDisposable
     string ParserName();
     string ParserType();
     string LinkName();
+    string SourceUrl();
+    string SourceDomain();
 }

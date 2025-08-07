@@ -31,12 +31,16 @@ public sealed class RabbitMqChannel : IDisposable, IAsyncDisposable
         await _connection.DisposeAsync();
     }
 
+    public async Task Acknowledge(BasicDeliverEventArgs ea, CancellationToken cancel)
+    {
+        await _channel.BasicAckAsync(ea.DeliveryTag, false, cancellationToken: cancel);
+    }
+
     public async Task<RabbitAcceptPoint> MakeAcceptPoint(
-        string queueName,
         AsyncEventHandler<BasicDeliverEventArgs> handler
     )
     {
-        return new RabbitAcceptPoint(_channel, queueName, handler);
+        return new RabbitAcceptPoint(_channel, handler);
     }
 
     public async Task<RabbitSendPoint> MakeSendPoint(string queueName)

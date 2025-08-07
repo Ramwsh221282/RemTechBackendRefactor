@@ -23,7 +23,8 @@ internal sealed class NewVehicleKindsStorage(NpgsqlDataSource dataSource) : IVeh
         int affected = await command.ExecuteNonQueryAsync();
         return affected == 0
             ? throw new UnableToStoreVehicleKindException(
-                $"Не удается сохранить тип техники. Дубликат по названию {name}"
+                $"Не удается сохранить тип техники. Дубликат по названию.",
+                name
             )
             : kind;
     }

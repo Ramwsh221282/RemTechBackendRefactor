@@ -1,20 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <PackageReference Include="PuppeteerExtraSharp" Version="2.0.0" />
-      <PackageReference Include="PuppeteerSharp" Version="15.0.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\..\modules\shared_module\adapters\RemTech.Logging.Adapter\RemTech.Logging.Adapter.csproj" />
-      <ProjectReference Include="..\..\..\modules\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj" />
-      <ProjectReference Include="..\..\vehicle_parsing\Parsing.Vehicles.Grpc.Recognition\Parsing.Vehicles.Grpc.Recognition.csproj" />
-    </ItemGroup>
-
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="PuppeteerExtraSharp" Version="2.0.0" />
+    <PackageReference Include="PuppeteerSharp" Version="15.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\modules\shared_module\adapters\RemTech.Logging.Adapter\RemTech.Logging.Adapter.csproj" />
+    <ProjectReference Include="..\..\vehicle_parsing\Parsing.Vehicles.Grpc.Recognition\Parsing.Vehicles.Grpc.Recognition.csproj" />
+  </ItemGroup>
 </Project>

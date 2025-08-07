@@ -164,8 +164,13 @@ public sealed class CachedVehicleJsonSink : IVehicleJsonSink
         return _origin.LinkName();
     }
 
-    public void Dispose()
+    public string SourceUrl()
     {
-        _origin.Dispose();
+        return _origin.SourceUrl();
+    }
+
+    public string SourceDomain()
+    {
+        return _origin.SourceDomain();
     }
 }

@@ -13,9 +13,9 @@ public sealed class PgSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
         string sql = string.Intern(
             """
             INSERT INTO parsed_advertisements_module.parsed_vehicles
-            (id, kind_id, brand_id, geo_id, model_id, price, is_nds, object, document_tsvector)
+            (id, kind_id, brand_id, geo_id, model_id, price, is_nds, source_url, source_domain, object, document_tsvector)
             VALUES
-            (@id, @kind_id, @brand_id, @geo_id, @model_id, @price, @is_nds, @object, to_tsvector('russian', @document_tsvector))
+            (@id, @kind_id, @brand_id, @geo_id, @model_id, @price, @is_nds, @source_url, @source_domain, @object, to_tsvector('russian', @document_tsvector))
             ON CONFLICT(id) DO NOTHING;
             """
         );
@@ -38,6 +38,8 @@ public sealed class PgSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
         Guid modelId = Model.Id();
         long price = Price.Value();
         bool nds = Price.UnderNds();
+        string sourceUrl = SourceUrl;
+        string sourceDomain = SourceDomain;
         return new ParametrizingPgCommand(new PgCommand(connection, sql))
             .With("@id", id)
             .With("@kind_id", kindId)
@@ -46,6 +48,8 @@ public sealed class PgSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
             .With("@model_id", modelId)
             .With("@price", price)
             .With("@is_nds", nds)
+            .With("@source_url", sourceUrl)
+            .With("@source_domain", sourceDomain)
             .With("@object", new JsonVehicle(this).Read(), NpgsqlDbType.Jsonb)
             .With("@document_tsvector", MakeTsVectorString(), NpgsqlDbType.Text);
     }

@@ -1,18 +1,11 @@
-﻿using RemTech.Core.Shared.Primitives;
+﻿namespace Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleModels;
 
-namespace Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleModels;
-
-public sealed class ParsedVehicleModel
+public sealed class ParsedVehicleModel(string? model)
 {
-    private readonly NotEmptyString _model;
+    private readonly string _model = model ?? string.Empty;
 
-    public ParsedVehicleModel(NotEmptyString model) =>
-        _model = model;
-
-    public ParsedVehicleModel(string? model) : this(new  NotEmptyString(model)) 
-    { }
-
-    public static implicit operator NotEmptyString(ParsedVehicleModel model) => model._model;
     public static implicit operator string(ParsedVehicleModel model) => model._model;
-    public static implicit operator bool(ParsedVehicleModel model) => model._model;
+
+    public static implicit operator bool(ParsedVehicleModel model) =>
+        !string.IsNullOrWhiteSpace(model._model);
 }

@@ -68,7 +68,7 @@ internal sealed class NpgSqlLinkActivityToChangeStorage(NpgsqlDataSource dataSou
             """
         );
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
-        await using var command = new NpgsqlCommand(sql, connection);
+        await using NpgsqlCommand command = new NpgsqlCommand(sql, connection);
         command.CommandText = sql;
         command.Parameters.Add(new NpgsqlParameter<string>("@name", link.Name));
         command.Parameters.Add(new NpgsqlParameter<string>("@parser_name", link.ParserName));

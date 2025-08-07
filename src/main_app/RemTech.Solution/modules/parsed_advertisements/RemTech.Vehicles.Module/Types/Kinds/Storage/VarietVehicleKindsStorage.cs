@@ -22,6 +22,6 @@ internal sealed class VarietVehicleKindsStorage : IVehicleKindsStorage
             catch (UnableToStoreVehicleKindException) { }
         }
 
-        throw new UnableToStoreVehicleKindException("Unable to save vehicle kind");
+        throw new UnableToStoreVehicleKindException("Unable to save vehicle kind", kind.Name());
     }
 }

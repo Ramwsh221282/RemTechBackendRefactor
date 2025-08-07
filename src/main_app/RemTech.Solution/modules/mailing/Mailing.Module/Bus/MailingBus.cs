@@ -6,22 +6,31 @@ namespace Mailing.Module.Bus;
 
 internal sealed class MailingBusReceiver(
     IEmailSendersSource senders,
-    Channel<MailingBusMessage> channel
+    Channel<MailingBusMessage> channel,
+    Serilog.ILogger logger
 ) : BackgroundService
 {
     private readonly ChannelReader<MailingBusMessage> _reader = channel.Reader;
+
+    public override Task StartAsync(CancellationToken cancellationToken)
+    {
+        logger.Information("{Entrance} starting.", nameof(MailingBusReceiver));
+        return base.StartAsync(cancellationToken);
+    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            if (!_reader.TryRead(out MailingBusMessage? message))
-                return;
-            IEnumerable<IEmailSender> senders1 = await senders.ReadAll(stoppingToken);
-            IEmailSender[] array = senders1.ToArray();
-            if (array.Length == 0)
-                return;
-            IEmailSender first = array[0];
+            await _reader.WaitToReadAsync(stoppingToken);
+            while (_reader.TryRead(out var message))
+            {
+                IEnumerable<IEmailSender> existingSenders = await senders.ReadAll(stoppingToken);
+                IEmailSender[] array = existingSenders.ToArray();
+                if (array.Length == 0)
+                    return;
+                IEmailSender firstSender = array[0];
+            }
         }
     }
 }

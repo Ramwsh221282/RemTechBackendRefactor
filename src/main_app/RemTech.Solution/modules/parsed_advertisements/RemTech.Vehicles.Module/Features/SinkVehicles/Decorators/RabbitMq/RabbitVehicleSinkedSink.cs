@@ -1,19 +1,33 @@
 ﻿using RemTech.Result.Library;
+using Scrapers.Module.Features.IncreaseProcessedAmount.MessageBus;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;
 
-public sealed class RabbitVehicleSinkedSink : ITransportAdvertisementSinking
+public sealed class RabbitVehicleSinkedSink(
+    IIncreaseProcessedPublisher publisher,
+    ITransportAdvertisementSinking origin,
+    Serilog.ILogger logger
+) : ITransportAdvertisementSinking
 {
-    private readonly ITransportAdvertisementSinking _origin;
-
-    public RabbitVehicleSinkedSink(ITransportAdvertisementSinking origin) => _origin = origin;
-
     public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
     {
-        Status result = await _origin.Sink(sink, ct);
+        Status result = await origin.Sink(sink, ct);
         if (result.IsSuccess)
         {
-            Console.WriteLine("Should publish to parsers queue.");
+            string name = sink.ParserName();
+            string type = sink.ParserType();
+            string link = sink.LinkName();
+            await publisher.SendIncreaseProcessed(name, type, link);
+            logger.Information(
+                "Sended message to increase processed for {Parser} {Type} {Link}",
+                name,
+                type,
+                link
+            );
+        }
+        else
+        {
+            logger.Error("Error at saving vehicle: {Error}.", result.Error.ErrorText);
         }
 
         return result;

@@ -19,11 +19,23 @@ public class Vehicle : IVehicle
     protected virtual GeoLocation Location { get; }
     protected virtual IItemPrice Price { get; }
     protected virtual VehiclePhotos Photos { get; }
+
+    public string SourceUrl { get; private set; }
+
+    public string SourceDomain { get; private set; }
     public virtual VehicleCharacteristics Characteristics { get; }
     protected virtual VehicleModel Model { get; }
 
-    public Vehicle(VehicleIdentity identity, IItemPrice price, VehiclePhotos photos)
+    public Vehicle(
+        VehicleIdentity identity,
+        IItemPrice price,
+        VehiclePhotos photos,
+        string sourceUrl,
+        string sourceDomain
+    )
     {
+        SourceUrl = sourceUrl;
+        SourceDomain = sourceDomain;
         Identity = identity;
         Price = price;
         Photos = photos;
@@ -71,5 +83,7 @@ public class Vehicle : IVehicle
         Photos = origin.Photos;
         Characteristics = origin.Characteristics;
         Model = origin.Model;
+        SourceUrl = origin.SourceUrl;
+        SourceDomain = origin.SourceDomain;
     }
 }

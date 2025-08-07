@@ -1,5 +1,6 @@
 ﻿using RabbitMQ.Client;
 using RemTech.RabbitMq.Adapter;
+using RemTech.Vehicles.Module.Types.Brands.Storage;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;
 
@@ -20,15 +21,20 @@ public sealed class RabbitVehicleSink : IDisposable, IAsyncDisposable
         _origin = origin;
     }
 
-    public async Task OpenQueue(string queueName, CancellationToken ct = default)
+    public async Task OpenQueue(CancellationToken ct = default)
     {
         _acceptPoint ??= await _channel.MakeAcceptPoint(
-            queueName,
             async (_, @event) =>
             {
-                using VehicleJsonSink sink = new VehicleJsonSink(@event.Body);
-                await _origin.Sink(sink, ct);
-                await _acceptPoint!.Acknowledge(@event, ct);
+                try
+                {
+                    VehicleSinkBytes sink = new VehicleSinkBytes(@event.Body.ToArray());
+                    await _origin.Sink(sink, ct);
+                }
+                finally
+                {
+                    await _channel.Acknowledge(@event, ct);
+                }
             }
         );
         await _acceptPoint.StartConsuming(ct);

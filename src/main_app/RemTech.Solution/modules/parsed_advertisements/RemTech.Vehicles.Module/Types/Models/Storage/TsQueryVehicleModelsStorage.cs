@@ -53,7 +53,8 @@ internal sealed class TsQueryVehicleModelsStorage(NpgsqlDataSource dataSource)
         await using DbDataReader reader = await command.ExecuteReaderAsync();
         if (!await reader.ReadAsync())
             throw new UnableToStoreVehicleModelException(
-                "Не удается получить модель техники по ts query."
+                "Не удается получить модель техники по ts query.",
+                name
             );
         Guid id = reader.GetGuid(reader.GetOrdinal("id"));
         string text = reader.GetString(reader.GetOrdinal("text"));

@@ -34,7 +34,7 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
         _photos = new UniqueParsedVehiclePhotos();
         _price = new ParsedVehiclePrice(-1, string.Empty);
         _urlSource = new ParsedVehicleUrl(new NotEmptyString(string.Empty));
-        _geo = new ParsedVehicleGeo(new ParsedVehicleRegion(), new ParsedVehicleCity());
+        _geo = new ParsedVehicleGeo(null);
     }
 
     public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin)

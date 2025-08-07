@@ -1,15 +1,30 @@
+using System.Diagnostics;
 using System.Text.Json;
-using Parsing.RabbitMq.FinishParser;
-using Parsing.RabbitMq.FinishParserLink;
+using Avito.Vehicles.Service.VehiclesParsing;
+using Parsing.RabbitMq.Facade;
+using Parsing.RabbitMq.PublishVehicle;
 using Parsing.RabbitMq.StartParsing;
+using Parsing.SDK.Browsers;
+using Parsing.SDK.Browsers.BrowserLoadings;
+using Parsing.SDK.Browsers.InstantiationModes;
+using Parsing.SDK.Browsers.InstantiationOptions;
+using Parsing.SDK.Browsers.PageSources;
+using Parsing.Vehicles.Common.ParsedVehicles;
+using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
+using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePhotos;
+using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePrices;
+using Parsing.Vehicles.Common.TextWriting;
+using Parsing.Vehicles.Grpc.Recognition;
+using PuppeteerSharp;
+using RabbitMQ.Client.Events;
 
 namespace Avito.Vehicles.Service;
 
 public class Worker(
     Serilog.ILogger logger,
     IStartParsingListener listener,
-    IParserFinishMessagePublisher finishedPublisher,
-    IParserLinkFinishedMessagePublisher linkFinishedPublisher
+    IParserRabbitMqActionsPublisher publisher,
+    ICommunicationChannel communicationChannel
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -21,37 +36,100 @@ public class Worker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        listener.Consumer.ReceivedAsync += async (sender, args) =>
-        {
-            logger.Information("Message received");
-            ParserStartedRabbitMqMessage? parserStarted =
-                JsonSerializer.Deserialize<ParserStartedRabbitMqMessage>(args.Body.ToArray());
-            if (parserStarted != null)
-            {
-                ParserFinishedMessage finished = new ParserFinishedMessage(
-                    parserStarted.ParserName,
-                    parserStarted.ParserType,
-                    10000
-                );
-                await finishedPublisher.Publish(finished);
-                logger.Information("Sended message to publish.");
-                foreach (ParserLinkStartedRabbitMqMessage link in parserStarted.Links)
-                {
-                    await linkFinishedPublisher.Publish(
-                        new FinishedParserLinkMessage(
-                            parserStarted.ParserName,
-                            parserStarted.ParserType,
-                            link.LinkName,
-                            100000
-                        )
-                    );
-                    logger.Information("Sended link publisher");
-                }
-            }
-            await listener.Acknowledge(args, stoppingToken);
-        };
+        listener.Consumer.ReceivedAsync += HandleMessage;
         await listener.StartConsuming(stoppingToken);
         logger.Information("Worker service started consuming.");
         stoppingToken.ThrowIfCancellationRequested();
+    }
+
+    private async Task HandleMessage(object sender, BasicDeliverEventArgs eventArgs)
+    {
+        await listener.Acknowledge(eventArgs);
+        ParserStartedRabbitMqMessage? parserStarted =
+            JsonSerializer.Deserialize<ParserStartedRabbitMqMessage>(eventArgs.Body.ToArray());
+        if (parserStarted == null)
+            return;
+        Stopwatch parserStopwatch = new Stopwatch();
+        parserStopwatch.Start();
+        foreach (var link in parserStarted.Links)
+        {
+            Stopwatch parserLinkStopwatch = new Stopwatch();
+            parserLinkStopwatch.Start();
+            await using IScrapingBrowser browser = await CreateBrowser(link.LinkUrl);
+            await using IBrowserPagesSource pagesSource = await browser.AccessPages();
+            foreach (IPage page in pagesSource.Iterate())
+            {
+                IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
+                    page,
+                    new NoTextWrite(),
+                    logger,
+                    communicationChannel,
+                    link.LinkUrl
+                );
+                await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
+                {
+                    if (!await new ValidatingParsedVehicle(vehicle).IsValid())
+                        continue;
+                    ParsedVehiclePrice price = await vehicle.Price();
+                    CharacteristicsDictionary ctxes = await vehicle.Characteristics();
+                    UniqueParsedVehiclePhotos photos = await vehicle.Photos();
+                    VehiclePublishMessage message = new VehiclePublishMessage(
+                        new ParserBody(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            parserStarted.ParserDomain
+                        ),
+                        new ParserLinkBody(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            parserStarted.ParserDomain,
+                            link.LinkName,
+                            link.LinkUrl
+                        ),
+                        new VehicleBody(
+                            await vehicle.Identity(),
+                            await vehicle.Kind(),
+                            await vehicle.Brand(),
+                            await vehicle.Model(),
+                            price,
+                            price.IsNds(),
+                            await vehicle.Geo(),
+                            await vehicle.SourceUrl(),
+                            ctxes
+                                .Read()
+                                .Select(c => new VehicleBodyCharacteristic(c.Name(), c.Value())),
+                            photos.Read().Select(p => new VehicleBodyPhoto(p))
+                        )
+                    );
+                    await publisher.SayVehicleFinished(message);
+                }
+            }
+            parserLinkStopwatch.Stop();
+            long linkSeconds = (long)parserLinkStopwatch.Elapsed.TotalSeconds;
+            await publisher.SayParserLinkFinished(
+                parserStarted.ParserName,
+                parserStarted.ParserType,
+                link.LinkName,
+                linkSeconds
+            );
+        }
+        parserStopwatch.Stop();
+        long parserStopwatchSeconds = (long)parserStopwatch.Elapsed.TotalSeconds;
+        await publisher.SayParserFinished(
+            parserStarted.ParserName,
+            parserStarted.ParserType,
+            parserStopwatchSeconds
+        );
+    }
+
+    private async Task<IScrapingBrowser> CreateBrowser(string url)
+    {
+        return new SinglePagedScrapingBrowser(
+            await new DefaultBrowserInstantiation(
+                new HeadlessBrowserInstantiationOptions(),
+                new BasicBrowserLoading()
+            ).Instantiation(),
+            url
+        );
     }
 }

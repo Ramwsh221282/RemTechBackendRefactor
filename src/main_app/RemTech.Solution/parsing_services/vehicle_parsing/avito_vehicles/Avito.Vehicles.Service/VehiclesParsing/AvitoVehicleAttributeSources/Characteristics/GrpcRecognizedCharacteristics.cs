@@ -21,41 +21,33 @@ using PuppeteerSharp;
 
 namespace Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Characteristics;
 
-public sealed class GrpcRecognizedCharacteristics : IKeyValuedCharacteristicsSource
+public sealed class GrpcRecognizedCharacteristics(IPage page, ICommunicationChannel channel)
+    : IKeyValuedCharacteristicsSource
 {
-    private readonly IPage _page;
-    private readonly CommunicationChannel _channel;
-
-    public GrpcRecognizedCharacteristics(IPage page, CommunicationChannel channel)
-    {
-        _page = page;
-        _channel = channel;
-    }
-
     public async Task<CharacteristicsDictionary> Read()
     {
         IElementHandle[] ctxes = await new DefaultOnErrorAvitoCharacteristics(
-            new AvitoCharacteristicsSource(_page)
+            new AvitoCharacteristicsSource(page)
         ).Read();
         string ctxRawText = string.Join(' ', await CharacteristicTexts(ctxes));
         CharacteristicsDictionary dictionary = new CharacteristicsDictionary();
         DictionariedRecognitions recognitions = await new DictionariedRecognitions()
-            .With(new BucketCapacityRecognition(_channel))
-            .With(new BucketControlTypeRecognition(_channel))
-            .With(new BuRecognition(_channel))
-            .With(new EngineModelRecognition(_channel))
-            .With(new EnginePowerRecognition(_channel))
-            .With(new EngineTypeRecognition(_channel))
-            .With(new EngineVolumeRecognition(_channel))
-            .With(new FuelTankCapacityRecognition(_channel))
-            .With(new LoadingHeightRecognition(_channel))
-            .With(new LoadingWeightRecognition(_channel))
-            .With(new ReleaseYearRecognition(_channel))
-            .With(new TorqueRecognition(_channel))
-            .With(new TransportHoursRecognition(_channel))
-            .With(new UnloadingHeightRecognition(_channel))
-            .With(new VinRecognition(_channel))
-            .With(new WeightRecognition(_channel))
+            .With(new BucketCapacityRecognition(channel))
+            .With(new BucketControlTypeRecognition(channel))
+            .With(new BuRecognition(channel))
+            .With(new EngineModelRecognition(channel))
+            .With(new EnginePowerRecognition(channel))
+            .With(new EngineTypeRecognition(channel))
+            .With(new EngineVolumeRecognition(channel))
+            .With(new FuelTankCapacityRecognition(channel))
+            .With(new LoadingHeightRecognition(channel))
+            .With(new LoadingWeightRecognition(channel))
+            .With(new ReleaseYearRecognition(channel))
+            .With(new TorqueRecognition(channel))
+            .With(new TransportHoursRecognition(channel))
+            .With(new UnloadingHeightRecognition(channel))
+            .With(new VinRecognition(channel))
+            .With(new WeightRecognition(channel))
             .Processed(ctxRawText);
         foreach (var recognition in recognitions.All())
             dictionary.With(

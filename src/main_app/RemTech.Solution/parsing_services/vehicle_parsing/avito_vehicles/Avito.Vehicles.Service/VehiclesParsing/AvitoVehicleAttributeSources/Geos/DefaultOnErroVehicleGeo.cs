@@ -2,24 +2,18 @@
 
 namespace Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Geos;
 
-public sealed class DefaultOnErroVehicleGeo : IParsedVehicleGeoSource
+public sealed class DefaultOnErroVehicleGeo(IParsedVehicleGeoSource origin)
+    : IParsedVehicleGeoSource
 {
-    private readonly IParsedVehicleGeoSource _origin;
-
-    public DefaultOnErroVehicleGeo(IParsedVehicleGeoSource origin)
-    {
-        _origin = origin;
-    }
-
     public async Task<ParsedVehicleGeo> Read()
     {
         try
         {
-            return await _origin.Read();
+            return await origin.Read();
         }
         catch
         {
-            return new ParsedVehicleGeo(new ParsedVehicleRegion(), new ParsedVehicleCity());
+            return new ParsedVehicleGeo(null);
         }
     }
 }

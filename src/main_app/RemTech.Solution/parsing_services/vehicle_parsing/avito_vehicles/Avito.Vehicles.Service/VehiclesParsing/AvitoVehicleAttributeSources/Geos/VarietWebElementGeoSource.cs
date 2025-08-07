@@ -22,6 +22,6 @@ public sealed class VarietWebElementGeoSource : IParsedVehicleGeoSource
                 return geo;
         }
 
-        return new ParsedVehicleGeo(new ParsedVehicleRegion(), new ParsedVehicleCity());
+        return new ParsedVehicleGeo(null);
     }
 }
