@@ -26,7 +26,8 @@ internal sealed class PgTgrmVehicleModelsStorage(NpgsqlDataSource dataSource)
         await using DbDataReader reader = await command.ExecuteReaderAsync();
         if (!await reader.ReadAsync())
             throw new UnableToStoreVehicleModelException(
-                "Не удается получить модель техники по pg tgrm."
+                "Не удается получить модель техники по pg tgrm.",
+                name
             );
         Guid id = reader.GetGuid(reader.GetOrdinal("id"));
         string text = reader.GetString(reader.GetOrdinal("text"));

@@ -15,7 +15,7 @@ internal sealed class NpgSqlFinishedParser(NpgsqlDataSource dataSource) : IParse
     {
         string sql = string.Intern(
             """
-            SELECT name, state, type FROM scrapers_module.scrapers
+            SELECT name, wait_days, type FROM scrapers_module.scrapers
             WHERE name = @name AND type = @type;
             """
         );
@@ -25,14 +25,12 @@ internal sealed class NpgSqlFinishedParser(NpgsqlDataSource dataSource) : IParse
         command.Parameters.Add(new NpgsqlParameter<string>("@name", parserName));
         command.Parameters.Add(new NpgsqlParameter<string>("@type", parserType));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
-        if (!reader.HasRows)
-            throw new CannotFindParserToFinishException(parserName, parserType);
-        if (!await reader.ReadAsync(ct))
+        if (!reader.HasRows || !await reader.ReadAsync(ct))
             throw new CannotFindParserToFinishException(parserName, parserType);
         return new ParserToFinish(
             reader.GetString(reader.GetOrdinal("name")),
             reader.GetString(reader.GetOrdinal("type")),
-            reader.GetString(reader.GetOrdinal("state"))
+            reader.GetInt32(reader.GetOrdinal("wait_days"))
         );
     }
 
@@ -44,19 +42,25 @@ internal sealed class NpgSqlFinishedParser(NpgsqlDataSource dataSource) : IParse
             SET total_seconds = @total,
                 hours = @hours,
                 minutes = @minutes,
-                seconds = @seconds
+                seconds = @seconds,
+                last_run = @last_run,
+                next_run = @next_run,
+                state = @state
             WHERE name = @name AND type = @type;
             """
         );
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         await using NpgsqlCommand command = connection.CreateCommand();
         command.CommandText = sql;
+        command.Parameters.Add(new NpgsqlParameter<string>("@state", parser.ParserState));
         command.Parameters.Add(new NpgsqlParameter<string>("@name", parser.ParserName));
         command.Parameters.Add(new NpgsqlParameter<string>("@type", parser.ParserType));
         command.Parameters.Add(new NpgsqlParameter<long>("@total", parser.TotalElapsedSeconds));
         command.Parameters.Add(new NpgsqlParameter<int>("@hours", parser.Hours));
         command.Parameters.Add(new NpgsqlParameter<int>("@minutes", parser.Minutes));
         command.Parameters.Add(new NpgsqlParameter<int>("@seconds", parser.Seconds));
+        command.Parameters.Add(new NpgsqlParameter<DateTime>("@last_run", parser.LastRun));
+        command.Parameters.Add(new NpgsqlParameter<DateTime>("@next_run", parser.NextRun));
         int affected = await command.ExecuteNonQueryAsync(ct);
         return affected == 0
             ? throw new CannotFindParserToFinishException(parser.ParserName, parser.ParserType)

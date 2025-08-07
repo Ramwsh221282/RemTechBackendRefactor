@@ -3,7 +3,7 @@
 internal sealed record ParserToStart(
     string ParserName,
     string ParserType,
-    string State,
+    string ParserDomain,
     HashSet<ParserLinksToStart> Links
 )
 {
@@ -12,6 +12,7 @@ internal sealed record ParserToStart(
         HashSet<StartedParserLink> links = Links
             .Select(l => new StartedParserLink(l.LinkName, l.LinkUrl, l.LinkParserName))
             .ToHashSet();
-        return new StartedParser(ParserName, ParserType, links);
+        string startedState = "Работает";
+        return new StartedParser(ParserName, ParserType, ParserDomain, startedState, 0, links);
     }
 }

@@ -3,6 +3,7 @@ using RabbitMQ.Client;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Logging;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;
+using Scrapers.Module.Features.IncreaseProcessedAmount.MessageBus;
 using Serilog;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.BackgroundService;
@@ -14,6 +15,7 @@ public sealed class BackgroundJobTransportAdvertisementSinking
     private readonly ILogger _logger;
 
     public BackgroundJobTransportAdvertisementSinking(
+        IIncreaseProcessedPublisher publisher,
         ConnectionFactory rabbitConnectionFactory,
         NpgsqlDataSource connection,
         ILogger logger
@@ -25,6 +27,7 @@ public sealed class BackgroundJobTransportAdvertisementSinking
             new LoggingVehicleSink(
                 logger,
                 new RabbitVehicleSinkedSink(
+                    publisher,
                     new ExceptionHandlingVehicleSinking(
                         new PgVehicleBrandSinking(
                             connection,
@@ -44,8 +47,10 @@ public sealed class BackgroundJobTransportAdvertisementSinking
                                     )
                                 )
                             )
-                        )
-                    )
+                        ),
+                        logger
+                    ),
+                    logger
                 )
             )
         );
@@ -57,7 +62,7 @@ public sealed class BackgroundJobTransportAdvertisementSinking
             "Background job {0} is starting...",
             nameof(BackgroundJobTransportAdvertisementSinking)
         );
-        await _rabbitSink.OpenQueue("vehicles_sink", cancellationToken);
+        await _rabbitSink.OpenQueue(cancellationToken);
         _logger.Information(
             "Background job {0} has been started.",
             nameof(BackgroundJobTransportAdvertisementSinking)

@@ -24,8 +24,9 @@ internal sealed class PgTgrmVehicleKindsStorage(NpgsqlDataSource dataSource) : I
         command.Parameters.Add(new NpgsqlParameter<string>("@input", name));
         await using DbDataReader reader = await command.ExecuteReaderAsync();
         if (!await reader.ReadAsync())
-            throw new UnableToStoreBrandException(
-                "Невозможно получить тип техники по tgrm запросу."
+            throw new UnableToStoreVehicleKindException(
+                "Невозможно получить тип техники по tgrm запросу.",
+                name
             );
         Guid id = reader.GetGuid(reader.GetOrdinal("id"));
         string text = reader.GetString(reader.GetOrdinal("text"));

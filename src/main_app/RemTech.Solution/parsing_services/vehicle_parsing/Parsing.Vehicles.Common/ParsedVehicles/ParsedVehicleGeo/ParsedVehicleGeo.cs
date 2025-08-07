@@ -2,20 +2,15 @@
 
 public sealed class ParsedVehicleGeo
 {
-    private readonly ParsedVehicleRegion _region;
-    private readonly ParsedVehicleCity _city;
+    private readonly string _region;
 
-    public ParsedVehicleGeo(ParsedVehicleRegion region, ParsedVehicleCity city)
+    public ParsedVehicleGeo(string? region)
     {
-        _region = region;
-        _city = city;
+        _region = region ?? string.Empty;
     }
 
-    public ParsedVehicleRegion Region() => _region;
-    public ParsedVehicleCity City() => _city;
+    public static implicit operator string(ParsedVehicleGeo region) => region._region;
 
-    public static implicit operator bool(ParsedVehicleGeo geo)
-    {
-        return geo._region;
-    }
+    public static implicit operator bool(ParsedVehicleGeo region) =>
+        !string.IsNullOrWhiteSpace(region._region);
 }

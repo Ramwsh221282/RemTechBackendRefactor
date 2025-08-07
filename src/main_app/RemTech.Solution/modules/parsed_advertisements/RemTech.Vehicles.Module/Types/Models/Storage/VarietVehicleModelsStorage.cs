@@ -22,6 +22,9 @@ internal sealed class VarietVehicleModelsStorage : IVehicleModelsStorage
             catch (UnableToStoreVehicleModelException ex) { }
         }
 
-        throw new UnableToStoreVehicleModelException("Unable to save vehicle model");
+        throw new UnableToStoreVehicleModelException(
+            "Unable to save vehicle model",
+            vehicleModel.NameString()
+        );
     }
 }

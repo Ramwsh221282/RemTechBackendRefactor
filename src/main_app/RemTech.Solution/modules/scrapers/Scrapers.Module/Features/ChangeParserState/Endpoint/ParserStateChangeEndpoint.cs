@@ -3,12 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using Scrapers.Module.Features.ChangeParserState.Cache;
 using Scrapers.Module.Features.ChangeParserState.Database;
 using Scrapers.Module.Features.ChangeParserState.Exception;
 using Scrapers.Module.Features.ChangeParserState.Logging;
 using Scrapers.Module.Features.ChangeParserState.Models;
-using StackExchange.Redis;
 
 namespace Scrapers.Module.Features.ChangeParserState.Endpoint;
 
@@ -26,7 +24,6 @@ internal static class ParserStateChangeEndpoint
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource dataSource,
-        [FromServices] ConnectionMultiplexer multiplexer,
         [FromServices] Serilog.ILogger logger,
         [FromQuery] string name,
         [FromQuery] string type,

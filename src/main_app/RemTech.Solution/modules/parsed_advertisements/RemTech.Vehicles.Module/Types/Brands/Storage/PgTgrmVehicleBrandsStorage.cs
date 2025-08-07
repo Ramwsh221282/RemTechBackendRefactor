@@ -25,7 +25,10 @@ internal sealed class PgTgrmVehicleBrandsStorage(NpgsqlDataSource dataSource)
         command.Parameters.Add(new NpgsqlParameter<string>("@input", parameter));
         await using DbDataReader reader = await command.ExecuteReaderAsync();
         if (!await reader.ReadAsync())
-            throw new UnableToStoreBrandException("Не удается получить бренд по pg tgrm запросу.");
+            throw new UnableToStoreBrandException(
+                "Не удается получить бренд по pg tgrm запросу.",
+                brand.Name()
+            );
         Guid id = reader.GetGuid(reader.GetOrdinal("id"));
         string text = reader.GetString(reader.GetOrdinal("text"));
         VehicleBrandIdentity otherIdentity = new VehicleBrandIdentity(

@@ -1,4 +1,6 @@
-﻿namespace Scrapers.Module.Features.FinishParserLink.Models;
+﻿using Scrapers.Module.Features.FinishParserLink.Database;
+
+namespace Scrapers.Module.Features.FinishParserLink.Models;
 
 internal sealed record FinishedParserLink(
     string ParserName,
@@ -8,4 +10,10 @@ internal sealed record FinishedParserLink(
     int Seconds,
     int Minutes,
     int Hours
-);
+)
+{
+    public async Task Save(IFinishedParserLinkStorage storage)
+    {
+        await storage.Save(this);
+    }
+}

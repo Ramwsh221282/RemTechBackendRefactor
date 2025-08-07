@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
 using Scrapers.Module.Features.ReadAllTransportParsers.Storage;
-using StackExchange.Redis;
 
 namespace Scrapers.Module.Features.ReadAllTransportParsers.Endpoint;
 
@@ -14,7 +13,6 @@ internal static class ReadAllTransportParsersEndpoint
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource dataSource,
-        [FromServices] ConnectionMultiplexer multiplexer,
         CancellationToken ct
     )
     {

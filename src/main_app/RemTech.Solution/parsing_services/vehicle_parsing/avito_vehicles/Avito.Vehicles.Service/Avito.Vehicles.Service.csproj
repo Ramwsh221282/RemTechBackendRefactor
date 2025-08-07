@@ -7,9 +7,13 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.7" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\common_avito\Parsing.Avito.Common\Parsing.Avito.Common.csproj" />
     <ProjectReference Include="..\..\..\common\Parsing.RabbitMq\Parsing.RabbitMq.csproj" />
-    <ProjectReference Include="..\Avito.Parsing.Vehicles\Avito.Parsing.Vehicles.csproj" />
+    <ProjectReference Include="..\..\..\common\Parsing.SDK\Parsing.SDK.csproj" />
+    <ProjectReference Include="..\..\Parsing.Vehicles.Common\Parsing.Vehicles.Common.csproj" />
+    <ProjectReference Include="..\..\Parsing.Vehicles.Grpc.Recognition\Parsing.Vehicles.Grpc.Recognition.csproj" />
   </ItemGroup>
 </Project>

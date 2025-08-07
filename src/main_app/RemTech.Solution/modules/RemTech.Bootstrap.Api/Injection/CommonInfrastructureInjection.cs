@@ -2,7 +2,6 @@
 using RabbitMQ.Client;
 using RemTech.Bootstrap.Api.Configuration;
 using Serilog;
-using StackExchange.Redis;
 
 namespace RemTech.Bootstrap.Api.Injection;
 
@@ -14,7 +13,6 @@ public static class CommonInfrastructureInjection
     )
     {
         services.InjectDatabase(settings.Database);
-        services.InjectCache(settings.Cache);
         services.InjectRabbitMq(settings.RabbitMq);
         services.InjectLogging();
     }
@@ -25,11 +23,6 @@ public static class CommonInfrastructureInjection
     )
     {
         services.AddSingleton(new NpgsqlDataSourceBuilder(settings.ToConnectionString()).Build());
-    }
-
-    private static void InjectCache(this IServiceCollection services, RemTechCacheSettings settings)
-    {
-        services.AddSingleton(ConnectionMultiplexer.Connect(settings.Host));
     }
 
     private static void InjectLogging(this IServiceCollection services)

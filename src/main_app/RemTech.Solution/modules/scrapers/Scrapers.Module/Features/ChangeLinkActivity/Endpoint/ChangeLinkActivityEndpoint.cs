@@ -7,7 +7,6 @@ using Scrapers.Module.Features.ChangeLinkActivity.Database;
 using Scrapers.Module.Features.ChangeLinkActivity.Exceptions;
 using Scrapers.Module.Features.ChangeLinkActivity.Logging;
 using Scrapers.Module.Features.ChangeLinkActivity.Models;
-using StackExchange.Redis;
 
 namespace Scrapers.Module.Features.ChangeLinkActivity.Endpoint;
 
@@ -27,7 +26,6 @@ public static class ChangeLinkActivityEndpoint
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource source,
-        [FromServices] ConnectionMultiplexer multiplexer,
         [FromServices] Serilog.ILogger logger,
         [FromQuery] string linkName,
         [FromQuery] string parserName,

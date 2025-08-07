@@ -1,17 +1,11 @@
-using RemTech.Core.Shared.Primitives;
-
 namespace Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleBrands;
 
-public sealed class ParsedVehicleBrand
+public sealed class ParsedVehicleBrand(string? brand)
 {
-    private readonly NotEmptyString _brand;
+    private readonly string _brand = brand ?? string.Empty;
 
-    public ParsedVehicleBrand(NotEmptyString brand) => _brand = brand;
-
-    public ParsedVehicleBrand(string? brand) : this(new  NotEmptyString(brand))
-    { }
-
-    public static implicit operator NotEmptyString(ParsedVehicleBrand brand) => brand._brand;
     public static implicit operator string(ParsedVehicleBrand brand) => brand._brand;
-    public static implicit operator bool(ParsedVehicleBrand brand) => brand._brand;
+
+    public static implicit operator bool(ParsedVehicleBrand brand) =>
+        !string.IsNullOrWhiteSpace(brand._brand);
 }

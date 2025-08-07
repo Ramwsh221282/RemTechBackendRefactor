@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\parsers_management\RemTech.ParsersManagement.External\RemTech.ParsersManagement.External.csproj" />
+    <ProjectReference Include="..\..\scrapers\Scrapers.Module\Scrapers.Module.csproj" />
     <ProjectReference Include="..\..\shared_module\adapters\RemTech.Logging.Adapter\RemTech.Logging.Adapter.csproj" />
     <ProjectReference Include="..\..\shared_module\adapters\RemTech.Postgres.Adapter.Library\RemTech.Postgres.Adapter.Library.csproj" />
     <ProjectReference Include="..\..\shared_module\adapters\RemTech.RabbitMq.Adapter\RemTech.RabbitMq.Adapter.csproj" />

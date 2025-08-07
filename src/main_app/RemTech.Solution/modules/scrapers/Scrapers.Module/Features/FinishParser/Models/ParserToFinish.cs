@@ -1,19 +1,20 @@
-﻿using Scrapers.Module.Features.FinishParser.Exceptions;
+﻿namespace Scrapers.Module.Features.FinishParser.Models;
 
-namespace Scrapers.Module.Features.FinishParser.Models;
-
-internal sealed record ParserToFinish(string ParserName, string ParserType, string ParserState)
+internal sealed record ParserToFinish(string ParserName, string ParserType, int WaitDays)
 {
     public FinishedParser Finish(long totalElapsedSeconds)
     {
-        if (ParserState != "Работает")
-            throw new CannotFinishNotWorkingParserException(ParserName, ParserType);
         int hours = CalculateHoursFromElapsedSeconds(totalElapsedSeconds);
         int minutes = CalculateMinutesFromElapsedSeconds(totalElapsedSeconds);
         int seconds = CalculateSecondsFromElapsedSeconds(totalElapsedSeconds);
+        DateTime newLastRun = DateTime.UtcNow;
+        DateTime newNextRun = newLastRun.AddDays(WaitDays);
         return new FinishedParser(
             ParserName,
             ParserType,
+            "Ожидает",
+            newLastRun,
+            newNextRun,
             totalElapsedSeconds,
             seconds,
             hours,

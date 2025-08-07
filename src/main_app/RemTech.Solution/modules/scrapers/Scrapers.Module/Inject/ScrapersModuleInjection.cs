@@ -1,15 +1,24 @@
-﻿using DbUp;
+﻿using System.Threading.Channels;
+using DbUp;
 using DbUp.Engine;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 using Scrapers.Module.Features.ChangeLinkActivity.Endpoint;
 using Scrapers.Module.Features.ChangeParserState.Endpoint;
 using Scrapers.Module.Features.CreateNewParser.Inject;
 using Scrapers.Module.Features.CreateNewParserLink.Endpoint;
+using Scrapers.Module.Features.FinishParser.Entrance;
+using Scrapers.Module.Features.FinishParserLink.Entrance;
+using Scrapers.Module.Features.IncreaseProcessedAmount.Entrance;
+using Scrapers.Module.Features.IncreaseProcessedAmount.MessageBus;
+using Scrapers.Module.Features.InstantlyEnableParser.Endpoint;
 using Scrapers.Module.Features.ReadAllTransportParsers.Endpoint;
 using Scrapers.Module.Features.ReadConcreteScraper.Endpoint;
 using Scrapers.Module.Features.RemovingParserLink.Endpoint;
+using Scrapers.Module.Features.StartParser.Entrance;
+using Scrapers.Module.Features.StartParser.RabbitMq;
 using Scrapers.Module.Features.UpdateParserLink.Endpoint;
 using Scrapers.Module.Features.UpdateWaitDays.Endpoint;
 
@@ -20,6 +29,13 @@ public static class ScrapersModuleInjection
     public static void InjectScrapersModule(this IServiceCollection services)
     {
         CreateNewParserInjection.Inject(services);
+        services.InjectStartParserBackgroundJob();
+        services.AddHostedService<FinishParserEntrance>();
+        services.AddHostedService<FinishedParserLinkEntrance>();
+        services.AddHostedService<IncreasedProcessedEntrance>();
+        services.AddSingleton<IParserStartedPublisher, RabbitMqParserStartedPublisher>();
+        services.AddSingleton(Channel.CreateUnbounded<IncreaseProcessedMessage>());
+        services.AddSingleton<IIncreaseProcessedPublisher, IncreaseProcessedPublisher>();
     }
 
     public static void UpScrapersModuleDatabase(string connectionString)
@@ -46,5 +62,23 @@ public static class ScrapersModuleInjection
         RemoveParserLinkEndpoint.Map(group);
         UpdateParserLinkEndpoint.Map(group);
         ChangeLinkActivityEndpoint.Map(group);
+        InstantlyEnableParserEndpoint.Map(group);
+    }
+
+    private static void InjectStartParserBackgroundJob(this IServiceCollection services)
+    {
+        services.AddQuartz(options =>
+        {
+            JobKey jobKey = JobKey.Create(nameof(StartingParsersEntrance));
+            options
+                .AddJob<StartingParsersEntrance>(jobKey)
+                .AddTrigger(trigger =>
+                    trigger
+                        .ForJob(jobKey)
+                        .WithSimpleSchedule(schedule =>
+                            schedule.WithIntervalInMinutes(1).RepeatForever()
+                        )
+                );
+        });
     }
 }

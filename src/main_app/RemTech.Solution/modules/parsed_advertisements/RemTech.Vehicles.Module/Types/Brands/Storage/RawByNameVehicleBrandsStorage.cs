@@ -23,7 +23,8 @@ internal sealed class RawByNameVehicleBrandsStorage(NpgsqlDataSource dataSource)
         await using DbDataReader reader = await command.ExecuteReaderAsync();
         if (!await reader.ReadAsync())
             throw new UnableToStoreBrandException(
-                "Не удается получить бренд по соответствию с именем."
+                "Не удается получить бренд по соответствию с именем.",
+                brand.Name()
             );
         Guid id = reader.GetGuid(reader.GetOrdinal("id"));
         string text = reader.GetString(reader.GetOrdinal("text"));

@@ -2,6 +2,9 @@
 
 internal sealed class UnableToStoreBrandException : Exception
 {
-    public UnableToStoreBrandException(string message)
-        : base(message) { }
+    public UnableToStoreBrandException(string message, string brandName)
+        : base($"{message} {brandName}") { }
+
+    public UnableToStoreBrandException(string message, string brandName, Exception inner)
+        : base($"{message} {brandName}", inner) { }
 }

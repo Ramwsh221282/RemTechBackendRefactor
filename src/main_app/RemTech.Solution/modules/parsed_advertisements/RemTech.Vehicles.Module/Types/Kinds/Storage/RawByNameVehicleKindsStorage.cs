@@ -23,7 +23,8 @@ internal sealed class RawByNameVehicleKindsStorage(NpgsqlDataSource dataSource)
         await using DbDataReader reader = await command.ExecuteReaderAsync();
         if (!await reader.ReadAsync())
             throw new UnableToStoreVehicleKindException(
-                $"Не удается найти тип техники с названием {name}"
+                $"Не удается найти тип техники с названием {name}",
+                name
             );
         Guid id = reader.GetGuid(reader.GetOrdinal("id"));
         string text = reader.GetString(reader.GetOrdinal("text"));

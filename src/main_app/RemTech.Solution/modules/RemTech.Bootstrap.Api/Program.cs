@@ -1,4 +1,5 @@
 using Mailing.Module.Injection;
+using Quartz;
 using RemTech.Bootstrap.Api.Configuration;
 using RemTech.Bootstrap.Api.Injection;
 using RemTech.Vehicles.Module.Injection;
@@ -24,6 +25,7 @@ builder.Services.AddCors(options =>
     )
 );
 builder.Services.AddOpenApi();
+builder.Services.AddQuartzHostedService();
 WebApplication app = builder.Build();
 app.UseCors("FRONTEND");
 if (app.Environment.IsDevelopment())

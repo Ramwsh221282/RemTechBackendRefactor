@@ -18,7 +18,6 @@ public static class UsersModuleInjection
     {
         services.AddSingleton(new StringHash());
         services.AddSingleton(new SecurityKeySource());
-        services.AddSingleton<IJsonWebTokensStorage, RedisJsonWebTokensStorage>();
     }
 
     public static void MapUsersModuleEndpoints(this WebApplication app)
