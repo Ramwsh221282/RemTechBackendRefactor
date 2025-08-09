@@ -1,5 +1,6 @@
 ﻿using Npgsql;
 using RabbitMQ.Client;
+using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Logging;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;
@@ -18,6 +19,7 @@ public sealed class BackgroundJobTransportAdvertisementSinking
         IIncreaseProcessedPublisher publisher,
         ConnectionFactory rabbitConnectionFactory,
         NpgsqlDataSource connection,
+        IEmbeddingGenerator generator,
         ILogger logger
     )
     {
@@ -41,12 +43,17 @@ public sealed class BackgroundJobTransportAdvertisementSinking
                                             connection,
                                             new PgVehicleSinking(
                                                 connection,
-                                                new EmptyVehicleSinking()
+                                                new EmptyVehicleSinking(),
+                                                generator
                                             )
-                                        )
-                                    )
-                                )
-                            )
+                                        ),
+                                        generator
+                                    ),
+                                    generator
+                                ),
+                                generator
+                            ),
+                            generator
                         ),
                         logger
                     ),
@@ -62,15 +69,16 @@ public sealed class BackgroundJobTransportAdvertisementSinking
             "Background job {0} is starting...",
             nameof(BackgroundJobTransportAdvertisementSinking)
         );
-        await _rabbitSink.OpenQueue(cancellationToken);
-        _logger.Information(
-            "Background job {0} has been started.",
-            nameof(BackgroundJobTransportAdvertisementSinking)
-        );
+        await base.StartAsync(cancellationToken);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await _rabbitSink.OpenQueue(stoppingToken);
+        _logger.Information(
+            "Background job {0} has been started.",
+            nameof(BackgroundJobTransportAdvertisementSinking)
+        );
         stoppingToken.ThrowIfCancellationRequested();
     }
 

@@ -5,6 +5,8 @@
 
 # dotenv files
 .env
+*.onnx
+*.onnx_data
 
 # User-specific files
 *.rsuser
@@ -482,3 +484,4 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+/modules/RemTech.Bootstrap.Api/model.onnx

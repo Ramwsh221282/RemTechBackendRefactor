@@ -2,6 +2,7 @@
 using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicle;
 using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Brand;
 using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Characteristics;
+using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Description;
 using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Geos;
 using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Identity;
 using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Kind;
@@ -128,7 +129,10 @@ public sealed class AvitoVehiclesParser(
                     .WrapBy(i => new DefaultOnErrorVehicleIdentity(i))
                     .WrapBy(i => new LoggingVehicleIdentity(logger, i));
 
+                IAvitoDescriptionSource descriptionSource = new AvitoDescriptionSource(page);
+
                 yield return await new EmptyAvitoVehicle()
+                    .WrapBy(v => new AvitoVehicleWithDescription(descriptionSource, v))
                     .WrapBy(v => new AvitoVehicleWithPrice(priceSource, v))
                     .WrapBy(v => new AvitoVehicleWithGeo(geoSource, v))
                     .WrapBy(v => new AvitoVehicleWithModel(modelSource, v))

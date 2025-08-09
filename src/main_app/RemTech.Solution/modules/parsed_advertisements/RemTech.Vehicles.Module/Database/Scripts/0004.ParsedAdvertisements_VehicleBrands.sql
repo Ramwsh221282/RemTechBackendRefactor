@@ -1,8 +1,12 @@
 ﻿CREATE TABLE IF NOT EXISTS parsed_advertisements_module.vehicle_brands(
     id                      UUID PRIMARY KEY,
     text                    VARCHAR(80) UNIQUE NOT NULL,
-    document_tsvector       TSVECTOR
+    document_tsvector       TSVECTOR,
+    embedding               vector(1024)
 );
+
+CREATE INDEX IF NOT EXISTS idx_vehicle_brands_hnsw
+    ON parsed_advertisements_module.vehicle_brands USING hnsw (embedding vector_cosine_ops);
 
 CREATE INDEX IF NOT EXISTS idx_vehicle_brands_document_tsvector
     ON parsed_advertisements_module.vehicle_brands USING GIN(document_tsvector);

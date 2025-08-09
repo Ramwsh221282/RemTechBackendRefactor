@@ -133,6 +133,8 @@ public static class QueryVehiclesAggregatedDataFeature
 
         public void AcceptPagination(int page) { }
 
+        public void AcceptTextSearch(string textSearch) { }
+
         public VehiclesAggregatedDataSqlQuery AcceptRequest(
             VehiclesAggregatedDataQueryRequest request
         )

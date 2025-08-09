@@ -95,6 +95,7 @@ public class Worker(
                             price.IsNds(),
                             await vehicle.Geo(),
                             await vehicle.SourceUrl(),
+                            await vehicle.Description(),
                             ctxes
                                 .Read()
                                 .Select(c => new VehicleBodyCharacteristic(c.Name(), c.Value())),

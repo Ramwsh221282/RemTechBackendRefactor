@@ -1,15 +1,19 @@
 ﻿using Npgsql;
+using RemTech.Vehicles.Module.Database.Embeddings;
 
 namespace RemTech.Vehicles.Module.Types.Models.Storage;
 
-internal sealed class NewVehicleModelsStorage(NpgsqlDataSource dataSource) : IVehicleModelsStorage
+internal sealed class NewVehicleModelsStorage(
+    NpgsqlDataSource dataSource,
+    IEmbeddingGenerator generator
+) : IVehicleModelsStorage
 {
     public async Task<VehicleModel> Store(VehicleModel vehicleModel)
     {
         string sql = string.Intern(
             """
-            INSERT INTO parsed_advertisements_module.vehicle_models(id, text)
-            VALUES(@id, @text)
+            INSERT INTO parsed_advertisements_module.vehicle_models(id, text, embedding)
+            VALUES(@id, @text, @embedding)
             ON CONFLICT(text) DO NOTHING;
             """
         );
@@ -20,6 +24,7 @@ internal sealed class NewVehicleModelsStorage(NpgsqlDataSource dataSource) : IVe
         command.CommandText = sql;
         command.Parameters.Add(new NpgsqlParameter<Guid>("@id", id));
         command.Parameters.Add(new NpgsqlParameter<string>("@text", text));
+        command.Parameters.AddWithValue("@embedding", generator.Generate(text));
         int affected = await command.ExecuteNonQueryAsync();
         return affected == 0
             ? throw new UnableToStoreVehicleModelException(

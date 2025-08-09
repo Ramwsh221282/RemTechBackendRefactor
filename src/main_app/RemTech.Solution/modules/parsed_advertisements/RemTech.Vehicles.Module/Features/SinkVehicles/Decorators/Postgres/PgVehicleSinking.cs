@@ -1,5 +1,6 @@
 ﻿using Npgsql;
 using RemTech.Result.Library;
+using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Types.Brands.Decorators.Logic;
 using RemTech.Vehicles.Module.Types.GeoLocations.Decorators.Logic;
 using RemTech.Vehicles.Module.Types.Kinds.Decorators.Logic;
@@ -12,7 +13,8 @@ namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 
 public sealed class PgVehicleSinking(
     NpgsqlDataSource connection,
-    ITransportAdvertisementSinking sinking
+    ITransportAdvertisementSinking sinking,
+    IEmbeddingGenerator generator
 ) : ITransportAdvertisementSinking
 {
     public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
@@ -23,7 +25,7 @@ public sealed class PgVehicleSinking(
         Vehicle branded = new BrandingVehicleBrand(sink.Brand()).BrandVehicle(kinded);
         Vehicle modeled = new ModelingVehicleModel(sink.Model()).ModeledVehicle(branded);
         Vehicle valid = new ValidVehicle(modeled);
-        await new PgTransactionalVehicle(connection, valid).SaveAsync(ct);
+        await new PgTransactionalVehicle(connection, generator, valid).SaveAsync(ct);
         return await sinking.Sink(sink, ct);
     }
 }

@@ -23,7 +23,8 @@ public sealed class PgCharacteristicsSinking(
         VehiclePhotos photos = sink.VehiclePhotos();
         string sourceUrl = sink.SourceUrl();
         string sourceDomain = sink.SourceDomain();
-        Vehicle vehicle = new(identity, price, photos, sourceUrl, sourceDomain);
+        string description = sink.Description();
+        Vehicle vehicle = new(identity, price, photos, sourceUrl, sourceDomain, description);
         foreach (Characteristic entry in stored)
         {
             try

@@ -3,6 +3,7 @@ using Quartz;
 using RemTech.Bootstrap.Api.Configuration;
 using RemTech.Bootstrap.Api.Injection;
 using RemTech.Vehicles.Module.Injection;
+using RemTech.Vehicles.Module.OnStartup;
 using Scalar.AspNetCore;
 using Scrapers.Module.Inject;
 using Users.Module.Injection;
@@ -27,6 +28,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddOpenApi();
 builder.Services.AddQuartzHostedService();
 WebApplication app = builder.Build();
+CreateVectorsOnStartup createVectors = app.Services.GetRequiredService<CreateVectorsOnStartup>();
+createVectors.Create().Wait();
 app.UseCors("FRONTEND");
 if (app.Environment.IsDevelopment())
 {

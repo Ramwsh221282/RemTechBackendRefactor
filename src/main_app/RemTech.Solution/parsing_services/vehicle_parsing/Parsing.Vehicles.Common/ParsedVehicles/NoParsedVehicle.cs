@@ -35,4 +35,6 @@ public sealed class NoParsedVehicle : IParsedVehicle
 
     public Task<ParsedVehicleGeo.ParsedVehicleGeo> Geo() =>
         Task.FromResult(new ParsedVehicleGeo.ParsedVehicleGeo(null));
+
+    public Task<string> Description() => Task.FromResult(string.Empty);
 }

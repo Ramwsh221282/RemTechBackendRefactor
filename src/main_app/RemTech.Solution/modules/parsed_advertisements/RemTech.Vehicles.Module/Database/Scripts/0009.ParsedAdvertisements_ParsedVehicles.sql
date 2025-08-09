@@ -9,12 +9,16 @@
     source_url              TEXT NOT NULL,
     source_domain           VARCHAR(50) NOT NULL,
     object                  JSONB NOT NULL,    
-    document_tsvector       TSVECTOR    
+    description             TEXT NOT NULL,
+    document_tsvector       TSVECTOR,
+    embedding               vector(1024)
 );
+
+CREATE INDEX IF NOT EXISTS idx_vehicle_parsed_vehicles_hnsw
+    ON parsed_advertisements_module.parsed_vehicles USING hnsw (embedding vector_cosine_ops);
 
 CREATE INDEX IF NOT EXISTS idx_parsed_vehicles_document_tsvector
     ON parsed_advertisements_module.parsed_vehicles USING GIN(document_tsvector);
 
 CREATE INDEX IF NOT EXISTS idx_parsed_vehicles_price
     ON parsed_advertisements_module.parsed_vehicles(price);
-

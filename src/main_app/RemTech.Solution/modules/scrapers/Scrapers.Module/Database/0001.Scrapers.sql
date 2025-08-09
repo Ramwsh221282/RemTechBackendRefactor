@@ -28,8 +28,7 @@ CREATE TABLE IF NOT EXISTS scrapers_module.scraper_links (
     hours           integer NOT NULL,
     minutes         integer NOT NULL,
     seconds         integer NOT NULL,
-    PRIMARY KEY(name, parser_name),
-    UNIQUE(name),
+    PRIMARY KEY(name, parser_name),    
     UNIQUE(url),
     FOREIGN KEY(parser_name, parser_type) REFERENCES scrapers_module.scrapers(name, type) ON DELETE CASCADE
 );

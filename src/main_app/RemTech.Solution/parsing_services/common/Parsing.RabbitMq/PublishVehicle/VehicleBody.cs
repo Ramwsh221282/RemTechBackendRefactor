@@ -9,6 +9,7 @@ public sealed record VehicleBody(
     bool IsNds,
     string Geo,
     string SourceUrl,
+    string Description,
     IEnumerable<VehicleBodyCharacteristic> Characteristics,
     IEnumerable<VehicleBodyPhoto> Photos
 );
