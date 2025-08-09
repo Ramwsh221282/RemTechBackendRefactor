@@ -3,7 +3,7 @@ using DbUp.Engine;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.Postgres.Adapter.Library.DataAccessConfiguration;
+using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Features.QueryAllBrandModels;
 using RemTech.Vehicles.Module.Features.QueryAllKindBrands;
 using RemTech.Vehicles.Module.Features.QueryAllKinds;
@@ -15,6 +15,7 @@ using RemTech.Vehicles.Module.Features.QueryVehicles.Http;
 using RemTech.Vehicles.Module.Features.QueryVehiclesAggregatedData;
 using RemTech.Vehicles.Module.Features.QueryVehiclesCharacteristicsDictionary;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.BackgroundService;
+using RemTech.Vehicles.Module.OnStartup;
 
 namespace RemTech.Vehicles.Module.Injection;
 
@@ -22,7 +23,9 @@ public static class ParsedAdvertisementsInjection
 {
     public static void InjectVehiclesModule(this IServiceCollection services)
     {
+        services.AddSingleton<CreateVectorsOnStartup>();
         services.AddHostedService<BackgroundJobTransportAdvertisementSinking>();
+        services.AddSingleton<IEmbeddingGenerator, OnnxEmbeddingGenerator>();
     }
 
     public static void UpVehiclesDatabase(string connectionString)

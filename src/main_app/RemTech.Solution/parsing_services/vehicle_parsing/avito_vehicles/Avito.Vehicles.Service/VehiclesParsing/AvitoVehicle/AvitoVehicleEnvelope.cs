@@ -23,6 +23,7 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
     private readonly ParsedVehiclePrice _price;
     private readonly ParsedVehicleUrl _urlSource;
     private readonly ParsedVehicleGeo _geo;
+    private readonly string _description;
 
     public AvitoVehicleEnvelope()
     {
@@ -35,6 +36,7 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
         _price = new ParsedVehiclePrice(-1, string.Empty);
         _urlSource = new ParsedVehicleUrl(new NotEmptyString(string.Empty));
         _geo = new ParsedVehicleGeo(null);
+        _description = string.Empty;
     }
 
     public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin)
@@ -48,6 +50,7 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
         _price = origin._price;
         _urlSource = origin._urlSource;
         _geo = origin._geo;
+        _description = origin._description;
     }
 
     public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin, ParsedVehiclePrice price)
@@ -77,6 +80,9 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
     public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin, ParsedVehicleUrl url)
         : this(origin) => _urlSource = url;
 
+    public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin, string description)
+        : this(origin) => _description = description;
+
     public Task<ParsedVehicleIdentity> Identity() => Task.FromResult(_identity);
 
     public Task<ParsedVehicleBrand> Brand() => Task.FromResult(_brand);
@@ -94,4 +100,6 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
     public Task<ParsedVehicleUrl> SourceUrl() => Task.FromResult(_urlSource);
 
     public Task<ParsedVehicleGeo> Geo() => Task.FromResult(_geo);
+
+    public Task<string> Description() => Task.FromResult(_description);
 }

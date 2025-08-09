@@ -82,7 +82,8 @@ internal sealed class VehicleSinkBytes : IVehicleJsonSink
             VehiclePrice(),
             VehiclePhotos(),
             _message.Vehicle.SourceUrl,
-            _message.Parser.ParserDomain
+            _message.Parser.ParserDomain,
+            Description()
         );
     }
 
@@ -119,5 +120,10 @@ internal sealed class VehicleSinkBytes : IVehicleJsonSink
     public string SourceDomain()
     {
         return _message.Parser.ParserDomain;
+    }
+
+    public string Description()
+    {
+        return _message.Vehicle.Description;
     }
 }

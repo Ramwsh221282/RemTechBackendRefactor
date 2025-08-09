@@ -33,16 +33,16 @@ internal sealed class NewParsersEntrance(
             cancellationToken: cancellationToken
         );
         await _channel.QueueDeclareAsync(
-            "new_parsers",
+            "new_scraper",
             durable: false,
             exclusive: false,
             autoDelete: false,
             cancellationToken: cancellationToken
         );
         await _channel.QueueBindAsync(
-            "new_parsers",
+            "new_scraper",
             "scrapers",
-            "new_parsers",
+            "new_scraper",
             null,
             cancellationToken: cancellationToken
         );
@@ -70,7 +70,7 @@ internal sealed class NewParsersEntrance(
         AsyncEventingBasicConsumer consumer = new(_channel);
         consumer.ReceivedAsync += ProcessMessage;
         await _channel.BasicConsumeAsync(
-            queue: "new_parsers",
+            queue: "new_scraper",
             autoAck: false,
             consumer: consumer,
             cancellationToken: stoppingToken
@@ -85,6 +85,7 @@ internal sealed class NewParsersEntrance(
         if (_connection == null)
             throw new ApplicationException($"{nameof(NewParsersEntrance)} Connection was null.");
         byte[] body = ea.Body.ToArray();
+        logger.Information("Received message to create scraper.");
         NewParsersMessage? message = JsonSerializer.Deserialize<NewParsersMessage>(body);
         if (message != null)
         {

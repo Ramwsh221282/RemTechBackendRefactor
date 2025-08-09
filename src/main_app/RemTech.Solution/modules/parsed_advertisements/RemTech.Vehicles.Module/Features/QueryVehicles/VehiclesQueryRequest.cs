@@ -12,7 +12,8 @@ public sealed record VehiclesQueryRequest(
     VehicleSortOrderQueryFilterArgument? SortOrder = null,
     VehicleRegionIdQueryFilterArgument? RegionId = null,
     VehiclePriceQueryFilterArgument? Price = null,
-    VehicleCharacteristicsQueryArguments? Characteristics = null
+    VehicleCharacteristicsQueryArguments? Characteristics = null,
+    VehicleTextSearchQueryFilterArgument? Text = null
 ) : VehicleQueryFilterArgument
 {
     public override CompositeVehicleSpeicification ApplyTo(
@@ -30,6 +31,7 @@ public sealed record VehiclesQueryRequest(
         composite = RegionId.ApplyIfProvided(composite);
         composite = Price.ApplyIfProvided(composite);
         composite = Characteristics.ApplyIfProvided(composite);
+        composite = Text.ApplyIfProvided(composite);
         return composite;
     }
 }

@@ -25,4 +25,5 @@ public interface IVehicleJsonSink
     string LinkName();
     string SourceUrl();
     string SourceDomain();
+    string Description();
 }

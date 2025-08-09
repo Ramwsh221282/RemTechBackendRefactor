@@ -1,24 +1,28 @@
 ﻿using System.Data.Common;
 using System.Text;
 using Npgsql;
+using Pgvector;
 using RemTech.Postgres.Adapter.Library.PgCommands;
+using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Presenting;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
 using Serilog;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicles;
 
-public sealed class VehiclesSqlQuery(ILogger logger) : IVehiclesSqlQuery
+internal sealed class VehiclesSqlQuery(ILogger logger, IEmbeddingGenerator generator)
+    : IVehiclesSqlQuery
 {
     private const int MaxPageSize = 20;
     private readonly List<string> _filters = [];
     private readonly List<NpgsqlParameter> _parameters = [];
-    private string _ordering = string.Empty;
+    private readonly VehiclesSqlQueryOrdering _ordering = new();
+    private Vector? _vector = null;
     private string _pagination = string.Empty;
 
     private readonly string _sql = string.Intern(
         """
-        SELECT DISTINCT ON (v.id)
+        SELECT
         v.id as vehicle_id,
         v.price as vehicle_price,
         v.is_nds as vehicle_nds,
@@ -65,12 +69,24 @@ public sealed class VehiclesSqlQuery(ILogger logger) : IVehiclesSqlQuery
 
     public void AcceptAscending(string orderingField)
     {
-        _ordering = $" ORDER BY {orderingField} ASC ";
+        _ordering.WithOrdering(orderingField, "ASC");
     }
 
     public void AcceptDescending(string orderingField)
     {
-        _ordering = $" ORDER BY {orderingField} DESC ";
+        _ordering.WithOrdering(orderingField, "DESC");
+    }
+
+    public void AcceptTextSearch(string textSearch)
+    {
+        if (!string.IsNullOrWhiteSpace(textSearch))
+        {
+            logger.Information("Applying text search.");
+            float[] embeddings = generator.Generate(textSearch);
+            _vector = new Vector(embeddings);
+            _ordering.WithVectorSearch();
+            logger.Information("Text search applied.");
+        }
     }
 
     public IPgCommandSource PrepareCommand(NpgsqlConnection connection)
@@ -88,6 +104,8 @@ public sealed class VehiclesSqlQuery(ILogger logger) : IVehiclesSqlQuery
             string value = parameter.Value!.ToString()!;
             logger.Information("Parameter name: {Name}. Parameter value: {Value}.", name, value);
         }
+        if (_vector != null)
+            command.Parameters.AddWithValue("@embedding", _vector);
         return new DefaultPgCommandSource(command);
     }
 
@@ -103,10 +121,9 @@ public sealed class VehiclesSqlQuery(ILogger logger) : IVehiclesSqlQuery
     {
         StringBuilder sb = new StringBuilder(_sql);
         sb = sb.AppendLine(GenerateFilters());
-        if (!string.IsNullOrWhiteSpace(_ordering))
-            sb = sb.AppendLine(_ordering);
-        if (!string.IsNullOrWhiteSpace(_pagination))
-            sb = sb.AppendLine(_pagination);
+        logger.Information("Applying text search sql part.");
+        sb = _ordering.Apply(sb);
+        logger.Information("Text search sql part applied.");
         return sb.ToString();
     }
 

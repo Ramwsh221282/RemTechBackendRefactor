@@ -21,4 +21,5 @@ public interface IParsedVehicle
     Task<ParsedVehiclePrice> Price();
     Task<ParsedVehicleUrl> SourceUrl();
     Task<ParsedVehicleGeo.ParsedVehicleGeo> Geo();
+    Task<string> Description();
 }

@@ -86,7 +86,7 @@ internal sealed class NpgSqlParsersWithLinkStorage(NpgsqlDataSource dataSource)
                 || ex.Message.Contains("scraper_links_url_key")
             )
                 throw new ParserLinkAlreadyExistsInParserException(parser.Parser, parser.Link);
-            throw new Exception("Invalid error resolve.");
+            throw new Exception(ex.Message);
         }
     }
 }

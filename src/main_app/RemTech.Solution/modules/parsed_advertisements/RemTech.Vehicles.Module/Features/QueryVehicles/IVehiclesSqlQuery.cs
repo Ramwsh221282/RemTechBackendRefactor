@@ -11,4 +11,5 @@ public interface IVehiclesSqlQuery
     void AcceptDescending(string orderingField);
     IPgCommandSource PrepareCommand(NpgsqlConnection connection);
     void AcceptPagination(int page);
+    void AcceptTextSearch(string textSearch);
 }

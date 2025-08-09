@@ -2,8 +2,12 @@
     id                      UUID PRIMARY KEY,
     text                    VARCHAR(50) UNIQUE NOT NULL,
     kind                    VARCHAR(50) NOT NULL,
-    document_tsvector       TSVECTOR
+    document_tsvector       TSVECTOR,
+    embedding               vector(1024)
 );
+
+CREATE INDEX IF NOT EXISTS idx_vehicle_geos_hnsw
+    ON parsed_advertisements_module.geos USING hnsw (embedding vector_cosine_ops);
 
 CREATE INDEX IF NOT EXISTS idx_vehicle_geos_tsvector
     ON parsed_advertisements_module.geos USING GIN(document_tsvector);

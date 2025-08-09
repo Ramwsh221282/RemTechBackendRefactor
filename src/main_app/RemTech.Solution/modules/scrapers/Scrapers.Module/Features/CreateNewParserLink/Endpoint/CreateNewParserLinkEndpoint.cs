@@ -94,5 +94,14 @@ public static class CreateNewParserLinkEndpoint
         {
             return Results.BadRequest(new { message = ex.Message });
         }
+        catch (Exception ex)
+        {
+            logger.Fatal(
+                "Fatal at {Entrance.}. Error: {Ex}",
+                nameof(CreateNewParserLinkEndpoint),
+                ex.Message
+            );
+            return Results.InternalServerError(new { message = "Ошибка на стороне приложения" });
+        }
     }
 }

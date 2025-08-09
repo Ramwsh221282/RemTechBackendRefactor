@@ -2,7 +2,7 @@
 
 services:
   database:
-    image: postgres:latest
+    image: pgvector/pgvector:0.8.0-pg17-bookworm
     restart: always
     container_name: database
     environment:

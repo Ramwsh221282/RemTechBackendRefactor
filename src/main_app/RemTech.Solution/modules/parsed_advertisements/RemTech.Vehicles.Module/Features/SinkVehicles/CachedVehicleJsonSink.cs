@@ -173,4 +173,9 @@ public sealed class CachedVehicleJsonSink : IVehicleJsonSink
     {
         return _origin.SourceDomain();
     }
+
+    public string Description()
+    {
+        return _origin.Description();
+    }
 }

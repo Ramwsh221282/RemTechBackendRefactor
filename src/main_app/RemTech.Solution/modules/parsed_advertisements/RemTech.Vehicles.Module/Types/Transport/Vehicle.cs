@@ -19,9 +19,8 @@ public class Vehicle : IVehicle
     protected virtual GeoLocation Location { get; }
     protected virtual IItemPrice Price { get; }
     protected virtual VehiclePhotos Photos { get; }
-
     public string SourceUrl { get; private set; }
-
+    public string Description { get; private set; }
     public string SourceDomain { get; private set; }
     public virtual VehicleCharacteristics Characteristics { get; }
     protected virtual VehicleModel Model { get; }
@@ -31,7 +30,8 @@ public class Vehicle : IVehicle
         IItemPrice price,
         VehiclePhotos photos,
         string sourceUrl,
-        string sourceDomain
+        string sourceDomain,
+        string description
     )
     {
         SourceUrl = sourceUrl;
@@ -44,6 +44,7 @@ public class Vehicle : IVehicle
         Brand = new UnknownVehicleBrand();
         Location = new UnknownGeolocation();
         Model = new VehicleModel();
+        Description = description;
     }
 
     public string Id() => Identity.Read();
@@ -85,5 +86,6 @@ public class Vehicle : IVehicle
         Model = origin.Model;
         SourceUrl = origin.SourceUrl;
         SourceDomain = origin.SourceDomain;
+        Description = origin.Description;
     }
 }

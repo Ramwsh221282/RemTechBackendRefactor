@@ -39,4 +39,9 @@ public sealed class ParsedVehicle(
     public Task<ParsedVehicleUrl> SourceUrl() => urlSource.Read();
 
     public Task<ParsedVehicleGeo.ParsedVehicleGeo> Geo() => geoSource.Read();
+
+    public Task<string> Description()
+    {
+        return Task.FromResult(string.Empty);
+    }
 }

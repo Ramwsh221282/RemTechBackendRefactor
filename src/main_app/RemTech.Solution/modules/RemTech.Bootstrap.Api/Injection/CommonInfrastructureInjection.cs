@@ -22,7 +22,14 @@ public static class CommonInfrastructureInjection
         RemTechDatabaseSettings settings
     )
     {
-        services.AddSingleton(new NpgsqlDataSourceBuilder(settings.ToConnectionString()).Build());
+        services.AddSingleton(_ =>
+        {
+            NpgsqlDataSourceBuilder builder = new NpgsqlDataSourceBuilder(
+                settings.ToConnectionString()
+            );
+            builder.UseVector();
+            return builder.Build();
+        });
     }
 
     private static void InjectLogging(this IServiceCollection services)
