@@ -23,12 +23,23 @@ public static class QueryAllKindsFeature
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource connectionSource,
+        [FromServices] Serilog.ILogger logger,
         CancellationToken ct
     )
     {
-        await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(ct);
-        IEnumerable<QueryAllKindsResult> result = await Query(connection, ct);
-        return Results.Ok(result);
+        try
+        {
+            await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(
+                ct
+            );
+            IEnumerable<QueryAllKindsResult> result = await Query(connection, ct);
+            return Results.Ok(result);
+        }
+        catch (Exception ex)
+        {
+            logger.Fatal("{Entrance} {Error}.", nameof(QueryAllKindsFeature), ex.Message);
+            return Results.InternalServerError(new { message = "Ошибка на стороне приложения." });
+        }
     }
 
     private static async Task<IEnumerable<QueryAllKindsResult>> Query(

@@ -24,16 +24,33 @@ public static class QueryAllBrandModelsFeature
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource source,
+        [FromServices] Serilog.ILogger logger,
         [FromQuery] Guid brandId,
         [FromQuery] Guid kindId,
         CancellationToken ct
     )
     {
-        if (brandId == Guid.Empty || kindId == Guid.Empty)
-            return Results.NoContent();
-        await using NpgsqlConnection connection = await source.OpenConnectionAsync(ct);
-        IEnumerable<QueryAllBrandModelsResult> result = await connection.Query(brandId, kindId, ct);
-        return Results.Ok(result);
+        try
+        {
+            if (brandId == Guid.Empty || kindId == Guid.Empty)
+                return Results.NoContent();
+            await using NpgsqlConnection connection = await source.OpenConnectionAsync(ct);
+            IEnumerable<QueryAllBrandModelsResult> result = await connection.Query(
+                brandId,
+                kindId,
+                ct
+            );
+            return Results.Ok(result);
+        }
+        catch (Exception ex)
+        {
+            logger.Information(
+                "{Entrance}. {Error}.",
+                nameof(QueryAllBrandModelsFeature),
+                ex.Message
+            );
+            return Results.InternalServerError(new { message = "Ошибка на стороне приложения" });
+        }
     }
 
     private static async Task<IEnumerable<QueryAllBrandModelsResult>> Query(

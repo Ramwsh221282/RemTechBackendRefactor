@@ -24,15 +24,26 @@ public static class QueryAllKindBrandsFeature
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource connectionSource,
+        [FromServices] Serilog.ILogger logger,
         [FromQuery] Guid kindId,
         CancellationToken ct
     )
     {
-        if (kindId == Guid.Empty)
-            return Results.NoContent();
-        await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(ct);
-        IEnumerable<QueryAllKindBrandResult> results = await connection.Query(kindId, ct);
-        return Results.Ok(results);
+        try
+        {
+            if (kindId == Guid.Empty)
+                return Results.NoContent();
+            await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(
+                ct
+            );
+            IEnumerable<QueryAllKindBrandResult> results = await connection.Query(kindId, ct);
+            return Results.Ok(results);
+        }
+        catch (Exception ex)
+        {
+            logger.Fatal("{Entrance} {Error}.", nameof(QueryAllKindBrandsFeature), ex.Message);
+            return Results.InternalServerError(new { message = "Ошибка на стороне приложения." });
+        }
     }
 
     private static async Task<IEnumerable<QueryAllKindBrandResult>> Query(

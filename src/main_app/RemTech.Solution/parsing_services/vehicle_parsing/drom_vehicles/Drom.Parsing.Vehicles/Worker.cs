@@ -64,7 +64,8 @@ public class Worker(
             foreach (IPage page in pagesSource.Iterate())
             {
                 DromPagesCursor cursor = new DromPagesCursor(page);
-                while (true)
+                bool shouldStop = false;
+                while (!shouldStop)
                 {
                     await cursor.Navigate();
                     await new PageBottomScrollingAction(page).Do();
@@ -76,7 +77,7 @@ public class Worker(
                     }
                     catch (DromCatalogueNoItemsException)
                     {
-                        break;
+                        shouldStop = true;
                     }
                     catch (Exception ex)
                     {

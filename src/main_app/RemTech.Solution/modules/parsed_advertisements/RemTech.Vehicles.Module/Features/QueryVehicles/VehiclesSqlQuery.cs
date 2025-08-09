@@ -123,6 +123,8 @@ internal sealed class VehiclesSqlQuery(ILogger logger, IEmbeddingGenerator gener
         sb = sb.AppendLine(GenerateFilters());
         logger.Information("Applying text search sql part.");
         sb = _ordering.Apply(sb);
+        if (!string.IsNullOrWhiteSpace(_pagination))
+            sb = sb.AppendLine(_pagination);
         logger.Information("Text search sql part applied.");
         return sb.ToString();
     }

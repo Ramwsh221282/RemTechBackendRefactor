@@ -18,7 +18,7 @@ public static class QueryVehiclesCharacteristicsDictionaryFeature
         pvc.ctx_value as ctx_value
         FROM parsed_advertisements_module.parsed_vehicles v     
         INNER JOIN parsed_advertisements_module.parsed_vehicle_characteristics pvc ON v.id = pvc.vehicle_id
-        WHERE v.kind_id = @kindId AND v.brand_id = @brandId AND v.model_id = @modelId;
+        WHERE v.kind_id = @kindId AND v.brand_id = @brandId;
         """;
 
     public sealed record Characteristic(
@@ -35,49 +35,57 @@ public static class QueryVehiclesCharacteristicsDictionaryFeature
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource connectionSource,
+        [FromServices] Serilog.ILogger logger,
         [FromQuery] Guid kindId,
         [FromQuery] Guid brandId,
-        [FromQuery] Guid modelId,
         CancellationToken ct
     )
     {
-        if (kindId == Guid.Empty || brandId == Guid.Empty || modelId == Guid.Empty)
-            return Results.NoContent();
-        IEnumerable<Characteristic> characteristics = await ExecuteQuery(
-            connectionSource,
-            kindId,
-            brandId,
-            modelId,
-            ct
-        );
-        return Results.Ok(characteristics);
+        try
+        {
+            if (kindId == Guid.Empty || brandId == Guid.Empty)
+                return Results.NoContent();
+            IEnumerable<Characteristic> characteristics = await ExecuteQuery(
+                connectionSource,
+                kindId,
+                brandId,
+                ct
+            );
+            return Results.Ok(characteristics);
+        }
+        catch (Exception ex)
+        {
+            logger.Fatal(
+                "{Entrance} {Ex}.",
+                nameof(QueryVehiclesCharacteristicsDictionaryFeature),
+                ex.Message
+            );
+            return Results.InternalServerError(new { message = "Ошибка на стороне приложения " });
+        }
     }
 
     private static async Task<IEnumerable<Characteristic>> ExecuteQuery(
         NpgsqlDataSource connectionSource,
         Guid kindId,
         Guid brandId,
-        Guid modelId,
         CancellationToken ct
     )
     {
         await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(ct);
-        AsyncDbReaderCommand command = CreateCommand(connection, kindId, brandId, modelId);
+        AsyncDbReaderCommand command = CreateCommand(connection, kindId, brandId);
         return await ExecuteCommand(command, ct);
     }
 
     private static AsyncDbReaderCommand CreateCommand(
         NpgsqlConnection connection,
         Guid kindId,
-        Guid brandId,
-        Guid modelId
+        Guid brandId
     ) =>
         new(
             new AsyncPreparedCommand(
                 new ParametrizingPgCommand(new PgCommand(connection, Sql))
                     .With("@kindId", kindId)
                     .With("@brandId", brandId)
-                    .With("@modelId", modelId)
             )
         );
 
