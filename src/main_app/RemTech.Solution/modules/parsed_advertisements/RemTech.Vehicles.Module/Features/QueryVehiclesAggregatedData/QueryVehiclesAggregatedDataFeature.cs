@@ -20,7 +20,7 @@ public static class QueryVehiclesAggregatedDataFeature
     public sealed record VehiclesAggregatedDataQueryRequest(
         VehicleKindIdQueryFilterArgument KindId,
         VehicleBrandIdQueryFilterArgument BrandId,
-        VehicleModelIdQueryFilterArgument ModelId,
+        VehicleModelIdQueryFilterArgument? ModelId = null,
         VehicleRegionIdQueryFilterArgument? RegionId = null,
         VehiclePriceQueryFilterArgument? Price = null,
         VehicleCharacteristicsQueryArguments? Characteristics = null
@@ -33,7 +33,7 @@ public static class QueryVehiclesAggregatedDataFeature
             CompositeVehicleSpeicification composite = new();
             composite = KindId.ApplyTo(composite);
             composite = BrandId.ApplyTo(composite);
-            composite = ModelId.ApplyTo(composite);
+            composite = ModelId.ApplyIfProvided(composite);
             composite = RegionId.ApplyIfProvided(composite);
             composite = Price.ApplyIfProvided(composite);
             composite = RegionId.ApplyIfProvided(composite);
@@ -52,27 +52,22 @@ public static class QueryVehiclesAggregatedDataFeature
     );
 
     public static void Map(RouteGroupBuilder builder) =>
-        builder.MapPost(
-            "kinds/{kindId:Guid}/brands/{brandId:Guid}/models/{modelId:Guid}/catalogue/aggregated",
-            Handle
-        );
+        builder.MapPost("kinds/{kindId:Guid}/brands/{brandId:Guid}/catalogue/aggregated", Handle);
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource connectionSource,
         [FromRoute] Guid kindId,
         [FromRoute] Guid brandId,
-        [FromRoute] Guid modelId,
         [FromBody] VehiclesAggregatedDataQueryRequest request,
         CancellationToken ct
     )
     {
-        if (kindId == Guid.Empty || brandId == Guid.Empty || modelId == Guid.Empty)
+        if (kindId == Guid.Empty || brandId == Guid.Empty)
             return Results.NoContent();
         request = request with
         {
             KindId = new VehicleKindIdQueryFilterArgument(kindId),
             BrandId = new VehicleBrandIdQueryFilterArgument(brandId),
-            ModelId = new VehicleModelIdQueryFilterArgument(modelId),
         };
         VehiclesAggregatedDataResult result = await ExecuteQuery(connectionSource, request, ct);
         return Results.Ok(result);

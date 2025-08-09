@@ -13,10 +13,7 @@ namespace RemTech.Vehicles.Module.Features.QueryVehicles.Http;
 public static class VehiclesCatalogueHttpEndpoint
 {
     public static void CatalogueEndpoint(this RouteGroupBuilder group) =>
-        group.MapPost(
-            "kinds/{kindId:Guid}/brands/{brandId:Guid}/models/{modelId:Guid}/catalogue",
-            Handle
-        );
+        group.MapPost("kinds/{kindId:Guid}/brands/{brandId:Guid}/catalogue", Handle);
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource connectionSource,
@@ -25,7 +22,6 @@ public static class VehiclesCatalogueHttpEndpoint
         [FromBody] VehiclesQueryRequest request,
         [FromRoute] Guid kindId,
         [FromRoute] Guid brandId,
-        [FromRoute] Guid modelId,
         CancellationToken ct
     )
     {
@@ -35,7 +31,6 @@ public static class VehiclesCatalogueHttpEndpoint
             {
                 BrandId = new VehicleBrandIdQueryFilterArgument(brandId),
                 KindId = new VehicleKindIdQueryFilterArgument(kindId),
-                ModelId = new VehicleModelIdQueryFilterArgument(modelId),
             };
             await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(
                 ct

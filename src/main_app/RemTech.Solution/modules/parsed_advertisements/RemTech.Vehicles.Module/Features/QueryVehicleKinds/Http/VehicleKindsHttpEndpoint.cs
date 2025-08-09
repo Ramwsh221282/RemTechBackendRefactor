@@ -14,16 +14,27 @@ public static class VehicleKindsHttpEndpoint
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource connectionSource,
+        [FromServices] Serilog.ILogger logger,
         CancellationToken ct
     )
     {
-        await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(ct);
-        IEnumerable<VehicleKindPresentation> kinds = await connection.Provide(
-            VehicleKindsPresentationSource.VehicleKindsCommand,
-            VehicleKindsPresentationSource.VehicleKindsReader,
-            VehicleKindsPresentationSource.VehicleKindsReading,
-            ct
-        );
-        return Results.Ok(kinds);
+        try
+        {
+            await using NpgsqlConnection connection = await connectionSource.OpenConnectionAsync(
+                ct
+            );
+            IEnumerable<VehicleKindPresentation> kinds = await connection.Provide(
+                VehicleKindsPresentationSource.VehicleKindsCommand,
+                VehicleKindsPresentationSource.VehicleKindsReader,
+                VehicleKindsPresentationSource.VehicleKindsReading,
+                ct
+            );
+            return Results.Ok(kinds);
+        }
+        catch (Exception ex)
+        {
+            logger.Fatal("{Entrance}. {Error}.", nameof(VehicleKindsHttpEndpoint), ex.Message);
+            return Results.InternalServerError(new { message = "Ошибка на стороне приложения" });
+        }
     }
 }
