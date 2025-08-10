@@ -2,7 +2,7 @@
 using Parsing.SDK.ScrapingArtifacts;
 using PuppeteerSharp;
 
-namespace Avito.Vehicles.Service.Parsing;
+namespace Avito.Parsing.Spares.Parsing;
 
 public sealed class AvitoDescriptionDetailsSource(IPage page) : IAvitoDescriptionDetailsSource
 {

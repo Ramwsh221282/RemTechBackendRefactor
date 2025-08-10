@@ -2,7 +2,7 @@
 using Parsing.SDK.ScrapingActions;
 using PuppeteerSharp;
 
-namespace Avito.Vehicles.Service.Parsing;
+namespace Avito.Parsing.Spares.Parsing;
 
 public sealed class AvitoSpare
 {
@@ -79,7 +79,7 @@ public sealed class AvitoSpare
             _oem,
             _relatedBrand,
             _geo,
-            _descriptionDetails
+            string.Join(' ', _descriptionDetails)
         );
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Parsing.SDK.ElementSources;
 using PuppeteerSharp;
 
-namespace Avito.Vehicles.Service.Parsing;
+namespace Avito.Parsing.Spares.Parsing;
 
 public sealed class ImageHoveringAvitoSparesCollection(IPage page, IAvitoSparesCollection origin)
     : IAvitoSparesCollection

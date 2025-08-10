@@ -1,4 +1,4 @@
-﻿using Avito.Vehicles.Service.Parsing;
+﻿using Avito.Parsing.Spares.Parsing;
 using Parsing.Avito.Common.BypassFirewall;
 using Parsing.Avito.Common.PaginationBar;
 using Parsing.RabbitMq.PublishSpare;

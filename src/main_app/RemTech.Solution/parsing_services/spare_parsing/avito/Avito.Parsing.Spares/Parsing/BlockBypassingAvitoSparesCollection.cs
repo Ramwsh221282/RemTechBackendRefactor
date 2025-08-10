@@ -1,6 +1,6 @@
 ﻿using Parsing.Avito.Common.BypassFirewall;
 
-namespace Avito.Vehicles.Service.Parsing;
+namespace Avito.Parsing.Spares.Parsing;
 
 public sealed class BlockBypassingAvitoSparesCollection(
     IAvitoBypassFirewall bypass,
