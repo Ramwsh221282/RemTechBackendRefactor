@@ -2,7 +2,7 @@
 using Parsing.SDK.ScrapingArtifacts;
 using PuppeteerSharp;
 
-namespace Avito.Vehicles.Service.PaginationBar;
+namespace Parsing.Avito.Common.PaginationBar;
 
 public sealed class AvitoPaginationBarSource(IPage page) : IAvitoPaginationBarSource
 {

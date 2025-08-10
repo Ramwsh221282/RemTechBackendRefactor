@@ -1,3 +1,3 @@
 ﻿namespace RemTech.Spares.Module.Features.SinkSpare;
 
-internal sealed record SpareSinkMessage(ParserBody Parser, ParserLinkBody Link, Sparebody Spare);
+internal sealed record SpareSinkMessage(ParserBody Parser, ParserLinkBody Link, SpareBody Spare);

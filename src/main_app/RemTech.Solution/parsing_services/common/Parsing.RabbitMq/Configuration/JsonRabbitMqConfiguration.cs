@@ -3,6 +3,7 @@ using Parsing.RabbitMq.CreateParser;
 using Parsing.RabbitMq.Facade;
 using Parsing.RabbitMq.FinishParser;
 using Parsing.RabbitMq.FinishParserLink;
+using Parsing.RabbitMq.PublishSpare;
 using Parsing.RabbitMq.PublishVehicle;
 using Parsing.RabbitMq.StartParsing;
 using RabbitMQ.Client;
@@ -49,6 +50,7 @@ public sealed class JsonRabbitMqConfiguration(
             IParserLinkFinishedMessagePublisher,
             ParserLinkFinishedMessagePublisher
         >();
+        services.AddSingleton<ISparePublisher, SparePublisher>();
         services.AddSingleton<IParserRabbitMqActionsPublisher, ParserRabbitMqActionsPublisher>();
     }
 }

@@ -1,5 +1,4 @@
-﻿using Avito.Vehicles.Service.PaginationBar;
-using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicle;
+﻿using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicle;
 using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Brand;
 using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Characteristics;
 using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Description;
@@ -12,6 +11,7 @@ using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Price;
 using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Url;
 using Avito.Vehicles.Service.VehiclesParsing.CatalogueItems;
 using Parsing.Avito.Common.BypassFirewall;
+using Parsing.Avito.Common.PaginationBar;
 using Parsing.SDK.ScrapingActions;
 using Parsing.Vehicles.Common.ParsedVehicles;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleBrands;

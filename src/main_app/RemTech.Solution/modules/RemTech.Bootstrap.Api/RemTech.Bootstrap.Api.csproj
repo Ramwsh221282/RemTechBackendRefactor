@@ -11,6 +11,7 @@
     <PackageReference Include="Scalar.AspNetCore" Version="2.6.4" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\geo_locations\GeoLocations.Module\GeoLocations.Module.csproj" />
     <ProjectReference Include="..\mailing\Mailing.Module\Mailing.Module.csproj" />
     <ProjectReference Include="..\parsed_advertisements\RemTech.Spares.Module\RemTech.Spares.Module.csproj" />
     <ProjectReference Include="..\parsed_advertisements\RemTech.Vehicles.Module\RemTech.Vehicles.Module.csproj" />
@@ -25,6 +26,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="tokenizer.onnx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="OnStartup\city.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

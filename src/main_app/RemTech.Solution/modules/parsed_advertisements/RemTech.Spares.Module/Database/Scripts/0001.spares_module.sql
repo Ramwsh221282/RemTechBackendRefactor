@@ -2,7 +2,8 @@
 
 CREATE TABLE IF NOT EXISTS spares_module.spares(
     id              VARCHAR(100) NOT NULL,
-    geo_id          UUID NOT NULL,
+    region_id       UUID NOT NULL,
+    city_id         UUID NOT NULL,
     price           BIGINT NOT NULL,
     is_nds          BOOLEAN NOT NULL,
     source_url      TEXT NOT NULL UNIQUE,
@@ -14,7 +15,9 @@ CREATE TABLE IF NOT EXISTS spares_module.spares(
 
 CREATE INDEX IF NOT EXISTS idx_spares_module_id ON spares_module.spares(id);
 
-CREATE INDEX IF NOT EXISTS idx_spares_module_geo_id ON spares_module.spares(geo_id);
+CREATE INDEX IF NOT EXISTS idx_spares_module_region_id ON spares_module.spares(region_id);
+
+CREATE INDEX IF NOT EXISTS idx_spares_module_city_id ON spares_module.spares(city_id);
 
 CREATE INDEX IF NOT EXISTS idx_spares_module_source_url ON spares_module.spares(source_url);
 

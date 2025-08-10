@@ -1,8 +1,8 @@
 using System.Text;
 
-namespace Avito.Vehicles.Service.PaginationBar;
+namespace Parsing.Avito.Common.PaginationBar;
 
-public sealed class AvitoPaginationBarElement
+public sealed class AvitoPaginationBarElement : IAvitoPaginationBarElement
 {
     private readonly int[] _pages;
 

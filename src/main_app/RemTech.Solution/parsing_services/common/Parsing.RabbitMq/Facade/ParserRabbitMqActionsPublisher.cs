@@ -1,5 +1,6 @@
 ﻿using Parsing.RabbitMq.FinishParser;
 using Parsing.RabbitMq.FinishParserLink;
+using Parsing.RabbitMq.PublishSpare;
 using Parsing.RabbitMq.PublishVehicle;
 
 namespace Parsing.RabbitMq.Facade;
@@ -7,7 +8,8 @@ namespace Parsing.RabbitMq.Facade;
 internal sealed class ParserRabbitMqActionsPublisher(
     IParserFinishMessagePublisher finishParser,
     IParserLinkFinishedMessagePublisher finishLink,
-    IPublishVehiclePublisher vehicle
+    IPublishVehiclePublisher vehicle,
+    ISparePublisher spare
 ) : IParserRabbitMqActionsPublisher
 {
     public async Task SayParserFinished(
@@ -36,5 +38,10 @@ internal sealed class ParserRabbitMqActionsPublisher(
     public async Task SayVehicleFinished(VehiclePublishMessage message)
     {
         await vehicle.Publish(message);
+    }
+
+    public async Task SaySparePublished(SpareSinkMessage message)
+    {
+        await spare.Publish(message);
     }
 }
