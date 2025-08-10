@@ -28,7 +28,7 @@ public static class ParsedAdvertisementsInjection
         services.AddSingleton<IEmbeddingGenerator, OnnxEmbeddingGenerator>();
     }
 
-    public static void UpVehiclesDatabase(string connectionString)
+    public static void UpDatabase(string connectionString)
     {
         EnsureDatabase.For.PostgresqlDatabase(connectionString);
         UpgradeEngine upgrader = DeployChanges

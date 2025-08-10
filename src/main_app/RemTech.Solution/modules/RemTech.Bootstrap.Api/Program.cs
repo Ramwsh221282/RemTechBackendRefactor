@@ -2,6 +2,7 @@ using Mailing.Module.Injection;
 using Quartz;
 using RemTech.Bootstrap.Api.Configuration;
 using RemTech.Bootstrap.Api.Injection;
+using RemTech.Spares.Module.Injection;
 using RemTech.Vehicles.Module.Injection;
 using RemTech.Vehicles.Module.OnStartup;
 using Scalar.AspNetCore;
@@ -10,15 +11,17 @@ using Users.Module.Injection;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 RemTechApplicationSettings settings = RemTechApplicationSettings.CreateFromJson("appsettings.json");
-UsersModuleInjection.UpUsersModuleDatabase(settings.Database.ToConnectionString());
-MailingModuleInjection.UpMailingModuleDatabase(settings.Database.ToConnectionString());
-ParsedAdvertisementsInjection.UpVehiclesDatabase(settings.Database.ToConnectionString());
-ScrapersModuleInjection.UpScrapersModuleDatabase(settings.Database.ToConnectionString());
+UsersModuleInjection.UpDatabase(settings.Database.ToConnectionString());
+MailingModuleInjection.UpDatabase(settings.Database.ToConnectionString());
+ParsedAdvertisementsInjection.UpDatabase(settings.Database.ToConnectionString());
+ScrapersModuleInjection.UpDatabase(settings.Database.ToConnectionString());
+SparesModuleInjection.UpDatabase(settings.Database.ToConnectionString());
 builder.Services.InjectCommonInfrastructure(settings);
 builder.Services.InjectScrapersModule();
 builder.Services.InjectMailingModule();
 builder.Services.InjectUsersModule();
 builder.Services.InjectVehiclesModule();
+builder.Services.InjectSparesModule();
 builder.Services.AddCors(options =>
     options.AddPolicy(
         "FRONTEND",

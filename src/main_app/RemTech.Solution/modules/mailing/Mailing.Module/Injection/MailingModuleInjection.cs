@@ -30,7 +30,7 @@ public static class MailingModuleInjection
         ReadMailingSenders.Map(builder);
     }
 
-    public static void UpMailingModuleDatabase(string connectionString)
+    public static void UpDatabase(string connectionString)
     {
         EnsureDatabase.For.PostgresqlDatabase(connectionString);
         UpgradeEngine upgrader = DeployChanges
