@@ -47,4 +47,5 @@ app.MapMailingModuleEndpoints();
 app.MapVehiclesModuleEndpoints();
 app.MapUsersModuleEndpoints();
 app.MapScrapersModuleEndpoints();
+app.MapSparesEndpoints();
 app.Run();
