@@ -2,7 +2,7 @@
 
 namespace RemTech.Vehicles.Module.Utilities;
 
-internal sealed class StringForVectorStoring(string input)
+public sealed class StringForVectorStoring(string input)
 {
     public string Read()
     {

@@ -38,7 +38,7 @@ public static class ScrapersModuleInjection
         services.AddSingleton<IIncreaseProcessedPublisher, IncreaseProcessedPublisher>();
     }
 
-    public static void UpScrapersModuleDatabase(string connectionString)
+    public static void UpDatabase(string connectionString)
     {
         EnsureDatabase.For.PostgresqlDatabase(connectionString);
         UpgradeEngine upgrader = DeployChanges

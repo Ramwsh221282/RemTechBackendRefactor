@@ -27,7 +27,7 @@ public static class UsersModuleInjection
         AuthenticateUserFeatureEndpoint.Map(builder);
     }
 
-    public static void UpUsersModuleDatabase(string connectionString)
+    public static void UpDatabase(string connectionString)
     {
         EnsureDatabase.For.PostgresqlDatabase(connectionString);
         UpgradeEngine upgrader = DeployChanges
