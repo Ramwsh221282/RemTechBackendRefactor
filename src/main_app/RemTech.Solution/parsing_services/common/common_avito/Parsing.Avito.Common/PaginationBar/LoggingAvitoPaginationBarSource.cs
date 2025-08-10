@@ -1,4 +1,4 @@
-namespace Avito.Vehicles.Service.PaginationBar;
+namespace Parsing.Avito.Common.PaginationBar;
 
 public sealed class LoggingAvitoPaginationBarSource(
     Serilog.ILogger log,

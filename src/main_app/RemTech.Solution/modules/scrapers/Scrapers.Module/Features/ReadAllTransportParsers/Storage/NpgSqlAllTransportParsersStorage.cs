@@ -49,11 +49,13 @@ internal sealed class NpgSqlAllTransportParsersStorage(NpgsqlDataSource dataSour
         while (await reader.ReadAsync(ct))
         {
             string parserName = reader.GetString(reader.GetOrdinal("parser_name"));
-            if (!entries.TryGetValue(parserName, out ParserResult? parserResult))
+            string parserType = reader.GetString(reader.GetOrdinal("parser_type"));
+            string key = $"{parserName}_{parserType}";
+            if (!entries.TryGetValue(key, out ParserResult? parserResult))
             {
                 parserResult = new ParserResult(
                     parserName,
-                    reader.GetString(reader.GetOrdinal("parser_type")),
+                    parserType,
                     reader.GetString(reader.GetOrdinal("parser_state")),
                     reader.GetString(reader.GetOrdinal("parser_domain")),
                     reader.GetInt32(reader.GetOrdinal("parser_processed")),
@@ -66,7 +68,7 @@ internal sealed class NpgSqlAllTransportParsersStorage(NpgsqlDataSource dataSour
                     reader.GetDateTime(reader.GetOrdinal("parser_next_run")),
                     []
                 );
-                entries.Add(parserName, parserResult);
+                entries.Add(key, parserResult);
             }
 
             if (await reader.IsDBNullAsync(reader.GetOrdinal("link_name"), ct))
@@ -89,7 +91,7 @@ internal sealed class NpgSqlAllTransportParsersStorage(NpgsqlDataSource dataSour
                 reader.GetInt32(reader.GetOrdinal("link_minutes")),
                 reader.GetInt32(reader.GetOrdinal("link_seconds"))
             );
-            entries[parserName].Links.Add(parserLink);
+            entries[key].Links.Add(parserLink);
         }
         return entries.Values;
     }

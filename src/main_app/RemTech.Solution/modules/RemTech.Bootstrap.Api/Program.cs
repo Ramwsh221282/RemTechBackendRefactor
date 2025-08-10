@@ -1,3 +1,4 @@
+using GeoLocations.Module.Injection;
 using Mailing.Module.Injection;
 using Quartz;
 using RemTech.Bootstrap.Api.Configuration;
@@ -16,12 +17,14 @@ MailingModuleInjection.UpDatabase(settings.Database.ToConnectionString());
 ParsedAdvertisementsInjection.UpDatabase(settings.Database.ToConnectionString());
 ScrapersModuleInjection.UpDatabase(settings.Database.ToConnectionString());
 SparesModuleInjection.UpDatabase(settings.Database.ToConnectionString());
+GeoLocationsModuleInjection.UpDatabase(settings.Database.ToConnectionString());
 builder.Services.InjectCommonInfrastructure(settings);
 builder.Services.InjectScrapersModule();
 builder.Services.InjectMailingModule();
 builder.Services.InjectUsersModule();
 builder.Services.InjectVehiclesModule();
 builder.Services.InjectSparesModule();
+builder.Services.InjectLocationsModule();
 builder.Services.AddCors(options =>
     options.AddPolicy(
         "FRONTEND",

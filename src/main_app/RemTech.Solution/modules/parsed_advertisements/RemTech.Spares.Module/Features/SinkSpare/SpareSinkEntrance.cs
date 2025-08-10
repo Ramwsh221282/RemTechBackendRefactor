@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using GeoLocations.Module.Features.Querying;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using RabbitMQ.Client;
@@ -47,8 +48,6 @@ internal sealed class SpareSinkEntrance(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (_connection == null)
-            throw new ApplicationException("Spares connection is null.");
         if (_channel == null)
             throw new ApplicationException("Spares channel is null.");
         AsyncEventingBasicConsumer consumer = new AsyncEventingBasicConsumer(_channel);
@@ -59,14 +58,23 @@ internal sealed class SpareSinkEntrance(
 
     private async Task Handle(object sender, BasicDeliverEventArgs ea)
     {
+        if (_channel == null)
+            throw new ApplicationException("Spares channel is null.");
         SpareSinkMessage? message = JsonSerializer.Deserialize<SpareSinkMessage>(ea.Body.ToArray());
         if (message != null)
         {
-            SpareLocation location = await new ExternalSpareLocation(
-                message.Spare.LocationText,
-                dataSource,
-                generator
-            ).Fetch();
+            IGeoLocationQueryService service = new LoggingGeoLocationQueryService(
+                logger,
+                new GeoLocationsQueryService(dataSource, generator)
+            );
+            GeoLocationInfo geoInfo = await service.VectorSearch(message.Spare.LocationText);
+            SpareLocation location = new SpareLocation(
+                geoInfo.Region.Id,
+                geoInfo.City.Id,
+                geoInfo.Region.Name,
+                geoInfo.Region.Type,
+                geoInfo.City.Name
+            );
             SpareToPersist spare = new(message, location, dataSource, generator);
             try
             {
@@ -101,6 +109,10 @@ internal sealed class SpareSinkEntrance(
             catch (Exception ex)
             {
                 LogError(ex);
+            }
+            finally
+            {
+                await _channel.BasicAckAsync(ea.DeliveryTag, false);
             }
         }
     }

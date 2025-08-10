@@ -1,11 +1,11 @@
-﻿namespace RemTech.Spares.Module.Features.SinkSpare;
+﻿namespace Parsing.RabbitMq.PublishSpare;
 
-internal sealed record Sparebody(
+public sealed record SpareBody(
     string Id,
     string Description,
     string Title,
     string SourceUrl,
-    long Value,
+    long PriceValue,
     bool IsNds,
     string LocationText,
     IEnumerable<string> Photos

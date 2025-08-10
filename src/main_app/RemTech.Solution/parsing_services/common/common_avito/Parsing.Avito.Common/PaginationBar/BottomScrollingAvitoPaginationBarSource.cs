@@ -1,7 +1,7 @@
 ﻿using Parsing.SDK.ScrapingActions;
 using PuppeteerSharp;
 
-namespace Avito.Vehicles.Service.PaginationBar;
+namespace Parsing.Avito.Common.PaginationBar;
 
 public sealed class BottomScrollingAvitoPaginationBarSource(
     IPage page,

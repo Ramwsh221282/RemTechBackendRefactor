@@ -1,4 +1,5 @@
-﻿using Parsing.RabbitMq.PublishVehicle;
+﻿using Parsing.RabbitMq.PublishSpare;
+using Parsing.RabbitMq.PublishVehicle;
 
 namespace Parsing.RabbitMq.Facade;
 
@@ -14,4 +15,6 @@ public interface IParserRabbitMqActionsPublisher
     );
 
     Task SayVehicleFinished(VehiclePublishMessage message);
+
+    Task SaySparePublished(SpareSinkMessage message);
 }

@@ -24,7 +24,7 @@ internal sealed class SpareToPersist(
                 message.Spare.Id,
                 new SpareTextInformation(message.Spare.Description, message.Spare.Title),
                 location,
-                new SparePrice(message.Spare.Value, message.Spare.IsNds),
+                new SparePrice(message.Spare.PriceValue, message.Spare.IsNds),
                 new SpareSourceInformation(message.Spare.SourceUrl, message.Parser.ParserDomain),
                 new SparePhotos(message.Spare.Photos)
             ),
@@ -37,9 +37,9 @@ internal sealed class SpareToPersist(
         string sql = string.Intern(
             """
             INSERT INTO spares_module.spares
-            (id, geo_id, price, is_nds, source_url, source_domain, object, embedding)
+            (id, region_id, city_id, price, is_nds, source_url, source_domain, object, embedding)
             VALUES
-            (@id, @geo_id, @price, @is_nds, @source_url, @source_domain, @object, @embedding)
+            (@id, @region_id, @city_id, @price, @is_nds, @source_url, @source_domain, @object, @embedding)
             ON CONFLICT(id) DO NOTHING;
             """
         );

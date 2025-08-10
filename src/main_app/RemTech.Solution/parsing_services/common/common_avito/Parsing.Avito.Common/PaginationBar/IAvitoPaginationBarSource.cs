@@ -1,5 +1,5 @@
 using Parsing.SDK.ScrapingArtifacts;
 
-namespace Avito.Vehicles.Service.PaginationBar;
+namespace Parsing.Avito.Common.PaginationBar;
 
 public interface IAvitoPaginationBarSource : IScrapingArtifact<AvitoPaginationBarElement>;
