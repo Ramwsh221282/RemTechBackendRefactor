@@ -2,6 +2,7 @@
 using RabbitMQ.Client;
 using RemTech.Bootstrap.Api.Configuration;
 using Serilog;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Bootstrap.Api.Injection;
 
@@ -12,6 +13,7 @@ public static class CommonInfrastructureInjection
         RemTechApplicationSettings settings
     )
     {
+        services.AddSingleton<IEmbeddingGenerator, OnnxEmbeddingGenerator>();
         services.InjectDatabase(settings.Database);
         services.InjectRabbitMq(settings.RabbitMq);
         services.InjectLogging();

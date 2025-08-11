@@ -3,7 +3,7 @@ using RemTech.Spares.Module.Features.SinkSpare.Exceptions;
 using RemTech.Spares.Module.Features.SinkSpare.Json;
 using RemTech.Spares.Module.Features.SinkSpare.Models;
 using RemTech.Spares.Module.Features.SinkSpare.Persistance;
-using RemTech.Vehicles.Module.Database.Embeddings;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Spares.Module.Features.SinkSpare;
 

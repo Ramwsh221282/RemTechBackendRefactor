@@ -1,7 +1,6 @@
 ﻿using Npgsql;
 using RemTech.Core.Shared.Exceptions;
-using RemTech.Postgres.Adapter.Library;
-using RemTech.Vehicles.Module.Database.Embeddings;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 using IsolationLevel = System.Data.IsolationLevel;
 
 namespace RemTech.Vehicles.Module.Types.Transport.Decorators.Postgres;

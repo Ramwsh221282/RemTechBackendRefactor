@@ -2,10 +2,10 @@
 using NpgsqlTypes;
 using Pgvector;
 using RemTech.Core.Shared.Exceptions;
-using RemTech.Postgres.Adapter.Library.PgCommands;
-using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Types.Transport.Decorators.Json;
 using RemTech.Vehicles.Module.Utilities;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
+using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Types.Transport.Decorators.Postgres;
 

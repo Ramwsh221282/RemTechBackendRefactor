@@ -11,8 +11,12 @@
     <PackageReference Include="Scalar.AspNetCore" Version="2.6.4" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\brands\Brands.Module\Brands.Module.csproj" />
+    <ProjectReference Include="..\categories\Categories.Module\Categories.Module.csproj" />
     <ProjectReference Include="..\geo_locations\GeoLocations.Module\GeoLocations.Module.csproj" />
     <ProjectReference Include="..\mailing\Mailing.Module\Mailing.Module.csproj" />
+    <ProjectReference Include="..\models\Models.Module\Models.Module.csproj" />
+    <ProjectReference Include="..\parsed_advertisements\RemTech.ContainedItems.Module\RemTech.ContainedItems.Module.csproj" />
     <ProjectReference Include="..\parsed_advertisements\RemTech.Spares.Module\RemTech.Spares.Module.csproj" />
     <ProjectReference Include="..\parsed_advertisements\RemTech.Vehicles.Module\RemTech.Vehicles.Module.csproj" />
     <ProjectReference Include="..\scrapers\Scrapers.Module\Scrapers.Module.csproj" />
@@ -29,6 +33,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="OnStartup\city.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="OnStartup\brands.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="OnStartup\categories.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="OnStartup\models.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

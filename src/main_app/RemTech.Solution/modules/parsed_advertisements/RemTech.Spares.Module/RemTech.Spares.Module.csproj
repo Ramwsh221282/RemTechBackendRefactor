@@ -13,7 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\geo_locations\GeoLocations.Module\GeoLocations.Module.csproj" />
-    <ProjectReference Include="..\RemTech.Vehicles.Module\RemTech.Vehicles.Module.csproj" />
   </ItemGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

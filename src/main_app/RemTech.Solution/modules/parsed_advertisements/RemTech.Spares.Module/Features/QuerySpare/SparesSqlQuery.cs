@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Npgsql;
 using Pgvector;
-using RemTech.Vehicles.Module.Database.Embeddings;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Spares.Module.Features.QuerySpare;
 

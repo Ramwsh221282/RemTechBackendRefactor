@@ -11,7 +11,6 @@ using Parsing.Vehicles.Grpc.Recognition;
 using PuppeteerSharp;
 using RabbitMQ.Client;
 using RemTech.Core.Shared.Decorating;
-using RemTech.Logging.Adapter;
 using Serilog;
 
 namespace Avito.Parsing.Vehicles.Tests;

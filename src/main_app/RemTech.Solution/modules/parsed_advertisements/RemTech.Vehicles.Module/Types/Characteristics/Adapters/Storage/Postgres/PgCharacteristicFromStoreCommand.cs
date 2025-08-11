@@ -2,9 +2,9 @@
 using Npgsql;
 using RemTech.Core.Shared.Exceptions;
 using RemTech.Core.Shared.Primitives;
-using RemTech.Postgres.Adapter.Library.PgCommands;
 using RemTech.Vehicles.Module.Types.Characteristics.Ports.Storage;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
+using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Adapters.Storage.Postgres;
 

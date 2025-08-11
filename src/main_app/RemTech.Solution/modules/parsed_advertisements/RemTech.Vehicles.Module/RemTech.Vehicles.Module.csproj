@@ -6,11 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\scrapers\Scrapers.Module\Scrapers.Module.csproj" />
-    <ProjectReference Include="..\..\shared_module\adapters\RemTech.Logging.Adapter\RemTech.Logging.Adapter.csproj" />
-    <ProjectReference Include="..\..\shared_module\adapters\RemTech.Postgres.Adapter.Library\RemTech.Postgres.Adapter.Library.csproj" />
-    <ProjectReference Include="..\..\shared_module\adapters\RemTech.RabbitMq.Adapter\RemTech.RabbitMq.Adapter.csproj" />
-    <ProjectReference Include="..\..\shared_module\RemTech.Configuration.Library\RemTech.Configuration.Library.csproj" />
     <ProjectReference Include="..\..\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj" />
+    <ProjectReference Include="..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Database\Scripts\*.sql" />

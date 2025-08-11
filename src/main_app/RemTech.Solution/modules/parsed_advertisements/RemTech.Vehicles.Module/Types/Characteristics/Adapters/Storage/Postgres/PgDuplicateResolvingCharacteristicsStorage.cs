@@ -1,5 +1,4 @@
 ﻿using Npgsql;
-using RemTech.Postgres.Adapter.Library;
 using RemTech.Vehicles.Module.Types.Characteristics.Ports.Storage;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Adapters.Storage.Postgres;

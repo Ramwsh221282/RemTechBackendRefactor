@@ -2,7 +2,7 @@
 using Npgsql;
 using Pgvector;
 using RemTech.Core.Shared.Exceptions;
-using RemTech.Vehicles.Module.Database.Embeddings;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace GeoLocations.Module.Features.Querying;
 

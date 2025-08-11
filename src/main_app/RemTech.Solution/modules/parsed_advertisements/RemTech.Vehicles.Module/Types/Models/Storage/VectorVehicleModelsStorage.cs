@@ -1,8 +1,8 @@
 ﻿using System.Data.Common;
 using Npgsql;
 using Pgvector;
-using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Types.Models.ValueObjects;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Vehicles.Module.Types.Models.Storage;
 

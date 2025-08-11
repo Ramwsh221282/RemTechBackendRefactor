@@ -1,9 +1,9 @@
 ﻿using Npgsql;
 using RemTech.Result.Library;
-using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Types.Kinds;
 using RemTech.Vehicles.Module.Types.Kinds.Decorators.Validation;
 using RemTech.Vehicles.Module.Types.Kinds.Storage;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 

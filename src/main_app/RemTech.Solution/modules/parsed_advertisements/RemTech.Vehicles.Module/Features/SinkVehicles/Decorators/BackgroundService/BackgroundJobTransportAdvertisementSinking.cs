@@ -1,11 +1,11 @@
 ﻿using Npgsql;
 using RabbitMQ.Client;
-using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Logging;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;
 using Scrapers.Module.Features.IncreaseProcessedAmount.MessageBus;
 using Serilog;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.BackgroundService;
 

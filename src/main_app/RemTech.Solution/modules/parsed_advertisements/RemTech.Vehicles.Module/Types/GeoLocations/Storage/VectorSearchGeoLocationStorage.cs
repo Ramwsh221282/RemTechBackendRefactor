@@ -2,8 +2,8 @@
 using Npgsql;
 using Pgvector;
 using RemTech.Core.Shared.Primitives;
-using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Types.GeoLocations.ValueObjects;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Vehicles.Module.Types.GeoLocations.Storage;
 

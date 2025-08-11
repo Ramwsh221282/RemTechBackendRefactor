@@ -1,6 +1,6 @@
 ﻿using RabbitMQ.Client;
-using RemTech.RabbitMq.Adapter;
 using RemTech.Vehicles.Module.Types.Brands.Storage;
+using Shared.Infrastructure.Module.RabbitMq;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;
 

@@ -1,7 +1,7 @@
 ﻿using GeoLocations.Module.Features.Persisting;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using RemTech.Vehicles.Module.Database.Embeddings;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace GeoLocations.Module.OnStartup;
 

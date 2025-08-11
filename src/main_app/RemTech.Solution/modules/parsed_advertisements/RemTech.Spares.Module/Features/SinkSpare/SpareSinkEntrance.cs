@@ -6,8 +6,8 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RemTech.Spares.Module.Features.SinkSpare.Exceptions;
 using RemTech.Spares.Module.Features.SinkSpare.Models;
-using RemTech.Vehicles.Module.Database.Embeddings;
 using Scrapers.Module.Features.IncreaseProcessedAmount.MessageBus;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Spares.Module.Features.SinkSpare;
 

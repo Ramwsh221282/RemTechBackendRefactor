@@ -1,8 +1,8 @@
 ﻿using Npgsql;
 using Pgvector;
 using RemTech.Spares.Module.Features.SinkSpare.Exceptions;
-using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Utilities;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Spares.Module.Features.SinkSpare.Persistance;
 

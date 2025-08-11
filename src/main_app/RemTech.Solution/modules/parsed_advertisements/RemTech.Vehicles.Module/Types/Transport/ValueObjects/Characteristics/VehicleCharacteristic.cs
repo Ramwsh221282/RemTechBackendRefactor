@@ -1,5 +1,5 @@
-﻿using RemTech.Postgres.Adapter.Library.PgCommands;
-using RemTech.Vehicles.Module.Types.Characteristics;
+﻿using RemTech.Vehicles.Module.Types.Characteristics;
+using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 

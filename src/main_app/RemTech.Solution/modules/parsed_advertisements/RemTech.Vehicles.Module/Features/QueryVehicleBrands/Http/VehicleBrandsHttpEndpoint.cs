@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using RemTech.Postgres.Adapter.Library;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicleBrands.Http;
 

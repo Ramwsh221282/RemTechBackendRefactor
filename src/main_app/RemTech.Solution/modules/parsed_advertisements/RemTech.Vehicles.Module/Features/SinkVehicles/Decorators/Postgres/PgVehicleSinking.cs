@@ -1,6 +1,5 @@
 ﻿using Npgsql;
 using RemTech.Result.Library;
-using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Types.Brands.Decorators.Logic;
 using RemTech.Vehicles.Module.Types.GeoLocations.Decorators.Logic;
 using RemTech.Vehicles.Module.Types.Kinds.Decorators.Logic;
@@ -8,6 +7,7 @@ using RemTech.Vehicles.Module.Types.Models.Decorators.Logic;
 using RemTech.Vehicles.Module.Types.Transport;
 using RemTech.Vehicles.Module.Types.Transport.Decorators;
 using RemTech.Vehicles.Module.Types.Transport.Decorators.Postgres;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 

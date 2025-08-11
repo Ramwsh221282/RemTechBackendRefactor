@@ -2,11 +2,11 @@
 using System.Text;
 using Npgsql;
 using Pgvector;
-using RemTech.Postgres.Adapter.Library.PgCommands;
-using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Presenting;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
 using Serilog;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
+using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicles;
 

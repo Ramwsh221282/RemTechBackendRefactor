@@ -1,5 +1,5 @@
-﻿using RemTech.Postgres.Adapter.Library.PgCommands;
-using RemTech.Vehicles.Module.Features.QueryVehicleModels.Types;
+﻿using RemTech.Vehicles.Module.Features.QueryVehicleModels.Types;
+using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicleModels.Delegates;
 

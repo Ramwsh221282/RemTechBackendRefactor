@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using RemTech.Postgres.Adapter.Library.PgCommands;
 using RemTech.Vehicles.Module.Database.SqlStringGeneration;
 using RemTech.Vehicles.Module.Features.QueryVehicles;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Arguments;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Extensions;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
+using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehiclesAggregatedData;
 

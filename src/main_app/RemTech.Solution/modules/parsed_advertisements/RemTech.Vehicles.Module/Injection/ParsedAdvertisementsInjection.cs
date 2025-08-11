@@ -3,7 +3,6 @@ using DbUp.Engine;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Features.QueryAllBrandModels;
 using RemTech.Vehicles.Module.Features.QueryAllKindBrands;
 using RemTech.Vehicles.Module.Features.QueryAllKinds;
@@ -25,7 +24,6 @@ public static class ParsedAdvertisementsInjection
     {
         services.AddSingleton<CreateVectorsOnStartup>();
         services.AddHostedService<BackgroundJobTransportAdvertisementSinking>();
-        services.AddSingleton<IEmbeddingGenerator, OnnxEmbeddingGenerator>();
     }
 
     public static void UpDatabase(string connectionString)

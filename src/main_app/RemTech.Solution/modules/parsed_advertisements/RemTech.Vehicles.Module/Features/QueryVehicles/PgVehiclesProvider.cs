@@ -1,6 +1,6 @@
 ﻿using Npgsql;
-using RemTech.Vehicles.Module.Database.Embeddings;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Presenting;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicles;
 
