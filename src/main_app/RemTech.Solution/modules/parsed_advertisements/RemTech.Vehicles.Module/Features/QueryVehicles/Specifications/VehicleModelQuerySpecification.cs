@@ -1,18 +1,12 @@
 ﻿using Npgsql;
-using RemTech.Vehicles.Module.Types.Models.ValueObjects;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
 
-public sealed class VehicleModelQuerySpecification : IQueryVehiclesSpecification
+internal sealed class VehicleModelQuerySpecification(Guid modelId) : IQueryVehiclesSpecification
 {
-    private readonly VehicleModelIdentity _identity;
-
-    public VehicleModelQuerySpecification(VehicleModelIdentity identity) => _identity = identity;
-
     public void ApplyTo(IVehiclesSqlQuery query)
     {
-        string sql = "v.model_id = @model_id";
-        Guid modelId = _identity;
+        string sql = string.Intern("v.model_id = @model_id");
         query.AcceptFilter(sql, new NpgsqlParameter<Guid>("@model_id", modelId));
     }
 }

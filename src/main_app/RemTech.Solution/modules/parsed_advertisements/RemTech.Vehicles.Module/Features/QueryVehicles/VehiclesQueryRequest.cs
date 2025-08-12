@@ -5,32 +5,30 @@ using RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
 namespace RemTech.Vehicles.Module.Features.QueryVehicles;
 
 public sealed record VehiclesQueryRequest(
-    VehicleKindIdQueryFilterArgument KindId,
-    VehicleBrandIdQueryFilterArgument BrandId,
-    VehiclePaginationQueryFilterArgument Pagination,
+    VehiclePaginationQueryFilterArgument? Pagination = null,
+    VehicleKindIdQueryFilterArgument? KindId = null,
+    VehicleBrandIdQueryFilterArgument? BrandId = null,
     VehicleModelIdQueryFilterArgument? ModelId = null,
     VehicleSortOrderQueryFilterArgument? SortOrder = null,
     VehicleRegionIdQueryFilterArgument? RegionId = null,
     VehiclePriceQueryFilterArgument? Price = null,
-    VehicleCharacteristicsQueryArguments? Characteristics = null,
     VehicleTextSearchQueryFilterArgument? Text = null
 ) : VehicleQueryFilterArgument
 {
-    public override CompositeVehicleSpeicification ApplyTo(
+    internal override CompositeVehicleSpeicification ApplyTo(
         CompositeVehicleSpeicification speicification
     )
     {
         CompositeVehicleSpeicification composite = new();
-        composite = KindId.ApplyTo(composite);
-        composite = BrandId.ApplyTo(composite);
+        composite = KindId.ApplyIfProvided(composite);
+        composite = BrandId.ApplyIfProvided(composite);
         composite = ModelId.ApplyIfProvided(composite);
-        composite = Pagination.ApplyTo(composite);
+        composite = Pagination.ApplyIfProvided(composite);
         composite = RegionId.ApplyIfProvided(composite);
         composite = Price.ApplyIfProvided(composite);
         composite = SortOrder.ApplyIfProvided(composite);
         composite = RegionId.ApplyIfProvided(composite);
         composite = Price.ApplyIfProvided(composite);
-        composite = Characteristics.ApplyIfProvided(composite);
         composite = Text.ApplyIfProvided(composite);
         return composite;
     }

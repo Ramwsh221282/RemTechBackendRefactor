@@ -1,10 +1,10 @@
-﻿using RabbitMQ.Client;
-using RemTech.Vehicles.Module.Types.Brands.Storage;
+﻿using System.Text.Json;
+using RabbitMQ.Client;
 using Shared.Infrastructure.Module.RabbitMq;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;
 
-public sealed class RabbitVehicleSink : IDisposable, IAsyncDisposable
+internal sealed class RabbitVehicleSink : IDisposable, IAsyncDisposable
 {
     private readonly RabbitMqChannel _channel;
     private readonly ITransportAdvertisementSinking _origin;

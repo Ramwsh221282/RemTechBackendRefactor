@@ -7,15 +7,18 @@ namespace Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Ki
 
 public sealed class FromCharacteristicsKindSource(IPage page) : IParsedVehicleKindSource
 {
+    private const string Type = "тип техники";
+    private const char SplitChar = ':';
+
     public async Task<ParsedVehicleKind> Read()
     {
         IElementHandle[] ctxes = await new AvitoCharacteristicsSource(page).Read();
         foreach (IElementHandle ctxe in ctxes)
         {
             string text = await new TextFromWebElement(ctxe).Read();
-            if (text.Contains("тип техники", StringComparison.OrdinalIgnoreCase))
+            if (text.Contains(Type, StringComparison.OrdinalIgnoreCase))
                 return new ParsedVehicleKind(
-                    text.Split(':', StringSplitOptions.TrimEntries)[^1].Trim()
+                    text.Split(SplitChar, StringSplitOptions.TrimEntries)[^1].Trim()
                 );
         }
 

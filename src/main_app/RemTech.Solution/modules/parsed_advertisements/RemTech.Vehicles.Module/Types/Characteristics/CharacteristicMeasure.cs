@@ -2,7 +2,7 @@
 
 namespace RemTech.Vehicles.Module.Types.Characteristics;
 
-public sealed class CharacteristicMeasure
+internal sealed class CharacteristicMeasure
 {
     private readonly NotEmptyString _measure;
 

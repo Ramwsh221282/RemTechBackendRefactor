@@ -3,6 +3,7 @@ using System.Text.Json;
 using Avito.Vehicles.Service.VehiclesParsing;
 using Parsing.RabbitMq.Facade;
 using Parsing.RabbitMq.PublishVehicle;
+using Parsing.RabbitMq.PublishVehicle.Extras;
 using Parsing.RabbitMq.StartParsing;
 using Parsing.SDK.Browsers;
 using Parsing.SDK.Browsers.BrowserLoadings;
@@ -14,7 +15,6 @@ using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePhotos;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePrices;
 using Parsing.Vehicles.Common.TextWriting;
-using Parsing.Vehicles.Grpc.Recognition;
 using PuppeteerSharp;
 using RabbitMQ.Client.Events;
 
@@ -23,8 +23,7 @@ namespace Avito.Vehicles.Service;
 public class Worker(
     Serilog.ILogger logger,
     IStartParsingListener listener,
-    IParserRabbitMqActionsPublisher publisher,
-    ICommunicationChannel communicationChannel
+    IParserRabbitMqActionsPublisher publisher
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -51,68 +50,85 @@ public class Worker(
             return;
         Stopwatch parserStopwatch = new Stopwatch();
         parserStopwatch.Start();
-        foreach (var link in parserStarted.Links)
+        try
         {
-            Stopwatch parserLinkStopwatch = new Stopwatch();
-            parserLinkStopwatch.Start();
-            await using IScrapingBrowser browser = await CreateBrowser(link.LinkUrl);
-            await using IBrowserPagesSource pagesSource = await browser.AccessPages();
-            foreach (IPage page in pagesSource.Iterate())
+            foreach (var link in parserStarted.Links)
             {
-                IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
-                    page,
-                    new NoTextWrite(),
-                    logger,
-                    communicationChannel,
-                    link.LinkUrl
-                );
-                await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
+                Stopwatch parserLinkStopwatch = new Stopwatch();
+                parserLinkStopwatch.Start();
+                await using IScrapingBrowser browser = await CreateBrowser(link.LinkUrl);
+                await using IBrowserPagesSource pagesSource = await browser.AccessPages();
+                foreach (IPage page in pagesSource.Iterate())
                 {
-                    if (!await new ValidatingParsedVehicle(vehicle).IsValid())
-                        continue;
-                    ParsedVehiclePrice price = await vehicle.Price();
-                    CharacteristicsDictionary ctxes = await vehicle.Characteristics();
-                    UniqueParsedVehiclePhotos photos = await vehicle.Photos();
-                    VehiclePublishMessage message = new VehiclePublishMessage(
-                        new ParserBody(
-                            parserStarted.ParserName,
-                            parserStarted.ParserType,
-                            parserStarted.ParserDomain
-                        ),
-                        new ParserLinkBody(
-                            parserStarted.ParserName,
-                            parserStarted.ParserType,
-                            parserStarted.ParserDomain,
-                            link.LinkName,
-                            link.LinkUrl
-                        ),
-                        new VehicleBody(
-                            await vehicle.Identity(),
-                            await vehicle.Kind(),
-                            await vehicle.Brand(),
-                            await vehicle.Model(),
-                            price,
-                            price.IsNds(),
-                            await vehicle.Geo(),
-                            await vehicle.SourceUrl(),
-                            await vehicle.Description(),
-                            ctxes
-                                .Read()
-                                .Select(c => new VehicleBodyCharacteristic(c.Name(), c.Value())),
-                            photos.Read().Select(p => new VehicleBodyPhoto(p))
-                        )
+                    IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
+                        page,
+                        new NoTextWrite(),
+                        logger,
+                        link.LinkUrl
                     );
-                    await publisher.SayVehicleFinished(message);
+                    await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
+                    {
+                        if (!await new ValidatingParsedVehicle(vehicle).IsValid())
+                            continue;
+                        ParsedVehiclePrice price = await vehicle.Price();
+                        CharacteristicsDictionary ctxes = await vehicle.Characteristics();
+                        UniqueParsedVehiclePhotos photos = await vehicle.Photos();
+                        SentencesCollection sentences = await vehicle.Sentences();
+                        string description = sentences.FormText();
+                        if (string.IsNullOrWhiteSpace(description))
+                        {
+                            logger.Warning("No description provided.");
+                            continue;
+                        }
+                        VehiclePublishMessage message = new VehiclePublishMessage(
+                            new ParserBody(
+                                parserStarted.ParserName,
+                                parserStarted.ParserType,
+                                parserStarted.ParserDomain
+                            ),
+                            new ParserLinkBody(
+                                parserStarted.ParserName,
+                                parserStarted.ParserType,
+                                parserStarted.ParserDomain,
+                                link.LinkName,
+                                link.LinkUrl
+                            ),
+                            new VehicleBody(
+                                await vehicle.Identity(),
+                                await vehicle.Kind(),
+                                await vehicle.Brand(),
+                                await vehicle.Model(),
+                                price,
+                                price.IsNds(),
+                                await vehicle.Geo(),
+                                await vehicle.SourceUrl(),
+                                description,
+                                ctxes
+                                    .Read()
+                                    .Select(c => new VehicleBodyCharacteristic(
+                                        c.Name(),
+                                        c.Value()
+                                    )),
+                                photos.Read().Select(p => new VehicleBodyPhoto(p))
+                            )
+                        );
+                        await publisher.SayVehicleFinished(message);
+                    }
                 }
+                parserLinkStopwatch.Stop();
+                long linkSeconds = (long)parserLinkStopwatch.Elapsed.TotalSeconds;
+                await publisher.SayParserLinkFinished(
+                    parserStarted.ParserName,
+                    parserStarted.ParserType,
+                    link.LinkName,
+                    linkSeconds
+                );
+                logger.Information("Sended finish link {Link}.", link.LinkName);
             }
-            parserLinkStopwatch.Stop();
-            long linkSeconds = (long)parserLinkStopwatch.Elapsed.TotalSeconds;
-            await publisher.SayParserLinkFinished(
-                parserStarted.ParserName,
-                parserStarted.ParserType,
-                link.LinkName,
-                linkSeconds
-            );
+        }
+        catch (Exception ex)
+        {
+            logger.Fatal("{Ex}.", ex.Message);
         }
         parserStopwatch.Stop();
         long parserStopwatchSeconds = (long)parserStopwatch.Elapsed.TotalSeconds;
@@ -120,6 +136,11 @@ public class Worker(
             parserStarted.ParserName,
             parserStarted.ParserType,
             parserStopwatchSeconds
+        );
+        logger.Information(
+            "Sended finish parser {Name} {Type}",
+            parserStarted.ParserName,
+            parserStarted.ParserType
         );
     }
 

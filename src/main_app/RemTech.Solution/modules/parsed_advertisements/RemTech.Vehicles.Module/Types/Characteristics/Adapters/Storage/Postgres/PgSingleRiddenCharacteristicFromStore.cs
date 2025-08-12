@@ -4,7 +4,7 @@ using RemTech.Vehicles.Module.Types.Characteristics.ValueObjects;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Adapters.Storage.Postgres;
 
-public sealed class PgSingleRiddenCharacteristicFromStore
+internal sealed class PgSingleRiddenCharacteristicFromStore
 {
     private readonly DbDataReader _reader;
 

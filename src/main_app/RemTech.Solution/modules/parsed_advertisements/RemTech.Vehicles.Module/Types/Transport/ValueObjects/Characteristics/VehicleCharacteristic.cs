@@ -3,7 +3,7 @@ using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 
-public sealed record VehicleCharacteristic
+internal sealed record VehicleCharacteristic
 {
     private readonly Characteristic _characteristic;
 

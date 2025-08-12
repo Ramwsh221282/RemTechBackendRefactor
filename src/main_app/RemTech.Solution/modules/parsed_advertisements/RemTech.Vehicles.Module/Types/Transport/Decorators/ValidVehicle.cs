@@ -1,17 +1,12 @@
 ﻿using RemTech.Core.Shared.Exceptions;
-using RemTech.Vehicles.Module.Types.Brands;
-using RemTech.Vehicles.Module.Types.Brands.Decorators.Logic;
-using RemTech.Vehicles.Module.Types.GeoLocations;
-using RemTech.Vehicles.Module.Types.GeoLocations.Decorators.Logic;
-using RemTech.Vehicles.Module.Types.Kinds;
-using RemTech.Vehicles.Module.Types.Kinds.Decorators.Logic;
+using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Prices;
 
 namespace RemTech.Vehicles.Module.Types.Transport.Decorators;
 
-public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
+internal sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
 {
     private bool _identityPassed;
     private bool _kindPassed;
@@ -35,43 +30,48 @@ public sealed class ValidVehicle(Vehicle origin) : Vehicle(origin)
         }
     }
 
-    protected override VehicleKind Kind
+    protected override SinkedVehicleCategory Category
     {
         get
         {
             if (_kindPassed)
-                return base.Kind;
-            VehicleKind kind = base.Kind;
-            if (kind is UnknownVehicleKind)
-                throw new ValueNotValidException("Тип техники", "не задан.");
+                return base.Category;
+            SinkedVehicleCategory category = base.Category;
+            if (string.IsNullOrWhiteSpace(category.Name) || category.Id == Guid.Empty)
+                throw new ValueNotValidException("Категория не распознана.");
             _kindPassed = true;
-            return kind;
+            return category;
         }
     }
 
-    protected override VehicleBrand Brand
+    protected override SinkedVehicleBrand Brand
     {
         get
         {
             if (_brandPassed)
                 return base.Brand;
-            VehicleBrand brand = base.Brand;
-            if (brand is UnknownVehicleBrand)
-                throw new ValueNotValidException("Бренд техники", "не задан.");
+            SinkedVehicleBrand brand = base.Brand;
+            if (string.IsNullOrWhiteSpace(brand.Name) || brand.Id == Guid.Empty)
+                throw new ValueNotValidException("Бренд не распознан.");
             _brandPassed = true;
             return brand;
         }
     }
 
-    protected override GeoLocation Location
+    protected override SinkedVehicleLocation Location
     {
         get
         {
             if (_locationPassed)
                 return base.Location;
-            GeoLocation location = base.Location;
-            if (location is UnknownGeolocation)
-                throw new ValueNotValidException("Локация техники", "не задана.");
+            SinkedVehicleLocation location = base.Location;
+            if (
+                string.IsNullOrWhiteSpace(location.Text)
+                || string.IsNullOrWhiteSpace(location.KindText)
+                || string.IsNullOrWhiteSpace(location.CityText)
+                || location.Id == Guid.Empty
+            )
+                throw new ValueNotValidException("Локация не распознана.");
             _locationPassed = true;
             return location;
         }

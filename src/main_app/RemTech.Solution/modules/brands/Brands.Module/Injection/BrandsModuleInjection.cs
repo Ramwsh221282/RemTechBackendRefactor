@@ -1,7 +1,12 @@
 ﻿using Brands.Module.Features.AddBrandsOnStartup;
+using Brands.Module.Features.QueryBrands;
+using Brands.Module.Features.QueryBrandsAmount;
+using Brands.Module.Features.QueryPopularBrands;
 using Brands.Module.Public;
 using DbUp;
 using DbUp.Engine;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Brands.Module.Injection;
@@ -25,5 +30,13 @@ public static class BrandsModuleInjection
         DatabaseUpgradeResult result = upgrader.PerformUpgrade();
         if (!result.Successful)
             throw new ApplicationException("Failed to create brands module database.");
+    }
+
+    public static void MapBrandsEndpoints(this WebApplication app)
+    {
+        RouteGroupBuilder group = app.MapGroup("api/brands").RequireCors("FRONTEND");
+        QueryPopularBrandsEndpoint.Map(group);
+        QueryBrandsEndpoint.Map(group);
+        QueryBrandsAmountEndpoint.Map(group);
     }
 }

@@ -2,5 +2,5 @@
 
 public interface IEmbeddingGenerator : IDisposable
 {
-    float[] Generate(string text);
+    ReadOnlyMemory<float> Generate(string text);
 }

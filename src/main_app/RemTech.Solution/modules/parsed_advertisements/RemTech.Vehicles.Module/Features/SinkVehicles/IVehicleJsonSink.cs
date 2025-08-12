@@ -1,20 +1,17 @@
-﻿using RemTech.Vehicles.Module.Types.Brands;
+﻿using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
 using RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
-using RemTech.Vehicles.Module.Types.GeoLocations;
-using RemTech.Vehicles.Module.Types.Kinds;
-using RemTech.Vehicles.Module.Types.Models;
 using RemTech.Vehicles.Module.Types.Transport;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Prices;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles;
 
-public interface IVehicleJsonSink
+internal interface IVehicleJsonSink
 {
-    VehicleKind Kind();
-    VehicleBrand Brand();
-    VehicleModel Model();
-    GeoLocation Location();
+    SinkedVehicleCategory Category();
+    SinkedVehicleBrand Brand();
+    SinkedVehicleModel Model();
+    SinkedVehicleLocation Location();
     VehicleIdentity VehicleId();
     IItemPrice VehiclePrice();
     VehiclePhotos VehiclePhotos();
@@ -25,5 +22,5 @@ public interface IVehicleJsonSink
     string LinkName();
     string SourceUrl();
     string SourceDomain();
-    string Description();
+    string Sentences();
 }

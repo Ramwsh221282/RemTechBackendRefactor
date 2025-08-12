@@ -1,5 +1,6 @@
 ﻿using DbUp;
 using DbUp.Engine;
+using GeoLocations.Module.Features.Querying;
 using GeoLocations.Module.OnStartup;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,7 @@ public static class GeoLocationsModuleInjection
     public static void InjectLocationsModule(this IServiceCollection services)
     {
         services.AddHostedService<LocationsSeeding>();
+        services.AddSingleton<IGeoLocationQueryService, GeoLocationsQueryService>();
     }
 
     public static void UpDatabase(string connectionString)

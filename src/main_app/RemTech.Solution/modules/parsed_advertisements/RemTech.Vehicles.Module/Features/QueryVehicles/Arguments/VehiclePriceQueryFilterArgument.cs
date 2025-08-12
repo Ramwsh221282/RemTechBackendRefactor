@@ -8,7 +8,7 @@ public sealed record VehiclePriceQueryFilterArgument(
     double? PriceTo = null
 ) : VehicleQueryFilterArgument
 {
-    public override CompositeVehicleSpeicification ApplyTo(
+    internal override CompositeVehicleSpeicification ApplyTo(
         CompositeVehicleSpeicification speicification
     )
     {

@@ -2,7 +2,7 @@
 
 namespace RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 
-public sealed record VehicleCharacteristics
+internal sealed record VehicleCharacteristics
 {
     private readonly HashSet<VehicleCharacteristic> _characteristics;
 

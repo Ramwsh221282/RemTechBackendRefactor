@@ -20,16 +20,18 @@ internal sealed class MailingBusReceiver(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        logger.Information("{Entrance} started.", nameof(MailingBusReceiver));
         while (!stoppingToken.IsCancellationRequested)
         {
             await _reader.WaitToReadAsync(stoppingToken);
             while (_reader.TryRead(out var message))
             {
-                IEnumerable<IEmailSender> existingSenders = await senders.ReadAll(stoppingToken);
-                IEmailSender[] array = existingSenders.ToArray();
-                if (array.Length == 0)
-                    return;
-                IEmailSender firstSender = array[0];
+                // temporary.
+                // IEnumerable<IEmailSender> existingSenders = await senders.ReadAll(stoppingToken);
+                // IEmailSender[] array = existingSenders.ToArray();
+                // if (array.Length == 0)
+                //     return;
+                // IEmailSender firstSender = array[0];
             }
         }
     }

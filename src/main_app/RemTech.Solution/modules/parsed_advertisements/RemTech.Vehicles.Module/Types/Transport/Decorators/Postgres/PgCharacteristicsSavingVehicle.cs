@@ -5,9 +5,9 @@ using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Types.Transport.Decorators.Postgres;
 
-public sealed class PgCharacteristicsSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
+internal sealed class PgCharacteristicsSavingVehicle(Vehicle vehicle) : Vehicle(vehicle)
 {
-    public async Task<int> SaveAsync(NpgsqlConnection connection, CancellationToken ct = default)
+    public async Task SaveAsync(NpgsqlConnection connection, CancellationToken ct = default)
     {
         VehicleCharacteristic[] ctxes = Characteristics.Read();
         string sql = FormSql(ctxes);
@@ -15,14 +15,13 @@ public sealed class PgCharacteristicsSavingVehicle(Vehicle vehicle) : Vehicle(ve
         int affected = await new AsyncExecutedCommand(
             new AsyncPreparedCommand(parametrized)
         ).AsyncExecuted(ct);
-        return affected == 0
-            ? throw new OperationException(
+        if (affected == 0)
+            throw new OperationException(
                 "Не удается вставить характеристики техники в таблицу parsed vehicle characteristics"
-            )
-            : affected;
+            );
     }
 
-    private string FormSql(VehicleCharacteristic[] ctxes)
+    private static string FormSql(VehicleCharacteristic[] ctxes)
     {
         string sql = string.Intern(
             """

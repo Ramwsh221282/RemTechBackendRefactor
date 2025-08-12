@@ -9,10 +9,11 @@ public sealed class AvitoCaptchaImagesInterception
     private readonly IPage _page;
     private readonly TaskCompletionSource _tcs;
     private AvitoCaptchaImages _images;
+    private const string Button = "button";
 
     public AvitoCaptchaImagesInterception(IPage page, IElementHandle? blockedForm)
     {
-        _tcs = new  TaskCompletionSource();
+        _tcs = new TaskCompletionSource();
         _images = new AvitoCaptchaImages();
         _page = page;
         _blockedForm = blockedForm;
@@ -24,10 +25,10 @@ public sealed class AvitoCaptchaImagesInterception
             return _images;
 
         _page.Response += InterceptionMethod!;
-        IElementHandle? button = await new PageElementSource(_page).Read(string.Intern("button"));
+        IElementHandle? button = await new PageElementSource(_page).Read(Button);
         if (button == null)
         {
-            _page.Response -=  InterceptionMethod!;
+            _page.Response -= InterceptionMethod!;
             return _images;
         }
 
@@ -39,28 +40,30 @@ public sealed class AvitoCaptchaImagesInterception
         {
             _tcs.SetResult();
         }
-        
+
         _page.Response -= InterceptionMethod!;
         return _images;
     }
+
+    private const string BgImage = "/bg/";
+    private const string Slide = "/slide/";
 
     private async void InterceptionMethod(object sender, ResponseCreatedEventArgs ea)
     {
         try
         {
             string requestUrl = ea.Response.Request.Url;
-            if (requestUrl.Contains(string.Intern("/bg/")) ||
-                requestUrl.Contains(string.Intern("/slide/")))
+            if (requestUrl.Contains(BgImage) || requestUrl.Contains(Slide))
             {
-                await ea.Response
-                    .BufferAsync()
+                await ea
+                    .Response.BufferAsync()
                     .AsTask()
                     .ContinueWith(async data =>
                     {
                         _images = _images.With(await data);
                     });
             }
-            
+
             if (_images.Amount() >= 2)
                 _tcs.TrySetResult();
         }

@@ -16,22 +16,59 @@ public sealed class ImageHoveringAvitoCatalogueItemsSource(
     public async Task<CatalogueItemsList> Read()
     {
         CatalogueItemsList fromOrigin = await origin.Read();
-        IElementHandle container = await new ValidSingleElementSource(
-            new PageElementSource(page)
-        ).Read(_containerSelector);
-        IElementHandle[] items = await new ParentManyElementsSource(container).Read(_itemSelector);
-        foreach (var item in items)
+        try
         {
-            IElementHandle? slider = await new ParentElementSource(item).Read(_sliderSelector);
-            if (slider == null)
-                continue;
-            IElementHandle sliderList = await new ParentElementSource(slider).Read(_photoSelector);
-            if (sliderList == null)
-                continue;
-            await sliderList.FocusAsync();
-            await sliderList.HoverAsync();
+            await Hover();
         }
-
+        catch
+        {
+            await Hover();
+        }
         return fromOrigin;
+    }
+
+    private async Task Hover(int repeatTimes = 5)
+    {
+        for (int i = 0; i < repeatTimes; i++)
+        {
+            try
+            {
+                IElementHandle container = await new ValidSingleElementSource(
+                    new PageElementSource(page)
+                ).Read(_containerSelector);
+                IElementHandle[] items = await new ParentManyElementsSource(container).Read(
+                    _itemSelector
+                );
+                foreach (var item in items)
+                {
+                    try
+                    {
+                        await HoverImageElement(item);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+
+                break;
+            }
+            catch
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5));
+            }
+        }
+    }
+
+    private async Task HoverImageElement(IElementHandle item)
+    {
+        IElementHandle slider = await new ValidSingleElementSource(
+            new ParentElementSource(item)
+        ).Read(_sliderSelector);
+        IElementHandle sliderList = await new ValidSingleElementSource(
+            new ParentElementSource(slider)
+        ).Read(_photoSelector);
+        await sliderList.FocusAsync();
+        await sliderList.HoverAsync();
     }
 }

@@ -1,60 +1,41 @@
 ﻿using System.Text.Json;
 using RemTech.Core.Shared.Primitives;
-using RemTech.Vehicles.Module.Types.Brands;
-using RemTech.Vehicles.Module.Types.Brands.ValueObjects;
+using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
 using RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
-using RemTech.Vehicles.Module.Types.GeoLocations;
-using RemTech.Vehicles.Module.Types.GeoLocations.ValueObjects;
-using RemTech.Vehicles.Module.Types.Kinds;
-using RemTech.Vehicles.Module.Types.Kinds.ValueObjects;
-using RemTech.Vehicles.Module.Types.Models;
-using RemTech.Vehicles.Module.Types.Models.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Prices;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles;
 
-internal sealed class VehicleSinkBytes : IVehicleJsonSink
+internal sealed class VehicleSinkBytes(byte[] bytes) : IVehicleJsonSink
 {
-    private readonly VehicleSinkMessage _message;
+    private readonly VehicleSinkMessage _message = JsonSerializer.Deserialize<VehicleSinkMessage>(
+        bytes
+    )!;
 
-    public VehicleSinkBytes(byte[] bytes)
+    public SinkedVehicleCategory Category()
     {
-        _message = JsonSerializer.Deserialize<VehicleSinkMessage>(bytes)!;
+        return new SinkedVehicleCategory(_message.Vehicle.Kind, Guid.Empty);
     }
 
-    public VehicleKind Kind()
+    public SinkedVehicleBrand Brand()
     {
-        VehicleKindIdentity identity = new VehicleKindIdentity(
-            new VehicleKindText(_message.Vehicle.Kind)
-        );
-        return new VehicleKind(identity);
+        return new SinkedVehicleBrand(_message.Vehicle.Brand, Guid.Empty);
     }
 
-    public VehicleBrand Brand()
+    public SinkedVehicleModel Model()
     {
-        VehicleBrandIdentity brand = new VehicleBrandIdentity(
-            new VehicleBrandText(_message.Vehicle.Brand)
-        );
-        return new VehicleBrand(brand);
+        return new SinkedVehicleModel(_message.Vehicle.Model, Guid.Empty);
     }
 
-    public VehicleModel Model()
+    public SinkedVehicleLocation Location()
     {
-        return new VehicleModel(
-            new VehicleModelIdentity(Guid.NewGuid()),
-            new VehicleModelName(_message.Vehicle.Model)
-        );
-    }
-
-    public GeoLocation Location()
-    {
-        return new GeoLocation(
-            new GeoLocationIdentity(
-                new GeolocationText(_message.Vehicle.Geo),
-                new GeolocationText(string.Empty)
-            )
+        return new SinkedVehicleLocation(
+            _message.Vehicle.Geo,
+            string.Empty,
+            string.Empty,
+            Guid.Empty
         );
     }
 
@@ -83,7 +64,7 @@ internal sealed class VehicleSinkBytes : IVehicleJsonSink
             VehiclePhotos(),
             _message.Vehicle.SourceUrl,
             _message.Parser.ParserDomain,
-            Description()
+            Sentences()
         );
     }
 
@@ -122,7 +103,7 @@ internal sealed class VehicleSinkBytes : IVehicleJsonSink
         return _message.Parser.ParserDomain;
     }
 
-    public string Description()
+    public string Sentences()
     {
         return _message.Vehicle.Description;
     }

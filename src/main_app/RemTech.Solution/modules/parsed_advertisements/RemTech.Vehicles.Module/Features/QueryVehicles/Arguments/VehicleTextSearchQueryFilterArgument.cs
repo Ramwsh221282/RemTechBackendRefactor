@@ -5,7 +5,7 @@ namespace RemTech.Vehicles.Module.Features.QueryVehicles.Arguments;
 public sealed record VehicleTextSearchQueryFilterArgument(string TextSearch)
     : VehicleQueryFilterArgument
 {
-    public override CompositeVehicleSpeicification ApplyTo(
+    internal override CompositeVehicleSpeicification ApplyTo(
         CompositeVehicleSpeicification speicification
     )
     {

@@ -1,32 +1,18 @@
-﻿using RemTech.Result.Library;
-using Serilog;
+﻿using Serilog;
+using Status = RemTech.Core.Shared.Result.Status;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Logging;
 
-public sealed class LoggingVehicleSink : ITransportAdvertisementSinking
+internal sealed class LoggingVehicleSink(ILogger logger, ITransportAdvertisementSinking origin)
+    : ITransportAdvertisementSinking
 {
-    private readonly ILogger _logger;
-    private readonly ITransportAdvertisementSinking _origin;
-
-    public LoggingVehicleSink(ILogger logger, ITransportAdvertisementSinking origin)
-    {
-        _logger = logger;
-        _origin = origin;
-    }
-
     public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
     {
-        _logger.Information("Sinking advertisement...");
-        Status status = await _origin.Sink(sink, ct);
-        if (status.IsSuccess)
+        Status status = await origin.Sink(sink, ct);
+        if (status.IsFailure)
         {
-            _logger.Information("Advertisement sink success.");
+            logger.Error("Advertisement sink failed. Error: {0}.", status.Error.ErrorText);
         }
-        else
-        {
-            _logger.Error("Advertisement sink failed. Error: {0}.", status.Error.ErrorText);
-        }
-
         return status;
     }
 }

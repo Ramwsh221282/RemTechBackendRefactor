@@ -4,7 +4,7 @@ using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
 
-public sealed class LoadingHeightCharacteristicMeasureInspection(
+internal sealed class LoadingHeightCharacteristicMeasureInspection(
     NotEmptyString name,
     NotEmptyString value
 ) : ICharacteristicMeasureInspection

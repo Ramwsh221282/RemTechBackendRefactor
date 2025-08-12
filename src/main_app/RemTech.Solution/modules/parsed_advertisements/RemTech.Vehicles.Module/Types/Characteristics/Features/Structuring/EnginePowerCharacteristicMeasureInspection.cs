@@ -6,7 +6,7 @@ using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
 
-public sealed class EnginePowerCharacteristicMeasureInspection(
+internal sealed class EnginePowerCharacteristicMeasureInspection(
     NotEmptyString name,
     NotEmptyString value
 ) : ICharacteristicMeasureInspection

@@ -49,80 +49,80 @@ public class Worker(
             return;
         Stopwatch parserStopwatch = new Stopwatch();
         parserStopwatch.Start();
-        foreach (var link in parserStarted.Links)
+        try
         {
-            Stopwatch parserLinkStopwatch = new Stopwatch();
-            parserLinkStopwatch.Start();
-            await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
-                await new DefaultBrowserInstantiation(
-                    new HeadlessBrowserInstantiationOptions(),
-                    new BasicBrowserLoading()
-                ).Instantiation(),
-                link.LinkUrl
-            );
-            await using IBrowserPagesSource pagesSource = await browser.AccessPages();
-            foreach (IPage page in pagesSource.Iterate())
+            foreach (var link in parserStarted.Links)
             {
-                DromPagesCursor cursor = new DromPagesCursor(page);
-                bool shouldStop = false;
-                while (!shouldStop)
+                Stopwatch parserLinkStopwatch = new Stopwatch();
+                parserLinkStopwatch.Start();
+                await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
+                    await new DefaultBrowserInstantiation(
+                        new HeadlessBrowserInstantiationOptions(),
+                        new BasicBrowserLoading()
+                    ).Instantiation(),
+                    link.LinkUrl
+                );
+                await using IBrowserPagesSource pagesSource = await browser.AccessPages();
+                foreach (IPage page in pagesSource.Iterate())
                 {
-                    await cursor.Navigate();
-                    await new PageBottomScrollingAction(page).Do();
-                    await new PageUpperScrollingAction(page).Do();
-
-                    try
+                    DromPagesCursor cursor = new DromPagesCursor(page);
+                    bool shouldStop = false;
+                    while (!shouldStop)
                     {
-                        await new DromImagesHoveringAction(page).Do();
-                    }
-                    catch (DromCatalogueNoItemsException)
-                    {
-                        shouldStop = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error("{Ex}", ex.Message);
-                    }
-                    DromCatalogueCarsCollection collection = new(page);
-                    IEnumerable<DromCatalogueCar> cars = await collection.Iterate();
-                    foreach (DromCatalogueCar item in cars)
-                    {
-                        await item.Navigation().Navigate(page);
-                        await new DromVehicleModelSource(page).Print(item);
-                        await new DromVehicleBrandSource(page).Print(item);
-                        await new DromVehicleKindSource(page).Print(item);
-                        await new CarDescriptionSource(page).Print(item);
-                        (await new DromVehicleCharacteristicSource(page).Read()).Print(item);
-                        (await new CarPriceSource(page).Read()).Print(item);
-                        (await new CarLocationSource(page).Read()).Print(item);
-                        await new GrpcRecognizedCarCharacteristics(
-                            page,
-                            communicationChannel
-                        ).Print(item);
-                        item.LogMessage().Log(logger);
-                        if (item.Valid())
+                        await cursor.Navigate();
+                        await new PageBottomScrollingAction(page).Do();
+                        await new PageUpperScrollingAction(page).Do();
+                        if (!await new DromImagesHoveringAction(page).Do())
                         {
-                            await publisher.SayVehicleFinished(
-                                item.AsPublishMessage(
-                                    parserStarted.ParserName,
-                                    parserStarted.ParserType,
-                                    parserStarted.ParserDomain,
-                                    link.LinkName,
-                                    link.LinkUrl
-                                )
-                            );
+                            shouldStop = true;
+                            continue;
+                        }
+                        DromCatalogueCarsCollection collection = new(page);
+                        IEnumerable<DromCatalogueCar> cars = await collection.Iterate();
+                        foreach (DromCatalogueCar item in cars)
+                        {
+                            await item.Navigation().Navigate(page);
+                            await new DromVehicleModelSource(page).Print(item);
+                            await new DromVehicleBrandSource(page).Print(item);
+                            await new DromVehicleKindSource(page).Print(item);
+                            await new CarDescriptionSource(page).Print(item);
+                            (await new DromVehicleCharacteristicSource(page).Read()).Print(item);
+                            (await new CarPriceSource(page).Read()).Print(item);
+                            (await new CarLocationSource(page).Read()).Print(item);
+                            await new GrpcRecognizedCarCharacteristics(
+                                page,
+                                communicationChannel
+                            ).Print(item);
+                            item.LogMessage().Log(logger);
+                            if (item.Valid())
+                            {
+                                await publisher.SayVehicleFinished(
+                                    item.AsPublishMessage(
+                                        parserStarted.ParserName,
+                                        parserStarted.ParserType,
+                                        parserStarted.ParserDomain,
+                                        link.LinkName,
+                                        link.LinkUrl
+                                    )
+                                );
+                            }
                         }
                     }
                 }
+                parserLinkStopwatch.Stop();
+                long linkSeconds = (long)parserLinkStopwatch.Elapsed.TotalSeconds;
+                await publisher.SayParserLinkFinished(
+                    parserStarted.ParserName,
+                    parserStarted.ParserType,
+                    link.LinkName,
+                    linkSeconds
+                );
+                logger.Information("Sended finsih link {Link}", link.LinkName);
             }
-            parserLinkStopwatch.Stop();
-            long linkSeconds = (long)parserLinkStopwatch.Elapsed.TotalSeconds;
-            await publisher.SayParserLinkFinished(
-                parserStarted.ParserName,
-                parserStarted.ParserType,
-                link.LinkName,
-                linkSeconds
-            );
+        }
+        catch (Exception ex)
+        {
+            logger.Fatal("{Ex}.", ex.Message);
         }
 
         parserStopwatch.Stop();
@@ -131,6 +131,11 @@ public class Worker(
             parserStarted.ParserName,
             parserStarted.ParserType,
             parserStopwatchSeconds
+        );
+        logger.Information(
+            "Sended finish parser {Name} {Type}",
+            parserStarted.ParserName,
+            parserStarted.ParserType
         );
     }
 }

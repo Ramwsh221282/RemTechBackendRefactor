@@ -6,7 +6,7 @@ namespace RemTech.Vehicles.Module.Features.QueryVehicles.Arguments;
 
 public sealed record VehicleCharacteristicQueryArgument(Guid Id, string Name, string Value)
 {
-    public VehicleCharacteristic AsCharacteristic()
+    internal VehicleCharacteristic AsCharacteristic()
     {
         CharacteristicIdentity identity = new(
             new CharacteristicId(Id),

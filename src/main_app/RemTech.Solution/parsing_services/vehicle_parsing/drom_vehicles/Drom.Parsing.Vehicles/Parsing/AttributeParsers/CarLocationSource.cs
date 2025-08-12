@@ -7,20 +7,20 @@ namespace Drom.Parsing.Vehicles.Parsing.AttributeParsers;
 
 public sealed class CarLocationSource(IPage page)
 {
-    private readonly string _containerSelector = string.Intern(".css-inmjwf.e162wx9x0");
+    private const string ContainerSelector = ".css-inmjwf.e162wx9x0";
+    private const string City = "Город";
+    private const string Replace = "Город:";
+    private const StringComparison Comparison = StringComparison.OrdinalIgnoreCase;
 
     public async Task<CarLocationInfo> Read()
     {
-        IElementHandle[] elements = await new PageManyElementsSource(page).Read(_containerSelector);
+        IElementHandle[] elements = await new PageManyElementsSource(page).Read(ContainerSelector);
         foreach (IElementHandle element in elements)
         {
             string text = await new TextFromWebElement(element).Read();
-            if (
-                string.IsNullOrWhiteSpace(text)
-                || !text.Contains("Город", StringComparison.OrdinalIgnoreCase)
-            )
+            if (string.IsNullOrWhiteSpace(text) || !text.Contains(City, Comparison))
                 continue;
-            text = text.Replace("Город:", string.Empty);
+            text = text.Replace(Replace, string.Empty);
             return new CarLocationInfo(text);
         }
 

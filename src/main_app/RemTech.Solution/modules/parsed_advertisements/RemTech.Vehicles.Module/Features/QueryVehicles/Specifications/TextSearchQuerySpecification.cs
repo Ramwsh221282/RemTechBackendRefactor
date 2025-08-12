@@ -1,6 +1,6 @@
 ﻿namespace RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
 
-public sealed class TextSearchQuerySpecification : IQueryVehiclesSpecification
+internal sealed class TextSearchQuerySpecification : IQueryVehiclesSpecification
 {
     private readonly string _textSearch;
 

@@ -76,7 +76,7 @@ public static class ScrapersModuleInjection
                     trigger
                         .ForJob(jobKey)
                         .WithSimpleSchedule(schedule =>
-                            schedule.WithIntervalInMinutes(1).RepeatForever()
+                            schedule.WithIntervalInSeconds(30).RepeatForever()
                         )
                 );
         });

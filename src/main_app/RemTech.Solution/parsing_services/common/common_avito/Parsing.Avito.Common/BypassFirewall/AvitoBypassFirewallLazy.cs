@@ -3,12 +3,12 @@ using PuppeteerSharp;
 
 namespace Parsing.Avito.Common.BypassFirewall;
 
-public sealed class AvitoBypassFirewallLazy (
-    IPage page, 
-    IAvitoBypassFirewall origin)
+public sealed class AvitoBypassFirewallLazy(IPage page, IAvitoBypassFirewall origin)
     : IAvitoBypassFirewall
 {
-    public async  Task<bool> Read()
+    private const string Title = ".firewall-title";
+
+    public async Task<bool> Read()
     {
         if (await FirewallDoesNotPersist() == false)
             return true;
@@ -19,8 +19,7 @@ public sealed class AvitoBypassFirewallLazy (
 
     private async Task<bool> FirewallDoesNotPersist()
     {
-        string fireWallSelector = string.Intern(".firewall-title");
-        IElementHandle? fireWall = await new PageElementSource(page).Read(fireWallSelector);
+        IElementHandle? fireWall = await new PageElementSource(page).Read(Title);
         return fireWall != null;
     }
 }

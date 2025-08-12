@@ -1,15 +1,11 @@
 ﻿using RemTech.Core.Shared.Exceptions;
-using RemTech.Result.Library;
-using RemTech.Vehicles.Module.Types.Brands.Storage;
-using RemTech.Vehicles.Module.Types.GeoLocations.Storage;
-using RemTech.Vehicles.Module.Types.Kinds.Storage;
-using RemTech.Vehicles.Module.Types.Models.Storage;
+using RemTech.Core.Shared.Result;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators;
 
-public sealed class ExceptionHandlingVehicleSinking(
-    ITransportAdvertisementSinking origin,
-    Serilog.ILogger logger
+internal sealed class ExceptionHandlingVehicleSinking(
+    Serilog.ILogger logger,
+    ITransportAdvertisementSinking origin
 ) : ITransportAdvertisementSinking
 {
     private const string Scope = nameof(ExceptionHandlingVehicleSinking);
@@ -32,22 +28,7 @@ public sealed class ExceptionHandlingVehicleSinking(
             Error error = new Error(ex.Message, ErrorCodes.Conflict);
             return new Status(error);
         }
-        catch (UnableToStoreBrandException ex)
-        {
-            LogException(ex);
-            return ErrorFromException(ex);
-        }
-        catch (UnableToStoreGeoLocationException ex)
-        {
-            LogException(ex);
-            return ErrorFromException(ex);
-        }
-        catch (UnableToStoreVehicleKindException ex)
-        {
-            LogException(ex);
-            return ErrorFromException(ex);
-        }
-        catch (UnableToStoreVehicleModelException ex)
+        catch (Exception ex)
         {
             LogException(ex);
             return ErrorFromException(ex);

@@ -7,13 +7,14 @@ namespace Parsing.Avito.Common.BypassFirewall;
 public sealed class AvitoBypassWebsiteIsNotAvailable(
     IPage page,
     IAvitoBypassFirewall origin,
-    int attempts = 20)
-    : IAvitoBypassFirewall
+    int attempts = 20
+) : IAvitoBypassFirewall
 {
-    private readonly string _buttonSelector = string.Intern("button");
+    private const string ButtonSelector = "button";
+    private const string TitleSelector = ".content-wrapper";
+    private const string NotAvailable = "Сайт временно недоступен";
+    private const StringComparison Comparison = StringComparison.OrdinalIgnoreCase;
 
-    private readonly string _titleSelector = string.Intern(".content-wrapper");
-    
     public async Task<bool> Read()
     {
         if (!await HasUnavailableTitle())
@@ -21,7 +22,7 @@ public sealed class AvitoBypassWebsiteIsNotAvailable(
 
         for (int i = 0; i < attempts; i++)
         {
-            IElementHandle? button = await new PageElementSource(page).Read(_buttonSelector);
+            IElementHandle? button = await new PageElementSource(page).Read(ButtonSelector);
             if (button != null)
             {
                 await button.ClickAsync();
@@ -31,17 +32,16 @@ public sealed class AvitoBypassWebsiteIsNotAvailable(
             if (!await HasUnavailableTitle())
                 break;
         }
-        
+
         return await origin.Read();
     }
 
     private async Task<bool> HasUnavailableTitle()
     {
-        IElementHandle? title = await new PageElementSource(page).Read(_titleSelector);
+        IElementHandle? title = await new PageElementSource(page).Read(TitleSelector);
         if (title == null)
             return false;
-
         string text = await new TextFromWebElement(title).Read();
-        return text.Contains("Сайт временно недоступен", StringComparison.OrdinalIgnoreCase);
+        return text.Contains(NotAvailable, Comparison);
     }
 }

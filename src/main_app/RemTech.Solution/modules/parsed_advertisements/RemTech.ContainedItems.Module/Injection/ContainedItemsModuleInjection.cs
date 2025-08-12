@@ -1,9 +1,14 @@
 ﻿using System.Threading.Channels;
 using DbUp;
 using DbUp.Engine;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.ContainedItems.Module.Features.AddFirstCleaner;
+using RemTech.ContainedItems.Module.Features.GetContainedVehiclesAmount;
 using RemTech.ContainedItems.Module.Features.MessageBus;
+using RemTech.ContainedItems.Module.Features.QueryRecentContainedItems;
+using RemTech.ContainedItems.Module.Features.QueryRecentContainedItemsCount;
 
 namespace RemTech.ContainedItems.Module.Injection;
 
@@ -17,6 +22,14 @@ public static class ContainedItemsModuleInjection
         services.AddSingleton<Channel<AddContainedItemMessage>>(_ =>
             Channel.CreateUnbounded<AddContainedItemMessage>()
         );
+    }
+
+    public static void MapContainedItemsModuleEndpoints(this WebApplication app)
+    {
+        RouteGroupBuilder group = app.MapGroup("api/contained-items").RequireCors("FRONTEND");
+        GetContainedItemsByTypeEndpoint.Map(group);
+        QuerySomeRecentItemsEndpoint.Map(group);
+        QueryRecentContainedItemsEndpoint.Map(group);
     }
 
     public static void UpDatabase(string connectionString)

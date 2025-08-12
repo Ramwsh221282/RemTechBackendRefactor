@@ -1,8 +1,8 @@
-﻿using RemTech.Result.Library;
+﻿using RemTech.Core.Shared.Result;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles;
 
-public interface ITransportAdvertisementSinking
+internal interface ITransportAdvertisementSinking
 {
     Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default);
 }

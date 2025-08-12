@@ -3,7 +3,7 @@ using RemTech.Vehicles.Module.Types.Characteristics.Ports.Storage;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Adapters.Storage.Postgres;
 
-public sealed class PgVarietCharacteristicsStorage : IPgCharacteristicsStorage
+internal sealed class PgVarietCharacteristicsStorage : IPgCharacteristicsStorage
 {
     private readonly Queue<IPgCharacteristicsStorage> _storages = [];
 

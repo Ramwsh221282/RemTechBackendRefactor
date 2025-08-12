@@ -4,7 +4,7 @@ using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
 
-public sealed class FuelTankCapacityCharacteristicMeasureInspection(
+internal sealed class FuelTankCapacityCharacteristicMeasureInspection(
     NotEmptyString name,
     NotEmptyString value
 ) : ICharacteristicMeasureInspection

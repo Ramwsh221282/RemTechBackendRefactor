@@ -8,58 +8,65 @@ namespace Scrapers.Module.Features.UpdateWaitDays.Database;
 internal sealed class NpgSqlParserWaitDaysToUpdateStorage(NpgsqlDataSource dataSource)
     : IParserWaitDaysToUpdateStorage
 {
+    private const string FetchSql = """
+        SELECT name, type, state, next_run, wait_days
+        FROM scrapers_module.scrapers
+        WHERE name = @name AND type = @type 
+        """;
+    private const string NameParam = "@name";
+    private const string TypeParam = "@type";
+    private const string NameColumn = "name";
+    private const string TypeColumn = "type";
+    private const string StateColumn = "state";
+    private const string NextRunColumn = "next_run";
+    private const string WaitDaysColumn = "wait_days";
+
     public async Task<ParserWaitDaysToUpdate> Fetch(
         string parserName,
         string parserType,
         CancellationToken ct = default
     )
     {
-        string sql = string.Intern(
-            """
-            SELECT name, type, state, next_run, wait_days
-            FROM scrapers_module.scrapers
-            WHERE name = @name AND type = @type 
-            """
-        );
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         await using NpgsqlCommand command = connection.CreateCommand();
-        command.CommandText = sql;
-        command.Parameters.Add(new NpgsqlParameter<string>("@name", parserName));
-        command.Parameters.Add(new NpgsqlParameter<string>("@type", parserType));
+        command.CommandText = FetchSql;
+        command.Parameters.Add(new NpgsqlParameter<string>(NameParam, parserName));
+        command.Parameters.Add(new NpgsqlParameter<string>(TypeParam, parserType));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
         if (!reader.HasRows)
             throw new ParserToUpdateWaitDaysNotFoundException(parserName, parserType);
         if (!await reader.ReadAsync(ct))
             throw new ParserToUpdateWaitDaysNotFoundException(parserName, parserType);
         return new ParserWaitDaysToUpdate(
-            reader.GetString(reader.GetOrdinal("name")),
-            reader.GetString(reader.GetOrdinal("type")),
-            reader.GetString(reader.GetOrdinal("state")),
-            reader.GetInt32(reader.GetOrdinal("wait_days")),
-            reader.GetDateTime(reader.GetOrdinal("next_run"))
+            reader.GetString(reader.GetOrdinal(NameColumn)),
+            reader.GetString(reader.GetOrdinal(TypeColumn)),
+            reader.GetString(reader.GetOrdinal(StateColumn)),
+            reader.GetInt32(reader.GetOrdinal(WaitDaysColumn)),
+            reader.GetDateTime(reader.GetOrdinal(NextRunColumn))
         );
     }
+
+    private const string SaveSql = """
+        UPDATE scrapers_module.scrapers
+        SET wait_days = @wait_days,
+            next_run = @next_run
+        WHERE name = @name AND type = @type;
+        """;
+    private const string WaitDaysParam = "@wait_days";
+    private const string NextRunParam = "@next_run";
 
     public async Task<ParserWithUpdatedWaitDays> Save(
         ParserWithUpdatedWaitDays parser,
         CancellationToken ct = default
     )
     {
-        string sql = string.Intern(
-            """
-            UPDATE scrapers_module.scrapers
-            SET wait_days = @wait_days,
-                next_run = @next_run
-            WHERE name = @name AND type = @type;
-            """
-        );
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         await using NpgsqlCommand command = connection.CreateCommand();
-        command.CommandText = sql;
-        command.Parameters.Add(new NpgsqlParameter<string>("@name", parser.ParserName));
-        command.Parameters.Add(new NpgsqlParameter<string>("@type", parser.ParserType));
-        command.Parameters.Add(new NpgsqlParameter<int>("@wait_days", parser.WaitDays));
-        command.Parameters.Add(new NpgsqlParameter<DateTime>("@next_run", parser.NextRun));
+        command.CommandText = SaveSql;
+        command.Parameters.Add(new NpgsqlParameter<string>(NameParam, parser.ParserName));
+        command.Parameters.Add(new NpgsqlParameter<string>(TypeParam, parser.ParserType));
+        command.Parameters.Add(new NpgsqlParameter<int>(WaitDaysParam, parser.WaitDays));
+        command.Parameters.Add(new NpgsqlParameter<DateTime>(NextRunParam, parser.NextRun));
         int affected = await command.ExecuteNonQueryAsync(ct);
         return affected == 0
             ? throw new ParserToUpdateWaitDaysNotFoundException(

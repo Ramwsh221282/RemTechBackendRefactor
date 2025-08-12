@@ -1,29 +1,25 @@
-﻿using RemTech.Vehicles.Module.Types.Brands;
-using RemTech.Vehicles.Module.Types.Brands.Decorators.Logic;
-using RemTech.Vehicles.Module.Types.GeoLocations;
-using RemTech.Vehicles.Module.Types.GeoLocations.Decorators.Logic;
-using RemTech.Vehicles.Module.Types.Kinds;
-using RemTech.Vehicles.Module.Types.Kinds.Decorators.Logic;
-using RemTech.Vehicles.Module.Types.Models;
+﻿using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Prices;
 
 namespace RemTech.Vehicles.Module.Types.Transport;
 
-public class Vehicle : IVehicle
+internal class Vehicle : IVehicle
 {
     protected virtual VehicleIdentity Identity { get; }
-    protected virtual VehicleKind Kind { get; }
-    protected virtual VehicleBrand Brand { get; }
-    protected virtual GeoLocation Location { get; }
+    protected virtual SinkedVehicleCategory Category { get; }
+    protected virtual SinkedVehicleBrand Brand { get; }
+    protected virtual SinkedVehicleLocation Location { get; }
     protected virtual IItemPrice Price { get; }
     protected virtual VehiclePhotos Photos { get; }
     public string SourceUrl { get; private set; }
-    public string Description { get; private set; }
+    public string Sentences { get; private set; }
     public string SourceDomain { get; private set; }
     public virtual VehicleCharacteristics Characteristics { get; }
-    protected virtual VehicleModel Model { get; }
+    protected virtual SinkedVehicleModel Model { get; }
+
+    public string Id() => Identity.Read();
 
     public Vehicle(
         VehicleIdentity identity,
@@ -31,7 +27,7 @@ public class Vehicle : IVehicle
         VehiclePhotos photos,
         string sourceUrl,
         string sourceDomain,
-        string description
+        string sentences
     )
     {
         SourceUrl = sourceUrl;
@@ -40,34 +36,60 @@ public class Vehicle : IVehicle
         Price = price;
         Photos = photos;
         Characteristics = new VehicleCharacteristics([]);
-        Kind = new UnknownVehicleKind();
-        Brand = new UnknownVehicleBrand();
-        Location = new UnknownGeolocation();
-        Model = new VehicleModel();
-        Description = description;
+        Category = new SinkedVehicleCategory(string.Empty, Guid.Empty);
+        Brand = new SinkedVehicleBrand(string.Empty, Guid.Empty);
+        Location = new SinkedVehicleLocation(string.Empty, string.Empty, string.Empty, Guid.Empty);
+        Model = new SinkedVehicleModel(string.Empty, Guid.Empty);
+        Sentences = sentences;
     }
 
-    public string Id() => Identity.Read();
-
-    public Vehicle(Vehicle origin, IEnumerable<VehicleCharacteristic> characteristics)
-        : this(origin)
+    public string MakeDocument()
     {
-        Characteristics = new VehicleCharacteristics(characteristics);
+        string[] parts =
+        [
+            Category.Name,
+            Brand.Name,
+            Model.Name,
+            Sentences,
+            $"{Location.CityText} {Location.Text} {Location.KindText}",
+        ];
+        return string.Join(' ', parts);
     }
 
-    public Vehicle(Vehicle origin, VehicleKind kind)
-        : this(origin) => Kind = kind;
+    public Vehicle Accept(IEnumerable<VehicleCharacteristic> characteristics) =>
+        new(this, new VehicleCharacteristics(characteristics));
 
-    public Vehicle(Vehicle origin, VehicleBrand brand)
+    public Vehicle Accept(VehicleCharacteristic characteristic) => new(this, characteristic);
+
+    public Vehicle Accept(VehicleCharacteristics characteristics) => new(this, characteristics);
+
+    public Vehicle Accept(SinkedVehicleCategory category) => new(this, category);
+
+    public Vehicle Accept(SinkedVehicleBrand brand) => new(this, brand);
+
+    public Vehicle Accept(SinkedVehicleLocation location) => new(this, location);
+
+    public Vehicle Accept(SinkedVehicleModel vehicleModel) => new(this, vehicleModel);
+
+    private Vehicle(Vehicle origin, VehicleCharacteristics characteristics)
+        : this(origin) => Characteristics = characteristics;
+
+    private Vehicle(Vehicle origin, IEnumerable<VehicleCharacteristic> characteristics)
+        : this(origin) => Characteristics = new VehicleCharacteristics(characteristics);
+
+    private Vehicle(Vehicle origin, SinkedVehicleCategory category)
+        : this(origin) => Category = category;
+
+    private Vehicle(Vehicle origin, SinkedVehicleBrand brand)
         : this(origin) => Brand = brand;
 
-    public Vehicle(Vehicle origin, GeoLocation location)
+    private Vehicle(Vehicle origin, SinkedVehicleLocation location)
         : this(origin) => Location = location;
 
-    public Vehicle(Vehicle origin, VehicleModel model)
+    private Vehicle(Vehicle origin, SinkedVehicleModel model)
         : this(origin) => Model = model;
 
-    public Vehicle(Vehicle origin, VehicleCharacteristic ctx)
+    private Vehicle(Vehicle origin, VehicleCharacteristic ctx)
         : this(origin)
     {
         VehicleCharacteristic[] current = origin.Characteristics.Read();
@@ -77,7 +99,7 @@ public class Vehicle : IVehicle
     public Vehicle(Vehicle origin)
     {
         Identity = origin.Identity;
-        Kind = origin.Kind;
+        Category = origin.Category;
         Brand = origin.Brand;
         Location = origin.Location;
         Price = origin.Price;
@@ -86,6 +108,6 @@ public class Vehicle : IVehicle
         Model = origin.Model;
         SourceUrl = origin.SourceUrl;
         SourceDomain = origin.SourceDomain;
-        Description = origin.Description;
+        Sentences = origin.Sentences;
     }
 }

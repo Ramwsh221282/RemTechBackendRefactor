@@ -6,28 +6,36 @@ namespace RemTech.ContainedItems.Module.Features.AddContainedItem;
 internal sealed class AddContainedItemHandler(Serilog.ILogger logger, NpgsqlDataSource dataSource)
     : ICommandHandler<AddContainedItemCommand, int>
 {
+    private const string Sql = """
+        INSERT INTO contained_items.items
+        (id, type, domain, created_at, is_deleted, source_url)
+        VALUES
+        (@id, @type, @domain, @created_at, @is_deleted, @source_url)
+        """;
+
+    private const string IdParam = "@id";
+    private const string TypeParam = "@type";
+    private const string DomainParam = "@domain";
+    private const string CreatedAtParam = "@created_at";
+    private const string IsDeletedParam = "@is_deleted";
+    private const string SourceUrlParam = "@source_url";
+
     public async Task<int> Handle(AddContainedItemCommand command, CancellationToken ct = default)
     {
-        string sql = string.Intern(
-            """
-            INSERT INTO contained_items.items
-            (id, type, domain, created_at, is_deleted, source_url)
-            VALUES
-            (@id, @type, @domain, @created_at, @is_deleted, @source_url)
-            """
-        );
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         await using NpgsqlCommand sqlCommand = connection.CreateCommand();
-        sqlCommand.CommandText = sql;
-        sqlCommand.Parameters.Add(new NpgsqlParameter<string>("@id", command.Item.Id));
-        sqlCommand.Parameters.Add(new NpgsqlParameter<string>("@type", command.Item.Type));
-        sqlCommand.Parameters.Add(new NpgsqlParameter<string>("@domain", command.Item.Domain));
+        sqlCommand.CommandText = Sql;
+        sqlCommand.Parameters.Add(new NpgsqlParameter<string>(IdParam, command.Item.Id));
+        sqlCommand.Parameters.Add(new NpgsqlParameter<string>(TypeParam, command.Item.Type));
+        sqlCommand.Parameters.Add(new NpgsqlParameter<string>(DomainParam, command.Item.Domain));
         sqlCommand.Parameters.Add(
-            new NpgsqlParameter<DateTime>("@created_at", command.Item.CreatedAt)
+            new NpgsqlParameter<DateTime>(CreatedAtParam, command.Item.CreatedAt)
         );
-        sqlCommand.Parameters.Add(new NpgsqlParameter<bool>("@is_deleted", command.Item.IsDeleted));
         sqlCommand.Parameters.Add(
-            new NpgsqlParameter<string>("@source_url", command.Item.SourceUrl)
+            new NpgsqlParameter<bool>(IsDeletedParam, command.Item.IsDeleted)
+        );
+        sqlCommand.Parameters.Add(
+            new NpgsqlParameter<string>(SourceUrlParam, command.Item.SourceUrl)
         );
         int affected = await sqlCommand.ExecuteNonQueryAsync(ct);
         if (affected == 0)

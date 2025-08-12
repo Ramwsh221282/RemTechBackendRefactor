@@ -23,6 +23,9 @@ internal sealed class SeedingCategoriesOnStartup(
         "categories.csv"
     );
 
+    private const string Sql =
+        "COPY categories_module.categories(id, name, rating, embedding) FROM STDIN (FORMAT BINARY)";
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(
@@ -36,10 +39,7 @@ internal sealed class SeedingCategoriesOnStartup(
 
         logger.Information("{Entrance}. Seeding categories.", Entrance);
         ICategory[] categories = ReadCategories();
-        await using var writer = await connection.BeginBinaryImportAsync(
-            "COPY categories_module.categories(id, name, rating, embedding) FROM STDIN (FORMAT BINARY)",
-            stoppingToken
-        );
+        await using var writer = await connection.BeginBinaryImportAsync(Sql, stoppingToken);
         foreach (ICategory category in categories)
         {
             await writer.StartRowAsync(stoppingToken);

@@ -11,32 +11,38 @@ internal sealed record RegionToPersist
     private readonly string _type;
     private readonly IEnumerable<CityToPersist> _cities;
 
+    private const string Sql =
+        "INSERT INTO locations_module.regions(id, name, kind, embedding) VALUES(@id, @name, @kind, @embedding)";
+    private const string IdParam = "@id";
+    private const string NameParam = "@name";
+    private const string KindParam = "@kind";
+    private const string EmbeddingParam = "@embedding";
+    private const string TextFormat = "{0} {1}";
+
     public RegionToPersist WithCity(string city)
     {
         if (string.IsNullOrWhiteSpace(city))
             return this;
         Guid id = Guid.NewGuid();
-        IEnumerable<CityToPersist> cities = [.. _cities, new CityToPersist(id, city)];
+        IEnumerable<CityToPersist> cities = [.. _cities, new(id, city)];
         return new RegionToPersist(_id, _name, _type, cities);
     }
 
-    public float[] MakeEmbedding(IEmbeddingGenerator generator)
+    private ReadOnlyMemory<float> MakeEmbedding(IEmbeddingGenerator generator)
     {
-        return generator.Generate($"{_name} {_type}");
+        string text = string.Format(TextFormat, _name, _type);
+        return generator.Generate(text);
     }
 
     public async Task Persist(NpgsqlDataSource dataSource, IEmbeddingGenerator generator)
     {
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync();
         await using NpgsqlCommand command = connection.CreateCommand();
-        string sql = string.Intern(
-            "INSERT INTO locations_module.regions(id, name, kind, embedding) VALUES(@id, @name, @kind, @embedding)"
-        );
-        command.CommandText = sql;
-        command.Parameters.Add(new NpgsqlParameter<Guid>("@id", _id));
-        command.Parameters.Add(new NpgsqlParameter<string>("@name", _name));
-        command.Parameters.Add(new NpgsqlParameter<string>("@kind", _type));
-        command.Parameters.AddWithValue("@embedding", new Vector(MakeEmbedding(generator)));
+        command.CommandText = Sql;
+        command.Parameters.Add(new NpgsqlParameter<Guid>(IdParam, _id));
+        command.Parameters.Add(new NpgsqlParameter<string>(NameParam, _name));
+        command.Parameters.Add(new NpgsqlParameter<string>(KindParam, _type));
+        command.Parameters.AddWithValue(EmbeddingParam, new Vector(MakeEmbedding(generator)));
         await command.ExecuteNonQueryAsync();
         foreach (CityToPersist city in _cities)
             await city.Persist(connection, generator, _name, _type, _id);

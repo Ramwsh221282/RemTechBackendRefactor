@@ -1,8 +1,8 @@
-﻿using RemTech.Result.Library;
+﻿using RemTech.Core.Shared.Result;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators;
 
-public sealed class EmptyVehicleSinking : ITransportAdvertisementSinking
+internal sealed class EmptyVehicleSinking : ITransportAdvertisementSinking
 {
     public Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
     {

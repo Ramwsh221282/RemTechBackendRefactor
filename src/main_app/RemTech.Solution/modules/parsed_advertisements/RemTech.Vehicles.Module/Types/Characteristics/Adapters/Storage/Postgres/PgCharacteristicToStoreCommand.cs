@@ -5,7 +5,7 @@ using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Adapters.Storage.Postgres;
 
-public sealed class PgCharacteristicToStoreCommand(Guid id, string text, string measuring)
+internal sealed class PgCharacteristicToStoreCommand(Guid id, string text, string measuring)
     : IPgCharacteristicToStoreCommand
 {
     private readonly string _sql = string.Intern(

@@ -27,10 +27,12 @@ internal sealed class VehiclesSqlQuery(ILogger logger, IEmbeddingGenerator gener
         v.price as vehicle_price,
         v.is_nds as vehicle_nds,
         v.brand_id as brand_id,
-        v.kind_id as kind_id,
+        v.kind_id as category_id,
         v.model_id as model_id,
-        v.geo_id as geo_id,
-        v.object as object_data
+        v.geo_id as region_id,
+        v.source_url as vehicle_source_url,
+        v.object as vehicle_object_data,
+        v.description as vehicle_description
         FROM parsed_advertisements_module.parsed_vehicles v
         """
     );
@@ -82,7 +84,7 @@ internal sealed class VehiclesSqlQuery(ILogger logger, IEmbeddingGenerator gener
         if (!string.IsNullOrWhiteSpace(textSearch))
         {
             logger.Information("Applying text search.");
-            float[] embeddings = generator.Generate(textSearch);
+            ReadOnlyMemory<float> embeddings = generator.Generate(textSearch);
             _vector = new Vector(embeddings);
             _ordering.WithVectorSearch();
             logger.Information("Text search applied.");

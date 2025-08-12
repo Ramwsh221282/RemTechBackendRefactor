@@ -7,7 +7,7 @@ public sealed class OnnxEmbeddingGenerator : IEmbeddingGenerator
 {
     private readonly InferenceSession _tokenizerSession;
     private readonly InferenceSession _modelSession;
-    private bool _disposed = false;
+    private bool _disposed;
 
     public OnnxEmbeddingGenerator()
     {
@@ -22,28 +22,17 @@ public sealed class OnnxEmbeddingGenerator : IEmbeddingGenerator
         );
     }
 
-    public float[] Generate(string text)
+    public ReadOnlyMemory<float> Generate(string text)
     {
-        DenseTensor<string> stringTensor = new DenseTensor<string>([1]);
-        stringTensor[0] = text;
+        DenseTensor<string> stringTensor = new DenseTensor<string>([1]) { [0] = text };
 
-        List<NamedOnnxValue> tokenizerInputs = new List<NamedOnnxValue>
-        {
+        List<NamedOnnxValue> tokenizerInputs =
+        [
             NamedOnnxValue.CreateFromTensor("inputs", stringTensor),
-        };
+        ];
 
-        using IDisposableReadOnlyCollection<DisposableNamedOnnxValue>? tokenizerResults =
-            _tokenizerSession.Run(tokenizerInputs);
-        List<DisposableNamedOnnxValue> tokenizerResultsList = tokenizerResults.ToList();
-
-        int[] tokens = tokenizerResultsList[0].AsTensor<int>().ToArray();
-        int[] tokenIndices = tokenizerResultsList[2].AsTensor<int>().ToArray();
-
-        int[] tokenPairs = tokens
-            .Zip(tokenIndices, (t, i) => (token: t, index: i))
-            .OrderBy(p => p.index)
-            .Select(p => p.token)
-            .ToArray();
+        EmbeddingData embeddingData = EmbeddingData.Create(tokenizerInputs, _tokenizerSession);
+        ReadOnlySpan<int> tokenPairs = embeddingData.TokenPairs();
 
         DenseTensor<long> inputIdsTensor = new DenseTensor<long>([1, tokenPairs.Length]);
         for (int i = 0; i < tokenPairs.Length; i++)
@@ -51,21 +40,29 @@ public sealed class OnnxEmbeddingGenerator : IEmbeddingGenerator
             inputIdsTensor[0, i] = tokenPairs[i];
         }
 
-        var attentionMaskTensor = new DenseTensor<long>([1, tokenPairs.Length]);
+        DenseTensor<long> attentionMaskTensor = new DenseTensor<long>([1, tokenPairs.Length]);
         for (int i = 0; i < tokenPairs.Length; i++)
         {
             attentionMaskTensor[0, i] = 1;
         }
 
-        var modelInputs = new List<NamedOnnxValue>
-        {
+        List<NamedOnnxValue> modelInputs =
+        [
             NamedOnnxValue.CreateFromTensor("input_ids", inputIdsTensor),
             NamedOnnxValue.CreateFromTensor("attention_mask", attentionMaskTensor),
-        };
+        ];
 
-        using var modelResults = _modelSession.Run(modelInputs);
-        List<DisposableNamedOnnxValue> modelResultsList = modelResults.ToList();
-        float[] sentenceEmbedding = modelResultsList[1].AsTensor<float>().ToArray();
+        return GetEmbeddings(modelInputs, _modelSession);
+    }
+
+    private static ReadOnlyMemory<float> GetEmbeddings(
+        List<NamedOnnxValue> modelInputs,
+        InferenceSession modelSession
+    )
+    {
+        using IDisposableReadOnlyCollection<DisposableNamedOnnxValue>? modelResults =
+            modelSession.Run(modelInputs);
+        float[] sentenceEmbedding = modelResults[1].AsTensor<float>().ToArray();
         return sentenceEmbedding;
     }
 

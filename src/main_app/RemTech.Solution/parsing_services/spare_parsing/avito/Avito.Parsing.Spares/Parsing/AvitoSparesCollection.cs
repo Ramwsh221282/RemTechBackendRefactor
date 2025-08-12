@@ -7,8 +7,8 @@ namespace Avito.Parsing.Spares.Parsing;
 public sealed class AvitoSparesCollection : IAvitoSparesCollection
 {
     private readonly IPage _page;
-    private string _itemListContainer = string.Intern("#bx_serp-item-list");
-    private string _itemListItem = string.Intern("div[data-marker='item']");
+    private const string ItemListContainer = "#bx_serp-item-list";
+    private const string ItemListItem = "div[data-marker='item']";
 
     public AvitoSparesCollection(IPage page) => _page = page;
 
@@ -16,9 +16,9 @@ public sealed class AvitoSparesCollection : IAvitoSparesCollection
     {
         IElementHandle listContainer = await new ValidSingleElementSource(
             new PageElementSource(_page)
-        ).Read(_itemListContainer);
+        ).Read(ItemListContainer);
         IElementHandle[] items = await new ParentManyElementsSource(listContainer).Read(
-            _itemListItem
+            ItemListItem
         );
         LinkedList<AvitoSpare> spares = [];
         foreach (var item in items)
@@ -58,40 +58,53 @@ public sealed class AvitoSparesCollection : IAvitoSparesCollection
         return attribute;
     }
 
+    private const string TitleContainer = ".iva-item-title-KE8A9";
+
     private async Task<string> ReadTitle(IElementHandle item)
     {
         IElementHandle titleElement = await new ValidSingleElementSource(
             new ParentElementSource(item)
-        ).Read(string.Intern(".iva-item-title-KE8A9"));
+        ).Read(TitleContainer);
         return await new TextFromWebElement(titleElement).Read();
     }
+
+    private const string SourceUrlContainer = ".iva-item-title-KE8A9";
+    private const string SourceUrlTitle = "a[data-marker='item-title'";
+    private const string HrefAttribute = "href";
 
     private async Task<string> ReadSourceUrl(IElementHandle item)
     {
         IElementHandle titleContainer = await new ValidSingleElementSource(
             new ParentElementSource(item)
-        ).Read(string.Intern(".iva-item-title-KE8A9"));
+        ).Read(SourceUrlContainer);
         IElementHandle titleElement = await new ValidSingleElementSource(
             new ParentElementSource(titleContainer)
-        ).Read("a[data-marker='item-title'");
-        string href = await new AttributeFromWebElement(titleElement, "href").Read();
+        ).Read(SourceUrlTitle);
+        string href = await new AttributeFromWebElement(titleElement, HrefAttribute).Read();
         return href;
     }
+
+    private const string PriceContainer = "p[data-marker='item-price'";
+    private const string PriceMeta = "meta[itemprop='price']";
+    private const string PriceNds = "НДС";
+    private const string PriceAttribute = "Content";
 
     private async Task<(long, bool)> ReadItemPrice(IElementHandle item)
     {
         IElementHandle priceContainer = await new ValidSingleElementSource(
             new ParentElementSource(item)
-        ).Read("p[data-marker='item-price'");
+        ).Read(PriceContainer);
         IElementHandle priceMeta = await new ValidSingleElementSource(
             new ParentElementSource(priceContainer)
-        ).Read("meta[itemprop='price']");
-        string value = await new AttributeFromWebElement(priceMeta, "content").Read();
+        ).Read(PriceMeta);
+        string value = await new AttributeFromWebElement(priceMeta, PriceAttribute).Read();
         string text = await new TextFromWebElement(priceContainer).Read();
-        return text.Contains("НДС", StringComparison.OrdinalIgnoreCase)
+        return text.Contains(PriceNds, StringComparison.OrdinalIgnoreCase)
             ? (long.Parse(value), true)
             : (long.Parse(value), false);
     }
+
+    private const string GeoContainer = ".geo-root-BBVai";
 
     private async Task<string> ReadGeoInfo(IElementHandle[] blockParts)
     {
@@ -101,7 +114,7 @@ public sealed class AvitoSparesCollection : IAvitoSparesCollection
             {
                 IElementHandle geoRoot = await new ValidSingleElementSource(
                     new ParentElementSource(blockPart)
-                ).Read(string.Intern(".geo-root-BBVai"));
+                ).Read(GeoContainer);
                 string text = await new TextFromWebElement(geoRoot).Read();
                 return text.Trim();
             }
@@ -114,6 +127,8 @@ public sealed class AvitoSparesCollection : IAvitoSparesCollection
         return string.Empty;
     }
 
+    private const string RelatedBrandContainer = ".iva-item-text-PvwMY";
+
     private async Task<string> ReadRelatedBrand(IElementHandle[] blockParts)
     {
         foreach (IElementHandle blockPart in blockParts)
@@ -122,7 +137,7 @@ public sealed class AvitoSparesCollection : IAvitoSparesCollection
             {
                 IElementHandle relatedBrandElement = await new ValidSingleElementSource(
                     new ParentElementSource(blockPart)
-                ).Read(string.Intern(".iva-item-text-PvwMY"));
+                ).Read(RelatedBrandContainer);
                 string text = await new TextFromWebElement(relatedBrandElement).Read();
                 return text.Trim();
             }
@@ -135,6 +150,8 @@ public sealed class AvitoSparesCollection : IAvitoSparesCollection
         return string.Empty;
     }
 
+    private const string OemContainer = "p[data-marker='item-oem-number']";
+
     private async Task<string> ReadOem(IElementHandle[] blockParts)
     {
         foreach (IElementHandle blockPart in blockParts)
@@ -143,7 +160,7 @@ public sealed class AvitoSparesCollection : IAvitoSparesCollection
             {
                 IElementHandle oemElement = await new ValidSingleElementSource(
                     new ParentElementSource(blockPart)
-                ).Read(string.Intern("p[data-marker='item-oem-number']"));
+                ).Read(OemContainer);
                 string text = await new TextFromWebElement(oemElement).Read();
                 return text.Trim();
             }
@@ -156,30 +173,36 @@ public sealed class AvitoSparesCollection : IAvitoSparesCollection
         return string.Empty;
     }
 
+    private const string MiddleBlockContainer = ".iva-item-listMiddleBlock-W7qtU";
+    private const string MiddleBlockBlocks = ".iva-item-ivaItemRedesign-QmNXd";
+
     private async Task<IElementHandle[]> MiddleBlockData(IElementHandle item)
     {
-        IElementHandle block = await new ParentElementSource(item).Read(
-            string.Intern(".iva-item-listMiddleBlock-W7qtU")
-        );
+        IElementHandle block = await new ParentElementSource(item).Read(MiddleBlockContainer);
         IElementHandle[] blockParts = await new ParentManyElementsSource(block).Read(
-            ".iva-item-ivaItemRedesign-QmNXd"
+            MiddleBlockBlocks
         );
         return blockParts;
     }
+
+    private const string SliderContainer = ".iva-item-slider-BOsti";
+    private const string PhotoContainer = ".photo-slider-list-R0jle";
+    private const string Img = "img";
+    private const string SrcSet = "srcset";
 
     private async Task<LinkedList<string>> ReadImages(IElementHandle item)
     {
         LinkedList<string> images = [];
         IElementHandle slider = await new ValidSingleElementSource(
             new ParentElementSource(item)
-        ).Read(string.Intern(".iva-item-slider-BOsti"));
+        ).Read(SliderContainer);
         IElementHandle sliderList = await new ValidSingleElementSource(
             new ParentElementSource(slider)
-        ).Read(string.Intern(".photo-slider-list-R0jle"));
-        IElementHandle[] imageElements = await new ParentManyElementsSource(sliderList).Read("img");
+        ).Read(PhotoContainer);
+        IElementHandle[] imageElements = await new ParentManyElementsSource(sliderList).Read(Img);
         foreach (IElementHandle imageElement in imageElements)
         {
-            string srcSet = await new AttributeFromWebElement(imageElement, "srcset").Read();
+            string srcSet = await new AttributeFromWebElement(imageElement, SrcSet).Read();
             string[] parts = srcSet.Split(',', StringSplitOptions.TrimEntries);
             string highQualityImage = parts[^1].Split(" ", StringSplitOptions.TrimEntries)[0];
             images.AddFirst(highQualityImage);

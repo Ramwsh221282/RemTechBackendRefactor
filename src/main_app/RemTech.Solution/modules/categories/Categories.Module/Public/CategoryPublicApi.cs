@@ -15,6 +15,7 @@ internal sealed class CategoryPublicApi(
     {
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         GetCategoryVarietHandler handler = new GetCategoryVarietHandler(logger)
+            .With(new GetNewlyCreatedCategory(connection, generator))
             .With(new GetCategoryByNameHandler(connection))
             .With(new GetCategoryByEmbeddingHandler(connection, generator));
         ICategory category = await handler.Handle(new GetCategoryCommand(name), ct);

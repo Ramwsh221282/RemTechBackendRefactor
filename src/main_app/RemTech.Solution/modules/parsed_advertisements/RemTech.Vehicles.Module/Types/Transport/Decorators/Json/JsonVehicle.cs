@@ -1,18 +1,19 @@
-﻿using RemTech.Json.Library.Serialization.Primitives;
+﻿using RemTech.Core.Shared.Serialization.Primitives;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 
 namespace RemTech.Vehicles.Module.Types.Transport.Decorators.Json;
 
-public sealed class JsonVehicle(Vehicle origin) : Vehicle(origin)
+internal sealed class JsonVehicle(Vehicle inner) : Vehicle(inner)
 {
     public string Read()
     {
         return new PlainSerJson()
-            .With(new StringSerJson("kind_name", Kind.Name()))
-            .With(new StringSerJson("brand_name", Brand.Name()))
-            .With(new StringSerJson("model_name", Model.NameString()))
-            .With(new StringSerJson("location_name", Location.Name()))
-            .With(new StringSerJson("location_kind", Location.Kind()))
+            .With(new StringSerJson("kind_name", Category.Name))
+            .With(new StringSerJson("brand_name", Brand.Name))
+            .With(new StringSerJson("model_name", Model.Name))
+            .With(new StringSerJson("location_name", Location.Text))
+            .With(new StringSerJson("location_kind", Location.KindText))
+            .With(new StringSerJson("location_city", Location.CityText))
             .With(
                 new ObjectsArraySerJson<VehicleCharacteristic>(
                     "characteristics",

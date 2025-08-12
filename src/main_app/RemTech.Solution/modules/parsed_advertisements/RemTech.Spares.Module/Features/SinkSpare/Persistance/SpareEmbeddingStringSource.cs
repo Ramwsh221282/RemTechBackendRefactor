@@ -1,8 +1,8 @@
 ﻿using Npgsql;
 using Pgvector;
 using RemTech.Spares.Module.Features.SinkSpare.Exceptions;
-using RemTech.Vehicles.Module.Utilities;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
+using Shared.Infrastructure.Module.Utilities;
 
 namespace RemTech.Spares.Module.Features.SinkSpare.Persistance;
 
@@ -23,7 +23,7 @@ internal sealed class SpareEmbeddingStringSource
         _texts.Add(text);
     }
 
-    public float[] Embeddings()
+    private ReadOnlyMemory<float> Embeddings()
     {
         string raw = MakeTextRaw();
         return _generator.Generate(raw);

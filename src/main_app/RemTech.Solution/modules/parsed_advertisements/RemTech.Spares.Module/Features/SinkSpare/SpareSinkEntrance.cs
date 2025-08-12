@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RemTech.ContainedItems.Module.Features.MessageBus;
 using RemTech.Spares.Module.Features.SinkSpare.Exceptions;
 using RemTech.Spares.Module.Features.SinkSpare.Models;
 using Scrapers.Module.Features.IncreaseProcessedAmount.MessageBus;
@@ -12,8 +13,10 @@ using Shared.Infrastructure.Module.Postgres.Embeddings;
 namespace RemTech.Spares.Module.Features.SinkSpare;
 
 internal sealed class SpareSinkEntrance(
+    IGeoLocationQueryService geoLocationQuery,
     NpgsqlDataSource dataSource,
     IEmbeddingGenerator generator,
+    IAddContainedItemsPublisher contained,
     Serilog.ILogger logger,
     IIncreaseProcessedPublisher publisher,
     ConnectionFactory connectionFactory
@@ -63,11 +66,9 @@ internal sealed class SpareSinkEntrance(
         SpareSinkMessage? message = JsonSerializer.Deserialize<SpareSinkMessage>(ea.Body.ToArray());
         if (message != null)
         {
-            IGeoLocationQueryService service = new LoggingGeoLocationQueryService(
-                logger,
-                new GeoLocationsQueryService(dataSource, generator)
+            GeoLocationInfo geoInfo = await geoLocationQuery.VectorSearch(
+                message.Spare.LocationText
             );
-            GeoLocationInfo geoInfo = await service.VectorSearch(message.Spare.LocationText);
             SpareLocation location = new SpareLocation(
                 geoInfo.Region.Id,
                 geoInfo.City.Id,
@@ -84,6 +85,14 @@ internal sealed class SpareSinkEntrance(
                     message.Parser.ParserName,
                     message.Parser.ParserType,
                     message.Link.LinkName
+                );
+                await contained.Publish(
+                    new AddContainedItemMessage(
+                        message.Spare.Id,
+                        message.Parser.ParserType,
+                        message.Parser.ParserDomain,
+                        message.Spare.SourceUrl
+                    )
                 );
             }
             catch (SpareEmbeddingSourceEmptyValueException ex)

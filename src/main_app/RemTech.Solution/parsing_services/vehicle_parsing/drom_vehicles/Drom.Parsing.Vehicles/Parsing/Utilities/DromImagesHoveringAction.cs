@@ -4,59 +4,50 @@ using PuppeteerSharp;
 
 namespace Drom.Parsing.Vehicles.Parsing.Utilities;
 
-public sealed class DromImagesHoveringAction(IPage page) : IPageAction
+public sealed class DromImagesHoveringAction(IPage page)
 {
-    private readonly string _carsListSelector = string.Intern("div[data-bulletin-list='true']");
-    private readonly string _carItemSelector = string.Intern("div[data-ftid='bulls-list_bull']");
-    private readonly string _carItemImageSelector = string.Intern("div[data-ftid='bull_image']");
-    private readonly string _carItemImageSlidesSelector = string.Intern("img");
+    private const string CarsListSelector = "div[data-bulletin-list='true']";
+    private const string CarItemSelector = "div[data-ftid='bulls-list_bull']";
+    private const string CarItemImageSelector = "div[data-ftid='bull_image']";
+    private const string CarItemImageSlidesSelector = "img";
 
-    public async Task Do()
+    public async Task<bool> Do()
     {
-        IElementHandle[] cars = await GetCars();
-        foreach (IElementHandle car in cars)
+        try
         {
-            await HoverImageSlider(car);
+            IElementHandle[] cars = await GetCars();
+            foreach (IElementHandle car in cars)
+            {
+                await HoverImageSlider(car);
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 
     private async Task<IElementHandle[]> GetCars()
     {
-        try
-        {
-            IElementHandle carList = await new ValidSingleElementSource(
-                new PageElementSource(page)
-            ).Read(_carsListSelector);
-            IElementHandle[] cars = await new ParentManyElementsSource(carList).Read(
-                _carItemSelector
-            );
-            return cars;
-        }
-        catch
-        {
-            throw new DromCatalogueNoItemsException();
-        }
+        IElementHandle carList = await new ValidSingleElementSource(
+            new PageElementSource(page)
+        ).Read(CarsListSelector);
+        IElementHandle[] cars = await new ParentManyElementsSource(carList).Read(CarItemSelector);
+        return cars;
     }
 
     private async Task HoverImageSlider(IElementHandle car)
     {
-        try
+        IElementHandle carImage = await new ParentElementSource(car).Read(CarItemImageSelector);
+        IElementHandle[] carImageSlides = await new ParentManyElementsSource(carImage).Read(
+            CarItemImageSlidesSelector
+        );
+        foreach (IElementHandle carImageSlide in carImageSlides)
         {
-            IElementHandle carImage = await new ParentElementSource(car).Read(
-                _carItemImageSelector
-            );
-            IElementHandle[] carImageSlides = await new ParentManyElementsSource(carImage).Read(
-                _carItemImageSlidesSelector
-            );
-            foreach (IElementHandle carImageSlide in carImageSlides)
-            {
-                await carImageSlide.FocusAsync();
-                await carImageSlide.HoverAsync();
-            }
-        }
-        catch
-        {
-            // ignored
+            await carImageSlide.FocusAsync();
+            await carImageSlide.HoverAsync();
         }
     }
 }

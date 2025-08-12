@@ -8,26 +8,24 @@ namespace Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Pr
 
 public sealed class AvitoVehiclePriceSource(IPage page) : IParsedVehiclePriceSource
 {
-    private readonly string _selector = string.Intern("#bx_item-price-value");
-    private readonly string _priceValueSelector = string.Intern(
-        "span[data-marker='item-view/item-price']"
-    );
-    private readonly string _extraSelector = string.Intern(".JyWQn");
-    private readonly string _priceValueAttribute = string.Intern("content");
+    private const string Selector = "#bx_item-price-value";
+    private const string PriceValueSelector = "span[data-marker='item-view/item-price']";
+    private const string ExtraSelector = ".JyWQn";
+    private const string PriceValueAttribute = "content";
 
     public async Task<ParsedVehiclePrice> Read()
     {
         IElementHandle priceContainer = await new ValidSingleElementSource(
             new PageElementSource(page)
-        ).Read(_selector);
+        ).Read(Selector);
 
         IElementHandle priceValue = await new ValidSingleElementSource(
             new ParentElementSource(priceContainer)
-        ).Read(_priceValueSelector);
+        ).Read(PriceValueSelector);
 
         if (
             !long.TryParse(
-                await new AttributeFromWebElement(priceValue, _priceValueAttribute).Read(),
+                await new AttributeFromWebElement(priceValue, PriceValueAttribute).Read(),
                 out long price
             )
         )
@@ -35,7 +33,7 @@ public sealed class AvitoVehiclePriceSource(IPage page) : IParsedVehiclePriceSou
 
         IElementHandle priceExtra = await new ValidSingleElementSource(
             new ParentElementSource(priceContainer)
-        ).Read(_extraSelector);
+        ).Read(ExtraSelector);
 
         string extraText = await new TextFromWebElement(priceExtra).Read();
         return new ParsedVehiclePrice(new PositiveLong(price), extraText);

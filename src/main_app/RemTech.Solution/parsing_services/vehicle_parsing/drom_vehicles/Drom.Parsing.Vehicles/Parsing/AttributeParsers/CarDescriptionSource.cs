@@ -7,8 +7,8 @@ namespace Drom.Parsing.Vehicles.Parsing.AttributeParsers;
 
 public sealed class CarDescriptionSource(IPage page)
 {
-    private readonly string _containerSelector = string.Intern(".css-inmjwf.e162wx9x0");
-    private readonly string _innerContainerSelector = string.Intern(".css-1kb7l9z.e162wx9x0");
+    private const string ContainerSelector = ".css-inmjwf.e162wx9x0";
+    private const string InnerContainerSelector = ".css-1kb7l9z.e162wx9x0";
 
     public async Task Print(DromCatalogueCar car)
     {
@@ -16,10 +16,10 @@ public sealed class CarDescriptionSource(IPage page)
         {
             IElementHandle container = await new ValidSingleElementSource(
                 new PageElementSource(page)
-            ).Read(_containerSelector);
+            ).Read(ContainerSelector);
             IElementHandle innerContainer = await new ValidSingleElementSource(
                 new ParentElementSource(container)
-            ).Read(_innerContainerSelector);
+            ).Read(InnerContainerSelector);
             string text = await new TextFromWebElement(innerContainer).Read();
             car.WithDescription(text);
         }

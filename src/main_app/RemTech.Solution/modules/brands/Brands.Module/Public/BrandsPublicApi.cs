@@ -16,9 +16,10 @@ internal sealed class BrandsPublicApi(
     {
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         ICommandHandler<GetBrandCommand, IBrand> handler = new GetBrandVarietHandler(logger)
+            .With(new GetNewlyCreatedBrandHandler(connection, generator))
             .With(new GetBrandByNameHandler(connection))
             .With(new GetBrandByEmbeddingsHandler(connection, generator));
-        IBrand brand = await handler.Handle(new GetBrandCommand(name));
+        IBrand brand = await handler.Handle(new GetBrandCommand(name), ct);
         return new BrandResponse(brand.Name, brand.Id, brand.Rating);
     }
 }

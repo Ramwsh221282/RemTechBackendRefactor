@@ -8,28 +8,24 @@ namespace Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Pr
 
 public sealed class AvitoPriceFromContainer(IPage page) : IParsedVehiclePriceSource
 {
-    private readonly string _containerSelector = string.Intern(
-        "div[data-marker='item-view/item-price-container']"
-    );
-    private readonly string _priceValueSelector = string.Intern(
-        "span[data-marker='item-view/item-price']"
-    );
-    private readonly string _extraSelector = string.Intern(".JyWQn");
-    private readonly string _priceValueAttribute = string.Intern("content");
+    private const string ContainerSelector = "div[data-marker='item-view/item-price-container']";
+    private const string PriceValueSelector = "span[data-marker='item-view/item-price']";
+    private const string ExtraSelector = ".JyWQn";
+    private const string PriceValueAttribute = "content";
 
     public async Task<ParsedVehiclePrice> Read()
     {
         IElementHandle priceContainer = await new ValidSingleElementSource(
             new PageElementSource(page)
-        ).Read(_containerSelector);
+        ).Read(ContainerSelector);
 
         IElementHandle priceElement = await new ValidSingleElementSource(
             new ParentElementSource(priceContainer)
-        ).Read(_priceValueSelector);
+        ).Read(PriceValueSelector);
 
         if (
             !long.TryParse(
-                await new AttributeFromWebElement(priceElement, _priceValueAttribute).Read(),
+                await new AttributeFromWebElement(priceElement, PriceValueAttribute).Read(),
                 out long price
             )
         )
@@ -37,7 +33,7 @@ public sealed class AvitoPriceFromContainer(IPage page) : IParsedVehiclePriceSou
 
         IElementHandle priceExtra = await new ValidSingleElementSource(
             new ParentElementSource(priceContainer)
-        ).Read(_extraSelector);
+        ).Read(ExtraSelector);
 
         string extraText = await new TextFromWebElement(priceExtra).Read();
         return new ParsedVehiclePrice(new PositiveLong(price), extraText);

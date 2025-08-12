@@ -7,22 +7,26 @@ namespace Drom.Parsing.Vehicles.Parsing.AttributeParsers;
 
 public sealed class DromVehicleCharacteristicSource(IPage page)
 {
-    private readonly string _containerSelector = string.Intern(".css-1bwl6o2.epjhnwz0");
-    private readonly string _innerContainerSelector = string.Intern(".css-0.epjhnwz1");
+    private const string ContainerSelector = ".css-1bwl6o2.epjhnwz0";
+    private const string InnerContainerSelector = ".css-0.epjhnwz1";
+    private const string Table = "table";
+    private const string Tr = "tr";
+    private const string Th = "th";
+    private const string Td = "td";
 
     public async Task<CarCharacteristicsCollection> Read()
     {
         IElementHandle container = await new ValidSingleElementSource(
             new PageElementSource(page)
-        ).Read(_containerSelector);
+        ).Read(ContainerSelector);
         IElementHandle innerContainer = await new ValidSingleElementSource(
             new ParentElementSource(container)
-        ).Read(_innerContainerSelector);
+        ).Read(InnerContainerSelector);
         IElementHandle table = await new ValidSingleElementSource(
             new ParentElementSource(innerContainer)
-        ).Read(string.Intern("table"));
+        ).Read(string.Intern(Table));
         IElementHandle[] tableRows = await new ParentManyElementsSource(table).Read(
-            string.Intern("tr")
+            string.Intern(Tr)
         );
         CarCharacteristicsCollection collection = new();
         foreach (IElementHandle row in tableRows)
@@ -31,10 +35,10 @@ public sealed class DromVehicleCharacteristicSource(IPage page)
             {
                 IElementHandle ctxName = await new ValidSingleElementSource(
                     new ParentElementSource(row)
-                ).Read("th");
+                ).Read(Th);
                 IElementHandle ctxValue = await new ValidSingleElementSource(
                     new ParentElementSource(row)
-                ).Read("td");
+                ).Read(Td);
                 string name = await new TextFromWebElement(ctxName).Read();
                 if (string.IsNullOrWhiteSpace(name))
                     continue;

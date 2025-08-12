@@ -7,11 +7,12 @@ namespace Drom.Parsing.Vehicles.Parsing.Models;
 
 public sealed class DromCatalogueCarsCollection(IPage page)
 {
-    private readonly string _carsListSelector = string.Intern("div[data-bulletin-list='true']");
-    private readonly string _carItemSelector = string.Intern("div[data-ftid='bulls-list_bull']");
-    private readonly string _carItemImageSelector = string.Intern("div[data-ftid='bull_image']");
-    private readonly string _carItemImageSlidesSelector = string.Intern("img");
-    private readonly string _carItemTitleSelector = string.Intern("a[data-ftid='bull_title']");
+    private const string CarsListSelector = "div[data-bulletin-list='true']";
+    private const string CarItemSelector = "div[data-ftid='bulls-list_bull']";
+    private const string CarItemImageSelector = "div[data-ftid='bull_image']";
+    private const string CarItemImageSlidesSelector = "img";
+    private const string CarItemTitleSelector = "a[data-ftid='bull_title']";
+
     private const StringSplitOptions SplitOptions =
         StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries;
 
@@ -42,9 +43,9 @@ public sealed class DromCatalogueCarsCollection(IPage page)
         {
             IElementHandle carList = await new ValidSingleElementSource(
                 new PageElementSource(page)
-            ).Read(_carsListSelector);
+            ).Read(CarsListSelector);
             IElementHandle[] cars = await new ParentManyElementsSource(carList).Read(
-                _carItemSelector
+                CarItemSelector
             );
             return cars;
         }
@@ -58,7 +59,7 @@ public sealed class DromCatalogueCarsCollection(IPage page)
     {
         IElementHandle titleElement = await new ValidSingleElementSource(
             new ParentElementSource(car)
-        ).Read(_carItemTitleSelector);
+        ).Read(CarItemTitleSelector);
         string hrefAttribute = await new AttributeFromWebElement(titleElement, "href").Read();
         return hrefAttribute;
     }
@@ -71,9 +72,9 @@ public sealed class DromCatalogueCarsCollection(IPage page)
 
     private async Task<string[]> GetCarImages(IElementHandle car)
     {
-        IElementHandle carImage = await new ParentElementSource(car).Read(_carItemImageSelector);
+        IElementHandle carImage = await new ParentElementSource(car).Read(CarItemImageSelector);
         IElementHandle[] carImageSlides = await new ParentManyElementsSource(carImage).Read(
-            _carItemImageSlidesSelector
+            CarItemImageSlidesSelector
         );
         List<string> carImages = [];
         foreach (IElementHandle carImageSlide in carImageSlides)

@@ -1,4 +1,4 @@
-﻿using RemTech.Result.Library;
+﻿using RemTech.Core.Shared.Result;
 
 namespace RemTech.Core.Shared.Primitives;
 

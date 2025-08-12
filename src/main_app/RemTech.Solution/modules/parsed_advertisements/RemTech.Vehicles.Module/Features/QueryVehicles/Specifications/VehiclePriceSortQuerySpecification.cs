@@ -1,6 +1,6 @@
 ﻿namespace RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
 
-public sealed class VehiclePriceSortQuerySpecification(string? mode) : IQueryVehiclesSpecification
+internal sealed class VehiclePriceSortQuerySpecification(string? mode) : IQueryVehiclesSpecification
 {
     private readonly string _mode = string.IsNullOrWhiteSpace(mode) ? string.Empty : mode;
 
@@ -9,6 +9,6 @@ public sealed class VehiclePriceSortQuerySpecification(string? mode) : IQueryVeh
         if (_mode == "ASC")
             query.AcceptAscending("v.price");
         if (_mode == "DESC")
-            query.AcceptDescending(" ORDER BY v.price DESC");
+            query.AcceptDescending("v.price");
     }
 }

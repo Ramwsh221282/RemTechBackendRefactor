@@ -6,26 +6,31 @@ namespace Avito.Parsing.Spares.Parsing;
 
 public sealed class AvitoCharacteristicsDetailsSource(IPage page) : IAvitoDescriptionDetailsSource
 {
+    private const string DetailsContainer = "div[data-marker='item-view/item-params']";
+    private const string Ul = "ul";
+    private const string Li = "li";
+    private const StringSplitOptions SplitOptions = StringSplitOptions.TrimEntries;
+    private const char SplitChar = ':';
+    private const string Oem = "Номер запчасти";
+
     public async Task Add(AvitoSpare spare)
     {
         try
         {
             IElementHandle detailsContainer = await new ValidSingleElementSource(
                 new PageElementSource(page)
-            ).Read(string.Intern("div[data-marker='item-view/item-params']"));
+            ).Read(DetailsContainer);
             IElementHandle ul = await new ParentElementSource(detailsContainer).Read(
-                string.Intern("ul")
+                string.Intern(Ul)
             );
-            IElementHandle[] rows = await new ParentManyElementsSource(ul).Read(
-                string.Intern("li")
-            );
+            IElementHandle[] rows = await new ParentManyElementsSource(ul).Read(string.Intern(Li));
             foreach (IElementHandle row in rows)
             {
                 string text = await new TextFromWebElement(row).Read();
-                string[] parts = text.Split(':', StringSplitOptions.TrimEntries);
+                string[] parts = text.Split(SplitChar, SplitOptions);
                 string name = parts[0];
                 string value = parts[1];
-                if (name == "Номер запчасти")
+                if (name == Oem)
                 {
                     spare.CorrectOem(value);
                     continue;

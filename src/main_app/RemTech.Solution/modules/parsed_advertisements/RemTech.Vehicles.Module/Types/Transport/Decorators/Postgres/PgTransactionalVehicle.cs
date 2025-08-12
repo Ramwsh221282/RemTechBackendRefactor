@@ -5,7 +5,7 @@ using IsolationLevel = System.Data.IsolationLevel;
 
 namespace RemTech.Vehicles.Module.Types.Transport.Decorators.Postgres;
 
-public sealed class PgTransactionalVehicle(
+internal sealed class PgTransactionalVehicle(
     NpgsqlDataSource connectionSource,
     IEmbeddingGenerator generator,
     Vehicle source

@@ -6,18 +6,16 @@ namespace Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Ki
 public sealed class AvitoVehiclePageBreadcrumbs
 {
     private readonly IPage _page;
-    private readonly string _containerSelector = string.Intern("#bx_item-breadcrumbs");
-    private readonly string _breadCrumbsSelector = string.Intern(
-        "span[itemprop='itemListElement']"
-    );
+    private const string ContainerSelector = "#bx_item-breadcrumbs";
+    private const string BreadCrumbsSelector = "span[itemprop='itemListElement']";
 
     public AvitoVehiclePageBreadcrumbs(IPage page) => _page = page;
 
     public async Task<IElementHandle[]> Read()
     {
         IElementHandle breadcrumbsContainer = await new PageElementSource(_page).Read(
-            _containerSelector
+            ContainerSelector
         );
-        return await new ParentManyElementsSource(breadcrumbsContainer).Read(_breadCrumbsSelector);
+        return await new ParentManyElementsSource(breadcrumbsContainer).Read(BreadCrumbsSelector);
     }
 }

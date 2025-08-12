@@ -23,6 +23,9 @@ internal sealed class CsvModelsSeeding(
         "models.csv"
     );
 
+    private const string Sql =
+        "COPY models_module.models(id, name, rating, embedding) FROM STDIN (FORMAT BINARY)";
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(
@@ -36,10 +39,7 @@ internal sealed class CsvModelsSeeding(
 
         logger.Information("{Entrance}. Seeding models.", Entrance);
         IModel[] models = ReadModels();
-        await using var writer = await connection.BeginBinaryImportAsync(
-            "COPY models_module.models(id, name, rating, embedding) FROM STDIN (FORMAT BINARY)",
-            stoppingToken
-        );
+        await using var writer = await connection.BeginBinaryImportAsync(Sql, stoppingToken);
         foreach (IModel model in models)
         {
             await writer.StartRowAsync(stoppingToken);

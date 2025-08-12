@@ -8,7 +8,7 @@ using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Adapters.Storage.Postgres;
 
-public sealed class PgCharacteristicFromStoreCommand(
+internal sealed class PgCharacteristicFromStoreCommand(
     NotEmptyString text,
     VehicleCharacteristicValue value
 ) : IPgCharacteristicFromStoreCommand

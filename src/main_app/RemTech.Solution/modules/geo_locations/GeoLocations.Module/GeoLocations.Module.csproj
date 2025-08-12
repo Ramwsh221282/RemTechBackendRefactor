@@ -19,6 +19,6 @@
     <EmbeddedResource Include="Database\Scripts\*.sql" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\parsed_advertisements\RemTech.Vehicles.Module\RemTech.Vehicles.Module.csproj" />
+    <ProjectReference Include="..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj" />
   </ItemGroup>
 </Project>

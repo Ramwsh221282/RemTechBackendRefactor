@@ -135,6 +135,7 @@ public sealed class Worker(
                 link.LinkName,
                 linkSeconds
             );
+            logger.Information("Sended finish link {Link}", link.LinkName);
         }
         parserStopwatch.Stop();
         long parserStopwatchSeconds = (long)parserStopwatch.Elapsed.TotalSeconds;
@@ -142,6 +143,11 @@ public sealed class Worker(
             parserStarted.ParserName,
             parserStarted.ParserType,
             parserStopwatchSeconds
+        );
+        logger.Information(
+            "Sended finish parser {Name} {Type}",
+            parserStarted.ParserName,
+            parserStarted.ParserType
         );
     }
 }

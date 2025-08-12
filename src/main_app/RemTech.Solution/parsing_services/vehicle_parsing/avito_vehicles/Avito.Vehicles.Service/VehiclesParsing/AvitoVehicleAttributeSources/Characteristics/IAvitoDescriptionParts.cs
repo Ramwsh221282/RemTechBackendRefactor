@@ -2,5 +2,5 @@
 
 public interface IAvitoDescriptionParts
 {
-    Task<string[]> Read();
+    Task<string> Read();
 }

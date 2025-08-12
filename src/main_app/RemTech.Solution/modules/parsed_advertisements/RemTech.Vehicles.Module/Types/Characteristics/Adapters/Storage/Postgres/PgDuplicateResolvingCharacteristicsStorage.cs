@@ -3,7 +3,7 @@ using RemTech.Vehicles.Module.Types.Characteristics.Ports.Storage;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Adapters.Storage.Postgres;
 
-public sealed class PgDuplicateResolvingCharacteristicsStorage(NpgsqlDataSource connectionSource)
+internal sealed class PgDuplicateResolvingCharacteristicsStorage(NpgsqlDataSource connectionSource)
     : IPgCharacteristicsStorage
 {
     public async Task<Characteristic> Stored(Characteristic ctx, CancellationToken ct = default)

@@ -10,6 +10,16 @@ internal sealed class PgNewUsersStorage(PgConnectionSource connectionSource) : I
 
     public ValueTask DisposeAsync() => connectionSource.DisposeAsync();
 
+    private const string SaveSql = """
+        INSERT INTO users_module.users(id, name, password, email, email_confirmed)
+        VALUES(@id, @name, @password, @email, @email_confirmed);
+        """;
+    private const string EmailParam = "@email";
+    private const string NameParam = "@name";
+    private const string IdParam = "@id";
+    private const string PasswordParam = "@password";
+    private const string EmailConfirmedParam = "@email_confirmed";
+
     public async Task<bool> Save(
         string name,
         string email,
@@ -19,18 +29,12 @@ internal sealed class PgNewUsersStorage(PgConnectionSource connectionSource) : I
     {
         await using NpgsqlConnection connection = await connectionSource.Connect(ct);
         await using NpgsqlCommand command = connection.CreateCommand();
-        string sql = string.Intern(
-            """
-            INSERT INTO users_module.users(id, name, password, email, email_confirmed)
-            VALUES(@id, @name, @password, @email, @email_confirmed);
-            """
-        );
-        command.CommandText = sql;
-        command.Parameters.Add(new NpgsqlParameter<string>("@name", name));
-        command.Parameters.Add(new NpgsqlParameter<string>("@email", email));
-        command.Parameters.Add(new NpgsqlParameter<Guid>("@id", Guid.NewGuid()));
-        command.Parameters.Add(new NpgsqlParameter<string>("@password", password));
-        command.Parameters.Add(new NpgsqlParameter<bool>("@email_confirmed", false));
+        command.CommandText = SaveSql;
+        command.Parameters.Add(new NpgsqlParameter<string>(NameParam, name));
+        command.Parameters.Add(new NpgsqlParameter<string>(EmailParam, email));
+        command.Parameters.Add(new NpgsqlParameter<Guid>(IdParam, Guid.NewGuid()));
+        command.Parameters.Add(new NpgsqlParameter<string>(PasswordParam, password));
+        command.Parameters.Add(new NpgsqlParameter<bool>(EmailConfirmedParam, false));
         try
         {
             await command.ExecuteNonQueryAsync(ct);

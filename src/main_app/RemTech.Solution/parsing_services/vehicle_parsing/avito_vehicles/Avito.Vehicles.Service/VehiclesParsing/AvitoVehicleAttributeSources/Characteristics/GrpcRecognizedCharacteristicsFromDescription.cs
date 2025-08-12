@@ -27,16 +27,7 @@ public sealed class GrpcRecognizedCharacteristicsFromDescription(
 {
     public async Task<CharacteristicsDictionary> Read()
     {
-        string[] textParts = await new EmptyOnErrorDescriptionParts(
-            new AvitoDescriptionParts(page)
-        ).Read();
-        CharacteristicsDictionary dictionary = new CharacteristicsDictionary();
-        foreach (string text in textParts)
-        {
-            dictionary = dictionary.FromEnumerable(await Recognize(text));
-        }
-
-        return dictionary;
+        return new CharacteristicsDictionary();
     }
 
     public async Task<IEnumerable<VehicleCharacteristic>> Recognize(string text)

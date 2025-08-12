@@ -4,7 +4,7 @@ using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
 
-public sealed class TransportHoursCharacteristicMeasureInspection(
+internal sealed class TransportHoursCharacteristicMeasureInspection(
     NotEmptyString name,
     NotEmptyString value
 ) : ICharacteristicMeasureInspection

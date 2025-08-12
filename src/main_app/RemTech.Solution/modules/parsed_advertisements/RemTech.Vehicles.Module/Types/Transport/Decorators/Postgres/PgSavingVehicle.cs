@@ -3,49 +3,48 @@ using NpgsqlTypes;
 using Pgvector;
 using RemTech.Core.Shared.Exceptions;
 using RemTech.Vehicles.Module.Types.Transport.Decorators.Json;
-using RemTech.Vehicles.Module.Utilities;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Types.Transport.Decorators.Postgres;
 
-public sealed class PgSavingVehicle(Vehicle vehicle, IEmbeddingGenerator generator)
+internal sealed class PgSavingVehicle(Vehicle vehicle, IEmbeddingGenerator generator)
     : Vehicle(vehicle)
 {
-    public async Task<int> SaveAsync(NpgsqlConnection connection, CancellationToken ct = default)
+    public async Task SaveAsync(NpgsqlConnection connection, CancellationToken ct = default)
     {
         string sql = string.Intern(
             """
             INSERT INTO parsed_advertisements_module.parsed_vehicles
-            (id, kind_id, brand_id, geo_id, model_id, price, is_nds, source_url, source_domain, object, description, document_tsvector, embedding)
+            (id, kind_id, brand_id, geo_id, model_id, price, is_nds, source_url, source_domain, object, description, embedding)
             VALUES
-            (@id, @kind_id, @brand_id, @geo_id, @model_id, @price, @is_nds, @source_url, @source_domain, @object, @description, to_tsvector('russian', @document_tsvector), @embedding)
+            (@id, @kind_id, @brand_id, @geo_id, @model_id, @price, @is_nds, @source_url, @source_domain, @object, @description, @embedding)
             ON CONFLICT(id) DO NOTHING;
             """
         );
         int affected = await new AsyncExecutedCommand(
             new AsyncPreparedCommand(MakeParametrizedCommand(connection, sql))
         ).AsyncExecuted(ct);
-        return affected != 1
-            ? throw new OperationException(
+        if (affected == 0)
+            throw new OperationException(
                 $"Не удается добавить объявление. Объявление с ID: {(string)Identity.Read()} уже присутствует"
-            )
-            : affected;
+            );
     }
 
     private ParametrizingPgCommand MakeParametrizedCommand(NpgsqlConnection connection, string sql)
     {
         string id = Identity.Read();
-        Guid kindId = Kind.Id();
-        Guid brandId = Brand.Id();
-        Guid geoId = Location.Id();
-        Guid modelId = Model.Id();
+        Guid kindId = Category.Id;
+        Guid brandId = Brand.Id;
+        Guid geoId = Location.Id;
+        Guid modelId = Model.Id;
         long price = Price.Value();
         bool nds = Price.UnderNds();
         string sourceUrl = SourceUrl;
         string sourceDomain = SourceDomain;
+        string description = MakeDocument();
         return new ParametrizingPgCommand(new PgCommand(connection, sql))
-            .With("@embedding", new Vector(MakeVectorEmbedding(out string description)))
+            .With("@embedding", new Vector(MakeVectorEmbedding(description)))
             .With("@id", id)
             .With("@kind_id", kindId)
             .With("@brand_id", brandId)
@@ -56,35 +55,11 @@ public sealed class PgSavingVehicle(Vehicle vehicle, IEmbeddingGenerator generat
             .With("@description", description)
             .With("@source_url", sourceUrl)
             .With("@source_domain", sourceDomain)
-            .With("@object", new JsonVehicle(this).Read(), NpgsqlDbType.Jsonb)
-            .With("@document_tsvector", MakeTsVectorString(), NpgsqlDbType.Text);
+            .With("@object", new JsonVehicle(this).Read(), NpgsqlDbType.Jsonb);
     }
 
-    private float[] MakeVectorEmbedding(out string description)
+    private ReadOnlyMemory<float> MakeVectorEmbedding(string description)
     {
-        description = string.Empty;
-        string kindName = Kind.Name();
-        string brandName = Brand.Name();
-        string modelName = Model.NameString();
-        string geoName = Location.Name();
-        IEnumerable<string> ctxes = Characteristics.Read().Select(c => c.NameValued());
-        string[] texts = [kindName, brandName, modelName, geoName];
-        texts = [.. texts, .. ctxes, new StringForVectorStoring(Description).Read()];
-        string finalText = string.Join(" ", texts);
-        description = finalText;
-        float[] embeddings = generator.Generate(finalText);
-        return embeddings;
-    }
-
-    private string MakeTsVectorString()
-    {
-        string kindName = Kind.Name();
-        string brandName = Brand.Name();
-        string modelName = Model.NameString();
-        IEnumerable<string> ctxes = Characteristics.Read().Select(c => c.NameValued());
-        string[] texts = [kindName, brandName, modelName];
-        texts = [.. texts, .. ctxes];
-        string tsVectorText = string.Join(" ", texts);
-        return tsVectorText;
+        return generator.Generate(description);
     }
 }

@@ -1,21 +1,18 @@
-﻿using RemTech.Vehicles.Module.Types.Brands;
+﻿using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
 using RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
-using RemTech.Vehicles.Module.Types.GeoLocations;
-using RemTech.Vehicles.Module.Types.Kinds;
-using RemTech.Vehicles.Module.Types.Models;
 using RemTech.Vehicles.Module.Types.Transport;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Prices;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles;
 
-public sealed class CachedVehicleJsonSink : IVehicleJsonSink
+internal sealed class CachedVehicleJsonSink : IVehicleJsonSink
 {
     private readonly IVehicleJsonSink _origin;
-    private VehicleKind? _kind;
-    private VehicleBrand? _brand;
-    private VehicleModel? _model;
-    private GeoLocation? _location;
+    private readonly SinkedVehicleCategory _category;
+    private readonly SinkedVehicleBrand _brand;
+    private readonly SinkedVehicleModel _model;
+    private readonly SinkedVehicleLocation _location;
     private VehicleIdentity? _identity;
     private IItemPrice? _cost;
     private VehiclePhotos? _photos;
@@ -25,27 +22,36 @@ public sealed class CachedVehicleJsonSink : IVehicleJsonSink
     public CachedVehicleJsonSink(IVehicleJsonSink origin)
     {
         _origin = origin;
+        _category = origin.Category();
+        _brand = origin.Brand();
+        _model = origin.Model();
+        _location = origin.Location();
+        _identity = origin.VehicleId();
+        _cost = origin.VehiclePrice();
+        _photos = origin.VehiclePhotos();
+        _vehicle = origin.Vehicle();
+        _characteristics = origin.Characteristics();
     }
 
-    public CachedVehicleJsonSink(IVehicleJsonSink origin, VehicleKind kind)
+    public CachedVehicleJsonSink(IVehicleJsonSink origin, SinkedVehicleCategory category)
         : this(origin)
     {
-        _kind = kind;
+        _category = category;
     }
 
-    public CachedVehicleJsonSink(IVehicleJsonSink origin, VehicleBrand brand)
+    public CachedVehicleJsonSink(IVehicleJsonSink origin, SinkedVehicleBrand brand)
         : this(origin)
     {
         _brand = brand;
     }
 
-    public CachedVehicleJsonSink(IVehicleJsonSink origin, VehicleModel model)
+    public CachedVehicleJsonSink(IVehicleJsonSink origin, SinkedVehicleModel model)
         : this(origin)
     {
         _model = model;
     }
 
-    public CachedVehicleJsonSink(IVehicleJsonSink origin, GeoLocation location)
+    public CachedVehicleJsonSink(IVehicleJsonSink origin, SinkedVehicleLocation location)
         : this(origin)
     {
         _location = location;
@@ -84,7 +90,7 @@ public sealed class CachedVehicleJsonSink : IVehicleJsonSink
     public CachedVehicleJsonSink(CachedVehicleJsonSink origin)
     {
         _origin = origin;
-        _kind = origin._kind;
+        _category = origin._category;
         _brand = origin._brand;
         _model = origin._model;
         _location = origin._location;
@@ -95,27 +101,23 @@ public sealed class CachedVehicleJsonSink : IVehicleJsonSink
         _characteristics = origin._characteristics;
     }
 
-    public VehicleKind Kind()
+    public SinkedVehicleCategory Category()
     {
-        _kind ??= _origin.Kind();
-        return _kind;
+        return _category;
     }
 
-    public VehicleBrand Brand()
+    SinkedVehicleBrand IVehicleJsonSink.Brand()
     {
-        _brand ??= _origin.Brand();
         return _brand;
     }
 
-    public VehicleModel Model()
+    SinkedVehicleModel IVehicleJsonSink.Model()
     {
-        _model ??= _origin.Model();
         return _model;
     }
 
-    public GeoLocation Location()
+    SinkedVehicleLocation IVehicleJsonSink.Location()
     {
-        _location ??= _origin.Location();
         return _location;
     }
 
@@ -174,8 +176,8 @@ public sealed class CachedVehicleJsonSink : IVehicleJsonSink
         return _origin.SourceDomain();
     }
 
-    public string Description()
+    public string Sentences()
     {
-        return _origin.Description();
+        return _origin.Sentences();
     }
 }

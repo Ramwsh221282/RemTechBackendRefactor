@@ -8,72 +8,89 @@ namespace Scrapers.Module.Features.CreateNewParserLink.Database;
 internal sealed class NpgSqlParsersWithLinkStorage(NpgsqlDataSource dataSource)
     : IParsersWithNewLinkStorage
 {
+    private const string FetchSql = """
+        SELECT name, type, state, domain FROM scrapers_module.scrapers
+        WHERE name = @name AND type = @type;
+        """;
+    private const string NameParam = "@name";
+    private const string TypeParam = "@type";
+    private const string NameColumn = "name";
+    private const string TypeColumn = "type";
+    private const string StateColumn = "state";
+    private const string DomainColumn = "domain";
+
     public async Task<ParserWhereToPutLink> Fetch(
         string parserName,
         string parserType,
         CancellationToken ct = default
     )
     {
-        string sql = string.Intern(
-            """
-            SELECT name, type, state, domain FROM scrapers_module.scrapers
-            WHERE name = @name AND type = @type;
-            """
-        );
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         await using NpgsqlCommand command = connection.CreateCommand();
-        command.CommandText = sql;
-        command.Parameters.Add(new NpgsqlParameter<string>("@name", parserName));
-        command.Parameters.Add(new NpgsqlParameter<string>("@type", parserType));
+        command.CommandText = FetchSql;
+        command.Parameters.Add(new NpgsqlParameter<string>(NameParam, parserName));
+        command.Parameters.Add(new NpgsqlParameter<string>(TypeParam, parserType));
         await using DbDataReader reader = await command.ExecuteReaderAsync(ct);
         if (!reader.HasRows)
             throw new ParserWhereToPutLinkNotFoundException(parserName, parserType);
         if (!await reader.ReadAsync(ct))
             throw new ParserWhereToPutLinkNotFoundException(parserName, parserType);
         return new ParserWhereToPutLink(
-            reader.GetString(reader.GetOrdinal("name")),
-            reader.GetString(reader.GetOrdinal("type")),
-            reader.GetString(reader.GetOrdinal("state")),
-            reader.GetString(reader.GetOrdinal("domain"))
+            reader.GetString(reader.GetOrdinal(NameColumn)),
+            reader.GetString(reader.GetOrdinal(TypeColumn)),
+            reader.GetString(reader.GetOrdinal(StateColumn)),
+            reader.GetString(reader.GetOrdinal(DomainColumn))
         );
     }
+
+    private const string SaveSql = """
+        INSERT INTO scrapers_module.scraper_links
+        (name, parser_name, parser_type, url, activity, processed, total_seconds, hours, minutes, seconds)
+        VALUES
+        (@name, @parser_name, @parser_type, @url, @activity, @processed, @total_seconds, @hours, @minutes, @seconds);
+        """;
+    private const string ParserNameParam = "@parser_name";
+    private const string UrlParam = "@url";
+    private const string ActivityParam = "@activity";
+    private const string ProcessedParam = "@processed";
+    private const string TotalSecondsParam = "@total_seconds";
+    private const string HoursParam = "@hours";
+    private const string MinutesParam = "@minutes";
+    private const string SecondsParam = "@seconds";
+    private const string ParserTypeParam = "@parser_type";
 
     public async Task<ParserWithNewLink> Save(
         ParserWithNewLink parser,
         CancellationToken ct = default
     )
     {
-        string sql = string.Intern(
-            """
-            INSERT INTO scrapers_module.scraper_links
-            (name, parser_name, parser_type, url, activity, processed, total_seconds, hours, minutes, seconds)
-            VALUES
-            (@name, @parser_name, @parser_type, @url, @activity, @processed, @total_seconds, @hours, @minutes, @seconds);
-            """
-        );
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
         await using NpgsqlCommand command = connection.CreateCommand();
-        command.CommandText = sql;
-        command.Parameters.Add(new NpgsqlParameter<string>("@name", parser.Link.Name));
-        command.Parameters.Add(new NpgsqlParameter<string>("@parser_name", parser.Link.ParserName));
-        command.Parameters.Add(new NpgsqlParameter<string>("@url", parser.Link.Url));
-        command.Parameters.Add(new NpgsqlParameter<bool>("@activity", parser.Link.Active));
+        command.CommandText = SaveSql;
+        command.Parameters.Add(new NpgsqlParameter<string>(NameParam, parser.Link.Name));
         command.Parameters.Add(
-            new NpgsqlParameter<int>("@processed", parser.Link.Statistics.ParsedAmount)
+            new NpgsqlParameter<string>(ParserNameParam, parser.Link.ParserName)
+        );
+        command.Parameters.Add(new NpgsqlParameter<string>(UrlParam, parser.Link.Url));
+        command.Parameters.Add(new NpgsqlParameter<bool>(ActivityParam, parser.Link.Active));
+        command.Parameters.Add(
+            new NpgsqlParameter<int>(ProcessedParam, parser.Link.Statistics.ParsedAmount)
         );
         command.Parameters.Add(
-            new NpgsqlParameter<long>("@total_seconds", parser.Link.Statistics.TotalElapsedSeconds)
+            new NpgsqlParameter<long>(TotalSecondsParam, parser.Link.Statistics.TotalElapsedSeconds)
         );
         command.Parameters.Add(
-            new NpgsqlParameter<int>("@hours", parser.Link.Statistics.ElapsedHours)
+            new NpgsqlParameter<int>(HoursParam, parser.Link.Statistics.ElapsedHours)
         );
         command.Parameters.Add(
-            new NpgsqlParameter<int>("@minutes", parser.Link.Statistics.ElapsedMinutes)
+            new NpgsqlParameter<int>(MinutesParam, parser.Link.Statistics.ElapsedMinutes)
         );
         command.Parameters.Add(
-            new NpgsqlParameter<int>("@seconds", parser.Link.Statistics.ElapsedSeconds)
+            new NpgsqlParameter<int>(SecondsParam, parser.Link.Statistics.ElapsedSeconds)
         );
-        command.Parameters.Add(new NpgsqlParameter<string>("@parser_type", parser.Link.ParserType));
+        command.Parameters.Add(
+            new NpgsqlParameter<string>(ParserTypeParam, parser.Link.ParserType)
+        );
         try
         {
             await command.ExecuteNonQueryAsync(ct);

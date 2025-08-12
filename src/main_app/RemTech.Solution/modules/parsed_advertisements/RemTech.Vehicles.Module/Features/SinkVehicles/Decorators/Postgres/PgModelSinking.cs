@@ -1,29 +1,21 @@
-﻿using Npgsql;
-using RemTech.Result.Library;
-using RemTech.Vehicles.Module.Types.Models;
-using RemTech.Vehicles.Module.Types.Models.Decorators.Validation;
-using RemTech.Vehicles.Module.Types.Models.Storage;
-using Shared.Infrastructure.Module.Postgres.Embeddings;
+﻿using Models.Module.Public;
+using RemTech.Core.Shared.Result;
+using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 
-public sealed class PgModelSinking(
-    NpgsqlDataSource connection,
-    ITransportAdvertisementSinking sinking,
-    IEmbeddingGenerator generator
+internal sealed class PgModelSinking(
+    IModelPublicApi modelApi,
+    ITransportAdvertisementSinking sinking
 ) : ITransportAdvertisementSinking
 {
     public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
     {
-        VehicleModel model = sink.Model();
-        VehicleModel valid = new ValidVehicleModel(model);
-        VehicleModel saved = await new VarietVehicleModelsStorage()
-            .With(new RawByNameVehicleModelsStorage(connection))
-            .With(new VectorVehicleModelsStorage(connection, generator))
-            .With(new TsQueryVehicleModelsStorage(connection))
-            .With(new PgTgrmVehicleModelsStorage(connection))
-            .With(new NewVehicleModelsStorage(connection, generator))
-            .Store(valid);
-        return await sinking.Sink(new CachedVehicleJsonSink(sink, saved), ct);
+        SinkedVehicleModel model = sink.Model();
+        SinkedVehicleModel persisted = await ModelResponse.MapTo(
+            r => new SinkedVehicleModel(r.Name, r.Id),
+            () => modelApi.Get(model.Name, ct)
+        );
+        return await sinking.Sink(new CachedVehicleJsonSink(sink, persisted), ct);
     }
 }

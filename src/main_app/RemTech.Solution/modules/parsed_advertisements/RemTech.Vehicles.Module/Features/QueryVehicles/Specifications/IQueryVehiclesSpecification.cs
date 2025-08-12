@@ -1,6 +1,6 @@
 ﻿namespace RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
 
-public interface IQueryVehiclesSpecification
+internal interface IQueryVehiclesSpecification
 {
     void ApplyTo(IVehiclesSqlQuery query);
 }

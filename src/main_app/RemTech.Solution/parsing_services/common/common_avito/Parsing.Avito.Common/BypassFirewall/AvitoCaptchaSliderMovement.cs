@@ -7,11 +7,12 @@ namespace Parsing.Avito.Common.BypassFirewall;
 
 public sealed class AvitoCaptchaSliderMovement(IPage page, int centerPoint) : IPageAction
 {
-    public async  Task Do()
+    private const string Slider = ".geetest_btn";
+
+    public async Task Do()
     {
-        IElementHandle? slider = await new PageElementSource(page)
-            .Read(string.Intern(".geetest_btn"));
-        if (slider == null) 
+        IElementHandle? slider = await new PageElementSource(page).Read(Slider);
+        if (slider == null)
             return;
 
         await Task.Delay(TimeSpan.FromSeconds(5));

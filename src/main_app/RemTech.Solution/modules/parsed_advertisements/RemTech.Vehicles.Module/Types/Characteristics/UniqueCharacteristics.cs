@@ -2,7 +2,7 @@ using RemTech.Core.Shared.Primitives;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics;
 
-public sealed class UniqueCharacteristics
+internal sealed class UniqueCharacteristics
 {
     private readonly Dictionary<string, Characteristic> _ctxes = [];
 

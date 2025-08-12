@@ -3,18 +3,17 @@ using DbUp.Engine;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.Vehicles.Module.Features.QueryAllBrandModels;
-using RemTech.Vehicles.Module.Features.QueryAllKindBrands;
-using RemTech.Vehicles.Module.Features.QueryAllKinds;
-using RemTech.Vehicles.Module.Features.QueryVehicleBrands.Http;
-using RemTech.Vehicles.Module.Features.QueryVehicleKinds.Http;
-using RemTech.Vehicles.Module.Features.QueryVehicleLocations;
-using RemTech.Vehicles.Module.Features.QueryVehicleModels.Http;
+using RemTech.Vehicles.Module.Features.QueryBrandsOfCategory;
+using RemTech.Vehicles.Module.Features.QueryConcreteVehicle;
+using RemTech.Vehicles.Module.Features.QueryModelsOfCategoryBrand;
+using RemTech.Vehicles.Module.Features.QueryVehicleBrands;
+using RemTech.Vehicles.Module.Features.QueryVehicleCategories;
+using RemTech.Vehicles.Module.Features.QueryVehicleModels;
+using RemTech.Vehicles.Module.Features.QueryVehicleRegions;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Http;
-using RemTech.Vehicles.Module.Features.QueryVehiclesAggregatedData;
-using RemTech.Vehicles.Module.Features.QueryVehiclesCharacteristicsDictionary;
+using RemTech.Vehicles.Module.Features.QueryVehiclesAmount;
+using RemTech.Vehicles.Module.Features.SimilarVehiclesQuery;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.BackgroundService;
-using RemTech.Vehicles.Module.OnStartup;
 
 namespace RemTech.Vehicles.Module.Injection;
 
@@ -22,7 +21,6 @@ public static class ParsedAdvertisementsInjection
 {
     public static void InjectVehiclesModule(this IServiceCollection services)
     {
-        services.AddSingleton<CreateVectorsOnStartup>();
         services.AddHostedService<BackgroundJobTransportAdvertisementSinking>();
     }
 
@@ -43,16 +41,16 @@ public static class ParsedAdvertisementsInjection
 
     public static void MapVehiclesModuleEndpoints(this IEndpointRouteBuilder builder)
     {
-        QueryAllKindsFeature.Map(builder);
-        QueryAllKindBrandsFeature.Map(builder);
-        QueryAllBrandModelsFeature.Map(builder);
-        QueryVehiclesLocationsFeature.Map(builder);
-        QueryVehiclesCharacteristicsDictionaryFeature.Map(builder);
         RouteGroupBuilder group = builder.MapGroup("api/vehicles").RequireCors("FRONTEND");
-        QueryVehiclesAggregatedDataFeature.Map(group);
         group.CatalogueEndpoint();
-        group.BrandsEndpoint();
-        group.KindsEndpoint();
-        group.ModelsEndpoint();
+        QueryVehicleBrandsEndpoint.Map(group);
+        QueryVehicleCategoriesEndpoint.Map(group);
+        QueryVehicleRegionsEndpoint.Map(group);
+        QueryVehicleModelsEndpoint.Map(group);
+        VehiclesAmountEndpoint.Map(group);
+        ConcreteVehicleEndpoint.Map(group);
+        SimilarVehiclesQueryEndpoint.Map(group);
+        BrandsByCategoryEndpoint.Map(group);
+        ModelsOfCategoryBrandsEndpoint.Map(group);
     }
 }

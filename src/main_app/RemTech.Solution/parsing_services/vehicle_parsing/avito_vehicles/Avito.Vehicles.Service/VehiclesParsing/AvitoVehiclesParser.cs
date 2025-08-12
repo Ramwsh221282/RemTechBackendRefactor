@@ -34,7 +34,6 @@ public sealed class AvitoVehiclesParser(
     IPage page,
     ITextWrite write,
     Serilog.ILogger logger,
-    ICommunicationChannel channel,
     string originUrl
 ) : IParsedVehicleSource
 {
@@ -78,7 +77,6 @@ public sealed class AvitoVehiclesParser(
                     .WrapBy(p => new LoggingVehiclePriceSource(logger, p));
 
                 IParsedVehicleGeoSource geoSource = new VarietWebElementGeoSource()
-                    .With(new DefaultOnErroVehicleGeo(new GrpcVehicleGeoSource(page, channel)))
                     .With(new DefaultOnErroVehicleGeo(new WebElementVehicleGeoSource(page, write)))
                     .WrapBy(g => new LoggingVehicleGeoSource(logger, g));
 
@@ -87,10 +85,9 @@ public sealed class AvitoVehiclesParser(
                     .With(new FromCharacteristicsModelSource(page))
                     .WrapBy(c => new LoggingModelSource(logger, c));
 
-                IParsedVehicleKindSource kindSource = new DbOrParsedVehicleKindSource(
-                    page,
-                    channel
-                ).WrapBy(v => new LoggingKindSource(logger, v));
+                IParsedVehicleKindSource kindSource = new DbOrParsedVehicleKindSource(page).WrapBy(
+                    v => new LoggingKindSource(logger, v)
+                );
 
                 IParsedVehicleBrandSource brandSource = new VarietVehicleBrandSource()
                     .With(new VehicleBrandFromBreadcrumbsSource(page))
@@ -100,16 +97,6 @@ public sealed class AvitoVehiclesParser(
                 IKeyValuedCharacteristicsSource ctxSource = new VariantVehicleCharacteristics()
                     .With(
                         new DefaultOnErrorCharacteristics(new KeyValuedAvitoCharacteristics(page))
-                    )
-                    .With(
-                        new DefaultOnErrorCharacteristics(
-                            new GrpcRecognizedCharacteristics(page, channel)
-                        )
-                    )
-                    .With(
-                        new DefaultOnErrorCharacteristics(
-                            new GrpcRecognizedCharacteristicsFromDescription(page, channel)
-                        )
                     )
                     .WrapBy(c => new LoggingCharacteristics(logger, c));
 

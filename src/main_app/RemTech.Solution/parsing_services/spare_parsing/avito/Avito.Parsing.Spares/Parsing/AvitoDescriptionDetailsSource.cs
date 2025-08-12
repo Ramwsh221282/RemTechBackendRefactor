@@ -6,17 +6,17 @@ namespace Avito.Parsing.Spares.Parsing;
 
 public sealed class AvitoDescriptionDetailsSource(IPage page) : IAvitoDescriptionDetailsSource
 {
+    private const string Container = "div[itemprop='description']";
+    private const string P = "p";
+    private const string Button = "a[role='button']";
+
     public async Task Add(AvitoSpare spare)
     {
         try
         {
             await ClickButtonIfExists();
-            IElementHandle container = await new PageElementSource(page).Read(
-                string.Intern("div[itemprop='description']")
-            );
-            IElementHandle[] paragraphs = await new ParentManyElementsSource(container).Read(
-                string.Intern("p")
-            );
+            IElementHandle container = await new PageElementSource(page).Read(Container);
+            IElementHandle[] paragraphs = await new ParentManyElementsSource(container).Read(P);
             foreach (IElementHandle paragraph in paragraphs)
             {
                 string text = await new TextFromWebElement(paragraph).Read();
@@ -33,12 +33,10 @@ public sealed class AvitoDescriptionDetailsSource(IPage page) : IAvitoDescriptio
     {
         try
         {
-            IElementHandle container = await new PageElementSource(page).Read(
-                string.Intern("div[itemprop='description']")
-            );
+            IElementHandle container = await new PageElementSource(page).Read(Container);
             IElementHandle button = await new ValidSingleElementSource(
                 new ParentElementSource(container)
-            ).Read("a[role='button']");
+            ).Read(Button);
             await button.ClickAsync();
             await Task.Delay(TimeSpan.FromSeconds(3));
         }

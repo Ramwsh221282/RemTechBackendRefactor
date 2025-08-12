@@ -4,16 +4,18 @@ using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace GeoLocations.Module.Features.Persisting;
 
-internal sealed class CityToPersist
+internal sealed class CityToPersist(Guid id, string name)
 {
-    private readonly Guid _id;
-    private readonly string _name;
+    private const string Sql = """
+        INSERT INTO locations_module.cities(id, region_id, name, embedding)
+        VALUES(@id, @region_id, @name, @embedding)
+        """;
 
-    public CityToPersist(Guid id, string name)
-    {
-        _id = id;
-        _name = name;
-    }
+    private const string TextFormat = "{0} {1} {2}";
+    private const string IdParam = "@id";
+    private const string RegionIdParam = "@region_id";
+    private const string NameParam = "@name";
+    private const string EmbeddingParam = "@embedding";
 
     public async Task Persist(
         NpgsqlConnection connection,
@@ -23,19 +25,13 @@ internal sealed class CityToPersist
         Guid regionId
     )
     {
-        string text = $"{regionName} {regionType} {_name}";
-        string sql = string.Intern(
-            """
-            INSERT INTO locations_module.cities(id, region_id, name, embedding)
-            VALUES(@id, @region_id, @name, @embedding)
-            """
-        );
+        string text = string.Format(TextFormat, regionName, regionType, name);
         await using NpgsqlCommand command = connection.CreateCommand();
-        command.CommandText = sql;
-        command.Parameters.Add(new NpgsqlParameter<Guid>("@id", _id));
-        command.Parameters.Add(new NpgsqlParameter<Guid>("@region_id", regionId));
-        command.Parameters.Add(new NpgsqlParameter<string>("@name", _name));
-        command.Parameters.AddWithValue("@embedding", new Vector(generator.Generate(text)));
+        command.CommandText = Sql;
+        command.Parameters.Add(new NpgsqlParameter<Guid>(IdParam, id));
+        command.Parameters.Add(new NpgsqlParameter<Guid>(RegionIdParam, regionId));
+        command.Parameters.Add(new NpgsqlParameter<string>(NameParam, name));
+        command.Parameters.AddWithValue(EmbeddingParam, new Vector(generator.Generate(text)));
         await command.ExecuteNonQueryAsync();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Parsing.Vehicles.Common.ParsedVehicles;
+﻿using Parsing.RabbitMq.PublishVehicle.Extras;
+using Parsing.Vehicles.Common.ParsedVehicles;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleBrands;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleGeo;
@@ -23,7 +24,7 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
     private readonly ParsedVehiclePrice _price;
     private readonly ParsedVehicleUrl _urlSource;
     private readonly ParsedVehicleGeo _geo;
-    private readonly string _description;
+    private readonly SentencesCollection _sentences;
 
     public AvitoVehicleEnvelope()
     {
@@ -36,7 +37,7 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
         _price = new ParsedVehiclePrice(-1, string.Empty);
         _urlSource = new ParsedVehicleUrl(new NotEmptyString(string.Empty));
         _geo = new ParsedVehicleGeo(null);
-        _description = string.Empty;
+        _sentences = new SentencesCollection();
     }
 
     public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin)
@@ -50,7 +51,7 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
         _price = origin._price;
         _urlSource = origin._urlSource;
         _geo = origin._geo;
-        _description = origin._description;
+        _sentences = origin._sentences;
     }
 
     public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin, ParsedVehiclePrice price)
@@ -80,8 +81,8 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
     public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin, ParsedVehicleUrl url)
         : this(origin) => _urlSource = url;
 
-    public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin, string description)
-        : this(origin) => _description = description;
+    public AvitoVehicleEnvelope(AvitoVehicleEnvelope origin, SentencesCollection sentences)
+        : this(origin) => _sentences = sentences;
 
     public Task<ParsedVehicleIdentity> Identity() => Task.FromResult(_identity);
 
@@ -101,5 +102,5 @@ public sealed class AvitoVehicleEnvelope : IParsedVehicle
 
     public Task<ParsedVehicleGeo> Geo() => Task.FromResult(_geo);
 
-    public Task<string> Description() => Task.FromResult(_description);
+    public Task<SentencesCollection> Sentences() => Task.FromResult(_sentences);
 }

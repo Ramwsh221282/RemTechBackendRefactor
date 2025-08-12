@@ -1,6 +1,6 @@
 ﻿namespace RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
 
-public sealed class CompositeVehicleSpeicification : IQueryVehiclesSpecification
+internal sealed class CompositeVehicleSpeicification : IQueryVehiclesSpecification
 {
     private readonly Queue<IQueryVehiclesSpecification> _specs = [];
 

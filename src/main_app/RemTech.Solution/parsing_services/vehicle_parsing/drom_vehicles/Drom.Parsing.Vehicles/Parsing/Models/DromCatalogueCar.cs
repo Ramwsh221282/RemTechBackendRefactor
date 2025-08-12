@@ -1,5 +1,6 @@
 ﻿using Drom.Parsing.Vehicles.Parsing.Logging;
 using Parsing.RabbitMq.PublishVehicle;
+using Parsing.RabbitMq.PublishVehicle.Extras;
 using RemTech.Core.Shared.Exceptions;
 
 namespace Drom.Parsing.Vehicles.Parsing.Models;
@@ -16,7 +17,7 @@ public sealed class DromCatalogueCar
     private string _kind;
     private long _price;
     private bool _isNds;
-    private string _description;
+    private readonly SentencesCollection _sentences;
 
     public DromCatalogueCar(string id, string source, string[] photos)
     {
@@ -30,14 +31,14 @@ public sealed class DromCatalogueCar
         _isNds = false;
         _locationInfo = string.Empty;
         _characteristics = new CarCharacteristicsCollection();
-        _description = string.Empty;
+        _sentences = new SentencesCollection();
     }
 
     public void WithDescription(string description)
     {
         if (string.IsNullOrWhiteSpace(description))
             return;
-        _description = description;
+        _sentences.Fill(description);
     }
 
     public void WithLocation(string locationInfo)
@@ -135,7 +136,7 @@ public sealed class DromCatalogueCar
             _isNds,
             _locationInfo,
             _source,
-            _description,
+            _sentences.FormText(),
             [],
             _photos.Select(s => new VehicleBodyPhoto(s))
         );

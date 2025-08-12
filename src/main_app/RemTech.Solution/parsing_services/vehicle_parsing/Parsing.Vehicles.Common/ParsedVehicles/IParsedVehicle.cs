@@ -1,6 +1,6 @@
-﻿using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleBrands;
+﻿using Parsing.RabbitMq.PublishVehicle.Extras;
+using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleBrands;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
-using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleGeo;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleIdentities;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleKinds;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleModels;
@@ -21,5 +21,5 @@ public interface IParsedVehicle
     Task<ParsedVehiclePrice> Price();
     Task<ParsedVehicleUrl> SourceUrl();
     Task<ParsedVehicleGeo.ParsedVehicleGeo> Geo();
-    Task<string> Description();
+    Task<SentencesCollection> Sentences();
 }

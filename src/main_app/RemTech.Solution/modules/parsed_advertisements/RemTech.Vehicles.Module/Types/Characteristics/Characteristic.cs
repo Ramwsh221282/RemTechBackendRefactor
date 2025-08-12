@@ -8,22 +8,15 @@ using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics;
 
-public sealed class Characteristic : ICharacteristic
+internal sealed class Characteristic(
+    CharacteristicIdentity identity,
+    CharacteristicMeasure measure,
+    VehicleCharacteristicValue value
+) : ICharacteristic
 {
-    private readonly CharacteristicIdentity _identity;
-    private readonly CharacteristicMeasure _measure;
-    private readonly VehicleCharacteristicValue _value;
-
-    public Characteristic(
-        CharacteristicIdentity identity,
-        CharacteristicMeasure measure,
-        VehicleCharacteristicValue value
-    )
-    {
-        _identity = identity;
-        _measure = measure;
-        _value = value;
-    }
+    private readonly CharacteristicIdentity _identity = identity;
+    private readonly CharacteristicMeasure _measure = measure;
+    private readonly VehicleCharacteristicValue _value = value;
 
     public Characteristic(Characteristic origin, VehicleCharacteristicValue value)
         : this(origin)
@@ -38,25 +31,18 @@ public sealed class Characteristic : ICharacteristic
     }
 
     public Characteristic(CharacteristicIdentity identity)
-    {
-        _identity = identity;
-        _measure = new CharacteristicMeasure();
-        _value = new VehicleCharacteristicValue(new NotEmptyString(string.Empty));
-    }
+        : this(
+            identity,
+            new CharacteristicMeasure(),
+            new VehicleCharacteristicValue(new NotEmptyString(string.Empty))
+        ) { }
 
     public Characteristic(CharacteristicIdentity identity, CharacteristicMeasure measure)
-    {
-        _identity = identity;
-        _measure = measure;
-        _value = new VehicleCharacteristicValue(new NotEmptyString(string.Empty));
-    }
+        : this(identity, measure, new VehicleCharacteristicValue(new NotEmptyString(string.Empty)))
+    { }
 
     public Characteristic(Characteristic origin)
-    {
-        _identity = origin._identity;
-        _measure = origin._measure;
-        _value = origin._value;
-    }
+        : this(origin._identity, origin._measure, origin._value) { }
 
     public Characteristic(Characteristic origin, CharacteristicMeasure measure)
         : this(origin)
@@ -72,7 +58,7 @@ public sealed class Characteristic : ICharacteristic
             ? throw new OperationException(
                 "Нельзя передать характеристику технике без значения характеристики."
             )
-            : new Vehicle(vehicle, new VehicleCharacteristic(this, _value));
+            : vehicle.Accept(new VehicleCharacteristic(this, _value));
     }
 
     public UniqueCharacteristics Print(UniqueCharacteristics storage)

@@ -4,7 +4,7 @@ using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
 
-public sealed class VinCharacteristicMeasureInspection(NotEmptyString name, NotEmptyString value)
+internal sealed class VinCharacteristicMeasureInspection(NotEmptyString name, NotEmptyString value)
     : ICharacteristicMeasureInspection
 {
     public Characteristic Inspect(Characteristic ctx)

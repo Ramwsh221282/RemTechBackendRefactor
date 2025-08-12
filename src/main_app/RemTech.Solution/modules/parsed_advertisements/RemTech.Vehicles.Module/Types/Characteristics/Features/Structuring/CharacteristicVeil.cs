@@ -4,7 +4,7 @@ using RemTech.Vehicles.Module.Types.Characteristics.ValueObjects;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
 
-public sealed class CharacteristicVeil
+internal sealed class CharacteristicVeil
 {
     private readonly NotEmptyString _name;
     private readonly NotEmptyString _value;

@@ -19,6 +19,7 @@ internal sealed class ModelPublicApi(
             cancellationToken
         );
         ICommandHandler<GetModelCommand, IModel> handler = new GetModelVarietHandler(logger)
+            .With(new GetNewlyCreatedModelHandler(connection, generator))
             .With(new GetModelByNameHandler(connection))
             .With(new GetModelByEmbeddingHandler(connection, generator));
         IModel model = await handler.Handle(command, cancellationToken);

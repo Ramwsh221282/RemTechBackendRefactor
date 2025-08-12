@@ -6,27 +6,27 @@ namespace Avito.Parsing.Spares.Parsing;
 public sealed class ImageHoveringAvitoSparesCollection(IPage page, IAvitoSparesCollection origin)
     : IAvitoSparesCollection
 {
-    private readonly string _containerSelector = string.Intern("#bx_serp-item-list");
-    private readonly string _itemSelector = string.Intern("div[data-marker='item']");
-    private readonly string _sliderSelector = string.Intern(".iva-item-slider-BOsti");
-    private readonly string _photoSelector = string.Intern(".photo-slider-list-R0jle");
+    private const string ContainerSelector = "#bx_serp-item-list";
+    private const string ItemSelector = "div[data-marker='item']";
+    private const string SliderSelector = ".iva-item-slider-BOsti";
+    private const string PhotoSelector = ".photo-slider-list-R0jle";
 
     public async Task<IEnumerable<AvitoSpare>> Read()
     {
         IElementHandle container = await new ValidSingleElementSource(
             new PageElementSource(page)
-        ).Read(_containerSelector);
-        IElementHandle[] items = await new ParentManyElementsSource(container).Read(_itemSelector);
+        ).Read(ContainerSelector);
+        IElementHandle[] items = await new ParentManyElementsSource(container).Read(ItemSelector);
         foreach (var item in items)
         {
             try
             {
                 IElementHandle slider = await new ValidSingleElementSource(
                     new ParentElementSource(item)
-                ).Read(_sliderSelector);
+                ).Read(SliderSelector);
                 IElementHandle sliderList = await new ValidSingleElementSource(
                     new ParentElementSource(slider)
-                ).Read(_photoSelector);
+                ).Read(PhotoSelector);
                 await sliderList.FocusAsync();
                 await sliderList.HoverAsync();
             }

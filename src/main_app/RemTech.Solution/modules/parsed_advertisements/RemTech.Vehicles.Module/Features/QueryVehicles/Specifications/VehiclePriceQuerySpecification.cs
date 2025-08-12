@@ -2,7 +2,7 @@
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
 
-public sealed class VehiclePriceQuerySpecification(
+internal sealed class VehiclePriceQuerySpecification(
     double? priceTo,
     double? priceFrom,
     bool? isNds = null

@@ -1,22 +1,19 @@
 ﻿using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Description;
+using Parsing.RabbitMq.PublishVehicle.Extras;
 
 namespace Avito.Vehicles.Service.VehiclesParsing.AvitoVehicle;
 
-public sealed class AvitoVehicleWithDescription : IAvitoVehicle
+public sealed class AvitoVehicleWithDescription(
+    IAvitoDescriptionSource source,
+    IAvitoVehicle origin
+) : IAvitoVehicle
 {
-    private readonly IAvitoDescriptionSource _source;
-    private readonly IAvitoVehicle _origin;
-
-    public AvitoVehicleWithDescription(IAvitoDescriptionSource source, IAvitoVehicle origin)
-    {
-        _source = source;
-        _origin = origin;
-    }
-
     public async Task<AvitoVehicleEnvelope> VehicleSource()
     {
-        string description = await _source.Read();
-        AvitoVehicleEnvelope origin = await _origin.VehicleSource();
-        return new AvitoVehicleEnvelope(origin, description);
+        AvitoVehicleEnvelope origin1 = await origin.VehicleSource();
+        string description = await source.Read();
+        SentencesCollection sentences = new SentencesCollection();
+        sentences.Fill(description);
+        return new AvitoVehicleEnvelope(origin1, sentences);
     }
 }

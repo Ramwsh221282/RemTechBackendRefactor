@@ -1,5 +1,10 @@
-﻿using Npgsql;
+﻿using Brands.Module.Public;
+using Categories.Module.Public;
+using GeoLocations.Module.Features.Querying;
+using Models.Module.Public;
+using Npgsql;
 using RabbitMQ.Client;
+using RemTech.ContainedItems.Module.Features.MessageBus;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Logging;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;
@@ -16,7 +21,12 @@ public sealed class BackgroundJobTransportAdvertisementSinking
     private readonly ILogger _logger;
 
     public BackgroundJobTransportAdvertisementSinking(
-        IIncreaseProcessedPublisher publisher,
+        IGeoLocationQueryService locationsQuery,
+        IIncreaseProcessedPublisher processedPublisher,
+        IAddContainedItemsPublisher containedPublisher,
+        IBrandsPublicApi brandsApi,
+        IModelPublicApi modelApi,
+        ICategoryPublicApi categoryApi,
         ConnectionFactory rabbitConnectionFactory,
         NpgsqlDataSource connection,
         IEmbeddingGenerator generator,
@@ -28,36 +38,33 @@ public sealed class BackgroundJobTransportAdvertisementSinking
             rabbitConnectionFactory,
             new LoggingVehicleSink(
                 logger,
-                new RabbitVehicleSinkedSink(
-                    publisher,
+                new RabbitVehicleSinkLogic(
+                    processedPublisher,
+                    containedPublisher,
+                    logger,
                     new ExceptionHandlingVehicleSinking(
-                        new PgVehicleBrandSinking(
-                            connection,
-                            new PgVehicleKindSinking(
-                                connection,
+                        logger,
+                        new BrandSpecifying(
+                            brandsApi,
+                            new CategorySpecifying(
+                                categoryApi,
                                 new PgLocationSinking(
-                                    connection,
+                                    locationsQuery,
                                     new PgModelSinking(
-                                        connection,
+                                        modelApi,
                                         new PgCharacteristicsSinking(
                                             connection,
                                             new PgVehicleSinking(
                                                 connection,
-                                                new EmptyVehicleSinking(),
-                                                generator
+                                                generator,
+                                                new EmptyVehicleSinking()
                                             )
-                                        ),
-                                        generator
-                                    ),
-                                    generator
-                                ),
-                                generator
-                            ),
-                            generator
-                        ),
-                        logger
-                    ),
-                    logger
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
                 )
             )
         );
@@ -66,7 +73,7 @@ public sealed class BackgroundJobTransportAdvertisementSinking
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.Information(
-            "Background job {0} is starting...",
+            "{0} is starting...",
             nameof(BackgroundJobTransportAdvertisementSinking)
         );
         await base.StartAsync(cancellationToken);
@@ -76,7 +83,7 @@ public sealed class BackgroundJobTransportAdvertisementSinking
     {
         await _rabbitSink.OpenQueue(stoppingToken);
         _logger.Information(
-            "Background job {0} has been started.",
+            "{0} has been started.",
             nameof(BackgroundJobTransportAdvertisementSinking)
         );
         stoppingToken.ThrowIfCancellationRequested();
@@ -84,13 +91,10 @@ public sealed class BackgroundJobTransportAdvertisementSinking
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.Information(
-            "Background job {0} is stopping.",
-            nameof(BackgroundJobTransportAdvertisementSinking)
-        );
+        _logger.Information("{0} is stopping.", nameof(BackgroundJobTransportAdvertisementSinking));
         await _rabbitSink.DisposeAsync();
         _logger.Information(
-            "Background job {0} has been stopped.",
+            "{0} has been stopped.",
             nameof(BackgroundJobTransportAdvertisementSinking)
         );
     }
@@ -98,7 +102,7 @@ public sealed class BackgroundJobTransportAdvertisementSinking
     public override void Dispose()
     {
         _logger.Information(
-            "Background job {0} is disposing.",
+            "{0} is disposing.",
             nameof(BackgroundJobTransportAdvertisementSinking)
         );
         Task rabbitStop = Task.Run(async () =>
@@ -107,7 +111,7 @@ public sealed class BackgroundJobTransportAdvertisementSinking
         });
         rabbitStop.Wait();
         _logger.Information(
-            "Background job {0} has been disposed.",
+            "{0} has been disposed.",
             nameof(BackgroundJobTransportAdvertisementSinking)
         );
     }

@@ -1,6 +1,6 @@
 ﻿namespace RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
 
-public sealed record VehiclePaginationQuerySpecification : IQueryVehiclesSpecification
+internal sealed record VehiclePaginationQuerySpecification : IQueryVehiclesSpecification
 {
     private readonly int _currentPage;
 

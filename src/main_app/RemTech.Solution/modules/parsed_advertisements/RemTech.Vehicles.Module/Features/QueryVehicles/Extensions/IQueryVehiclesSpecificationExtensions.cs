@@ -3,9 +3,9 @@ using RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicles.Extensions;
 
-public static class QueryVehiclesSpecificationExtensions
+internal static class QueryVehiclesSpecificationExtensions
 {
-    public static CompositeVehicleSpeicification ApplyIfProvided(
+    internal static CompositeVehicleSpeicification ApplyIfProvided(
         this VehicleQueryFilterArgument? argument,
         CompositeVehicleSpeicification composite
     )

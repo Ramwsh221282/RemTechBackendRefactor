@@ -7,6 +7,15 @@ namespace RemTech.ContainedItems.Module.Features.AddFirstCleaner;
 internal sealed class AddFirstCleanerOnStartup(NpgsqlDataSource dataSource, Serilog.ILogger logger)
     : BackgroundService
 {
+    private const string CountQuery = "SELECT COUNT(id) FROM contained_items.cleaners";
+
+    private const string InsertQuery = """
+        INSERT INTO contained_items.cleaners
+        (id, cleaned_amount, last_run, next_run, wait_days, state)
+        VALUES
+        (@id, @cleaned_amount, @last_run, @next_run, @wait_days, @state)                
+        """;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(
@@ -21,13 +30,19 @@ internal sealed class AddFirstCleanerOnStartup(NpgsqlDataSource dataSource, Seri
         CancellationToken stoppingToken
     )
     {
-        string sql = string.Intern("SELECT COUNT(id) FROM contained_items.cleaners");
         await using NpgsqlCommand command = connection.CreateCommand();
-        command.CommandText = sql;
+        command.CommandText = CountQuery;
         object? count = await command.ExecuteScalarAsync(stoppingToken);
         long number = (long)count!;
         return number == 0;
     }
+
+    private const string IdParam = "@id";
+    private const string CleanedAmountParam = "@cleaned_amount";
+    private const string LastRunParam = "@last_run";
+    private const string NextRunParam = "@next_run";
+    private const string WaitDaysParam = "@wait_days";
+    private const string StateParam = "@state";
 
     private async Task CreateFirstCleaner(
         NpgsqlConnection connection,
@@ -42,22 +57,16 @@ internal sealed class AddFirstCleanerOnStartup(NpgsqlDataSource dataSource, Seri
             1,
             "Отключен"
         );
-        string sql = string.Intern(
-            """
-            INSERT INTO contained_items.cleaners
-            (id, cleaned_amount, last_run, next_run, wait_days, state)
-            VALUES
-            (@id, @cleaned_amount, @last_run, @next_run, @wait_days, @state)                
-            """
-        );
         await using NpgsqlCommand command = connection.CreateCommand();
-        command.CommandText = sql;
-        command.Parameters.Add(new NpgsqlParameter<Guid>("@id", cleaner.Id));
-        command.Parameters.Add(new NpgsqlParameter<long>("@cleaned_amount", cleaner.CleanedAmount));
-        command.Parameters.Add(new NpgsqlParameter<DateTime>("@last_run", cleaner.LastRun));
-        command.Parameters.Add(new NpgsqlParameter<DateTime>("@next_run", cleaner.NextRun));
-        command.Parameters.Add(new NpgsqlParameter<int>("@wait_days", cleaner.WaitDays));
-        command.Parameters.Add(new NpgsqlParameter<string>("@state", cleaner.State));
+        command.CommandText = InsertQuery;
+        command.Parameters.Add(new NpgsqlParameter<Guid>(IdParam, cleaner.Id));
+        command.Parameters.Add(
+            new NpgsqlParameter<long>(CleanedAmountParam, cleaner.CleanedAmount)
+        );
+        command.Parameters.Add(new NpgsqlParameter<DateTime>(LastRunParam, cleaner.LastRun));
+        command.Parameters.Add(new NpgsqlParameter<DateTime>(NextRunParam, cleaner.NextRun));
+        command.Parameters.Add(new NpgsqlParameter<int>(WaitDaysParam, cleaner.WaitDays));
+        command.Parameters.Add(new NpgsqlParameter<string>(StateParam, cleaner.State));
         int affected = await command.ExecuteNonQueryAsync(stoppingToken);
         if (affected == 0)
         {

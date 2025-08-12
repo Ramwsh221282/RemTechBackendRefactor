@@ -16,6 +16,8 @@ internal sealed class SeedingBrandsOnStartup(
 ) : BackgroundService
 {
     private const string Entrance = nameof(SeedingBrandsOnStartup);
+    private const string Sql =
+        "COPY brands_module.brands(id, name, rating, embedding) FROM STDIN (FORMAT BINARY)";
 
     private static readonly string CsvFilePath = Path.Combine(
         AppDomain.CurrentDomain.BaseDirectory,
@@ -36,10 +38,7 @@ internal sealed class SeedingBrandsOnStartup(
 
         logger.Information("{Entrance} seeding brands.", Entrance);
         IBrand[] brands = ReadBrands();
-        await using var writer = await connection.BeginBinaryImportAsync(
-            "COPY brands_module.brands(id, name, rating, embedding) FROM STDIN (FORMAT BINARY)",
-            stoppingToken
-        );
+        await using var writer = await connection.BeginBinaryImportAsync(Sql, stoppingToken);
         foreach (IBrand brand in brands)
         {
             await writer.StartRowAsync(stoppingToken);

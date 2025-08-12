@@ -1,15 +1,12 @@
 ﻿using Npgsql;
-using RemTech.Vehicles.Module.Types.Kinds.ValueObjects;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
 
-public sealed class VehicleKindQuerySpecification(VehicleKindIdentity identity)
-    : IQueryVehiclesSpecification
+internal sealed class VehicleKindQuerySpecification(Guid categoryId) : IQueryVehiclesSpecification
 {
     public void ApplyTo(IVehiclesSqlQuery query)
     {
-        string sql = "v.kind_id = @kind_id";
-        Guid id = identity.ReadId();
-        query.AcceptFilter(sql, new NpgsqlParameter<Guid>("@kind_id", id));
+        string sql = string.Intern("v.kind_id = @kind_id");
+        query.AcceptFilter(sql, new NpgsqlParameter<Guid>("@kind_id", categoryId));
     }
 }
