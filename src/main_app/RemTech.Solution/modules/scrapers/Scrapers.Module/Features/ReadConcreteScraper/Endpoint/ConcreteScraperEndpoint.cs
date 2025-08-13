@@ -8,7 +8,7 @@ using Scrapers.Module.Features.ReadConcreteScraper.Storage;
 
 namespace Scrapers.Module.Features.ReadConcreteScraper.Endpoint;
 
-internal static class ConcreteScraperEndpoint
+public static class ConcreteScraperEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapGet("{name}/{type}", Handle);
 

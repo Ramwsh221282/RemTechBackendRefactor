@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace RemTech.Vehicles.Module.Features.QueryModelsOfCategoryBrand;
 
-internal static class ModelsOfCategoryBrandsEndpoint
+public static class ModelsOfCategoryBrandsEndpoint
 {
     public static void Map(RouteGroupBuilder builder) =>
         builder.MapGet("category-brand-models", Handle);

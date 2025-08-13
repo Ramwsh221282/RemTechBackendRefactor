@@ -3,6 +3,7 @@ using RabbitMQ.Client;
 using RemTech.Bootstrap.Api.Configuration;
 using Serilog;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
+using StackExchange.Redis;
 
 namespace RemTech.Bootstrap.Api.Injection;
 
@@ -16,7 +17,15 @@ public static class CommonInfrastructureInjection
         services.AddSingleton<IEmbeddingGenerator, OnnxEmbeddingGenerator>();
         services.InjectDatabase(settings.Database);
         services.InjectRabbitMq(settings.RabbitMq);
+        services.InjectCache(settings.Cache);
         services.InjectLogging();
+    }
+
+    private static void InjectCache(this IServiceCollection services, RemTechCacheSettings settings)
+    {
+        services.AddSingleton<ConnectionMultiplexer>(_ =>
+            ConnectionMultiplexer.Connect(settings.Host)
+        );
     }
 
     private static void InjectDatabase(

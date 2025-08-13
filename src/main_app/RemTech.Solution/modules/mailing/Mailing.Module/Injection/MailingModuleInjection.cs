@@ -21,15 +21,6 @@ public static class MailingModuleInjection
         services.AddHostedService<MailingBusReceiver>();
     }
 
-    public static void MapMailingModuleEndpoints(this WebApplication app)
-    {
-        RouteGroupBuilder builder = app.MapGroup("api/mailing").RequireCors("FRONTEND");
-        CreateMailingSender.Map(builder);
-        RemoveMailingSender.Map(builder);
-        PingMailingSender.Map(builder);
-        ReadMailingSenders.Map(builder);
-    }
-
     public static void UpDatabase(string connectionString)
     {
         EnsureDatabase.For.PostgresqlDatabase(connectionString);

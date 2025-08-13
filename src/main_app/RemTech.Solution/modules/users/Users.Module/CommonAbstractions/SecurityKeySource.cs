@@ -1,11 +1,13 @@
-﻿using System.Text;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Users.Module.CommonAbstractions;
 
-internal sealed class SecurityKeySource
+public sealed class SecurityKeySource
 {
     private readonly byte[] _securityKeyBytes;
+    private TokenValidationParameters? _validationParameters;
 
     public SecurityKeySource()
     {
@@ -20,6 +22,28 @@ internal sealed class SecurityKeySource
         );
     }
 
+    public async Task<bool> IsTokenValid(string token)
+    {
+        _validationParameters ??= ValidationParameters();
+        JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+        try
+        {
+            TokenValidationResult validation = await tokenHandler.ValidateTokenAsync(
+                token,
+                _validationParameters
+            );
+            return validation.IsValid;
+        }
+        catch (SecurityTokenException)
+        {
+            return false;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
     private static string GenerateSecurityKeyFromUUID()
     {
         Guid uuid = Guid.NewGuid();
@@ -27,5 +51,18 @@ internal sealed class SecurityKeySource
         byte[] bytes = Encoding.UTF8.GetBytes(uuidString);
         string base64 = Convert.ToBase64String(bytes);
         return base64;
+    }
+
+    private TokenValidationParameters ValidationParameters()
+    {
+        return new TokenValidationParameters()
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = Credentials().Key,
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+        };
     }
 }

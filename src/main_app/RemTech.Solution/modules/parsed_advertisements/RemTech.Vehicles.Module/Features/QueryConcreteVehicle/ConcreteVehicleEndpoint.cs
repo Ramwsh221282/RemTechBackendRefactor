@@ -7,7 +7,7 @@ using RemTech.Vehicles.Module.Features.QueryVehicles.Presenting;
 
 namespace RemTech.Vehicles.Module.Features.QueryConcreteVehicle;
 
-internal static class ConcreteVehicleEndpoint
+public static class ConcreteVehicleEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapGet("item", Handle);
 

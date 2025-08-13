@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace RemTech.ContainedItems.Module.Features.QueryRecentContainedItems;
 
-internal static class QuerySomeRecentItemsEndpoint
+public static class QuerySomeRecentItemsEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.Map("recent", Handle);
 

@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace RemTech.ContainedItems.Module.Features.GetContainedVehiclesAmount;
 
-internal static class GetContainedItemsByTypeEndpoint
+public static class GetContainedItemsByTypeEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapGet("count", Handle);
 

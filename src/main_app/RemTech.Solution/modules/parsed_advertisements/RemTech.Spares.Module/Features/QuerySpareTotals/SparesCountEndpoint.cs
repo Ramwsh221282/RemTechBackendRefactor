@@ -8,7 +8,7 @@ using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Spares.Module.Features.QuerySpareTotals;
 
-internal static class SparesCountEndpoint
+public static class SparesCountEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapGet("count", Handle);
 

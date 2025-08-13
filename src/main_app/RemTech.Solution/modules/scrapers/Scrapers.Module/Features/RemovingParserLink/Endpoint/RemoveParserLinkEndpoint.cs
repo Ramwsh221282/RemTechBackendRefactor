@@ -10,7 +10,7 @@ using Scrapers.Module.Features.RemovingParserLink.Models;
 
 namespace Scrapers.Module.Features.RemovingParserLink.Endpoint;
 
-internal static class RemoveParserLinkEndpoint
+public static class RemoveParserLinkEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapDelete("scraper-link", Handle);
 

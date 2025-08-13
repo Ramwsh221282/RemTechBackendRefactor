@@ -28,11 +28,4 @@ public static class SparesModuleInjection
         if (!result.Successful)
             throw new ApplicationException("Failed to create spares module database.");
     }
-
-    public static void MapSparesEndpoints(this WebApplication app)
-    {
-        RouteGroupBuilder group = app.MapGroup("api/spares").RequireCors("FRONTEND");
-        QuerySpareHttpEndpoint.Map(group);
-        SparesCountEndpoint.Map(group);
-    }
 }

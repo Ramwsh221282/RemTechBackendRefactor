@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicleBrands;
 
-internal static class QueryVehicleBrandsEndpoint
+public static class QueryVehicleBrandsEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapGet("brands", Handle);
 

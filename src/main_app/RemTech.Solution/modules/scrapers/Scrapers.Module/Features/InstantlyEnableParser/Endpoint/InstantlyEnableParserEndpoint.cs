@@ -11,7 +11,7 @@ using Scrapers.Module.Features.StartParser.RabbitMq;
 
 namespace Scrapers.Module.Features.InstantlyEnableParser.Endpoint;
 
-internal static class InstantlyEnableParserEndpoint
+public static class InstantlyEnableParserEndpoint
 {
     public sealed record InstantlyEnabledParserResponse(
         string Name,

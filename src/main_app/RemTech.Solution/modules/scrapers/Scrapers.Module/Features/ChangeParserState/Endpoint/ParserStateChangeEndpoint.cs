@@ -10,7 +10,7 @@ using Scrapers.Module.Features.ChangeParserState.Models;
 
 namespace Scrapers.Module.Features.ChangeParserState.Endpoint;
 
-internal static class ParserStateChangeEndpoint
+public static class ParserStateChangeEndpoint
 {
     public sealed record ParserStateToChangeRequest(bool StateSwitch);
 

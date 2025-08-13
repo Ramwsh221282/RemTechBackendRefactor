@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace Categories.Module.Features.QueryPopularCategories;
 
-internal static class QueryPopularCategoriesEndpoint
+public static class QueryPopularCategoriesEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapGet("popular", Handle);
 

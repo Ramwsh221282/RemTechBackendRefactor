@@ -9,7 +9,7 @@ using Scrapers.Module.Features.UpdateParserLink.Models;
 
 namespace Scrapers.Module.Features.UpdateParserLink.Endpoint;
 
-internal static class UpdateParserLinkEndpoint
+public static class UpdateParserLinkEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapPut("scraper-link", Handle);
 

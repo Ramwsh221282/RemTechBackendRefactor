@@ -10,7 +10,7 @@ using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehiclesAmount;
 
-internal sealed class VehiclesAmountEndpoint
+public sealed class VehiclesAmountEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapGet("count", Handle);
 

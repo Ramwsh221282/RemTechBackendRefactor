@@ -10,7 +10,7 @@ using Scrapers.Module.Features.UpdateWaitDays.Models;
 
 namespace Scrapers.Module.Features.UpdateWaitDays.Endpoint;
 
-internal static class ParserWaitDaysUpdateEndpoint
+public static class ParserWaitDaysUpdateEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapPatch("wait-days", Handle);
 

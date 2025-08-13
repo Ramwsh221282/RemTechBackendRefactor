@@ -31,12 +31,4 @@ public static class CategoriesModuleInjection
         if (!result.Successful)
             throw new ApplicationException("Failed to create categories module database.");
     }
-
-    public static void MapCategoriesEndpoints(this WebApplication app)
-    {
-        RouteGroupBuilder group = app.MapGroup("api/categories");
-        QueryPopularCategoriesEndpoint.Map(group);
-        QueryCategoriesEndpoint.Map(group);
-        QueryCategoriesAmountEndpoint.Map(group);
-    }
 }

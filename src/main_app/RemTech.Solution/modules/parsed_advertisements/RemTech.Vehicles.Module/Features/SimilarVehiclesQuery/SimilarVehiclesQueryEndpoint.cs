@@ -8,7 +8,7 @@ using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Vehicles.Module.Features.SimilarVehiclesQuery;
 
-internal static class SimilarVehiclesQueryEndpoint
+public static class SimilarVehiclesQueryEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapGet("similar", Handle);
 

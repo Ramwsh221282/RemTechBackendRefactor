@@ -7,7 +7,7 @@ using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Spares.Module.Features.QuerySpare;
 
-internal static class QuerySpareHttpEndpoint
+public static class QuerySpareHttpEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapGet(string.Empty, Handle);
 

@@ -51,20 +51,6 @@ public static class ScrapersModuleInjection
             throw new ApplicationException("Failed to create scrapers database.");
     }
 
-    public static void MapScrapersModuleEndpoints(this WebApplication app)
-    {
-        RouteGroupBuilder group = app.MapGroup("api/scrapers").RequireCors("FRONTEND");
-        ReadAllTransportParsersEndpoint.Map(group);
-        ParserStateChangeEndpoint.Map(group);
-        ConcreteScraperEndpoint.Map(group);
-        ParserWaitDaysUpdateEndpoint.Map(group);
-        CreateNewParserLinkEndpoint.Map(group);
-        RemoveParserLinkEndpoint.Map(group);
-        UpdateParserLinkEndpoint.Map(group);
-        ChangeLinkActivityEndpoint.Map(group);
-        InstantlyEnableParserEndpoint.Map(group);
-    }
-
     private static void InjectStartParserBackgroundJob(this IServiceCollection services)
     {
         services.AddQuartz(options =>

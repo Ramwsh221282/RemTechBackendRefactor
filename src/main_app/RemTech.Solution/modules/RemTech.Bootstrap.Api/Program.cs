@@ -9,6 +9,6 @@ builder.ConfigureCors();
 builder.Services.AddOpenApi();
 builder.Services.AddQuartzHostedService();
 WebApplication app = builder.Build();
-
 app.RegisterMiddlewares();
+app.MapModulesEndpoints();
 app.Run();

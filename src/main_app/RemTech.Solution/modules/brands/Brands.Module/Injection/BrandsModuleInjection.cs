@@ -31,12 +31,4 @@ public static class BrandsModuleInjection
         if (!result.Successful)
             throw new ApplicationException("Failed to create brands module database.");
     }
-
-    public static void MapBrandsEndpoints(this WebApplication app)
-    {
-        RouteGroupBuilder group = app.MapGroup("api/brands").RequireCors("FRONTEND");
-        QueryPopularBrandsEndpoint.Map(group);
-        QueryBrandsEndpoint.Map(group);
-        QueryBrandsAmountEndpoint.Map(group);
-    }
 }

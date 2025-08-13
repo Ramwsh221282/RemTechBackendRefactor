@@ -38,19 +38,4 @@ public static class ParsedAdvertisementsInjection
         if (!result.Successful)
             throw new ApplicationException("Failed to create parsers management database.");
     }
-
-    public static void MapVehiclesModuleEndpoints(this IEndpointRouteBuilder builder)
-    {
-        RouteGroupBuilder group = builder.MapGroup("api/vehicles").RequireCors("FRONTEND");
-        group.CatalogueEndpoint();
-        QueryVehicleBrandsEndpoint.Map(group);
-        QueryVehicleCategoriesEndpoint.Map(group);
-        QueryVehicleRegionsEndpoint.Map(group);
-        QueryVehicleModelsEndpoint.Map(group);
-        VehiclesAmountEndpoint.Map(group);
-        ConcreteVehicleEndpoint.Map(group);
-        SimilarVehiclesQueryEndpoint.Map(group);
-        BrandsByCategoryEndpoint.Map(group);
-        ModelsOfCategoryBrandsEndpoint.Map(group);
-    }
 }

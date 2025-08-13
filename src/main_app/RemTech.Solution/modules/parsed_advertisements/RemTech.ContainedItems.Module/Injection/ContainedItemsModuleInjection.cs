@@ -24,14 +24,6 @@ public static class ContainedItemsModuleInjection
         );
     }
 
-    public static void MapContainedItemsModuleEndpoints(this WebApplication app)
-    {
-        RouteGroupBuilder group = app.MapGroup("api/contained-items").RequireCors("FRONTEND");
-        GetContainedItemsByTypeEndpoint.Map(group);
-        QuerySomeRecentItemsEndpoint.Map(group);
-        QueryRecentContainedItemsEndpoint.Map(group);
-    }
-
     public static void UpDatabase(string connectionString)
     {
         EnsureDatabase.For.PostgresqlDatabase(connectionString);

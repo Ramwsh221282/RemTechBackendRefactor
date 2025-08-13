@@ -7,7 +7,7 @@ using Scrapers.Module.Features.ReadAllTransportParsers.Storage;
 
 namespace Scrapers.Module.Features.ReadAllTransportParsers.Endpoint;
 
-internal static class ReadAllTransportParsersEndpoint
+public static class ReadAllTransportParsersEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapGet(string.Empty, Handle);
 

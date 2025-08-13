@@ -7,7 +7,7 @@ using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace Categories.Module.Features.QueryCategoriesAmount;
 
-internal static class QueryCategoriesAmountEndpoint
+public static class QueryCategoriesAmountEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapGet("count", Handle);
 

@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicleRegions;
 
-internal static class QueryVehicleRegionsEndpoint
+public static class QueryVehicleRegionsEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapGet("regions", Handle);
 

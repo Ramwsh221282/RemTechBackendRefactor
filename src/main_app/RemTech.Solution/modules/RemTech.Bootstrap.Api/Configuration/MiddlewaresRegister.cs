@@ -1,4 +1,5 @@
-﻿using Scalar.AspNetCore;
+﻿using RemTech.Bootstrap.Api.Middlewares;
+using Scalar.AspNetCore;
 
 namespace RemTech.Bootstrap.Api.Configuration;
 
@@ -13,6 +14,6 @@ public static class MiddlewaresRegister
             app.MapScalarApiReference();
         }
         app.UseHttpsRedirection();
-        app.RegisterEndpoints();
+        app.UseMiddleware<InternalServerErrorMiddleware>();
     }
 }
