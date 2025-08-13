@@ -1,4 +1,5 @@
-﻿using Parsing.SDK.ElementSources;
+﻿using Parsing.Avito.Common.Images;
+using Parsing.SDK.ElementSources;
 using Parsing.SDK.ScrapingArtifacts;
 using PuppeteerSharp;
 
@@ -185,29 +186,9 @@ public sealed class AvitoSparesCollection : IAvitoSparesCollection
         return blockParts;
     }
 
-    private const string SliderContainer = ".iva-item-slider-BOsti";
-    private const string PhotoContainer = ".photo-slider-list-R0jle";
-    private const string Img = "img";
-    private const string SrcSet = "srcset";
-
-    private async Task<LinkedList<string>> ReadImages(IElementHandle item)
+    private async Task<IEnumerable<string>> ReadImages(IElementHandle item)
     {
-        LinkedList<string> images = [];
-        IElementHandle slider = await new ValidSingleElementSource(
-            new ParentElementSource(item)
-        ).Read(SliderContainer);
-        IElementHandle sliderList = await new ValidSingleElementSource(
-            new ParentElementSource(slider)
-        ).Read(PhotoContainer);
-        IElementHandle[] imageElements = await new ParentManyElementsSource(sliderList).Read(Img);
-        foreach (IElementHandle imageElement in imageElements)
-        {
-            string srcSet = await new AttributeFromWebElement(imageElement, SrcSet).Read();
-            string[] parts = srcSet.Split(',', StringSplitOptions.TrimEntries);
-            string highQualityImage = parts[^1].Split(" ", StringSplitOptions.TrimEntries)[0];
-            images.AddFirst(highQualityImage);
-        }
-
+        IEnumerable<string> images = await new AvitoImagesProvider(item).GetImages();
         return images;
     }
 }

@@ -53,7 +53,6 @@ public sealed class BackgroundJobTransportAdvertisementSinking
                                     new PgModelSinking(
                                         modelApi,
                                         new PgCharacteristicsSinking(
-                                            connection,
                                             new PgVehicleSinking(
                                                 connection,
                                                 generator,

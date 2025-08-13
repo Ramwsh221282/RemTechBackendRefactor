@@ -13,11 +13,6 @@ public sealed class KeyValuedAvitoCharacteristics(IPage page) : IKeyValuedCharac
     private const string Mark = "марка";
     private const string Model = "модель";
     private const string Type = "тип техники";
-    private const string State = "состояние";
-    private const string New = "новое";
-    private const string Bu = "Б/у";
-    private const string Yes = "Да";
-    private const string No = "Нет";
     private const char SplitChar = ':';
 
     public async Task<CharacteristicsDictionary> Read()
@@ -36,15 +31,11 @@ public sealed class KeyValuedAvitoCharacteristics(IPage page) : IKeyValuedCharac
                 name.Contains(Mark, Comparison)
                 || name.Contains(Model, Comparison)
                 || name.Contains(Type, Comparison)
+                || name.Contains("доступность", Comparison)
+                || name.Contains("VIN", Comparison)
+                || name.Contains("состояние", Comparison)
             )
                 continue;
-            if (name.Equals(State, Comparison))
-            {
-                keyValued = value.Contains(New, Comparison)
-                    ? keyValued.With(new VehicleCharacteristic(Bu, Yes))
-                    : keyValued.With(new VehicleCharacteristic(Bu, No));
-                continue;
-            }
             keyValued = keyValued.With(new VehicleCharacteristic(name, value));
         }
 

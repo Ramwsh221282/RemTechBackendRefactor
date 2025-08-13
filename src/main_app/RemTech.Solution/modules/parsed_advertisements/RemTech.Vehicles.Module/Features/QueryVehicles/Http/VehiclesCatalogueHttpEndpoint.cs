@@ -65,7 +65,6 @@ public static class VehiclesCatalogueHttpEndpoint
             sw.Start();
             IEnumerable<VehiclePresentation> vehicles = await new PgVehiclesProvider(
                 connection,
-                logger,
                 generator
             ).Provide(request, ct);
             sw.Stop();

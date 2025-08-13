@@ -12,7 +12,6 @@
     <ProjectReference Include="..\..\..\common\Parsing.RabbitMq\Parsing.RabbitMq.csproj" />
     <ProjectReference Include="..\..\..\common\Parsing.SDK\Parsing.SDK.csproj" />
     <ProjectReference Include="..\..\Parsing.Vehicles.Common\Parsing.Vehicles.Common.csproj" />
-    <ProjectReference Include="..\..\Parsing.Vehicles.Grpc.Recognition\Parsing.Vehicles.Grpc.Recognition.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Parsing\" />

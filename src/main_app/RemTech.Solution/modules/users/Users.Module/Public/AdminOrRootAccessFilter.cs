@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
@@ -20,40 +19,49 @@ public sealed class AdminOrRootAccessFilter(
     {
         HttpContext httpContext = context.HttpContext;
 
-        if (!HasAccessTokenId(httpContext, out StringValues accessTokenId))
+        try
         {
+            if (!HasAccessTokenId(httpContext, out StringValues accessTokenId))
+            {
+                logger.Warning(
+                    "{Context} access denied for request: {Request}. Token id is required.",
+                    nameof(AdminOrRootAccessFilter),
+                    httpContext.Request.Path.Value
+                );
+                return Results.Json(
+                    new { message = "Access denied." },
+                    statusCode: StatusCodes.Status401Unauthorized
+                );
+            }
+
+            if (!IsAccessTokenGuid(accessTokenId, out Guid tokenGuid))
+            {
+                logger.Warning(
+                    "{Context} access denied for request: {Request}. Token id is invalid format.",
+                    nameof(AdminOrRootAccessFilter),
+                    httpContext.Request.Path.Value
+                );
+                return Results.Json(
+                    new { message = "Access denied." },
+                    statusCode: StatusCodes.Status401Unauthorized
+                );
+            }
+
+            if (await IsTokenOfAdminOrRoot(tokenGuid))
+                return await next(context);
+
             logger.Warning(
-                "{Context} access denied for request: {Request}. Token id is required.",
+                "{Context} access denied for request: {Request}. Token neither of ROOT or ADMIN.",
                 nameof(AdminOrRootAccessFilter),
                 httpContext.Request.Path.Value
             );
-            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await httpContext.Response.WriteAsJsonAsync(new { message = "Access denied." });
-            return Results.Unauthorized();
+            return Results.StatusCode(403);
         }
-
-        if (!IsAccessTokenGuid(accessTokenId, out Guid tokenGuid))
+        catch (Exception ex)
         {
-            logger.Warning(
-                "{Context} access denied for request: {Request}. Token id is invalid format.",
-                nameof(AdminOrRootAccessFilter),
-                httpContext.Request.Path.Value
-            );
-            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await httpContext.Response.WriteAsJsonAsync(new { message = "Access denied." });
-            return Results.Unauthorized();
+            logger.Error("{Entrance} {Message}", nameof(AdminOrRootAccessFilter), ex.Message);
+            return Results.StatusCode(403);
         }
-
-        if (await IsTokenOfAdminOrRoot(tokenGuid))
-            return await next(context);
-
-        logger.Warning(
-            "{Context} access denied for request: {Request}. Token neither of ROOT or ADMIN.",
-            nameof(AdminOrRootAccessFilter),
-            httpContext.Request.Path.Value
-        );
-        httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
-        return Results.StatusCode(403);
     }
 
     private async Task<bool> IsTokenOfAdminOrRoot(Guid tokenId)

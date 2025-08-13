@@ -1,5 +1,4 @@
 ﻿using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
-using RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
 using RemTech.Vehicles.Module.Types.Transport;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Prices;
@@ -16,7 +15,7 @@ internal interface IVehicleJsonSink
     IItemPrice VehiclePrice();
     VehiclePhotos VehiclePhotos();
     Vehicle Vehicle();
-    CharacteristicVeil[] Characteristics();
+    IEnumerable<VehicleBodyCharacteristic> Characteristics();
     string ParserName();
     string ParserType();
     string LinkName();

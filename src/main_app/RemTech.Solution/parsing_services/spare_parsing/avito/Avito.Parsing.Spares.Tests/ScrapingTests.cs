@@ -55,7 +55,7 @@ public class ScrapingTests
                     .Do();
                 IEnumerable<AvitoSpare> spares = await new BlockBypassingAvitoSparesCollection(
                     bypass,
-                    new ImageHoveringAvitoSparesCollection(page, new AvitoSparesCollection(page))
+                    new AvitoSparesCollection(page)
                 ).Read();
                 foreach (AvitoSpare spare in spares)
                 {

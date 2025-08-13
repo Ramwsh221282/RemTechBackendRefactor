@@ -13,7 +13,6 @@ using Parsing.SDK.Browsers.InstantiationModes;
 using Parsing.SDK.Browsers.InstantiationOptions;
 using Parsing.SDK.Browsers.PageSources;
 using Parsing.SDK.ScrapingActions;
-using Parsing.Vehicles.Grpc.Recognition;
 using PuppeteerSharp;
 using RabbitMQ.Client.Events;
 using RemTech.Core.Shared.Decorating;
@@ -23,8 +22,7 @@ namespace Avito.Parsing.Spares;
 public sealed class Worker(
     Serilog.ILogger logger,
     IStartParsingListener listener,
-    IParserRabbitMqActionsPublisher publisher,
-    ICommunicationChannel communicationChannel
+    IParserRabbitMqActionsPublisher publisher
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -88,10 +86,7 @@ public sealed class Worker(
                         .Do();
                     IEnumerable<AvitoSpare> spares = await new BlockBypassingAvitoSparesCollection(
                         bypass,
-                        new ImageHoveringAvitoSparesCollection(
-                            page,
-                            new AvitoSparesCollection(page)
-                        )
+                        new AvitoSparesCollection(page)
                     ).Read();
                     foreach (AvitoSpare spare in spares)
                     {

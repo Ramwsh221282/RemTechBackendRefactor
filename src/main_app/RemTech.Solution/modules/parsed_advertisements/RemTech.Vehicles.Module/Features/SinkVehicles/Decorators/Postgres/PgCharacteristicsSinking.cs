@@ -1,23 +1,19 @@
-﻿using Npgsql;
-using RemTech.Core.Shared.Result;
+﻿using RemTech.Core.Shared.Result;
 using RemTech.Vehicles.Module.Types.Characteristics;
-using RemTech.Vehicles.Module.Types.Characteristics.Adapters.Storage.Postgres;
-using RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
+using RemTech.Vehicles.Module.Types.Characteristics.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects;
+using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Prices;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 
-internal sealed class PgCharacteristicsSinking(
-    NpgsqlDataSource connection,
-    ITransportAdvertisementSinking sinking
-) : ITransportAdvertisementSinking
+internal sealed class PgCharacteristicsSinking(ITransportAdvertisementSinking sinking)
+    : ITransportAdvertisementSinking
 {
     public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
     {
-        Characteristic[] ctxes = Unveiled(sink);
-        Characteristic[] stored = await Stored(ctxes, ct);
+        Characteristic[] ctxes = Converted(sink);
         VehicleIdentity identity = sink.VehicleId();
         IItemPrice price = sink.VehiclePrice();
         VehiclePhotos photos = sink.VehiclePhotos();
@@ -25,58 +21,21 @@ internal sealed class PgCharacteristicsSinking(
         string sourceDomain = sink.SourceDomain();
         string sentences = sink.Sentences();
         Vehicle vehicle = new(identity, price, photos, sourceUrl, sourceDomain, sentences);
-        foreach (Characteristic entry in stored)
-        {
-            try
-            {
-                vehicle = entry.ToVehicle(vehicle);
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-
+        vehicle = ctxes.Aggregate(vehicle, (current, entry) => entry.ToVehicle(current));
         return await sinking.Sink(new CachedVehicleJsonSink(sink, vehicle), ct);
     }
 
-    private Characteristic[] Unveiled(IVehicleJsonSink sink)
+    private Characteristic[] Converted(IVehicleJsonSink sink)
     {
-        CharacteristicVeil[] ctxes = sink.Characteristics();
-        UniqueCharacteristics unique = new();
-        foreach (var ctx in ctxes)
-        {
-            try
+        return sink.Characteristics()
+            .Select(c =>
             {
-                unique = ctx.Characteristic().Print(unique);
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-
-        return unique.ReadAll();
-    }
-
-    private async Task<Characteristic[]> Stored(Characteristic[] ctxes, CancellationToken ct)
-    {
-        List<Characteristic> results = [];
-        foreach (Characteristic entry in ctxes)
-        {
-            try
-            {
-                Characteristic stored = await new PgVarietCharacteristicsStorage()
-                    .With(new PgCharacteristicsStorage(connection))
-                    .With(new PgDuplicateResolvingCharacteristicsStorage(connection))
-                    .Stored(entry, ct);
-                results.Add(stored);
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-        return results.ToArray();
+                CharacteristicText name = new CharacteristicText(c.Name);
+                CharacteristicIdentity identity = new CharacteristicIdentity(name);
+                VehicleCharacteristicValue value = new VehicleCharacteristicValue(c.Value);
+                Characteristic characteristic = new Characteristic(identity, value);
+                return characteristic;
+            })
+            .ToArray();
     }
 }

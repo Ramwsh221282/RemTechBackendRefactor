@@ -1,3 +1,0 @@
-namespace Parsing.Vehicles.Grpc.Recognition.BucketControlType;
-
-public interface IBucketControlTypeRecognition : ICharacteristicRecognition;

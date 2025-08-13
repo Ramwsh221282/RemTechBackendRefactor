@@ -1,7 +1,5 @@
 ﻿using System.Text.Json;
-using RemTech.Core.Shared.Primitives;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
-using RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
 using RemTech.Vehicles.Module.Types.Transport;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Prices;
@@ -68,14 +66,9 @@ internal sealed class VehicleSinkBytes(byte[] bytes) : IVehicleJsonSink
         );
     }
 
-    public CharacteristicVeil[] Characteristics()
+    public IEnumerable<VehicleBodyCharacteristic> Characteristics()
     {
-        return _message
-            .Vehicle.Characteristics.Select(c => new CharacteristicVeil(
-                new NotEmptyString(c.Name),
-                new NotEmptyString(c.Value)
-            ))
-            .ToArray();
+        return _message.Vehicle.Characteristics;
     }
 
     public string ParserName()

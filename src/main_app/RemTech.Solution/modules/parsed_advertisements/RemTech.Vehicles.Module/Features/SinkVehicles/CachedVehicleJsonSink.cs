@@ -1,5 +1,4 @@
 ﻿using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
-using RemTech.Vehicles.Module.Types.Characteristics.Features.Structuring;
 using RemTech.Vehicles.Module.Types.Transport;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Prices;
@@ -17,7 +16,7 @@ internal sealed class CachedVehicleJsonSink : IVehicleJsonSink
     private IItemPrice? _cost;
     private VehiclePhotos? _photos;
     private Vehicle? _vehicle;
-    private CharacteristicVeil[]? _characteristics;
+    private IEnumerable<VehicleBodyCharacteristic> _characteristics;
 
     public CachedVehicleJsonSink(IVehicleJsonSink origin)
     {
@@ -81,7 +80,10 @@ internal sealed class CachedVehicleJsonSink : IVehicleJsonSink
         _vehicle = vehicle;
     }
 
-    public CachedVehicleJsonSink(IVehicleJsonSink origin, CharacteristicVeil[] characteristics)
+    public CachedVehicleJsonSink(
+        IVehicleJsonSink origin,
+        IEnumerable<VehicleBodyCharacteristic> characteristics
+    )
         : this(origin)
     {
         _characteristics = characteristics;
@@ -145,7 +147,7 @@ internal sealed class CachedVehicleJsonSink : IVehicleJsonSink
         return _vehicle;
     }
 
-    public CharacteristicVeil[] Characteristics()
+    public IEnumerable<VehicleBodyCharacteristic> Characteristics()
     {
         _characteristics ??= _origin.Characteristics();
         return _characteristics;

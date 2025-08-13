@@ -1,7 +1,6 @@
 ﻿using Drom.Parsing.Vehicles.Parsing.Logging;
 using Parsing.RabbitMq.PublishVehicle;
 using Parsing.RabbitMq.PublishVehicle.Extras;
-using RemTech.Core.Shared.Exceptions;
 
 namespace Drom.Parsing.Vehicles.Parsing.Models;
 
@@ -53,7 +52,7 @@ public sealed class DromCatalogueCar
         if (string.IsNullOrEmpty(model))
             return;
         if (!string.IsNullOrWhiteSpace(_model))
-            throw new OperationException("Model is already present");
+            throw new InvalidOperationException("Model is already present");
         _model = model;
     }
 
@@ -62,7 +61,7 @@ public sealed class DromCatalogueCar
         if (string.IsNullOrWhiteSpace(brand))
             return;
         if (!string.IsNullOrWhiteSpace(_brand))
-            throw new OperationException("Brand is already present");
+            throw new InvalidOperationException("Brand is already present");
         _brand = brand;
     }
 
@@ -71,7 +70,7 @@ public sealed class DromCatalogueCar
         if (string.IsNullOrWhiteSpace(kind))
             return;
         if (!string.IsNullOrWhiteSpace(_kind))
-            throw new OperationException("Kind is already present");
+            throw new InvalidOperationException("Kind is already present");
         _kind = kind;
     }
 

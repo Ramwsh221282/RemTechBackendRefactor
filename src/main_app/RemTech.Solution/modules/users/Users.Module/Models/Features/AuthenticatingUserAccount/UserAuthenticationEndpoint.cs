@@ -39,28 +39,28 @@ public static class UserAuthenticationEndpoint
         }
         catch (AuthenticationEmailNotFoundException ex)
         {
-            return Results.NotFound(ex.Message);
+            return Results.NotFound(new { message = ex.Message });
         }
-        catch (AuthenticationPasswordFailedException)
+        catch (AuthenticationPasswordFailedException ex)
         {
-            return Results.Unauthorized();
+            return Results.BadRequest(new { message = ex.Message });
         }
         catch (AuthenticationPasswordNotProvidedException ex)
         {
-            return Results.BadRequest(ex.Message);
+            return Results.BadRequest(new { message = ex.Message });
         }
         catch (AuthenticationUserNameNotFoundException ex)
         {
-            return Results.NotFound(ex.Message);
+            return Results.NotFound(new { message = ex.Message });
         }
         catch (UnableToResolveAuthenticationMethodException ex)
         {
-            return Results.BadRequest(ex.Message);
+            return Results.BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
             logger.Fatal("{Entrance}. {Ex}.", nameof(UserAuthenticationEndpoint), ex.Message);
-            return Results.InternalServerError(ex);
+            return Results.InternalServerError(new { message = "Ошибка на стороне приложения." });
         }
     }
 }

@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Drom.Parsing.Vehicles.Parsing.AttributeParsers;
-using Drom.Parsing.Vehicles.Parsing.Grpcs;
 using Drom.Parsing.Vehicles.Parsing.Models;
 using Drom.Parsing.Vehicles.Parsing.Utilities;
 using Parsing.RabbitMq.Facade;
@@ -12,7 +11,6 @@ using Parsing.SDK.Browsers.InstantiationModes;
 using Parsing.SDK.Browsers.InstantiationOptions;
 using Parsing.SDK.Browsers.PageSources;
 using Parsing.SDK.ScrapingActions;
-using Parsing.Vehicles.Grpc.Recognition;
 using PuppeteerSharp;
 using RabbitMQ.Client.Events;
 
@@ -21,8 +19,7 @@ namespace Drom.Parsing.Vehicles;
 public class Worker(
     Serilog.ILogger logger,
     IStartParsingListener listener,
-    IParserRabbitMqActionsPublisher publisher,
-    ICommunicationChannel communicationChannel
+    IParserRabbitMqActionsPublisher publisher
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken stoppingToken)
@@ -89,10 +86,6 @@ public class Worker(
                             (await new DromVehicleCharacteristicSource(page).Read()).Print(item);
                             (await new CarPriceSource(page).Read()).Print(item);
                             (await new CarLocationSource(page).Read()).Print(item);
-                            await new GrpcRecognizedCarCharacteristics(
-                                page,
-                                communicationChannel
-                            ).Print(item);
                             item.LogMessage().Log(logger);
                             if (item.Valid())
                             {

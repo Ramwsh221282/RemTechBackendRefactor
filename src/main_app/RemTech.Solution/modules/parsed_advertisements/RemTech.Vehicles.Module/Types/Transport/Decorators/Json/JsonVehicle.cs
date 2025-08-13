@@ -27,7 +27,6 @@ internal sealed class JsonVehicle(Vehicle inner) : Vehicle(inner)
                             )
                         )
                         .With(new StringSerJson("ctx_value", c.WhatValue()))
-                        .With(new StringSerJson("ctx_measure", c.WhatCharacteristic().Measure()))
                 )
             )
             .With(

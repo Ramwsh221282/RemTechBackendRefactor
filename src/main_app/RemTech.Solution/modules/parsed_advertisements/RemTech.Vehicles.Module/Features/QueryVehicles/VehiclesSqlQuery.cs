@@ -4,14 +4,12 @@ using Npgsql;
 using Pgvector;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Presenting;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
-using Serilog;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicles;
 
-internal sealed class VehiclesSqlQuery(ILogger logger, IEmbeddingGenerator generator)
-    : IVehiclesSqlQuery
+internal sealed class VehiclesSqlQuery(IEmbeddingGenerator generator) : IVehiclesSqlQuery
 {
     private const int MaxPageSize = 20;
     private readonly List<string> _filters = [];
@@ -83,11 +81,9 @@ internal sealed class VehiclesSqlQuery(ILogger logger, IEmbeddingGenerator gener
     {
         if (!string.IsNullOrWhiteSpace(textSearch))
         {
-            logger.Information("Applying text search.");
             ReadOnlyMemory<float> embeddings = generator.Generate(textSearch);
             _vector = new Vector(embeddings);
             _ordering.WithVectorSearch();
-            logger.Information("Text search applied.");
         }
     }
 
@@ -95,17 +91,9 @@ internal sealed class VehiclesSqlQuery(ILogger logger, IEmbeddingGenerator gener
     {
         NpgsqlCommand command = connection.CreateCommand();
         string sql = GenerateSql();
-        logger.Information("Generated sql:");
-        logger.Information("{Sql}", sql);
         command.CommandText = sql;
-        logger.Information("Sql parameters:");
         foreach (NpgsqlParameter parameter in _parameters)
-        {
             command.Parameters.Add(parameter);
-            string name = parameter.ParameterName;
-            string value = parameter.Value!.ToString()!;
-            logger.Information("Parameter name: {Name}. Parameter value: {Value}.", name, value);
-        }
         if (_vector != null)
             command.Parameters.AddWithValue("@embedding", _vector);
         return new DefaultPgCommandSource(command);
@@ -123,11 +111,9 @@ internal sealed class VehiclesSqlQuery(ILogger logger, IEmbeddingGenerator gener
     {
         StringBuilder sb = new StringBuilder(_sql);
         sb = sb.AppendLine(GenerateFilters());
-        logger.Information("Applying text search sql part.");
         sb = _ordering.Apply(sb);
         if (!string.IsNullOrWhiteSpace(_pagination))
             sb = sb.AppendLine(_pagination);
-        logger.Information("Text search sql part applied.");
         return sb.ToString();
     }
 

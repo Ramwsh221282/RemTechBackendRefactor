@@ -8,7 +8,7 @@ internal sealed class UserAuthenticationProcess(DbDataReader reader)
     {
         string userPassword = reader.GetString(reader.GetOrdinal("user_password"));
         return !BCrypt.Net.BCrypt.Verify(password, userPassword)
-            ? throw new AuthenticationPasswordNotProvidedException()
+            ? throw new AuthenticationPasswordFailedException()
             : CompleteUser(reader, userPassword);
     }
 

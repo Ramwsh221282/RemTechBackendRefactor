@@ -1,21 +1,17 @@
 ﻿using RemTech.Core.Shared.Exceptions;
 using RemTech.Core.Shared.Primitives;
-using RemTech.Vehicles.Module.Types.Characteristics.Adapters.Storage.Postgres;
 using RemTech.Vehicles.Module.Types.Characteristics.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects.Characteristics;
-using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Types.Characteristics;
 
 internal sealed class Characteristic(
     CharacteristicIdentity identity,
-    CharacteristicMeasure measure,
     VehicleCharacteristicValue value
 ) : ICharacteristic
 {
     private readonly CharacteristicIdentity _identity = identity;
-    private readonly CharacteristicMeasure _measure = measure;
     private readonly VehicleCharacteristicValue _value = value;
 
     public Characteristic(Characteristic origin, VehicleCharacteristicValue value)
@@ -31,24 +27,10 @@ internal sealed class Characteristic(
     }
 
     public Characteristic(CharacteristicIdentity identity)
-        : this(
-            identity,
-            new CharacteristicMeasure(),
-            new VehicleCharacteristicValue(new NotEmptyString(string.Empty))
-        ) { }
-
-    public Characteristic(CharacteristicIdentity identity, CharacteristicMeasure measure)
-        : this(identity, measure, new VehicleCharacteristicValue(new NotEmptyString(string.Empty)))
-    { }
+        : this(identity, new VehicleCharacteristicValue(new NotEmptyString(string.Empty))) { }
 
     public Characteristic(Characteristic origin)
-        : this(origin._identity, origin._measure, origin._value) { }
-
-    public Characteristic(Characteristic origin, CharacteristicMeasure measure)
-        : this(origin)
-    {
-        _measure = measure;
-    }
+        : this(origin._identity, origin._value) { }
 
     public CharacteristicIdentity Identity => _identity;
 
@@ -59,41 +41,5 @@ internal sealed class Characteristic(
                 "Нельзя передать характеристику технике без значения характеристики."
             )
             : vehicle.Accept(new VehicleCharacteristic(this, _value));
-    }
-
-    public UniqueCharacteristics Print(UniqueCharacteristics storage)
-    {
-        string name = _identity.ReadText();
-        return storage.With(new NotEmptyString(name), this);
-    }
-
-    public PgCharacteristicToStoreCommand ToStoreCommand() =>
-        new(_identity.ReadId(), _identity.ReadText(), _measure.Read());
-
-    public PgCharacteristicFromStoreCommand FromStoreCommand() => new(_identity.ReadText(), _value);
-
-    public ParametrizingPgCommand VehicleCtxPgCommand(
-        VehicleCharacteristicValue value,
-        int index,
-        ParametrizingPgCommand command
-    )
-    {
-        string ctxValue = value;
-        Guid ctxId = _identity.ReadId();
-        string ctxName = _identity.ReadText();
-        string measure = _measure.Read();
-        return command
-            .With($"@ctx_id_{index}", ctxId)
-            .With($"@ctx_name_{index}", ctxName)
-            .With($"@ctx_value_{index}", ctxValue)
-            .With($"@ctx_measure_{index}", measure);
-    }
-
-    public string Measure() => _measure.Read();
-
-    public string NameValueString(NotEmptyString value)
-    {
-        string name = _identity.ReadText();
-        return $"{name} {(string)value}";
     }
 }

@@ -24,7 +24,6 @@ using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePhotos;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePrices;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleSources;
 using Parsing.Vehicles.Common.TextWriting;
-using Parsing.Vehicles.Grpc.Recognition;
 using PuppeteerSharp;
 using RemTech.Core.Shared.Decorating;
 

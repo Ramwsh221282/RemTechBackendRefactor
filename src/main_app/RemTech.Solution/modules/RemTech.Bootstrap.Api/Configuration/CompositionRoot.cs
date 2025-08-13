@@ -34,6 +34,7 @@ using Users.Module.Models.Features.CheckRoot;
 using Users.Module.Models.Features.CreateAdmiin;
 using Users.Module.Models.Features.CreateRoot;
 using Users.Module.Models.Features.CreatingNewAccount;
+using Users.Module.Models.Features.SessionRefreshing;
 using Users.Module.Models.Features.VerifyingAdmin;
 using Users.Module.Public;
 
@@ -104,6 +105,7 @@ public static class CompositionRoot
         AdminVerificationEndpoint.Map(builder);
         EnsureRootCreatedEndpoint.Map(builder);
         CreateRootAccountEndpoint.Map(builder);
+        SessionRefreshingEndpoint.Map(builder);
         builder.MapPost("admin-up", CreateAdminAccountEndpoint.HandleFn).RequireAdminOrRootAccess();
     }
 

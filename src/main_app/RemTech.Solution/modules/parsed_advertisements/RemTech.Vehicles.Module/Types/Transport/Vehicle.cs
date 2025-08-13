@@ -50,6 +50,7 @@ internal class Vehicle : IVehicle
             Category.Name,
             Brand.Name,
             Model.Name,
+            Characteristics.MakeDocument(),
             Sentences,
             $"{Location.CityText} {Location.Text} {Location.KindText}",
         ];

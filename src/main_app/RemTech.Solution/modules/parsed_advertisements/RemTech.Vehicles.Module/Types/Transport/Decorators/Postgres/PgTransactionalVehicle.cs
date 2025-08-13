@@ -21,7 +21,6 @@ internal sealed class PgTransactionalVehicle(
         try
         {
             await new PgSavingVehicle(source, generator).SaveAsync(connection, ct);
-            await new PgCharacteristicsSavingVehicle(source).SaveAsync(connection, ct);
             await txn.CommitAsync(ct);
         }
         catch (OperationException ex)

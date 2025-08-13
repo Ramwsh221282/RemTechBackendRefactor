@@ -118,8 +118,7 @@ public sealed record VehiclePresentation(
         {
             string name = characteristic.GetProperty("ctx_name").GetString()!;
             string value = characteristic.GetProperty("ctx_value").GetString()!;
-            string measure = characteristic.GetProperty("ctx_measure").GetString()!;
-            ctxex.Add(new VehicleCharacteristicsPresentation(name, value, measure));
+            ctxex.Add(new VehicleCharacteristicsPresentation(name, value));
         }
         return ctxex;
     }

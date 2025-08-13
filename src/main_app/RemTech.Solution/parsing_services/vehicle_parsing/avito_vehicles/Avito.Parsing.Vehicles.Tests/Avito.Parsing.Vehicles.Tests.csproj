@@ -15,6 +15,7 @@
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\modules\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj" />
     <ProjectReference Include="..\Avito.Vehicles.Service\Avito.Vehicles.Service.csproj" />
   </ItemGroup>
 </Project>
