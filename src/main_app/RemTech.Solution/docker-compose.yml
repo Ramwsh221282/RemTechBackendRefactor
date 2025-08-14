@@ -12,11 +12,23 @@ services:
       PGPORT: 5435
     ports:
       - "5535:5435"
-#    networks:
-#    - app_network
     volumes:
       - remtech_data:/var/lib/postgresql/data
-
+  
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_ADMINUSERNAME: remtech_user
+      SEQ_FIRSTRUN_ADMINPASSWORD: remtech_password
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    volumes:
+      - seq_data:/data
+  
   redis:
     image: redis:latest
     container_name: redis
@@ -38,7 +50,4 @@ services:
 
 volumes:
   remtech_data:
-
-#networks:
-#  app_network:
-#    external: true
+  seq_data:

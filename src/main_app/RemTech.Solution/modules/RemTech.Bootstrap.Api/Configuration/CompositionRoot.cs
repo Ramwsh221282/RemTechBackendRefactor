@@ -132,12 +132,15 @@ public static class CompositionRoot
 
     private static void MapCleanersEndpoints(this WebApplication app)
     {
-        RouteGroupBuilder group = app.MapGroup("api/cleaners");
+        RouteGroupBuilder group = app.MapGroup("api/cleaners")
+            .RequireCors("FRONTEND")
+            .RequireAdminOrRootAccess();
         ChangeWaitDaysEndpoint.Map(group);
         EnableEndpoint.Map(group);
         ReadCleanerEndpoint.Map(group);
         DisableCleanerEndpoint.Map(group);
         PermantlyEnableCleanerEndpoint.Map(group);
+        ChangeCleanerThresholdEndpoint.Map(group);
     }
 
     private static void MapSparesEndpoints(this WebApplication app)

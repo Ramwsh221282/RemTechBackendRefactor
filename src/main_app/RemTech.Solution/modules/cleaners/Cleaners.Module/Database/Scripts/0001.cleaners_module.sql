@@ -10,6 +10,7 @@ state           VARCHAR(50) NOT NULL,
 hours           INTEGER NOT NULL,
 minutes         INTEGER NOT NULL,
 seconds         INTEGER NOT NULL,
+items_date_day_threshold INTEGER NOT NULL,
 PRIMARY KEY(id)
 );
 

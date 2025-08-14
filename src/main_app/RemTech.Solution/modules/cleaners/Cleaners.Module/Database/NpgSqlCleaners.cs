@@ -8,7 +8,7 @@ namespace Cleaners.Module.Database;
 internal sealed class NpgSqlCleaners(NpgsqlConnection connection) : ICleaners
 {
     private const string Sql =
-        "SELECT id, cleaned_amount, last_run, next_run, wait_days, state, hours, minutes, seconds FROM cleaners_module.cleaners";
+        "SELECT id, cleaned_amount, last_run, next_run, wait_days, state, hours, minutes, seconds, items_date_day_threshold FROM cleaners_module.cleaners";
 
     public async Task<ICleaner> Single(CancellationToken ct = default)
     {
@@ -26,7 +26,8 @@ internal sealed class NpgSqlCleaners(NpgsqlConnection connection) : ICleaners
             reader.GetString(5),
             reader.GetInt32(6),
             reader.GetInt32(7),
-            reader.GetInt32(8)
+            reader.GetInt32(8),
+            reader.GetInt32(9)
         );
     }
 }

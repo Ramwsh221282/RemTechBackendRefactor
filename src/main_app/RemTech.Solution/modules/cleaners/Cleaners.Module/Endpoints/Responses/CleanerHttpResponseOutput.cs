@@ -9,5 +9,6 @@ internal sealed record CleanerHttpResponseOutput(
     string State,
     int Hours,
     int Minutes,
-    int Seconds
+    int Seconds,
+    int ItemsThreshold
 );

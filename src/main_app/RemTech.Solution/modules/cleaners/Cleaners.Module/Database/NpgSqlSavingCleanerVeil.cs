@@ -7,8 +7,8 @@ internal sealed class NpgSqlSavingCleanerVeil(NpgsqlConnection connection) : ICl
 {
     private const string SaveSql = """
         INSERT INTO cleaners_module.cleaners
-        (id, cleaned_amount, last_run, next_run, wait_days, state, hours, minutes, seconds)
-        VALUES(@id, @cleanedAmount, @lastRun, @nextRun, @waitDays, @state, @hours, @minutes, @seconds)
+        (id, cleaned_amount, last_run, next_run, wait_days, state, hours, minutes, seconds, items_date_day_threshold)
+        VALUES(@id, @cleanedAmount, @lastRun, @nextRun, @waitDays, @state, @hours, @minutes, @seconds, @items_date_day_threshold)
         ON CONFLICT(id) 
         DO UPDATE SET
                cleaned_amount = @cleanedAmount,
@@ -18,6 +18,7 @@ internal sealed class NpgSqlSavingCleanerVeil(NpgsqlConnection connection) : ICl
                hours = @hours,
                minutes = @minutes,
                seconds = @seconds,
+               items_date_day_threshold = @items_date_day_threshold,
                state = @state;
         """;
 
@@ -30,6 +31,7 @@ internal sealed class NpgSqlSavingCleanerVeil(NpgsqlConnection connection) : ICl
     private int _hours;
     private int _minutes;
     private int _seconds;
+    private int _itemsDateDayThreshold;
 
     public void Accept(
         Guid id,
@@ -40,7 +42,8 @@ internal sealed class NpgSqlSavingCleanerVeil(NpgsqlConnection connection) : ICl
         string state,
         int hours,
         int minutes,
-        int seconds
+        int seconds,
+        int itemsDateDayThreshold
     )
     {
         _id = id;
@@ -52,6 +55,7 @@ internal sealed class NpgSqlSavingCleanerVeil(NpgsqlConnection connection) : ICl
         _hours = hours;
         _minutes = minutes;
         _seconds = seconds;
+        _itemsDateDayThreshold = itemsDateDayThreshold;
     }
 
     public ICleaner Behave()
@@ -69,7 +73,8 @@ internal sealed class NpgSqlSavingCleanerVeil(NpgsqlConnection connection) : ICl
             _state,
             _hours,
             _minutes,
-            _seconds
+            _seconds,
+            _itemsDateDayThreshold
         );
     }
 
@@ -88,7 +93,8 @@ internal sealed class NpgSqlSavingCleanerVeil(NpgsqlConnection connection) : ICl
             _state,
             _hours,
             _minutes,
-            _seconds
+            _seconds,
+            _itemsDateDayThreshold
         );
     }
 
@@ -103,5 +109,8 @@ internal sealed class NpgSqlSavingCleanerVeil(NpgsqlConnection connection) : ICl
         command.Parameters.Add(new NpgsqlParameter("@hours", _hours));
         command.Parameters.Add(new NpgsqlParameter("@minutes", _minutes));
         command.Parameters.Add(new NpgsqlParameter("@seconds", _seconds));
+        command.Parameters.Add(
+            new NpgsqlParameter("@items_date_day_threshold", _itemsDateDayThreshold)
+        );
     }
 }

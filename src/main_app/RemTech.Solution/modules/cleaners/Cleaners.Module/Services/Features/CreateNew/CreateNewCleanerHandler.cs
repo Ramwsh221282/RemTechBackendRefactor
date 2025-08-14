@@ -19,7 +19,8 @@ internal sealed class CreateNewCleanerHandler(Serilog.ILogger logger)
             "Ожидает",
             0,
             0,
-            0
+            0,
+            1
         );
         return Task.FromResult(cleaner);
     }

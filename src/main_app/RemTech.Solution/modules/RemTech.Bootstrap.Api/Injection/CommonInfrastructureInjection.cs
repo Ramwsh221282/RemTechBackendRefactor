@@ -18,7 +18,7 @@ public static class CommonInfrastructureInjection
         services.InjectDatabase(settings.Database);
         services.InjectRabbitMq(settings.RabbitMq);
         services.InjectCache(settings.Cache);
-        services.InjectLogging();
+        services.InjectLogging(settings.Seq);
     }
 
     private static void InjectCache(this IServiceCollection services, RemTechCacheSettings settings)
@@ -43,10 +43,10 @@ public static class CommonInfrastructureInjection
         });
     }
 
-    private static void InjectLogging(this IServiceCollection services)
+    private static void InjectLogging(this IServiceCollection services, RemTechSeqSettings settings)
     {
         services.AddSingleton<Serilog.ILogger>(
-            new LoggerConfiguration().WriteTo.Console().CreateLogger()
+            new LoggerConfiguration().WriteTo.Seq(settings.Host).CreateLogger()
         );
     }
 

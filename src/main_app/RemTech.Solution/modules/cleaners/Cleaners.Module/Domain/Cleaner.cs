@@ -2,6 +2,24 @@
 
 namespace Cleaners.Module.Domain;
 
+internal sealed class Duration(long totalSeconds)
+{
+    public int Seconds()
+    {
+        return (int)(totalSeconds / 3600);
+    }
+
+    public int Minutes()
+    {
+        return (int)((totalSeconds % 3600) / 60);
+    }
+
+    public int Hours()
+    {
+        return (int)(totalSeconds / 3600);
+    }
+}
+
 internal sealed class Cleaner : ICleaner
 {
     private static readonly string[] AllowedStates = ["Работает", "Ожидает", "Отключен"];
@@ -14,6 +32,7 @@ internal sealed class Cleaner : ICleaner
     private readonly int _hours;
     private readonly int _minutes;
     private readonly int _seconds;
+    private readonly int _itemsDateDayThreshold;
 
     public ICleaner StartWork()
     {
@@ -35,7 +54,8 @@ internal sealed class Cleaner : ICleaner
             newState,
             newHours,
             newMinutes,
-            newSeconds
+            newSeconds,
+            _itemsDateDayThreshold
         );
     }
 
@@ -53,7 +73,51 @@ internal sealed class Cleaner : ICleaner
             newState,
             _hours,
             _minutes,
-            _seconds
+            _seconds,
+            _itemsDateDayThreshold
+        );
+    }
+
+    public ICleaner StopWork(long totalElapsedSeconds)
+    {
+        Duration duration = new(totalElapsedSeconds);
+        DateTime newLastRun = DateTime.UtcNow;
+        DateTime newNextRun = DateTime.UtcNow.AddDays(_waitDays);
+        int newHours = duration.Hours();
+        int newMinutes = duration.Minutes();
+        int newSeconds = duration.Seconds();
+        string newState = "Ожидает";
+        return Create(
+            _id,
+            _cleanedAmount,
+            newLastRun,
+            newNextRun,
+            _waitDays,
+            newState,
+            newHours,
+            newMinutes,
+            newSeconds,
+            _itemsDateDayThreshold
+        );
+    }
+
+    public ICleaner ChangeItemsToCleanThreshold(int threshold)
+    {
+        if (threshold < 1)
+            return this;
+        if (!CanBeConfigured())
+            throw new CleanerIsBusyException();
+        return Create(
+            _id,
+            _cleanedAmount,
+            _lastRun,
+            _nextRun,
+            _waitDays,
+            _state,
+            _hours,
+            _minutes,
+            _seconds,
+            threshold
         );
     }
 
@@ -73,7 +137,8 @@ internal sealed class Cleaner : ICleaner
             newState,
             _hours,
             _minutes,
-            _seconds
+            _seconds,
+            _itemsDateDayThreshold
         );
     }
 
@@ -91,7 +156,8 @@ internal sealed class Cleaner : ICleaner
             _state,
             _hours,
             _minutes,
-            _seconds
+            _seconds,
+            _itemsDateDayThreshold
         );
     }
 
@@ -109,7 +175,8 @@ internal sealed class Cleaner : ICleaner
             _state,
             _hours,
             _minutes,
-            _seconds
+            _seconds,
+            _itemsDateDayThreshold
         );
     }
 
@@ -124,7 +191,8 @@ internal sealed class Cleaner : ICleaner
             _state,
             _hours,
             _minutes,
-            _seconds
+            _seconds,
+            _itemsDateDayThreshold
         );
     }
 
@@ -144,7 +212,8 @@ internal sealed class Cleaner : ICleaner
         string state,
         int hours,
         int minutes,
-        int seconds
+        int seconds,
+        int itemsDateDayThreshold
     )
     {
         _id = id;
@@ -153,6 +222,10 @@ internal sealed class Cleaner : ICleaner
         _nextRun = nextRun;
         _waitDays = waitDays;
         _state = state;
+        _hours = hours;
+        _minutes = minutes;
+        _seconds = seconds;
+        _itemsDateDayThreshold = itemsDateDayThreshold;
     }
 
     public static Cleaner Create(
@@ -164,7 +237,8 @@ internal sealed class Cleaner : ICleaner
         string state,
         int hours,
         int minutes,
-        int seconds
+        int seconds,
+        int itemsDateDayThreshold
     )
     {
         if (id == Guid.Empty)
@@ -188,7 +262,8 @@ internal sealed class Cleaner : ICleaner
             state,
             hours,
             minutes,
-            seconds
+            seconds,
+            itemsDateDayThreshold
         );
     }
 }

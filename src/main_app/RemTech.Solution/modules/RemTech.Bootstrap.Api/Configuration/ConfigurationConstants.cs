@@ -12,4 +12,5 @@ internal static class ConfigurationConstants
     internal const string PG_USER_NAME_KEY = "PG_USER_NAME";
     internal const string PG_PASSWORD_KEY = "PG_PASSWORD";
     internal const string REDIS_HOST_KEY = "REDIS_HOST";
+    internal const string SEQ_HOST_KEY = "SEQ_HOST";
 }

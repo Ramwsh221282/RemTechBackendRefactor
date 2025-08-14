@@ -11,6 +11,7 @@ internal sealed class CleanerOutput
     private readonly int _hours;
     private readonly int _minutes;
     private readonly int _seconds;
+    private readonly int _itemsDateDayThreshold;
 
     public CleanerOutput(
         Guid id,
@@ -21,7 +22,8 @@ internal sealed class CleanerOutput
         string state,
         int hours,
         int minutes,
-        int seconds
+        int seconds,
+        int itemsDateDayThreshold
     )
     {
         _id = id;
@@ -33,6 +35,7 @@ internal sealed class CleanerOutput
         _hours = hours;
         _minutes = minutes;
         _seconds = seconds;
+        _itemsDateDayThreshold = itemsDateDayThreshold;
     }
 
     public TCleanerVeil PrintTo<TCleanerVeil>(TCleanerVeil storage)
@@ -47,7 +50,8 @@ internal sealed class CleanerOutput
             _state,
             _hours,
             _minutes,
-            _seconds
+            _seconds,
+            _itemsDateDayThreshold
         );
         return storage;
     }

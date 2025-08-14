@@ -11,7 +11,8 @@ internal interface ICleanerVeil
         string state,
         int hours,
         int minutes,
-        int seconds
+        int seconds,
+        int itemsDateDayThreshold
     );
 
     ICleaner Behave();

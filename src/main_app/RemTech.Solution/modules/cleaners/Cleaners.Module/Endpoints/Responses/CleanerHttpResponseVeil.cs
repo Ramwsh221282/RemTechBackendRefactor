@@ -17,6 +17,7 @@ internal sealed class CleanerHttpResponseVeil(Func<Task<ICleaner>> cleanerFn)
         string.Empty,
         0,
         0,
+        0,
         0
     );
 
@@ -29,7 +30,8 @@ internal sealed class CleanerHttpResponseVeil(Func<Task<ICleaner>> cleanerFn)
         string state,
         int hours,
         int minutes,
-        int seconds
+        int seconds,
+        int itemsDateDayThreshold
     )
     {
         _output = new CleanerHttpResponseOutput(
@@ -41,7 +43,8 @@ internal sealed class CleanerHttpResponseVeil(Func<Task<ICleaner>> cleanerFn)
             state,
             hours,
             minutes,
-            seconds
+            seconds,
+            itemsDateDayThreshold
         );
     }
 

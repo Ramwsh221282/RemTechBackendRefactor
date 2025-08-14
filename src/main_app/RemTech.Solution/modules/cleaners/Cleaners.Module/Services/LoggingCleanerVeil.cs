@@ -5,14 +5,15 @@ namespace Cleaners.Module.Services;
 internal sealed class LoggingCleanerVeil(Serilog.ILogger logger) : ICleanerVeil
 {
     private Guid _id = Guid.NewGuid();
-    private int _cleanedAmount = 0;
+    private int _cleanedAmount;
     private DateTime _lastRun = DateTime.MinValue;
     private DateTime _nextRun = DateTime.MinValue;
-    private int _waitDays = 0;
+    private int _waitDays;
     private string _state = "NONE";
-    private int _hours = 0;
-    private int _minutes = 0;
-    private int _seconds = 0;
+    private int _hours;
+    private int _minutes;
+    private int _seconds;
+    private int _itemsDateDayThreshold;
 
     public void Accept(
         Guid id,
@@ -23,7 +24,8 @@ internal sealed class LoggingCleanerVeil(Serilog.ILogger logger) : ICleanerVeil
         string state,
         int hours,
         int minutes,
-        int seconds
+        int seconds,
+        int itemsDateDayThreshold
     )
     {
         _id = id;
@@ -35,6 +37,7 @@ internal sealed class LoggingCleanerVeil(Serilog.ILogger logger) : ICleanerVeil
         _hours = hours;
         _minutes = minutes;
         _seconds = seconds;
+        _itemsDateDayThreshold = itemsDateDayThreshold;
     }
 
     public ICleaner Behave()
@@ -56,6 +59,7 @@ internal sealed class LoggingCleanerVeil(Serilog.ILogger logger) : ICleanerVeil
             WAIT DAYS: {WAIT_DAYS}
             STATE: {STATE}
             WORKED TIME: {H} h. {M} m. {S} s.
+            ITEMS DATE DAYS THRESHOLD: {THRESHOLD}
             """,
             _id,
             _cleanedAmount,
@@ -65,7 +69,8 @@ internal sealed class LoggingCleanerVeil(Serilog.ILogger logger) : ICleanerVeil
             _state,
             _hours,
             _minutes,
-            _seconds
+            _seconds,
+            _itemsDateDayThreshold
         );
 
     private ICleaner ReturnBack() =>
@@ -78,6 +83,7 @@ internal sealed class LoggingCleanerVeil(Serilog.ILogger logger) : ICleanerVeil
             _state,
             _hours,
             _minutes,
-            _seconds
+            _seconds,
+            _itemsDateDayThreshold
         );
 }
