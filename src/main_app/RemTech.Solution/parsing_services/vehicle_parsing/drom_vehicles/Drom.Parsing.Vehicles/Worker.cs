@@ -3,6 +3,7 @@ using System.Text.Json;
 using Drom.Parsing.Vehicles.Parsing.AttributeParsers;
 using Drom.Parsing.Vehicles.Parsing.Models;
 using Drom.Parsing.Vehicles.Parsing.Utilities;
+using Parsing.Cache;
 using Parsing.RabbitMq.Facade;
 using Parsing.RabbitMq.StartParsing;
 using Parsing.SDK.Browsers;
@@ -19,7 +20,8 @@ namespace Drom.Parsing.Vehicles;
 public class Worker(
     Serilog.ILogger logger,
     IStartParsingListener listener,
-    IParserRabbitMqActionsPublisher publisher
+    IParserRabbitMqActionsPublisher publisher,
+    IDisabledScraperTracker disabledTracker
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken stoppingToken)
@@ -50,6 +52,11 @@ public class Worker(
         {
             foreach (var link in parserStarted.Links)
             {
+                if (await HasPermantlyDisabled(parserStarted))
+                {
+                    break;
+                }
+
                 Stopwatch parserLinkStopwatch = new Stopwatch();
                 parserLinkStopwatch.Start();
                 await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
@@ -62,10 +69,20 @@ public class Worker(
                 await using IBrowserPagesSource pagesSource = await browser.AccessPages();
                 foreach (IPage page in pagesSource.Iterate())
                 {
+                    if (await HasPermantlyDisabled(parserStarted))
+                    {
+                        break;
+                    }
+
                     DromPagesCursor cursor = new DromPagesCursor(page);
                     bool shouldStop = false;
                     while (!shouldStop)
                     {
+                        if (await HasPermantlyDisabled(parserStarted))
+                        {
+                            break;
+                        }
+
                         await cursor.Navigate();
                         await new PageBottomScrollingAction(page).Do();
                         await new PageUpperScrollingAction(page).Do();
@@ -78,6 +95,11 @@ public class Worker(
                         IEnumerable<DromCatalogueCar> cars = await collection.Iterate();
                         foreach (DromCatalogueCar item in cars)
                         {
+                            if (await HasPermantlyDisabled(parserStarted))
+                            {
+                                break;
+                            }
+
                             await item.Navigation().Navigate(page);
                             await new DromVehicleModelSource(page).Print(item);
                             await new DromVehicleBrandSource(page).Print(item);
@@ -130,5 +152,19 @@ public class Worker(
             parserStarted.ParserName,
             parserStarted.ParserType
         );
+    }
+
+    private async Task<bool> HasPermantlyDisabled(ParserStartedRabbitMqMessage parser)
+    {
+        bool disabled = await disabledTracker.HasBeenDisabled(parser.ParserName, parser.ParserType);
+        if (disabled)
+        {
+            logger.Warning(
+                "{Parser} {Type} has been permantly disabled. Stopping process.",
+                parser.ParserName,
+                parser.ParserType
+            );
+        }
+        return disabled;
     }
 }

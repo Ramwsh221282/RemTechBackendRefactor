@@ -7,6 +7,7 @@ using Scrapers.Module.Features.ChangeParserState.Database;
 using Scrapers.Module.Features.ChangeParserState.Exception;
 using Scrapers.Module.Features.ChangeParserState.Logging;
 using Scrapers.Module.Features.ChangeParserState.Models;
+using Scrapers.Module.ParserStateCache;
 
 namespace Scrapers.Module.Features.ChangeParserState.Endpoint;
 
@@ -25,6 +26,7 @@ public static class ParserStateChangeEndpoint
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource dataSource,
         [FromServices] Serilog.ILogger logger,
+        [FromServices] ParserStateCachedStorage cache,
         [FromQuery] string name,
         [FromQuery] string type,
         [FromBody] ParserStateToChangeRequest request,
@@ -45,6 +47,7 @@ public static class ParserStateChangeEndpoint
                 saved.ParserType,
                 saved.NewState
             );
+            await cache.UpdateState(saved.ParserName, saved.ParserType, saved.NewState);
             return Results.Ok(result);
         }
         catch (ParserAlreadyHasThisStateException ex)

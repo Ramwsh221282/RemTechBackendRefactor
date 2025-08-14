@@ -8,6 +8,7 @@ using Scrapers.Module.Features.InstantlyEnableParser.Exceptions;
 using Scrapers.Module.Features.InstantlyEnableParser.Models;
 using Scrapers.Module.Features.InstantlyEnableParser.Storage;
 using Scrapers.Module.Features.StartParser.RabbitMq;
+using Scrapers.Module.ParserStateCache;
 
 namespace Scrapers.Module.Features.InstantlyEnableParser.Endpoint;
 
@@ -27,6 +28,7 @@ public static class InstantlyEnableParserEndpoint
         [FromServices] NpgsqlDataSource dataSource,
         [FromServices] Serilog.ILogger logger,
         [FromServices] ConnectionFactory factory,
+        [FromServices] ParserStateCachedStorage cache,
         [FromQuery] string name,
         [FromQuery] string type,
         CancellationToken ct
@@ -40,6 +42,7 @@ public static class InstantlyEnableParserEndpoint
             ParserToInstantlyEnable toEnable = await storage.Fetch(name, type, ct);
             InstantlyEnabledParser enabled = toEnable.Enable();
             await enabled.Save(storage, ct);
+            await cache.UpdateState(name, type, "Работает");
             await using IParserStartedPublisher publisher = new RabbitMqParserStartedPublisher(
                 factory
             );

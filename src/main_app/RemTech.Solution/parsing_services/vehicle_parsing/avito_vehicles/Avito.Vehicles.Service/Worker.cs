@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Avito.Vehicles.Service.VehiclesParsing;
+using Parsing.Cache;
 using Parsing.RabbitMq.Facade;
 using Parsing.RabbitMq.PublishVehicle;
 using Parsing.RabbitMq.PublishVehicle.Extras;
@@ -23,7 +24,8 @@ namespace Avito.Vehicles.Service;
 public class Worker(
     Serilog.ILogger logger,
     IStartParsingListener listener,
-    IParserRabbitMqActionsPublisher publisher
+    IParserRabbitMqActionsPublisher publisher,
+    IDisabledScraperTracker disabledTracker
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -54,12 +56,22 @@ public class Worker(
         {
             foreach (var link in parserStarted.Links)
             {
+                if (await HasPermantlyDisabled(parserStarted))
+                {
+                    break;
+                }
+
                 Stopwatch parserLinkStopwatch = new Stopwatch();
                 parserLinkStopwatch.Start();
                 await using IScrapingBrowser browser = await CreateBrowser(link.LinkUrl);
                 await using IBrowserPagesSource pagesSource = await browser.AccessPages();
                 foreach (IPage page in pagesSource.Iterate())
                 {
+                    if (await HasPermantlyDisabled(parserStarted))
+                    {
+                        break;
+                    }
+
                     IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
                         page,
                         new NoTextWrite(),
@@ -68,6 +80,11 @@ public class Worker(
                     );
                     await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
                     {
+                        if (await HasPermantlyDisabled(parserStarted))
+                        {
+                            break;
+                        }
+
                         if (!await new ValidatingParsedVehicle(vehicle).IsValid())
                             continue;
                         ParsedVehiclePrice price = await vehicle.Price();
@@ -142,6 +159,20 @@ public class Worker(
             parserStarted.ParserName,
             parserStarted.ParserType
         );
+    }
+
+    private async Task<bool> HasPermantlyDisabled(ParserStartedRabbitMqMessage parser)
+    {
+        bool disabled = await disabledTracker.HasBeenDisabled(parser.ParserName, parser.ParserType);
+        if (disabled)
+        {
+            logger.Warning(
+                "{Parser} {Type} has been permantly disabled. Stopping process.",
+                parser.ParserName,
+                parser.ParserType
+            );
+        }
+        return disabled;
     }
 
     private async Task<IScrapingBrowser> CreateBrowser(string url)

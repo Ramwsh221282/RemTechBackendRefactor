@@ -1,4 +1,5 @@
 using Drom.Parsing.Vehicles;
+using Parsing.Cache;
 using Parsing.RabbitMq.Configuration;
 using Parsing.RabbitMq.CreateParser;
 using Parsing.RabbitMq.StartParsing;
@@ -14,6 +15,9 @@ builder.Services.AddHostedService<Worker>();
 if (isDevelopment)
 {
     string file = "appsettings.json";
+    IDisabledTrackerConfigurationSource disabledTrackerConfigurationSource =
+        new JsonDisabledTrackerConfigurationSource(file);
+    disabledTrackerConfigurationSource.Provide().Register(builder.Services);
     IRabbitMqConfigurationSource configSource = new JsonRabbitMqConfigurationSource(file);
     configSource
         .Provide()

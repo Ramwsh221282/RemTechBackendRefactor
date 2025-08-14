@@ -3,6 +3,7 @@ using System.Text.Json;
 using Avito.Parsing.Spares.Parsing;
 using Parsing.Avito.Common.BypassFirewall;
 using Parsing.Avito.Common.PaginationBar;
+using Parsing.Cache;
 using Parsing.RabbitMq.Facade;
 using Parsing.RabbitMq.PublishSpare;
 using Parsing.RabbitMq.PublishVehicle;
@@ -22,7 +23,8 @@ namespace Avito.Parsing.Spares;
 public sealed class Worker(
     Serilog.ILogger logger,
     IStartParsingListener listener,
-    IParserRabbitMqActionsPublisher publisher
+    IParserRabbitMqActionsPublisher publisher,
+    IDisabledScraperTracker disabledTracker
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -51,6 +53,11 @@ public sealed class Worker(
         parserStopwatch.Start();
         foreach (var link in parserStarted.Links)
         {
+            if (await HasPermantlyDisabled(parserStarted))
+            {
+                break;
+            }
+
             Stopwatch parserLinkStopwatch = new Stopwatch();
             parserLinkStopwatch.Start();
             await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
@@ -63,6 +70,11 @@ public sealed class Worker(
             IBrowserPagesSource pages = await browser.AccessPages();
             foreach (IPage page in pages.Iterate())
             {
+                if (await HasPermantlyDisabled(parserStarted))
+                {
+                    break;
+                }
+
                 IAvitoBypassFirewall bypass = new AvitoBypassFirewall(page)
                     .WrapBy(p => new AvitoBypassFirewallExceptionSupressing(p))
                     .WrapBy(p => new AvitoBypassFirewallLazy(page, p))
@@ -81,6 +93,11 @@ public sealed class Worker(
                 SpareBodyValidator validator = new SpareBodyValidator();
                 foreach (string pageUrl in bar.Iterate(link.LinkUrl))
                 {
+                    if (await HasPermantlyDisabled(parserStarted))
+                    {
+                        break;
+                    }
+
                     await new PageNavigating(page, pageUrl)
                         .WrapBy(n => new LoggingPageNavigating(logger, pageUrl, n))
                         .Do();
@@ -90,6 +107,11 @@ public sealed class Worker(
                     ).Read();
                     foreach (AvitoSpare spare in spares)
                     {
+                        if (await HasPermantlyDisabled(parserStarted))
+                        {
+                            break;
+                        }
+
                         await spare.Navigate(page);
                         if (!await bypass.Read())
                             continue;
@@ -144,5 +166,19 @@ public sealed class Worker(
             parserStarted.ParserName,
             parserStarted.ParserType
         );
+    }
+
+    private async Task<bool> HasPermantlyDisabled(ParserStartedRabbitMqMessage parser)
+    {
+        bool disabled = await disabledTracker.HasBeenDisabled(parser.ParserName, parser.ParserType);
+        if (disabled)
+        {
+            logger.Warning(
+                "{Parser} {Type} has been permantly disabled. Stopping process.",
+                parser.ParserName,
+                parser.ParserType
+            );
+        }
+        return disabled;
     }
 }

@@ -6,13 +6,15 @@ using RabbitMQ.Client.Events;
 using Scrapers.Module.Features.CreateNewParser.RabbitMq;
 using Scrapers.Module.Features.FinishParser.Database;
 using Scrapers.Module.Features.FinishParser.Models;
+using Scrapers.Module.ParserStateCache;
 
 namespace Scrapers.Module.Features.FinishParser.Entrance;
 
 internal sealed class FinishParserEntrance(
     Serilog.ILogger logger,
     NpgsqlDataSource dataSource,
-    ConnectionFactory connectionFactory
+    ConnectionFactory connectionFactory,
+    ParserStateCachedStorage cache
 ) : BackgroundService
 {
     private const string Exchange = "scrapers";
@@ -26,7 +28,7 @@ internal sealed class FinishParserEntrance(
         _connection = await connectionFactory.CreateConnectionAsync(stoppingToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
         await _channel.ExchangeDeclareAsync(
-            "scrapers",
+            Exchange,
             ExchangeType.Direct,
             false,
             false,
@@ -34,16 +36,16 @@ internal sealed class FinishParserEntrance(
             cancellationToken: stoppingToken
         );
         await _channel.QueueDeclareAsync(
-            "finish_scraper",
+            Queue,
             durable: false,
             exclusive: false,
             autoDelete: false,
             cancellationToken: stoppingToken
         );
         await _channel.QueueBindAsync(
-            "finish_scraper",
-            "scrapers",
-            "finish_scraper",
+            Queue,
+            Exchange,
+            Queue,
             null,
             cancellationToken: stoppingToken
         );
@@ -84,6 +86,11 @@ internal sealed class FinishParserEntrance(
                 ParserToFinish parser = await storage.Fetch(message.ParserName, message.ParserType);
                 FinishedParser finished = parser.Finish(message.TotalElapsedSeconds);
                 await finished.Save(storage);
+                await cache.UpdateState(
+                    finished.ParserName,
+                    finished.ParserType,
+                    finished.ParserState
+                );
                 logger.Information(
                     "Finish parser: {Name} {Type}.",
                     finished.ParserName,

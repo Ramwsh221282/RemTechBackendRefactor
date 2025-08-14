@@ -7,13 +7,15 @@ using Scrapers.Module.Features.CreateNewParser.Database;
 using Scrapers.Module.Features.CreateNewParser.Exceptions;
 using Scrapers.Module.Features.CreateNewParser.Extensions;
 using Scrapers.Module.Features.CreateNewParser.Models;
+using Scrapers.Module.ParserStateCache;
 
 namespace Scrapers.Module.Features.CreateNewParser.RabbitMq;
 
 internal sealed class NewParsersEntrance(
     ConnectionFactory connectionFactory,
     NpgsqlDataSource dataSource,
-    Serilog.ILogger logger
+    Serilog.ILogger logger,
+    ParserStateCachedStorage cache
 ) : BackgroundService
 {
     private IConnection? _connection;
@@ -97,6 +99,7 @@ internal sealed class NewParsersEntrance(
             try
             {
                 await newParser.Store(storage);
+                await cache.UpdateState(newParser.Name, newParser.Type.Type, newParser.State.State);
             }
             catch (ParserNameAndTypeDuplicateException ex)
             {
