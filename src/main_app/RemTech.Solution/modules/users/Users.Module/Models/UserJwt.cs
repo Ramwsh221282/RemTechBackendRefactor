@@ -24,16 +24,13 @@ internal sealed class UserJwt
         ConnectionMultiplexer multiplexer
     )
     {
-        if (!await key.IsTokenValid(_token))
+        if (!await key.IsTokenValid(_refreshToken))
         {
-            if (!await key.IsTokenValid(_refreshToken))
-            {
-                await Deleted(multiplexer);
-                throw new TokensExpiredException();
-            }
-
-            return Recreate(key);
+            await Deleted(multiplexer);
+            throw new TokensExpiredException();
         }
+        if (!await key.IsTokenValid(_token))
+            return Recreate(key);
 
         return this;
     }
@@ -41,7 +38,7 @@ internal sealed class UserJwt
     public UserJwt Recreate(SecurityKeySource key)
     {
         UserJwtSource source = new(_userId, _name, _email, _password, _role);
-        return source.Provide(key);
+        return source.Provide(key, _tokenId);
     }
 
     public async Task<UserJwt> Deleted(ConnectionMultiplexer multiplexer)

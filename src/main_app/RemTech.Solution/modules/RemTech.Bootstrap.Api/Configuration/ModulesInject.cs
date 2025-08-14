@@ -1,5 +1,6 @@
 ﻿using Brands.Module.Injection;
 using Categories.Module.Injection;
+using Cleaners.Module.Injection;
 using GeoLocations.Module.Injection;
 using Mailing.Module.Injection;
 using Models.Module.Injection;
@@ -30,5 +31,6 @@ public static class ModulesInject
         services.InjectCategoriesModule();
         services.InjectModelsModule();
         services.InjectContainedItemsModule();
+        services.InjectCleanersModule();
     }
 }

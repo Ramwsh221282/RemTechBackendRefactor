@@ -23,9 +23,16 @@ public static class AdminVerificationEndpoint
             UserJwt jwt = new UserJwt(Guid.Parse(tokenId));
             jwt = await jwt.Provide(multiplexer);
             jwt = await jwt.CheckSubscription(key, multiplexer);
-            return jwt.IsOfRole("ADMIN") || jwt.IsOfRole("ROOT")
-                ? jwt.AsResult()
-                : Results.StatusCode(403);
+            bool verified = jwt.IsOfRole("ADMIN") || jwt.IsOfRole("ROOT");
+            if (verified)
+            {
+                logger.Information("Root or admin verification {Id} {Status}", tokenId, verified);
+            }
+            else
+            {
+                logger.Warning("Root or admin verification {Id} {Status}", tokenId, verified);
+            }
+            return verified ? jwt.AsResult() : Results.StatusCode(403);
         }
         catch (TokensExpiredException)
         {

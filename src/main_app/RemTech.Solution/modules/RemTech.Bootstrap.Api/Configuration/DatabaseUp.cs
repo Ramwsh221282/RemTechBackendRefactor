@@ -1,5 +1,6 @@
 ﻿using Brands.Module.Injection;
 using Categories.Module.Injection;
+using Cleaners.Module.Injection;
 using GeoLocations.Module.Injection;
 using Mailing.Module.Injection;
 using Models.Module.Injection;
@@ -25,5 +26,6 @@ public static class DatabaseUp
         CategoriesModuleInjection.UpDatabase(settings.Database.ToConnectionString());
         ModelsModuleInjection.UpDatabase(settings.Database.ToConnectionString());
         ContainedItemsModuleInjection.UpDatabase(settings.Database.ToConnectionString());
+        CleanersModuleInjection.UpDatabase(settings.Database.ToConnectionString());
     }
 }

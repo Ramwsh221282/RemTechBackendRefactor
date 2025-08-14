@@ -14,9 +14,9 @@ internal sealed class UserJwtSource(
     string role
 )
 {
-    public UserJwt Provide(SecurityKeySource securityKey)
+    public UserJwt Provide(SecurityKeySource securityKey, Guid? tokenId = null)
     {
-        Guid tokenId = Guid.NewGuid();
+        Guid actualToken = tokenId ?? Guid.NewGuid();
         DateTime expirationDate = DateTime.Now.AddMinutes(5);
         DateTime refreshExpirationDate = DateTime.Now.AddDays(7);
         Claim[] claims =
@@ -38,7 +38,7 @@ internal sealed class UserJwtSource(
         string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
         return new UserJwt(
             userId,
-            tokenId,
+            actualToken,
             name,
             password,
             email,

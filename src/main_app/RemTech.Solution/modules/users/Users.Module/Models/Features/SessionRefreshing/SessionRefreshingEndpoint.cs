@@ -27,6 +27,7 @@ public class SessionRefreshingEndpoint
             UserJwt jwt = new UserJwt(guid);
             jwt = await jwt.Provide(multiplexer);
             jwt = jwt.Recreate(key);
+            logger.Information("Token {id} recreated.", guid);
             return jwt.AsResult();
         }
         catch (UnableToGetUserJwtValueException)

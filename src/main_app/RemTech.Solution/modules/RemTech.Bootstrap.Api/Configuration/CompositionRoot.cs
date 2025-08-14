@@ -4,6 +4,7 @@ using Brands.Module.Features.QueryPopularBrands;
 using Categories.Module.Features.QueryCategories;
 using Categories.Module.Features.QueryCategoriesAmount;
 using Categories.Module.Features.QueryPopularCategories;
+using Cleaners.Module.Endpoints;
 using Mailing.Module.Features;
 using RemTech.ContainedItems.Module.Features.GetContainedVehiclesAmount;
 using RemTech.ContainedItems.Module.Features.QueryRecentContainedItems;
@@ -35,7 +36,9 @@ using Users.Module.Models.Features.CreateAdmiin;
 using Users.Module.Models.Features.CreateRoot;
 using Users.Module.Models.Features.CreatingNewAccount;
 using Users.Module.Models.Features.SessionRefreshing;
+using Users.Module.Models.Features.SignOut;
 using Users.Module.Models.Features.VerifyingAdmin;
+using Users.Module.Models.Features.VerifyingToken;
 using Users.Module.Public;
 
 namespace RemTech.Bootstrap.Api.Configuration;
@@ -52,6 +55,7 @@ public static class CompositionRoot
         app.MapVehiclesEndpoints();
         app.MapSparesEndpoints();
         app.MapContainedItemsEndpoints();
+        app.MapCleanersEndpoints();
     }
 
     private static void MapBrandEndpoints(this WebApplication app)
@@ -106,6 +110,8 @@ public static class CompositionRoot
         EnsureRootCreatedEndpoint.Map(builder);
         CreateRootAccountEndpoint.Map(builder);
         SessionRefreshingEndpoint.Map(builder);
+        VerifyTokenEndpoint.Map(builder);
+        SignOutEndpoint.Map(builder);
         builder.MapPost("admin-up", CreateAdminAccountEndpoint.HandleFn).RequireAdminOrRootAccess();
     }
 
@@ -122,6 +128,16 @@ public static class CompositionRoot
         SimilarVehiclesQueryEndpoint.Map(group);
         BrandsByCategoryEndpoint.Map(group);
         ModelsOfCategoryBrandsEndpoint.Map(group);
+    }
+
+    private static void MapCleanersEndpoints(this WebApplication app)
+    {
+        RouteGroupBuilder group = app.MapGroup("api/cleaners");
+        ChangeWaitDaysEndpoint.Map(group);
+        EnableEndpoint.Map(group);
+        ReadCleanerEndpoint.Map(group);
+        DisableCleanerEndpoint.Map(group);
+        PermantlyEnableCleanerEndpoint.Map(group);
     }
 
     private static void MapSparesEndpoints(this WebApplication app)
