@@ -3,7 +3,7 @@ using Scrapers.Module.Features.StartParser.RabbitMq;
 
 namespace Scrapers.Module.Features.StartParser.Models;
 
-internal sealed record StartedParser(
+public sealed record StartedParser(
     string ParserName,
     string ParserType,
     string ParserDomain,

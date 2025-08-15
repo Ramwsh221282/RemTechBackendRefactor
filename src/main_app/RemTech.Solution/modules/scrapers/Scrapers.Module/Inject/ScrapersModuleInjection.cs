@@ -2,13 +2,11 @@
 using DbUp;
 using DbUp.Engine;
 using Microsoft.Extensions.DependencyInjection;
-using Quartz;
 using Scrapers.Module.Features.CreateNewParser.Inject;
 using Scrapers.Module.Features.FinishParser.Entrance;
 using Scrapers.Module.Features.FinishParserLink.Entrance;
 using Scrapers.Module.Features.IncreaseProcessedAmount.Entrance;
 using Scrapers.Module.Features.IncreaseProcessedAmount.MessageBus;
-using Scrapers.Module.Features.StartParser.Entrance;
 using Scrapers.Module.Features.StartParser.RabbitMq;
 using Scrapers.Module.ParserStateCache;
 
@@ -19,7 +17,6 @@ public static class ScrapersModuleInjection
     public static void InjectScrapersModule(this IServiceCollection services)
     {
         CreateNewParserInjection.Inject(services);
-        services.InjectStartParserBackgroundJob();
         services.AddHostedService<FinishParserEntrance>();
         services.AddHostedService<FinishedParserLinkEntrance>();
         services.AddHostedService<IncreasedProcessedEntrance>();
@@ -40,22 +37,5 @@ public static class ScrapersModuleInjection
         DatabaseUpgradeResult result = upgrader.PerformUpgrade();
         if (!result.Successful)
             throw new ApplicationException("Failed to create scrapers database.");
-    }
-
-    private static void InjectStartParserBackgroundJob(this IServiceCollection services)
-    {
-        services.AddQuartz(options =>
-        {
-            JobKey jobKey = JobKey.Create(nameof(StartingParsersEntrance));
-            options
-                .AddJob<StartingParsersEntrance>(jobKey)
-                .AddTrigger(trigger =>
-                    trigger
-                        .ForJob(jobKey)
-                        .WithSimpleSchedule(schedule =>
-                            schedule.WithIntervalInSeconds(30).RepeatForever()
-                        )
-                );
-        });
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Scrapers.Module.Features.StartParser.Models;
 
-internal sealed record ParserToStart(
+public sealed record ParserToStart(
     string ParserName,
     string ParserType,
     string ParserDomain,

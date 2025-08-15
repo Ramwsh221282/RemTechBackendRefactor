@@ -2,7 +2,7 @@
 
 namespace Scrapers.Module.ParserStateCache;
 
-internal sealed class ParserStateCachedStorage(ConnectionMultiplexer multiplexer)
+public sealed class ParserStateCachedStorage(ConnectionMultiplexer multiplexer)
 {
     public async Task UpdateState(string name, string type, string state)
     {

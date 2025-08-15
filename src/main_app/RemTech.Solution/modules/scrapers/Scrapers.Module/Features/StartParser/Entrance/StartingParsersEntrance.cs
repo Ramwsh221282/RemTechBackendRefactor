@@ -7,7 +7,7 @@ using Scrapers.Module.ParserStateCache;
 
 namespace Scrapers.Module.Features.StartParser.Entrance;
 
-internal sealed class StartingParsersEntrance(
+public sealed class StartingParsersEntrance(
     Serilog.ILogger logger,
     NpgsqlDataSource dataSource,
     IParserStartedPublisher publisher,

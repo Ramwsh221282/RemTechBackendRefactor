@@ -1,4 +1,5 @@
-﻿using Cleaners.Module.Endpoints.Responses;
+﻿using Cleaners.Module.Cache;
+using Cleaners.Module.Endpoints.Responses;
 using Cleaners.Module.Services.Features.Common;
 using Cleaners.Module.Services.Features.Enable;
 using Microsoft.AspNetCore.Builder;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
+using StackExchange.Redis;
 
 namespace Cleaners.Module.Endpoints;
 
@@ -16,6 +18,7 @@ public static class EnableEndpoint
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource dataSource,
         [FromServices] Serilog.ILogger logger,
+        [FromServices] ConnectionMultiplexer multiplexer,
         CancellationToken ct
     )
     {
@@ -24,9 +27,12 @@ public static class EnableEndpoint
             new ResourceDisposingHandler<EnableCleaner>(
                 new LoggingCleanerHandler<EnableCleaner>(
                     logger,
-                    new SavingCleanerHandler<EnableCleaner>(
-                        connection,
-                        new EnableCleanerHandler(connection, logger)
+                    new CacheInvalidatingHandler<EnableCleaner>(
+                        new CleanerStateCache(multiplexer),
+                        new SavingCleanerHandler<EnableCleaner>(
+                            connection,
+                            new EnableCleanerHandler(connection, logger)
+                        )
                     )
                 )
             )

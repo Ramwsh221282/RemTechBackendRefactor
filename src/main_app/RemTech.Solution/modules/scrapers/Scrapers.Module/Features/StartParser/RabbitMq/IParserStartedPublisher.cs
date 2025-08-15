@@ -2,7 +2,7 @@
 
 namespace Scrapers.Module.Features.StartParser.RabbitMq;
 
-internal interface IParserStartedPublisher : IDisposable, IAsyncDisposable
+public interface IParserStartedPublisher : IDisposable, IAsyncDisposable
 {
     Task Publish(StartedParser parser);
 }

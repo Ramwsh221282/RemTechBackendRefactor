@@ -46,7 +46,7 @@ public static class CommonInfrastructureInjection
     private static void InjectLogging(this IServiceCollection services, RemTechSeqSettings settings)
     {
         services.AddSingleton<Serilog.ILogger>(
-            new LoggerConfiguration().WriteTo.Seq(settings.Host).CreateLogger()
+            new LoggerConfiguration().WriteTo.Seq(settings.Host).WriteTo.Console().CreateLogger()
         );
     }
 

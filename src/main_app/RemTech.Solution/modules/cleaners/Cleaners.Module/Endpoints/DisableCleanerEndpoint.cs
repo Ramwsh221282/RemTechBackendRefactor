@@ -1,4 +1,5 @@
-﻿using Cleaners.Module.Endpoints.Responses;
+﻿using Cleaners.Module.Cache;
+using Cleaners.Module.Endpoints.Responses;
 using Cleaners.Module.Services.Features.Common;
 using Cleaners.Module.Services.Features.DisableCleaner;
 using Microsoft.AspNetCore.Builder;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
+using StackExchange.Redis;
 
 namespace Cleaners.Module.Endpoints;
 
@@ -16,6 +18,7 @@ public static class DisableCleanerEndpoint
     private static async Task<IResult> Handle(
         [FromServices] Serilog.ILogger logger,
         [FromServices] NpgsqlDataSource dataSource,
+        [FromServices] ConnectionMultiplexer multiplexer,
         CancellationToken ct
     )
     {
@@ -24,9 +27,12 @@ public static class DisableCleanerEndpoint
             new ResourceDisposingHandler<DisableCleanerCommand>(
                 new LoggingCleanerHandler<DisableCleanerCommand>(
                     logger,
-                    new SavingCleanerHandler<DisableCleanerCommand>(
-                        connection,
-                        new DisableCleanerHandler(connection, logger)
+                    new CacheInvalidatingHandler<DisableCleanerCommand>(
+                        new CleanerStateCache(multiplexer),
+                        new SavingCleanerHandler<DisableCleanerCommand>(
+                            connection,
+                            new DisableCleanerHandler(connection, logger)
+                        )
                     )
                 )
             )

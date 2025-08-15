@@ -1,5 +1,6 @@
 ﻿using Cleaners.Module.Domain;
 using Cleaners.Module.Domain.Exceptions;
+using Cleaners.Module.Services.Features.PermantlyEnable;
 using Shared.Infrastructure.Module.Cqrs;
 
 namespace Cleaners.Module.Services.Features.Common;
@@ -73,6 +74,11 @@ internal sealed class LoggingCleanerHandler<TCommand>(
             throw;
         }
         catch (StateInvalidException ex)
+        {
+            LogError(ex);
+            throw;
+        }
+        catch (CleanerHasNoItemsToCleanException ex)
         {
             LogError(ex);
             throw;

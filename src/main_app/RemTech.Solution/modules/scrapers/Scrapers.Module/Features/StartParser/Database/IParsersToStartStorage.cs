@@ -2,7 +2,7 @@
 
 namespace Scrapers.Module.Features.StartParser.Database;
 
-internal interface IParsersToStartStorage
+public interface IParsersToStartStorage
 {
     Task<IEnumerable<ParserToStart>> Fetch(DateTime nextRun, CancellationToken ct = default);
     Task<StartedParser> Save(StartedParser parser, CancellationToken ct = default);

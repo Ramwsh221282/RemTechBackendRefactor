@@ -1,5 +1,6 @@
 ﻿using Cleaners.Module.Domain;
 using Cleaners.Module.Domain.Exceptions;
+using Cleaners.Module.Services.Features.PermantlyEnable;
 using Microsoft.AspNetCore.Http;
 
 namespace Cleaners.Module.Endpoints.Responses;
@@ -107,6 +108,10 @@ internal sealed class CleanerHttpResponseVeil(Func<Task<ICleaner>> cleanerFn)
             await Results.BadRequest(new { message = ex.Message }).ExecuteAsync(httpContext);
         }
         catch (StateInvalidException ex)
+        {
+            await Results.BadRequest(new { message = ex.Message }).ExecuteAsync(httpContext);
+        }
+        catch (CleanerHasNoItemsToCleanException ex)
         {
             await Results.BadRequest(new { message = ex.Message }).ExecuteAsync(httpContext);
         }
