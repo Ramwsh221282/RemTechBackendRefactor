@@ -7,10 +7,6 @@ using Parsing.RabbitMq.PublishVehicle;
 using Parsing.RabbitMq.PublishVehicle.Extras;
 using Parsing.RabbitMq.StartParsing;
 using Parsing.SDK.Browsers;
-using Parsing.SDK.Browsers.BrowserLoadings;
-using Parsing.SDK.Browsers.InstantiationModes;
-using Parsing.SDK.Browsers.InstantiationOptions;
-using Parsing.SDK.Browsers.PageSources;
 using Parsing.Vehicles.Common.ParsedVehicles;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePhotos;
@@ -50,6 +46,8 @@ public class Worker(
             JsonSerializer.Deserialize<ParserStartedRabbitMqMessage>(eventArgs.Body.ToArray());
         if (parserStarted == null)
             return;
+        await using IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
+        await using IPage page = await browser.ProvideDefaultPage();
         Stopwatch parserStopwatch = new Stopwatch();
         parserStopwatch.Start();
         try
@@ -57,80 +55,64 @@ public class Worker(
             foreach (var link in parserStarted.Links)
             {
                 if (await HasPermantlyDisabled(parserStarted))
-                {
                     break;
-                }
-
                 Stopwatch parserLinkStopwatch = new Stopwatch();
                 parserLinkStopwatch.Start();
-                await using IScrapingBrowser browser = await CreateBrowser(link.LinkUrl);
-                await using IBrowserPagesSource pagesSource = await browser.AccessPages();
-                foreach (IPage page in pagesSource.Iterate())
+                if (await HasPermantlyDisabled(parserStarted))
+                    break;
+
+                IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
+                    page,
+                    new NoTextWrite(),
+                    logger,
+                    link.LinkUrl
+                );
+                await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
                 {
                     if (await HasPermantlyDisabled(parserStarted))
-                    {
                         break;
-                    }
-
-                    IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
-                        page,
-                        new NoTextWrite(),
-                        logger,
-                        link.LinkUrl
-                    );
-                    await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
+                    if (!await new ValidatingParsedVehicle(vehicle).IsValid())
+                        continue;
+                    ParsedVehiclePrice price = await vehicle.Price();
+                    CharacteristicsDictionary ctxes = await vehicle.Characteristics();
+                    UniqueParsedVehiclePhotos photos = await vehicle.Photos();
+                    SentencesCollection sentences = await vehicle.Sentences();
+                    string description = sentences.FormText();
+                    if (string.IsNullOrWhiteSpace(description))
                     {
-                        if (await HasPermantlyDisabled(parserStarted))
-                        {
-                            break;
-                        }
-
-                        if (!await new ValidatingParsedVehicle(vehicle).IsValid())
-                            continue;
-                        ParsedVehiclePrice price = await vehicle.Price();
-                        CharacteristicsDictionary ctxes = await vehicle.Characteristics();
-                        UniqueParsedVehiclePhotos photos = await vehicle.Photos();
-                        SentencesCollection sentences = await vehicle.Sentences();
-                        string description = sentences.FormText();
-                        if (string.IsNullOrWhiteSpace(description))
-                        {
-                            logger.Warning("No description provided.");
-                            continue;
-                        }
-                        VehiclePublishMessage message = new VehiclePublishMessage(
-                            new ParserBody(
-                                parserStarted.ParserName,
-                                parserStarted.ParserType,
-                                parserStarted.ParserDomain
-                            ),
-                            new ParserLinkBody(
-                                parserStarted.ParserName,
-                                parserStarted.ParserType,
-                                parserStarted.ParserDomain,
-                                link.LinkName,
-                                link.LinkUrl
-                            ),
-                            new VehicleBody(
-                                await vehicle.Identity(),
-                                await vehicle.Kind(),
-                                await vehicle.Brand(),
-                                await vehicle.Model(),
-                                price,
-                                price.IsNds(),
-                                await vehicle.Geo(),
-                                await vehicle.SourceUrl(),
-                                description,
-                                ctxes
-                                    .Read()
-                                    .Select(c => new VehicleBodyCharacteristic(
-                                        c.Name(),
-                                        c.Value()
-                                    )),
-                                photos.Read().Select(p => new VehicleBodyPhoto(p))
-                            )
-                        );
-                        await publisher.SayVehicleFinished(message);
+                        logger.Warning("No description provided.");
+                        continue;
                     }
+                    VehiclePublishMessage message = new VehiclePublishMessage(
+                        new ParserBody(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            parserStarted.ParserDomain
+                        ),
+                        new ParserLinkBody(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            parserStarted.ParserDomain,
+                            link.LinkName,
+                            link.LinkUrl
+                        ),
+                        new VehicleBody(
+                            await vehicle.Identity(),
+                            await vehicle.Kind(),
+                            await vehicle.Brand(),
+                            await vehicle.Model(),
+                            price,
+                            price.IsNds(),
+                            await vehicle.Geo(),
+                            await vehicle.SourceUrl(),
+                            description,
+                            ctxes
+                                .Read()
+                                .Select(c => new VehicleBodyCharacteristic(c.Name(), c.Value())),
+                            photos.Read().Select(p => new VehicleBodyPhoto(p))
+                        )
+                    );
+                    await publisher.SayVehicleFinished(message);
                 }
                 parserLinkStopwatch.Stop();
                 long linkSeconds = (long)parserLinkStopwatch.Elapsed.TotalSeconds;
@@ -173,16 +155,5 @@ public class Worker(
             );
         }
         return disabled;
-    }
-
-    private async Task<IScrapingBrowser> CreateBrowser(string url)
-    {
-        return new SinglePagedScrapingBrowser(
-            await new DefaultBrowserInstantiation(
-                new HeadlessBrowserInstantiationOptions(),
-                new BasicBrowserLoading()
-            ).Instantiation(),
-            url
-        );
     }
 }

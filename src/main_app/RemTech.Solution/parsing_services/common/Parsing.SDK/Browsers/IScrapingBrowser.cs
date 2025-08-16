@@ -1,8 +1,8 @@
-﻿using Parsing.SDK.Browsers.PageSources;
+﻿using PuppeteerSharp;
 
 namespace Parsing.SDK.Browsers;
 
 public interface IScrapingBrowser : IDisposable, IAsyncDisposable
 {
-    Task<IBrowserPagesSource> AccessPages();
+    Task<IPage> ProvideDefaultPage();
 }

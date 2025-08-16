@@ -1,4 +1,4 @@
-﻿namespace Cleaner.Cleaning.Configuration;
+﻿namespace Cleaner.Configuration;
 
 internal static class ConfigurationConstants
 {

@@ -15,7 +15,4 @@
     <ProjectReference Include="..\..\common\common_avito\Parsing.Avito.Common\Parsing.Avito.Common.csproj" />
     <ProjectReference Include="..\..\common\Parsing.SDK\Parsing.SDK.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Cleaning\Cache\" />
-  </ItemGroup>
 </Project>

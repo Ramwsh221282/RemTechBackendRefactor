@@ -1,6 +1,6 @@
 ﻿using RabbitMQ.Client;
 
-namespace Cleaner.Cleaning.Configuration;
+namespace Cleaner.Configuration;
 
 internal sealed class CleanerRabbitMqSettings
 {

@@ -27,38 +27,23 @@ public class VehicleParsingTests
     {
         string link =
             "https://www.avito.ru/all/gruzoviki_i_spetstehnika/tehnika_dlya_lesozagotovki/komatsu-ASgBAgICAkRUsiyexw3g6j8?cd=1";
-        await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
-            await new DefaultBrowserInstantiation(
-                new NonHeadlessBrowserInstantiationOptions(),
-                new BasicBrowserLoading()
-            ).Instantiation(),
+        await using IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
+        await using IPage page = await browser.ProvideDefaultPage();
+        ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+        IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
+            page,
+            new NoTextWrite(),
+            logger,
             link
         );
-        await using IBrowserPagesSource pagesSource = await browser.AccessPages();
-        Serilog.ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
-
-        foreach (IPage page in pagesSource.Iterate())
+        await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
         {
-            IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
-                page,
-                new NoTextWrite(),
-                logger,
-                link
-            );
-            await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
-            {
-                if (!await new ValidatingParsedVehicle(vehicle).IsValid())
-                    continue;
-                ParsedVehiclePrice price = await vehicle.Price();
-                CharacteristicsDictionary ctxes = await vehicle.Characteristics();
-                UniqueParsedVehiclePhotos photos = await vehicle.Photos();
-                SentencesCollection sentences = await vehicle.Sentences();
-                string description = sentences.FormText();
-                if (string.IsNullOrWhiteSpace(description))
-                {
-                    logger.Warning("No description provided.");
-                }
-            }
+            if (!await new ValidatingParsedVehicle(vehicle).IsValid())
+                continue;
+            SentencesCollection sentences = await vehicle.Sentences();
+            string description = sentences.FormText();
+            if (string.IsNullOrWhiteSpace(description))
+                logger.Warning("No description provided.");
         }
     }
 }

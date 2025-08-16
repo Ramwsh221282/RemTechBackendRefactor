@@ -1,15 +1,12 @@
 ﻿using StackExchange.Redis;
 
-namespace Cleaner.Cleaning.Configuration;
+namespace Cleaner.Configuration;
 
 internal sealed class CleanerCacheSettings
 {
     private readonly string _host;
 
-    private CleanerCacheSettings(string host)
-    {
-        _host = host;
-    }
+    private CleanerCacheSettings(string host) => _host = host;
 
     public static CleanerCacheSettings FromJson(string json)
     {

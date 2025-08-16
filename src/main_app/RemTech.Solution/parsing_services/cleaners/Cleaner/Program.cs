@@ -1,5 +1,5 @@
 using Cleaner;
-using Cleaner.Cleaning.Configuration;
+using Cleaner.Configuration;
 using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);

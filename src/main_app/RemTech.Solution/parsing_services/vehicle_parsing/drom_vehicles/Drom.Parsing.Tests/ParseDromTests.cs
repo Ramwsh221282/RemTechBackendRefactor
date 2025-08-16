@@ -18,49 +18,40 @@ public sealed class ParseDromTests
     private async Task Invoke_Scraping()
     {
         string url = "https://auto.drom.ru/spec/john-deere/forestry/all/";
-        await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
-            await new DefaultBrowserInstantiation(
-                new HeadlessBrowserInstantiationOptions(),
-                new BasicBrowserLoading()
-            ).Instantiation(),
-            url
-        );
-        Serilog.ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
-        IBrowserPagesSource pages = await browser.AccessPages();
-        foreach (IPage page in pages.Iterate())
+        IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
+        ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+        IPage page = await browser.ProvideDefaultPage();
+        DromPagesCursor cursor = new DromPagesCursor(page);
+        while (true)
         {
-            DromPagesCursor cursor = new DromPagesCursor(page);
-            while (true)
-            {
-                await cursor.Navigate();
-                await new PageBottomScrollingAction(page).Do();
-                await new PageUpperScrollingAction(page).Do();
+            await cursor.Navigate();
+            await new PageBottomScrollingAction(page).Do();
+            await new PageUpperScrollingAction(page).Do();
 
-                try
-                {
-                    await new DromImagesHoveringAction(page).Do();
-                }
-                catch (DromCatalogueNoItemsException)
-                {
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    logger.Error("{Ex}", ex.Message);
-                }
-                DromCatalogueCarsCollection collection = new(page);
-                IEnumerable<DromCatalogueCar> cars = await collection.Iterate();
-                foreach (DromCatalogueCar item in cars)
-                {
-                    await item.Navigation().Navigate(page);
-                    await new DromVehicleModelSource(page).Print(item);
-                    await new DromVehicleBrandSource(page).Print(item);
-                    await new DromVehicleKindSource(page).Print(item);
-                    (await new DromVehicleCharacteristicSource(page).Read()).Print(item);
-                    (await new CarPriceSource(page).Read()).Print(item);
-                    (await new CarLocationSource(page).Read()).Print(item);
-                    item.LogMessage().Log(logger);
-                }
+            try
+            {
+                await new DromImagesHoveringAction(page).Do();
+            }
+            catch (DromCatalogueNoItemsException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                logger.Error("{Ex}", ex.Message);
+            }
+            DromCatalogueCarsCollection collection = new(page);
+            IEnumerable<DromCatalogueCar> cars = await collection.Iterate();
+            foreach (DromCatalogueCar item in cars)
+            {
+                await item.Navigation().Navigate(page);
+                await new DromVehicleModelSource(page).Print(item);
+                await new DromVehicleBrandSource(page).Print(item);
+                await new DromVehicleKindSource(page).Print(item);
+                (await new DromVehicleCharacteristicSource(page).Read()).Print(item);
+                (await new CarPriceSource(page).Read()).Print(item);
+                (await new CarLocationSource(page).Read()).Print(item);
+                item.LogMessage().Log(logger);
             }
         }
     }

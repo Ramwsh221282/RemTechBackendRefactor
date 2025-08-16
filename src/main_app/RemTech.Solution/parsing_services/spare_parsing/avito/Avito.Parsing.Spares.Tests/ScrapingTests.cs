@@ -1,4 +1,5 @@
 ﻿using Avito.Parsing.Spares.Parsing;
+using Microsoft.Extensions.Logging;
 using Parsing.Avito.Common.BypassFirewall;
 using Parsing.Avito.Common.PaginationBar;
 using Parsing.RabbitMq.PublishSpare;
@@ -19,60 +20,51 @@ public class ScrapingTests
     [Fact]
     private async Task Parse_Spares()
     {
-        const string url = "https://www.avito.ru/all/zapchasti_i_aksessuary?q=ponsse";
-        await using IScrapingBrowser browser = new SinglePagedScrapingBrowser(
-            await new DefaultBrowserInstantiation(
-                new NonHeadlessBrowserInstantiationOptions(),
-                new BasicBrowserLoading()
-            ).Instantiation(),
-            url
-        );
         Serilog.ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
-        IBrowserPagesSource pages = await browser.AccessPages();
-        foreach (IPage page in pages.Iterate())
+        const string url = "https://www.avito.ru/all/zapchasti_i_aksessuary?q=ponsse";
+        await using IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
+        await using IPage page = await browser.ProvideDefaultPage();
+        IAvitoBypassFirewall bypass = new AvitoBypassFirewall(page)
+            .WrapBy(p => new AvitoBypassFirewallExceptionSupressing(p))
+            .WrapBy(p => new AvitoBypassFirewallLazy(page, p))
+            .WrapBy(p => new AvitoBypassRepetetive(page, p))
+            .WrapBy(p => new AvitoBypassWebsiteIsNotAvailable(page, p))
+            .WrapBy(p => new AvitoBypassFirewallLogging(logger, p));
+        IAvitoPaginationBarSource pagination = new AvitoPaginationBarSource(page)
+            .WrapBy(p => new BottomScrollingAvitoPaginationBarSource(page, p))
+            .WrapBy(p => new LoggingAvitoPaginationBarSource(logger, p));
+        if (!await bypass.Read())
+            return;
+        LoggingAvitoPaginationBarElement bar = new LoggingAvitoPaginationBarElement(
+            logger,
+            await pagination.Read()
+        );
+        SpareBodyValidator validator = new SpareBodyValidator();
+        LinkedList<SpareBody> bodies = [];
+        foreach (string pageUrl in bar.Iterate(url))
         {
-            IAvitoBypassFirewall bypass = new AvitoBypassFirewall(page)
-                .WrapBy(p => new AvitoBypassFirewallExceptionSupressing(p))
-                .WrapBy(p => new AvitoBypassFirewallLazy(page, p))
-                .WrapBy(p => new AvitoBypassRepetetive(page, p))
-                .WrapBy(p => new AvitoBypassWebsiteIsNotAvailable(page, p))
-                .WrapBy(p => new AvitoBypassFirewallLogging(logger, p));
-            IAvitoPaginationBarSource pagination = new AvitoPaginationBarSource(page)
-                .WrapBy(p => new BottomScrollingAvitoPaginationBarSource(page, p))
-                .WrapBy(p => new LoggingAvitoPaginationBarSource(logger, p));
-            if (!await bypass.Read())
-                break;
-            LoggingAvitoPaginationBarElement bar = new LoggingAvitoPaginationBarElement(
-                logger,
-                await pagination.Read()
-            );
-            SpareBodyValidator validator = new SpareBodyValidator();
-            LinkedList<SpareBody> bodies = [];
-            foreach (string pageUrl in bar.Iterate(url))
+            await new PageNavigating(page, pageUrl)
+                .WrapBy(n => new LoggingPageNavigating(logger, pageUrl, n))
+                .Do();
+            IEnumerable<AvitoSpare> spares = await new BlockBypassingAvitoSparesCollection(
+                bypass,
+                new AvitoSparesCollection(page)
+            ).Read();
+            foreach (AvitoSpare spare in spares)
             {
-                await new PageNavigating(page, pageUrl)
-                    .WrapBy(n => new LoggingPageNavigating(logger, pageUrl, n))
-                    .Do();
-                IEnumerable<AvitoSpare> spares = await new BlockBypassingAvitoSparesCollection(
-                    bypass,
-                    new AvitoSparesCollection(page)
-                ).Read();
-                foreach (AvitoSpare spare in spares)
-                {
-                    await spare.Navigate(page);
-                    if (!await bypass.Read())
-                        continue;
-                    await new PageBottomScrollingAction(page).Do();
-                    await new PageUpperScrollingAction(page).Do();
-                    await new VariantDescriptionDetailsSource()
-                        .With(new AvitoCharacteristicsDetailsSource(page))
-                        .With(new AvitoDescriptionDetailsSource(page))
-                        .Add(spare);
-                    SpareBody body = spare.AsSpareBody();
-                    if (!validator.IsValid(body))
-                        continue;
-                    bodies.AddFirst(body);
-                }
+                await spare.Navigate(page);
+                if (!await bypass.Read())
+                    continue;
+                await new PageBottomScrollingAction(page).Do();
+                await new PageUpperScrollingAction(page).Do();
+                await new VariantDescriptionDetailsSource()
+                    .With(new AvitoCharacteristicsDetailsSource(page))
+                    .With(new AvitoDescriptionDetailsSource(page))
+                    .Add(spare);
+                SpareBody body = spare.AsSpareBody();
+                if (!validator.IsValid(body))
+                    continue;
+                bodies.AddFirst(body);
             }
         }
     }

@@ -3,29 +3,15 @@ using PuppeteerSharp;
 
 namespace Parsing.SDK.Browsers;
 
-public sealed class SinglePagedScrapingBrowser : IScrapingBrowser
+public sealed class SinglePagedScrapingBrowser(IBrowser browser) : IScrapingBrowser
 {
-    private readonly IBrowser _browser;
-    private readonly string _url;
+    public void Dispose() => browser.Dispose();
 
-    public SinglePagedScrapingBrowser(IBrowser browser, string url)
-    {
-        _browser = browser;
-        _url = url;
-    }
-    
-    public void Dispose()
-    {
-        _browser.Dispose();
-    }
+    public async ValueTask DisposeAsync() => await browser.DisposeAsync();
 
-    public async  ValueTask DisposeAsync()
+    public async Task<IPage> ProvideDefaultPage()
     {
-        await _browser.DisposeAsync();
-    }
-
-    public async Task<IBrowserPagesSource> AccessPages()
-    {
-        return await new NoPageSource().Single(_browser, _url);
+        IPage page = await browser.NewPageAsync();
+        return page;
     }
 }
