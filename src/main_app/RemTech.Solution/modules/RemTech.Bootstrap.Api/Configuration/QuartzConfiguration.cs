@@ -1,5 +1,6 @@
 ﻿using Cleaners.Module.BackgroundJobs.StartingWaitingCleaner;
 using Quartz;
+using RemTech.ContainedItems.Module.BackgroundJobs.RemoveMarkedItems;
 using Scrapers.Module.Features.StartParser.Entrance;
 
 namespace RemTech.Bootstrap.Api.Configuration;
@@ -29,6 +30,17 @@ public static class QuartzConfiguration
                         .ForJob(cleanerJob)
                         .WithSimpleSchedule(schedule =>
                             schedule.WithIntervalInSeconds(30).RepeatForever()
+                        )
+                );
+
+            JobKey itemRemoverJob = JobKey.Create(nameof(RemoveMarkedItemsJob));
+            options
+                .AddJob<RemoveMarkedItemsJob>(itemRemoverJob)
+                .AddTrigger(trigger =>
+                    trigger
+                        .ForJob(itemRemoverJob)
+                        .WithSimpleSchedule(schedule =>
+                            schedule.WithIntervalInMinutes(1).RepeatForever()
                         )
                 );
         });

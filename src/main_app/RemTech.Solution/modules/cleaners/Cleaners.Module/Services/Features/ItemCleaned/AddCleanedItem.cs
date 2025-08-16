@@ -2,4 +2,4 @@
 
 namespace Cleaners.Module.Services.Features.ItemCleaned;
 
-internal sealed record AddCleanedItem : ICommand;
+internal sealed record AddCleanedItem(string Id) : ICommand;

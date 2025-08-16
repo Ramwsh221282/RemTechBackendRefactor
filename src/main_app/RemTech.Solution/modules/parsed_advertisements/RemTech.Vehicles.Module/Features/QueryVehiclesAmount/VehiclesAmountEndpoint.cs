@@ -16,7 +16,6 @@ public sealed class VehiclesAmountEndpoint
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource datasource,
-        [FromServices] IEmbeddingGenerator generator,
         [FromServices] Serilog.ILogger logger,
         [FromQuery] Guid? categoryId,
         [FromQuery] Guid? brandId,
@@ -51,9 +50,7 @@ public sealed class VehiclesAmountEndpoint
             };
 
             await using NpgsqlConnection connection = await datasource.OpenConnectionAsync(ct);
-            VehiclesAmountSqlQuery query = new VehiclesAmountSqlQuery(generator).ApplyRequest(
-                request
-            );
+            VehiclesAmountSqlQuery query = new VehiclesAmountSqlQuery().ApplyRequest(request);
             long amount = await query.Retrieve(connection, ct);
             return Results.Ok(amount);
         }

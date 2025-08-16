@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\cleaners\Cleaners.Module\Cleaners.Module.csproj" />
     <ProjectReference Include="..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj" />
   </ItemGroup>
   <ItemGroup>

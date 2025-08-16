@@ -32,6 +32,8 @@ internal sealed class VehiclesSqlQuery(IEmbeddingGenerator generator) : IVehicle
         v.object as vehicle_object_data,
         v.description as vehicle_description
         FROM parsed_advertisements_module.parsed_vehicles v
+        INNER JOIN contained_items.items c ON c.id = v.id
+        WHERE c.is_deleted = FALSE
         """
     );
 
@@ -123,6 +125,6 @@ internal sealed class VehiclesSqlQuery(IEmbeddingGenerator generator) : IVehicle
             return string.Empty;
         StringBuilder stringBuilder = new();
         string joined = string.Join(" AND ", _filters);
-        return stringBuilder.AppendLine(" WHERE 1=1 AND ").AppendLine(joined).ToString();
+        return stringBuilder.AppendLine(" AND ").AppendLine(joined).ToString();
     }
 }

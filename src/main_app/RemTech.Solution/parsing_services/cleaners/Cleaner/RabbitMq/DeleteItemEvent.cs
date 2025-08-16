@@ -13,7 +13,7 @@ internal sealed class DeleteItemEvent(IConnection connection, string id)
     public async Task Publish()
     {
         await using IChannel channel = await connection.CreateChannelAsync();
-        await channel.ExchangeDeclareAsync(Exchange, ExchangeType.Direct);
+        await channel.ExchangeDeclareAsync(Exchange, ExchangeType.Direct, false, false);
         await channel.QueueDeclareAsync(Queue, false, false, false);
         await channel.QueueBindAsync(Queue, Exchange, Queue);
         await channel.BasicPublishAsync(Exchange, Queue, body: MakeBody());

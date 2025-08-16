@@ -12,8 +12,9 @@ internal sealed class SparesCountSqlQuery(NpgsqlCommand command)
     private readonly string _query = string.Intern(
         """
         SELECT
-        COUNT(id)
-        FROM spares_module.spares
+        COUNT(s.id)
+        FROM spares_module.spares s
+        INNER JOIN contained_items.items c ON c.id = s.id
         """
     );
 
@@ -25,11 +26,5 @@ internal sealed class SparesCountSqlQuery(NpgsqlCommand command)
         sb = sb.AppendLine(_textSearch);
         command.CommandText = sb.ToString();
         return command;
-    }
-
-    public void ApplyTextSearch(IEmbeddingGenerator generator, string text)
-    {
-        // _textSearch = " ORDER BY embedding <=> @embedding ";
-        // command.Parameters.AddWithValue("@embedding", new Vector(generator.Generate(text)));
     }
 }

@@ -12,9 +12,10 @@ internal sealed class SparesSqlQuery
     private readonly string _query = string.Intern(
         """
         SELECT
-        object
-        FROM spares_module.spares
-        WHERE 1=1
+        s.object
+        FROM spares_module.spares s
+        INNER JOIN contained_items.items c ON c.id = s.id
+        WHERE c.is_deleted = FALSE
         """
     );
 
@@ -50,7 +51,7 @@ internal sealed class SparesSqlQuery
 
     public void ApplyTextSearch(IEmbeddingGenerator generator, string text)
     {
-        _textSearch = " ORDER BY embedding <=> @embedding ";
+        _textSearch = " ORDER BY s.embedding <=> @embedding ";
         _command.Parameters.AddWithValue("@embedding", new Vector(generator.Generate(text)));
     }
 }

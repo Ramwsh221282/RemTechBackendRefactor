@@ -6,8 +6,8 @@ namespace Cleaners.Module.RabbitMq;
 
 internal sealed class StartCleaningPublisher(ConnectionFactory factory, Serilog.ILogger logger)
 {
-    private const string Exchange = "cleaners";
-    private const string Queue = "start";
+    private const string Exchange = RabbitMqConstants.CleanersExchange;
+    private const string Queue = RabbitMqConstants.CleanersStartQueue;
 
     public async Task Publish(StartCleaningMessage message, CancellationToken ct = default)
     {

@@ -1,18 +1,31 @@
-﻿using Cleaners.Module.Database;
+﻿using Cleaners.Module.Contracts.ItemCleaned;
+using Cleaners.Module.Database;
 using Cleaners.Module.Domain;
 using Npgsql;
 using Shared.Infrastructure.Module.Cqrs;
 
 namespace Cleaners.Module.Services.Features.ItemCleaned;
 
-internal sealed class AddCleanedItemHandler(NpgsqlConnection connection, Serilog.ILogger logger)
-    : ICommandHandler<AddCleanedItem, ICleaner>
+internal sealed class AddCleanedItemHandler(
+    NpgsqlConnection connection,
+    Serilog.ILogger logger,
+    ItemCleanedMessagePublisher publisher
+) : ICommandHandler<AddCleanedItem>
 {
-    public async Task<ICleaner> Handle(AddCleanedItem command, CancellationToken ct = default)
+    public async Task Handle(AddCleanedItem command, CancellationToken ct = default)
     {
         logger.Information("Adding cleaned item");
         ICleaners cleaners = new NpgSqlCleaners(connection);
         ICleaner cleaner = await cleaners.Single(ct);
-        return cleaner.CleanItem();
+        ICleaner withCleanedItem = cleaner.CleanItem();
+        ICleaner logged = await withCleanedItem
+            .ProduceOutput()
+            .PrintTo(new LoggingCleanerVeil(logger))
+            .BehaveAsync(ct);
+        await logged
+            .ProduceOutput()
+            .PrintTo(new NpgSqlSavingCleanerVeil(connection))
+            .BehaveAsync(ct);
+        await publisher.Send(command.Id, ct);
     }
 }

@@ -9,18 +9,19 @@ using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehiclesAmount;
 
-internal sealed class VehiclesAmountSqlQuery(IEmbeddingGenerator generator) : IVehiclesSqlQuery
+internal sealed class VehiclesAmountSqlQuery : IVehiclesSqlQuery
 {
     private readonly List<string> _filters = [];
     private readonly List<NpgsqlParameter> _parameters = [];
     private readonly VehiclesSqlQueryOrdering _ordering = new();
-    private Vector? _vector = null;
 
     private readonly string _sql = string.Intern(
         """
         SELECT
         COUNT(v.id) as AMOUNT
         FROM parsed_advertisements_module.parsed_vehicles v
+        INNER JOIN contained_items.items c ON c.id = v.id
+        WHERE c.is_deleted = FALSE
         """
     );
 
@@ -59,15 +60,7 @@ internal sealed class VehiclesAmountSqlQuery(IEmbeddingGenerator generator) : IV
 
     public void AcceptDescending(string orderingField) { }
 
-    public void AcceptTextSearch(string textSearch)
-    {
-        if (!string.IsNullOrWhiteSpace(textSearch))
-        {
-            ReadOnlyMemory<float> embeddings = generator.Generate(textSearch);
-            _vector = new Vector(embeddings);
-            _ordering.WithVectorSearch();
-        }
-    }
+    public void AcceptTextSearch(string textSearch) { }
 
     public IPgCommandSource PrepareCommand(NpgsqlConnection connection)
     {
@@ -76,8 +69,6 @@ internal sealed class VehiclesAmountSqlQuery(IEmbeddingGenerator generator) : IV
         command.CommandText = sql;
         foreach (NpgsqlParameter parameter in _parameters)
             command.Parameters.Add(parameter);
-        if (_vector != null)
-            command.Parameters.AddWithValue("@embedding", _vector);
         return new DefaultPgCommandSource(command);
     }
 
@@ -97,6 +88,6 @@ internal sealed class VehiclesAmountSqlQuery(IEmbeddingGenerator generator) : IV
             return string.Empty;
         StringBuilder stringBuilder = new();
         string joined = string.Join(" AND ", _filters);
-        return stringBuilder.AppendLine(" WHERE 1=1 AND ").AppendLine(joined).ToString();
+        return stringBuilder.AppendLine(" AND ").AppendLine(joined).ToString();
     }
 }
