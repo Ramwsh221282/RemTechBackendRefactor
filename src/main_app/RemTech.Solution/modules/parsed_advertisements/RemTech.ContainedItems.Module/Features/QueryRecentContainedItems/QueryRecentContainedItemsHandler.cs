@@ -14,7 +14,7 @@ internal sealed class QueryRecentContainedItemsHandler(NpgsqlConnection connecti
 
     private const string Sql = """
         SELECT id, type, created_at FROM contained_items.items
-        WHERE created_at > @dateThreshold
+        WHERE is_deleted = FALSE 
         ORDER BY created_at DESC
         LIMIT @limit OFFSET @offset;
         """;

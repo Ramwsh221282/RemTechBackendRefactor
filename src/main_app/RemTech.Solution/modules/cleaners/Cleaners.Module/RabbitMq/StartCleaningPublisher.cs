@@ -13,15 +13,6 @@ internal sealed class StartCleaningPublisher(ConnectionFactory factory, Serilog.
     {
         await using IConnection connection = await factory.CreateConnectionAsync(ct);
         await using IChannel channel = await connection.CreateChannelAsync(cancellationToken: ct);
-        await channel.ExchangeDeclareAsync(
-            Exchange,
-            ExchangeType.Direct,
-            false,
-            false,
-            cancellationToken: ct
-        );
-        await channel.QueueDeclareAsync(Queue, false, false, false, cancellationToken: ct);
-        await channel.QueueBindAsync(Queue, Exchange, Queue, cancellationToken: ct);
         ReadOnlyMemory<byte> payload = MessageAsBytes(message);
         await channel.BasicPublishAsync(Exchange, Queue, payload, ct);
         logger.Information(

@@ -2,6 +2,13 @@
 
 public sealed record RemTechDatabaseSettings
 {
+    private const string HostKey = ConfigurationConstants.PG_HOST_NAME_KEY;
+    private const string PasswordKey = ConfigurationConstants.PG_PASSWORD_KEY;
+    private const string PortKey = ConfigurationConstants.PG_PORT_KEY;
+    private const string UserKey = ConfigurationConstants.PG_USER_NAME_KEY;
+    private const string DatabaseKey = ConfigurationConstants.PG_DATABASE_NAME_KEY;
+    private const string Context = nameof(RemTechDatabaseSettings);
+
     public string Host { get; }
     public string Port { get; }
     public string Database { get; }
@@ -34,31 +41,42 @@ public sealed record RemTechDatabaseSettings
     public static RemTechDatabaseSettings CreateFromJson(string jsonPath)
     {
         IConfigurationRoot root = new ConfigurationBuilder().AddJsonFile(jsonPath).Build();
-        string? host = root.GetSection(ConfigurationConstants.PG_HOST_NAME_KEY).Value;
-        string? port = root.GetSection(ConfigurationConstants.PG_PORT_KEY).Value;
-        string? database = root.GetSection(ConfigurationConstants.PG_DATABASE_NAME_KEY).Value;
-        string? userName = root.GetSection(ConfigurationConstants.PG_USER_NAME_KEY).Value;
-        string? password = root.GetSection(ConfigurationConstants.PG_PASSWORD_KEY).Value;
+        string? host = root.GetSection(HostKey).Value;
+        string? port = root.GetSection(PortKey).Value;
+        string? database = root.GetSection(DatabaseKey).Value;
+        string? userName = root.GetSection(UserKey).Value;
+        string? password = root.GetSection(PasswordKey).Value;
+        return CreateFromValues(host, port, database, userName, password);
+    }
+
+    public static RemTechDatabaseSettings FromEnv()
+    {
+        string? host = Environment.GetEnvironmentVariable(HostKey);
+        string? port = Environment.GetEnvironmentVariable(PortKey);
+        string? database = Environment.GetEnvironmentVariable(DatabaseKey);
+        string? username = Environment.GetEnvironmentVariable(UserKey);
+        string? password = Environment.GetEnvironmentVariable(PasswordKey);
+        return CreateFromValues(host, port, database, username, password);
+    }
+
+    private static RemTechDatabaseSettings CreateFromValues(
+        string? host,
+        string? port,
+        string? database,
+        string? userName,
+        string? password
+    )
+    {
         if (string.IsNullOrWhiteSpace(host))
-            throw new ApplicationException(
-                $"{nameof(RemTechDatabaseSettings)} empty host database value."
-            );
+            throw new ApplicationException($"{Context} empty host database value.");
         if (string.IsNullOrWhiteSpace(port))
-            throw new ApplicationException(
-                $"{nameof(RemTechDatabaseSettings)} empty port database value."
-            );
+            throw new ApplicationException($"{Context} empty port database value.");
         if (string.IsNullOrWhiteSpace(database))
-            throw new ApplicationException(
-                $"{nameof(RemTechDatabaseSettings)} empty database name value."
-            );
+            throw new ApplicationException($"{Context} empty database name value.");
         if (string.IsNullOrWhiteSpace(userName))
-            throw new ApplicationException(
-                $"{nameof(RemTechDatabaseSettings)} empty database user name value."
-            );
+            throw new ApplicationException($"{Context} empty database user name value.");
         if (string.IsNullOrWhiteSpace(password))
-            throw new ApplicationException(
-                $"{nameof(RemTechDatabaseSettings)} empty password database value."
-            );
+            throw new ApplicationException($"{Context} empty password database value.");
         return new RemTechDatabaseSettings(host, port, database, userName, password);
     }
 }

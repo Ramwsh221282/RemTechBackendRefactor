@@ -2,11 +2,11 @@ using Quartz;
 using RemTech.Bootstrap.Api.Configuration;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-RemTechApplicationSettings settings = RemTechApplicationSettings.CreateFromJson("appsettings.json");
+RemTechApplicationSettings settings = RemTechApplicationSettings.ResolveByEnvironment(builder);
 settings.UpDatabases();
 builder.Services.InjectModules(settings);
 builder.Services.ConfigureQuartz();
-builder.ConfigureCors();
+settings.ConfigureCors(builder);
 builder.Services.AddOpenApi();
 builder.Services.AddQuartzHostedService();
 WebApplication app = builder.Build();

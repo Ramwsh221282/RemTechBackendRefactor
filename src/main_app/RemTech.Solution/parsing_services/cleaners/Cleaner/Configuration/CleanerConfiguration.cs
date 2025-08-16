@@ -1,4 +1,6 @@
-﻿namespace Cleaner.Configuration;
+﻿using Parsing.SDK.Browsers;
+
+namespace Cleaner.Configuration;
 
 internal sealed class CleanerConfiguration
 {
@@ -16,6 +18,27 @@ internal sealed class CleanerConfiguration
         CleanerRabbitMqSettings rabbit = CleanerRabbitMqSettings.FromJson(json);
         CleanerCacheSettings cache = CleanerCacheSettings.FromJson(json);
         return new CleanerConfiguration(rabbit, cache);
+    }
+
+    public static CleanerConfiguration FromEnv()
+    {
+        CleanerRabbitMqSettings rabbit = CleanerRabbitMqSettings.FromEnv();
+        CleanerCacheSettings cache = CleanerCacheSettings.FromEnv();
+        return new CleanerConfiguration(rabbit, cache);
+    }
+
+    public static CleanerConfiguration ResolveByEnvironment()
+    {
+        try
+        {
+            BrowserFactory.DevelopmentMode();
+            return FromJson("appsettings.json");
+        }
+        catch
+        {
+            BrowserFactory.ProductionMode();
+            return FromEnv();
+        }
     }
 
     public void Register(IServiceCollection services)

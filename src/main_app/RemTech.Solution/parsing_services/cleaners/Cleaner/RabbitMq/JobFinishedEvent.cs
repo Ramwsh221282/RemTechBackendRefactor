@@ -17,9 +17,6 @@ internal sealed class JobFinishedEvent(IConnection connection, Stopwatch stopwat
             return;
         stopwatch.Stop();
         await using IChannel channel = await connection.CreateChannelAsync();
-        await channel.ExchangeDeclareAsync(Exchange, ExchangeType.Direct, false, false);
-        await channel.QueueDeclareAsync(Queue, false, false, false);
-        await channel.QueueBindAsync(Queue, Exchange, Queue);
         await channel.BasicPublishAsync(Exchange, Queue, body: MakeBody());
     }
 

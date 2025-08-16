@@ -12,7 +12,8 @@ internal sealed class SuspiciousItemCollection(BasicDeliverEventArgs @event)
     {
         string json = Encoding.UTF8.GetString(_bytes.Span);
         using JsonDocument document = JsonDocument.Parse(json);
-        foreach (JsonElement element in document.RootElement.EnumerateArray())
+        JsonElement array = document.RootElement.GetProperty("Items");
+        foreach (JsonElement element in array.EnumerateArray())
         {
             string? id = element.GetProperty("Id").GetString();
             if (string.IsNullOrWhiteSpace(id))

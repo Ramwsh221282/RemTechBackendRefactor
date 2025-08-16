@@ -3,16 +3,11 @@ using Cleaner.Configuration;
 using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);
+CleanerConfiguration configuration = CleanerConfiguration.ResolveByEnvironment();
+configuration.Register(builder.Services);
 builder.Services.AddSingleton<Serilog.ILogger>(
     new LoggerConfiguration().WriteTo.Console().CreateLogger()
 );
-if (builder.Environment.IsDevelopment())
-{
-    CleanerConfiguration configuration = CleanerConfiguration.FromJson("appsettings.json");
-    configuration.Register(builder.Services);
-}
-
 builder.Services.AddHostedService<Worker>();
-
 var host = builder.Build();
 host.Run();

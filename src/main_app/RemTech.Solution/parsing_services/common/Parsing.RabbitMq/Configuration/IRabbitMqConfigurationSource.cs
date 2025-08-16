@@ -2,5 +2,5 @@
 
 public interface IRabbitMqConfigurationSource
 {
-    IRabbitMqConfiguration Provide();
+    RabbitMqConfiguration Provide();
 }

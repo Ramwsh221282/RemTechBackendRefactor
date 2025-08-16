@@ -17,6 +17,7 @@ public static class CleanersModuleInjection
         services.AddHostedService<CleanItemBackgroundListener>();
         services.AddHostedService<FinishCleanerBackgroundListener>();
         services.AddSingleton(Channel.CreateUnbounded<ItemCleanedMessage>());
+        services.AddSingleton<ItemCleanedMessagePublisher>();
     }
 
     public static void UpDatabase(string connectionString)

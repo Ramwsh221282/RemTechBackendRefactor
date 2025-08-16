@@ -64,18 +64,26 @@ internal sealed class Worker(
         if (_channel == null)
             throw new InvalidOperationException("Channel not initialized");
         await _channel.BasicAckAsync(@event.DeliveryTag, false);
+        logger.Information("Cleaner invoked.");
         await using IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
         await using IPage page = await browser.ProvideDefaultPage();
-        SuspiciousItemCollection items = new(@event);
-        SuspiciousItemInspector inspector = new(logger, page, _connection, multiplexer);
-        foreach (SuspiciousItem item in items.Read())
+        try
         {
-            await inspector.Inspect(item);
-            if (!await inspector.WasPermantlyDisabled())
-                continue;
+            SuspiciousItemCollection items = new(@event);
+            SuspiciousItemInspector inspector = new(logger, page, _connection, multiplexer);
+            foreach (SuspiciousItem item in items.Read())
+            {
+                await inspector.Inspect(item);
+                if (!await inspector.WasPermantlyDisabled())
+                    continue;
+                await inspector.FinishJob();
+                break;
+            }
             await inspector.FinishJob();
-            break;
         }
-        await inspector.FinishJob();
+        catch (Exception ex)
+        {
+            logger.Fatal("{Entrance}. {Ex}.", "Cleaner", ex.Message);
+        }
     }
 }

@@ -19,7 +19,7 @@ internal sealed class CleanItemBackgroundListener(
 {
     private const string Entrance = nameof(CleanItemBackgroundListener);
     private const string Exchange = RabbitMqConstants.CleanersExchange;
-    private const string Queue = RabbitMqConstants.CleanersStartQueue;
+    private const string Queue = RabbitMqConstants.CleanersCleanItemQueue;
     private IConnection? _connection;
     private IChannel? _channel;
     private AsyncEventingBasicConsumer? _consumer;

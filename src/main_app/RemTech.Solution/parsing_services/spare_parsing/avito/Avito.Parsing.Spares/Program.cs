@@ -3,24 +3,26 @@ using Parsing.Cache;
 using Parsing.RabbitMq.Configuration;
 using Parsing.RabbitMq.CreateParser;
 using Parsing.RabbitMq.StartParsing;
+using Parsing.SDK.Browsers;
 using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);
-bool isDevelopment = builder.Environment.IsDevelopment();
+if (builder.Environment.IsDevelopment())
+{
+    BrowserFactory.DevelopmentMode();
+}
+else
+{
+    BrowserFactory.ProductionMode();
+}
 builder.Services.AddSingleton<Serilog.ILogger>(
     new LoggerConfiguration().WriteTo.Console().CreateLogger()
 );
 builder.Services.AddHostedService<Worker>();
-if (isDevelopment)
-{
-    string file = "appsettings.json";
-    IDisabledTrackerConfigurationSource disabledTrackerConfigurationSource =
-        new JsonDisabledTrackerConfigurationSource(file);
-    disabledTrackerConfigurationSource.Provide().Register(builder.Services);
-    IRabbitMqConfigurationSource configSource = new JsonRabbitMqConfigurationSource(file);
-    IRabbitMqConfiguration config = configSource.Provide();
-    config.Register(builder.Services, new StartParsingListenerOptions("Avito", "Запчасти"));
-}
+new DisabledTrackerConfigurationSource().Provide().Register(builder.Services);
+new RabbitMqConfigurationSource()
+    .Provide()
+    .Register(builder.Services, new StartParsingListenerOptions("Avito", "Запчасти"));
 var host = builder.Build();
 ICreateNewParserPublisher createPublisher =
     host.Services.GetRequiredService<ICreateNewParserPublisher>();
