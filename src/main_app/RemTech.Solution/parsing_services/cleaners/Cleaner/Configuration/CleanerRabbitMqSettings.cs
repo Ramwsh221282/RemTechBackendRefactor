@@ -16,6 +16,9 @@ internal sealed class CleanerRabbitMqSettings
 
     private CleanerRabbitMqSettings(string hostName, string userName, string password, string port)
     {
+        Console.WriteLine(
+            $"Rabbit host: {hostName} Rabbit user: {userName} Rabbit password: {password} Rabbit port: {port}"
+        );
         _hostName = hostName;
         _userName = userName;
         _password = password;

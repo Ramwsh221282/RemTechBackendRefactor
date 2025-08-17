@@ -14,6 +14,9 @@ public sealed record RemTechRabbitMqSettings
 
     private RemTechRabbitMqSettings(string hostName, string userName, string password, string port)
     {
+        Console.WriteLine(
+            $"Rabbit host {hostName}. Rabbit user: {userName} Rabbit password: {password} Rabbit port: {port}"
+        );
         HostName = hostName;
         UserName = userName;
         Password = password;

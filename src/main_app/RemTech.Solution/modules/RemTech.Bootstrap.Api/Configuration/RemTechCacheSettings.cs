@@ -7,6 +7,7 @@ public sealed record RemTechCacheSettings
 
     private RemTechCacheSettings(string host)
     {
+        Console.WriteLine($"Cache host: {host}");
         Host = host;
     }
 

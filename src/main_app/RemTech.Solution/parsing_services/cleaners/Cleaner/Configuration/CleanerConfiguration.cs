@@ -27,18 +27,17 @@ internal sealed class CleanerConfiguration
         return new CleanerConfiguration(rabbit, cache);
     }
 
-    public static CleanerConfiguration ResolveByEnvironment()
+    public static CleanerConfiguration ResolveByEnvironment(HostApplicationBuilder builder)
     {
-        try
+        if (builder.Environment.IsDevelopment())
         {
+            Console.WriteLine("Development environment.");
             BrowserFactory.DevelopmentMode();
             return FromJson("appsettings.json");
         }
-        catch
-        {
-            BrowserFactory.ProductionMode();
-            return FromEnv();
-        }
+        Console.WriteLine("Production environment.");
+        BrowserFactory.ProductionMode();
+        return FromEnv();
     }
 
     public void Register(IServiceCollection services)

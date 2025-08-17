@@ -8,7 +8,11 @@ internal sealed class CleanerCacheSettings
     private const string Context = nameof(CleanerCacheSettings);
     private readonly string _host;
 
-    private CleanerCacheSettings(string host) => _host = host;
+    private CleanerCacheSettings(string host)
+    {
+        Console.WriteLine($"Cache host: {host}");
+        _host = host;
+    }
 
     public static CleanerCacheSettings FromJson(string json)
     {

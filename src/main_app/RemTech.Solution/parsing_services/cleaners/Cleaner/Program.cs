@@ -3,7 +3,7 @@ using Cleaner.Configuration;
 using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);
-CleanerConfiguration configuration = CleanerConfiguration.ResolveByEnvironment();
+CleanerConfiguration configuration = CleanerConfiguration.ResolveByEnvironment(builder);
 configuration.Register(builder.Services);
 builder.Services.AddSingleton<Serilog.ILogger>(
     new LoggerConfiguration().WriteTo.Console().CreateLogger()

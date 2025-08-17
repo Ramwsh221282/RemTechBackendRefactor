@@ -23,6 +23,9 @@ public sealed record RemTechDatabaseSettings
         string password
     )
     {
+        Console.WriteLine(
+            $"Db host: {host}. Db port: {port}. Db name: {database}. Db user: {username}. Db password: {password}."
+        );
         Host = host;
         Port = port;
         Database = database;

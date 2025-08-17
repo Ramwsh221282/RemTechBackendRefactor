@@ -13,19 +13,19 @@ public sealed class LocationsSeeding(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        long amount = await GetCurrentCount();
-        if (amount != 0)
-        {
-            logger.Information("Regions seeded. Seeding is not required.");
-            return;
-        }
-
-        CsvLocationsReading reading = new CsvLocationsReading();
-        IEnumerable<RegionToPersist> regions = reading.Read();
-        foreach (RegionToPersist region in regions)
-            await region.Persist(dataSource, generator);
-        logger.Information("Regions seeded.");
-        await Task.CompletedTask;
+        // long amount = await GetCurrentCount();
+        // if (amount != 0)
+        // {
+        //     logger.Information("Regions seeded. Seeding is not required.");
+        //     return;
+        // }
+        //
+        // CsvLocationsReading reading = new CsvLocationsReading();
+        // IEnumerable<RegionToPersist> regions = reading.Read();
+        // foreach (RegionToPersist region in regions)
+        //     await region.Persist(dataSource, generator);
+        // logger.Information("Regions seeded.");
+        // await Task.CompletedTask;
     }
 
     private async Task<long> GetCurrentCount()

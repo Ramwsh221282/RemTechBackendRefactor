@@ -27,29 +27,29 @@ internal sealed class SeedingBrandsOnStartup(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(
-            stoppingToken
-        );
-        if (await AreBrandAlreadySeeded(connection))
-        {
-            logger.Information("{Entrance}. Brands already seeded.", Entrance);
-            return;
-        }
-
-        logger.Information("{Entrance} seeding brands.", Entrance);
-        IBrand[] brands = ReadBrands();
-        await using var writer = await connection.BeginBinaryImportAsync(Sql, stoppingToken);
-        foreach (IBrand brand in brands)
-        {
-            await writer.StartRowAsync(stoppingToken);
-            await writer.WriteAsync(brand.Id, stoppingToken);
-            await writer.WriteAsync(brand.Name, stoppingToken);
-            await writer.WriteAsync(brand.Rating, stoppingToken);
-            await writer.WriteAsync(new Vector(generator.Generate(brand.Name)), stoppingToken);
-        }
-
-        await writer.CompleteAsync(stoppingToken);
-        logger.Information("{Entrance}. Brands seeded.", Entrance);
+        // await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(
+        //     stoppingToken
+        // );
+        // if (await AreBrandAlreadySeeded(connection))
+        // {
+        //     logger.Information("{Entrance}. Brands already seeded.", Entrance);
+        //     return;
+        // }
+        //
+        // logger.Information("{Entrance} seeding brands.", Entrance);
+        // IBrand[] brands = ReadBrands();
+        // await using var writer = await connection.BeginBinaryImportAsync(Sql, stoppingToken);
+        // foreach (IBrand brand in brands)
+        // {
+        //     await writer.StartRowAsync(stoppingToken);
+        //     await writer.WriteAsync(brand.Id, stoppingToken);
+        //     await writer.WriteAsync(brand.Name, stoppingToken);
+        //     await writer.WriteAsync(brand.Rating, stoppingToken);
+        //     await writer.WriteAsync(new Vector(generator.Generate(brand.Name)), stoppingToken);
+        // }
+        //
+        // await writer.CompleteAsync(stoppingToken);
+        // logger.Information("{Entrance}. Brands seeded.", Entrance);
     }
 
     private IBrand[] ReadBrands()

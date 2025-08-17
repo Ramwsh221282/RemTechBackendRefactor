@@ -45,14 +45,13 @@ public sealed class RemTechApplicationSettings
 
     public static RemTechApplicationSettings ResolveByEnvironment(WebApplicationBuilder builder)
     {
-        try
+        if (builder.Environment.IsDevelopment())
         {
+            Console.WriteLine("Development environment.");
             return CreateFromJson("appsettings.json");
         }
-        catch
-        {
-            return CreateFromEnv();
-        }
+        Console.WriteLine("Production environment.");
+        return CreateFromEnv();
     }
 
     public void ConfigureCors(WebApplicationBuilder app)

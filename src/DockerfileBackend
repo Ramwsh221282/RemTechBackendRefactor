@@ -1,0 +1,22 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+
+WORKDIR /app
+
+COPY ./main_app/RemTech.Solution/modules/. ./
+COPY ./model.onnx ./RemTech.Bootstrap.Api/
+COPY ./model.onnx_data ./RemTech.Bootstrap.Api/
+COPY ./tokenizer.onnx ./RemTech.Bootstrap.Api/
+
+RUN ls -la RemTech.Bootstrap.Api/
+
+WORKDIR /app/RemTech.Bootstrap.Api
+
+RUN dotnet restore -r linux-x64
+RUN dotnet publish -c Release -r linux-x64 --no-restore -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:9.0
+
+WORKDIR /app
+EXPOSE 5185
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "RemTech.Bootstrap.Api.dll"]

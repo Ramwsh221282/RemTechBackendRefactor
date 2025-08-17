@@ -1,0 +1,36 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+
+WORKDIR /app
+
+COPY ./main_app/RemTech.Solution/parsing_services/vehicle_parsing/drom_vehicles/Drom.Parsing.Vehicles/. ./main_app/RemTech.Solution/parsing_services/vehicle_parsing/drom_vehicles/Drom.Parsing.Vehicles/
+COPY ./main_app/RemTech.Solution/modules/shared_module/RemTech.Core.Shared/. ./main_app/RemTech.Solution/modules/shared_module/RemTech.Core.Shared/
+COPY ./main_app/RemTech.Solution/parsing_services/common/common_avito/Parsing.Avito.Common/. ./main_app/RemTech.Solution/parsing_services/common/common_avito/Parsing.Avito.Common/
+COPY ./main_app/RemTech.Solution/parsing_services/common/Parsing.SDK/. ./main_app/RemTech.Solution/parsing_services/common/Parsing.SDK/
+COPY ./main_app/RemTech.Solution/parsing_services/common/Parsing.RabbitMq/. ./main_app/RemTech.Solution/parsing_services/common/Parsing.RabbitMq/
+COPY ./main_app/RemTech.Solution/parsing_services/common/Parsing.Cache/. ./main_app/RemTech.Solution/parsing_services/common/Parsing.Cache/
+COPY ./main_app/RemTech.Solution/parsing_services/vehicle_parsing/Parsing.Vehicles.Common/. ./main_app/RemTech.Solution/parsing_services/vehicle_parsing/Parsing.Vehicles.Common/
+
+WORKDIR /app/main_app/RemTech.Solution/parsing_services/vehicle_parsing/drom_vehicles/Drom.Parsing.Vehicles
+
+RUN dotnet restore -r linux-x64
+RUN dotnet publish -c Release -r linux-x64 --no-restore -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0
+
+RUN apt-get update && \
+    apt-get install -y wget gnupg2 && \
+    wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && \
+    apt-get install -y google-chrome-stable && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV CHROME_BIN=/usr/bin/google-chrome
+
+WORKDIR /app
+
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "Drom.Parsing.Vehicles.dll"]

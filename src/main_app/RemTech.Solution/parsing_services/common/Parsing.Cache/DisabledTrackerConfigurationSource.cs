@@ -1,16 +1,16 @@
 ﻿namespace Parsing.Cache;
 
-public sealed class DisabledTrackerConfigurationSource : IDisabledTrackerConfigurationSource
+public sealed class DisabledTrackerConfigurationSource(bool isDevelopment)
+    : IDisabledTrackerConfigurationSource
 {
     public DisabledTrackerConfiguration Provide()
     {
-        try
+        if (isDevelopment)
         {
+            Console.WriteLine("Development environment.");
             return new JsonDisabledTrackerConfigurationSource("appsettings.json").Provide();
         }
-        catch
-        {
-            return new EnvDisabledTrackerConfigurationSource().Provide();
-        }
+        Console.WriteLine("Production environment.");
+        return new EnvDisabledTrackerConfigurationSource().Provide();
     }
 }

@@ -22,6 +22,9 @@ public sealed class RabbitMqConfiguration(
 
     public void Register(IServiceCollection services, StartParsingListenerOptions options)
     {
+        Console.WriteLine(
+            $"Rabbit host: {hostName}. Rabbit user: {userName}. Rabbit password: {password} Rabbit port: {port}"
+        );
         ConnectionFactory factory = new ConnectionFactory()
         {
             HostName = hostName,

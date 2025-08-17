@@ -7,7 +7,8 @@ using Parsing.SDK.Browsers;
 using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);
-if (builder.Environment.IsDevelopment())
+bool isDevelopment = builder.Environment.IsDevelopment();
+if (isDevelopment)
 {
     BrowserFactory.DevelopmentMode();
 }
@@ -19,8 +20,8 @@ builder.Services.AddSingleton<Serilog.ILogger>(
     new LoggerConfiguration().WriteTo.Console().CreateLogger()
 );
 builder.Services.AddHostedService<Worker>();
-new DisabledTrackerConfigurationSource().Provide().Register(builder.Services);
-new RabbitMqConfigurationSource()
+new DisabledTrackerConfigurationSource(isDevelopment).Provide().Register(builder.Services);
+new RabbitMqConfigurationSource(isDevelopment)
     .Provide()
     .Register(builder.Services, new StartParsingListenerOptions("Avito", "Техника"));
 var host = builder.Build();

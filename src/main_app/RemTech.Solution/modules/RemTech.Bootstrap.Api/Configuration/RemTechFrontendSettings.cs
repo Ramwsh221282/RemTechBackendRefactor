@@ -5,7 +5,11 @@ public sealed class RemTechFrontendSettings
     private const string Key = ConfigurationConstants.FRONTEND_URL_KEY;
     private readonly string _frontendUrl;
 
-    private RemTechFrontendSettings(string frontendUrl) => _frontendUrl = frontendUrl;
+    private RemTechFrontendSettings(string frontendUrl)
+    {
+        Console.WriteLine($"Frontend url {frontendUrl}");
+        _frontendUrl = frontendUrl;
+    }
 
     public void ConfigureCors(WebApplicationBuilder builder)
     {

@@ -28,29 +28,29 @@ internal sealed class SeedingCategoriesOnStartup(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(
-            stoppingToken
-        );
-        if (await AreBrandAlreadySeeded(connection))
-        {
-            logger.Information("{Entrance}. Categories already seeded.", Entrance);
-            return;
-        }
-
-        logger.Information("{Entrance}. Seeding categories.", Entrance);
-        ICategory[] categories = ReadCategories();
-        await using var writer = await connection.BeginBinaryImportAsync(Sql, stoppingToken);
-        foreach (ICategory category in categories)
-        {
-            await writer.StartRowAsync(stoppingToken);
-            await writer.WriteAsync(category.Id, stoppingToken);
-            await writer.WriteAsync(category.Name, stoppingToken);
-            await writer.WriteAsync(category.Rating, stoppingToken);
-            await writer.WriteAsync(new Vector(generator.Generate(category.Name)), stoppingToken);
-        }
-
-        await writer.CompleteAsync(stoppingToken);
-        logger.Information("{Entrance}. Categories seeded.", Entrance);
+        // await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(
+        //     stoppingToken
+        // );
+        // if (await AreBrandAlreadySeeded(connection))
+        // {
+        //     logger.Information("{Entrance}. Categories already seeded.", Entrance);
+        //     return;
+        // }
+        //
+        // logger.Information("{Entrance}. Seeding categories.", Entrance);
+        // ICategory[] categories = ReadCategories();
+        // await using var writer = await connection.BeginBinaryImportAsync(Sql, stoppingToken);
+        // foreach (ICategory category in categories)
+        // {
+        //     await writer.StartRowAsync(stoppingToken);
+        //     await writer.WriteAsync(category.Id, stoppingToken);
+        //     await writer.WriteAsync(category.Name, stoppingToken);
+        //     await writer.WriteAsync(category.Rating, stoppingToken);
+        //     await writer.WriteAsync(new Vector(generator.Generate(category.Name)), stoppingToken);
+        // }
+        //
+        // await writer.CompleteAsync(stoppingToken);
+        // logger.Information("{Entrance}. Categories seeded.", Entrance);
     }
 
     private ICategory[] ReadCategories()

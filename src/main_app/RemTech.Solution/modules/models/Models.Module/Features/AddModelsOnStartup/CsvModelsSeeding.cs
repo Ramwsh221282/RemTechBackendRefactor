@@ -28,29 +28,29 @@ internal sealed class CsvModelsSeeding(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(
-            stoppingToken
-        );
-        if (await AreBrandAlreadySeeded(connection))
-        {
-            logger.Information("{Entrance}. Models already seeded.", Entrance);
-            return;
-        }
-
-        logger.Information("{Entrance}. Seeding models.", Entrance);
-        IModel[] models = ReadModels();
-        await using var writer = await connection.BeginBinaryImportAsync(Sql, stoppingToken);
-        foreach (IModel model in models)
-        {
-            await writer.StartRowAsync(stoppingToken);
-            await writer.WriteAsync(model.Id, stoppingToken);
-            await writer.WriteAsync(model.Name, stoppingToken);
-            await writer.WriteAsync(model.Rating, stoppingToken);
-            await writer.WriteAsync(new Vector(generator.Generate(model.Name)), stoppingToken);
-        }
-
-        await writer.CompleteAsync(stoppingToken);
-        logger.Information("{Entrance}. Models seeded.", Entrance);
+        // await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(
+        //     stoppingToken
+        // );
+        // if (await AreBrandAlreadySeeded(connection))
+        // {
+        //     logger.Information("{Entrance}. Models already seeded.", Entrance);
+        //     return;
+        // }
+        //
+        // logger.Information("{Entrance}. Seeding models.", Entrance);
+        // IModel[] models = ReadModels();
+        // await using var writer = await connection.BeginBinaryImportAsync(Sql, stoppingToken);
+        // foreach (IModel model in models)
+        // {
+        //     await writer.StartRowAsync(stoppingToken);
+        //     await writer.WriteAsync(model.Id, stoppingToken);
+        //     await writer.WriteAsync(model.Name, stoppingToken);
+        //     await writer.WriteAsync(model.Rating, stoppingToken);
+        //     await writer.WriteAsync(new Vector(generator.Generate(model.Name)), stoppingToken);
+        // }
+        //
+        // await writer.CompleteAsync(stoppingToken);
+        // logger.Information("{Entrance}. Models seeded.", Entrance);
     }
 
     private IModel[] ReadModels()

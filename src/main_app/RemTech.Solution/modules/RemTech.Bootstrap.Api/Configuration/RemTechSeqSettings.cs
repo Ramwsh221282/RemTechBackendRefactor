@@ -8,6 +8,7 @@ public sealed class RemTechSeqSettings
 
     private RemTechSeqSettings(string host)
     {
+        Console.WriteLine($"Seq host: {host}");
         Host = host;
     }
 
