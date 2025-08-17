@@ -1,0 +1,25 @@
+//.app-display-root {
+//  display: grid;
+//  grid-template-columns: 85px 1fr;
+//  grid-template-rows: auto 1fr;
+//  grid-template-areas:
+//    "app-nav app-nav"
+//    "app-aside app-main";
+//  height: 100vh;
+//}
+//
+//.app-nav {
+//  grid-area: app-nav;
+//}
+//
+//.app-aside {
+//  grid-area: app-aside;
+//}
+//
+//.app-main {
+//  height: calc(100% - 61px);
+//  overflow: auto;
+//  padding: 0.25rem;
+//  grid-area: app-main;
+//  height: 100%;
+//}

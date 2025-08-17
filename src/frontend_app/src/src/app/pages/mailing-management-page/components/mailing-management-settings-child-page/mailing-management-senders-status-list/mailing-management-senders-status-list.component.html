@@ -1,0 +1,45 @@
+<div
+  class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 transition-all duration-200 hover:shadow-md">
+  <h3 class="font-semibold text-gray-800 dark:text-gray-200 mb-2">Текущие подключения:</h3>
+  <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+    <li class="flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span
+          [ngClass]="boolHasSenderWith('gmail.com') ? 'w-2 h-2 bg-blue-500 rounded-full' : 'w-2 h-2 bg-gray-400 rounded-full' "></span>
+        <span>Google</span>
+      </div>
+      <div class="flex items-center gap-2">
+        @if (boolHasSenderWith('gmail.com')) {
+          <span class="cursor-pointer" (click)="pingSenderByPostfix('gmail.com')">Проверить</span>
+          <i class="pi pi-trash"></i>
+        }
+      </div>
+    </li>
+    <li class="flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span
+          [ngClass]="boolHasSenderWith('yandex.ru') ? 'w-2 h-2 bg-blue-500 rounded-full' : 'w-2 h-2 bg-gray-400 rounded-full' "></span>
+        <span>Yandex</span>
+      </div>
+      <div class="flex items-center gap-2">
+        @if (boolHasSenderWith('yandex.ru')) {
+          <span class="cursor-pointer" (click)="pingSenderByPostfix('yandex.ru')">Проверить</span>
+          <i class="pi pi-trash"></i>
+        }
+      </div>
+    </li>
+    <li class="flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span
+          [ngClass]="boolHasSenderWith('mail.ru') ? 'w-2 h-2 bg-blue-500 rounded-full' : 'w-2 h-2 bg-gray-400 rounded-full' "></span>
+        <span class="cursor-pointer">Mail ru</span>
+      </div>
+      <div class="flex items-center gap-2">
+        @if (boolHasSenderWith('mail.ru')) {
+          <span class="cursor-pointer" (click)="pingSenderByPostfix('mail.ru')">Проверить</span>
+          <i class="pi pi-trash"></i>
+        }
+      </div>
+    </li>
+  </ul>
+</div>

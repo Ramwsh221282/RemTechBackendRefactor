@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "prettier": "3.5.3"
+  },
+  "dependencies": {
+    "chartjs-plugin-zoom": "^2.2.0",
+    "ngx-cookie-service": "^20.1.0"
+  }
+}

@@ -1,0 +1,19 @@
+.header-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.header-logo-part {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.header-menu-part {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-end;
+}

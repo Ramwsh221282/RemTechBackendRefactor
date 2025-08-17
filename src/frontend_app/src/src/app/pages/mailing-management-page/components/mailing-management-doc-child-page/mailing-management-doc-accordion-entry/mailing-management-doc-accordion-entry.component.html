@@ -1,0 +1,36 @@
+<p-accordion-panel [value]="entry.value">
+  <p-accordion-header>
+    <div class="flex items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+      <div class="flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full mr-3">
+        <svg [class]=entry.iconClasses [attr.viewBox]="entry.iconViewBox" [attr.fill]="entry.iconFill">
+          <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" />
+        </svg>
+      </div>
+      <span class="font-medium dark:text-gray-200">{{ entry.serviceName }}</span>
+    </div>
+  </p-accordion-header>
+  <p-accordion-content>
+    <div class="space-y-4">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ entry.guidanceName }}</h3>
+      <ul class="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
+        @for (guidance of entry.guidances; track guidance.guidance) {
+          <li>{{ guidance.guidance }}
+            <a *ngIf="guidance.extraLink" [href]="guidance.extraLink"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
+                underline transition-colors duration-200 inline-flex items-center">
+              {{ guidance.extraLink }}
+              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+  </p-accordion-content>
+</p-accordion-panel>

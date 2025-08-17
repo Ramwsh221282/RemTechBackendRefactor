@@ -1,0 +1,21 @@
+<p-dialog
+  maskStyleClass="backdrop-blur-sm"
+  [(visible)]="visible"
+  styleClass="!border-0 !bg-transparent"
+>
+  <ng-template #headless>
+    <div
+      class="flex flex-col px-8 py-8 gap-6 rounded-2xl"
+      style="
+        border-radius: 12px;
+        background-image: radial-gradient(
+          circle at left top,
+          var(--p-primary-700),
+          var(--p-primary-950)
+        );
+      "
+    >
+      <ng-content />
+    </div>
+  </ng-template>
+</p-dialog>

@@ -1,0 +1,6 @@
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Количество дней, после которых объявление
+  подозрительно</p>
+<p-select [ngModel]="currentWaitDays" (onChange)="onSelect($event)" [options]="waitDaysOptions">
+
+</p-select>
+<p-toast [position]="'bottom-right'"/>
