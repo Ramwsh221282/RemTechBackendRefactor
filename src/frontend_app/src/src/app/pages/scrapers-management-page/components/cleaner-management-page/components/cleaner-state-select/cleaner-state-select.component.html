@@ -1,0 +1,8 @@
+<span class="px-4 py-1 text-sm font-semibold rounded-full"
+      [ngClass]="{
+              'bg-green-500 text-white': currentState === 'Работает',
+              'bg-red-500 text-white': currentState === 'Отключен',
+              'bg-yellow-400 text-gray-800': currentState === 'Ожидает'
+            }">
+        {{ currentState }}
+</span>

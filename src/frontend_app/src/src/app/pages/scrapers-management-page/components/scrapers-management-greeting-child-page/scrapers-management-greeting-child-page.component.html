@@ -1,0 +1,229 @@
+<div class="max-w-4xl mx-auto p-6 space-y-8">
+  <div class="text-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">Парсеры техники</h1>
+    <p class="text-gray-600 dark:text-gray-400">Описание</p>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+    <div class="space-y-6">
+
+      <div>
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">Поддерживаемые сервисы парсинга:</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div class="flex items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div class="flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full mr-3">
+              <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" />
+              </svg>
+            </div>
+            <span class="font-medium dark:text-gray-200">AVITO.RU</span>
+          </div>
+
+          <div class="flex items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div class="flex items-center justify-center w-10 h-10 bg-red-100 dark:bg-red-900 rounded-full mr-3">
+              <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" />
+              </svg>
+            </div>
+            <span class="font-medium dark:text-gray-200">DROM.RU</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 p-4 rounded">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-blue-500 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-blue-700 dark:text-blue-300">
+              Для подробной информации о функционале сервисов парсинга разверните интересующую панель.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <p-accordion [value]="-1">
+        <p-accordion-panel [value]="0">
+          <p-accordion-header>
+            Описание
+          </p-accordion-header>
+          <p-accordion-content>
+            <div class="space-y-4">
+              <ul class="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
+                <li>Сервисы парсинга - отдельные приложения, каждое из которых парсит назначенный ему сервис.</li>
+                <li>За управление сервисами парсинга отвечают объекты "Парсеры" которыми Вы можете управлять.</li>
+                <li>На каждый сервис парсинга существует свой единственный объект "Парсер" с уникальными названиями и
+                  типом парсинга (техника или запчасти).
+                </li>
+                <li>Интеграция нового сервиса парсера осуществляется разработчиком путем создания нового
+                  небольшого приложения, предназначенного для парсинга сервиса.
+                </li>
+              </ul>
+              <div class="bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 p-4 rounded">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-500 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                      Каждый сервис парсера работает автономно и ждёт своего времени запуска. Отключение основого
+                      приложения прерывает работу всех парсеров.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </p-accordion-content>
+        </p-accordion-panel>
+        <p-accordion-panel [value]="1">
+          <p-accordion-header>
+            Объект "Парсер"
+          </p-accordion-header>
+          <p-accordion-content>
+            <div class="space-y-4">
+              <ul class="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
+                <li>Объект парсер представляет собой единицу сервиса парсинга.</li>
+                <li>Объект парсер работает в трёх состояниях: "Ожидает", "Отключен", "Работает".</li>
+                <li>В каждой итерации парсера (в каждом моменте запуска парсера согласно расписанию) за процесс его
+                  работы может менятся его статистика времени выполнения и число добавленных объявлений.
+                </li>
+                <div class="bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 p-4 rounded">
+                  <div class="flex">
+                    <div class="flex-shrink-0">
+                      <svg class="h-5 w-5 text-blue-500 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                              clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm text-blue-700 dark:text-blue-300">
+                        В состоянии ожидания, парсер ждёт следующего запуска, согласно свойствам "Дни ожидания",
+                        "Следующий
+                        запуск".
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 p-4 rounded">
+                  <div class="flex">
+                    <div class="flex-shrink-0">
+                      <svg class="h-5 w-5 text-blue-500 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                              clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm text-blue-700 dark:text-blue-300">
+                        В состоянии "Отключен" парсер не будет запускаться даже если его "Следующий запуск" является
+                        релевантным по отношению к настоящему времени.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 p-4 rounded">
+                  <div class="flex">
+                    <div class="flex-shrink-0">
+                      <svg class="h-5 w-5 text-blue-500 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                              clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm text-blue-700 dark:text-blue-300">
+                        В состоянии "Работает" парсер обрабатывает принадлежащие ему ссылки, создает "Журналы парсинга",
+                        в
+                        которых можно просмотреть, что делал парсер, а так же отправляет результаты собранных объявлений
+                        в
+                        основное приложение для их сохранения.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </ul>
+            </div>
+          </p-accordion-content>
+        </p-accordion-panel>
+        <p-accordion-panel [value]="2">
+          <p-accordion-header>
+            Объект "Ссылка парсера"
+          </p-accordion-header>
+          <p-accordion-content>
+            <div class="space-y-4">
+              <ul class="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
+                <li>Ссылки парсера принадлежат парсеру, для которого они создаются.</li>
+                <li>На каждую ссылку парсера так же присутствует статистика, как и у парсера.</li>
+                <li>Для удобной работы с ссылками, рекомендуется давать им осознанное имя, например "Avito JCB".
+                </li>
+                <li>Ссылки можно "Деактивировать", при таком случае, деактивированные ссылки будут игнорироваться при
+                  итерации парсинга.
+                </li>
+              </ul>
+              <div class="bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 p-4 rounded">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-500 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                      Парсер не может хранить ссылки, которые дублируются по наименованию, либо по URL значению.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 p-4 rounded">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-500 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                      Парсер, у которого нет ссылок, нельзя перевести в состояние "Ожидает".
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 p-4 rounded">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-500 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                      Если у ссылки и у парсера разный домен, операция добавления будет невалидной. Например нельзя для
+                      avito парсера добавить ссылку drom.ru/bulls.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </p-accordion-content>
+        </p-accordion-panel>
+      </p-accordion>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+<p-select (onChange)="onChange($event)" [fluid]="true" [options]="categories" [(ngModel)]="selectedCategory"
+          optionLabel="name" [filter]="true"
+          filterBy="name"
+          [showClear]="true" placeholder="Выбрать категорию" class="w-full md:w-56">
+  <ng-template #selectedItem let-selectedOption>
+    <div class="flex items-center gap-2">
+      <div>{{ selectedOption.name }}</div>
+    </div>
+  </ng-template>
+  <ng-template let-category #item>
+    <div class="flex items-center gap-2">
+      <div>{{ category.name }}</div>
+    </div>
+  </ng-template>
+</p-select>

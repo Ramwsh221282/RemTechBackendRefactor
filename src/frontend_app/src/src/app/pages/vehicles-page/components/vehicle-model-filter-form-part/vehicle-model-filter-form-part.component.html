@@ -1,0 +1,15 @@
+<p-select (onChange)="onChange($event)" [fluid]="true" [options]="models" [(ngModel)]="selectedModel"
+          optionLabel="name" [filter]="true"
+          filterBy="name"
+          [showClear]="true" placeholder="Выбрать модель" class="w-full md:w-56">
+  <ng-template #selectedItem let-selectedOption>
+    <div class="flex items-center gap-2">
+      <div>{{ selectedOption.name }}</div>
+    </div>
+  </ng-template>
+  <ng-template let-model #item>
+    <div class="flex items-center gap-2">
+      <div>{{ model.name }}</div>
+    </div>
+  </ng-template>
+</p-select>
