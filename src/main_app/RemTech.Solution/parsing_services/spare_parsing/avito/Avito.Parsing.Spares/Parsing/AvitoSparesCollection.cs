@@ -15,6 +15,7 @@ public sealed class AvitoSparesCollection : IAvitoSparesCollection
 
     public async Task<IEnumerable<AvitoSpare>> Read()
     {
+        await new AvitoImagesHoverer(_page).HoverImages();
         IElementHandle listContainer = await new ValidSingleElementSource(
             new PageElementSource(_page)
         ).Read(ItemListContainer);

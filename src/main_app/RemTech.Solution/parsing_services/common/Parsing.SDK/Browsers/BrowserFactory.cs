@@ -39,6 +39,15 @@ public static class BrowserFactory
         return new SinglePagedScrapingBrowser(browser);
     }
 
+    public static async Task<IScrapingBrowser> ProvideDevelopmentNonHeadlessBrowser()
+    {
+        IBrowser browser = await new DefaultBrowserInstantiation(
+            new NonHeadlessBrowserInstantiationOptions(),
+            new BasicBrowserLoading()
+        ).Instantiation();
+        return new SinglePagedScrapingBrowser(browser);
+    }
+
     public static async Task<IScrapingBrowser> ProvideProductionBrowser()
     {
         IBrowser browser = await new DefaultBrowserInstantiation(

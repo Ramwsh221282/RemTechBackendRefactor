@@ -16,6 +16,7 @@ public static class UsersModuleInjection
         services.AddSingleton(new StringHash());
         services.AddSingleton(new SecurityKeySource());
         services.AddTransient<AdminOrRootAccessFilter>();
+        services.AddSingleton<PrivelegedAccessVerify>();
     }
 
     public static void UpDatabase(string connectionString)

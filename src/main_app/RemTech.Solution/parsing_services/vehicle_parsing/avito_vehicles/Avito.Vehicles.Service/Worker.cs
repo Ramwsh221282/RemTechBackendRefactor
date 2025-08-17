@@ -7,6 +7,7 @@ using Parsing.RabbitMq.PublishVehicle;
 using Parsing.RabbitMq.PublishVehicle.Extras;
 using Parsing.RabbitMq.StartParsing;
 using Parsing.SDK.Browsers;
+using Parsing.SDK.ScrapingActions;
 using Parsing.Vehicles.Common.ParsedVehicles;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePhotos;
@@ -60,7 +61,7 @@ public class Worker(
                 parserLinkStopwatch.Start();
                 if (await HasPermantlyDisabled(parserStarted))
                     break;
-
+                await new PageNavigating(page, link.LinkUrl).Do();
                 IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
                     page,
                     new NoTextWrite(),

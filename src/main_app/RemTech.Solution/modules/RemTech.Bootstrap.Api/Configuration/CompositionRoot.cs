@@ -6,6 +6,8 @@ using Categories.Module.Features.QueryCategoriesAmount;
 using Categories.Module.Features.QueryPopularCategories;
 using Cleaners.Module.Endpoints;
 using Mailing.Module.Features;
+using RemTech.ContainedItems.Module.Features.DropSpares;
+using RemTech.ContainedItems.Module.Features.DropVehicles;
 using RemTech.ContainedItems.Module.Features.GetContainedVehiclesAmount;
 using RemTech.ContainedItems.Module.Features.QueryRecentContainedItems;
 using RemTech.ContainedItems.Module.Features.QueryRecentContainedItemsCount;
@@ -156,5 +158,7 @@ public static class CompositionRoot
         GetContainedItemsByTypeEndpoint.Map(group);
         QuerySomeRecentItemsEndpoint.Map(group);
         QueryRecentContainedItemsEndpoint.Map(group);
+        DropSparesEndpoint.Map(group);
+        DropVehiclesEndpoint.Map(group);
     }
 }

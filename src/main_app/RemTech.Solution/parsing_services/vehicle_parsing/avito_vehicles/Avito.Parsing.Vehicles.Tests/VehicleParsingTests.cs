@@ -8,6 +8,7 @@ using Parsing.SDK.Browsers.InstantiationModes;
 using Parsing.SDK.Browsers.InstantiationOptions;
 using Parsing.SDK.Browsers.PageSources;
 using Parsing.SDK.ElementSources;
+using Parsing.SDK.ScrapingActions;
 using Parsing.SDK.ScrapingArtifacts;
 using Parsing.Vehicles.Common.ParsedVehicles;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
@@ -29,6 +30,7 @@ public class VehicleParsingTests
             "https://www.avito.ru/all/gruzoviki_i_spetstehnika/tehnika_dlya_lesozagotovki/komatsu-ASgBAgICAkRUsiyexw3g6j8?cd=1";
         await using IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
         await using IPage page = await browser.ProvideDefaultPage();
+        await new PageNavigating(page, link).Do();
         ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
         IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
             page,

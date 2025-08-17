@@ -11,6 +11,7 @@ using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Price;
 using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Url;
 using Avito.Vehicles.Service.VehiclesParsing.CatalogueItems;
 using Parsing.Avito.Common.BypassFirewall;
+using Parsing.Avito.Common.Images;
 using Parsing.Avito.Common.PaginationBar;
 using Parsing.SDK.ScrapingActions;
 using Parsing.Vehicles.Common.ParsedVehicles;
@@ -57,8 +58,11 @@ public sealed class AvitoVehiclesParser(
             IPageNavigating catalogueNavigating = new PageNavigating(page, url).WrapBy(
                 n => new LoggingPageNavigating(logger, url, n)
             );
+            if (!await bypass.Read())
+                continue;
+
             CatalogueItemsList items = await new EmptyAvitoCatalogueItemsSource()
-                .WrapBy(s => new NavigatingCatalogueItems(catalogueNavigating, s))
+                .WrapBy(s => new NavigatingCatalogueItems(page, catalogueNavigating, s))
                 .WrapBy(s => new ImageHoveringAvitoCatalogueItemsSource(page, s))
                 .WrapBy(s => new ExtractingAvitoCatalogueItemsSource(page, s))
                 .WrapBy(s => new IdentifiedAvitoCatalogueItemsSource(s))

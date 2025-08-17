@@ -70,6 +70,7 @@ public sealed class Worker(
             IAvitoPaginationBarSource pagination = new AvitoPaginationBarSource(page)
                 .WrapBy(p => new BottomScrollingAvitoPaginationBarSource(page, p))
                 .WrapBy(p => new LoggingAvitoPaginationBarSource(logger, p));
+            await new PageNavigating(page, link.LinkUrl).Do();
             if (!await bypass.Read())
                 break;
             LoggingAvitoPaginationBarElement bar = new LoggingAvitoPaginationBarElement(
@@ -85,6 +86,8 @@ public sealed class Worker(
                 await new PageNavigating(page, pageUrl)
                     .WrapBy(n => new LoggingPageNavigating(logger, pageUrl, n))
                     .Do();
+                if (!await bypass.Read())
+                    break;
                 IEnumerable<AvitoSpare> spares = await new BlockBypassingAvitoSparesCollection(
                     bypass,
                     new AvitoSparesCollection(page)
