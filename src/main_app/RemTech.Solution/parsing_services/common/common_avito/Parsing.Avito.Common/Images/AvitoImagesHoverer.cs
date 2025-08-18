@@ -11,6 +11,7 @@ public sealed class AvitoImagesHoverer(IPage page)
 
     public async Task HoverImages()
     {
+        await Task.Delay(TimeSpan.FromSeconds(10));
         IElementHandle container = await new PageElementSource(page).Read(
             string.Intern(ContainerSelector)
         );
@@ -35,6 +36,6 @@ public sealed class AvitoImagesHoverer(IPage page)
                 }
             }
         }
-        Console.WriteLine("Hovered");
+        await Task.Delay(TimeSpan.FromSeconds(10));
     }
 }

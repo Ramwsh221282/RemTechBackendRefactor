@@ -52,11 +52,9 @@ public class Worker(
             {
                 if (await HasPermantlyDisabled(parserStarted))
                     break;
-
+                await new PageNavigating(page, link.LinkUrl).Do();
                 Stopwatch parserLinkStopwatch = new Stopwatch();
                 parserLinkStopwatch.Start();
-                if (await HasPermantlyDisabled(parserStarted))
-                    break;
                 DromPagesCursor cursor = new DromPagesCursor(page);
                 bool shouldStop = false;
                 while (!shouldStop)
