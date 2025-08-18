@@ -83,7 +83,7 @@ export class ContainedItemsManagementPageComponent {
     const email: string = formValues.email as string;
     const name: string = formValues.name as string;
     const password: string = formValues.password as string;
-    this._service.deleteVehicles(email, name, password).subscribe({
+    this._service.deleteSpares(email, name, password).subscribe({
       next: (deleted: number): void => {
         const message = `Удалено ${deleted} запчастей.`;
         MessageServiceUtils.showSuccess(this._messageService, message);
