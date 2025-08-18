@@ -23,15 +23,22 @@ public static class CommonInfrastructureInjection
 
     private static void InjectCache(this IServiceCollection services, RemTechCacheSettings settings)
     {
-        ConnectionMultiplexer multiplexer = ConnectionMultiplexer.Connect(settings.Host);
+        ConfigurationOptions opts = new ConfigurationOptions()
+        {
+            AbortOnConnectFail = false,
+            AsyncTimeout = 5000,
+            AllowAdmin = true,
+            EndPoints = { settings.Host },
+            ConnectTimeout = 5000,
+            ConnectRetry = 3,
+        };
+        ConnectionMultiplexer multiplexer = ConnectionMultiplexer.Connect(opts);
         IDatabase database = multiplexer.GetDatabase();
         Guid id = Guid.NewGuid();
         string key = id.ToString();
         database.StringSet(key, "test");
         database.KeyDelete(key);
-        services.AddSingleton<ConnectionMultiplexer>(_ =>
-            ConnectionMultiplexer.Connect(settings.Host)
-        );
+        services.AddSingleton(multiplexer);
     }
 
     private static void InjectDatabase(

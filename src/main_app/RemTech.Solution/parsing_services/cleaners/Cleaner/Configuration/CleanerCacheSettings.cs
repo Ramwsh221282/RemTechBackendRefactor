@@ -36,6 +36,16 @@ internal sealed class CleanerCacheSettings
 
     public void Register(IServiceCollection services)
     {
-        services.AddSingleton<ConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(_host));
+        ConfigurationOptions opts = new ConfigurationOptions()
+        {
+            AbortOnConnectFail = false,
+            AsyncTimeout = 5000,
+            AllowAdmin = true,
+            EndPoints = { _host },
+            ConnectTimeout = 5000,
+            ConnectRetry = 3,
+        };
+        ConnectionMultiplexer multiplexer = ConnectionMultiplexer.Connect(opts);
+        services.AddSingleton(multiplexer);
     }
 }
