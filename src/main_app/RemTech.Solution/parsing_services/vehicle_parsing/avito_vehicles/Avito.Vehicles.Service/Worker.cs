@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using Avito.Vehicles.Service.VehiclesParsing;
 using Parsing.Cache;
+using Parsing.RabbitMq.AddJournalRecord;
 using Parsing.RabbitMq.Facade;
 using Parsing.RabbitMq.PublishVehicle;
 using Parsing.RabbitMq.PublishVehicle.Extras;
@@ -22,7 +23,8 @@ public class Worker(
     Serilog.ILogger logger,
     IStartParsingListener listener,
     IParserRabbitMqActionsPublisher publisher,
-    IDisabledScraperTracker disabledTracker
+    IDisabledScraperTracker disabledTracker,
+    IAddJournalRecordPublisher addJournalRecord
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -51,16 +53,33 @@ public class Worker(
         await using IPage page = await browser.ProvideDefaultPage();
         Stopwatch parserStopwatch = new Stopwatch();
         parserStopwatch.Start();
+        await addJournalRecord.PublishJournalRecord(
+            parserStarted.ParserName,
+            parserStarted.ParserType,
+            "Работа парсера",
+            "Парсинг начался."
+        );
         try
         {
             foreach (var link in parserStarted.Links)
             {
                 if (await HasPermantlyDisabled(parserStarted))
-                    break;
+                {
+                    await addJournalRecord.PublishJournalRecord(
+                        parserStarted.ParserName,
+                        parserStarted.ParserType,
+                        "Работа парсера",
+                        $"Парсер был немедленно отключен. Остановка работы."
+                    );
+                }
+                await addJournalRecord.PublishJournalRecord(
+                    parserStarted.ParserName,
+                    parserStarted.ParserType,
+                    "Обработка ссылки",
+                    $"Обработка ссылки {link.LinkUrl}. Начата."
+                );
                 Stopwatch parserLinkStopwatch = new Stopwatch();
                 parserLinkStopwatch.Start();
-                if (await HasPermantlyDisabled(parserStarted))
-                    break;
                 await new PageNavigating(page, link.LinkUrl).Do();
                 IParsedVehicleSource vehicleSource = new AvitoVehiclesParser(
                     page,
@@ -70,10 +89,32 @@ public class Worker(
                 );
                 await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
                 {
+                    await addJournalRecord.PublishJournalRecord(
+                        parserStarted.ParserName,
+                        parserStarted.ParserType,
+                        "Обработка объявления",
+                        $"Обработка объявления начата."
+                    );
                     if (await HasPermantlyDisabled(parserStarted))
+                    {
+                        await addJournalRecord.PublishJournalRecord(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            "Работа парсера",
+                            $"Парсер был немедленно отключен. Остановка работы."
+                        );
                         break;
+                    }
                     if (!await new ValidatingParsedVehicle(vehicle).IsValid())
+                    {
+                        await addJournalRecord.PublishJournalRecord(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            "Обработка объявления",
+                            $"Объявление пропущено. Проблема с данными объявления."
+                        );
                         continue;
+                    }
                     ParsedVehiclePrice price = await vehicle.Price();
                     CharacteristicsDictionary ctxes = await vehicle.Characteristics();
                     UniqueParsedVehiclePhotos photos = await vehicle.Photos();
@@ -114,6 +155,12 @@ public class Worker(
                         )
                     );
                     await publisher.SayVehicleFinished(message);
+                    await addJournalRecord.PublishJournalRecord(
+                        parserStarted.ParserName,
+                        parserStarted.ParserType,
+                        "Обработка объявления",
+                        $"Объявление {message.Vehicle.SourceUrl} добавлено в очередь добавления."
+                    );
                 }
                 parserLinkStopwatch.Stop();
                 long linkSeconds = (long)parserLinkStopwatch.Elapsed.TotalSeconds;
@@ -124,11 +171,23 @@ public class Worker(
                     linkSeconds
                 );
                 logger.Information("Sended finish link {Link}.", link.LinkName);
+                await addJournalRecord.PublishJournalRecord(
+                    parserStarted.ParserName,
+                    parserStarted.ParserType,
+                    "Обработка ссылки",
+                    $"Обработка ссылки {link.LinkUrl}. Закончена."
+                );
             }
         }
         catch (Exception ex)
         {
             logger.Fatal("{Ex}.", ex.Message);
+            await addJournalRecord.PublishJournalRecord(
+                parserStarted.ParserName,
+                parserStarted.ParserType,
+                "Работа парсера",
+                $"Ошибка выполнения парсера. {ex.Message}. Работа закончена."
+            );
         }
         parserStopwatch.Stop();
         long parserStopwatchSeconds = (long)parserStopwatch.Elapsed.TotalSeconds;
@@ -141,6 +200,12 @@ public class Worker(
             "Sended finish parser {Name} {Type}",
             parserStarted.ParserName,
             parserStarted.ParserType
+        );
+        await addJournalRecord.PublishJournalRecord(
+            parserStarted.ParserName,
+            parserStarted.ParserType,
+            "Работа парсера",
+            $"Парсер закончил работу."
         );
     }
 

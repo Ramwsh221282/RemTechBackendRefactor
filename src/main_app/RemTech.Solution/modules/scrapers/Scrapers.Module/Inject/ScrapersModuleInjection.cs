@@ -2,6 +2,8 @@
 using DbUp;
 using DbUp.Engine;
 using Microsoft.Extensions.DependencyInjection;
+using Scrapers.Module.Domain.JournalsContext.BackgroundServices.AddJournalRecordListener;
+using Scrapers.Module.Domain.JournalsContext.Cache;
 using Scrapers.Module.Features.CreateNewParser.Inject;
 using Scrapers.Module.Features.FinishParser.Entrance;
 using Scrapers.Module.Features.FinishParserLink.Entrance;
@@ -20,10 +22,12 @@ public static class ScrapersModuleInjection
         services.AddHostedService<FinishParserEntrance>();
         services.AddHostedService<FinishedParserLinkEntrance>();
         services.AddHostedService<IncreasedProcessedEntrance>();
+        services.AddHostedService<AddJournalRecordBackgroundService>();
         services.AddSingleton<IParserStartedPublisher, RabbitMqParserStartedPublisher>();
         services.AddSingleton(Channel.CreateUnbounded<IncreaseProcessedMessage>());
         services.AddSingleton<IIncreaseProcessedPublisher, IncreaseProcessedPublisher>();
         services.AddSingleton<ParserStateCachedStorage>();
+        services.AddSingleton<ActiveScraperJournalsCache>();
     }
 
     public static void UpDatabase(string connectionString)

@@ -4,10 +4,13 @@ using Drom.Parsing.Vehicles.Parsing.AttributeParsers;
 using Drom.Parsing.Vehicles.Parsing.Models;
 using Drom.Parsing.Vehicles.Parsing.Utilities;
 using Parsing.Cache;
+using Parsing.RabbitMq.AddJournalRecord;
 using Parsing.RabbitMq.Facade;
+using Parsing.RabbitMq.PublishVehicle;
 using Parsing.RabbitMq.StartParsing;
 using Parsing.SDK.Browsers;
 using Parsing.SDK.ScrapingActions;
+using Parsing.SDK.ScrapingArtifacts;
 using PuppeteerSharp;
 using RabbitMQ.Client.Events;
 
@@ -17,7 +20,8 @@ public class Worker(
     Serilog.ILogger logger,
     IStartParsingListener listener,
     IParserRabbitMqActionsPublisher publisher,
-    IDisabledScraperTracker disabledTracker
+    IDisabledScraperTracker disabledTracker,
+    IAddJournalRecordPublisher addJournalRecord
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken stoppingToken)
@@ -46,12 +50,33 @@ public class Worker(
         await using IPage page = await browser.ProvideDefaultPage();
         Stopwatch parserStopwatch = new Stopwatch();
         parserStopwatch.Start();
+        await addJournalRecord.PublishJournalRecord(
+            parserStarted.ParserName,
+            parserStarted.ParserType,
+            "Работа парсера",
+            "Парсинг начался."
+        );
+        logger.Information("Started.");
         try
         {
             foreach (var link in parserStarted.Links)
             {
                 if (await HasPermantlyDisabled(parserStarted))
+                {
+                    await addJournalRecord.PublishJournalRecord(
+                        parserStarted.ParserName,
+                        parserStarted.ParserType,
+                        "Работа парсера",
+                        $"Парсер был немедленно отключен. Остановка работы."
+                    );
                     break;
+                }
+                await addJournalRecord.PublishJournalRecord(
+                    parserStarted.ParserName,
+                    parserStarted.ParserType,
+                    "Обработка ссылки",
+                    $"Обработка ссылки {link.LinkUrl}. Начата."
+                );
                 await new PageNavigating(page, link.LinkUrl).Do();
                 Stopwatch parserLinkStopwatch = new Stopwatch();
                 parserLinkStopwatch.Start();
@@ -60,7 +85,15 @@ public class Worker(
                 while (!shouldStop)
                 {
                     if (await HasPermantlyDisabled(parserStarted))
+                    {
+                        await addJournalRecord.PublishJournalRecord(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            "Работа парсера",
+                            $"Парсер был немедленно отключен. Остановка работы."
+                        );
                         break;
+                    }
                     await cursor.Navigate();
                     await new PageBottomScrollingAction(page).Do();
                     await new PageUpperScrollingAction(page).Do();
@@ -73,8 +106,22 @@ public class Worker(
                     IEnumerable<DromCatalogueCar> cars = await collection.Iterate();
                     foreach (DromCatalogueCar item in cars)
                     {
+                        await addJournalRecord.PublishJournalRecord(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            "Обработка объявления",
+                            $"Обработка объявления начата."
+                        );
                         if (await HasPermantlyDisabled(parserStarted))
+                        {
+                            await addJournalRecord.PublishJournalRecord(
+                                parserStarted.ParserName,
+                                parserStarted.ParserType,
+                                "Работа парсера",
+                                $"Парсер был немедленно отключен. Остановка работы."
+                            );
                             break;
+                        }
                         await item.Navigation().Navigate(page);
                         await new DromVehicleModelSource(page).Print(item);
                         await new DromVehicleBrandSource(page).Print(item);
@@ -83,19 +130,44 @@ public class Worker(
                         (await new DromVehicleCharacteristicSource(page).Read()).Print(item);
                         (await new CarPriceSource(page).Read()).Print(item);
                         (await new CarLocationSource(page).Read()).Print(item);
-                        item.LogMessage().Log(logger);
-                        if (item.Valid())
+                        if (await IsNotRelevant(page))
                         {
-                            await publisher.SayVehicleFinished(
-                                item.AsPublishMessage(
-                                    parserStarted.ParserName,
-                                    parserStarted.ParserType,
-                                    parserStarted.ParserDomain,
-                                    link.LinkName,
-                                    link.LinkUrl
-                                )
+                            logger.Warning("Item was not relevant. Skipping item.");
+                            await addJournalRecord.PublishJournalRecord(
+                                parserStarted.ParserName,
+                                parserStarted.ParserType,
+                                "Обработка объявления",
+                                $"Объявление пропущено. Неактуально."
                             );
+                            continue;
                         }
+
+                        item.LogMessage().Log(logger);
+                        if (!item.Valid())
+                        {
+                            await addJournalRecord.PublishJournalRecord(
+                                parserStarted.ParserName,
+                                parserStarted.ParserType,
+                                "Обработка объявления",
+                                $"Объявление пропущено. Проблема с данными объявления."
+                            );
+                            continue;
+                        }
+
+                        VehiclePublishMessage message = item.AsPublishMessage(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            parserStarted.ParserDomain,
+                            link.LinkName,
+                            link.LinkUrl
+                        );
+                        await publisher.SayVehicleFinished(message);
+                        await addJournalRecord.PublishJournalRecord(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            "Обработка объявления",
+                            $"Объявление {message.Vehicle.SourceUrl} добавлено в очередь добавления."
+                        );
                     }
                 }
                 parserLinkStopwatch.Stop();
@@ -107,11 +179,23 @@ public class Worker(
                     linkSeconds
                 );
                 logger.Information("Sended finsih link {Link}", link.LinkName);
+                await addJournalRecord.PublishJournalRecord(
+                    parserStarted.ParserName,
+                    parserStarted.ParserType,
+                    "Обработка ссылки",
+                    $"Обработка ссылки {link.LinkUrl}. Закончена."
+                );
             }
         }
         catch (Exception ex)
         {
             logger.Fatal("{Ex}.", ex.Message);
+            await addJournalRecord.PublishJournalRecord(
+                parserStarted.ParserName,
+                parserStarted.ParserType,
+                "Работа парсера",
+                $"Ошибка выполнения парсера. {ex.Message}. Работа закончена."
+            );
         }
 
         parserStopwatch.Stop();
@@ -125,6 +209,12 @@ public class Worker(
             "Sended finish parser {Name} {Type}",
             parserStarted.ParserName,
             parserStarted.ParserType
+        );
+        await addJournalRecord.PublishJournalRecord(
+            parserStarted.ParserName,
+            parserStarted.ParserType,
+            "Работа парсера",
+            $"Парсер закончил работу."
         );
     }
 
@@ -140,5 +230,33 @@ public class Worker(
             );
         }
         return disabled;
+    }
+
+    private static async Task<bool> IsNotRelevant(IPage page)
+    {
+        string container = string.Intern(".ftldj60.css-1yado2t");
+        IElementHandle? element = await page.QuerySelectorAsync(container);
+        if (element == null)
+            return false;
+        IElementHandle? innerContainer = await element.QuerySelectorAsync(".ftldj61");
+        if (innerContainer == null)
+            return false;
+        IElementHandle? irrelevantContainer = await innerContainer.QuerySelectorAsync(
+            ".ebrtcvm0.css-qjhitd.e1u9wqx22"
+        );
+        if (irrelevantContainer == null)
+            return false;
+        IElementHandle? irrelevantElement = await irrelevantContainer.QuerySelectorAsync(
+            ".css-1jba3gn.edsrp6u3"
+        );
+        if (irrelevantElement == null)
+            return false;
+        IElementHandle? irrelevantTextElement = await irrelevantElement.QuerySelectorAsync(
+            ".css-1gp719b.edsrp6u2"
+        );
+        if (irrelevantTextElement == null)
+            return false;
+        string text = await new TextFromWebElement(irrelevantTextElement).Read();
+        return text.Contains("Техника снята с продажи");
     }
 }

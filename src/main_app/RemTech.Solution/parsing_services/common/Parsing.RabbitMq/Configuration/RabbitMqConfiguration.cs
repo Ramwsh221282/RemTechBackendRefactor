@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Parsing.RabbitMq.AddJournalRecord;
 using Parsing.RabbitMq.CreateParser;
 using Parsing.RabbitMq.Facade;
 using Parsing.RabbitMq.FinishParser;
@@ -55,5 +56,6 @@ public sealed class RabbitMqConfiguration(
         >();
         services.AddSingleton<ISparePublisher, SparePublisher>();
         services.AddSingleton<IParserRabbitMqActionsPublisher, ParserRabbitMqActionsPublisher>();
+        services.AddSingleton<IAddJournalRecordPublisher, AddJournalRecordPublisher>();
     }
 }

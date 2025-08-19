@@ -1,4 +1,5 @@
-﻿using Scrapers.Module.Features.FinishParser.Database;
+﻿using Scrapers.Module.Domain.JournalsContext.Features.CompleteScraperJournal;
+using Scrapers.Module.Features.FinishParser.Database;
 
 namespace Scrapers.Module.Features.FinishParser.Models;
 
@@ -17,5 +18,10 @@ internal sealed record FinishedParser(
     public Task Save(IParserToFinishStorage storage, CancellationToken ct = default)
     {
         return storage.Save(this, ct);
+    }
+
+    public CompleteScraperJournalCommand CompleteJournalCommand()
+    {
+        return new CompleteScraperJournalCommand(ParserName, ParserType);
     }
 }

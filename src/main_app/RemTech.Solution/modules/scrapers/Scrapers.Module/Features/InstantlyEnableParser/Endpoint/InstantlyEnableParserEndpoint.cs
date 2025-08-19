@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
 using RabbitMQ.Client;
+using Scrapers.Module.Domain.JournalsContext;
+using Scrapers.Module.Domain.JournalsContext.Cache;
+using Scrapers.Module.Domain.JournalsContext.Features.CreateScraperJournal;
 using Scrapers.Module.Features.InstantlyEnableParser.Exceptions;
 using Scrapers.Module.Features.InstantlyEnableParser.Models;
 using Scrapers.Module.Features.InstantlyEnableParser.Storage;
@@ -29,6 +32,7 @@ public static class InstantlyEnableParserEndpoint
         [FromServices] Serilog.ILogger logger,
         [FromServices] ConnectionFactory factory,
         [FromServices] ParserStateCachedStorage cache,
+        [FromServices] ActiveScraperJournalsCache journalsCache,
         [FromQuery] string name,
         [FromQuery] string type,
         CancellationToken ct
@@ -43,6 +47,10 @@ public static class InstantlyEnableParserEndpoint
             InstantlyEnabledParser enabled = toEnable.Enable();
             await enabled.Save(storage, ct);
             await cache.UpdateState(name, type, "Работает");
+            await new CreateScraperJournalHandler(dataSource, logger, journalsCache).Handle(
+                enabled.CreateJournalCommand(),
+                ct
+            );
             await using IParserStartedPublisher publisher = new RabbitMqParserStartedPublisher(
                 factory
             );

@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
+using Scrapers.Module.Domain.JournalsContext.Cache;
+using Scrapers.Module.Domain.JournalsContext.Exceptions;
+using Scrapers.Module.Domain.JournalsContext.Features.CompleteScraperJournal;
+using Scrapers.Module.Domain.JournalsContext.Persistance;
 using Scrapers.Module.Features.ChangeParserState.Database;
 using Scrapers.Module.Features.ChangeParserState.Exception;
 using Scrapers.Module.Features.ChangeParserState.Logging;
@@ -27,6 +31,7 @@ public static class ParserStateChangeEndpoint
         [FromServices] NpgsqlDataSource dataSource,
         [FromServices] Serilog.ILogger logger,
         [FromServices] ParserStateCachedStorage cache,
+        [FromServices] ActiveScraperJournalsCache journalsCache,
         [FromQuery] string name,
         [FromQuery] string type,
         [FromBody] ParserStateToChangeRequest request,
@@ -48,6 +53,13 @@ public static class ParserStateChangeEndpoint
                 saved.NewState
             );
             await cache.UpdateState(saved.ParserName, saved.ParserType, saved.NewState);
+            if (saved.NewState == "Отключен")
+            {
+                await new CompleteScraperJournalHandler(dataSource, logger, journalsCache).Handle(
+                    new CompleteScraperJournalCommand(result.ParserName, result.ParserType),
+                    ct
+                );
+            }
             return Results.Ok(result);
         }
         catch (ParserAlreadyHasThisStateException ex)
@@ -55,6 +67,10 @@ public static class ParserStateChangeEndpoint
             return Results.BadRequest(new { message = ex.Message });
         }
         catch (ParserStateToChangeNotFoundException ex)
+        {
+            return Results.NotFound(new { message = ex.Message });
+        }
+        catch (ScraperJournalByIdNotFoundException ex)
         {
             return Results.NotFound(new { message = ex.Message });
         }
