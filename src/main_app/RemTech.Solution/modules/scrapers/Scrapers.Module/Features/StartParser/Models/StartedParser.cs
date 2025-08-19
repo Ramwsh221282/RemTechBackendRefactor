@@ -1,4 +1,5 @@
-﻿using Scrapers.Module.Features.StartParser.Database;
+﻿using Scrapers.Module.Domain.JournalsContext.Features.CreateScraperJournal;
+using Scrapers.Module.Features.StartParser.Database;
 using Scrapers.Module.Features.StartParser.RabbitMq;
 
 namespace Scrapers.Module.Features.StartParser.Models;
@@ -20,5 +21,10 @@ public sealed record StartedParser(
     public Task Publish(IParserStartedPublisher publisher)
     {
         return publisher.Publish(this);
+    }
+
+    internal CreateScraperJournalCommand CreateJournalCommand()
+    {
+        return new CreateScraperJournalCommand(ParserName, ParserType);
     }
 }

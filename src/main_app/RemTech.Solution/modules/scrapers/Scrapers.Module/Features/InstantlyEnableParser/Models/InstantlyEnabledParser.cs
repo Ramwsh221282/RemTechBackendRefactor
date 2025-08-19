@@ -1,4 +1,6 @@
-﻿using Scrapers.Module.Features.InstantlyEnableParser.Endpoint;
+﻿using Scrapers.Module.Domain.JournalsContext;
+using Scrapers.Module.Domain.JournalsContext.Features.CreateScraperJournal;
+using Scrapers.Module.Features.InstantlyEnableParser.Endpoint;
 
 namespace Scrapers.Module.Features.InstantlyEnableParser.Models;
 
@@ -39,5 +41,10 @@ internal sealed class InstantlyEnabledParser
             _lastRun,
             _nextRun
         );
+    }
+
+    public CreateScraperJournalCommand CreateJournalCommand()
+    {
+        return new CreateScraperJournalCommand(_name, _type);
     }
 }

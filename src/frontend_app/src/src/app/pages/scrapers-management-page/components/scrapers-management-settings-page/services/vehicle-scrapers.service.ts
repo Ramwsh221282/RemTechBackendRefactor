@@ -18,6 +18,8 @@ import { LinkWithChangedActivityResponse } from '../types/LinkWithChangedActivit
 import { LinkWithChangedActivityRequest } from '../types/LinkWithChangedActivityRequest';
 import { InstantlyEnabledParserResponse } from '../types/InstantlyEnabledParserResponse';
 import { TokensService } from '../../../../../shared/services/TokensService';
+import { ScraperJournalResponse } from '../../scrapers-management-journals-page/types/ScraperJournalResponse';
+import { ScraperJournalRecordResponse } from '../../scrapers-management-journals-page/types/ScraperJournalRecordResponse';
 
 @Injectable({
   providedIn: 'root',
@@ -144,6 +146,88 @@ export class VehicleScrapersService {
       null,
       { params: params },
     );
+  }
+
+  public fetchJournals(
+    name: string,
+    type: string,
+    page: number,
+    from: Date | null,
+    to: Date | null,
+  ): Observable<ScraperJournalResponse[]> {
+    let params: HttpParams = new HttpParams()
+      .set('name', name)
+      .set('type', type)
+      .set('page', page);
+    const body: object = {
+      from: from === null ? null : from,
+      to: to === null ? null : to,
+    };
+    const requestUrl = `${this._apiUrl}/journals`;
+    return this._httpClient.post<ScraperJournalResponse[]>(requestUrl, body, {
+      params: params,
+    });
+  }
+
+  public fetchJournalRecordsCount(journalId: string): Observable<number> {
+    const requestUrl = `${this._apiUrl}/journals/records/count`;
+    const params: HttpParams = new HttpParams().set('journalId', journalId);
+    return this._httpClient.get<number>(requestUrl, { params });
+  }
+
+  public fetchJournalsCount(name: string, type: string): Observable<number> {
+    const requestUrl = `${this._apiUrl}/journals/count`;
+    const params: HttpParams = new HttpParams()
+      .set('name', name)
+      .set('type', type);
+    return this._httpClient.get<number>(requestUrl, { params });
+  }
+
+  public removeJournal(
+    id: string,
+    name: string,
+    type: string,
+  ): Observable<string> {
+    const requestUrl = `${this._apiUrl}/journals/${id}`;
+    let params: HttpParams = new HttpParams()
+      .set('name', name)
+      .set('type', type);
+    return this._httpClient.delete<string>(requestUrl, { params });
+  }
+
+  public fetchJournalRecords(
+    journalId: string,
+    page: number,
+    text: string | null,
+  ): Observable<ScraperJournalRecordResponse[]> {
+    const requestUrl = `${this._apiUrl}/journals/records`;
+    let params: HttpParams = new HttpParams()
+      .set('page', page)
+      .set('journalId', journalId);
+    if (text) params = params.set('text', text);
+    return this._httpClient.get<ScraperJournalRecordResponse[]>(requestUrl, {
+      params: params,
+    });
+  }
+
+  public static defaultJournal(): ScraperJournalResponse {
+    return {
+      name: '',
+      id: '',
+      type: '',
+      completedAt: null,
+      createdAt: new Date(),
+    };
+  }
+
+  public static defaultJournalRecord(): ScraperJournalRecordResponse {
+    return {
+      createdAt: new Date(),
+      journalId: '',
+      id: '',
+      action: '',
+      text: '',
+    };
   }
 
   public static defaultScraper(): Scraper {

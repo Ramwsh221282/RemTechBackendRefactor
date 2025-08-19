@@ -4,6 +4,14 @@ import { RootExistsGuard } from '../../shared/guards/RootExistsGuard';
 
 export const ScrapersManagementPageRoutes: Routes = [
   {
+    path: 'scrapers/journals/:journalId',
+    loadComponent: () =>
+      import(
+        './components/scrapers-management-journals-page/components/scraper-journal-details/scraper-journal-details.component'
+      ).then((c) => c.ScraperJournalDetailsComponent),
+    canActivate: [RootExistsGuard, AdminAccessGuard],
+  },
+  {
     path: 'scrapers',
     loadComponent: () =>
       import('./scrapers-management-page.component').then(
@@ -11,6 +19,22 @@ export const ScrapersManagementPageRoutes: Routes = [
       ),
     canActivate: [RootExistsGuard, AdminAccessGuard],
     children: [
+      {
+        path: 'journals',
+        loadComponent: () =>
+          import(
+            './components/scrapers-management-journals-page/scrapers-management-journals-page.component'
+          ).then((c) => c.ScrapersManagementJournalsPageComponent),
+        children: [
+          {
+            path: ':scraperName/:scraperType',
+            loadComponent: () =>
+              import(
+                './components/scrapers-management-journals-page/components/scraper-journal-content/scraper-journal-content.component'
+              ).then((c) => c.ScraperJournalContentComponent),
+          },
+        ],
+      },
       {
         path: 'cleaner',
         loadComponent: () =>

@@ -23,6 +23,11 @@ using RemTech.Vehicles.Module.Features.QueryVehicleRegions;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Http;
 using RemTech.Vehicles.Module.Features.QueryVehiclesAmount;
 using RemTech.Vehicles.Module.Features.SimilarVehiclesQuery;
+using Scrapers.Module.Domain.JournalsContext.Features.GetScraperJournalRecordsCount;
+using Scrapers.Module.Domain.JournalsContext.Features.GetScraperJournalsCount;
+using Scrapers.Module.Domain.JournalsContext.Features.ReadScraperJournalRecords;
+using Scrapers.Module.Domain.JournalsContext.Features.ReadScraperJournals;
+using Scrapers.Module.Domain.JournalsContext.Features.RemoveScraperJournal;
 using Scrapers.Module.Features.ChangeLinkActivity.Endpoint;
 using Scrapers.Module.Features.ChangeParserState.Endpoint;
 using Scrapers.Module.Features.CreateNewParserLink.Endpoint;
@@ -101,6 +106,11 @@ public static class CompositionRoot
         UpdateParserLinkEndpoint.Map(group);
         ChangeLinkActivityEndpoint.Map(group);
         InstantlyEnableParserEndpoint.Map(group);
+        ReadScraperJournalsEndpoint.Map(group);
+        ReadScraperJournalRecordsEndpoint.Map(group);
+        GetScraperJournalsCountEndpoint.Map(group);
+        GetScraperJournalRecordsCountEndpoint.Map(group);
+        RemoveScraperJournalEndpoint.Map(group);
     }
 
     private static void MapUsersEndpoints(this WebApplication app)

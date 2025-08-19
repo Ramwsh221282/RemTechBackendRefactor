@@ -9,4 +9,5 @@ public static class RabbitMqScraperConstants
     public const string SparesCreateQueue = "spares";
     public const string ScrapersFinishQueue = "finish_scraper";
     public const string ScrapersFinishLinkQueue = "finish_scraper_link";
+    public const string AddJournalRecordQueue = "journals";
 }

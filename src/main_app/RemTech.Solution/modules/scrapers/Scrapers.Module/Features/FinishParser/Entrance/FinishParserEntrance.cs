@@ -3,10 +3,13 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Scrapers.Module.Domain.JournalsContext.Cache;
+using Scrapers.Module.Domain.JournalsContext.Features.CompleteScraperJournal;
 using Scrapers.Module.Features.CreateNewParser.RabbitMq;
 using Scrapers.Module.Features.FinishParser.Database;
 using Scrapers.Module.Features.FinishParser.Models;
 using Scrapers.Module.ParserStateCache;
+using StackExchange.Redis;
 
 namespace Scrapers.Module.Features.FinishParser.Entrance;
 
@@ -14,45 +17,40 @@ internal sealed class FinishParserEntrance(
     Serilog.ILogger logger,
     NpgsqlDataSource dataSource,
     ConnectionFactory connectionFactory,
-    ParserStateCachedStorage cache
+    ConnectionMultiplexer multiplexer
 ) : BackgroundService
 {
     private const string Exchange = "scrapers";
     private const string Queue = "finish_scraper";
+    private readonly ParserStateCachedStorage _stateCache = new(multiplexer);
+    private readonly ActiveScraperJournalsCache _journalsCache = new(multiplexer);
     private IConnection? _connection;
     private IChannel? _channel;
 
-    public override async Task StartAsync(CancellationToken stoppingToken)
+    public override async Task StartAsync(CancellationToken ct)
     {
         logger.Information("{Service} starting...", nameof(FinishParserEntrance));
-        _connection = await connectionFactory.CreateConnectionAsync(stoppingToken);
-        _channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
+        _connection = await connectionFactory.CreateConnectionAsync(ct);
+        _channel = await _connection.CreateChannelAsync(cancellationToken: ct);
         await _channel.ExchangeDeclareAsync(
             Exchange,
             ExchangeType.Direct,
             false,
             false,
-            null,
-            cancellationToken: stoppingToken
+            cancellationToken: ct
         );
         await _channel.QueueDeclareAsync(
             Queue,
             durable: false,
             exclusive: false,
             autoDelete: false,
-            cancellationToken: stoppingToken
+            cancellationToken: ct
         );
-        await _channel.QueueBindAsync(
-            Queue,
-            Exchange,
-            Queue,
-            null,
-            cancellationToken: stoppingToken
-        );
-        await base.StartAsync(stoppingToken);
+        await _channel.QueueBindAsync(Queue, Exchange, Queue, cancellationToken: ct);
+        await base.StartAsync(ct);
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken ct)
     {
         logger.Information("{Service} has been starting.", nameof(FinishParserEntrance));
         if (_channel == null)
@@ -65,9 +63,9 @@ internal sealed class FinishParserEntrance(
             queue: "finish_scraper",
             autoAck: false,
             consumer: consumer,
-            cancellationToken: stoppingToken
+            cancellationToken: ct
         );
-        stoppingToken.ThrowIfCancellationRequested();
+        ct.ThrowIfCancellationRequested();
     }
 
     private async Task ProcessMessage(object sender, BasicDeliverEventArgs ea)
@@ -86,11 +84,15 @@ internal sealed class FinishParserEntrance(
                 ParserToFinish parser = await storage.Fetch(message.ParserName, message.ParserType);
                 FinishedParser finished = parser.Finish(message.TotalElapsedSeconds);
                 await finished.Save(storage);
-                await cache.UpdateState(
+                await _stateCache.UpdateState(
                     finished.ParserName,
                     finished.ParserType,
                     finished.ParserState
                 );
+                await new CompleteScraperJournalHandler(dataSource, logger, _journalsCache).Handle(
+                    finished.CompleteJournalCommand()
+                );
+                await _journalsCache.RemoveIdentifier(finished.ParserName, finished.ParserType);
                 logger.Information(
                     "Finish parser: {Name} {Type}.",
                     finished.ParserName,

@@ -16,5 +16,6 @@ export class ScrapersManagementPageComponent {
     { label: 'Руководство', routerLink: 'doc' },
     { label: 'Настройка', routerLink: 'settings' },
     { label: 'Чистильщик', routerLink: 'cleaner' },
+    { label: 'Журналы', routerLink: 'journals' },
   ];
 }

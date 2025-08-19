@@ -4,6 +4,7 @@ using Avito.Parsing.Spares.Parsing;
 using Parsing.Avito.Common.BypassFirewall;
 using Parsing.Avito.Common.PaginationBar;
 using Parsing.Cache;
+using Parsing.RabbitMq.AddJournalRecord;
 using Parsing.RabbitMq.Facade;
 using Parsing.RabbitMq.PublishSpare;
 using Parsing.RabbitMq.PublishVehicle;
@@ -20,7 +21,8 @@ public sealed class Worker(
     Serilog.ILogger logger,
     IStartParsingListener listener,
     IParserRabbitMqActionsPublisher publisher,
-    IDisabledScraperTracker disabledTracker
+    IDisabledScraperTracker disabledTracker,
+    IAddJournalRecordPublisher addJournalRecord
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -50,17 +52,32 @@ public sealed class Worker(
         await using IPage page = await browser.ProvideDefaultPage();
         Stopwatch parserStopwatch = new Stopwatch();
         parserStopwatch.Start();
+        await addJournalRecord.PublishJournalRecord(
+            parserStarted.ParserName,
+            parserStarted.ParserType,
+            "Работа парсера",
+            "Парсинг начался."
+        );
         foreach (var link in parserStarted.Links)
         {
             if (await HasPermantlyDisabled(parserStarted))
-                break;
-            Stopwatch parserLinkStopwatch = new Stopwatch();
-            parserLinkStopwatch.Start();
-            if (await HasPermantlyDisabled(parserStarted))
             {
+                await addJournalRecord.PublishJournalRecord(
+                    parserStarted.ParserName,
+                    parserStarted.ParserType,
+                    "Работа парсера",
+                    $"Парсер был немедленно отключен. Остановка работы."
+                );
                 break;
             }
-
+            Stopwatch parserLinkStopwatch = new Stopwatch();
+            parserLinkStopwatch.Start();
+            await addJournalRecord.PublishJournalRecord(
+                parserStarted.ParserName,
+                parserStarted.ParserType,
+                "Обработка ссылки",
+                $"Обработка ссылки {link.LinkUrl}. Начата."
+            );
             IAvitoBypassFirewall bypass = new AvitoBypassFirewall(page)
                 .WrapBy(p => new AvitoBypassFirewallExceptionSupressing(p))
                 .WrapBy(p => new AvitoBypassFirewallLazy(page, p))
@@ -72,7 +89,15 @@ public sealed class Worker(
                 .WrapBy(p => new LoggingAvitoPaginationBarSource(logger, p));
             await new PageNavigating(page, link.LinkUrl).Do();
             if (!await bypass.Read())
-                break;
+            {
+                await addJournalRecord.PublishJournalRecord(
+                    parserStarted.ParserName,
+                    parserStarted.ParserType,
+                    "Обработка ссылки",
+                    $"Обработка ссылки {link.LinkUrl}. Блокировка. Пропуск."
+                );
+                continue;
+            }
             LoggingAvitoPaginationBarElement bar = new LoggingAvitoPaginationBarElement(
                 logger,
                 await pagination.Read()
@@ -81,13 +106,29 @@ public sealed class Worker(
             foreach (string pageUrl in bar.Iterate(link.LinkUrl))
             {
                 if (await HasPermantlyDisabled(parserStarted))
+                {
+                    await addJournalRecord.PublishJournalRecord(
+                        parserStarted.ParserName,
+                        parserStarted.ParserType,
+                        "Обработка ссылки",
+                        $"Обработка ссылки {link.LinkUrl}. Начата."
+                    );
                     break;
+                }
 
                 await new PageNavigating(page, pageUrl)
                     .WrapBy(n => new LoggingPageNavigating(logger, pageUrl, n))
                     .Do();
                 if (!await bypass.Read())
-                    break;
+                {
+                    await addJournalRecord.PublishJournalRecord(
+                        parserStarted.ParserName,
+                        parserStarted.ParserType,
+                        "Обработка ссылки",
+                        $"Обработка ссылки {link.LinkUrl}. Блокировка. Пропуск."
+                    );
+                    continue;
+                }
                 IEnumerable<AvitoSpare> spares = await new BlockBypassingAvitoSparesCollection(
                     bypass,
                     new AvitoSparesCollection(page)
@@ -95,11 +136,27 @@ public sealed class Worker(
                 foreach (AvitoSpare spare in spares)
                 {
                     if (await HasPermantlyDisabled(parserStarted))
+                    {
+                        await addJournalRecord.PublishJournalRecord(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            "Обработка ссылки",
+                            $"Обработка ссылки {link.LinkUrl}. Начата."
+                        );
                         break;
+                    }
 
                     await spare.Navigate(page);
                     if (!await bypass.Read())
+                    {
+                        await addJournalRecord.PublishJournalRecord(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            "Обработка ссылки",
+                            $"Обработка ссылки {link.LinkUrl}. Блокировка. Пропуск."
+                        );
                         continue;
+                    }
                     await new PageBottomScrollingAction(page).Do();
                     await new PageUpperScrollingAction(page).Do();
                     await new VariantDescriptionDetailsSource()
@@ -108,23 +165,37 @@ public sealed class Worker(
                         .Add(spare);
                     SpareBody body = spare.AsSpareBody();
                     if (!validator.IsValid(body))
+                    {
+                        await addJournalRecord.PublishJournalRecord(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            "Обработка объявления",
+                            $"Объявление пропущено. Проблема с данными объявления."
+                        );
                         continue;
-                    await publisher.SaySparePublished(
-                        new SpareSinkMessage(
-                            new ParserBody(
-                                parserStarted.ParserName,
-                                parserStarted.ParserType,
-                                parserStarted.ParserDomain
-                            ),
-                            new ParserLinkBody(
-                                parserStarted.ParserName,
-                                parserStarted.ParserType,
-                                parserStarted.ParserDomain,
-                                link.LinkName,
-                                link.LinkUrl
-                            ),
-                            body
-                        )
+                    }
+
+                    var message = new SpareSinkMessage(
+                        new ParserBody(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            parserStarted.ParserDomain
+                        ),
+                        new ParserLinkBody(
+                            parserStarted.ParserName,
+                            parserStarted.ParserType,
+                            parserStarted.ParserDomain,
+                            link.LinkName,
+                            link.LinkUrl
+                        ),
+                        body
+                    );
+                    await publisher.SaySparePublished(message);
+                    await addJournalRecord.PublishJournalRecord(
+                        parserStarted.ParserName,
+                        parserStarted.ParserType,
+                        "Обработка объявления",
+                        $"Объявление {message.Spare.SourceUrl} добавлено в очередь добавления."
                     );
                 }
             }
@@ -137,6 +208,12 @@ public sealed class Worker(
                 linkSeconds
             );
             logger.Information("Sended finish link {Link}", link.LinkName);
+            await addJournalRecord.PublishJournalRecord(
+                parserStarted.ParserName,
+                parserStarted.ParserType,
+                "Обработка ссылки",
+                $"Обработка ссылки {link.LinkUrl}. Закончена."
+            );
         }
         parserStopwatch.Stop();
         long parserStopwatchSeconds = (long)parserStopwatch.Elapsed.TotalSeconds;
@@ -149,6 +226,12 @@ public sealed class Worker(
             "Sended finish parser {Name} {Type}",
             parserStarted.ParserName,
             parserStarted.ParserType
+        );
+        await addJournalRecord.PublishJournalRecord(
+            parserStarted.ParserName,
+            parserStarted.ParserType,
+            "Работа парсера",
+            $"Парсер закончил работу."
         );
     }
 
