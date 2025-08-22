@@ -1,6 +1,6 @@
 ﻿using Npgsql;
+using Users.Module.Features.AuthenticatingUserAccount;
 using Users.Module.Models;
-using Users.Module.Models.Features.AuthenticatingUserAccount;
 
 namespace Users.Module.Public;
 

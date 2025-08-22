@@ -1,10 +1,9 @@
 ﻿using System.Text.Json;
-using Microsoft.IdentityModel.Tokens;
 using Shared.Infrastructure.Module.Json;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
-using Users.Module.Models.Features.CreatingNewAccount;
-using Users.Module.Models.Features.VerifyingAdmin;
+using Users.Module.Features.CreatingNewAccount;
+using Users.Module.Features.VerifyingAdmin;
 
 namespace Users.Module.Models;
 
@@ -18,6 +17,9 @@ internal sealed class UserJwt
     private readonly string _role;
     private readonly string _token;
     private readonly string _refreshToken;
+
+    public UserJwtOutput MakeOutput() =>
+        new(_userId, _name, _password, _email, _role, _token, _refreshToken);
 
     public async Task<UserJwt> CheckSubscription(
         SecurityKeySource key,

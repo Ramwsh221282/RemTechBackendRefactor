@@ -2,6 +2,7 @@
 using RabbitMQ.Client;
 using RemTech.Bootstrap.Api.Configuration;
 using Serilog;
+using Shared.Infrastructure.Module.Frontend;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 using StackExchange.Redis;
 
@@ -19,6 +20,7 @@ public static class CommonInfrastructureInjection
         services.InjectRabbitMq(settings.RabbitMq);
         services.InjectCache(settings.Cache);
         services.InjectLogging(settings.Seq);
+        services.InjectFrontendUrl(settings);
     }
 
     private static void InjectCache(this IServiceCollection services, RemTechCacheSettings settings)
@@ -61,6 +63,14 @@ public static class CommonInfrastructureInjection
         services.AddSingleton<Serilog.ILogger>(
             new LoggerConfiguration().WriteTo.Seq(settings.Host).WriteTo.Console().CreateLogger()
         );
+    }
+
+    private static void InjectFrontendUrl(
+        this IServiceCollection services,
+        RemTechApplicationSettings settings
+    )
+    {
+        settings.ConfigureFrontendUrl(services);
     }
 
     private static void InjectRabbitMq(

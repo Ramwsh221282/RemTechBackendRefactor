@@ -2,8 +2,8 @@
 
 namespace Mailing.Module.Bus;
 
-public sealed class MailingBusMessage(string to, string body)
+public sealed record MailingBusMessage(string To, string Body, string Subject)
 {
     public Task Send(IEmailSender sender, CancellationToken ct = default) =>
-        sender.FormEmailMessage().Send(to, "Регистрация Rem Tech", body, ct);
+        sender.FormEmailMessage().Send(To, Subject, Body, ct);
 }

@@ -1,11 +1,13 @@
 ﻿using System.Threading.Channels;
+using Mailing.Module.Cache;
 using Mailing.Module.Contracts;
+using Mailing.Module.Models;
 using Microsoft.Extensions.Hosting;
 
 namespace Mailing.Module.Bus;
 
 internal sealed class MailingBusReceiver(
-    IEmailSendersSource senders,
+    MailingSendersCache cache,
     Channel<MailingBusMessage> channel,
     Serilog.ILogger logger
 ) : BackgroundService
@@ -24,14 +26,24 @@ internal sealed class MailingBusReceiver(
         while (!stoppingToken.IsCancellationRequested)
         {
             await _reader.WaitToReadAsync(stoppingToken);
-            while (_reader.TryRead(out var message))
+            while (_reader.TryRead(out MailingBusMessage? message))
             {
-                // temporary.
-                // IEnumerable<IEmailSender> existingSenders = await senders.ReadAll(stoppingToken);
-                // IEmailSender[] array = existingSenders.ToArray();
-                // if (array.Length == 0)
-                //     return;
-                // IEmailSender firstSender = array[0];
+                CachedMailingSender[] senders = await cache.GetAll();
+                if (senders.Length == 0)
+                {
+                    logger.Warning(
+                        "{Entrance} unable to send mailing message. No senders active.",
+                        nameof(MailingBusReceiver)
+                    );
+                    continue;
+                }
+
+                CachedMailingSender sender = senders[0];
+                IEmailSender behaviourSender = new EmailSender(sender.Email, sender.Key);
+                await behaviourSender
+                    .FormEmailMessage()
+                    .Send(message.To, message.Subject, message.Body, stoppingToken);
+                logger.Information("{Entrance} has sended email message. To: {To}.", message.To);
             }
         }
     }

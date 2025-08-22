@@ -16,6 +16,7 @@ internal sealed class EmailMessage(SmtpClient client, MailMessage message) : IEm
             message.To.Add(new MailAddress(to));
             message.Subject = subject;
             message.Body = body;
+            message.IsBodyHtml = true;
             await client.SendMailAsync(message, ct);
             _sended = true;
         }
