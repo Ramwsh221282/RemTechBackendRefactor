@@ -1,0 +1,63 @@
+<p-dialog header="Редактирование пользователя" [modal]="true" [visible]="visible">
+  <form class="grid grid-cols-2" [formGroup]="form" (ngSubmit)="submitForm()">
+    <div>
+      <div class="flex flex-col items-start gap-1 mb-4">
+        <label class="font-semibold w-24 text-xs">Текущий email:</label>
+        <label class="w-24"> {{ email }} </label>
+      </div>
+      <div class="flex flex-col items-start gap-1 mb-4">
+        <label class="font-semibold w-24 text-xs">Текущий псевдоним:</label>
+        <label class="w-24"> {{ name }} </label>
+      </div>
+      <div class="flex flex-col items-start gap-1 mb-4">
+        <label class="font-semibold w-24 text-xs">Текущая роль:</label>
+        <label class="w-24"> {{ role }} </label>
+      </div>
+    </div>
+    <div>
+      <div class="flex flex-col items-start gap-1 mb-4">
+        <label class="font-semibold w-24 text-xs">Новый email пользователя</label>
+        <input [formControlName]="'email'" pInputText class="flex-auto" autocomplete="off" [fluid]="true"/>
+      </div>
+      <div class="flex flex-col items-start gap-1 mb-4">
+        <label class="font-semibold w-24 text-xs">Новый псевдоним пользователя</label>
+        <input [formControlName]="'name'" pInputText class="flex-auto" autocomplete="off" [fluid]="true"/>
+      </div>
+      <div class="flex flex-col items-start gap-1 mb-4">
+        <label class="font-semibold w-24 text-xs">Новая роль пользователя</label>
+        <p-select [formControlName]="'role'" [fluid]="true" [options]="roles" optionLabel="name"
+                  (onChange)="onRoleChange($event)" placeholder="Роли" class="w-full md:w-56">
+          <ng-template #selectedItem let-selectedOption>
+            <div class="flex items-center gap-2">
+              <div>{{ selectedOption.name }}</div>
+            </div>
+          </ng-template>
+          <ng-template let-role #item>
+            <div class="flex items-center gap-2">
+              <div>{{ role.name }}</div>
+            </div>
+          </ng-template>
+        </p-select>
+      </div>
+
+      <div class="flex items-center gap-2 mb-4">
+        <input type="checkbox" [formControlName]="'passwordCheck'"
+               (change)="onPasswordCheckChange()"
+               class="form-checkbox h-4 w-4 text-blue-600">
+        <label class="font-semibold text-xs">Генерировать новый пароль</label>
+      </div>
+      <div class="password-rules mt-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Примечание:</h3>
+        <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400 list-none pl-4">
+          <li>• Новый пароль пользователя будет сгенерирован и отправлен на его почту.</li>
+          <li>• Только ROOT пользователь может задать другому пользователю ROOT права.</li>
+        </ul>
+      </div>
+      <div class="flex justify-end gap-2 my-5">
+        <p-button [type]="'button'" label="Отмена" severity="secondary" (click)="cancel()"/>
+        <p-button [type]="'submit'" label="Изменить"/>
+      </div>
+    </div>
+  </form>
+</p-dialog>
+<p-toast [position]="'bottom-right'"/>

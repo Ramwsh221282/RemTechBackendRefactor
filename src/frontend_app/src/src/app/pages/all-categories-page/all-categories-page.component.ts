@@ -7,10 +7,6 @@ import {
   WritableSignal,
 } from '@angular/core';
 import { NgForOf, NgIf } from '@angular/common';
-import { ContainedItemsInfoComponent } from '../main-page/components/contained-items-info/contained-items-info.component';
-import { PopularBrandsBlockComponent } from '../main-page/components/popular-brands-block/popular-brands-block.component';
-import { PopularCategoriesBlockComponent } from '../main-page/components/popular-categories-block/popular-categories-block.component';
-import { RecentItemsListComponent } from '../main-page/components/recent-items-list/recent-items-list.component';
 import { QueryCategoriesResponse } from './types/QueryCategoriesResponse';
 import { AllCategoriesService } from './services/AllCategoriesService';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -18,6 +14,7 @@ import { PaginationComponent } from '../../shared/components/pagination/paginati
 import { Button } from 'primeng/button';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { StringUtils } from '../../shared/utils/string-utils';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-all-categories-page',
@@ -35,7 +32,10 @@ export class AllCategoriesPageComponent {
     text: new FormControl(''),
   });
 
-  constructor(service: AllCategoriesService) {
+  constructor(
+    service: AllCategoriesService,
+    private readonly _router: Router,
+  ) {
     this._page = signal(1);
     this._text = signal(null);
     this._categories = signal([]);
@@ -62,6 +62,16 @@ export class AllCategoriesPageComponent {
             this._categories.set(data);
           },
         });
+    });
+  }
+
+  public navigateByCategory(category: QueryCategoriesResponse): void {
+    this._router.navigate(['vehicles'], {
+      queryParams: {
+        categoryId: category.id,
+        categoryName: category.name,
+        page: 1,
+      },
     });
   }
 

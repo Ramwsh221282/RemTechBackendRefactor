@@ -19,6 +19,9 @@ import { defer, Observable } from 'rxjs';
 import { TokensService } from '../../../services/TokensService';
 import { ConfirmationService } from 'primeng/api';
 import { ConfirmDialog } from 'primeng/confirmdialog';
+import { UserInfoService } from '../../../services/UserInfoService';
+import { UserInfo } from '../../../../pages/sign-in-page/types/UserInfo';
+import { StringUtils } from '../../../utils/string-utils';
 
 @Component({
   selector: 'app-sidebar',
@@ -35,7 +38,7 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
   animations: [],
   providers: [ConfirmationService],
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent {
   @Output() closeClicked: EventEmitter<void> = new EventEmitter();
   @Input({ required: true }) isExpanded: boolean = false;
 
@@ -43,44 +46,57 @@ export class SidebarComponent implements OnInit {
   constructor(
     public readonly usersService: UsersService,
     public readonly tokensService: TokensService,
+    public readonly userInfoService: UserInfoService,
     private readonly cookieService: CookieService,
     private readonly confirmationService: ConfirmationService,
   ) {
     effect(() => {
-      defer(() => this.waitForToken())
+      defer(() => this.verifyAdminToken())
         .pipe(takeUntilDestroyed(this._destroyRef))
         .subscribe({
           next: (): void => {
             tokensService.setAdmin();
-            tokensService.hasTokenSignal.set(true);
           },
           error: (): void => {
-            tokensService.hasTokenSignal.set(false);
             tokensService.setNotAdmin();
           },
         });
     });
 
     effect(() => {
-      defer(() => this.verifyToken())
+      defer(() => this.verifyUserToken())
         .pipe(takeUntilDestroyed(this._destroyRef))
         .subscribe({
           next: (): void => {
-            tokensService.hasTokenSignal.set(true);
+            const tokenId = this.cookieService.get('RemTechAccessTokenId');
+            tokensService.tokenId.set(tokenId);
           },
           error: (): void => {
-            tokensService.hasTokenSignal.set(false);
-            tokensService.setNotAdmin();
+            tokensService.tokenId.set('');
+          },
+        });
+    });
+
+    effect(() => {
+      defer(() => this.verifyUserInfo())
+        .pipe(takeUntilDestroyed(this._destroyRef))
+        .subscribe({
+          next: (info: UserInfo): void => {
+            this.userInfoService.setUserInfo(info);
+          },
+          error: (): void => {
+            this.userInfoService.setUserInfo({
+              id: '',
+              name: '',
+              email: '',
+              emailConfirmed: false,
+            });
           },
         });
     });
   }
 
-  ngOnInit(): void {
-    const tokenId = this.cookieService.get('RemTechAccessTokenId');
-  }
-
-  private waitForToken(): Observable<any> {
+  private verifyAdminToken(): Observable<any> {
     return new Observable((observer) => {
       const checkToken = () => {
         const tokenId = this.cookieService.get('RemTechAccessTokenId');
@@ -97,12 +113,29 @@ export class SidebarComponent implements OnInit {
     });
   }
 
-  private verifyToken(): Observable<any> {
+  private verifyUserToken(): Observable<any> {
     return new Observable((observer) => {
       const checkToken = () => {
         const tokenId = this.cookieService.get('RemTechAccessTokenId');
         if (tokenId) {
           this.usersService.verify(tokenId).subscribe({
+            next: (result) => observer.next(result),
+            error: (error) => observer.error(error),
+          });
+        } else {
+          setTimeout(checkToken, 100);
+        }
+      };
+      checkToken();
+    });
+  }
+
+  private verifyUserInfo(): Observable<UserInfo> {
+    return new Observable((observer) => {
+      const checkToken = () => {
+        const tokenId = this.cookieService.get('RemTechAccessTokenId');
+        if (tokenId) {
+          this.usersService.fetchUserInfo(tokenId).subscribe({
             next: (result) => observer.next(result),
             error: (error) => observer.error(error),
           });
@@ -146,8 +179,14 @@ export class SidebarComponent implements OnInit {
       next: () => {
         this.cookieService.delete('RemTechAccessToken');
         this.cookieService.delete('RemTechAccessTokenId');
-        this.tokensService.hasTokenSignal.set(false);
+        this.tokensService.tokenId.set('');
         this.tokensService.setNotAdmin();
+        this.userInfoService.setUserInfo({
+          email: '',
+          id: '',
+          name: '',
+          emailConfirmed: false,
+        });
       },
     });
   }

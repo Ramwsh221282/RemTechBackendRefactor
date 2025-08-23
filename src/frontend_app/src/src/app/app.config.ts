@@ -25,6 +25,7 @@ import { AllBrandsService } from './pages/all-brands-page/services/AllBrandsServ
 import { CatalogueVehiclesService } from './pages/vehicles-page/services/CatalogueVehiclesService';
 import { UsersService } from './pages/sign-in-page/services/UsersService';
 import { TokensService } from './shared/services/TokensService';
+import { UserInfoService } from './shared/services/UserInfoService';
 
 const myPreset = definePreset(Aura, {
   semantic: {
@@ -55,6 +56,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withViewTransitions(), withComponentInputBinding()),
     provideHttpClient(withInterceptors([JwtTokenManagingInterceptor])),
+    UserInfoService,
     TokensService,
     UsersService,
     CatalogueVehiclesService,

@@ -1,6 +1,15 @@
-import { Injectable, signal, WritableSignal } from '@angular/core';
+import {
+  computed,
+  effect,
+  Injectable,
+  signal,
+  WritableSignal,
+} from '@angular/core';
 import { HttpHeaders } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
+import { UserInfo } from '../../pages/sign-in-page/types/UserInfo';
+import { StringUtils } from '../utils/string-utils';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -8,7 +17,12 @@ import { CookieService } from 'ngx-cookie-service';
 export class TokensService {
   public readonly tokenId: WritableSignal<string>;
   public readonly isAdminSignal: WritableSignal<boolean>;
-  public readonly hasTokenSignal: WritableSignal<boolean>;
+
+  public readonly hasTokenSignal = computed(() => {
+    const token = this.tokenId();
+    return !StringUtils.isEmptyOrWhiteSpace(token);
+  });
+
   constructor(private readonly cookies: CookieService) {
     this.tokenId = signal('');
     this.hasTokenSignal = signal(false);
@@ -26,7 +40,6 @@ export class TokensService {
 
   public setNotAdmin(): void {
     this.isAdminSignal.set(false);
-    this.hasTokenSignal.set(false);
   }
 
   public hasToken(): boolean {
@@ -39,7 +52,22 @@ export class TokensService {
     );
     if (tokenId) {
       this.tokenId.set(tokenId);
-      this.hasTokenSignal.set(true);
     }
+  }
+
+  public tokenAsObservable(): Observable<string> {
+    return new Observable((observer) => {
+      const checkToken = () => {
+        const tokenId = this.cookies.get('RemTechAccessTokenId');
+        if (tokenId) {
+          this.tokenId.set(tokenId);
+          observer.next(tokenId);
+          observer.complete();
+        } else {
+          setTimeout(checkToken, 100);
+        }
+      };
+      checkToken();
+    });
   }
 }

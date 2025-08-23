@@ -3,7 +3,6 @@ import {
   HttpErrorResponse,
   HttpEvent,
   HttpHandlerFn,
-  HttpHeaders,
   HttpRequest,
   HttpResponse,
 } from '@angular/common/http';
@@ -11,7 +10,8 @@ import { CookieService } from 'ngx-cookie-service';
 import { inject } from '@angular/core';
 import { TokensService } from '../services/TokensService';
 import { UsersService } from '../../pages/sign-in-page/services/UsersService';
-import { Router } from '@angular/router';
+import { UserInfoService } from '../services/UserInfoService';
+import { UserInfo } from '../../pages/sign-in-page/types/UserInfo';
 
 export function JwtTokenManagingInterceptor(
   req: HttpRequest<unknown>,
@@ -20,6 +20,7 @@ export function JwtTokenManagingInterceptor(
   const cookiesService: CookieService = inject(CookieService);
   const tokensService: TokensService = inject(TokensService);
   const usersService: UsersService = inject(UsersService);
+  const userInfoService: UserInfoService = inject(UserInfoService);
 
   const currentToken: string | null = cookiesService.get(
     'RemTechAccessTokenId',
@@ -40,7 +41,6 @@ export function JwtTokenManagingInterceptor(
           const tokenValue: string | null = event.headers.get(
             'Authorization_Token_Value',
           );
-          tokensService.hasTokenSignal.set(true);
           tokensService.setAdmin();
           updateTokensFromHeaders(
             tokenId,
@@ -48,6 +48,7 @@ export function JwtTokenManagingInterceptor(
             cookiesService,
             tokensService,
           );
+          initUserInfo(usersService, userInfoService, tokenId);
           return;
         } else {
           tokensService.setNotAdmin();
@@ -68,13 +69,13 @@ export function JwtTokenManagingInterceptor(
             const tokenValue: string | null = event.headers.get(
               'Authorization_Token_Value',
             );
-            tokensService.hasTokenSignal.set(false);
             updateTokensFromHeaders(
               tokenId,
               tokenValue,
               cookiesService,
               tokensService,
             );
+            initUserInfo(usersService, userInfoService, tokenId);
             return;
           }
         }
@@ -94,6 +95,7 @@ export function JwtTokenManagingInterceptor(
             cookiesService,
             tokensService,
           );
+          initUserInfo(usersService, userInfoService, tokenId);
           return;
         }
       }
@@ -111,6 +113,7 @@ export function JwtTokenManagingInterceptor(
           cookiesService,
           tokensService,
         );
+        initUserInfo(usersService, userInfoService, tokenId);
       }
     }),
 
@@ -160,7 +163,6 @@ function updateTokensFromHeaders(
     cookiesService.set('RemTechAccessToken', tokenValue, { path: '/' });
     cookiesService.set('RemTechAccessTokenId', tokenId, { path: '/' });
     tokensService.tokenId.set(tokenId);
-    tokensService.hasTokenSignal.set(true);
   }
 }
 
@@ -173,6 +175,28 @@ function addAuthorizationHeader(
   return req.clone({
     setHeaders: {
       RemTechAccessTokenId: tokenId,
+    },
+  });
+}
+
+function initUserInfo(
+  usersService: UsersService,
+  userInfoService: UserInfoService,
+  tokenId: string | undefined | null,
+): void {
+  if (tokenId === undefined) return;
+  if (!tokenId) return;
+  usersService.fetchUserInfo(tokenId).subscribe({
+    next: (info: UserInfo): void => {
+      userInfoService.setUserInfo(info);
+    },
+    error: (err: HttpErrorResponse): void => {
+      userInfoService.setUserInfo({
+        id: '',
+        name: '',
+        email: '',
+        emailConfirmed: false,
+      });
     },
   });
 }
@@ -206,7 +230,6 @@ function handleTokenRefresh(
     }),
     catchError((refreshError) => {
       clearAllTokens(cookiesService, tokensService);
-      tokensService.hasTokenSignal.set(false);
       tokensService.setNotAdmin();
       return throwError(() => refreshError);
     }),
@@ -220,6 +243,5 @@ function clearAllTokens(
   cookiesService.deleteAll('RemTechAccessToken');
   cookiesService.deleteAll('RemTechAccessTokenId');
   tokensService.tokenId.set('');
-  tokensService.hasTokenSignal.set(false);
   tokensService.setNotAdmin();
 }

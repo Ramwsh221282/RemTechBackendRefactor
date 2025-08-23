@@ -16,10 +16,8 @@ export class MailingManagementService {
     this._apiUrl = `${apiUrl}/mailing`;
   }
   public create(email: string, password: string): Observable<MailingSender> {
-    const body: object = { email: email, password: password };
-    return this._httpClient.post<MailingSender>(this._apiUrl, {
-      body,
-    });
+    const body: object = { email, password };
+    return this._httpClient.post<MailingSender>(this._apiUrl, body);
   }
   public read(): Observable<MailingSender[]> {
     return this._httpClient.get<MailingSender[]>(this._apiUrl, {});
