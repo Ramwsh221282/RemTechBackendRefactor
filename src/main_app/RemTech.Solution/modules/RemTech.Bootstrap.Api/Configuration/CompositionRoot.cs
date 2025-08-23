@@ -39,9 +39,7 @@ using Scrapers.Module.Features.UpdateParserLink.Endpoint;
 using Scrapers.Module.Features.UpdateWaitDays.Endpoint;
 using Users.Module.Features.AddUserByAdmin;
 using Users.Module.Features.AuthenticatingUserAccount;
-using Users.Module.Features.ChangingEmail.UpdateUserEmail;
-using Users.Module.Features.ChangingEmail.UpdateUserEmailByAdmin;
-using Users.Module.Features.ChangingPassword.UpdateUserPassword;
+using Users.Module.Features.ChangingEmail;
 using Users.Module.Features.CheckRoot;
 using Users.Module.Features.ConfirmUserEmail;
 using Users.Module.Features.CreateAdmiin;
@@ -51,8 +49,12 @@ using Users.Module.Features.CreatingNewAccount;
 using Users.Module.Features.GetUserInfo;
 using Users.Module.Features.ReadRoles;
 using Users.Module.Features.ReadUsers;
+using Users.Module.Features.ReadUsersCount;
+using Users.Module.Features.RemoveUserByAdmin;
 using Users.Module.Features.SessionRefreshing;
 using Users.Module.Features.SignOut;
+using Users.Module.Features.UpdateUserPassword;
+using Users.Module.Features.UpdateUserProfile;
 using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Features.VerifyingToken;
 using Users.Module.Public;
@@ -133,7 +135,6 @@ public static class CompositionRoot
         SessionRefreshingEndpoint.Map(builder);
         VerifyTokenEndpoint.Map(builder);
         SignOutEndpoint.Map(builder);
-        UpdateUserEmailByAdminEndpoint.Map(builder);
         UpdateUserEmailEndpoint.Map(builder);
         ConfirmUserEmailEndpoint.Map(builder);
         GetUserInfoEndpoint.Map(builder);
@@ -145,6 +146,9 @@ public static class CompositionRoot
         builder
             .MapPost("user-by-admin", AddUserByAdminEndpoint.HandleFn)
             .RequireAdminOrRootAccess();
+        builder.MapPut("profile", UpdateUserProfileEndpoint.HandleFn).RequireAdminOrRootAccess();
+        builder.MapDelete("profile", RemoveUserByAdminEndpoint.HandleFn).RequireAdminOrRootAccess();
+        builder.MapGet("count", ReadUsersCountEndpoint.HandleFn).RequireAdminOrRootAccess();
     }
 
     private static void MapVehiclesEndpoints(this WebApplication app)

@@ -27,7 +27,4 @@
   <ItemGroup>
     <EmbeddedResource Include="Database\*.sql" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Features\ChangingPassword\UpdateUserPasswordByAdmin\" />
-  </ItemGroup>
 </Project>

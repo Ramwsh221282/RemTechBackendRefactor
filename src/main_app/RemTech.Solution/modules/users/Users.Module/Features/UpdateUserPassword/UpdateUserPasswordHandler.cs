@@ -6,7 +6,7 @@ using Users.Module.CommonAbstractions;
 using Users.Module.Features.ChangingEmail.Shared;
 using Users.Module.Features.CreateEmailConfirmation;
 
-namespace Users.Module.Features.ChangingPassword.UpdateUserPassword;
+namespace Users.Module.Features.UpdateUserPassword;
 
 internal sealed class UpdateUserPasswordHandler(
     NpgsqlDataSource dataSource,

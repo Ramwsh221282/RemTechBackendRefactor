@@ -1,6 +1,6 @@
 ﻿using Shared.Infrastructure.Module.Cqrs;
 
-namespace Users.Module.Features.ChangingPassword.UpdateUserPassword;
+namespace Users.Module.Features.UpdateUserPassword;
 
 internal sealed record UpdateUserPasswordCommand(
     string InputPassword,

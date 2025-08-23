@@ -10,7 +10,7 @@ using Users.Module.Features.CreateEmailConfirmation;
 using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Models;
 
-namespace Users.Module.Features.ChangingPassword.UpdateUserPassword;
+namespace Users.Module.Features.UpdateUserPassword;
 
 public static class UpdateUserPasswordEndpoint
 {

@@ -12,11 +12,11 @@ using Users.Module.Features.CreatingNewAccount.Exceptions;
 using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Models;
 
-namespace Users.Module.Features.ChangingEmail.UpdateUserEmailByAdmin;
+namespace Users.Module.Features.ChangingEmail;
 
-public static class UpdateUserEmailByAdminEndpoint
+public static class UpdateUserEmailEndpoint
 {
-    public static void Map(RouteGroupBuilder builder) => builder.MapPatch("email-admin", Handle);
+    public static void Map(RouteGroupBuilder builder) => builder.MapPatch("email", Handle);
 
     private static async Task<IResult> Handle(
         [FromServices] NpgsqlDataSource dataSource,
@@ -26,8 +26,10 @@ public static class UpdateUserEmailByAdminEndpoint
         [FromServices] HasSenderApi hasSenderApi,
         [FromServices] FrontendUrl frontendUrl,
         [FromServices] ConfirmationEmailsCache emailsCache,
-        [FromBody] UpdateUserEmailByAdminCommand byAdminCommand,
         [FromHeader(Name = "RemTechAccessTokenId")] string tokenId,
+        [FromHeader(Name = "Password")] string password,
+        [FromHeader(Name = "Id")] string id,
+        [FromHeader(Name = "NewEmail")] string newEmail,
         CancellationToken ct
     )
     {
@@ -35,27 +37,34 @@ public static class UpdateUserEmailByAdminEndpoint
         {
             if (!Guid.TryParse(tokenId, out Guid guidTokenId))
                 return Results.BadRequest(
-                    new { message = "Ошибка авторизации. Попробуйте снова авторизоваться" }
+                    new { message = "Ошибка авторизации. Попробуйте снова авторизоваться." }
+                );
+            if (!Guid.TryParse(id, out Guid userId))
+                return Results.BadRequest(
+                    new { message = "Ошибка авторизации. Проблема с идентификацией пользователя." }
                 );
             UserJwt jwt = new UserJwt(guidTokenId);
             jwt = await jwt.Provide(multiplexer);
-            if (jwt.IsOfRole("ROOT") || jwt.IsOfRole("ADMIN") == false)
+            UserJwtOutput jwtOutput = jwt.MakeOutput();
+            if (jwtOutput.UserId != userId)
+            {
+                await jwt.Deleted(multiplexer);
                 return Results.BadRequest(
-                    new { message = "Функция доступна юзеру с правами ROOT или ADMIN." }
+                    new { message = "Ошибка авторизации. Проблема с идентификацией пользователя." }
                 );
-            UpdateUserEmailByAdminHandler byAdminHandler = new UpdateUserEmailByAdminHandler(
+            }
+            UpdateUserEmailCommand command = new(jwt, newEmail, password, userId);
+            UpdateUserEmailHandler handler = new(
                 dataSource,
                 publisher,
                 logger,
+                multiplexer,
                 hasSenderApi,
                 frontendUrl,
                 emailsCache
             );
-            UpdateUserEmailByAdminResponse byAdminResponse = await byAdminHandler.Handle(
-                byAdminCommand,
-                ct
-            );
-            return Results.Ok(byAdminResponse);
+            UpdateUserEmailResponse response = await handler.Handle(command, ct);
+            return Results.Ok(response);
         }
         catch (SendersAreNotAvailableYetException ex)
         {
@@ -85,9 +94,13 @@ public static class UpdateUserEmailByAdminEndpoint
                 new { message = "Ошибка авторизации. Попробуйте снова авторизоваться" }
             );
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Results.Unauthorized();
+        }
         catch (Exception ex)
         {
-            logger.Fatal("{Entrance}. {Ex}.", nameof(UpdateUserEmailByAdminEndpoint), ex.Message);
+            logger.Fatal("{Entrance}. {Ex}.", nameof(UpdateUserEmailEndpoint), ex.Message);
             return Results.InternalServerError(new { message = "Ошибка на стороне приложения" });
         }
     }
