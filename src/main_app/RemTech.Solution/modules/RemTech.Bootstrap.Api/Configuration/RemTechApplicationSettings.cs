@@ -1,4 +1,6 @@
-﻿namespace RemTech.Bootstrap.Api.Configuration;
+﻿using Shared.Infrastructure.Module.Frontend;
+
+namespace RemTech.Bootstrap.Api.Configuration;
 
 public sealed class RemTechApplicationSettings
 {
@@ -52,6 +54,12 @@ public sealed class RemTechApplicationSettings
         }
         Console.WriteLine("Production environment.");
         return CreateFromEnv();
+    }
+
+    public void ConfigureFrontendUrl(IServiceCollection services)
+    {
+        FrontendUrl url = new FrontendUrl(_frontend.Read());
+        services.AddSingleton(url);
     }
 
     public void ConfigureCors(WebApplicationBuilder app)

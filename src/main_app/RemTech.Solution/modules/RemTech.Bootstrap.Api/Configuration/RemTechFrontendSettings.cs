@@ -5,6 +5,8 @@ public sealed class RemTechFrontendSettings
     private const string Key = ConfigurationConstants.FRONTEND_URL_KEY;
     private readonly string _frontendUrl;
 
+    public string Read() => _frontendUrl;
+
     private RemTechFrontendSettings(string frontendUrl)
     {
         Console.WriteLine($"Frontend url {frontendUrl}");

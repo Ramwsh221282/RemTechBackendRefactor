@@ -2,8 +2,9 @@
 using DbUp.Engine;
 using Microsoft.Extensions.DependencyInjection;
 using Users.Module.CommonAbstractions;
-using Users.Module.Models.Features.CreatingNewAccount;
-using Users.Module.Models.Features.RolesSeeding;
+using Users.Module.Features.ChangingEmail.Exceptions;
+using Users.Module.Features.CreatingNewAccount;
+using Users.Module.Features.RolesSeeding;
 using Users.Module.Public;
 
 namespace Users.Module.Injection;
@@ -17,6 +18,7 @@ public static class UsersModuleInjection
         services.AddSingleton(new SecurityKeySource());
         services.AddTransient<AdminOrRootAccessFilter>();
         services.AddSingleton<PrivelegedAccessVerify>();
+        services.AddSingleton<ConfirmationEmailsCache>();
     }
 
     public static void UpDatabase(string connectionString)

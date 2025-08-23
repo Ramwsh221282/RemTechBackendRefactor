@@ -1,7 +1,0 @@
-﻿namespace Users.Module.Models.Features.CreatingNewAccount.Exceptions;
-
-internal sealed class PasswordShouldContainDigitException : Exception
-{
-    public PasswordShouldContainDigitException()
-        : base("Пароль должен содержать спец. символ.") { }
-}

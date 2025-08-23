@@ -37,15 +37,26 @@ using Scrapers.Module.Features.ReadConcreteScraper.Endpoint;
 using Scrapers.Module.Features.RemovingParserLink.Endpoint;
 using Scrapers.Module.Features.UpdateParserLink.Endpoint;
 using Scrapers.Module.Features.UpdateWaitDays.Endpoint;
-using Users.Module.Models.Features.AuthenticatingUserAccount;
-using Users.Module.Models.Features.CheckRoot;
-using Users.Module.Models.Features.CreateAdmiin;
-using Users.Module.Models.Features.CreateRoot;
-using Users.Module.Models.Features.CreatingNewAccount;
-using Users.Module.Models.Features.SessionRefreshing;
-using Users.Module.Models.Features.SignOut;
-using Users.Module.Models.Features.VerifyingAdmin;
-using Users.Module.Models.Features.VerifyingToken;
+using Users.Module.Features.AddUserByAdmin;
+using Users.Module.Features.AuthenticatingUserAccount;
+using Users.Module.Features.ChangingEmail;
+using Users.Module.Features.CheckRoot;
+using Users.Module.Features.ConfirmUserEmail;
+using Users.Module.Features.CreateAdmiin;
+using Users.Module.Features.CreateEmailConfirmation;
+using Users.Module.Features.CreateRoot;
+using Users.Module.Features.CreatingNewAccount;
+using Users.Module.Features.GetUserInfo;
+using Users.Module.Features.ReadRoles;
+using Users.Module.Features.ReadUsers;
+using Users.Module.Features.ReadUsersCount;
+using Users.Module.Features.RemoveUserByAdmin;
+using Users.Module.Features.SessionRefreshing;
+using Users.Module.Features.SignOut;
+using Users.Module.Features.UpdateUserPassword;
+using Users.Module.Features.UpdateUserProfile;
+using Users.Module.Features.VerifyingAdmin;
+using Users.Module.Features.VerifyingToken;
 using Users.Module.Public;
 
 namespace RemTech.Bootstrap.Api.Configuration;
@@ -124,7 +135,20 @@ public static class CompositionRoot
         SessionRefreshingEndpoint.Map(builder);
         VerifyTokenEndpoint.Map(builder);
         SignOutEndpoint.Map(builder);
+        UpdateUserEmailEndpoint.Map(builder);
+        ConfirmUserEmailEndpoint.Map(builder);
+        GetUserInfoEndpoint.Map(builder);
+        CreateEmailConfirmationEndpoint.Map(builder);
+        UpdateUserPasswordEndpoint.Map(builder);
+        builder.MapGet("roles", ReadRolesEndpoint.HandleFn).RequireAdminOrRootAccess();
+        builder.MapGet("list", ReadUsersEndpoint.HandleFn).RequireAdminOrRootAccess();
         builder.MapPost("admin-up", CreateAdminAccountEndpoint.HandleFn).RequireAdminOrRootAccess();
+        builder
+            .MapPost("user-by-admin", AddUserByAdminEndpoint.HandleFn)
+            .RequireAdminOrRootAccess();
+        builder.MapPut("profile", UpdateUserProfileEndpoint.HandleFn).RequireAdminOrRootAccess();
+        builder.MapDelete("profile", RemoveUserByAdminEndpoint.HandleFn).RequireAdminOrRootAccess();
+        builder.MapGet("count", ReadUsersCountEndpoint.HandleFn).RequireAdminOrRootAccess();
     }
 
     private static void MapVehiclesEndpoints(this WebApplication app)

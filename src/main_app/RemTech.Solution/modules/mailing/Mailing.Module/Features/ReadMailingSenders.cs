@@ -1,8 +1,9 @@
-﻿using Mailing.Module.Contracts;
+﻿using Mailing.Module.Cache;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using StackExchange.Redis;
 
 namespace Mailing.Module.Features;
 
@@ -13,24 +14,15 @@ public static class ReadMailingSenders
     public static void Map(RouteGroupBuilder builder) => builder.MapGet(string.Empty, Handle);
 
     private static async Task<IResult> Handle(
-        [FromServices] IEmailSendersSource senders,
+        [FromServices] ConnectionMultiplexer multiplexer,
         CancellationToken ct
     )
     {
-        IEnumerable<EmailSenderOutput> entries = await Process(senders, ct);
-        IEnumerable<ReadMailingSenderResponse> responses = entries.Select(
+        MailingSendersCache cache = new(multiplexer);
+        CachedMailingSender[] senders = await cache.GetAll();
+        IEnumerable<ReadMailingSenderResponse> responses = senders.Select(
             e => new ReadMailingSenderResponse(e.Name, e.Email)
         );
         return Results.Ok(responses);
-    }
-
-    private static async Task<IEnumerable<EmailSenderOutput>> Process(
-        IEmailSendersSource senders,
-        CancellationToken ct
-    )
-    {
-        IEnumerable<IEmailSender> entries = await senders.ReadAll(ct);
-        IEnumerable<EmailSenderOutput> outputs = entries.Select(e => e.Print());
-        return outputs;
     }
 }

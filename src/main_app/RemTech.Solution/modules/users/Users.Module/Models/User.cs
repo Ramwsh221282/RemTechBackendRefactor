@@ -1,6 +1,6 @@
-﻿using Users.Module.Models.Features.AuthenticatingUserAccount;
-using Users.Module.Models.Features.CreatingNewAccount;
-using Users.Module.Models.Features.CreatingNewAccount.Exceptions;
+﻿using Users.Module.Features.AuthenticatingUserAccount;
+using Users.Module.Features.CreatingNewAccount;
+using Users.Module.Features.CreatingNewAccount.Exceptions;
 
 namespace Users.Module.Models;
 
