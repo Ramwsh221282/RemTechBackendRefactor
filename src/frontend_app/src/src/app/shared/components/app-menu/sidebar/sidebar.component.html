@@ -62,7 +62,6 @@
                   leaveActiveClass="animate-slideup"
                   class="flex items-center p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple"
                 >
-                  <i class="pi pi-warehouse mr-2"></i>
                   <span class="font-medium">Управление</span>
                 </a>
               </li>
@@ -93,6 +92,15 @@
                   <span class="font-medium">Управление хранением данных</span>
                 </a>
               </li>
+              <li>
+                <a pRipple
+                   *ngIf="tokensService.isAdminSignal()"
+                   [routerLink]="'users-management'"
+                   class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
+                  <i class="pi pi-users mr-2"></i>
+                  <span class="font-medium">Управление пользователями</span>
+                </a>
+              </li>
             </ul>
           </li>
         </ul>
@@ -112,7 +120,7 @@
             <ul class="list-none p-0 m-0 overflow-hidden">
               <li>
                 <a pRipple
-                   *ngIf="!tokensService.hasToken()"
+                   *ngIf="!userInfoService.hasUserInfo"
                    [routerLink]="'sign-in'"
                    class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
                   <i class="pi pi-sign-in mr-2"></i>
@@ -121,7 +129,16 @@
               </li>
               <li>
                 <a pRipple
-                   *ngIf="tokensService.hasToken()"
+                   *ngIf="userInfoService.hasUserInfo"
+                   [routerLink]="'user'"
+                   class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
+                  <i class="pi pi-user mr-2"></i>
+                  <span class="font-medium">Профиль</span>
+                </a>
+              </li>
+              <li>
+                <a pRipple
+                   *ngIf="userInfoService.hasUserInfo"
                    (click)="confirmSignOut($event)"
                    class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
                   <i class="pi pi-sign-out mr-2"></i>

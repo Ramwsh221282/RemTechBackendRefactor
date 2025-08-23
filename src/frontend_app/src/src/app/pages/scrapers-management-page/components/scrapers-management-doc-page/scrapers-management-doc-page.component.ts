@@ -47,5 +47,13 @@ export class ScrapersManagementDocPageComponent {
       name: 'Редактирование ссылки у парсера',
       routerLink: 'parser-link-editing-doc',
     },
+    {
+      name: 'Чистильщик',
+      routerLink: 'cleaner-doc',
+    },
+    {
+      name: 'Журналы',
+      routerLink: 'journals-doc',
+    },
   ];
 }

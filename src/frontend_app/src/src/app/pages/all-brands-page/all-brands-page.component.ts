@@ -20,6 +20,8 @@ import { AllBrandsService } from './services/AllBrandsService';
 import { Button } from 'primeng/button';
 import { NgForOf, NgIf } from '@angular/common';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
+import { PopularBrand } from '../main-page/types/PopularBrand';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-all-brands-page',
@@ -44,7 +46,10 @@ export class AllBrandsPageComponent {
     text: new FormControl(''),
   });
 
-  constructor(service: AllBrandsService) {
+  constructor(
+    service: AllBrandsService,
+    private readonly _router: Router,
+  ) {
     this._page = signal(1);
     this._text = signal(null);
     this._brands = signal([]);
@@ -81,6 +86,16 @@ export class AllBrandsPageComponent {
 
   public textSearchFormSubmit(): void {
     this.submitSearch();
+  }
+
+  public navigateByBrand(brand: PopularBrand): void {
+    this._router.navigate(['vehicles'], {
+      queryParams: {
+        brandId: brand.id,
+        brandName: brand.name,
+        page: 1,
+      },
+    });
   }
 
   private submitSearch(): void {

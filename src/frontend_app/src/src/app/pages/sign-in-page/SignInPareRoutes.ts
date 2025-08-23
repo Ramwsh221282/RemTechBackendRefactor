@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { RootExistsGuard } from '../../shared/guards/RootExistsGuard';
-import { MailingSendersExistGuard } from '../../shared/guards/MailingSendersExistGuard';
+import { AlreadyAuthorizedGuard } from '../../shared/guards/AlreadyAuthorizedGuard';
 
 export const SignInPageRoutes: Routes = [
   {

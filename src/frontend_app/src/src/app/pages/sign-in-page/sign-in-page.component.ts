@@ -13,8 +13,6 @@ import { SignUpFormComponent } from './components/sign-up-form/sign-up-form.comp
     TabPanels,
     TabList,
     TabPanel,
-    Accordion,
-    MailingManagementDocAccordionEntryComponent,
     SignInFormComponent,
     SignUpFormComponent,
   ],

@@ -127,6 +127,20 @@ export const ScrapersManagementPageRoutes: Routes = [
                 './components/scrapers-management-doc-page/child-sections/scrapers-management-parser-link-editing-doc/scrapers-management-parser-link-editing-doc.component'
               ).then((c) => c.ScrapersManagementParserLinkEditingDocComponent),
           },
+          {
+            path: 'cleaner-doc',
+            loadComponent: () =>
+              import(
+                './components/scrapers-management-doc-page/child-sections/scrapers-management-cleaners-doc/scrapers-management-cleaners-doc.component'
+              ).then((c) => c.ScrapersManagementCleanersDocComponent),
+          },
+          {
+            path: 'journals-doc',
+            loadComponent: () =>
+              import(
+                './components/scrapers-management-doc-page/child-sections/scrapers-management-journals-doc/scrapers-management-journals-doc.component'
+              ).then((c) => c.ScrapersManagementJournalsDocComponent),
+          },
         ],
       },
     ],

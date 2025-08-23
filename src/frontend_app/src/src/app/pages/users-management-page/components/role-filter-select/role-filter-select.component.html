@@ -1,0 +1,13 @@
+<p-select [options]="roles" [(ngModel)]="_currentRole" optionLabel="name" [filter]="true" filterBy="name"
+          [showClear]="true" (onChange)="changeRole($event)" placeholder="Роли" class="w-full md:w-56">
+  <ng-template #selectedItem let-selectedOption>
+    <div class="flex items-center gap-2">
+      <div>{{ selectedOption.name }}</div>
+    </div>
+  </ng-template>
+  <ng-template let-role #item>
+    <div class="flex items-center gap-2">
+      <div>{{ role.name }}</div>
+    </div>
+  </ng-template>
+</p-select>

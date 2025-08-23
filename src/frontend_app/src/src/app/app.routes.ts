@@ -13,8 +13,12 @@ import { ConcreteVehicleRoute } from './pages/concrete-vehicle-page/ConcreteVehi
 import { CreateRootUserRoutes } from './pages/create-root-user-page/CreateRootUserRoutes';
 import { SomethingWentWrongRoutes } from './pages/something-went-wrong-page/SomethingWentWrongRoutes';
 import { ContainedItemsRoutes } from './pages/contained-items-management-page/ContainedItemsRoutes';
+import { UserInfoPageRoutes } from './pages/user-info-page/user-info-page-routes';
+import { UsersManagementPageRoutes } from './pages/users-management-page/UsersManagementPageRoutes';
 
 export const routes: Routes = [
+  ...UsersManagementPageRoutes,
+  ...UserInfoPageRoutes,
   ...ContainedItemsRoutes,
   ...SomethingWentWrongRoutes,
   ...CreateRootUserRoutes,

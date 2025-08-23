@@ -1,0 +1,39 @@
+<p-dialog header="Создание пользователя" [modal]="true" [visible]="visible">
+  <form [formGroup]="form" (ngSubmit)="submitForm()">
+    <div class="flex flex-col items-start gap-4 mb-4">
+      <label for="username" class="font-semibold w-24 text-xs">Email пользователя</label>
+      <input [formControlName]="'email'" pInputText class="flex-auto" autocomplete="off" [fluid]="true"/>
+    </div>
+    <div class="flex flex-col items-start gap-4 mb-4">
+      <label for="username" class="font-semibold w-24 text-xs">Псевдоним пользователя</label>
+      <input [formControlName]="'name'" pInputText class="flex-auto" autocomplete="off" [fluid]="true"/>
+    </div>
+    <div class="flex flex-col items-start gap-4 mb-4">
+      <label for="username" class="font-semibold w-24 text-xs">Роль пользователя</label>
+      <p-select [formControlName]="'role'" [fluid]="true" [options]="roles" optionLabel="name"
+                (onChange)="onRoleChange($event)" placeholder="Роли" class="w-full md:w-56">
+        <ng-template #selectedItem let-selectedOption>
+          <div class="flex items-center gap-2">
+            <div>{{ selectedOption.name }}</div>
+          </div>
+        </ng-template>
+        <ng-template let-role #item>
+          <div class="flex items-center gap-2">
+            <div>{{ role.name }}</div>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+    <div class="password-rules mt-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+      <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Примечание:</h3>
+      <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400 list-none pl-4">
+        <li>• Пароль пользователя будет сгенерирован и отправлен на его почту.</li>
+      </ul>
+    </div>
+    <div class="flex justify-end gap-2 my-5">
+      <p-button [type]="'button'" label="Отмена" severity="secondary" (click)="cancel()"/>
+      <p-button [type]="'submit'" label="Добавить"/>
+    </div>
+  </form>
+</p-dialog>
+<p-toast [position]="'bottom-right'"/>

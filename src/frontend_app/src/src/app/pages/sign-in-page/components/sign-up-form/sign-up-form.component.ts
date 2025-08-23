@@ -7,10 +7,11 @@ import { MessageServiceUtils } from '../../../../shared/utils/message-service-ut
 import { UsersService } from '../../services/UsersService';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
+import { PasswordRulesComponent } from '../../../../shared/components/password-rules/password-rules.component';
 
 @Component({
   selector: 'app-sign-up-form',
-  imports: [ReactiveFormsModule, Toast],
+  imports: [ReactiveFormsModule, Toast, PasswordRulesComponent],
   templateUrl: './sign-up-form.component.html',
   styleUrl: './sign-up-form.component.scss',
   providers: [MessageService],
