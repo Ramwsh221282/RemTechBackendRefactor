@@ -81,7 +81,6 @@ public sealed class Worker(
             try
             {
                 await using IPage page = await browser.ProvideDefaultPage();
-                int itemsProcessed = 0;
                 if (await HasPermantlyDisabled(parserStarted))
                 {
                     await addJournalRecord.PublishJournalRecord(
@@ -121,6 +120,7 @@ public sealed class Worker(
                 {
                     try
                     {
+                        logger.Information("Navigating page: {pageUrl}", pageUrl);
                         if (await HasPermantlyDisabled(parserStarted))
                         {
                             await addJournalRecord.PublishJournalRecord(
@@ -146,7 +146,8 @@ public sealed class Worker(
                             );
                             continue;
                         }
-
+                        logger.Information("Page navigated");
+                        logger.Information("Scraping avito spares.");
                         IEnumerable<AvitoSpare> spares =
                             await new BlockBypassingAvitoSparesCollection(
                                 bypass,
@@ -155,6 +156,8 @@ public sealed class Worker(
                                     new AvitoSparesCollection(page)
                                 )
                             ).Read();
+                        logger.Information("Spares scraped");
+                        logger.Information("Processing spare items.");
                         foreach (AvitoSpare spare in spares)
                         {
                             if (await HasPermantlyDisabled(parserStarted))
@@ -220,9 +223,8 @@ public sealed class Worker(
                                 "Обработка объявления",
                                 $"Объявление {message.Spare.SourceUrl} добавлено в очередь добавления."
                             );
-                            itemsProcessed += 1;
-                            logger.Information("Processed items amount: {Count}", itemsProcessed);
                         }
+                        logger.Information("Spare items processed");
                     }
                     catch (Exception ex)
                     {

@@ -15,13 +15,18 @@ public sealed class AvitoSparesCollection : IAvitoSparesCollection
 
     public async Task<IEnumerable<AvitoSpare>> Read()
     {
+        Console.WriteLine("Hovering images.");
         await new AvitoImagesHoverer(_page).HoverImages();
+        Console.WriteLine("Images hovered.");
+        Console.WriteLine("Extracting items container.");
         IElementHandle listContainer = await new ValidSingleElementSource(
             new PageElementSource(_page)
         ).Read(ItemListContainer);
+        Console.WriteLine("Container extracted.");
         IElementHandle[] items = await new ParentManyElementsSource(listContainer).Read(
             ItemListItem
         );
+        Console.WriteLine("Items extracted");
         LinkedList<AvitoSpare> spares = [];
         foreach (var item in items)
         {
