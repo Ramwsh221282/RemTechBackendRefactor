@@ -229,6 +229,7 @@ public sealed class Worker(
                     catch (Exception ex)
                     {
                         logger.Fatal("{Exception} at catalogue page processing.", ex.Message);
+                        logger.Fatal(ex, "Exception at catalogue page processing.");
                     }
                 }
             }
