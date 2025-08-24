@@ -28,7 +28,15 @@ public class Worker(
 {
     public override async Task StartAsync(CancellationToken stoppingToken)
     {
-        await client.Ping();
+        try
+        {
+            await client.Ping();
+        }
+        catch
+        {
+            logger.Fatal("Unable to connecto to Backend Grpc");
+            throw;
+        }
         await listener.Prepare(stoppingToken);
         logger.Information("Worker service started.");
         await base.StartAsync(stoppingToken);
