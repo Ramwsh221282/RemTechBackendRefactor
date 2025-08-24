@@ -12,43 +12,52 @@ public sealed class AvitoImagesHoverer(IPage page)
     public async Task HoverImages()
     {
         await Task.Delay(TimeSpan.FromSeconds(10));
-        if (page == null)
+        bool hovered = false;
+        for (int i = 0; i < 5; i++)
         {
-            Console.WriteLine("Page is null.");
+            try
+            {
+                await Hover();
+                hovered = true;
+                break;
+            }
+            catch
+            {
+                Console.WriteLine("Error hovering item. Retrying...");
+                await Task.Delay(TimeSpan.FromSeconds(3));
+            }
         }
 
-        try
+        if (!hovered)
+            throw new ApplicationException("Exception at image hovering.");
+        await Task.Delay(TimeSpan.FromSeconds(10));
+    }
+
+    private async Task Hover()
+    {
+        IElementHandle container = await new PageElementSource(page).Read(
+            string.Intern(ContainerSelector)
+        );
+        IElementHandle[] itemsList = await new ParentManyElementsSource(container).Read(
+            string.Intern(ItemsSelector)
+        );
+        foreach (IElementHandle item in itemsList)
         {
-            IElementHandle container = await new PageElementSource(page).Read(
-                string.Intern(ContainerSelector)
-            );
-            IElementHandle[] itemsList = await new ParentManyElementsSource(container).Read(
-                string.Intern(ItemsSelector)
-            );
-            foreach (IElementHandle item in itemsList)
+            await using (item)
             {
-                await using (item)
+                try
                 {
-                    try
-                    {
-                        IElementHandle sliderElement = await new ValidSingleElementSource(
-                            new ParentElementSource(item)
-                        ).Read(SliderSelector);
-                        await sliderElement.HoverAsync();
-                        await sliderElement.FocusAsync();
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
+                    IElementHandle sliderElement = await new ValidSingleElementSource(
+                        new ParentElementSource(item)
+                    ).Read(SliderSelector);
+                    await sliderElement.HoverAsync();
+                    await sliderElement.FocusAsync();
+                }
+                catch
+                {
+                    // ignored
                 }
             }
-            await Task.Delay(TimeSpan.FromSeconds(10));
-        }
-        catch
-        {
-            Console.WriteLine("Exception at image hovering.");
-            throw;
         }
     }
 }

@@ -60,6 +60,7 @@ public sealed class Worker(
             return;
 
         await using IScrapingBrowser browser = await BrowserFactory.Create();
+        await using IPage page = await browser.ProvideDefaultPage();
         Stopwatch parserStopwatch = new Stopwatch();
         parserStopwatch.Start();
         await addJournalRecord.PublishJournalRecord(
@@ -80,7 +81,6 @@ public sealed class Worker(
             );
             try
             {
-                await using IPage page = await browser.ProvideDefaultPage();
                 if (await HasPermantlyDisabled(parserStarted))
                 {
                     await addJournalRecord.PublishJournalRecord(
