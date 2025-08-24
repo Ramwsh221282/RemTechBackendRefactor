@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using Avito.Vehicles.Service.VehiclesParsing;
 using Parsing.Cache;
+using Parsing.Grpc.Services.DuplicateIds;
 using Parsing.RabbitMq.AddJournalRecord;
 using Parsing.RabbitMq.Facade;
 using Parsing.RabbitMq.PublishVehicle;
@@ -24,11 +25,13 @@ public class Worker(
     IStartParsingListener listener,
     IParserRabbitMqActionsPublisher publisher,
     IDisabledScraperTracker disabledTracker,
-    IAddJournalRecordPublisher addJournalRecord
+    IAddJournalRecordPublisher addJournalRecord,
+    GrpcDuplicateIdsClient client
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
+        await client.Ping();
         await listener.Prepare(cancellationToken);
         logger.Information("Worker service started.");
         await base.StartAsync(cancellationToken);
@@ -49,7 +52,7 @@ public class Worker(
             JsonSerializer.Deserialize<ParserStartedRabbitMqMessage>(eventArgs.Body.ToArray());
         if (parserStarted == null)
             return;
-        await using IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
+        await using IScrapingBrowser browser = await BrowserFactory.Create();
         await using IPage page = await browser.ProvideDefaultPage();
         Stopwatch parserStopwatch = new Stopwatch();
         parserStopwatch.Start();
@@ -85,7 +88,8 @@ public class Worker(
                     page,
                     new NoTextWrite(),
                     logger,
-                    link.LinkUrl
+                    link.LinkUrl,
+                    client
                 );
                 await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
                 {

@@ -4,6 +4,7 @@ using Avito.Parsing.Spares.Parsing;
 using Parsing.Avito.Common.BypassFirewall;
 using Parsing.Avito.Common.PaginationBar;
 using Parsing.Cache;
+using Parsing.Grpc.Services.DuplicateIds;
 using Parsing.RabbitMq.AddJournalRecord;
 using Parsing.RabbitMq.Facade;
 using Parsing.RabbitMq.PublishSpare;
@@ -22,11 +23,13 @@ public sealed class Worker(
     IStartParsingListener listener,
     IParserRabbitMqActionsPublisher publisher,
     IDisabledScraperTracker disabledTracker,
-    IAddJournalRecordPublisher addJournalRecord
+    IAddJournalRecordPublisher addJournalRecord,
+    GrpcDuplicateIdsClient client
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
+        await client.Ping();
         await listener.Prepare(cancellationToken);
         logger.Information("Worker service starting...");
         await base.StartAsync(cancellationToken);
@@ -48,8 +51,7 @@ public sealed class Worker(
         if (parserStarted == null)
             return;
 
-        await using IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
-        await using IPage page = await browser.ProvideDefaultPage();
+        await using IScrapingBrowser browser = await BrowserFactory.Create();
         Stopwatch parserStopwatch = new Stopwatch();
         parserStopwatch.Start();
         await addJournalRecord.PublishJournalRecord(
@@ -60,16 +62,6 @@ public sealed class Worker(
         );
         foreach (var link in parserStarted.Links)
         {
-            if (await HasPermantlyDisabled(parserStarted))
-            {
-                await addJournalRecord.PublishJournalRecord(
-                    parserStarted.ParserName,
-                    parserStarted.ParserType,
-                    "Работа парсера",
-                    $"Парсер был немедленно отключен. Остановка работы."
-                );
-                break;
-            }
             Stopwatch parserLinkStopwatch = new Stopwatch();
             parserLinkStopwatch.Start();
             await addJournalRecord.PublishJournalRecord(
@@ -78,47 +70,30 @@ public sealed class Worker(
                 "Обработка ссылки",
                 $"Обработка ссылки {link.LinkUrl}. Начата."
             );
-            IAvitoBypassFirewall bypass = new AvitoBypassFirewall(page)
-                .WrapBy(p => new AvitoBypassFirewallExceptionSupressing(p))
-                .WrapBy(p => new AvitoBypassFirewallLazy(page, p))
-                .WrapBy(p => new AvitoBypassRepetetive(page, p))
-                .WrapBy(p => new AvitoBypassWebsiteIsNotAvailable(page, p))
-                .WrapBy(p => new AvitoBypassFirewallLogging(logger, p));
-            IAvitoPaginationBarSource pagination = new AvitoPaginationBarSource(page)
-                .WrapBy(p => new BottomScrollingAvitoPaginationBarSource(page, p))
-                .WrapBy(p => new LoggingAvitoPaginationBarSource(logger, p));
-            await new PageNavigating(page, link.LinkUrl).Do();
-            if (!await bypass.Read())
+            try
             {
-                await addJournalRecord.PublishJournalRecord(
-                    parserStarted.ParserName,
-                    parserStarted.ParserType,
-                    "Обработка ссылки",
-                    $"Обработка ссылки {link.LinkUrl}. Блокировка. Пропуск."
-                );
-                continue;
-            }
-            LoggingAvitoPaginationBarElement bar = new LoggingAvitoPaginationBarElement(
-                logger,
-                await pagination.Read()
-            );
-            SpareBodyValidator validator = new SpareBodyValidator();
-            foreach (string pageUrl in bar.Iterate(link.LinkUrl))
-            {
+                await using IPage page = await browser.ProvideDefaultPage();
+                int itemsProcessed = 0;
                 if (await HasPermantlyDisabled(parserStarted))
                 {
                     await addJournalRecord.PublishJournalRecord(
                         parserStarted.ParserName,
                         parserStarted.ParserType,
-                        "Обработка ссылки",
-                        $"Обработка ссылки {link.LinkUrl}. Начата."
+                        "Работа парсера",
+                        $"Парсер был немедленно отключен. Остановка работы."
                     );
                     break;
                 }
-
-                await new PageNavigating(page, pageUrl)
-                    .WrapBy(n => new LoggingPageNavigating(logger, pageUrl, n))
-                    .Do();
+                IAvitoBypassFirewall bypass = new AvitoBypassFirewall(page)
+                    .WrapBy(p => new AvitoBypassFirewallExceptionSupressing(p))
+                    .WrapBy(p => new AvitoBypassFirewallLazy(page, p))
+                    .WrapBy(p => new AvitoBypassRepetetive(page, p))
+                    .WrapBy(p => new AvitoBypassWebsiteIsNotAvailable(page, p))
+                    .WrapBy(p => new AvitoBypassFirewallLogging(logger, p));
+                IAvitoPaginationBarSource pagination = new AvitoPaginationBarSource(page)
+                    .WrapBy(p => new BottomScrollingAvitoPaginationBarSource(page, p))
+                    .WrapBy(p => new LoggingAvitoPaginationBarSource(logger, p));
+                await new PageNavigating(page, link.LinkUrl).Do();
                 if (!await bypass.Read())
                 {
                     await addJournalRecord.PublishJournalRecord(
@@ -129,75 +104,126 @@ public sealed class Worker(
                     );
                     continue;
                 }
-                IEnumerable<AvitoSpare> spares = await new BlockBypassingAvitoSparesCollection(
-                    bypass,
-                    new AvitoSparesCollection(page)
-                ).Read();
-                foreach (AvitoSpare spare in spares)
+                LoggingAvitoPaginationBarElement bar = new LoggingAvitoPaginationBarElement(
+                    logger,
+                    await pagination.Read()
+                );
+                SpareBodyValidator validator = new SpareBodyValidator();
+                foreach (string pageUrl in bar.Iterate(link.LinkUrl))
                 {
-                    if (await HasPermantlyDisabled(parserStarted))
+                    try
                     {
-                        await addJournalRecord.PublishJournalRecord(
-                            parserStarted.ParserName,
-                            parserStarted.ParserType,
-                            "Обработка ссылки",
-                            $"Обработка ссылки {link.LinkUrl}. Начата."
-                        );
-                        break;
-                    }
+                        if (await HasPermantlyDisabled(parserStarted))
+                        {
+                            await addJournalRecord.PublishJournalRecord(
+                                parserStarted.ParserName,
+                                parserStarted.ParserType,
+                                "Обработка ссылки",
+                                $"Обработка ссылки {link.LinkUrl}. Начата."
+                            );
+                            break;
+                        }
 
-                    await spare.Navigate(page);
-                    if (!await bypass.Read())
-                    {
-                        await addJournalRecord.PublishJournalRecord(
-                            parserStarted.ParserName,
-                            parserStarted.ParserType,
-                            "Обработка ссылки",
-                            $"Обработка ссылки {link.LinkUrl}. Блокировка. Пропуск."
-                        );
-                        continue;
-                    }
-                    await new PageBottomScrollingAction(page).Do();
-                    await new PageUpperScrollingAction(page).Do();
-                    await new VariantDescriptionDetailsSource()
-                        .With(new AvitoCharacteristicsDetailsSource(page))
-                        .With(new AvitoDescriptionDetailsSource(page))
-                        .Add(spare);
-                    SpareBody body = spare.AsSpareBody();
-                    if (!validator.IsValid(body))
-                    {
-                        await addJournalRecord.PublishJournalRecord(
-                            parserStarted.ParserName,
-                            parserStarted.ParserType,
-                            "Обработка объявления",
-                            $"Объявление пропущено. Проблема с данными объявления."
-                        );
-                        continue;
-                    }
+                        await new PageNavigating(page, pageUrl)
+                            .WrapBy(n => new LoggingPageNavigating(logger, pageUrl, n))
+                            .Do();
+                        if (!await bypass.Read())
+                        {
+                            await addJournalRecord.PublishJournalRecord(
+                                parserStarted.ParserName,
+                                parserStarted.ParserType,
+                                "Обработка ссылки",
+                                $"Обработка ссылки {link.LinkUrl}. Блокировка. Пропуск."
+                            );
+                            continue;
+                        }
 
-                    var message = new SpareSinkMessage(
-                        new ParserBody(
-                            parserStarted.ParserName,
-                            parserStarted.ParserType,
-                            parserStarted.ParserDomain
-                        ),
-                        new ParserLinkBody(
-                            parserStarted.ParserName,
-                            parserStarted.ParserType,
-                            parserStarted.ParserDomain,
-                            link.LinkName,
-                            link.LinkUrl
-                        ),
-                        body
-                    );
-                    await publisher.SaySparePublished(message);
-                    await addJournalRecord.PublishJournalRecord(
-                        parserStarted.ParserName,
-                        parserStarted.ParserType,
-                        "Обработка объявления",
-                        $"Объявление {message.Spare.SourceUrl} добавлено в очередь добавления."
-                    );
+                        IEnumerable<AvitoSpare> spares =
+                            await new BlockBypassingAvitoSparesCollection(
+                                bypass,
+                                new DuplicateFilteringAvitoSparesCollection(
+                                    client,
+                                    new AvitoSparesCollection(page)
+                                )
+                            ).Read();
+                        foreach (AvitoSpare spare in spares)
+                        {
+                            if (await HasPermantlyDisabled(parserStarted))
+                            {
+                                await addJournalRecord.PublishJournalRecord(
+                                    parserStarted.ParserName,
+                                    parserStarted.ParserType,
+                                    "Обработка ссылки",
+                                    $"Обработка ссылки {link.LinkUrl}. Начата."
+                                );
+                                break;
+                            }
+
+                            await spare.Navigate(page);
+                            if (!await bypass.Read())
+                            {
+                                await addJournalRecord.PublishJournalRecord(
+                                    parserStarted.ParserName,
+                                    parserStarted.ParserType,
+                                    "Обработка ссылки",
+                                    $"Обработка ссылки {link.LinkUrl}. Блокировка. Пропуск."
+                                );
+                                continue;
+                            }
+
+                            await new PageBottomScrollingAction(page).Do();
+                            await new PageUpperScrollingAction(page).Do();
+                            await new VariantDescriptionDetailsSource()
+                                .With(new AvitoCharacteristicsDetailsSource(page))
+                                .With(new AvitoDescriptionDetailsSource(page))
+                                .Add(spare);
+                            SpareBody body = spare.AsSpareBody();
+                            if (!validator.IsValid(body))
+                            {
+                                await addJournalRecord.PublishJournalRecord(
+                                    parserStarted.ParserName,
+                                    parserStarted.ParserType,
+                                    "Обработка объявления",
+                                    $"Объявление пропущено. Проблема с данными объявления."
+                                );
+                                continue;
+                            }
+
+                            var message = new SpareSinkMessage(
+                                new ParserBody(
+                                    parserStarted.ParserName,
+                                    parserStarted.ParserType,
+                                    parserStarted.ParserDomain
+                                ),
+                                new ParserLinkBody(
+                                    parserStarted.ParserName,
+                                    parserStarted.ParserType,
+                                    parserStarted.ParserDomain,
+                                    link.LinkName,
+                                    link.LinkUrl
+                                ),
+                                body
+                            );
+                            await publisher.SaySparePublished(message);
+                            await addJournalRecord.PublishJournalRecord(
+                                parserStarted.ParserName,
+                                parserStarted.ParserType,
+                                "Обработка объявления",
+                                $"Объявление {message.Spare.SourceUrl} добавлено в очередь добавления."
+                            );
+                            itemsProcessed += 1;
+                            logger.Information("Processed items amount: {Count}", itemsProcessed);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Fatal("{Exception} at catalogue page processing.", ex.Message);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                logger.Fatal("{Exception} at scraping.", ex.Message);
             }
             parserLinkStopwatch.Stop();
             long linkSeconds = (long)parserLinkStopwatch.Elapsed.TotalSeconds;

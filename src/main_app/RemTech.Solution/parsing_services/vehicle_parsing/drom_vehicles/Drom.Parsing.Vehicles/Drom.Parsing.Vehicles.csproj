@@ -10,6 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\Parsing.Cache\Parsing.Cache.csproj" />
+    <ProjectReference Include="..\..\..\common\Parsing.Grpc\Parsing.Grpc.csproj" />
     <ProjectReference Include="..\..\..\common\Parsing.RabbitMq\Parsing.RabbitMq.csproj" />
     <ProjectReference Include="..\..\..\common\Parsing.SDK\Parsing.SDK.csproj" />
     <ProjectReference Include="..\..\Parsing.Vehicles.Common\Parsing.Vehicles.Common.csproj" />

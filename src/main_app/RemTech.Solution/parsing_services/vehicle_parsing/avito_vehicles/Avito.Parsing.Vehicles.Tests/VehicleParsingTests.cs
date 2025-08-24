@@ -36,7 +36,8 @@ public class VehicleParsingTests
             page,
             new NoTextWrite(),
             logger,
-            link
+            link,
+            null! // should be replaced by DuplicateIdsGrpcClient
         );
         await foreach (IParsedVehicle vehicle in vehicleSource.Iterate())
         {

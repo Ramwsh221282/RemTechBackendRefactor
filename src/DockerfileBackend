@@ -17,6 +17,7 @@ RUN dotnet publish -c Release -r linux-x64 --no-restore -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 
 WORKDIR /app
+EXPOSE 5238
 EXPOSE 5185
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "RemTech.Bootstrap.Api.dll"]

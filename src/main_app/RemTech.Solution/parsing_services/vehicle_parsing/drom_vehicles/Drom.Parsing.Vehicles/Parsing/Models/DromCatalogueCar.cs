@@ -33,6 +33,8 @@ public sealed class DromCatalogueCar
         _sentences = new SentencesCollection();
     }
 
+    public string Id => _id;
+
     public void WithDescription(string description)
     {
         if (string.IsNullOrWhiteSpace(description))

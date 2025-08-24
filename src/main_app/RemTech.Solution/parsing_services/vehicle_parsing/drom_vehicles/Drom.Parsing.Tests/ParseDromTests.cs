@@ -41,7 +41,7 @@ public sealed class ParseDromTests
                 logger.Error("{Ex}", ex.Message);
             }
             DromCatalogueCarsCollection collection = new(page);
-            IEnumerable<DromCatalogueCar> cars = await collection.Iterate();
+            IEnumerable<DromCatalogueCar> cars = await collection.Iterate(null!); // Null should be replaced by DuplicateIdsGrpcClient
             foreach (DromCatalogueCar item in cars)
             {
                 await item.Navigation().Navigate(page);

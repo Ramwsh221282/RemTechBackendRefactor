@@ -11,10 +11,10 @@ services:
       POSTGRES_PASSWORD: ${PG_PASSWORD}
       PGPORT: 5435
     ports:
-      - "5535:5435"
+      - "5435"
     volumes:
       - remtech_data:/var/lib/postgresql/data
-  
+
   seq:
     image: datalust/seq:latest
     container_name: seq
@@ -28,13 +28,13 @@ services:
       - "8081:80"
     volumes:
       - seq_data:/data
-  
+
   redis:
     image: redis:latest
     container_name: redis
     restart: always
     ports:
-      - "6379:6379"
+      - "6379"
 
   rabbitmq:
     image: rabbitmq:management-alpine
@@ -42,12 +42,12 @@ services:
     hostname: rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBIT_USER_NAME}
-      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}    
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5672"
+      - "15672"
     restart: always
-    
+
   backend:
     container_name: backend
     build:
@@ -55,12 +55,13 @@ services:
       dockerfile: DockerfileBackend
     ports:
       - "5185:5185"
+      - "5238"
     environment:
-      - ASPNETCORE_URLS=http://+:5185          
-      - RABBIT_HOST_NAME=${RABBIT_HOST_NAME}      
-      - RABBIT_USER_NAME=${RABBIT_USER_NAME}      
-      - RABBIT_PASSWORD=${RABBIT_PASSWORD}      
-      - RABBIT_PORT=${RABBIT_PORT}     
+      - ASPNETCORE_URLS=http://+:5185
+      - RABBIT_HOST_NAME=${RABBIT_HOST_NAME}
+      - RABBIT_USER_NAME=${RABBIT_USER_NAME}
+      - RABBIT_PASSWORD=${RABBIT_PASSWORD}
+      - RABBIT_PORT=${RABBIT_PORT}
       - PG_HOST_NAME=${PG_HOST_NAME}
       - PG_PORT=${PG_PORT}
       - PG_DATABASE_NAME=${PG_DATABASE_NAME}
@@ -94,10 +95,15 @@ services:
       - REDIS_HOST=${REDIS_HOST}
       - SEQ_HOST=${SEQ_HOST}
       - FRONTEND_URL=${FRONTEND_URL}
+      - MAIN_GRPC_ADDRESS=${MAIN_GRPC_ADDRESS}
     depends_on:
       - backend
+      - database
+      - redis
+      - rabbitmq
+      - seq
     restart: always
-  
+
   drom-vehicles:
     container_name: drom-vehicles
     build:
@@ -116,10 +122,15 @@ services:
       - REDIS_HOST=${REDIS_HOST}
       - SEQ_HOST=${SEQ_HOST}
       - FRONTEND_URL=${FRONTEND_URL}
+      - MAIN_GRPC_ADDRESS=${MAIN_GRPC_ADDRESS}
     depends_on:
       - backend
+      - database
+      - redis
+      - rabbitmq
+      - seq
     restart: always
-  
+
   avito-spares:
     container_name: avito-spares
     build:
@@ -138,10 +149,15 @@ services:
       - REDIS_HOST=${REDIS_HOST}
       - SEQ_HOST=${SEQ_HOST}
       - FRONTEND_URL=${FRONTEND_URL}
+      - MAIN_GRPC_ADDRESS=${MAIN_GRPC_ADDRESS}
     depends_on:
       - backend
+      - database
+      - redis
+      - rabbitmq
+      - seq
     restart: always
-  
+
   cleaner:
     container_name: cleaner
     build:
@@ -162,8 +178,12 @@ services:
       - FRONTEND_URL=${FRONTEND_URL}
     depends_on:
       - backend
+      - database
+      - redis
+      - rabbitmq
+      - seq
     restart: always
-  
+
   frontend:
     container_name: frontend
     build:
@@ -175,8 +195,12 @@ services:
       - DISABLE_IPV6=1
     depends_on:
       - backend
+      - database
+      - redis
+      - rabbitmq
+      - seq
     restart: always
-    
+
 volumes:
   remtech_data:
   seq_data:

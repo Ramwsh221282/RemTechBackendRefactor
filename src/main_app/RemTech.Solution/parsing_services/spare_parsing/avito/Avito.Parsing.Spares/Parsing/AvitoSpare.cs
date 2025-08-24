@@ -45,6 +45,8 @@ public sealed class AvitoSpare
         await new PageNavigating(page, _sourceUrl).Do();
     }
 
+    public string Id() => _id;
+
     public void CorrectOem(string oem)
     {
         _oem = oem;
