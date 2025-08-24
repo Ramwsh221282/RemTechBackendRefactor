@@ -129,6 +129,7 @@ public sealed class Worker(
                                 "Обработка ссылки",
                                 $"Обработка ссылки {link.LinkUrl}. Начата."
                             );
+                            logger.Information("Diabled");
                             break;
                         }
 
