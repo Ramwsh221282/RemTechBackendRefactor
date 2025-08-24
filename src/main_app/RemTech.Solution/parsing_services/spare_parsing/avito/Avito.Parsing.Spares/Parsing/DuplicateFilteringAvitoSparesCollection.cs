@@ -9,19 +9,52 @@ internal sealed class DuplicateFilteringAvitoSparesCollection(
 {
     public async Task<IEnumerable<AvitoSpare>> Read()
     {
-        try
+        IEnumerable<AvitoSpare> spares = await origin.Read();
+        if (spares == null)
         {
-            AvitoSpare[] spares = (await origin.Read().ConfigureAwait(false)).ToArray();
-            IEnumerable<string> duplicateIds = await client
-                .GetDuplicateIdentifiers(spares.Select(s => s.Id()))
-                .ConfigureAwait(false);
-            HashSet<string> dupSet = new HashSet<string>(duplicateIds, StringComparer.Ordinal);
-            return spares.DistinctBy(s => s.Id()).Where(s => !dupSet.Contains(s.Id()));
+            throw new ApplicationException(
+                $"{nameof(DuplicateFilteringAvitoSparesCollection)} spares collection was null"
+            );
         }
-        catch
+
+        IEnumerable<string> spareIds = spares.Select(s => s.Id());
+        IEnumerable<string> existingIds = await client.GetDuplicateIdentifiers(spareIds);
+        if (existingIds == null)
         {
-            Console.WriteLine($"Exception at {nameof(DuplicateFilteringAvitoSparesCollection)}");
-            throw;
+            throw new ApplicationException(
+                $"{nameof(DuplicateFilteringAvitoSparesCollection)} existing ids collection was null"
+            );
         }
+
+        HashSet<string> dupSet = new HashSet<string>(existingIds);
+        List<AvitoSpare> results = [];
+        foreach (AvitoSpare spare in spares)
+        {
+            string spareId = spare.Id();
+            if (string.IsNullOrWhiteSpace(spareId))
+            {
+                Console.WriteLine("Spare id was null");
+                continue;
+            }
+            if (dupSet.Contains(spareId))
+                continue;
+            results.Add(spare);
+        }
+        return results;
+
+        // try
+        // {
+        //     AvitoSpare[] spares = (await origin.Read().ConfigureAwait(false)).ToArray();
+        //     IEnumerable<string> duplicateIds = await client
+        //         .GetDuplicateIdentifiers(spares.Select(s => s.Id()))
+        //         .ConfigureAwait(false);
+        //     HashSet<string> dupSet = new HashSet<string>(duplicateIds, StringComparer.Ordinal);
+        //     return spares.DistinctBy(s => s.Id()).Where(s => !dupSet.Contains(s.Id()));
+        // }
+        // catch
+        // {
+        //     Console.WriteLine($"Exception at {nameof(DuplicateFilteringAvitoSparesCollection)}");
+        //     throw;
+        // }
     }
 }
