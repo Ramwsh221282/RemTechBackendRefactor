@@ -4,6 +4,7 @@ using Drom.Parsing.Vehicles.Parsing.AttributeParsers;
 using Drom.Parsing.Vehicles.Parsing.Models;
 using Drom.Parsing.Vehicles.Parsing.Utilities;
 using Parsing.Cache;
+using Parsing.Grpc.Services.DuplicateIds;
 using Parsing.RabbitMq.AddJournalRecord;
 using Parsing.RabbitMq.Facade;
 using Parsing.RabbitMq.PublishVehicle;
@@ -21,11 +22,13 @@ public class Worker(
     IStartParsingListener listener,
     IParserRabbitMqActionsPublisher publisher,
     IDisabledScraperTracker disabledTracker,
-    IAddJournalRecordPublisher addJournalRecord
+    IAddJournalRecordPublisher addJournalRecord,
+    GrpcDuplicateIdsClient client
 ) : BackgroundService
 {
     public override async Task StartAsync(CancellationToken stoppingToken)
     {
+        await client.Ping();
         await listener.Prepare(stoppingToken);
         logger.Information("Worker service started.");
         await base.StartAsync(stoppingToken);
@@ -46,7 +49,7 @@ public class Worker(
             JsonSerializer.Deserialize<ParserStartedRabbitMqMessage>(eventArgs.Body.ToArray());
         if (parserStarted == null)
             return;
-        await using IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
+        await using IScrapingBrowser browser = await BrowserFactory.Create();
         await using IPage page = await browser.ProvideDefaultPage();
         Stopwatch parserStopwatch = new Stopwatch();
         parserStopwatch.Start();
@@ -103,7 +106,7 @@ public class Worker(
                         continue;
                     }
                     DromCatalogueCarsCollection collection = new(page);
-                    IEnumerable<DromCatalogueCar> cars = await collection.Iterate();
+                    IEnumerable<DromCatalogueCar> cars = await collection.Iterate(client);
                     foreach (DromCatalogueCar item in cars)
                     {
                         await addJournalRecord.PublishJournalRecord(

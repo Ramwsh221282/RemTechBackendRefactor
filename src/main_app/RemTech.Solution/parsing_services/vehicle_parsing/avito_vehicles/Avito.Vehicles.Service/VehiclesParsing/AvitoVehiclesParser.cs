@@ -11,8 +11,8 @@ using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Price;
 using Avito.Vehicles.Service.VehiclesParsing.AvitoVehicleAttributeSources.Url;
 using Avito.Vehicles.Service.VehiclesParsing.CatalogueItems;
 using Parsing.Avito.Common.BypassFirewall;
-using Parsing.Avito.Common.Images;
 using Parsing.Avito.Common.PaginationBar;
+using Parsing.Grpc.Services.DuplicateIds;
 using Parsing.SDK.ScrapingActions;
 using Parsing.Vehicles.Common.ParsedVehicles;
 using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleBrands;
@@ -34,7 +34,8 @@ public sealed class AvitoVehiclesParser(
     IPage page,
     ITextWrite write,
     Serilog.ILogger logger,
-    string originUrl
+    string originUrl,
+    GrpcDuplicateIdsClient client
 ) : IParsedVehicleSource
 {
     private readonly IPageAction _bottomScroll = new PageBottomScrollingAction(page);
@@ -67,6 +68,7 @@ public sealed class AvitoVehiclesParser(
                 .WrapBy(s => new ExtractingAvitoCatalogueItemsSource(page, s))
                 .WrapBy(s => new IdentifiedAvitoCatalogueItemsSource(s))
                 .WrapBy(s => new LoggingAvitoCatalogueItemsSource(logger, s))
+                .WrapBy(s => new DuplicateFilteringAvitoCatalogueItems(client, s))
                 .Read();
             foreach (CatalogueItem item in items.Iterate())
             {

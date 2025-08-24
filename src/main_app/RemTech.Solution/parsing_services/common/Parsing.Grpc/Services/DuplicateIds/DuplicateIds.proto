@@ -1,0 +1,30 @@
+﻿syntax = "proto3";
+
+service DuplicateIdsGrpcService {
+  rpc CheckDuplicateIds (CheckDuplicateIdsRequest) returns (CheckDuplicateIdsResponse);
+  rpc PingService (PingDuplicateIdsServiceRequest) returns (PingDuplicateIdsServiceResponse);
+}
+
+message PingDuplicateIdsServiceRequest {
+
+}
+
+message PingDuplicateIdsServiceResponse {
+
+}
+
+message CheckDuplicateIdsRequest {
+  repeated IdsToCheck ids = 1;
+}
+
+message CheckDuplicateIdsResponse {
+  repeated IdsExisting ids = 1;
+}
+
+message IdsToCheck {
+  string id = 1;
+}
+
+message IdsExisting {
+  string id = 1;
+}

@@ -8,6 +8,7 @@ COPY ./main_app/RemTech.Solution/parsing_services/common/common_avito/Parsing.Av
 COPY ./main_app/RemTech.Solution/parsing_services/common/Parsing.SDK/. ./main_app/RemTech.Solution/parsing_services/common/Parsing.SDK/
 COPY ./main_app/RemTech.Solution/parsing_services/common/Parsing.RabbitMq/. ./main_app/RemTech.Solution/parsing_services/common/Parsing.RabbitMq/
 COPY ./main_app/RemTech.Solution/parsing_services/common/Parsing.Cache/. ./main_app/RemTech.Solution/parsing_services/common/Parsing.Cache/
+COPY ./main_app/RemTech.Solution/parsing_services/common/Parsing.Grpc/. ./main_app/RemTech.Solution/parsing_services/common/Parsing.Grpc/
 COPY ./main_app/RemTech.Solution/parsing_services/vehicle_parsing/Parsing.Vehicles.Common/. ./main_app/RemTech.Solution/parsing_services/vehicle_parsing/Parsing.Vehicles.Common/
 
 WORKDIR /app/main_app/RemTech.Solution/parsing_services/spare_parsing/avito/Avito.Parsing.Spares

@@ -1,4 +1,5 @@
 ﻿using Drom.Parsing.Vehicles.Parsing.Utilities;
+using Parsing.Grpc.Services.DuplicateIds;
 using Parsing.SDK.ElementSources;
 using Parsing.SDK.ScrapingArtifacts;
 using PuppeteerSharp;
@@ -16,10 +17,25 @@ public sealed class DromCatalogueCarsCollection(IPage page)
     private const StringSplitOptions SplitOptions =
         StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries;
 
-    public async Task<IEnumerable<DromCatalogueCar>> Iterate()
+    public async Task<IEnumerable<DromCatalogueCar>> Iterate(GrpcDuplicateIdsClient client)
     {
         LinkedList<DromCatalogueCar> materialized = await Materialize();
+        materialized = await Filter(client, materialized);
         return materialized;
+    }
+
+    public async Task<LinkedList<DromCatalogueCar>> Filter(
+        GrpcDuplicateIdsClient client,
+        LinkedList<DromCatalogueCar> cars
+    )
+    {
+        IEnumerable<string> duplicateIds = await client.GetDuplicateIdentifiers(
+            cars.Select(c => c.Id)
+        );
+        HashSet<string> dupSet = new HashSet<string>(duplicateIds);
+        return new LinkedList<DromCatalogueCar>(
+            cars.DistinctBy(c => c.Id).Where(c => !dupSet.Contains(c.Id))
+        );
     }
 
     private async Task<LinkedList<DromCatalogueCar>> Materialize()

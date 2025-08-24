@@ -1,5 +1,6 @@
 using Avito.Parsing.Spares;
 using Parsing.Cache;
+using Parsing.Grpc.Services.DuplicateIds;
 using Parsing.RabbitMq.Configuration;
 using Parsing.RabbitMq.CreateParser;
 using Parsing.RabbitMq.StartParsing;
@@ -20,6 +21,7 @@ builder.Services.AddSingleton<Serilog.ILogger>(
     new LoggerConfiguration().WriteTo.Console().CreateLogger()
 );
 builder.Services.AddHostedService<Worker>();
+DuplicateIdsCheckClientOptions.Create(isDevelopment).Register(builder.Services);
 new DisabledTrackerConfigurationSource(isDevelopment).Provide().Register(builder.Services);
 new RabbitMqConfigurationSource(isDevelopment)
     .Provide()
