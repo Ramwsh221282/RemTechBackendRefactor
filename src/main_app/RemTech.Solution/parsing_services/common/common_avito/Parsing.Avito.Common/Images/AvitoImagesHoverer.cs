@@ -12,30 +12,43 @@ public sealed class AvitoImagesHoverer(IPage page)
     public async Task HoverImages()
     {
         await Task.Delay(TimeSpan.FromSeconds(10));
-        IElementHandle container = await new PageElementSource(page).Read(
-            string.Intern(ContainerSelector)
-        );
-        IElementHandle[] itemsList = await new ParentManyElementsSource(container).Read(
-            string.Intern(ItemsSelector)
-        );
-        foreach (IElementHandle item in itemsList)
+        if (page == null)
         {
-            await using (item)
+            Console.WriteLine("Page is null.");
+        }
+
+        try
+        {
+            IElementHandle container = await new PageElementSource(page).Read(
+                string.Intern(ContainerSelector)
+            );
+            IElementHandle[] itemsList = await new ParentManyElementsSource(container).Read(
+                string.Intern(ItemsSelector)
+            );
+            foreach (IElementHandle item in itemsList)
             {
-                try
+                await using (item)
                 {
-                    IElementHandle sliderElement = await new ValidSingleElementSource(
-                        new ParentElementSource(item)
-                    ).Read(SliderSelector);
-                    await sliderElement.HoverAsync();
-                    await sliderElement.FocusAsync();
-                }
-                catch
-                {
-                    // ignored
+                    try
+                    {
+                        IElementHandle sliderElement = await new ValidSingleElementSource(
+                            new ParentElementSource(item)
+                        ).Read(SliderSelector);
+                        await sliderElement.HoverAsync();
+                        await sliderElement.FocusAsync();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
                 }
             }
+            await Task.Delay(TimeSpan.FromSeconds(10));
         }
-        await Task.Delay(TimeSpan.FromSeconds(10));
+        catch
+        {
+            Console.WriteLine("Exception at image hovering.");
+            throw;
+        }
     }
 }

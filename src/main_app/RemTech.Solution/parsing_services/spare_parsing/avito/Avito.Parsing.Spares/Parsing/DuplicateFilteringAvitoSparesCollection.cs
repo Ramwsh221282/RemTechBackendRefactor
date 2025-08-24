@@ -18,6 +18,13 @@ internal sealed class DuplicateFilteringAvitoSparesCollection(
         }
 
         IEnumerable<string> spareIds = spares.Select(s => s.Id());
+        if (spareIds == null)
+        {
+            throw new ApplicationException(
+                $"{nameof(DuplicateFilteringAvitoSparesCollection)} spares ids collection was null"
+            );
+        }
+
         IEnumerable<string> existingIds = await client.GetDuplicateIdentifiers(spareIds);
         if (existingIds == null)
         {
@@ -27,6 +34,13 @@ internal sealed class DuplicateFilteringAvitoSparesCollection(
         }
 
         HashSet<string> dupSet = new HashSet<string>(existingIds);
+        if (dupSet == null)
+        {
+            throw new ApplicationException(
+                $"{nameof(DuplicateFilteringAvitoSparesCollection)} dupset was null"
+            );
+        }
+
         List<AvitoSpare> results = [];
         foreach (AvitoSpare spare in spares)
         {
