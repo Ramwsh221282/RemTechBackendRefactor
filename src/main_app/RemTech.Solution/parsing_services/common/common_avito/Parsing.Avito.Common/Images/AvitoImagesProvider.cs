@@ -15,28 +15,39 @@ public sealed partial class AvitoImagesProvider(IElementHandle item)
     public async Task<IEnumerable<string>> GetImages()
     {
         LinkedList<string> images = [];
-        IElementHandle slider = await new ValidSingleElementSource(
-            new ParentElementSource(item)
-        ).Read(SliderSelector);
-        IElementHandle[] elements = await new ParentManyElementsSource(slider).Read("li");
-        foreach (var image in elements)
+        try
         {
-            try
+            IElementHandle slider = await new ValidSingleElementSource(
+                new ParentElementSource(item)
+            ).Read(SliderSelector);
+            IElementHandle[] elements = await new ParentManyElementsSource(slider).Read("li");
+            foreach (var image in elements)
             {
-                string srcSet = await GetSrcSet(image);
-                if (string.IsNullOrEmpty(srcSet))
-                    continue;
-                string highQualityImage = srcSet.Split(',', SplitOptions)[^1].Split(' ')[0].Trim();
-                images.AddFirst(highQualityImage);
-                Console.WriteLine(highQualityImage);
+                try
+                {
+                    string srcSet = await GetSrcSet(image);
+                    if (string.IsNullOrEmpty(srcSet))
+                        continue;
+                    string highQualityImage = srcSet
+                        .Split(',', SplitOptions)[^1]
+                        .Split(' ')[0]
+                        .Trim();
+                    images.AddFirst(highQualityImage);
+                    Console.WriteLine(highQualityImage);
+                }
+                catch
+                {
+                    Console.WriteLine("Exception");
+                }
             }
-            catch
-            {
-                Console.WriteLine("Exception");
-            }
-        }
 
-        return images;
+            return images;
+        }
+        catch
+        {
+            Console.WriteLine($"Exception at {nameof(AvitoImagesProvider)}");
+            return images;
+        }
     }
 
     private static async Task<string> GetSrcSet(IElementHandle element)
