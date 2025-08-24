@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: ${PG_PASSWORD}
       PGPORT: 5435
     ports:
-      - "5435"
+      - "5535:5435"
     volumes:
       - remtech_data:/var/lib/postgresql/data
 
@@ -34,7 +34,7 @@ services:
     container_name: redis
     restart: always
     ports:
-      - "6379"
+      - "6379:6379"
 
   rabbitmq:
     image: rabbitmq:management-alpine
@@ -44,8 +44,8 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBIT_USER_NAME}
       RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
     ports:
-      - "5672"
-      - "15672"
+      - "5672:5672"
+      - "15672:15672"
     restart: always
 
   backend:
@@ -55,7 +55,7 @@ services:
       dockerfile: DockerfileBackend
     ports:
       - "5185:5185"
-      - "5238"
+      - "5238:5238"
     environment:
       - ASPNETCORE_URLS=http://+:5185
       - RABBIT_HOST_NAME=${RABBIT_HOST_NAME}
