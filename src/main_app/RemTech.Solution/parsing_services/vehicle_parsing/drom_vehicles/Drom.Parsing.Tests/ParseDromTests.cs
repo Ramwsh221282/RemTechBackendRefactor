@@ -18,7 +18,7 @@ public sealed class ParseDromTests
     private async Task Invoke_Scraping()
     {
         string url = "https://auto.drom.ru/spec/john-deere/forestry/all/";
-        IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
+        IScrapingBrowser browser = await BrowserFactory.ProvideBrowser();
         ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
         IPage page = await browser.ProvideDefaultPage();
         DromPagesCursor cursor = new DromPagesCursor(page);

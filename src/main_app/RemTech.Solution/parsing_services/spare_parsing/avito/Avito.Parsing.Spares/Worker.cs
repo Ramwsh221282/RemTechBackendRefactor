@@ -59,7 +59,7 @@ public sealed class Worker(
         if (parserStarted == null)
             return;
 
-        await using IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
+        await using IScrapingBrowser browser = await BrowserFactory.ProvideBrowser();
         await using IPage page = await browser.ProvideDefaultPage();
         Stopwatch parserStopwatch = new Stopwatch();
         parserStopwatch.Start();

@@ -28,7 +28,7 @@ public class VehicleParsingTests
     {
         string link =
             "https://www.avito.ru/all/gruzoviki_i_spetstehnika/tehnika_dlya_lesozagotovki/komatsu-ASgBAgICAkRUsiyexw3g6j8?cd=1";
-        await using IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
+        await using IScrapingBrowser browser = await BrowserFactory.ProvideBrowser();
         await using IPage page = await browser.ProvideDefaultPage();
         await new PageNavigating(page, link).Do();
         ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();

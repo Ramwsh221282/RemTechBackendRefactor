@@ -22,7 +22,7 @@ public class ScrapingTests
     {
         Serilog.ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
         const string url = "https://www.avito.ru/all/zapchasti_i_aksessuary?q=ponsse";
-        await using IScrapingBrowser browser = await BrowserFactory.ProvideDevelopmentBrowser();
+        await using IScrapingBrowser browser = await BrowserFactory.ProvideBrowser();
         await using IPage page = await browser.ProvideDefaultPage();
         IAvitoBypassFirewall bypass = new AvitoBypassFirewall(page)
             .WrapBy(p => new AvitoBypassFirewallExceptionSupressing(p))

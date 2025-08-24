@@ -23,14 +23,7 @@ public static class BrowserFactory
         Console.WriteLine("Producation mode set.");
     }
 
-    public static async Task<IScrapingBrowser> Create()
-    {
-        return _isDevelopment
-            ? await ProvideDevelopmentBrowser()
-            : await ProvideProductionBrowser();
-    }
-
-    public static async Task<IScrapingBrowser> ProvideDevelopmentBrowser()
+    public static async Task<IScrapingBrowser> ProvideBrowser()
     {
         IBrowser browser = await new DefaultBrowserInstantiation(
             new HeadlessBrowserInstantiationOptions(),
@@ -39,21 +32,10 @@ public static class BrowserFactory
         return new SinglePagedScrapingBrowser(browser);
     }
 
-    public static async Task<IScrapingBrowser> ProvideDevelopmentNonHeadlessBrowser()
+    public static async Task<IScrapingBrowser> ProvideNonHeadlessBrowser()
     {
         IBrowser browser = await new DefaultBrowserInstantiation(
             new NonHeadlessBrowserInstantiationOptions(),
-            new BasicBrowserLoading()
-        ).Instantiation();
-        return new SinglePagedScrapingBrowser(browser);
-    }
-
-    public static async Task<IScrapingBrowser> ProvideProductionBrowser()
-    {
-        IBrowser browser = await new DefaultBrowserInstantiation(
-            new HeadlessWithDirectBrowserPathLaunchOptions(
-                new BrowserPathSourceFromEnvironmentVariables("CHROME_BIN")
-            ),
             new BasicBrowserLoading()
         ).Instantiation();
         return new SinglePagedScrapingBrowser(browser);

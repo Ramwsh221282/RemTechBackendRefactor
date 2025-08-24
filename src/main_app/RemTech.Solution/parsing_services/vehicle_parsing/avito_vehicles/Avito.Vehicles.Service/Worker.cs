@@ -60,7 +60,7 @@ public class Worker(
             JsonSerializer.Deserialize<ParserStartedRabbitMqMessage>(eventArgs.Body.ToArray());
         if (parserStarted == null)
             return;
-        await using IScrapingBrowser browser = await BrowserFactory.Create();
+        await using IScrapingBrowser browser = await BrowserFactory.ProvideBrowser();
         await using IPage page = await browser.ProvideDefaultPage();
         Stopwatch parserStopwatch = new Stopwatch();
         parserStopwatch.Start();

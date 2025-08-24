@@ -65,7 +65,7 @@ internal sealed class Worker(
             throw new InvalidOperationException("Channel not initialized");
         await _channel.BasicAckAsync(@event.DeliveryTag, false);
         logger.Information("Cleaner invoked.");
-        await using IScrapingBrowser browser = await BrowserFactory.Create();
+        await using IScrapingBrowser browser = await BrowserFactory.ProvideBrowser();
         await using IPage page = await browser.ProvideDefaultPage();
         try
         {
