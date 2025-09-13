@@ -11,4 +11,11 @@ public sealed class HasSenderApi(ConnectionMultiplexer multiplexer)
         CachedMailingSender[] senders = await cache.GetAll();
         return senders.Length > 0;
     }
+
+    public async Task HasSenderAndThrowIfNotExists()
+    {
+        bool hasSender = await HasSender();
+        if (!hasSender)
+            throw new HasNoAvailableSendersException();
+    }
 }

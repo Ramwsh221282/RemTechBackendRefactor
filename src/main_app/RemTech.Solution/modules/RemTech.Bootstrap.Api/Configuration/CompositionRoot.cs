@@ -55,6 +55,8 @@ using Users.Module.Features.SessionRefreshing;
 using Users.Module.Features.SignOut;
 using Users.Module.Features.UpdateUserPassword;
 using Users.Module.Features.UpdateUserProfile;
+using Users.Module.Features.UserPasswordRecovering.Endpoint;
+using Users.Module.Features.UserPasswordRecoveryConfirmation.Endpoint;
 using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Features.VerifyingToken;
 using Users.Module.Public;
@@ -127,12 +129,14 @@ public static class CompositionRoot
     private static void MapUsersEndpoints(this WebApplication app)
     {
         RouteGroupBuilder builder = app.MapGroup("api/users").RequireCors("FRONTEND");
+        UserPasswordRecoveringEndpoint.Map(builder);
         CreateUserAccountEndpoint.Map(builder);
         UserAuthenticationEndpoint.Map(builder);
         AdminVerificationEndpoint.Map(builder);
         EnsureRootCreatedEndpoint.Map(builder);
         CreateRootAccountEndpoint.Map(builder);
         SessionRefreshingEndpoint.Map(builder);
+        UserPasswordRecoveryConfirmationEndpoint.Map(builder);
         VerifyTokenEndpoint.Map(builder);
         SignOutEndpoint.Map(builder);
         UpdateUserEmailEndpoint.Map(builder);
