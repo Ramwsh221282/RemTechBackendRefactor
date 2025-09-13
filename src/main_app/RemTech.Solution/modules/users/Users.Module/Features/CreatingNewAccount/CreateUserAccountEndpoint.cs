@@ -10,6 +10,18 @@ using Users.Module.Models;
 
 namespace Users.Module.Features.CreatingNewAccount;
 
+internal sealed class UserRegistrationEmailEmptyException : Exception
+{
+    public UserRegistrationEmailEmptyException()
+        : base("Почта пользователя не указана.") { }
+}
+
+internal sealed class UserRegistrationLoginEmptyException : Exception
+{
+    public UserRegistrationLoginEmptyException()
+        : base("Логин пользователя не указан.") { }
+}
+
 public static class CreateUserAccountEndpoint
 {
     public static void Map(RouteGroupBuilder builder) => builder.MapPost("sign-up", Handle);
@@ -26,6 +38,10 @@ public static class CreateUserAccountEndpoint
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                throw new UserRegistrationEmailEmptyException();
+            if (string.IsNullOrWhiteSpace(request.Name))
+                throw new UserRegistrationRequiresNameException();
             UserRegistrationDetails details = await new User(
                 request.Name,
                 request.Password,
@@ -37,6 +53,14 @@ public static class CreateUserAccountEndpoint
             UserJwt jwt = details.JwtDetails().UserJwt(securityKey);
             await jwt.StoreInCache(multiplexer);
             return jwt.AsResult();
+        }
+        catch (UserRegistrationEmailEmptyException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
+        catch (UserRegistrationLoginEmptyException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
         }
         catch (InvalidEmailFormatException ex)
         {

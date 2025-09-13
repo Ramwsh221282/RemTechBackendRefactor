@@ -15,6 +15,18 @@ internal sealed class MailingSenderNotFoundException : Exception
         : base($"Отправитель {email} не найден.") { }
 }
 
+internal sealed class MailPingMessageRecepientEmptyException : Exception
+{
+    public MailPingMessageRecepientEmptyException()
+        : base("Не указан получатель отправки почты.") { }
+}
+
+internal sealed class MailingPingMessageSenderEmptyException : Exception
+{
+    public MailingPingMessageSenderEmptyException()
+        : base("Не указан сервис отправки почты.") { }
+}
+
 public static class PingMailingSender
 {
     public sealed record PingMailingSenderRequest(string Email, string To);
@@ -31,6 +43,10 @@ public static class PingMailingSender
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                throw new MailingPingMessageSenderEmptyException();
+            if (string.IsNullOrWhiteSpace(request.To))
+                throw new MailPingMessageRecepientEmptyException();
             EmailSenderOutput output = await Process(multiplexer, request, ct);
             return Results.Ok(new PingMailingSenderResponse(output.Name, output.Email));
         }
@@ -46,22 +62,24 @@ public static class PingMailingSender
         CancellationToken ct
     )
     {
+        IEmailSender sender = await GetRequiredSender(request, multiplexer);
+        await sender
+            .FormEmailMessage()
+            .Send(request.To, "RemTech Test Email Sending.", "Do not answer for this message.", ct);
+        return sender.Print();
+    }
+
+    private static async Task<IEmailSender> GetRequiredSender(
+        PingMailingSenderRequest request,
+        ConnectionMultiplexer multiplexer
+    )
+    {
         MailingSendersCache cache = new(multiplexer);
         CachedMailingSender[] senders = await cache.GetAll();
-        foreach (var senderEntry in senders)
+        foreach (CachedMailingSender entry in senders)
         {
-            if (senderEntry.Email != request.Email)
-                continue;
-            IEmailSender sender = new EmailSender(senderEntry.Email, senderEntry.Key);
-            await sender
-                .FormEmailMessage()
-                .Send(
-                    request.To,
-                    "RemTech Test Email Sending.",
-                    "Do not answer for this message.",
-                    ct
-                );
-            return sender.Print();
+            if (entry.Email == entry.Email)
+                return entry.AsSender();
         }
 
         throw new MailingSenderNotFoundException(request.Email);
