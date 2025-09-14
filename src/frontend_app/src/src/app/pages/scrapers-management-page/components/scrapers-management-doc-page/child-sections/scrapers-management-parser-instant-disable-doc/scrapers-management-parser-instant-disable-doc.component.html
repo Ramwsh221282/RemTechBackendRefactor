@@ -1,0 +1,19 @@
+<div class="space-y-6">
+  <div>
+    <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">Немдленное выключение:</h2>
+  </div>
+  <div class="flex flex-col gap-2">
+    <app-gray-text-info-wrapper>
+      <app-gray-text-info
+        [text_setter]="'Немедленное выключение парсера меняет состояние парсера в Отключен.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Если парсер находится в работе и была вызвана команда немедленного выключения, отключение происходит не моментально, поскольку прерывание процесса парсинга требует завершение операции связных программных модулей.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Во избежание конфликтов, когда парсер отключается немедленным способом, он по прежнему в момент отключения вычисляет дату следующего запуска.'" />
+    </app-gray-text-info-wrapper>
+  </div>
+</div>

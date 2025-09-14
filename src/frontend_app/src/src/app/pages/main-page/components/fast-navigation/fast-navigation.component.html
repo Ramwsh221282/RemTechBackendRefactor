@@ -1,0 +1,77 @@
+<div class="lg:col-span-1">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+    <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Быстрый поиск</h2>
+
+    <div class="space-y-4">
+      <p-select [fluid]="true" [options]="navigationCategories" [(ngModel)]="selectedCategory"
+                placeholder="Выбрать категорию" class="w-full md:w-56">
+        <ng-template #selectedItem let-selectedOption>
+          <div class="flex items-center gap-2">
+            <div>{{ selectedOption }}</div>
+          </div>
+        </ng-template>
+        <ng-template let-category #item>
+          <div class="flex items-center gap-2">
+            <div>{{ category }}</div>
+          </div>
+        </ng-template>
+      </p-select>
+
+      @if (selectedCategory === 'Техника') {
+        <p-select [fluid]="true" [options]="vehicleTypes" [(ngModel)]="selectedType" [filter]="true"
+                  filterBy="name" [showClear]="true" placeholder="1. Выбрать тип техники" class="w-full md:w-56">
+          <ng-template #selectedItem let-selectedOption>
+            <div class="flex items-center gap-2">
+              <div>{{ selectedOption.name }}</div>
+            </div>
+          </ng-template>
+          <ng-template let-type #item>
+            <div class="flex items-center gap-2">
+              <div>{{ type.name }}</div>
+            </div>
+          </ng-template>
+        </p-select>@if (selectedType()) {
+          <p-select [fluid]="true" [options]="vehicleBrands" [(ngModel)]="selectedBrand" [filter]="true"
+                    filterBy="name" [showClear]="true" placeholder="2. Выбрать марку техники" class="w-full md:w-56">
+            <ng-template #selectedItem let-selectedOption>
+              <div class="flex items-center gap-2">
+                <div>{{ selectedOption.name }}</div>
+              </div>
+            </ng-template>
+            <ng-template let-brand #item>
+              <div class="flex items-center gap-2">
+                <div>{{ brand.name }}</div>
+              </div>
+            </ng-template>
+          </p-select>@if (selectedBrand() && selectedType()) {
+            <p-select [fluid]="true" [options]="models" [(ngModel)]="selectedModel" [filter]="true"
+                      filterBy="name" [showClear]="true" placeholder="3. Выбрать модель техники" class="w-full md:w-56">
+              <ng-template #selectedItem let-selectedOption>
+                <div class="flex items-center gap-2">
+                  <div>{{ selectedOption.name }}</div>
+                </div>
+              </ng-template>
+              <ng-template let-model #item>
+                <div class="flex items-center gap-2">
+                  <div>{{ model.name }}</div>
+                </div>
+              </ng-template>
+            </p-select>@if (selectedBrand() && selectedType() && selectedModel()) {
+              <button (click)="navigateVehicles()"
+                      class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200">
+                Найти предложения
+              </button>
+            }
+          }
+        }
+      }
+      @if (selectedCategory === 'Запчасти') {
+        <input pInputText [placeholder]="'Введите что интересует'" [fluid]="true" [(ngModel)]="vehicleTextInput">
+        <button (click)="navigateSpares()"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200">
+          Найти предложения
+        </button>
+      }
+    </div>
+  </div>
+</div>

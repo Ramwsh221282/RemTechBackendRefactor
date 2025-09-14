@@ -1,0 +1,18 @@
+<div class="space-y-1 text-sm">
+  <div>
+    <span class="font-medium text-gray-700 dark:text-gray-300">Город:</span>
+    <span class="ml-1 text-gray-900 dark:text-gray-100">{{ spare.city }}</span>
+  </div>
+  <div>
+    <span class="font-medium text-gray-700 dark:text-gray-300">Регион:</span>
+    <span class="ml-1 text-gray-900 dark:text-gray-100">{{ spare.region }}</span>
+  </div>
+  <div class="flex items-center flex-wrap">
+    <span class="font-medium text-gray-700 dark:text-gray-300">Цена:</span>
+    <span class="ml-1 text-gray-900 dark:text-gray-100">{{ spare.priceValue | number }} ₽</span>
+    <span class="ml-2 px-2 py-0.5 text-xs rounded-full"
+          [ngClass]="spare.isNds ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                {{ spare.isNds ? 'с НДС' : 'без НДС' }}
+              </span>
+  </div>
+</div>

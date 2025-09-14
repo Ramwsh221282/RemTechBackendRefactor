@@ -1,0 +1,19 @@
+<div class="space-y-6">
+  <div>
+    <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">Немдленное включение:</h2>
+  </div>
+  <div class="flex flex-col gap-2">
+    <app-gray-text-info-wrapper>
+      <app-gray-text-info
+        [text_setter]="'Немедленное включение парсера доступно, когда он отключен  или ожидает. Немедленное включение переводит парсер в состояние Работает и начинает процесс парсинга.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Экспериментальная функция предназначенная только для тестирования парсера на определенной ссылке сервиса.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Во всех остальных случаях, рекомендуется предоставить автоматизированное поведение парсеру.'" />
+    </app-gray-text-info-wrapper>
+  </div>
+</div>

@@ -1,0 +1,27 @@
+<div class="space-y-6">
+  <div>
+    <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">Добавление ссылки парсеру:</h2>
+  </div>
+  <div class="flex flex-col gap-2">
+    <app-gray-text-info-wrapper>
+      <app-gray-text-info
+        [text_setter]="'Добавление ссылки парсеру подразумевает создание объекта ссылка со свойствами название и URL значение для парсера.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'По умолчанию, новые созданные ссылки у парсера находятся в деактивированном состоянии.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Если парсер в рабочем состоянии, новая добавленная ссылка для него игнорируется в текущей итерации.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Если домен ссылки не соответствует домену парсера, операция невалидна. Например нельзя добавить ссылку сервиса drom для парсера avito.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Рекомендуется добавлять ссылку перед запуском парсера.'" />
+    </app-gray-text-info-wrapper>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+<div class="space-y-6">
+  <div>
+    <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">Изменение состояния:</h2>
+  </div>
+  <div class="flex flex-col gap-2">
+    <app-gray-text-info-wrapper>
+      <app-gray-text-info
+        [text_setter]="'Изменения состояния парсера пользователем подразумевает отключение и включение (переход в ожидание) парсера.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Отключение парсера невозможно, если он уже отключен или работает.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Отключение парсера когда он работает возможно при вызове команды немедленного отключения.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'По умолчанию парсер в отключенном состоянии.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Ожидающие парсеры автоматически включаются согласно расписанию.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'При необходимости включить парсер немедленно, необходимо вызвать команду немедленного включения.'" />
+    </app-gray-text-info-wrapper>
+  </div>
+</div>

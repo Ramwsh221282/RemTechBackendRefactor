@@ -1,0 +1,25 @@
+<div class="max-w-5xl mx-auto p-4 md:p-8">
+  <div class="text-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">Парсеры техники</h1>
+    <p class="text-gray-600 dark:text-gray-400">Руководство</p>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-0 md:p-0 flex flex-col md:flex-row overflow-hidden">
+    <aside
+      class="md:w-64 w-full border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+      <nav class="p-4 space-y-1">
+        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Разделы</h2>
+        <ul class="space-y-1">
+          @for (button_data of buttonsData; track button_data.name) {
+            <li>
+              <app-scraper-management-doc-navigation-button [data_setter]="button_data" />
+            </li>
+          }
+        </ul>
+      </nav>
+    </aside>
+    <main class="flex-1 p-6">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

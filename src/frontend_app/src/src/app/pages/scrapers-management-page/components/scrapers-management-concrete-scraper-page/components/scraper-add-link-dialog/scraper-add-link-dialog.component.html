@@ -1,0 +1,9 @@
+<p-dialog [header]="'Добавление ссылки'" [(visible)]="visibility" (onHide)="onHide()" [modal]="true"
+          [draggable]="false">
+  <form class="flex flex-col gap-2" [formGroup]="addLinkForm" (ngSubmit)="onSubmit()">
+    <input pInputText [formControlName]="'name'" [fluid]="true" [placeholder]="'Название ссылки'">
+    <input pInputText [formControlName]="'url'" [fluid]="true" [placeholder]="'URL ссылки'">
+    <p-button [label]="'Добавить'" [type]="'submit'"/>
+  </form>
+</p-dialog>
+<p-toast [position]="'bottom-right'"/>
