@@ -32,8 +32,6 @@ export class MailingManagementService {
   public ping(sender: MailingSender, to: string): Observable<MailingSender> {
     const body: object = { email: sender.email, to: to };
     const requestUrl: string = `${this._apiUrl}/ping`;
-    return this._httpClient.post<MailingSender>(requestUrl, {
-      body,
-    });
+    return this._httpClient.post<MailingSender>(requestUrl, body);
   }
 }

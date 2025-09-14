@@ -62,6 +62,11 @@ export class SignInFormComponent {
     this.authenticate(password, email, name);
   }
 
+  public resetPasswordClick(): void {
+    const path = 'reset-password';
+    this._router.navigate([path]);
+  }
+
   private authenticate(
     password: string,
     email?: string | null,
@@ -71,7 +76,7 @@ export class SignInFormComponent {
       .authenticate(password, email, name)
       .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
-        next: (value: any): void => {
+        next: (_: any): void => {
           MessageServiceUtils.showSuccess(
             this._messageService,
             'Авторизация успешна.',
@@ -82,7 +87,7 @@ export class SignInFormComponent {
               this._tokensService.setAdmin();
               this._router.navigate(['']);
             },
-            error: (err): void => {
+            error: (_): void => {
               this._tokensService.setNotAdmin();
               this._router.navigate(['']);
             },

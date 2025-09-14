@@ -10,7 +10,6 @@ import {
   WritableSignal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgForOf } from '@angular/common';
 import { Scraper } from '../../../scrapers-management-settings-page/types/Scraper';
 import { VehicleScrapersService } from '../../../scrapers-management-settings-page/services/vehicle-scrapers.service';
 import { Select, SelectChangeEvent } from 'primeng/select';
@@ -23,7 +22,7 @@ import { MessageServiceUtils } from '../../../../../../shared/utils/message-serv
 
 @Component({
   selector: 'app-scraper-wait-days-select',
-  imports: [FormsModule, NgForOf, Select, Toast],
+  imports: [FormsModule, Select, Toast],
   templateUrl: './scraper-wait-days-select.component.html',
   styleUrl: './scraper-wait-days-select.component.scss',
   providers: [MessageService],

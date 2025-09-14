@@ -9,4 +9,11 @@ export const SignInPageRoutes: Routes = [
       import('./sign-in-page.component').then((c) => c.SignInPageComponent),
     canActivate: [RootExistsGuard],
   },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./components/reset-password-page/reset-password-page.component')
+        .then((c) => c.ResetPasswordPageComponent),
+      canActivate: [RootExistsGuard]
+  },
 ];

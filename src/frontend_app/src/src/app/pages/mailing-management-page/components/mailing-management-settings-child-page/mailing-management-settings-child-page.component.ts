@@ -2,15 +2,13 @@ import { Component, signal, WritableSignal } from '@angular/core';
 import { MailingManagementCreateSenderFormComponent } from './mailing-management-create-sender-form/mailing-management-create-sender-form.component';
 import { MailingManagementSendersStatusListComponent } from './mailing-management-senders-status-list/mailing-management-senders-status-list.component';
 import { MailingSender } from '../../models/MailingSender';
-import { Dialog } from 'primeng/dialog';
 import { MailingManagementCheckSenderFormComponent } from './mailing-management-check-sender-form/mailing-management-check-sender-form.component';
 
 @Component({
   selector: 'app-mailing-management-settings-child-page',
   imports: [
     MailingManagementCreateSenderFormComponent,
-    MailingManagementSendersStatusListComponent,
-    Dialog,
+    MailingManagementSendersStatusListComponent,    
     MailingManagementCheckSenderFormComponent,
   ],
   templateUrl: './mailing-management-settings-child-page.component.html',

@@ -70,7 +70,7 @@ export interface PriceSubmitEvent {
 
 @Component({
   selector: 'app-vehicle-price-filter-form-part',
-  imports: [InputNumber, FormatPriceDirective, DecimalPipe],
+  imports: [FormatPriceDirective, DecimalPipe],
   templateUrl: './vehicle-price-filter-form-part.component.html',
   styleUrl: './vehicle-price-filter-form-part.component.scss',
 })

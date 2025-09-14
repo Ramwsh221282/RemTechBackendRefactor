@@ -7,12 +7,11 @@ import { StringUtils } from '../../shared/utils/string-utils';
 import { MessageServiceUtils } from '../../shared/utils/message-service-utils';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
-import { SignInFormComponent } from '../sign-in-page/components/sign-in-form/sign-in-form.component';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-create-root-user-page',
-  imports: [ReactiveFormsModule, Toast, SignInFormComponent],
+  imports: [ReactiveFormsModule, Toast],
   templateUrl: './create-root-user-page.component.html',
   styleUrl: './create-root-user-page.component.scss',
   providers: [MessageService],

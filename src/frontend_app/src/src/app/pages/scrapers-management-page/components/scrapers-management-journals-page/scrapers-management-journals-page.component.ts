@@ -17,8 +17,7 @@ import { ScraperJournalNavButtonComponent } from './components/scraper-journal-n
 @Component({
   selector: 'app-scrapers-management-journals-page',
   imports: [
-    NgForOf,
-    ParserSettingsNavButtonComponent,
+    NgForOf,    
     RouterOutlet,
     ScraperJournalNavButtonComponent,
   ],

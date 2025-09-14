@@ -192,6 +192,16 @@ export class UsersService {
     return this._httpClient.get<any>(requestUrl, { headers: headers });
   }
 
+  public requireResetPassword(login: string, email: string): Observable<any> {
+    const requestUrl = `${this._apiUrl}/password-reset`;
+    let headers: HttpHeaders = new HttpHeaders();
+    if (!StringUtils.isEmptyOrWhiteSpace(login))
+      headers = headers.set('Login', login);
+    if (!StringUtils.isEmptyOrWhiteSpace(email))
+      headers = headers.set('Email', email);
+    return this._httpClient.get(requestUrl, { headers: headers });
+  }
+
   public authenticate(
     password: string,
     email?: string | null,
@@ -208,5 +218,11 @@ export class UsersService {
       headers: headers,
       params: params,
     });
+  }
+
+  public confirmResetPassword(key: string): Observable<any> {
+    const requestUrl = `${this._apiUrl}/password-reset-confirm`;
+    const params: HttpParams = new HttpParams().set('confirmationKey', key);
+    return this._httpClient.get(requestUrl, { params: params });
   }
 }

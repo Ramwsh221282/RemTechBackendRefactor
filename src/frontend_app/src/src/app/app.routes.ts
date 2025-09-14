@@ -15,6 +15,7 @@ import { SomethingWentWrongRoutes } from './pages/something-went-wrong-page/Some
 import { ContainedItemsRoutes } from './pages/contained-items-management-page/ContainedItemsRoutes';
 import { UserInfoPageRoutes } from './pages/user-info-page/user-info-page-routes';
 import { UsersManagementPageRoutes } from './pages/users-management-page/UsersManagementPageRoutes';
+import { PasswordResetRoutes } from './pages/PasswordResetConfirmationPage/PasswordResetRoutes';
 
 export const routes: Routes = [
   ...UsersManagementPageRoutes,
@@ -33,4 +34,5 @@ export const routes: Routes = [
   ...MailingManagementPageRoutes,
   ...SignInPageRoutes,
   ...ScrapersManagementPageRoutes,
+  ...PasswordResetRoutes,
 ];

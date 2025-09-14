@@ -6,7 +6,7 @@ import { Toast } from 'primeng/toast';
 
 @Component({
   selector: 'app-scraper-last-run-info',
-  imports: [DatePipe, Toast],
+  imports: [DatePipe],
   templateUrl: './scraper-last-run-info.component.html',
   styleUrl: './scraper-last-run-info.component.scss',
 })

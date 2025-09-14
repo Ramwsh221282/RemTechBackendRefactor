@@ -5,7 +5,7 @@ import { DecimalPipe, NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-spare-content',
-  imports: [DecimalPipe, NgClass],
+  imports: [],
   templateUrl: './spare-content.component.html',
   styleUrl: './spare-content.component.scss',
 })
