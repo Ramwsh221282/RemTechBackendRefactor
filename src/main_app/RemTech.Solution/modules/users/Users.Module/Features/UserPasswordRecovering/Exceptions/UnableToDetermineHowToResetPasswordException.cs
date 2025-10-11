@@ -1,4 +1,4 @@
-namespace Users.Module.Features.UserPasswordRecovering.Core;
+namespace Users.Module.Features.UserPasswordRecovering.Exceptions;
 
 internal sealed class UnableToDetermineHowToResetPasswordException : Exception
 {

@@ -96,6 +96,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cleaner", "parsing_services
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parsing.Grpc", "parsing_services\common\Parsing.Grpc\Parsing.Grpc.csproj", "{C382E56A-D457-4B51-A5A6-E328A09A8079}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "telemetry", "telemetry", "{5CB0644B-C59E-4EC3-83C8-13CF97341231}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Telemetry.Domain", "modules\telemetry\Telemetry.Domain\Telemetry.Domain.csproj", "{93FC8BD4-B3CC-423C-BB02-3D985E9DFF51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -148,6 +152,8 @@ Global
 		{9A209187-FE22-4439-B37A-1401FCA207CD} = {33ED6847-9F92-420E-AA37-D7EB229DB765}
 		{4A3FB16A-7868-45AE-8707-6983394EC868} = {9A209187-FE22-4439-B37A-1401FCA207CD}
 		{C382E56A-D457-4B51-A5A6-E328A09A8079} = {B98D490E-E1FC-4672-BF66-B9A5234C6DE1}
+		{5CB0644B-C59E-4EC3-83C8-13CF97341231} = {79472554-9950-4B72-8B55-F32E46914B0B}
+		{93FC8BD4-B3CC-423C-BB02-3D985E9DFF51} = {5CB0644B-C59E-4EC3-83C8-13CF97341231}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -262,5 +268,9 @@ Global
 		{C382E56A-D457-4B51-A5A6-E328A09A8079}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C382E56A-D457-4B51-A5A6-E328A09A8079}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C382E56A-D457-4B51-A5A6-E328A09A8079}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93FC8BD4-B3CC-423C-BB02-3D985E9DFF51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93FC8BD4-B3CC-423C-BB02-3D985E9DFF51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93FC8BD4-B3CC-423C-BB02-3D985E9DFF51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93FC8BD4-B3CC-423C-BB02-3D985E9DFF51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
