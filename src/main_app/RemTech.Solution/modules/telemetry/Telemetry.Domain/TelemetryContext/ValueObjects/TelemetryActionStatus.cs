@@ -2,6 +2,9 @@
 
 namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
+/// <summary>
+/// Статусы результата действия
+/// </summary>
 public sealed record TelemetryActionStatus
 {
     public static readonly TelemetryActionStatus Failure = new("Ошибка");

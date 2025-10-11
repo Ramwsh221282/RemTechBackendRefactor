@@ -2,6 +2,9 @@
 
 namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
+/// <summary>
+/// Комментарий к действию
+/// </summary>
 public sealed record TelemetryActionComment
 {
     public string Value { get; }

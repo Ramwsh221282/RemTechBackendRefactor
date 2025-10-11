@@ -4,6 +4,9 @@ using Telemetry.Domain.TelemetryContext.ValueObjects;
 
 namespace Telemetry.UseCases.SaveActionInfo;
 
+/// <summary>
+/// Валидатор команды добавления действия
+/// </summary>
 public sealed class SaveActionInfoCommandValidator : AbstractValidator<SaveActionInfoIbCommand>
 {
     public SaveActionInfoCommandValidator()

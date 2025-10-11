@@ -16,22 +16,23 @@ public sealed class ActionInvokedEventListener : BaseExchangedRabbitMqListener
     public const string QueueName = "telemetry-action-invoked";
     public const string ExchangeName = "telemetry-exchange";
     private const string Context = nameof(ActionInvokedEventListener);
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceScopeFactory _factory;
     private readonly Serilog.ILogger _logger;
 
     public ActionInvokedEventListener(
         RabbitMqConnectionProvider provider,
-        IServiceProvider serviceProvider,
+        IServiceScopeFactory factory,
         Serilog.ILogger logger
     )
         : base(provider)
     {
-        _serviceProvider = serviceProvider;
+        _factory = factory;
         _logger = logger;
     }
 
     public override void Configure()
     {
+        // настройка очереди в брокере.
         Configurer.Queue.WithName(QueueName);
         Configurer.Exchange.WithName(ExchangeName).WithType(ExchangeType.Direct);
         _logger.Information("{Context} configured.", Context);
@@ -39,27 +40,33 @@ public sealed class ActionInvokedEventListener : BaseExchangedRabbitMqListener
 
     public override async Task HandleMessage(object sender, BasicDeliverEventArgs eventArgs)
     {
-        SaveActionInfoEvent? @event = JsonSerializer.Deserialize<SaveActionInfoEvent>(
-            eventArgs.Body.ToArray()
-        );
-
-        if (@event == null)
+        try
         {
-            _logger.Warning("{Context} invalid event info.", Context);
-            await Acknowledge(eventArgs);
-            return;
-        }
+            byte[] bodyData = eventArgs.Body.ToArray();
+            var @event = JsonSerializer.Deserialize<SaveActionInfoEvent>(bodyData);
 
-        Status<TelemetryRecord> result = await SaveRecord(@event);
-        await Acknowledge(eventArgs);
-        _logger.Information("{Context} handled event.", Context);
-        if (result.IsFailure)
-            _logger.Error("{Context} error: {Error}", Context, result.Error.ErrorText);
+            if (@event == null)
+            {
+                _logger.Warning("{Context} invalid event info.", Context);
+                await Acknowledge(eventArgs);
+                return;
+            }
+
+            Status<TelemetryRecord> result = await SaveRecord(@event);
+            await Acknowledge(eventArgs);
+            _logger.Information("{Context} handled event.", Context);
+            if (result.IsFailure)
+                _logger.Error("{Context} error: {Error}", Context, result.Error.ErrorText);
+        }
+        catch (Exception ex)
+        {
+            _logger.Fatal("{Context} error: {Error}", Context, ex);
+        }
     }
 
     private async Task<Status<TelemetryRecord>> SaveRecord(SaveActionInfoEvent @event)
     {
-        await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+        await using AsyncServiceScope scope = _factory.CreateAsyncScope();
         IBCommandHandler<SaveActionInfoIbCommand, TelemetryRecord> handler =
             scope.ServiceProvider.GetRequiredService<
                 IBCommandHandler<SaveActionInfoIbCommand, TelemetryRecord>

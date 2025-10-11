@@ -1,5 +1,4 @@
-﻿using System.Data.Common;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Pgvector;
 using RemTech.Core.Shared.Result;
@@ -65,6 +64,7 @@ public sealed class TelemetryRecordsRepository : ITelemetryRecordsRepository
         CancellationToken ct = default
     )
     {
+        // запрос с учетом jsonb колонки details, для получения записей с таким названием действия.
         IEnumerable<TelemetryRecord> records = await _dbContext
             .Records.FromSqlInterpolated(
                 $@"
@@ -76,6 +76,9 @@ public sealed class TelemetryRecordsRepository : ITelemetryRecordsRepository
         return records;
     }
 
+    /// <summary>
+    /// метод для обновления вектора у записи.
+    /// </summary>
     private async Task UpdateEmbeddingForRecord(
         TelemetryRecord record,
         CancellationToken ct = default

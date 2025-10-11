@@ -7,6 +7,9 @@ using Telemetry.UseCases.SaveActionInfo;
 
 namespace Telemetry.CompositionRoot.UseCasesInjection.SaveActionInfo;
 
+/// <summary>
+/// Инъекция обработчика добавления действия
+/// </summary>
 [InjectionClass]
 public static class SaveActionInfoInjection
 {

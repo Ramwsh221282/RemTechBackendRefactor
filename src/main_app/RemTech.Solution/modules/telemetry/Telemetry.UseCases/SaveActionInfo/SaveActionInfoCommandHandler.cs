@@ -11,6 +11,9 @@ using Telemetry.Domain.TelemetryContext.ValueObjects;
 
 namespace Telemetry.UseCases.SaveActionInfo;
 
+/// <summary>
+/// Обработчик команды добавления действия
+/// </summary>
 public sealed class SaveActionInfoIbCommandHandler
     : IBCommandHandler<SaveActionInfoIbCommand, TelemetryRecord>
 {
@@ -44,6 +47,7 @@ public sealed class SaveActionInfoIbCommandHandler
         [
             .. ibCommand.Comments.Select(TelemetryActionComment.Create),
         ];
+
         TelemetryInvokerId invokerId = TelemetryInvokerId.Create(ibCommand.InvokerId);
         TelemetryRecordDate occured = TelemetryRecordDate.Create(ibCommand.OccuredAt);
         TelemetryRecord record = new TelemetryRecord(invokerId, name, comments, status, occured);

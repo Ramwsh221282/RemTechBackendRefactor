@@ -5,6 +5,9 @@ using Telemetry.Infrastructure.PostgreSQL.Repositories;
 
 namespace Telemetry.CompositionRoot.InfrastuctureInjection.PostgreSql;
 
+/// <summary>
+/// Инъекция работы с PostgreSQL у модуля телеметрии
+/// </summary>
 [InjectionClass]
 public static class TelemetryInfrastructurePostgreSqlInjection
 {

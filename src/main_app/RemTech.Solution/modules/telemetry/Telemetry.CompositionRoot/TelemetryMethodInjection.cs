@@ -4,6 +4,9 @@ using RemTech.DependencyInjection;
 
 namespace Telemetry.CompositionRoot;
 
+/// <summary>
+/// инъекция сервиса модуля Телеметрии
+/// </summary>
 public static class TelemetryMethodInjection
 {
     public static void InjectTelemetryModule(

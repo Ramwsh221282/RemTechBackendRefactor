@@ -3,6 +3,9 @@ using Telemetry.Domain.TelemetryContext;
 
 namespace Telemetry.UseCases.SaveActionInfo;
 
+/// <summary>
+/// Команда для выполнения добавления действия.
+/// </summary>
 public sealed record SaveActionInfoIbCommand : IBCommand<TelemetryRecord>
 {
     public IEnumerable<string> Comments { get; }

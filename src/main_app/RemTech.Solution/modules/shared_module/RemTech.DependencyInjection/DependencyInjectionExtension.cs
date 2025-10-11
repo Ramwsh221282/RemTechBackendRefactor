@@ -23,9 +23,13 @@ public static class DependencyInjectionExtension
         string moduleName
     )
     {
+        // поиск сборок конкретного модуля по moduleName
         IEnumerable<Assembly> filtered = assemblies.GetFilteredAssemblies(moduleName);
+        // поиск типов, которые имеют атрибут InjectionClassAttribute
         IEnumerable<Type> types = filtered.GetInjectionClasses();
+        // поиск методов у типов, которые имеют аттрибут InjectionMethodAttribute
         IEnumerable<MethodInfo> methods = types.GetInjectionMethods();
+        // вызов инъекции
         methods.InvokeMethods(services);
     }
 

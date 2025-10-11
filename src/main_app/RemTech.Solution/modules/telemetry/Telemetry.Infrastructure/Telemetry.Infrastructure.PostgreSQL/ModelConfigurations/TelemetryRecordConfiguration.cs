@@ -51,6 +51,7 @@ public sealed class TelemetryRecordConfiguration : IEntityTypeConfiguration<Tele
                 fromDb => JsonAsTelemetryDetailsAction(fromDb)
             );
 
+        // добавление колонки для хранения вектора из данных объекта.
         builder.Property<Vector>("embedding").HasColumnType("vector(1024)").IsRequired(false);
         builder
             .HasIndex("embedding")

@@ -1,5 +1,8 @@
 ﻿namespace Telemetry.Infrastructure.PostgreSQL;
 
+/// <summary>
+/// Настройки подключения к PostgreSQL
+/// </summary>
 public sealed class PostgreSqlConnectionOptions
 {
     public required string Hostname { get; set; }

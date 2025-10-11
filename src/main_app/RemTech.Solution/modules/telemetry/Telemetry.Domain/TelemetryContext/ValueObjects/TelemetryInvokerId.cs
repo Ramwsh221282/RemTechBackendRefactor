@@ -2,6 +2,9 @@
 
 namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
+/// <summary>
+/// Идентификатор того, кто вызвал действие.
+/// </summary>
 public readonly record struct TelemetryInvokerId
 {
     public Guid Value { get; }

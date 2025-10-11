@@ -2,6 +2,9 @@
 
 namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
+/// <summary>
+/// Название действия
+/// </summary>
 public sealed record TelemetryActionName
 {
     public const int MaxLength = 200;

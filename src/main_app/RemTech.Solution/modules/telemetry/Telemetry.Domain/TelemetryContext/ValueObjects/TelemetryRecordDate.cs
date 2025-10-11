@@ -2,6 +2,9 @@
 
 namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
+/// <summary>
+/// Дата записи действия телеметрии
+/// </summary>
 public readonly record struct TelemetryRecordDate
 {
     public DateTime OccuredAt { get; }

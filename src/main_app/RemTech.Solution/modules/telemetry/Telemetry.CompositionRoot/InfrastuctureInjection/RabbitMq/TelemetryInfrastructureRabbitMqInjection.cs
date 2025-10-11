@@ -4,6 +4,9 @@ using Telemetry.Infrastructure.RabbitMQ;
 
 namespace Telemetry.CompositionRoot.InfrastuctureInjection.RabbitMq;
 
+/// <summary>
+/// Инъекция брокера сообщений у модуля телеметрии
+/// </summary>
 [InjectionClass]
 public static class TelemetryInfrastructureRabbitMqInjection
 {
