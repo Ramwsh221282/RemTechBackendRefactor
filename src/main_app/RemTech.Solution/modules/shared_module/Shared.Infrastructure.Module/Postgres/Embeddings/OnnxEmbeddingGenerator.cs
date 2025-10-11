@@ -1,10 +1,19 @@
-﻿using Microsoft.ML.OnnxRuntime;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 
 namespace Shared.Infrastructure.Module.Postgres.Embeddings;
 
 public sealed class OnnxEmbeddingGenerator : IEmbeddingGenerator
 {
+    private static readonly string TokenizerPath = Path.Combine(
+        AppDomain.CurrentDomain.BaseDirectory,
+        "tokenizer.onnx"
+    );
+    private static readonly string ModelPath = Path.Combine(
+        AppDomain.CurrentDomain.BaseDirectory,
+        "model.onnx"
+    );
     private readonly InferenceSession _tokenizerSession;
     private readonly InferenceSession _modelSession;
     private bool _disposed;
@@ -13,13 +22,19 @@ public sealed class OnnxEmbeddingGenerator : IEmbeddingGenerator
     {
         var tokenizerOptions = new SessionOptions();
         tokenizerOptions.RegisterOrtExtensions();
-        _tokenizerSession = new InferenceSession(
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tokenizer.onnx"),
-            tokenizerOptions
-        );
-        _modelSession = new InferenceSession(
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "model.onnx")
-        );
+        _tokenizerSession = new InferenceSession(TokenizerPath, tokenizerOptions);
+        _modelSession = new InferenceSession(ModelPath);
+    }
+
+    public static void AddEmbeddingGenerator(IServiceCollection services)
+    {
+        if (!File.Exists(TokenizerPath))
+            throw new FileNotFoundException("Tokenizer file not found", TokenizerPath);
+        if (!File.Exists(ModelPath))
+            throw new FileNotFoundException("Model file not found", ModelPath);
+
+        IEmbeddingGenerator generator = new OnnxEmbeddingGenerator();
+        services.AddSingleton(generator);
     }
 
     public ReadOnlyMemory<float> Generate(string text)
