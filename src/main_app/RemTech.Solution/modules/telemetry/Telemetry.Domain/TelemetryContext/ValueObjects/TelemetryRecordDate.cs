@@ -11,15 +11,17 @@ public readonly record struct TelemetryRecordDate
     private TelemetryRecordDate(DateTime occuredAt) => OccuredAt = occuredAt;
 
     public static Status<TelemetryRecordDate> Create(DateTime? occuredAt) =>
+        occuredAt == null ? new TelemetryRecordDate() : Create(occuredAt.Value);
+
+    public static Status<TelemetryRecordDate> Create(DateTime occuredAt) =>
         occuredAt switch
         {
-            null => Error.Validation("Дата записи телеметрии была пустой."),
-            not null when occuredAt.Value == DateTime.MaxValue => Error.Validation(
+            _ when occuredAt == DateTime.MaxValue => Error.Validation(
                 "Дата записи телеметрии некорректна."
             ),
-            not null when occuredAt.Value == DateTime.MinValue => Error.Validation(
+            _ when occuredAt == DateTime.MinValue => Error.Validation(
                 "Дата записи телеметрии некорректна."
             ),
-            _ => new TelemetryRecordDate(occuredAt.Value),
+            _ => new TelemetryRecordDate(occuredAt),
         };
 }

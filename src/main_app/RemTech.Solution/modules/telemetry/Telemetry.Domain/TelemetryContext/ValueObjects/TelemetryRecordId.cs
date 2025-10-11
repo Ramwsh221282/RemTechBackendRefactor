@@ -2,21 +2,21 @@
 
 namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
-public readonly record struct TelemetryId
+public readonly record struct TelemetryRecordId
 {
     public Guid Value { get; }
 
-    public TelemetryId() => Value = Guid.NewGuid();
+    public TelemetryRecordId() => Value = Guid.NewGuid();
 
-    private TelemetryId(Guid value) => Value = value;
+    private TelemetryRecordId(Guid value) => Value = value;
 
-    public static Status<TelemetryId> Create(Guid? value) =>
+    public static Status<TelemetryRecordId> Create(Guid? value) =>
         value switch
         {
             null => Error.Validation("Идентификатор записи действия не может быть пустым."),
             not null when value.Value == Guid.Empty => Error.Validation(
                 "Идентификатор записи действия не может быть пустым."
             ),
-            _ => new TelemetryId(value.Value),
+            _ => new TelemetryRecordId(value.Value),
         };
 }

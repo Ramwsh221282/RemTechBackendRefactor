@@ -4,7 +4,11 @@ namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
 public sealed record TelemetryActionStatus
 {
-    public const int MAX_LENGTH = 100;
+    public static readonly TelemetryActionStatus Failure = new("Ошибка");
+    public static readonly TelemetryActionStatus Success = new("Успех");
+    private static readonly TelemetryActionStatus[] _allowed = [Failure, Success];
+
+    public const int MaxLength = 100;
     public string Value { get; }
 
     private TelemetryActionStatus(string value) => Value = value;
@@ -16,9 +20,20 @@ public sealed record TelemetryActionStatus
             not null when string.IsNullOrWhiteSpace(value) => Error.Validation(
                 "Статус действия записи телеметрии был пустым."
             ),
-            not null when value.Length > MAX_LENGTH => Error.Validation(
-                $"Статус действия телеметрии превышает длину {MAX_LENGTH} символов."
+            not null when StringNotMatchesStatus(value) => Error.Validation(
+                $"Статус операции телеметрии: {value} не поддерживается."
+            ),
+            not null when value.Length > MaxLength => Error.Validation(
+                $"Статус действия телеметрии превышает длину {MaxLength} символов."
             ),
             _ => new TelemetryActionStatus(value),
         };
+
+    private static bool StringNotMatchesStatus(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        return !_allowed.Any(s => s.Value.Equals(value));
+    }
 }

@@ -4,10 +4,12 @@ namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
 public sealed record TelemetryActionName
 {
-    public const int MAX_LENGTH = 200;
+    public const int MaxLength = 200;
     public string Value { get; }
 
     private TelemetryActionName(string value) => Value = value;
+
+    public static TelemetryActionName Unknown() => new("Неизвестно");
 
     public static Status<TelemetryActionName> Create(string? value) =>
         value switch
@@ -16,8 +18,8 @@ public sealed record TelemetryActionName
             not null when string.IsNullOrWhiteSpace(value) => Error.Validation(
                 "Название действия телеметрии было пустым"
             ),
-            not null when value.Length > MAX_LENGTH => Error.Validation(
-                $"Название действия телеметрии превышает длину: {MAX_LENGTH} символов"
+            not null when value.Length > MaxLength => Error.Validation(
+                $"Название действия телеметрии превышает длину: {MaxLength} символов"
             ),
             _ => new TelemetryActionName(value),
         };
