@@ -1,4 +1,4 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using RemTech.Result.Pattern;
 
 namespace RemTech.Core.Shared.Primitives;
 
@@ -16,7 +16,7 @@ public readonly record struct PositiveInteger
 
     public static PositiveInteger New() => new(0);
 
-    public static Status<PositiveInteger> New(int? value) =>
+    public static Result<PositiveInteger> New(int? value) =>
         value switch
         {
             null => new Error("Число было пустым.", ErrorCodes.Validation),

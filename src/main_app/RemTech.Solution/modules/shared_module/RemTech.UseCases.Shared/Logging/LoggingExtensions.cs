@@ -1,34 +1,38 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using RemTech.Result.Pattern;
 using Serilog;
 
 namespace RemTech.UseCases.Shared.Logging;
 
 public static class LoggingExtensions
 {
-    public static Error LoggedError(this ILogger logger, Error error, string? operationName = null)
+    public static Result.Pattern.Error LoggedError(
+        this ILogger logger,
+        Result.Pattern.Error error,
+        string? operationName = null
+    )
     {
         logger.Error("{Operation} error: {Error}.", error.ErrorText, operationName);
         return error;
     }
 
-    public static Status LoggedError(
+    public static Result.Pattern.Result LoggedError(
         this ILogger logger,
-        Status status,
+        Result.Pattern.Result result,
         string? operationName = null
     )
     {
-        Error error = logger.LoggedError(status.Error, operationName);
-        return Status.Failure(error);
+        Error error = logger.LoggedError(result.Error, operationName);
+        return Result.Pattern.Result.Failure(error);
     }
 
-    public static Status<T> LoggedError<T>(
+    public static Result<T> LoggedError<T>(
         this ILogger logger,
-        Status<T> status,
+        Result<T> result,
         string? operationName = null
     )
     {
-        Status parent = status;
-        Status logged = logger.LoggedError(parent, operationName);
-        return Status<T>.Failure(logged.Error);
+        Result.Pattern.Result parent = result;
+        Result.Pattern.Result logged = logger.LoggedError(parent, operationName);
+        return Result<T>.Failure(logged.Error);
     }
 }

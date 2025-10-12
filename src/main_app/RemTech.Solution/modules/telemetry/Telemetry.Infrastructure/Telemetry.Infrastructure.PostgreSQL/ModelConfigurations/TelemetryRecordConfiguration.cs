@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Pgvector;
-using RemTech.Core.Shared.Result;
+using RemTech.Result.Pattern;
 using Telemetry.Domain.TelemetryContext;
 using Telemetry.Domain.TelemetryContext.ValueObjects;
 
@@ -71,7 +71,7 @@ public sealed class TelemetryRecordConfiguration : IEntityTypeConfiguration<Tele
         using JsonDocument document = JsonDocument.Parse(json);
         JsonElement root = document.RootElement;
         string? name = root.GetProperty("Name").GetProperty("Value").GetString();
-        Status<TelemetryActionName> actionName = TelemetryActionName.Create(name);
+        Result<TelemetryActionName> actionName = TelemetryActionName.Create(name);
         if (actionName.IsFailure)
             throw new InvalidOperationException(
                 $"Invalid mapping jsonb to {nameof(TelemetryActionName)}"
@@ -81,7 +81,7 @@ public sealed class TelemetryRecordConfiguration : IEntityTypeConfiguration<Tele
         foreach (JsonElement entry in root.GetProperty("Comments").EnumerateArray())
         {
             string? value = entry.GetProperty("Value").GetString();
-            Status<TelemetryActionComment> comment = TelemetryActionComment.Create(value);
+            Result<TelemetryActionComment> comment = TelemetryActionComment.Create(value);
             if (comment.IsFailure)
                 throw new InvalidOperationException(
                     $"Invalid mapping jsonb to {nameof(TelemetryActionName)}"

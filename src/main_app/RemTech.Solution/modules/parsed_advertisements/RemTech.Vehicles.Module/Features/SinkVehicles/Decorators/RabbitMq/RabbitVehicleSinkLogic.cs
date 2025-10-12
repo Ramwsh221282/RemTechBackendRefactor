@@ -1,6 +1,5 @@
 ﻿using RemTech.ContainedItems.Module.Features.MessageBus;
 using Scrapers.Module.Features.IncreaseProcessedAmount.MessageBus;
-using Status = RemTech.Core.Shared.Result.Status;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;
 
@@ -11,9 +10,12 @@ internal sealed class RabbitVehicleSinkLogic(
     ITransportAdvertisementSinking origin
 ) : ITransportAdvertisementSinking
 {
-    public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
+    public async Task<Result.Pattern.Result> Sink(
+        IVehicleJsonSink sink,
+        CancellationToken ct = default
+    )
     {
-        Status result = await origin.Sink(sink, ct);
+        Result.Pattern.Result result = await origin.Sink(sink, ct);
         if (result.IsSuccess)
         {
             string name = sink.ParserName();

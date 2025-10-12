@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\shared_module\RemTech.UseCases.Shared\RemTech.UseCases.Shared.csproj" />
+    <ProjectReference Include="..\Vehicles.Domain\Vehicles.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="BrandContext\Queries\" />
+  </ItemGroup>
+</Project>

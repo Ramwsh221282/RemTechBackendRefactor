@@ -2,8 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using RemTech.Core.Shared.Result;
 using Remtech.Infrastructure.RabbitMQ.Consumers;
+using RemTech.Result.Pattern;
 using RemTech.UseCases.Shared.Cqrs;
 using Telemetry.Contracts;
 using Telemetry.Domain.TelemetryContext;
@@ -52,7 +52,7 @@ public sealed class ActionInvokedEventListener : BaseExchangedRabbitMqListener
                 return;
             }
 
-            Status<TelemetryRecord> result = await SaveRecord(@event);
+            RemTech.Result.Pattern.Result<TelemetryRecord> result = await SaveRecord(@event);
             await Acknowledge(eventArgs);
             _logger.Information("{Context} handled event.", Context);
             if (result.IsFailure)
@@ -64,12 +64,12 @@ public sealed class ActionInvokedEventListener : BaseExchangedRabbitMqListener
         }
     }
 
-    private async Task<Status<TelemetryRecord>> SaveRecord(SaveActionInfoEvent @event)
+    private async Task<Result<TelemetryRecord>> SaveRecord(SaveActionInfoEvent @event)
     {
         await using AsyncServiceScope scope = _factory.CreateAsyncScope();
-        IBCommandHandler<SaveActionInfoIbCommand, TelemetryRecord> handler =
+        ICommandHandler<SaveActionInfoIbCommand, TelemetryRecord> handler =
             scope.ServiceProvider.GetRequiredService<
-                IBCommandHandler<SaveActionInfoIbCommand, TelemetryRecord>
+                ICommandHandler<SaveActionInfoIbCommand, TelemetryRecord>
             >();
         return await handler.Handle(EventToCommand(@event));
     }

@@ -1,5 +1,4 @@
-﻿using RemTech.Core.Shared.Result;
-using RemTech.Vehicles.Module.Types.Characteristics;
+﻿using RemTech.Vehicles.Module.Types.Characteristics;
 using RemTech.Vehicles.Module.Types.Characteristics.ValueObjects;
 using RemTech.Vehicles.Module.Types.Transport;
 using RemTech.Vehicles.Module.Types.Transport.ValueObjects;
@@ -11,7 +10,10 @@ namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 internal sealed class PgCharacteristicsSinking(ITransportAdvertisementSinking sinking)
     : ITransportAdvertisementSinking
 {
-    public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
+    public async Task<Result.Pattern.Result> Sink(
+        IVehicleJsonSink sink,
+        CancellationToken ct = default
+    )
     {
         Characteristic[] ctxes = Converted(sink);
         VehicleIdentity identity = sink.VehicleId();

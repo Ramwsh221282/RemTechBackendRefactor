@@ -1,4 +1,4 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using RemTech.Result.Pattern;
 
 namespace RemTech.Core.Shared.Primitives;
 
@@ -56,7 +56,7 @@ public sealed class NotEmptyString
 
     public override string ToString() => _value;
 
-    public static Status<NotEmptyString> New(string? input) =>
+    public static Result<NotEmptyString> New(string? input) =>
         string.IsNullOrWhiteSpace(input)
             ? new Error("Строка не должна быть пустой.", ErrorCodes.Validation)
             : new NotEmptyString(input);

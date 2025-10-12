@@ -1,4 +1,4 @@
-namespace RemTech.Core.Shared.Result;
+namespace RemTech.Result.Pattern;
 
 public record Error(string ErrorText, ErrorCodes Code)
 {
@@ -10,16 +10,18 @@ public record Error(string ErrorText, ErrorCodes Code)
 
     public static Error Conflict(string errorMessage) => new(errorMessage, ErrorCodes.Conflict);
 
-    public Status Status() => new(this);
+    public static Error Internal() => new("Ошибка на уровне приложения.", ErrorCodes.Internal);
 
-    public Status<T> Status<T>() => new(this);
+    public Result Status() => new(this);
+
+    public Result<T> Status<T>() => new(this);
 
     public bool Any() => !(string.IsNullOrWhiteSpace(ErrorText) || Code == ErrorCodes.Empty);
 
     public static implicit operator Error((string, ErrorCodes code) tuple) =>
         new(tuple.Item1, tuple.code);
 
-    public static implicit operator Status(Error error)
+    public static implicit operator Result(Error error)
     {
         return error.Status();
     }
@@ -27,16 +29,16 @@ public record Error(string ErrorText, ErrorCodes Code)
 
 public sealed record Error<T>(string ErrorText, ErrorCodes Code) : Error(ErrorText, Code)
 {
-    public static implicit operator Status<T>(Error<T> error)
+    public static implicit operator Result<T>(Error<T> error)
     {
         Error upcated = error;
-        return new Status<T>(upcated);
+        return new Result<T>(upcated);
     }
 
-    public static implicit operator Status(Error<T> error)
+    public static implicit operator Result(Error<T> error)
     {
         Error upcated = error;
-        return new Status(upcated);
+        return new Result(upcated);
     }
 }
 
@@ -51,16 +53,16 @@ public record ValidationError
         _code = ErrorCodes.Validation;
     }
 
-    public Status Status() => new(this);
+    public Result Status() => new(this);
 
-    public Status<T> Status<T>() => new(this);
+    public Result<T> Status<T>() => new(this);
 
     public static implicit operator Error(ValidationError validationError)
     {
         return new Error(validationError._text, validationError._code);
     }
 
-    public static implicit operator Status(ValidationError validationError)
+    public static implicit operator Result(ValidationError validationError)
     {
         return validationError.Status();
     }
@@ -71,25 +73,25 @@ public sealed record ValidationError<T> : ValidationError
     public ValidationError(string text)
         : base(text) { }
 
-    public static implicit operator Status<T>(ValidationError<T> validationError)
+    public static implicit operator Result<T>(ValidationError<T> validationError)
     {
         ValidationError upcated = validationError;
-        return new Status<T>(upcated);
+        return new Result<T>(upcated);
     }
 
-    public static implicit operator Status(ValidationError<T> validationError)
+    public static implicit operator Result(ValidationError<T> validationError)
     {
         ValidationError upcated = validationError;
-        return new Status(upcated);
+        return new Result(upcated);
     }
 
-    public static implicit operator Task<Status<T>>(ValidationError<T> error)
+    public static implicit operator Task<Result<T>>(ValidationError<T> error)
     {
-        return Task.FromResult<Status<T>>(error);
+        return Task.FromResult<Result<T>>(error);
     }
 
-    public static implicit operator Task<Status>(ValidationError<T> error)
+    public static implicit operator Task<Result>(ValidationError<T> error)
     {
-        return Task.FromResult<Status>(error);
+        return Task.FromResult<Result>(error);
     }
 }

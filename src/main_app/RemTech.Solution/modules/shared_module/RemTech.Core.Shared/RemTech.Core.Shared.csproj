@@ -4,4 +4,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Result\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RemTech.Result.Pattern\RemTech.Result.Pattern.csproj" />
+  </ItemGroup>
 </Project>

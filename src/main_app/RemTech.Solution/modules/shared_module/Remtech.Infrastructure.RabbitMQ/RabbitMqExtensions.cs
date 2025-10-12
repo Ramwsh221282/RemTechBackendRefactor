@@ -58,13 +58,13 @@ public static class RabbitMqExtensions
     {
         if (options == null)
             throw new InvalidOperationException("RabbitMqOptions were not set up.");
-        if (string.IsNullOrWhiteSpace(options.HostName))
+        if (string.IsNullOrWhiteSpace(options.Hostname))
             throw new InvalidOperationException("RabbitMqOptions HostName was not set.");
         if (string.IsNullOrWhiteSpace(options.Port))
             throw new InvalidOperationException("RabbitMqOptions Port was not set.");
         if (string.IsNullOrWhiteSpace(options.Password))
             throw new InvalidOperationException("RabbitMqOptions Password was not set.");
-        if (string.IsNullOrWhiteSpace(options.UserName))
+        if (string.IsNullOrWhiteSpace(options.Username))
             throw new InvalidOperationException("RabbitMqOptions Username was not set.");
         if (!int.TryParse(options.Port, out _))
             throw new InvalidOperationException("RabbitMqOptions Port was is incorrent value.");

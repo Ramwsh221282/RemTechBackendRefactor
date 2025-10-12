@@ -1,4 +1,4 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using RemTech.Result.Pattern;
 
 namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
@@ -11,7 +11,7 @@ public sealed record TelemetryActionComment
 
     private TelemetryActionComment(string value) => Value = value;
 
-    public static Status<TelemetryActionComment> Create(string? value) =>
+    public static Result<TelemetryActionComment> Create(string? value) =>
         value switch
         {
             null => Error.Validation(

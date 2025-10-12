@@ -2,9 +2,9 @@
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
-using RemTech.Core.Shared.Result;
 using RemTech.DependencyInjection;
 using Remtech.Infrastructure.RabbitMQ.Consumers;
+using RemTech.Result.Pattern;
 using RemTech.UseCases.Shared.Cqrs;
 using Telemetry.Contracts;
 using Telemetry.Domain.TelemetryContext;
@@ -21,7 +21,7 @@ public sealed class TelemetryModuleTestHelper
     public TelemetryModuleTestHelper(TestApplicationFactory factory) =>
         _serviceProvider = factory.Services;
 
-    public async Task<Status<TelemetryRecord>> CreateRecord(
+    public async Task<Result<TelemetryRecord>> CreateRecord(
         string name,
         string status,
         Guid invokerId,
@@ -32,7 +32,7 @@ public sealed class TelemetryModuleTestHelper
         var command = new SaveActionInfoIbCommand(parts, name, status, invokerId, occuredAt);
         await using var scope = _serviceProvider.CreateAsyncScope();
         var handler = scope.ServiceProvider.GetRequiredService<
-            IBCommandHandler<SaveActionInfoIbCommand, TelemetryRecord>
+            ICommandHandler<SaveActionInfoIbCommand, TelemetryRecord>
         >();
         return await handler.Handle(command);
     }
@@ -44,7 +44,7 @@ public sealed class TelemetryModuleTestHelper
         return await repository.GetByName(name);
     }
 
-    public async Task<Status<string>> CreateRecordFromRabbitMq(
+    public async Task<Result<string>> CreateRecordFromRabbitMq(
         string name,
         string status,
         Guid invokerId,
@@ -56,9 +56,9 @@ public sealed class TelemetryModuleTestHelper
         RabbitMqOptions options = scope.GetService<RabbitMqOptions>();
         ConnectionFactory factory = new ConnectionFactory()
         {
-            HostName = options.HostName,
+            HostName = options.Hostname,
             Port = int.Parse(options.Port),
-            UserName = options.UserName,
+            UserName = options.Username,
             Password = options.Password,
         };
 
@@ -83,7 +83,7 @@ public sealed class TelemetryModuleTestHelper
         return @event.Name;
     }
 
-    public async Task<Status<TelemetryRecord>> GetById(Guid id)
+    public async Task<Result<TelemetryRecord>> GetById(Guid id)
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var repository = scope.GetService<ITelemetryRecordsRepository>();

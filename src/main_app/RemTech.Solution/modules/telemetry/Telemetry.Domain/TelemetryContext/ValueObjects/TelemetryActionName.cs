@@ -1,4 +1,4 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using RemTech.Result.Pattern;
 
 namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
@@ -14,7 +14,7 @@ public sealed record TelemetryActionName
 
     public static TelemetryActionName Unknown() => new("Неизвестно");
 
-    public static Status<TelemetryActionName> Create(string? value) =>
+    public static Result<TelemetryActionName> Create(string? value) =>
         value switch
         {
             null => Error.Validation("Название действия телеметрии было пустым"),

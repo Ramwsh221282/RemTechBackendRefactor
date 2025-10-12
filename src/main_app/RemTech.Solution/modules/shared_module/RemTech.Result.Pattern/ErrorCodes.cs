@@ -1,4 +1,4 @@
-namespace RemTech.Core.Shared.Result;
+namespace RemTech.Result.Pattern;
 
 public enum ErrorCodes
 {

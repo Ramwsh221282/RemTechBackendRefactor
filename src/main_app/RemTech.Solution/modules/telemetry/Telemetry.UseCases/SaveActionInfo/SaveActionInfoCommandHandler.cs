@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using RemTech.Core.Shared.Result;
+using RemTech.Result.Pattern;
 using RemTech.UseCases.Shared.Cqrs;
 using RemTech.UseCases.Shared.Logging;
 using RemTech.UseCases.Shared.Validations;
@@ -15,7 +15,7 @@ namespace Telemetry.UseCases.SaveActionInfo;
 /// Обработчик команды добавления действия
 /// </summary>
 public sealed class SaveActionInfoIbCommandHandler
-    : IBCommandHandler<SaveActionInfoIbCommand, TelemetryRecord>
+    : ICommandHandler<SaveActionInfoIbCommand, TelemetryRecord>
 {
     private readonly ITelemetryRecordsRepository _recordsRepository;
     private readonly IValidator<SaveActionInfoIbCommand> _validator;
@@ -32,14 +32,14 @@ public sealed class SaveActionInfoIbCommandHandler
         _logger = logger;
     }
 
-    public async Task<Status<TelemetryRecord>> Handle(
+    public async Task<Result<TelemetryRecord>> Handle(
         SaveActionInfoIbCommand ibCommand,
         CancellationToken ct = default
     )
     {
         ValidationResult validation = await _validator.ValidateAsync(ibCommand, ct);
         if (validation.NotValid())
-            return _logger.LoggedError(validation.BadStatus<TelemetryRecord>());
+            return _logger.LoggedError(validation.Failure<TelemetryRecord>());
 
         TelemetryActionName name = TelemetryActionName.Create(ibCommand.Name);
         TelemetryActionStatus status = TelemetryActionStatus.Create(ibCommand.Status);

@@ -107,10 +107,10 @@ public sealed class TestApplicationFactory : WebApplicationFactory<Program>, IAs
         string password = userParts[1];
         return new RabbitMqOptions()
         {
-            HostName = host,
+            Hostname = host,
             Port = port,
             Password = password,
-            UserName = username,
+            Username = username,
         };
     }
 }

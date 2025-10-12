@@ -1,5 +1,4 @@
 ﻿using Brands.Module.Public;
-using RemTech.Core.Shared.Result;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
@@ -9,7 +8,10 @@ internal sealed class BrandSpecifying(
     ITransportAdvertisementSinking inner
 ) : ITransportAdvertisementSinking
 {
-    public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
+    public async Task<Result.Pattern.Result> Sink(
+        IVehicleJsonSink sink,
+        CancellationToken ct = default
+    )
     {
         SinkedVehicleBrand brand = sink.Brand();
         SinkedVehicleBrand persisted = await BrandResponse.MapTo(

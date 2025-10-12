@@ -1,5 +1,4 @@
 ﻿using GeoLocations.Module.Features.Querying;
-using RemTech.Core.Shared.Result;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
@@ -9,7 +8,10 @@ internal sealed class PgLocationSinking(
     ITransportAdvertisementSinking sinking
 ) : ITransportAdvertisementSinking
 {
-    public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
+    public async Task<Result.Pattern.Result> Sink(
+        IVehicleJsonSink sink,
+        CancellationToken ct = default
+    )
     {
         SinkedVehicleLocation location = sink.Location();
         GeoLocationInfo persisted = await service.VectorSearch(location.Text, ct);

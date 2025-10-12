@@ -1,4 +1,4 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using RemTech.Result.Pattern;
 
 namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
@@ -16,7 +16,7 @@ public sealed record TelemetryActionStatus
 
     private TelemetryActionStatus(string value) => Value = value;
 
-    public static Status<TelemetryActionStatus> Create(string? value) =>
+    public static Result<TelemetryActionStatus> Create(string? value) =>
         value switch
         {
             null => Error.Validation("Статус действия записи телеметрии был пустым."),

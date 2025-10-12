@@ -11,8 +11,8 @@ public sealed class RabbitMqConnectionProvider
     {
         _factory = new ConnectionFactory()
         {
-            HostName = options.HostName,
-            UserName = options.UserName,
+            HostName = options.Hostname,
+            UserName = options.Username,
             Password = options.Password,
             Port = int.Parse(options.Port),
         };

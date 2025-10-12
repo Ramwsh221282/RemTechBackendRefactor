@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using RemTech.Core.Shared.Result;
+using RemTech.Result.Pattern;
 
 namespace RemTech.UseCases.Shared.Validations;
 
@@ -9,7 +9,7 @@ public static class ValidatorExtensions
     public static bool NotValid(this ValidationResult validationResult) =>
         !validationResult.IsValid;
 
-    public static Status BadStatus(this ValidationResult validationResult)
+    public static Result.Pattern.Result Failure(this ValidationResult validationResult)
     {
         List<Error> errors = [];
         foreach (ValidationFailure failure in validationResult.Errors)
@@ -21,13 +21,13 @@ public static class ValidatorExtensions
 
         IEnumerable<string> errorStrings = errors.Select(er => er.ErrorText);
         string resultMessage = string.Join(", ", errorStrings);
-        return Status.Failure(new Error(resultMessage, distinct.First().Code));
+        return Result.Pattern.Result.Failure(new Error(resultMessage, distinct.First().Code));
     }
 
-    public static Status<T> BadStatus<T>(this ValidationResult validationResult)
+    public static Result<T> Failure<T>(this ValidationResult validationResult)
     {
-        Status status = validationResult.BadStatus();
-        return Status<T>.Failure(status.Error);
+        Result.Pattern.Result result = validationResult.Failure();
+        return Result<T>.Failure(result.Error);
     }
 
     public static Error AsError(this ValidationFailure failure)
@@ -43,7 +43,7 @@ public static class ValidatorExtensions
         TValidatable
     >(
         this IRuleBuilderInitial<TProperty, TValidatable> initial,
-        Func<TValidatable, Status> statusFactory
+        Func<TValidatable, Result.Pattern.Result> statusFactory
     ) => initial.Custom((validatable, context) => validatable.ManageStatus(context, statusFactory));
 
     public static IRuleBuilderOptionsConditions<
@@ -51,7 +51,7 @@ public static class ValidatorExtensions
         IEnumerable<TValidatable>
     > AllMustBeValid<TProperty, TValidatable>(
         this IRuleBuilderInitial<TProperty, IEnumerable<TValidatable>> initial,
-        Func<TValidatable, Status> statusFactory
+        Func<TValidatable, Result.Pattern.Result> statusFactory
     ) =>
         initial.Custom(
             (enumerable, context) =>
@@ -64,21 +64,21 @@ public static class ValidatorExtensions
     private static void ManageStatus<TProperty, TValidatable>(
         this TValidatable validatable,
         ValidationContext<TProperty> context,
-        Func<TValidatable, Status> statusFactory
+        Func<TValidatable, Result.Pattern.Result> statusFactory
     )
     {
-        Status status = statusFactory(validatable);
-        if (status.IsFailure)
-            context.AddFailure(status.FailureFromStatus());
+        Result.Pattern.Result result = statusFactory(validatable);
+        if (result.IsFailure)
+            context.AddFailure(result.FailureFromStatus());
     }
 
-    private static ValidationFailure FailureFromStatus(this Status status)
+    private static ValidationFailure FailureFromStatus(this Result.Pattern.Result result)
     {
-        if (status.IsSuccess)
+        if (result.IsSuccess)
             throw new ApplicationException("Cannot create failure from success status.");
 
-        string message = status.Error.ErrorText;
-        string code = status.Error.Code.ToString();
+        string message = result.Error.ErrorText;
+        string code = result.Error.Code.ToString();
         return new ValidationFailure()
         {
             ErrorCode = code,

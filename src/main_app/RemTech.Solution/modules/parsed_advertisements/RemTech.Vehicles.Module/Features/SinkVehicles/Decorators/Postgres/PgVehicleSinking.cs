@@ -1,5 +1,4 @@
 ﻿using Npgsql;
-using RemTech.Core.Shared.Result;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
 using RemTech.Vehicles.Module.Types.Transport;
 using RemTech.Vehicles.Module.Types.Transport.Decorators;
@@ -14,7 +13,10 @@ internal sealed class PgVehicleSinking(
     ITransportAdvertisementSinking sinking
 ) : ITransportAdvertisementSinking
 {
-    public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
+    public async Task<Result.Pattern.Result> Sink(
+        IVehicleJsonSink sink,
+        CancellationToken ct = default
+    )
     {
         Vehicle vehicle = sink.Vehicle();
         SinkedVehicleCategory category = sink.Category();

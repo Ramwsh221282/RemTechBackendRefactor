@@ -1,5 +1,5 @@
 ﻿using RemTech.Core.Shared.Exceptions;
-using RemTech.Core.Shared.Result;
+using RemTech.Result.Pattern;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators;
 
@@ -10,7 +10,10 @@ internal sealed class ExceptionHandlingVehicleSinking(
 {
     private const string Scope = nameof(ExceptionHandlingVehicleSinking);
 
-    public async Task<Status> Sink(IVehicleJsonSink sink, CancellationToken ct = default)
+    public async Task<Result.Pattern.Result> Sink(
+        IVehicleJsonSink sink,
+        CancellationToken ct = default
+    )
     {
         try
         {
@@ -20,13 +23,13 @@ internal sealed class ExceptionHandlingVehicleSinking(
         {
             LogException(ex);
             Error error = new Error(ex.Message, ErrorCodes.Conflict);
-            return new Status(error);
+            return new Result.Pattern.Result(error);
         }
         catch (ValueNotValidException ex)
         {
             LogException(ex);
             Error error = new Error(ex.Message, ErrorCodes.Conflict);
-            return new Status(error);
+            return new Result.Pattern.Result(error);
         }
         catch (Exception ex)
         {
@@ -40,8 +43,8 @@ internal sealed class ExceptionHandlingVehicleSinking(
         logger.Error("{Scope} error: {Ex}.", Scope, ex.Message);
     }
 
-    private Status ErrorFromException(Exception ex)
+    private Result.Pattern.Result ErrorFromException(Exception ex)
     {
-        return new Status(new Error(ex.Message, ErrorCodes.Conflict));
+        return new Result.Pattern.Result(new Error(ex.Message, ErrorCodes.Conflict));
     }
 }

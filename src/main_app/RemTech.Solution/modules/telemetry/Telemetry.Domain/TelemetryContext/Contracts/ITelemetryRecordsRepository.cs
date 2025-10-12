@@ -1,4 +1,4 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using RemTech.Result.Pattern;
 using Telemetry.Domain.TelemetryContext.ValueObjects;
 
 namespace Telemetry.Domain.TelemetryContext.Contracts;
@@ -16,12 +16,12 @@ public interface ITelemetryRecordsRepository
     /// <summary>
     /// Получить действие по его ИД
     /// </summary>
-    Task<Status<TelemetryRecord>> GetById(Guid id, CancellationToken ct = default);
+    Task<Result<TelemetryRecord>> GetById(Guid id, CancellationToken ct = default);
 
     /// <summary>
     /// Получить действие по его ИД (типизированный)
     /// </summary>
-    Task<Status<TelemetryRecord>> GetById(
+    Task<Result<TelemetryRecord>> GetById(
         TelemetryRecordId recordId,
         CancellationToken ct = default
     );

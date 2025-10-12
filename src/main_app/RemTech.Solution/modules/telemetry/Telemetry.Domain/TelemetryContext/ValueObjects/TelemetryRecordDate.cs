@@ -1,4 +1,4 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using RemTech.Result.Pattern;
 
 namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
@@ -13,10 +13,10 @@ public readonly record struct TelemetryRecordDate
 
     private TelemetryRecordDate(DateTime occuredAt) => OccuredAt = occuredAt;
 
-    public static Status<TelemetryRecordDate> Create(DateTime? occuredAt) =>
+    public static Result<TelemetryRecordDate> Create(DateTime? occuredAt) =>
         occuredAt == null ? new TelemetryRecordDate() : Create(occuredAt.Value);
 
-    public static Status<TelemetryRecordDate> Create(DateTime occuredAt) =>
+    public static Result<TelemetryRecordDate> Create(DateTime occuredAt) =>
         occuredAt switch
         {
             _ when occuredAt == DateTime.MaxValue => Error.Validation(

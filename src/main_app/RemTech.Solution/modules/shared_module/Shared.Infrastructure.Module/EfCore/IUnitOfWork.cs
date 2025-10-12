@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RemTech.Core.Shared.Result;
+using RemTech.Result.Pattern;
 
 namespace Shared.Infrastructure.Module.EfCore;
 
 public interface IUnitOfWork
 {
-    Task<Status> Save(CancellationToken ct = default);
+    Task<Result> Save(CancellationToken ct = default);
 }
 
 public interface IUnitOfWork<TContext> : IUnitOfWork

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Pgvector;
-using RemTech.Core.Shared.Result;
+using RemTech.Result.Pattern;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 using Telemetry.Domain.TelemetryContext;
 using Telemetry.Domain.TelemetryContext.Contracts;
@@ -30,13 +30,13 @@ public sealed class TelemetryRecordsRepository : ITelemetryRecordsRepository
         await UpdateEmbeddingForRecord(record, ct);
     }
 
-    public async Task<Status<TelemetryRecord>> GetById(Guid id, CancellationToken ct = default)
+    public async Task<Result<TelemetryRecord>> GetById(Guid id, CancellationToken ct = default)
     {
-        Status<TelemetryRecordId> recordId = TelemetryRecordId.Create(id);
+        Result<TelemetryRecordId> recordId = TelemetryRecordId.Create(id);
         return recordId.IsFailure ? recordId.Error : await GetById(recordId, ct);
     }
 
-    public async Task<Status<TelemetryRecord>> GetById(
+    public async Task<Result<TelemetryRecord>> GetById(
         TelemetryRecordId recordId,
         CancellationToken ct = default
     )
@@ -45,7 +45,7 @@ public sealed class TelemetryRecordsRepository : ITelemetryRecordsRepository
             .Records.AsNoTracking()
             .FirstOrDefaultAsync(r => r.RecordId == recordId, ct);
         return record
-            ?? Status<TelemetryRecord>.Failure(
+            ?? Result<TelemetryRecord>.Failure(
                 new Error($"Запись действия не найдена с ID: {recordId.Value}", ErrorCodes.NotFound)
             );
     }
@@ -55,7 +55,7 @@ public sealed class TelemetryRecordsRepository : ITelemetryRecordsRepository
         CancellationToken ct = default
     )
     {
-        Status<TelemetryActionName> recordName = TelemetryActionName.Create(name);
+        Result<TelemetryActionName> recordName = TelemetryActionName.Create(name);
         return recordName.IsFailure ? [] : await GetByName(recordName, ct);
     }
 

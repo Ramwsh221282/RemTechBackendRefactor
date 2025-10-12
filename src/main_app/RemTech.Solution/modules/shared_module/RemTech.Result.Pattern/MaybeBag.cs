@@ -1,4 +1,4 @@
-﻿namespace RemTech.Core.Shared.Result;
+﻿namespace RemTech.Result.Pattern;
 
 public class MaybeBag
 {
@@ -29,10 +29,10 @@ public class MaybeBag<TValue> : MaybeBag
 
     public new MaybeBag<TValue> Drop() => new();
 
-    public MaybeBag<TValue> Put(Status<TValue> status)
+    public MaybeBag<TValue> Put(Result<TValue> result)
     {
         MaybeBag<TValue> maybeBag = new();
-        return status.IsFailure ? maybeBag : maybeBag.Put(status.Value);
+        return result.IsFailure ? maybeBag : maybeBag.Put(result.Value);
     }
 
     public MaybeBag<TValue> MaybePut<T>(T value, Func<T, bool> predicate, Func<T, TValue> converter)
@@ -46,8 +46,8 @@ public class MaybeBag<TValue> : MaybeBag
 
     public static implicit operator MaybeBag<TValue>(TValue value) => new(value);
 
-    public static implicit operator MaybeBag<TValue>(Status<TValue> status) =>
-        status.IsFailure ? new MaybeBag<TValue>() : new MaybeBag<TValue>(status.Value);
+    public static implicit operator MaybeBag<TValue>(Result<TValue> result) =>
+        result.IsFailure ? new MaybeBag<TValue>() : new MaybeBag<TValue>(result.Value);
 
     public static implicit operator TValue(MaybeBag<TValue> maybeBag) => maybeBag._value!;
 }

@@ -1,4 +1,4 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using RemTech.Result.Pattern;
 
 namespace RemTech.Core.Shared.Primitives;
 
@@ -12,7 +12,7 @@ public readonly record struct NotEmptyGuid
 
     public static NotEmptyGuid New() => new(Guid.NewGuid());
 
-    public static Status<NotEmptyGuid> New(Guid? value) =>
+    public static Result<NotEmptyGuid> New(Guid? value) =>
         value switch
         {
             null => new Error("ID было пустым.", ErrorCodes.Validation),

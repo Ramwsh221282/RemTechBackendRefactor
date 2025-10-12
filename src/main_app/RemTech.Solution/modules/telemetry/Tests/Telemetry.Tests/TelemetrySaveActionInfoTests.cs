@@ -1,4 +1,4 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using RemTech.Result.Pattern;
 using Telemetry.Domain.TelemetryContext;
 using Telemetry.Domain.TelemetryContext.ValueObjects;
 
@@ -21,7 +21,7 @@ public sealed class TelemetrySaveActionInfoTests : IClassFixture<TestApplication
         string status = TelemetryActionStatus.Success.Value;
         Guid invokerId = Guid.NewGuid();
 
-        Status<TelemetryRecord> result = await _helper.CreateRecord(
+        Result<TelemetryRecord> result = await _helper.CreateRecord(
             name,
             status,
             invokerId,
@@ -29,7 +29,7 @@ public sealed class TelemetrySaveActionInfoTests : IClassFixture<TestApplication
         );
         Assert.True(result.IsSuccess);
 
-        Status<TelemetryRecord> createdResult = await _helper.GetById(result.Value.RecordId.Value);
+        Result<TelemetryRecord> createdResult = await _helper.GetById(result.Value.RecordId.Value);
         Assert.True(createdResult.IsSuccess);
 
         TelemetryRecord record = createdResult;
@@ -48,7 +48,7 @@ public sealed class TelemetrySaveActionInfoTests : IClassFixture<TestApplication
         string name = "Success operation";
         string status = TelemetryActionStatus.Success.Value;
         Guid invokerId = Guid.NewGuid();
-        Status<string> result = await _helper.CreateRecordFromRabbitMq(
+        Result<string> result = await _helper.CreateRecordFromRabbitMq(
             name,
             status,
             invokerId,

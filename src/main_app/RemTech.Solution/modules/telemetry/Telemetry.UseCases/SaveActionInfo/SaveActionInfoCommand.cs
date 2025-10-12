@@ -6,7 +6,7 @@ namespace Telemetry.UseCases.SaveActionInfo;
 /// <summary>
 /// Команда для выполнения добавления действия.
 /// </summary>
-public sealed record SaveActionInfoIbCommand : IBCommand<TelemetryRecord>
+public sealed record SaveActionInfoIbCommand : ICommand<TelemetryRecord>
 {
     public IEnumerable<string> Comments { get; }
     public string Name { get; }

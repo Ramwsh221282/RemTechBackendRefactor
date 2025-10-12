@@ -1,4 +1,4 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using RemTech.Result.Pattern;
 
 namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
@@ -13,7 +13,7 @@ public readonly record struct TelemetryRecordId
 
     private TelemetryRecordId(Guid value) => Value = value;
 
-    public static Status<TelemetryRecordId> Create(Guid? value) =>
+    public static Result<TelemetryRecordId> Create(Guid? value) =>
         value switch
         {
             null => Error.Validation("Идентификатор записи действия не может быть пустым."),

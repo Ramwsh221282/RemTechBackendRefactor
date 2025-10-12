@@ -18,7 +18,7 @@ public static class SaveActionInfoInjection
     {
         services.AddScoped<IValidator<SaveActionInfoIbCommand>, SaveActionInfoCommandValidator>();
         services.AddScoped<
-            IBCommandHandler<SaveActionInfoIbCommand, TelemetryRecord>,
+            ICommandHandler<SaveActionInfoIbCommand, TelemetryRecord>,
             SaveActionInfoIbCommandHandler
         >();
     }

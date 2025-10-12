@@ -1,4 +1,4 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using RemTech.Result.Pattern;
 
 namespace Telemetry.Domain.TelemetryContext.ValueObjects;
 
@@ -19,7 +19,7 @@ public readonly record struct TelemetryInvokerId
         Value = value;
     }
 
-    public static Status<TelemetryInvokerId> Create(Guid? value) =>
+    public static Result<TelemetryInvokerId> Create(Guid? value) =>
         value switch
         {
             null => Error.Validation("Идентификатор пользователя пустой для записи телеметрии"),
@@ -29,7 +29,7 @@ public readonly record struct TelemetryInvokerId
             _ => Create(value.Value),
         };
 
-    public static Status<TelemetryInvokerId> Create(Guid value) =>
+    public static Result<TelemetryInvokerId> Create(Guid value) =>
         value switch
         {
             _ when value == Guid.Empty => Error.Validation(
