@@ -17,27 +17,27 @@ public sealed class CategoryEntityConfiguration : IEntityTypeConfiguration<Categ
         builder
             .Property(c => c.Id)
             .HasColumnName("id")
-            .HasConversion(toDb => toDb.Value, fromDb => CategoryId.Create(fromDb));
+            .HasConversion(toDb => toDb.Value, fromDb => new CategoryId(fromDb));
 
         builder
             .Property(c => c.Name)
             .HasColumnName("name")
             .IsRequired()
-            .HasConversion(toDb => toDb.Value, fromDb => CategoryName.Create(fromDb));
+            .HasConversion(toDb => toDb.Value, fromDb => new CategoryName(fromDb));
 
         builder
-            .Property(c => c.OwnedVehiclesCount)
+            .Property(c => c.VehiclesCount)
             .HasColumnName("vehicles_count")
             .IsRequired()
-            .HasConversion(toDb => toDb.Value, fromDb => CategoryOwnedVehiclesCount.Create(fromDb));
+            .HasConversion(toDb => toDb.Value, fromDb => new CategoryVehiclesCount(fromDb));
 
         builder
             .Property(c => c.Rating)
             .HasColumnName("rating")
             .IsRequired()
-            .HasConversion(toDb => toDb.Value, fromDb => CategoryRating.Create(fromDb));
+            .HasConversion(toDb => toDb.Value, fromDb => new CategoryRating(fromDb));
 
-        builder.ConfigureVector();
+        builder.ConfigureVector("categories");
 
         builder.HasIndex(c => c.Name).IsUnique().HasDatabaseName("category_unique_name_idx");
     }

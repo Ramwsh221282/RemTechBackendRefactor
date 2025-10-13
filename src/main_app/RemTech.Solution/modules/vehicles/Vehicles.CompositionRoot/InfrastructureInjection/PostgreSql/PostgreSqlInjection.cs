@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using RemTech.DependencyInjection;
 using RemTech.Infrastructure.PostgreSQL;
-using RemTech.UseCases.Shared.Database;
 using Vehicles.Domain.BrandContext.Infrastructure.DataSource;
 using Vehicles.Domain.CategoryContext.Infrastructure.DataSource;
 using Vehicles.Domain.LocationContext.Infrastructure.DataSource;
@@ -22,20 +21,7 @@ public static class PostgreSqlInjection
     [InjectionMethod]
     public static void InjectInfrastructure(this IServiceCollection services)
     {
-        services.InjectDatabaseDependencies();
-        services.InjectEmbeddingGenerator();
-    }
-
-    private static void InjectDatabaseDependencies(this IServiceCollection services)
-    {
-        services.InjectEmbeddingGenerator();
-        services.AddScoped<VehiclesServiceDbContext>();
-        services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
-        services.AddScoped<IUnitOfWork, UnitOfWork<VehiclesServiceDbContext>>();
-    }
-
-    private static void InjectRepositories(this IServiceCollection services)
-    {
+        services.InjectDatabaseDependencies<VehiclesServiceDbContext>();
         services.AddScoped<ILocationsDataSource, LocationsRepository>();
         services.AddScoped<ICategoryDataSource, CategoriesRepository>();
         services.AddScoped<IVehicleModelsDataSource, VehicleModelsRepository>();

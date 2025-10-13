@@ -1,3 +1,8 @@
-﻿namespace Vehicles.UseCases.AddVehicle;
+﻿using Vehicles.Domain.VehicleContext.ValueObjects;
 
-public sealed record AddVehicleCommandCharacteristic(string Name, string Value);
+namespace Vehicles.UseCases.AddVehicle;
+
+public sealed record AddVehicleCommandCharacteristic(string Name, string Value)
+{
+    public VehicleCharacteristic ProvideCharacteristic() => new VehicleCharacteristic(Name, Value);
+}

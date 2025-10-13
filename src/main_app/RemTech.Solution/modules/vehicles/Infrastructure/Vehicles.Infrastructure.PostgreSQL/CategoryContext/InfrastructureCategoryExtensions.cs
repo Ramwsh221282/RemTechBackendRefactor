@@ -11,7 +11,7 @@ internal static class InfrastructureCategoryExtensions
     )
     {
         string nameString = name.Value;
-        ReadOnlyMemory<float> vecotrs = generator.Generate(nameString);
-        return new Pgvector.Vector(vecotrs);
+        ReadOnlyMemory<float> vectors = generator.Generate(nameString);
+        return new Pgvector.Vector(vectors);
     }
 }

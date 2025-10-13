@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
 using RemTech.DependencyInjection;
+using Remtech.Infrastructure.RabbitMQ;
 using Remtech.Infrastructure.RabbitMQ.Consumers;
 using RemTech.Result.Pattern;
 using RemTech.UseCases.Shared.Cqrs;

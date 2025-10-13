@@ -2,5 +2,5 @@
 
 public interface IVehiclesDataSource
 {
-    Task Add(Vehicle vehicle, CancellationToken ct = default);
+    Task<Vehicle> Add(Vehicle vehicle, CancellationToken ct = default);
 }

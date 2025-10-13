@@ -17,28 +17,28 @@ public sealed class BrandEntityConfiguration : IEntityTypeConfiguration<Brand>
         builder
             .Property(b => b.Id)
             .HasColumnName("id")
-            .HasConversion(toDb => toDb.Id, fromDb => BrandId.Create(fromDb));
+            .HasConversion(toDb => toDb.Id, fromDb => new BrandId(fromDb));
 
         builder
             .Property(b => b.Name)
             .HasColumnName("name")
             .HasMaxLength(BrandName.MaxLength)
-            .HasConversion(toDb => toDb.Name, fromDb => BrandName.Create(fromDb))
+            .HasConversion(toDb => toDb.Name, fromDb => new BrandName(fromDb))
             .IsRequired();
 
         builder
             .Property(b => b.Rating)
             .HasColumnName("rating")
-            .HasConversion(toDb => toDb.Value, fromDb => BrandRating.Create(fromDb))
+            .HasConversion(toDb => toDb.Value, fromDb => new BrandRating(fromDb))
             .IsRequired();
 
         builder
             .Property(b => b.VehiclesCount)
             .HasColumnName("vehicles_count")
-            .HasConversion(toDb => toDb.Value, fromDb => BrandOwnedVehiclesCount.Create(fromDb))
+            .HasConversion(toDb => toDb.Value, fromDb => new BrandVehiclesCount(fromDb))
             .IsRequired();
 
-        builder.ConfigureVector();
+        builder.ConfigureVector("brands");
 
         builder.HasIndex(b => b.Name).IsUnique().HasDatabaseName("brands_unique_name_idx");
     }

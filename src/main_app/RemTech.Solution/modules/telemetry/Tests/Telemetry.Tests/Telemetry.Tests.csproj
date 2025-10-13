@@ -19,6 +19,7 @@
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\shared_module\RemTech.Tests.Shared\RemTech.Tests.Shared.csproj" />
     <ProjectReference Include="..\..\Telemetry.WebApi\Telemetry.WebApi.csproj" />
   </ItemGroup>
 </Project>

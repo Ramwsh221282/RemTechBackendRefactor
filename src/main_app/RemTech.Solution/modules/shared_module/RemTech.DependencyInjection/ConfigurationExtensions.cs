@@ -1,4 +1,8 @@
-﻿namespace Telemetry.WebApi.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+namespace RemTech.DependencyInjection;
 
 public static class ConfigurationExtensions
 {

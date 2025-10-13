@@ -1,4 +1,4 @@
-﻿namespace Remtech.Infrastructure.RabbitMQ.Consumers;
+﻿namespace Remtech.Infrastructure.RabbitMQ;
 
 public sealed class RabbitMqOptions
 {

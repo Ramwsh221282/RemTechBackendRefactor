@@ -15,8 +15,7 @@ public static class TelemetryInfrastructurePostgreSqlInjection
     [InjectionMethod]
     public static void InjectTelemetryPostgreSql(this IServiceCollection services)
     {
-        services.InjectEmbeddingGenerator();
-        services.AddScoped<TelemetryServiceDbContext>();
+        services.InjectDatabaseDependencies<TelemetryServiceDbContext>();
         services.AddScoped<ITelemetryRecordsRepository, TelemetryRecordsRepository>();
     }
 }

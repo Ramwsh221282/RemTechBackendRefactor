@@ -38,18 +38,12 @@ public static class ValidatorExtensions
         return error;
     }
 
-    public static IRuleBuilderOptionsConditions<TProperty, TValidatable> MustBeValid<
-        TProperty,
-        TValidatable
-    >(
+    public static void MustBeValid<TProperty, TValidatable>(
         this IRuleBuilderInitial<TProperty, TValidatable> initial,
         Func<TValidatable, Result.Pattern.Result> statusFactory
     ) => initial.Custom((validatable, context) => validatable.ManageStatus(context, statusFactory));
 
-    public static IRuleBuilderOptionsConditions<
-        TProperty,
-        IEnumerable<TValidatable>
-    > AllMustBeValid<TProperty, TValidatable>(
+    public static void AllMustBeValid<TProperty, TValidatable>(
         this IRuleBuilderInitial<TProperty, IEnumerable<TValidatable>> initial,
         Func<TValidatable, Result.Pattern.Result> statusFactory
     ) =>

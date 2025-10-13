@@ -1,10 +1,7 @@
-﻿using Vehicles.Domain.CategoryContext.ValueObjects;
-
-namespace Vehicles.Domain.CategoryContext.Infrastructure.DataSource;
+﻿namespace Vehicles.Domain.CategoryContext.Infrastructure.DataSource;
 
 public interface ICategoryDataSource
 {
-    Task<UniqueCategory> GetUnique(CategoryName name, CancellationToken ct = default);
-    Task Add(Category category, CancellationToken ct = default);
-    Task<Category> GetOrSave(CategoryName name, CancellationToken ct = default);
+    Task<Category> Add(Category category, CancellationToken ct = default);
+    Task<Category> GetOrSave(Category category, CancellationToken ct = default);
 }

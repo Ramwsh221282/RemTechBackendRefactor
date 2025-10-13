@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RemTech.Infrastructure.PostgreSQL;
 using Vehicles.Domain.BrandContext.ValueObjects;
@@ -21,30 +22,30 @@ public sealed class VehicleEntityConfiguration : IEntityTypeConfiguration<Vehicl
         builder
             .Property(v => v.Id)
             .HasColumnName("id")
-            .HasConversion(toDb => toDb.Value, fromDb => VehicleId.Create(fromDb));
+            .HasConversion(toDb => toDb.Value, fromDb => new VehicleId(fromDb));
 
         builder
             .Property(v => v.CategoryId)
             .HasColumnName("category_id")
-            .HasConversion(toDb => toDb.Value, fromDb => CategoryId.Create(fromDb))
+            .HasConversion(toDb => toDb.Value, fromDb => new CategoryId(fromDb))
             .IsRequired();
 
         builder
             .Property(v => v.LocationId)
             .HasColumnName("location_id")
-            .HasConversion(toDb => toDb.Value, fromDb => LocationId.Create(fromDb))
+            .HasConversion(toDb => toDb.Value, fromDb => new LocationId(fromDb))
             .IsRequired();
 
         builder
             .Property(v => v.BrandId)
             .HasColumnName("brand_id")
-            .HasConversion(toDb => toDb.Id, fromDb => BrandId.Create(fromDb))
+            .HasConversion(toDb => toDb.Id, fromDb => new BrandId(fromDb))
             .IsRequired();
 
         builder
             .Property(v => v.ModelId)
             .HasColumnName("model_id")
-            .HasConversion(toDb => toDb.Value, fromDb => VehicleModelId.Create(fromDb))
+            .HasConversion(toDb => toDb.Value, fromDb => new VehicleModelId(fromDb))
             .IsRequired();
 
         builder.ComplexProperty(
@@ -59,18 +60,30 @@ public sealed class VehicleEntityConfiguration : IEntityTypeConfiguration<Vehicl
         builder
             .Property(v => v.Description)
             .HasColumnName("description")
-            .HasConversion(toDb => toDb.Value, fromDb => VehicleDescription.Create(fromDb))
+            .HasConversion(toDb => toDb.Value, fromDb => new VehicleDescription(fromDb))
             .IsRequired();
 
         builder
             .Property(v => v.Characteristics)
             .HasColumnName("characteristics")
             .HasColumnType("jsonb")
+            .HasConversion(
+                toDb => toDb.VehicleCharacteristicsToJson(),
+                fromDb => fromDb.JsonToVehicleCharacteristics()
+            )
             .IsRequired();
 
-        builder.Property(v => v.Photos).HasColumnName("photos").HasColumnType("jsonb").IsRequired();
+        builder
+            .Property(v => v.Photos)
+            .HasColumnName("photos")
+            .HasColumnType("jsonb")
+            .IsRequired()
+            .HasConversion(
+                toDb => toDb.VehiclePhotosToJson(),
+                fromDb => fromDb.JsonToVehiclePhotos()
+            );
 
-        builder.ConfigureVector();
+        builder.ConfigureVector("vehicles");
 
         builder.HasIndex(["Id", "CategoryId", "LocationId", "BrandId", "ModelId"]).IsUnique();
 
@@ -101,5 +114,38 @@ public sealed class VehicleEntityConfiguration : IEntityTypeConfiguration<Vehicl
             .HasForeignKey(v => v.LocationId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+public static class InfrastructureVehicleExtensions
+{
+    public static string VehiclePhotosToJson(this VehiclePhotosCollection photos)
+    {
+        return JsonSerializer.Serialize(photos, JsonSerializerOptions.Default);
+    }
+
+    public static VehiclePhotosCollection JsonToVehiclePhotos(this string json)
+    {
+        return JsonSerializer.Deserialize<VehiclePhotosCollection>(
+            json,
+            JsonSerializerOptions.Default
+        )!;
+    }
+
+    public static string VehicleCharacteristicsToJson(
+        this VehicleCharacteristicsCollection characteristics
+    )
+    {
+        return JsonSerializer.Serialize(characteristics, JsonSerializerOptions.Default);
+    }
+
+    public static VehicleCharacteristicsCollection JsonToVehicleCharacteristics(
+        this string characteristics
+    )
+    {
+        return JsonSerializer.Deserialize<VehicleCharacteristicsCollection>(
+            characteristics,
+            JsonSerializerOptions.Default
+        )!;
     }
 }

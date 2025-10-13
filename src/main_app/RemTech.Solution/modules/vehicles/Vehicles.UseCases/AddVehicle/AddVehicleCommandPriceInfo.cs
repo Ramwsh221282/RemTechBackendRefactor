@@ -1,3 +1,8 @@
-﻿namespace Vehicles.UseCases.AddVehicle;
+﻿using Vehicles.Domain.VehicleContext.ValueObjects;
 
-public sealed record AddVehicleCommandPriceInfo(long Value, bool IsNds);
+namespace Vehicles.UseCases.AddVehicle;
+
+public sealed record AddVehicleCommandPriceInfo(long Value, bool IsNds)
+{
+    public VehiclePrice ProvideVehiclePrice() => new(Value, IsNds);
+}

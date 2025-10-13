@@ -1,10 +1,7 @@
-﻿using Vehicles.Domain.LocationContext.ValueObjects;
-
-namespace Vehicles.Domain.LocationContext.Infrastructure.DataSource;
+﻿namespace Vehicles.Domain.LocationContext.Infrastructure.DataSource;
 
 public interface ILocationsDataSource
 {
-    Task Add(Location location, CancellationToken ct = default);
-    Task<UniqueLocation> GetUnique(LocationAddress address, CancellationToken ct = default);
-    Task<Location> GetOrSave(LocationAddress address, CancellationToken ct);
+    Task<Location> Add(Location location, CancellationToken ct = default);
+    Task<Location> GetOrSave(Location location, CancellationToken ct);
 }

@@ -9,9 +9,10 @@ public sealed class VehiclesRepository : IVehiclesDataSource
 
     public VehiclesRepository(VehiclesServiceDbContext context) => _context = context;
 
-    public async Task Add(Vehicle vehicle, CancellationToken ct = default)
+    public async Task<Vehicle> Add(Vehicle vehicle, CancellationToken ct = default)
     {
         await _context.Vehicles.AddAsync(vehicle, ct);
         await _context.SaveChangesAsync(ct);
+        return vehicle;
     }
 }

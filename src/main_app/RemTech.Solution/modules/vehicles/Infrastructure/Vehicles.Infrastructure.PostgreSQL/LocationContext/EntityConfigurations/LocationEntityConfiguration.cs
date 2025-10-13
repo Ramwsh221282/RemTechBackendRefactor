@@ -17,26 +17,27 @@ public sealed class LocationEntityConfiguration : IEntityTypeConfiguration<Locat
         builder
             .Property(l => l.Id)
             .HasColumnName("id")
-            .HasConversion(toDb => toDb.Value, fromDb => LocationId.Create(fromDb));
+            .HasConversion(toDb => toDb.Value, fromDb => new LocationId(fromDb));
 
         builder
             .Property(l => l.Rating)
             .HasColumnName("rating")
-            .HasConversion(toDb => toDb.Value, fromDb => LocationRating.Create(fromDb))
+            .HasConversion(toDb => toDb.Value, fromDb => new LocationRating(fromDb))
             .IsRequired();
 
         builder
             .Property(l => l.VehicleCount)
             .HasColumnName("vehicles_count")
-            .HasConversion(toDb => toDb.Value, fromDb => LocationVehiclesCount.Create(fromDb))
+            .HasConversion(toDb => toDb.Value, fromDb => new LocationVehiclesCount(fromDb))
             .IsRequired();
 
         builder
             .Property(l => l.Address)
             .HasColumnName("address")
             .HasColumnType("jsonb")
+            .HasConversion(toDb => toDb.LocationToJson(), fromDb => fromDb.JsonToLocation())
             .IsRequired();
 
-        builder.ConfigureVector();
+        builder.ConfigureVector("locations");
     }
 }

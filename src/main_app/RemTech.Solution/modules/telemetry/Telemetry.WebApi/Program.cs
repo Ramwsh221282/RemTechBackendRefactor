@@ -1,14 +1,16 @@
+using RemTech.DependencyInjection;
+using RemTech.Infrastructure.PostgreSQL;
 using Remtech.Infrastructure.RabbitMQ;
-using Remtech.Infrastructure.RabbitMQ.Consumers;
 using Serilog;
 using SwaggerThemes;
 using Telemetry.CompositionRoot;
 using Telemetry.Infrastructure.PostgreSQL.Repositories;
-using Telemetry.WebApi.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.RegisterFromJsonRoot<RabbitMqOptions>();
+builder.RegisterFromJsonRoot<NpgsqlOptions>();
+
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

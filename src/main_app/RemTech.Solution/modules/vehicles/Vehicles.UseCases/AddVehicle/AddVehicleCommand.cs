@@ -1,9 +1,11 @@
-﻿using FluentValidation;
-using RemTech.UseCases.Shared.Cqrs;
-using RemTech.UseCases.Shared.Validations;
+﻿using RemTech.UseCases.Shared.Cqrs;
+using Vehicles.Domain.BrandContext;
 using Vehicles.Domain.BrandContext.ValueObjects;
+using Vehicles.Domain.CategoryContext;
 using Vehicles.Domain.CategoryContext.ValueObjects;
+using Vehicles.Domain.LocationContext;
 using Vehicles.Domain.LocationContext.ValueObjects;
+using Vehicles.Domain.ModelContext;
 using Vehicles.Domain.ModelContext.ValueObjects;
 using Vehicles.Domain.VehicleContext;
 using Vehicles.Domain.VehicleContext.ValueObjects;
@@ -19,32 +21,69 @@ public sealed record AddVehicleCommand(
     AddVehicleCommandPriceInfo Price,
     IEnumerable<AddVehicleCommandCharacteristic> Characteristics,
     IEnumerable<string> PhotoPaths
-) : ICommand<Vehicle>;
-
-public sealed class AddVehicleCommandValidator : AbstractValidator<AddVehicleCommand>
+) : ICommand<Vehicle>
 {
-    public AddVehicleCommandValidator()
+    public Vehicle ProvideVehicle()
     {
-        RuleFor(x => x.CategoryName).MustBeValid(CategoryName.Create);
-        RuleFor(x => x.BrandName).MustBeValid(BrandName.Create);
-        RuleFor(x => x.ModelName).MustBeValid(VehicleModelName.Create);
-        RuleFor(x => x.LocationParts).MustBeValid(LocationAddress.Create);
-        RuleFor(x => x.Description).MustBeValid(VehicleDescription.Create);
-
-        RuleFor(x => new { x.Price.Value, x.Price.IsNds })
-            .MustBeValid(arg => VehiclePrice.Create(arg.Value, arg.IsNds));
-
-        RuleFor(x => x.Characteristics)
-            .AllMustBeValid(c => VehicleCharacteristic.Create(c.Name, c.Value));
-
-        RuleFor(x => x.Characteristics)
-            .MustBeValid(en =>
-                VehicleCharacteristicsCollection.Create(
-                    en.Select(ctx => VehicleCharacteristic.Create(ctx.Name, ctx.Value).Value)
-                )
-            );
-
-        RuleFor(x => x.PhotoPaths).AllMustBeValid(VehiclePhoto.Create);
-        RuleFor(x => x.PhotoPaths).MustBeValid(VehiclePhotosCollection.Create);
+        Category category = ProvideCategory();
+        Brand brand = ProvideBrand();
+        Location location = ProvideLocation();
+        VehicleModel model = ProvideVehicleModel();
+        return new Vehicle()
+        {
+            Id = new VehicleId(Guid.NewGuid()),
+            Brand = brand,
+            BrandId = brand.Id,
+            Category = category,
+            CategoryId = category.Id,
+            Model = model,
+            ModelId = model.Id,
+            Location = location,
+            LocationId = location.Id,
+            Price = Price.ProvideVehiclePrice(),
+            Description = new VehicleDescription(Description),
+            Photos = new VehiclePhotosCollection([.. PhotoPaths.Select(p => new VehiclePhoto(p))]),
+            Characteristics = new VehicleCharacteristicsCollection(
+                [.. Characteristics.Select(c => c.ProvideCharacteristic())]
+            ),
+        };
     }
+
+    private Category ProvideCategory() =>
+        new()
+        {
+            Name = new CategoryName(CategoryName),
+            Id = new CategoryId(Guid.NewGuid()),
+            Rating = new CategoryRating(),
+            VehiclesCount = new CategoryVehiclesCount(),
+        };
+
+    private Brand ProvideBrand() =>
+        new()
+        {
+            Name = new BrandName(BrandName),
+            Rating = new BrandRating(),
+            VehiclesCount = new BrandVehiclesCount(),
+            Id = new BrandId(Guid.NewGuid()),
+        };
+
+    private VehicleModel ProvideVehicleModel() =>
+        new()
+        {
+            Id = new VehicleModelId(Guid.NewGuid()),
+            Name = new VehicleModelName(ModelName),
+            Rating = new VehicleModelRating(),
+            VehiclesCount = new VehicleModelVehicleCount(),
+        };
+
+    private Location ProvideLocation() =>
+        new()
+        {
+            Id = new LocationId(Guid.NewGuid()),
+            Rating = new LocationRating(),
+            VehicleCount = new LocationVehiclesCount(),
+            Address = new LocationAddress(
+                LocationParts.Select(p => new LocationAddressPart(p)).ToList()
+            ),
+        };
 }

@@ -17,28 +17,28 @@ public sealed class VehicleModelEntityConfiguration : IEntityTypeConfiguration<V
         builder
             .Property(m => m.Id)
             .HasColumnName("id")
-            .HasConversion(toDb => toDb.Value, fromDb => VehicleModelId.Create(fromDb));
+            .HasConversion(toDb => toDb.Value, fromDb => new VehicleModelId(fromDb));
 
         builder
             .Property(m => m.Name)
             .HasColumnName("name")
-            .HasConversion(toDb => toDb.Value, fromDb => VehicleModelName.Create(fromDb))
+            .HasConversion(toDb => toDb.Value, fromDb => new VehicleModelName(fromDb))
             .IsRequired();
 
         builder
             .Property(m => m.VehiclesCount)
             .HasColumnName("vehicles_count")
-            .HasConversion(toDb => toDb.Value, fromDb => VehicleModelVehicleCount.Create(fromDb))
+            .HasConversion(toDb => toDb.Value, fromDb => new VehicleModelVehicleCount(fromDb))
             .IsRequired();
 
         builder
             .Property(m => m.Rating)
             .HasColumnName("rating")
-            .HasConversion(toDb => toDb.Value, fromDb => VehicleModelRating.Create(fromDb))
+            .HasConversion(toDb => toDb.Value, fromDb => new VehicleModelRating(fromDb))
             .IsRequired();
 
         builder.HasIndex(m => m.Name).IsUnique().HasDatabaseName("unique_model_name_idx");
 
-        builder.ConfigureVector();
+        builder.ConfigureVector("models");
     }
 }

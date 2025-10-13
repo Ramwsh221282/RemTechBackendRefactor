@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\shared_module\RemTech.DependencyInjection\RemTech.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\shared_module\Remtech.Infrastructure.RabbitMQ\Remtech.Infrastructure.RabbitMQ.csproj" />
     <ProjectReference Include="..\Infrastructure\Vehicles.Infrastructure.PostgreSQL\Vehicles.Infrastructure.PostgreSQL.csproj" />
     <ProjectReference Include="..\Vehicles.Gateways\Vehicles.Gateways.csproj" />
   </ItemGroup>

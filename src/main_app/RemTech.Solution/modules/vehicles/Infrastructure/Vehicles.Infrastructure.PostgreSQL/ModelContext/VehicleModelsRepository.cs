@@ -17,39 +17,35 @@ public sealed class VehicleModelsRepository : IVehicleModelsDataSource
         _generator = generator;
     }
 
-    public async Task Add(VehicleModel model, CancellationToken ct = default)
+    public async Task<VehicleModel> Add(VehicleModel model, CancellationToken ct = default)
     {
         await _context.AddAsync(model, ct);
         await _context.SaveChangesAsync(ct);
+        return model;
     }
 
-    public async Task<UniqueVehicleModel> GetUnique(
-        VehicleModelName name,
-        CancellationToken ct = default
-    )
+    public async Task<VehicleModel> GetOrSave(VehicleModel model, CancellationToken ct)
     {
-        VehicleModel? model = await _context
-            .Models.AsNoTracking()
-            .FirstOrDefaultAsync(m => m.Name == name, cancellationToken: ct);
-
-        return new UniqueVehicleModel(model?.Name);
+        VehicleModel? relevant = await GetRelevantByName(model.Name, ct);
+        return relevant ?? await Add(model, ct);
     }
 
-    public async Task<VehicleModel> GetOrSave(VehicleModelName modelName, CancellationToken ct)
+    private async Task<VehicleModel?> GetRelevantByName(VehicleModelName name, CancellationToken ct)
     {
-        Pgvector.Vector vector = modelName.Generate(_generator);
+        Pgvector.Vector vector = name.Generate(_generator);
         return await _context
             .Models.FromSqlInterpolated(
                 $@"
                 SELECT  id,
                         name,
                         vehicles_count,
-                        rating
-                FROM models
+                        rating,
+                        embedding
+                FROM vehicles_module.models
                 ORDER BY embedding <=> {vector}
                 LIMIT 1
                 "
             )
-            .FirstAsync(cancellationToken: ct);
+            .FirstOrDefaultAsync(cancellationToken: ct);
     }
 }

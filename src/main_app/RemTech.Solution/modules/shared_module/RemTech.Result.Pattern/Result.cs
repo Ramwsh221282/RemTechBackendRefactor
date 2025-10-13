@@ -119,3 +119,22 @@ public class Result<T> : Result
 
     public static implicit operator Result<T>(T value) => Success(value);
 }
+
+public static class ResultPatternExtensions
+{
+    public static async Task<Result<T>> OnSuccess<T>(
+        this Result<T> result,
+        Func<Task<T>> continuation
+    ) => result.IsSuccess ? await continuation() : result;
+
+    public static async Task<Result<T>> OnFailure<T>(
+        this Result<T> result,
+        Func<Task<T>> continuation
+    ) => result.IsFailure ? await continuation() : result;
+
+    public static async Task<Result<T>> Match<T>(
+        this Result<T> result,
+        Func<Result<T>, Task<Result<T>>> onSuccess,
+        Func<Result<T>, Error> onFailure
+    ) => result.IsSuccess ? await onSuccess(result) : onFailure(result);
+}

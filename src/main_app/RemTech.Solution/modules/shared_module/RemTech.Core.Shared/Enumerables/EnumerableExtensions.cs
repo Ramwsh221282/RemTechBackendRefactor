@@ -1,4 +1,6 @@
-﻿namespace RemTech.Core.Shared.Enumerables;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace RemTech.Core.Shared.Enumerables;
 
 public static class EnumerableExtensions
 {
@@ -19,6 +21,56 @@ public static class EnumerableExtensions
 
         repeatableValues = array.GetRepeatableValues(selector);
         return true;
+    }
+
+    public static bool MatchTo<T>(
+        this IEnumerable<T> source,
+        Func<T, bool> predicate,
+        [NotNullWhen(true)] out T? matched
+    )
+    {
+        foreach (T item in source)
+        {
+            if (!predicate(item))
+                continue;
+
+            matched = item;
+            return true;
+        }
+
+        matched = default;
+        return false;
+    }
+
+    public static bool MatchTo<T, TValue>(
+        this IEnumerable<T> source,
+        Func<T, TValue> factory,
+        Func<TValue, bool> predicate,
+        [NotNullWhen(true)] out TValue matched
+    )
+    {
+        foreach (T item in source)
+        {
+            TValue value = factory(item);
+            if (predicate(value))
+            {
+                matched = value;
+                return true;
+            }
+        }
+
+        matched = default!;
+        return false;
+    }
+
+    public static string CreateRepeatableValuesMessage<T>(
+        this IEnumerable<T> source,
+        Func<T, string> selector,
+        string prefix
+    )
+    {
+        IEnumerable<string> values = source.Select(selector);
+        return $"{prefix} {string.Join(" ,", values)}";
     }
 
     public static T[] GetRepeatableValues<T, TKey>(
