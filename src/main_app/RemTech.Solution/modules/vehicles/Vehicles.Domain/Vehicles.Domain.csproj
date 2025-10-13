@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj" />
     <ProjectReference Include="..\..\shared_module\RemTech.Result.Pattern\RemTech.Result.Pattern.csproj" />
   </ItemGroup>
 </Project>

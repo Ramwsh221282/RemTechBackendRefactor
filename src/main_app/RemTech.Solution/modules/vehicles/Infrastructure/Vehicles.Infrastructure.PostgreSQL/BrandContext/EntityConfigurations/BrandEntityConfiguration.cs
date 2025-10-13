@@ -11,27 +11,35 @@ public sealed class BrandEntityConfiguration : IEntityTypeConfiguration<Brand>
     public void Configure(EntityTypeBuilder<Brand> builder)
     {
         builder.ToTable("brands");
+
         builder.HasKey(b => b.Id).HasName("pk_brands");
+
         builder
             .Property(b => b.Id)
             .HasColumnName("id")
             .HasConversion(toDb => toDb.Id, fromDb => BrandId.Create(fromDb));
+
         builder
             .Property(b => b.Name)
             .HasColumnName("name")
             .HasMaxLength(BrandName.MaxLength)
             .HasConversion(toDb => toDb.Name, fromDb => BrandName.Create(fromDb))
             .IsRequired();
+
         builder
             .Property(b => b.Rating)
             .HasColumnName("rating")
             .HasConversion(toDb => toDb.Value, fromDb => BrandRating.Create(fromDb))
             .IsRequired();
+
         builder
             .Property(b => b.VehiclesCount)
             .HasColumnName("vehicles_count")
             .HasConversion(toDb => toDb.Value, fromDb => BrandOwnedVehiclesCount.Create(fromDb))
             .IsRequired();
+
         builder.ConfigureVector();
+
+        builder.HasIndex(b => b.Name).IsUnique().HasDatabaseName("brands_unique_name_idx");
     }
 }
