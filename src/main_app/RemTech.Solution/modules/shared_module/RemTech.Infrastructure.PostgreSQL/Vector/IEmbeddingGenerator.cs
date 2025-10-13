@@ -1,4 +1,4 @@
-﻿namespace Shared.Infrastructure.Module.Postgres.Embeddings;
+﻿namespace RemTech.Infrastructure.PostgreSQL.Vector;
 
 public interface IEmbeddingGenerator : IDisposable
 {

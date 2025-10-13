@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\shared_module\RemTech.Infrastructure.PostgreSQL\RemTech.Infrastructure.PostgreSQL.csproj" />
     <ProjectReference Include="..\..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj" />
     <ProjectReference Include="..\..\Telemetry.UseCases\Telemetry.UseCases.csproj" />
   </ItemGroup>

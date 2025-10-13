@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using RemTech.DependencyInjection;
+using RemTech.Infrastructure.PostgreSQL;
 using Remtech.Infrastructure.RabbitMQ;
 using Remtech.Infrastructure.RabbitMQ.Consumers;
 using Serilog;
-using Telemetry.Infrastructure.PostgreSQL;
 using Telemetry.Infrastructure.PostgreSQL.Repositories;
 using Telemetry.WebApi;
 using Testcontainers.PostgreSql;
@@ -35,7 +35,7 @@ public sealed class TestApplicationFactory : WebApplicationFactory<Program>, IAs
     {
         base.ConfigureWebHost(builder);
 
-        PostgreSqlConnectionOptions pgOptions = CreatePostgreSqlConnectionOptions();
+        NpgsqlOptions pgOptions = CreatePostgreSqlConnectionOptions();
         RabbitMqOptions rabbitMqOptions = CreateRabbitMqOptions();
 
         ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
@@ -43,7 +43,7 @@ public sealed class TestApplicationFactory : WebApplicationFactory<Program>, IAs
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<TelemetryServiceDbContext>();
-            services.RemoveAll<PostgreSqlConnectionOptions>();
+            services.RemoveAll<NpgsqlOptions>();
             services.RemoveAll<RabbitMqOptions>();
 
             services.AddRabbitMqProvider();
@@ -70,7 +70,7 @@ public sealed class TestApplicationFactory : WebApplicationFactory<Program>, IAs
         await _rabbitContainer.StopAsync();
     }
 
-    private PostgreSqlConnectionOptions CreatePostgreSqlConnectionOptions()
+    private NpgsqlOptions CreatePostgreSqlConnectionOptions()
     {
         string connectionString = _dbContainer.GetConnectionString();
         string[] pairs = connectionString.Split(';', StringSplitOptions.RemoveEmptyEntries);
@@ -83,7 +83,7 @@ public sealed class TestApplicationFactory : WebApplicationFactory<Program>, IAs
             parameters.Add(optionName, optionValue);
         }
 
-        return new PostgreSqlConnectionOptions()
+        return new NpgsqlOptions()
         {
             Hostname = parameters["Host"],
             Port = parameters["Port"],

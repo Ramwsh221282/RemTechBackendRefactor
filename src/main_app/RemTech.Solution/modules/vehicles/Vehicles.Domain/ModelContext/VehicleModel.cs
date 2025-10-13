@@ -1,6 +1,7 @@
 using RemTech.Result.Pattern;
 using Vehicles.Domain.ModelContext.Infrastructure;
 using Vehicles.Domain.ModelContext.ValueObjects;
+using Vehicles.Domain.VehicleContext;
 
 namespace Vehicles.Domain.ModelContext;
 
@@ -52,5 +53,11 @@ public sealed class VehicleModel
     {
         VehicleModel model = new(id, name, rating, vehiclesCount);
         return unique.Unique(model);
+    }
+
+    public void AddVehicle(Vehicle vehicle)
+    {
+        if (Id != vehicle.ModelId)
+            return;
     }
 }

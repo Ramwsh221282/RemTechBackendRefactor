@@ -1,6 +1,7 @@
 ﻿using RemTech.Result.Pattern;
 using Vehicles.Domain.BrandContext.Infrastructure.DataSource;
 using Vehicles.Domain.BrandContext.ValueObjects;
+using Vehicles.Domain.VehicleContext;
 
 namespace Vehicles.Domain.BrandContext;
 
@@ -40,6 +41,13 @@ public sealed class Brand
         BrandOwnedVehiclesCount vehiclesCount = new();
         UniqueBrand unique = await brands.GetUniqueBrand(name, ct);
         return Create(id, name, rating, vehiclesCount, unique);
+    }
+
+    public void AddVehicle(Vehicle vehicle)
+    {
+        if (vehicle.BrandId != Id)
+            return;
+        VehiclesCount = VehiclesCount.Increase();
     }
 
     public static Result<Brand> Create(

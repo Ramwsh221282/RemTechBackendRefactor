@@ -1,6 +1,7 @@
 ﻿using RemTech.Result.Pattern;
 using Vehicles.Domain.CategoryContext.Infrastructure.DataSource;
 using Vehicles.Domain.CategoryContext.ValueObjects;
+using Vehicles.Domain.VehicleContext;
 
 namespace Vehicles.Domain.CategoryContext;
 
@@ -9,7 +10,7 @@ public sealed class Category
     public CategoryId Id { get; }
     public CategoryName Name { get; } = null!;
     public CategoryRating Rating { get; }
-    public CategoryOwnedVehiclesCount OwnedVehiclesCount { get; }
+    public CategoryOwnedVehiclesCount OwnedVehiclesCount { get; private set; }
 
     private Category()
     {
@@ -52,5 +53,12 @@ public sealed class Category
     {
         Category category = new Category(id, name, rating, ownedVehiclesCount);
         return unique.ApproveUniqueness(category);
+    }
+
+    public void AddVehicle(Vehicle vehicle)
+    {
+        if (vehicle.CategoryId != Id)
+            return;
+        OwnedVehiclesCount = OwnedVehiclesCount.Increase();
     }
 }

@@ -6,4 +6,5 @@ public interface ICategoryDataSource
 {
     Task<UniqueCategory> GetUnique(CategoryName name, CancellationToken ct = default);
     Task Add(Category category, CancellationToken ct = default);
+    Task<Category> GetOrSave(CategoryName name, CancellationToken ct = default);
 }

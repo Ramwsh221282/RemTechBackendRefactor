@@ -1,6 +1,7 @@
 ﻿using RemTech.Result.Pattern;
 using Vehicles.Domain.LocationContext.Infrastructure.DataSource;
 using Vehicles.Domain.LocationContext.ValueObjects;
+using Vehicles.Domain.VehicleContext;
 
 namespace Vehicles.Domain.LocationContext;
 
@@ -9,7 +10,7 @@ public sealed class Location
     public LocationId Id { get; }
     public LocationAddress Address { get; }
     public LocationRating Rating { get; }
-    public LocationVehiclesCount VehicleCount { get; }
+    public LocationVehiclesCount VehicleCount { get; private set; }
 
     private Location(
         LocationId id,
@@ -47,5 +48,12 @@ public sealed class Location
         LocationVehiclesCount vehiclesCount = new();
         UniqueLocation unique = await dataSource.GetUnique(address, ct);
         return Create(id, address, rating, vehiclesCount, unique);
+    }
+
+    public void AddVehicle(Vehicle vehicle)
+    {
+        if (vehicle.LocationId != Id)
+            return;
+        VehicleCount = VehicleCount.Increase();
     }
 }

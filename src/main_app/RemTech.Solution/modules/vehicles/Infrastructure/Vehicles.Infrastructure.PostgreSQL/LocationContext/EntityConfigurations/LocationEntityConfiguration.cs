@@ -16,12 +16,12 @@ public sealed class LocationEntityConfiguration : IEntityTypeConfiguration<Locat
 
         builder
             .Property(l => l.Id)
-            .HasColumnName("location_id")
+            .HasColumnName("id")
             .HasConversion(toDb => toDb.Value, fromDb => LocationId.Create(fromDb));
 
         builder
             .Property(l => l.Rating)
-            .HasColumnName("location_rating")
+            .HasColumnName("rating")
             .HasConversion(toDb => toDb.Value, fromDb => LocationRating.Create(fromDb))
             .IsRequired();
 

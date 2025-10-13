@@ -20,10 +20,10 @@ public readonly record struct VehiclePrice
         IsNds = isNds;
     }
 
-    private static Result<VehiclePrice> Create(long value, bool isNds) =>
+    public static Result<VehiclePrice> Create(long value, bool isNds) =>
         value < 0 ? new VehiclePriceNegativeError() : new VehiclePrice(value, isNds);
 
-    private static Result<VehiclePrice> Create(long? value, bool? isNds)
+    public static Result<VehiclePrice> Create(long? value, bool? isNds)
     {
         if (value == null)
             return new VehiclePriceEmptyError();

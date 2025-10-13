@@ -1,6 +1,6 @@
 ﻿using Microsoft.ML.OnnxRuntime;
 
-namespace Shared.Infrastructure.Module.Postgres.Embeddings;
+namespace RemTech.Infrastructure.PostgreSQL.Vector;
 
 internal readonly ref struct EmbeddingData
 {

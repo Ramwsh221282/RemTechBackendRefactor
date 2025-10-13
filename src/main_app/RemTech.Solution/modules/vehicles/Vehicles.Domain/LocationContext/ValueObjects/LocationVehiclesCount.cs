@@ -18,4 +18,10 @@ public readonly record struct LocationVehiclesCount
         value == null
             ? new LocationVehiclesNegativeError()
             : new LocationVehiclesCount(value.Value);
+
+    public LocationVehiclesCount Increase()
+    {
+        long nextValue = Value + 1;
+        return new LocationVehiclesCount(nextValue);
+    }
 }

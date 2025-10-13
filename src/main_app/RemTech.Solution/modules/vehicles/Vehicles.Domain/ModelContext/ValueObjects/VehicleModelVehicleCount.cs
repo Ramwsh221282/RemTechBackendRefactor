@@ -11,6 +11,12 @@ public readonly record struct VehicleModelVehicleCount
 
     private VehicleModelVehicleCount(long value) => Value = value;
 
+    public VehicleModelVehicleCount Increase()
+    {
+        long nextValue = Value + 1;
+        return new VehicleModelVehicleCount(nextValue);
+    }
+
     public static Result<VehicleModelVehicleCount> Create(long value) =>
         value < 0
             ? new VehicleModelVehicleCountNegativeError()

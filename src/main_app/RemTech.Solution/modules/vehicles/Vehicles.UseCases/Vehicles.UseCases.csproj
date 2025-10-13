@@ -8,7 +8,4 @@
     <ProjectReference Include="..\..\shared_module\RemTech.UseCases.Shared\RemTech.UseCases.Shared.csproj" />
     <ProjectReference Include="..\Vehicles.Domain\Vehicles.Domain.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="BrandContext\Queries\" />
-  </ItemGroup>
 </Project>

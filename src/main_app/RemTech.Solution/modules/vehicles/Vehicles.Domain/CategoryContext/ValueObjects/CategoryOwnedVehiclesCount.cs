@@ -20,4 +20,10 @@ public readonly record struct CategoryOwnedVehiclesCount
         value == null
             ? new CategoryOwnedVehiclesCountEmptyError()
             : new CategoryOwnedVehiclesCount(value.Value);
+
+    public CategoryOwnedVehiclesCount Increase()
+    {
+        long nextValue = Value + 1;
+        return new CategoryOwnedVehiclesCount(nextValue);
+    }
 }

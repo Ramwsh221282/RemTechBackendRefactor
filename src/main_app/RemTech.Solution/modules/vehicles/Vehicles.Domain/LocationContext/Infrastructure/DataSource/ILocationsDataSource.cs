@@ -6,4 +6,5 @@ public interface ILocationsDataSource
 {
     Task Add(Location location, CancellationToken ct = default);
     Task<UniqueLocation> GetUnique(LocationAddress address, CancellationToken ct = default);
+    Task<Location> GetOrSave(LocationAddress address, CancellationToken ct);
 }

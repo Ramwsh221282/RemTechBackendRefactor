@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Pgvector;
+using RemTech.Infrastructure.PostgreSQL.Vector;
 using RemTech.Result.Pattern;
-using Shared.Infrastructure.Module.Postgres.Embeddings;
 using Telemetry.Domain.TelemetryContext;
 using Telemetry.Domain.TelemetryContext.Contracts;
 using Telemetry.Domain.TelemetryContext.ValueObjects;
@@ -89,11 +89,7 @@ public sealed class TelemetryRecordsRepository : ITelemetryRecordsRepository
         await using var connection = (NpgsqlConnection)_dbContext.Database.GetDbConnection();
         await connection.OpenAsync(ct);
         await using var command = new NpgsqlCommand();
-
-        string comments = string.Join(", ", record.Details.Comments.Select(c => c.Value));
-        string text =
-            $"{record.Details.Name} {record.Status.Value} {comments} записано: {record.OccuredAt}";
-        Vector vector = new Vector(_generator.Generate(text));
+        Vector vector = record.Generate(_generator);
         command.Connection = connection;
         command.CommandText = sql;
         command.Parameters.AddWithValue("@embedding", vector);

@@ -5,11 +5,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\shared_module\RemTech.Gateways.Shared\RemTech.Gateways.Shared.csproj" />
     <ProjectReference Include="..\Telemetry.Infrastructure\Telemetry.Infrastructure.PostgreSQL\Telemetry.Infrastructure.PostgreSQL.csproj" />
     <ProjectReference Include="..\Telemetry.Infrastructure\Telemetry.Infrastructure.RabbitMQ\Telemetry.Infrastructure.RabbitMQ.csproj" />
     <ProjectReference Include="..\Telemetry.UseCases\Telemetry.UseCases.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 </Project>

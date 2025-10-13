@@ -59,7 +59,37 @@ public sealed class Vehicle
         Id = id ?? new VehicleId();
     }
 
-    public static async Task<Vehicle> Add(
+    public static Vehicle Create(
+        Category category,
+        Brand brand,
+        VehicleModel model,
+        Location location,
+        VehicleDescription description,
+        VehiclePrice price,
+        VehicleCharacteristicsCollection characteristics,
+        VehiclePhotosCollection photos,
+        VehicleId? id = null
+    )
+    {
+        Vehicle vehicle = new Vehicle(
+            category,
+            brand,
+            model,
+            location,
+            description,
+            price,
+            characteristics,
+            photos,
+            id
+        );
+        brand.AddVehicle(vehicle);
+        category.AddVehicle(vehicle);
+        model.AddVehicle(vehicle);
+        location.AddVehicle(vehicle);
+        return vehicle;
+    }
+
+    public static async Task<Vehicle> Create(
         IVehiclesDataSource dataSource,
         Category category,
         Brand brand,
