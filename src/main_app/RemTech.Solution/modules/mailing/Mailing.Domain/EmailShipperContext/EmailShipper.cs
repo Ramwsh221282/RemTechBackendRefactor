@@ -8,26 +8,17 @@ public sealed class EmailShipper
     public EmailShipperId Id { get; }
     public EmailShipperServiceAddress Address { get; } = null!;
     public EmailShipperKey Key { get; } = null!;
-    public EmailShipperActionsCounter Counter { get; private set; }
 
     private EmailShipper()
     {
         // ef core
     }
 
-    public void ActionCompleted() => Counter = Counter.Increment();
-
-    public EmailShipper(
-        EmailShipperId id,
-        EmailShipperServiceAddress address,
-        EmailShipperKey key,
-        EmailShipperActionsCounter counter
-    )
+    public EmailShipper(EmailShipperId id, EmailShipperServiceAddress address, EmailShipperKey key)
     {
         Id = id;
         Address = address;
         Key = key;
-        Counter = counter;
     }
 
     public void Subscribe(EmailShippmentProcess shippment)

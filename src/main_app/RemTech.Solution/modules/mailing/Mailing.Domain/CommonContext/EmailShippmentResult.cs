@@ -11,7 +11,6 @@ public sealed record EmailShippmentResult
     public EmailShipperId ShipperId { get; init; }
     public EmailAddress From { get; init; }
     public EmailAddress To { get; init; }
-    public EmailShipperActionsCounter Counter { get; }
     public EmailDestinationDetails Destination { get; init; }
     public EmailMessageDetails Message { get; init; }
     public EmailShippmentId Id { get; init; }
@@ -21,7 +20,6 @@ public sealed record EmailShippmentResult
     {
         From = shipper.Address.Address;
         To = shipper.Address.Address;
-        Counter = shipper.Counter;
         ShipperId = shipper.Id;
         Destination = shippment.Destination;
         Message = shippment.Message;

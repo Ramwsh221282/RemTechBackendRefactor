@@ -21,40 +21,39 @@ public sealed record EmailShippmentProcess : IDisposable
         EmailShipper shipper,
         EmailShippment shippment,
         CancellationToken ct = default,
-        IEnumerable<OnShippmentProcessFinish>? onFinish = null,
-        IEnumerable<OnShippmentProcessFinishAsync>? onFinishAsync = null
+        IEnumerable<IEmailShippmentCallback>? callbacks = null
     )
     {
         shipper.Subscribe(this);
         shippment.Subscribe(this);
         await SmtpClient.SendMailAsync(MailMessage, ct);
         EmailShippmentResult result = new EmailShippmentResult(shipper, shippment);
-        FinishOnShippmentProcesses(onFinish, result);
-        await FinishOnShippmentProcessesAsync(onFinishAsync, result);
+        await ProcessCallbacks(callbacks, result, ct);
         return result;
     }
 
     public void Dispose() => SmtpClient.Dispose();
 
-    private void FinishOnShippmentProcesses(
-        IEnumerable<OnShippmentProcessFinish>? onFinish,
-        EmailShippmentResult result
+    private async Task ProcessCallbacks(
+        IEnumerable<IEmailShippmentCallback>? callbacks,
+        EmailShippmentResult result,
+        CancellationToken ct = default
     )
     {
-        if (onFinish is null || !onFinish.Any())
+        if (callbacks is null || !callbacks.Any())
             return;
-        foreach (OnShippmentProcessFinish action in onFinish)
-            action(result);
-    }
 
-    private async Task FinishOnShippmentProcessesAsync(
-        IEnumerable<OnShippmentProcessFinishAsync>? onFinish,
-        EmailShippmentResult result
-    )
-    {
-        if (onFinish is null || !onFinish.Any())
-            return;
-        foreach (OnShippmentProcessFinishAsync action in onFinish)
-            await action(result);
+        foreach (IEmailShippmentCallback callback in callbacks)
+        {
+            switch (callback)
+            {
+                case IEmailShippmentNonAsyncCallback nonAsync:
+                    nonAsync.Invoke(result);
+                    break;
+                case IEmailShippmentAsyncCallback asyncCallback:
+                    await asyncCallback.Invoke(result, ct);
+                    break;
+            }
+        }
     }
 }
