@@ -1,6 +1,6 @@
 using Mailing.Module.Bus;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using Shared.Infrastructure.Module.Frontend;
 using StackExchange.Redis;
 using Users.Module.Features.UserPasswordRecovering.Core;

@@ -1,4 +1,4 @@
-﻿using Shared.Infrastructure.Module.Cqrs;
+﻿using RemTech.Core.Shared.Cqrs;
 
 namespace Scrapers.Module.Domain.JournalsContext.Features.CompleteScraperJournal;
 

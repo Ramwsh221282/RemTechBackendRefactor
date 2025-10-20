@@ -1,7 +1,7 @@
 ﻿using System.Data.Common;
 using Categories.Module.Types;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 
 namespace Categories.Module.Features.GetCategory;
 

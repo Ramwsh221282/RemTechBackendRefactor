@@ -2,10 +2,9 @@
 using Mailing.Module.Bus;
 using Mailing.Module.Public;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using Users.Module.CommonAbstractions;
 using Users.Module.Features.AddUserByAdmin;
-using Users.Module.Features.ChangingEmail.Exceptions;
 using Users.Module.Features.CreatingNewAccount.Exceptions;
 
 namespace Users.Module.Features.UpdateUserProfile;

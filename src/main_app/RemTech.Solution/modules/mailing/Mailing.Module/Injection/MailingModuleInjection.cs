@@ -1,6 +1,4 @@
 ﻿using System.Threading.Channels;
-using DbUp;
-using DbUp.Engine;
 using Mailing.Module.Bus;
 using Mailing.Module.Cache;
 using Mailing.Module.Contracts;
@@ -22,18 +20,5 @@ public static class MailingModuleInjection
         services.AddHostedService<InitSendersOnStart>();
         services.AddSingleton<HasSenderApi>();
         services.AddSingleton<MailingSendersCache>();
-    }
-
-    public static void UpDatabase(string connectionString)
-    {
-        EnsureDatabase.For.PostgresqlDatabase(connectionString);
-        UpgradeEngine upgrader = DeployChanges
-            .To.PostgresqlDatabase(connectionString)
-            .WithScriptsEmbeddedInAssembly(typeof(NpgSqlEmailSendersSource).Assembly)
-            .LogToConsole()
-            .Build();
-        DatabaseUpgradeResult result = upgrader.PerformUpgrade();
-        if (!result.Successful)
-            throw new ApplicationException("Failed to create parsers management database.");
     }
 }

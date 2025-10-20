@@ -1,5 +1,5 @@
 ﻿using Categories.Module.Types;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 
 namespace Categories.Module.Features.GetCategory;
 

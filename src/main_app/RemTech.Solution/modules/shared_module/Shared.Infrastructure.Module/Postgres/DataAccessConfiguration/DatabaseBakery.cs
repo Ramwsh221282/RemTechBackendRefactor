@@ -2,18 +2,20 @@
 using DbUp;
 using DbUp.Engine;
 using Npgsql;
+using RemTech.Shared.Configuration;
+using RemTech.Shared.Configuration.Options;
 
 namespace Shared.Infrastructure.Module.Postgres.DataAccessConfiguration;
 
 public sealed class DatabaseBakery
 {
-    private readonly DatabaseConfiguration _configuration;
+    private readonly DatabaseOptions _configuration;
 
-    public DatabaseBakery(DatabaseConfiguration configuration) => _configuration = configuration;
+    public DatabaseBakery(DatabaseOptions configuration) => _configuration = configuration;
 
     public void Up(Assembly assembly)
     {
-        string connectionString = _configuration.ConnectionString;
+        string connectionString = _configuration.ToConnectionString();
         EnsureDatabase.For.PostgresqlDatabase(connectionString);
         UpgradeEngine upgrader = DeployChanges
             .To.PostgresqlDatabase(connectionString)
@@ -30,7 +32,7 @@ public sealed class DatabaseBakery
         if (tables.Length == 0)
             throw new ApplicationException("Tables cannot be empty.");
         await using NpgsqlDataSource dataSource = new NpgsqlDataSourceBuilder(
-            _configuration.ConnectionString
+            _configuration.ToConnectionString()
         ).Build();
         await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync();
         string joinedTableNames = string.Join(", ", tables);

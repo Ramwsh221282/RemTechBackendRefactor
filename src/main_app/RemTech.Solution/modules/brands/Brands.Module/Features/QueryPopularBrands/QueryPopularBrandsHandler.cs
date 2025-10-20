@@ -1,5 +1,5 @@
 ﻿using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using Shared.Infrastructure.Module.Postgres.PgCommandsBetter;
 
 namespace Brands.Module.Features.QueryPopularBrands;

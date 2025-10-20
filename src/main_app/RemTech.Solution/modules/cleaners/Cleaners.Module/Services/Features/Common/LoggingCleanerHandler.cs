@@ -1,7 +1,7 @@
 ﻿using Cleaners.Module.Domain;
 using Cleaners.Module.Domain.Exceptions;
 using Cleaners.Module.Services.Features.PermantlyEnable;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 
 namespace Cleaners.Module.Services.Features.Common;
 

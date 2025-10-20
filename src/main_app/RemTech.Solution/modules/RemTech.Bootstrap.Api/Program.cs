@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Quartz;
 using RemTech.Bootstrap.Api.Configuration;
 using RemTech.ContainedItems.Module.Grpc;
+using RemTech.Shared.Configuration;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+new ConfigurationPartsBuilder(builder.Services).AddConfigurations();
+
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.Listen(
@@ -24,15 +27,17 @@ builder.WebHost.ConfigureKestrel(options =>
         }
     );
 });
-RemTechApplicationSettings settings = RemTechApplicationSettings.ResolveByEnvironment(builder);
-settings.UpDatabases();
-builder.Services.InjectModules(settings);
+
+builder.Services.InjectModules();
 builder.Services.ConfigureQuartz();
-settings.ConfigureCors(builder);
+builder.ConfigureCors();
 builder.Services.AddGrpc();
 builder.Services.AddOpenApi();
 builder.Services.AddQuartzHostedService();
+
 WebApplication app = builder.Build();
+await app.UpDatabases();
+
 app.RegisterMiddlewares();
 app.MapModulesEndpoints();
 app.MapGrpcService<DuplicateIdsCheckService>();

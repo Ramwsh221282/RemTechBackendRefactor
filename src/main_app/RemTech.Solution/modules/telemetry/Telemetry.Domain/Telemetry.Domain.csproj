@@ -6,5 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj" />
+    <ProjectReference Include="..\Telemetry.Contracts\Telemetry.Contracts.csproj" />
   </ItemGroup>
 </Project>

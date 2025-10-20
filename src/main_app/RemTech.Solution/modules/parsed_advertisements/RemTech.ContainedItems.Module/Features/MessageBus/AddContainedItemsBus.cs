@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using RemTech.ContainedItems.Module.Features.AddContainedItem;
 using RemTech.ContainedItems.Module.Types;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 
 namespace RemTech.ContainedItems.Module.Features.MessageBus;
 

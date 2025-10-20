@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using RabbitMQ.Client.Events;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 
 namespace Scrapers.Module.Domain.JournalsContext.Features.AddJournalRecord;
 

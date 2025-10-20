@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using Npgsql;
+using Shared.Infrastructure.Module.Postgres;
 
 namespace Users.Module.Features.AuthenticatingUserAccount;
 
@@ -19,11 +20,14 @@ internal sealed class NameAuthentication(string name, string password) : IUserAu
         """;
 
     public async Task<AuthenticatedUser> Authenticate(
-        NpgsqlDataSource dataSource,
+        PostgresDatabase dataSource,
         CancellationToken ct = default
     )
     {
-        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
+        await using NpgsqlConnection connection = await dataSource.DataSource.OpenConnectionAsync(
+            ct
+        );
+
         await using NpgsqlCommand command = connection.CreateCommand();
         command.CommandText = FetchUserSql;
         command.Parameters.Add(new NpgsqlParameter<string>("@name", name));

@@ -1,14 +1,15 @@
 ﻿using System.Data.Common;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
-using Users.Module.Features.CreateEmailConfirmation;
+using RemTech.Core.Shared.Cqrs;
+using RemTech.Core.Shared.Result;
+using Shared.Infrastructure.Module.Postgres;
 
 namespace Users.Module.Features.AddUserByAdmin;
 
 internal sealed class AddUserByAdminRoleWrapper(
-    NpgsqlDataSource dataSource,
-    ICommandHandler<AddUserByAdminCommand, AddUserByAdminResult> origin
-) : ICommandHandler<AddUserByAdminCommand, AddUserByAdminResult>
+    PostgresDatabase dataSource,
+    ICommandHandler<AddUserByAdminCommand, Status<AddUserByAdminResult>> origin
+) : ICommandHandler<AddUserByAdminCommand, Status<AddUserByAdminResult>>
 {
     private const string Sql = """
         SELECT r.name as role_name
@@ -18,28 +19,37 @@ internal sealed class AddUserByAdminRoleWrapper(
         WHERE u.id = @id;
         """;
 
-    public async Task<AddUserByAdminResult> Handle(
+    public async Task<Status<AddUserByAdminResult>> Handle(
         AddUserByAdminCommand command,
         CancellationToken ct = default
     )
     {
         Guid userId = command.AdditorId;
-        string role = await GetRole(userId, ct);
-        if (command.Role == "ROOT" && role != "ROOT")
-            throw new RootUserCanBeAddedOnlyByRootException();
-        return await origin.Handle(command, ct);
+        Status<string> role = await GetRole(userId, command.Role, ct);
+        return role.IsFailure ? role.Error : await origin.Handle(command, ct);
     }
 
-    private async Task<string> GetRole(Guid id, CancellationToken ct)
+    private async Task<Status<string>> GetRole(Guid id, string commandRole, CancellationToken ct)
     {
-        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
+        await using NpgsqlConnection connection = await dataSource.DataSource.OpenConnectionAsync(
+            ct
+        );
+
         await using NpgsqlCommand insertCommand = connection.CreateCommand();
         insertCommand.CommandText = Sql;
         insertCommand.Parameters.Add(new NpgsqlParameter<Guid>("@id", id));
         await using DbDataReader reader = await insertCommand.ExecuteReaderAsync(ct);
+
         if (!await reader.ReadAsync(ct))
-            throw new UserNotFoundException();
+            return Error.NotFound("Пользователь не найден.");
+
         string role = reader.GetString(0);
+
+        if (commandRole == "ROOT" && role != "ROOT")
+            return Error.Conflict(
+                "Корневой пользователь может быть добавлен только корневым пользователем."
+            );
+
         return role;
     }
 }

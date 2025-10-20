@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Npgsql;
-using StackExchange.Redis;
+using Shared.Infrastructure.Module.Postgres;
+using Shared.Infrastructure.Module.Redis;
 using Users.Module.CommonAbstractions;
 using Users.Module.Models;
 
@@ -15,27 +15,27 @@ public static class UserAuthenticationEndpoint
 
     private static async Task<IResult> Handle(
         HttpContext httpContext,
-        [FromServices] NpgsqlDataSource dataSource,
+        [FromServices] PostgresDatabase dataSource,
         [FromServices] Serilog.ILogger logger,
         [FromServices] SecurityKeySource securityKey,
-        [FromServices] ConnectionMultiplexer multiplexer,
+        [FromServices] RedisCache cache,
         [FromHeader(Name = "password")] string password,
         [FromQuery] string? email = null,
         [FromQuery] string? name = null,
         CancellationToken ct = default
     )
     {
+        User user = new(name, password, email);
+
         try
         {
-            IUserAuthentication authentication = new User(
-                name,
-                password,
-                email
-            ).RequireAuthentication();
+            IUserAuthentication authentication = user.RequireAuthentication();
             AuthenticatedUser authenticated = await authentication.Authenticate(dataSource, ct);
+
             UserJwtSource jwtSource = authenticated.AsJwtSource();
             UserJwt jwt = jwtSource.Provide(securityKey);
-            await jwt.StoreInCache(multiplexer);
+
+            await jwt.StoreInCache(cache);
             return jwt.AsResult();
         }
         catch (AuthenticationEmailNotFoundException ex)

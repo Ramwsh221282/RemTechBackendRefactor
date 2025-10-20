@@ -29,17 +29,4 @@ public static class ScrapersModuleInjection
         services.AddSingleton<ParserStateCachedStorage>();
         services.AddSingleton<ActiveScraperJournalsCache>();
     }
-
-    public static void UpDatabase(string connectionString)
-    {
-        EnsureDatabase.For.PostgresqlDatabase(connectionString);
-        UpgradeEngine upgrader = DeployChanges
-            .To.PostgresqlDatabase(connectionString)
-            .WithScriptsEmbeddedInAssembly(typeof(ScrapersModuleInjection).Assembly)
-            .LogToConsole()
-            .Build();
-        DatabaseUpgradeResult result = upgrader.PerformUpgrade();
-        if (!result.Successful)
-            throw new ApplicationException("Failed to create scrapers database.");
-    }
 }

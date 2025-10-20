@@ -1,9 +1,9 @@
 ﻿using Mailing.Module.Cache;
-using StackExchange.Redis;
+using Shared.Infrastructure.Module.Redis;
 
 namespace Mailing.Module.Public;
 
-public sealed class HasSenderApi(ConnectionMultiplexer multiplexer)
+public sealed class HasSenderApi(RedisCache cache)
 {
     public async Task<bool> HasSender()
     {

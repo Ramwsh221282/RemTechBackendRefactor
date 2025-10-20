@@ -1,4 +1,4 @@
-﻿using Shared.Infrastructure.Module.Cqrs;
+﻿using RemTech.Core.Shared.Cqrs;
 
 namespace Cleaners.Module.Services.Features.CreateNew;
 

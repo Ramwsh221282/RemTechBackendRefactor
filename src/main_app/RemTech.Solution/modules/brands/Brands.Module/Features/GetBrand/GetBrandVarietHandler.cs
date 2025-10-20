@@ -1,5 +1,5 @@
 ﻿using Brands.Module.Types;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 
 namespace Brands.Module.Features.GetBrand;
 

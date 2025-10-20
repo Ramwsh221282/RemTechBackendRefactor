@@ -5,7 +5,7 @@ using Cleaners.Module.Domain.Exceptions;
 using Cleaners.Module.RabbitMq;
 using Npgsql;
 using RabbitMQ.Client;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 
 namespace Cleaners.Module.Services.Features.PermantlyEnable;
 

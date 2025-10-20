@@ -1,7 +1,7 @@
 ﻿using System.Data.Common;
 using Brands.Module.Types;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 
 namespace Brands.Module.Features.GetBrand;
 

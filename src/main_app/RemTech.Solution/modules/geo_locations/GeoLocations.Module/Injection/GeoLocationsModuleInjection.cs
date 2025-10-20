@@ -1,6 +1,4 @@
-﻿using DbUp;
-using DbUp.Engine;
-using GeoLocations.Module.Features.Querying;
+﻿using GeoLocations.Module.Features.Querying;
 using GeoLocations.Module.OnStartup;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,18 +10,5 @@ public static class GeoLocationsModuleInjection
     {
         services.AddHostedService<LocationsSeeding>();
         services.AddSingleton<IGeoLocationQueryService, GeoLocationsQueryService>();
-    }
-
-    public static void UpDatabase(string connectionString)
-    {
-        EnsureDatabase.For.PostgresqlDatabase(connectionString);
-        UpgradeEngine upgrader = DeployChanges
-            .To.PostgresqlDatabase(connectionString)
-            .WithScriptsEmbeddedInAssembly(typeof(LocationsSeeding).Assembly)
-            .LogToConsole()
-            .Build();
-        DatabaseUpgradeResult result = upgrader.PerformUpgrade();
-        if (!result.Successful)
-            throw new ApplicationException("Failed to create locations module database.");
     }
 }

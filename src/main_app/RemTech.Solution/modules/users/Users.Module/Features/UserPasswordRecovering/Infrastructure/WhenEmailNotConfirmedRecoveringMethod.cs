@@ -1,7 +1,7 @@
 using Mailing.Module.Bus;
 using Shared.Infrastructure.Module.Frontend;
 using StackExchange.Redis;
-using Users.Module.Features.ChangingEmail.Exceptions;
+using Users.Module.Features.ChangingEmail;
 using Users.Module.Features.ChangingEmail.Shared;
 using Users.Module.Features.CreateEmailConfirmation;
 using Users.Module.Features.UserPasswordRecovering.Core;

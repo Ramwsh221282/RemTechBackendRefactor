@@ -1,7 +1,7 @@
 ﻿using Brands.Module.Features.GetBrand;
 using Brands.Module.Types;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace Brands.Module.Public;

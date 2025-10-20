@@ -4,14 +4,13 @@ using StackExchange.Redis;
 
 namespace Mailing.Module.Cache;
 
-internal sealed class MailingSendersCache(ConnectionMultiplexer multiplexer)
+internal sealed class MailingSendersCache(IDatabase database)
 {
     private const string Key = "Senders";
 
     public async Task<CachedMailingSender[]> GetAll()
     {
-        IDatabase db = multiplexer.GetDatabase();
-        string? array = await db.StringGetAsync(Key);
+        string? array = await database.StringGetAsync(Key);
         return string.IsNullOrWhiteSpace(array)
             ? []
             : JsonSerializer.Deserialize<CachedMailingSender[]>(array)!;
@@ -19,32 +18,35 @@ internal sealed class MailingSendersCache(ConnectionMultiplexer multiplexer)
 
     public async Task Add(IEmailSender sender)
     {
-        IDatabase db = multiplexer.GetDatabase();
-        string? array = await db.StringGetAsync(Key);
+        string? array = await database.StringGetAsync(Key);
+
         if (string.IsNullOrWhiteSpace(array))
         {
-            await CreateNewArray(sender, db);
+            await CreateNewArray(sender, database);
             return;
         }
-        await AddInArray(array, sender, db);
+
+        await AddInArray(array, sender, database);
     }
 
     public async Task Update(IEmailSender sender)
     {
-        IDatabase db = multiplexer.GetDatabase();
-        string? array = await db.StringGetAsync(Key);
+        string? array = await database.StringGetAsync(Key);
+
         if (string.IsNullOrWhiteSpace(array))
             return;
-        await UpdateInArray(array, sender, db);
+
+        await UpdateInArray(array, sender, database);
     }
 
     public async Task Remove(IEmailSender sender)
     {
-        IDatabase db = multiplexer.GetDatabase();
-        string? array = await db.StringGetAsync(Key);
+        string? array = await database.StringGetAsync(Key);
+
         if (string.IsNullOrWhiteSpace(array))
             return;
-        await RemoveFromArray(array, sender, db);
+
+        await RemoveFromArray(array, sender, database);
     }
 
     private static async Task CreateNewArray(IEmailSender sender, IDatabase database)

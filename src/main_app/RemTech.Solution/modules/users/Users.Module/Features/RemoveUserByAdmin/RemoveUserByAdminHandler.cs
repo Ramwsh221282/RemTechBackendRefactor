@@ -1,6 +1,6 @@
 ﻿using Mailing.Module.Bus;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using Users.Module.Features.CreateEmailConfirmation;
 
 namespace Users.Module.Features.RemoveUserByAdmin;

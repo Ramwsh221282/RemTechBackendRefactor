@@ -19,17 +19,4 @@ public static class CleanersModuleInjection
         services.AddSingleton(Channel.CreateUnbounded<ItemCleanedMessage>());
         services.AddSingleton<ItemCleanedMessagePublisher>();
     }
-
-    public static void UpDatabase(string connectionString)
-    {
-        EnsureDatabase.For.PostgresqlDatabase(connectionString);
-        UpgradeEngine upgrader = DeployChanges
-            .To.PostgresqlDatabase(connectionString)
-            .WithScriptsEmbeddedInAssembly(typeof(CreateFirstCleanerOnStartup).Assembly)
-            .LogToConsole()
-            .Build();
-        DatabaseUpgradeResult result = upgrader.PerformUpgrade();
-        if (!result.Successful)
-            throw new ApplicationException("Failed to create cleaners module database.");
-    }
 }

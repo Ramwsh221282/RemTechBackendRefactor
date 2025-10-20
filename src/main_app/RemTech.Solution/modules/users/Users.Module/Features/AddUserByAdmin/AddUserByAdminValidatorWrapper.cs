@@ -1,23 +1,27 @@
-﻿using Shared.Infrastructure.Module.Cqrs;
+﻿using RemTech.Core.Shared.Cqrs;
+using RemTech.Core.Shared.Result;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
 
 namespace Users.Module.Features.AddUserByAdmin;
 
 internal sealed class AddUserByAdminValidatorWrapper(
-    ICommandHandler<AddUserByAdminCommand, AddUserByAdminResult> origin
-) : ICommandHandler<AddUserByAdminCommand, AddUserByAdminResult>
+    ICommandHandler<AddUserByAdminCommand, Status<AddUserByAdminResult>> origin
+) : ICommandHandler<AddUserByAdminCommand, Status<AddUserByAdminResult>>
 {
-    public Task<AddUserByAdminResult> Handle(
+    public async Task<Status<AddUserByAdminResult>> Handle(
         AddUserByAdminCommand command,
         CancellationToken ct = default
     )
     {
         if (string.IsNullOrWhiteSpace(command.Name))
-            throw new UserRegistrationRequiresNameException();
+            return Error.Validation(
+                "Для создания учетной записи нужно указать название учетной записи."
+            );
+
         if (string.IsNullOrWhiteSpace(command.Email))
-            throw new UserRegistrationRequiresEmailException();
+            return Error.Validation("Для создания учетной записи нужно указать почту");
+
         new EmailValidation().ValidateEmail(command.Email);
-        return origin.Handle(command, ct);
+        return await origin.Handle(command, ct);
     }
 }

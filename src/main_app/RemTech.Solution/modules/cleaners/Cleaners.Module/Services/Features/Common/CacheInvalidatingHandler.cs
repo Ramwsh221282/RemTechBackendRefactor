@@ -1,6 +1,6 @@
 ﻿using Cleaners.Module.Cache;
 using Cleaners.Module.Domain;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 
 namespace Cleaners.Module.Services.Features.Common;
 

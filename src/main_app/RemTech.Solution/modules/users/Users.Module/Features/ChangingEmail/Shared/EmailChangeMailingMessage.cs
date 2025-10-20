@@ -1,10 +1,11 @@
 ﻿using Mailing.Module.Bus;
-using Shared.Infrastructure.Module.Frontend;
+using Microsoft.Extensions.Options;
+using RemTech.Shared.Configuration.Options;
 
 namespace Users.Module.Features.ChangingEmail.Shared;
 
 internal sealed class EmailChangeMailingMessage(
-    FrontendUrl frontendUrl,
+    IOptions<FrontendOptions> frontendUrl,
     Guid confirmationKey,
     MailingBusPublisher publisher
 )
@@ -16,7 +17,7 @@ internal sealed class EmailChangeMailingMessage(
         await publisher.Send(FormMessage(emailTo), ct);
     }
 
-    public MailingBusMessage FormMessage(string emailTo)
+    private MailingBusMessage FormMessage(string emailTo)
     {
         return new MailingBusMessage(
             emailTo,
@@ -29,9 +30,9 @@ internal sealed class EmailChangeMailingMessage(
         );
     }
 
-    public string Generate()
+    private string Generate()
     {
-        string frontendUrlString = frontendUrl.Read();
+        string frontendUrlString = frontendUrl.Value.FrontendUrl;
         string keyString = confirmationKey.ToString();
         return string.Format(Template, frontendUrlString, keyString);
     }

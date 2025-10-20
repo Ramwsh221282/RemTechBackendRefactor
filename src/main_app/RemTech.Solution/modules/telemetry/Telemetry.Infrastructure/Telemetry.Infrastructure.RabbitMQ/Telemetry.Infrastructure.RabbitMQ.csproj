@@ -5,8 +5,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\shared_module\Remtech.Infrastructure.RabbitMQ\Remtech.Infrastructure.RabbitMQ.csproj" />
     <ProjectReference Include="..\..\Telemetry.Contracts\Telemetry.Contracts.csproj" />
-    <ProjectReference Include="..\..\Telemetry.UseCases\Telemetry.UseCases.csproj" />
   </ItemGroup>
 </Project>

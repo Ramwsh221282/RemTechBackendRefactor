@@ -19,17 +19,4 @@ public static class ContainedItemsModuleInjection
         );
         services.AddHostedService<ItemCleanedMessageListener>();
     }
-
-    public static void UpDatabase(string connectionString)
-    {
-        EnsureDatabase.For.PostgresqlDatabase(connectionString);
-        UpgradeEngine upgrader = DeployChanges
-            .To.PostgresqlDatabase(connectionString)
-            .WithScriptsEmbeddedInAssembly(typeof(AddContainedItemsBus).Assembly)
-            .LogToConsole()
-            .Build();
-        DatabaseUpgradeResult result = upgrader.PerformUpgrade();
-        if (!result.Successful)
-            throw new ApplicationException("Failed to create contained items module database.");
-    }
 }

@@ -2,7 +2,7 @@
 using System.Text;
 using Npgsql;
 using Pgvector;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace Categories.Module.Features.QueryCategoriesAmount;

@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using Users.Module.Features.CreateEmailConfirmation;
 using Users.Module.Models;
 

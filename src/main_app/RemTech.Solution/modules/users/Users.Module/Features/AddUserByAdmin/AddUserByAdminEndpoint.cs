@@ -2,12 +2,14 @@
 using Mailing.Module.Bus;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
-using Shared.Infrastructure.Module.Frontend;
-using StackExchange.Redis;
+using Microsoft.Extensions.Options;
+using RemTech.Core.Shared.Cqrs;
+using RemTech.Core.Shared.Result;
+using RemTech.Shared.Configuration.Options;
+using Shared.Infrastructure.Module.Postgres;
+using Shared.Infrastructure.Module.Redis;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.ChangingEmail.Exceptions;
+using Users.Module.Features.ChangingEmail;
 using Users.Module.Features.CreateEmailConfirmation;
 using Users.Module.Features.CreatingNewAccount.Exceptions;
 using Users.Module.Features.VerifyingAdmin;
@@ -30,46 +32,47 @@ public static class AddUserByAdminEndpoint
     }
 
     private static async Task<IResult> Handle(
-        [FromServices] NpgsqlDataSource dataSource,
+        [FromServices] PostgresDatabase dataSource,
         [FromServices] StringHash hash,
-        [FromServices] ConnectionMultiplexer multiplexer,
+        [FromServices] RedisCache multiplexer,
         [FromServices] MailingBusPublisher publisher,
-        [FromServices] FrontendUrl frontendUrl,
-        [FromServices] ConfirmationEmailsCache cache,
+        [FromServices] IOptions<FrontendOptions> frontendUrl,
         [FromServices] Serilog.ILogger logger,
         [FromBody] AddUserByAdminRequest request,
         [FromHeader(Name = "RemTechAccessTokenId")] string tokenId,
         CancellationToken ct
     )
     {
+        if (!Guid.TryParse(tokenId, out Guid guidTokenId))
+            return Results.BadRequest(
+                new { message = "Ошибка авторизации. Попробуйте снова авторизоваться." }
+            );
+
+        ConfirmationEmailsCache cache = new(multiplexer);
+        UserJwt jwt = new UserJwt(guidTokenId);
+        ICommandHandler<AddUserByAdminCommand, Status<AddUserByAdminResult>> handler =
+            new AddUserSendEmailWrapper(
+                publisher,
+                frontendUrl,
+                cache,
+                new AddUserByAdminValidatorWrapper(
+                    new AddUserByAdminRoleWrapper(
+                        dataSource,
+                        new AddUserByAdminCommandHandler(dataSource, hash)
+                    )
+                )
+            );
+
         try
         {
-            if (!Guid.TryParse(tokenId, out Guid guidTokenId))
-                return Results.BadRequest(
-                    new { message = "Ошибка авторизации. Попробуйте снова авторизоваться." }
-                );
-
-            UserJwt jwt = new UserJwt(guidTokenId);
             jwt = await jwt.Provide(multiplexer);
             UserJwtOutput output = jwt.MakeOutput();
-            AddUserByAdminCommand command = new AddUserByAdminCommand(
+            AddUserByAdminCommand command = new(
                 output.UserId,
                 request.Email,
                 request.Name,
                 request.Role
             );
-            ICommandHandler<AddUserByAdminCommand, AddUserByAdminResult> handler =
-                new AddUserSendEmailWrapper(
-                    publisher,
-                    frontendUrl,
-                    cache,
-                    new AddUserByAdminValidatorWrapper(
-                        new AddUserByAdminRoleWrapper(
-                            dataSource,
-                            new AddUserByAdminCommandHandler(dataSource, hash)
-                        )
-                    )
-                );
             AddUserByAdminResult result = await handler.Handle(command, ct);
             AddUserByAdminResponse response = AddUserByAdminResponse.Create(result);
             return Results.Ok(response);

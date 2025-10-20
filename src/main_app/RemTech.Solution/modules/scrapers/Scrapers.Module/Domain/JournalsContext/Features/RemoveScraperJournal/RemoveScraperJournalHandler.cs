@@ -1,9 +1,9 @@
 ﻿using System.Data.Common;
 using Npgsql;
+using RemTech.Core.Shared.Cqrs;
 using Scrapers.Module.Domain.JournalsContext.Exceptions;
 using Scrapers.Module.Domain.JournalsContext.Logging;
 using Scrapers.Module.Domain.JournalsContext.Persistance;
-using Shared.Infrastructure.Module.Cqrs;
 
 namespace Scrapers.Module.Domain.JournalsContext.Features.RemoveScraperJournal;
 

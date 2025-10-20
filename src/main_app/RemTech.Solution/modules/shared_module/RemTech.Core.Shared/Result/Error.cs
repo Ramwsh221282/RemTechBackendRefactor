@@ -10,6 +10,15 @@ public record Error(string ErrorText, ErrorCodes Code)
 
     public static Error Conflict(string errorMessage) => new(errorMessage, ErrorCodes.Conflict);
 
+    public static Error PasswordIncorrect() => new("Пароль неверный", ErrorCodes.Unauthorized);
+
+    public static Error TokensExpired() =>
+        new Error("Expired tokens sessions.", ErrorCodes.Unauthorized);
+
+    public static Error Forbidden() => new("Операция запрещена", ErrorCodes.Forbidden);
+
+    public static Error Forbidden(string message) => new(message, ErrorCodes.Forbidden);
+
     public Status Status() => new(this);
 
     public Status<T> Status<T>() => new(this);
@@ -37,32 +46,6 @@ public sealed record Error<T>(string ErrorText, ErrorCodes Code) : Error(ErrorTe
     {
         Error upcated = error;
         return new Status(upcated);
-    }
-}
-
-public record ValidationError
-{
-    private readonly string _text;
-    private readonly ErrorCodes _code;
-
-    public ValidationError(string text)
-    {
-        _text = text;
-        _code = ErrorCodes.Validation;
-    }
-
-    public Status Status() => new(this);
-
-    public Status<T> Status<T>() => new(this);
-
-    public static implicit operator Error(ValidationError validationError)
-    {
-        return new Error(validationError._text, validationError._code);
-    }
-
-    public static implicit operator Status(ValidationError validationError)
-    {
-        return validationError.Status();
     }
 }
 

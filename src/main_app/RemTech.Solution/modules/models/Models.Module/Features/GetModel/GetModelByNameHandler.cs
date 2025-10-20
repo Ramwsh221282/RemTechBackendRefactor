@@ -1,7 +1,7 @@
 ﻿using System.Data.Common;
 using Models.Module.Types;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 
 namespace Models.Module.Features.GetModel;
 

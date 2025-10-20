@@ -15,12 +15,9 @@ namespace RemTech.Bootstrap.Api.Configuration;
 
 public static class ModulesInject
 {
-    public static void InjectModules(
-        this IServiceCollection services,
-        RemTechApplicationSettings settings
-    )
+    public static void InjectModules(this IServiceCollection services)
     {
-        services.InjectCommonInfrastructure(settings);
+        services.InjectCommonInfrastructure();
         services.InjectScrapersModule();
         services.InjectMailingModule();
         services.InjectUsersModule();

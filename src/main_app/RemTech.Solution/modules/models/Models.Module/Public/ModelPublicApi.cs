@@ -1,7 +1,7 @@
 ﻿using Models.Module.Features.GetModel;
 using Models.Module.Types;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace Models.Module.Public;

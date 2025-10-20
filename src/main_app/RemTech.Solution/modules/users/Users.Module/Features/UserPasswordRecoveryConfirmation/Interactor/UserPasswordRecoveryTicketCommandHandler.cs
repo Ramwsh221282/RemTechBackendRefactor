@@ -1,7 +1,7 @@
 using System.Data.Common;
 using Mailing.Module.Bus;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
 using Users.Module.Features.CreateEmailConfirmation;
