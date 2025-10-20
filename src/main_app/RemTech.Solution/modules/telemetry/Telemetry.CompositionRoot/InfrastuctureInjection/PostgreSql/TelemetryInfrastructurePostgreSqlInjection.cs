@@ -17,5 +17,6 @@ public static class TelemetryInfrastructurePostgreSqlInjection
     {
         services.AddScoped<TelemetryServiceDbContext>();
         services.AddScoped<ITelemetryRecordsRepository, TelemetryRecordsRepository>();
+        services.AddScoped<ITelemetryRecordsReadRepository, ITelemetryRecordsReadRepository>();
     }
 }
