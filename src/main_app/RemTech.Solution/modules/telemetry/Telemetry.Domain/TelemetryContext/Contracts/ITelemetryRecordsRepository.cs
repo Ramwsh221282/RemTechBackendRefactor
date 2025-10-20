@@ -3,6 +3,23 @@ using Telemetry.Domain.TelemetryContext.ValueObjects;
 
 namespace Telemetry.Domain.TelemetryContext.Contracts;
 
+public interface ITelemetryRecordsReadRepository
+{
+    Task<(IEnumerable<TelemetryRecord> Records, long Count)> Read(
+        int Page = 1,
+        int PageSize = 20,
+        TelemetryInvokerId? InvokerId = null,
+        TelemetryActionStatus? Status = null,
+        TelemetryActionName? Name = null,
+        TelemetryRecordDate? OccuredAtMin = null,
+        TelemetryRecordDate? OccuredAtMax = null,
+        string? TextSearch = null,
+        IEnumerable<string>? OrderNames = null,
+        string OrderMode = "ASC",
+        CancellationToken ct = default
+    );
+}
+
 /// <summary>
 /// Контракт взаимодействия с хранилищем записанных действий.
 /// </summary>

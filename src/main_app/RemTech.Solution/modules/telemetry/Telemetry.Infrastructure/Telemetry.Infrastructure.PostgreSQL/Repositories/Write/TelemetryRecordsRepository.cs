@@ -7,7 +7,7 @@ using Telemetry.Domain.TelemetryContext;
 using Telemetry.Domain.TelemetryContext.Contracts;
 using Telemetry.Domain.TelemetryContext.ValueObjects;
 
-namespace Telemetry.Infrastructure.PostgreSQL.Repositories;
+namespace Telemetry.Infrastructure.PostgreSQL.Repositories.Write;
 
 public sealed class TelemetryRecordsRepository : ITelemetryRecordsRepository
 {

@@ -2,6 +2,7 @@
 using RemTech.DependencyInjection;
 using Telemetry.Domain.TelemetryContext.Contracts;
 using Telemetry.Infrastructure.PostgreSQL.Repositories;
+using Telemetry.Infrastructure.PostgreSQL.Repositories.Write;
 
 namespace Telemetry.CompositionRoot.InfrastuctureInjection.PostgreSql;
 
