@@ -2,6 +2,7 @@
 using Identity.Domain.EmailTickets.Ports;
 using Identity.Domain.Mailing;
 using Identity.Domain.Mailing.Ports;
+using Identity.Domain.Users.Aggregate;
 using Identity.Domain.Users.Ports.Storage;
 using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Cqrs;
@@ -10,7 +11,7 @@ using RemTech.Core.Shared.Result;
 namespace Identity.Domain.Users.UseCases.CreateEmailConfirmation;
 
 public sealed class CreateEmailConfirmationCommandHandler(
-    IUserEmailConfirmationTicketsStorage tickets,
+    IEmailConfirmationTicketsStorage tickets,
     IUsersStorage users,
     IFrontendUrlProvider frontend,
     IIdentityEmailSender mailSender
@@ -22,7 +23,7 @@ public sealed class CreateEmailConfirmationCommandHandler(
     )
     {
         // получить пользователя.
-        Status<User> user = await FindUser(command, ct);
+        Status<IdentityUser> user = await FindUser(command, ct);
         if (user.IsFailure)
             return user.Error;
 
@@ -47,18 +48,18 @@ public sealed class CreateEmailConfirmationCommandHandler(
         );
     }
 
-    private async Task<Status<User>> FindUser(
+    private async Task<Status<IdentityUser>> FindUser(
         CreateEmailConfirmationCommand command,
         CancellationToken ct
     )
     {
         UserId id = UserId.Create(command.UserId);
-        User? user = await users.Get(id, ct);
+        IdentityUser? user = await users.Get(id, ct);
         return user == null ? Error.NotFound("Пользователь не найден.") : user;
     }
 
     private async Task<Status<EmailConfirmationTicket>> MakeTicket(
-        User user,
+        IdentityUser identityUser,
         CancellationToken ct
-    ) => await EmailConfirmationTicket.New(user).Save(tickets, ct);
+    ) => await EmailConfirmationTicket.New(identityUser).Save(tickets, ct);
 }

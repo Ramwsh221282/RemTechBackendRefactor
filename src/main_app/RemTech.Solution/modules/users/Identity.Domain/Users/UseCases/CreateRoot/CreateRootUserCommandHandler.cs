@@ -1,47 +1,49 @@
-﻿using Identity.Domain.Roles.Ports;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Identity.Domain.Roles;
+using Identity.Domain.Roles.Ports;
 using Identity.Domain.Roles.ValueObjects;
-using Identity.Domain.UserRoles.Ports;
+using Identity.Domain.Users.Aggregate;
+using Identity.Domain.Users.Entities;
+using Identity.Domain.Users.Ports.EventHandlers;
 using Identity.Domain.Users.Ports.Passwords;
-using Identity.Domain.Users.Ports.Storage;
 using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Cqrs;
 using RemTech.Core.Shared.Result;
+using RemTech.Core.Shared.Validation;
 
 namespace Identity.Domain.Users.UseCases.CreateRoot;
 
 public sealed class CreateRootUserCommandHandler(
-    IUsersStorage users,
     IRolesStorage roles,
-    IUserRolesStorage userRoles,
-    IIdentityUnitOfWork unitOfWork,
-    IPasswordManager passwordManager
-) : ICommandHandler<CreateRootUserCommand, Status<User>>
+    IPasswordManager passwordManager,
+    IIdentityUserEventHandler eventsHandler,
+    IValidator<CreateRootUserCommand> validator
+) : ICommandHandler<CreateRootUserCommand, Status<IdentityUser>>
 {
-    public async Task<Status<User>> Handle(
+    public async Task<Status<IdentityUser>> Handle(
         CreateRootUserCommand command,
         CancellationToken ct = default
     )
     {
+        ValidationResult validation = await validator.ValidateAsync(command, ct);
+        if (!validation.IsValid)
+            return validation.ValidationError();
+
+        Role? role = await roles.Get(RoleName.Root, ct);
+        if (role == null)
+            return Error.NotFound("Роль не найдена.");
+
         UserEmail email = UserEmail.Create(command.Email);
         UserLogin login = UserLogin.Create(command.Email);
-        UserPassword password = UserPassword.Create(command.Password);
+        UserPassword notHashed = UserPassword.Create(command.Password);
+        HashedUserPassword hashed = new HashedUserPassword(notHashed, passwordManager);
+        IdentityUserProfile profile = new(login, email, hashed);
+        IdentityUserRoles userRoles = new([role]);
+        IdentityUserSession session = new();
+        IdentityUser user = IdentityUser.Create(profile, session, userRoles);
 
-        Status<User> user = await User.New(login, email, password, users, passwordManager, ct);
-        if (user.IsFailure)
-            return user.Error;
-
-        Status saving = await unitOfWork.Save(ct);
-        if (saving.IsFailure)
-            return saving.Error;
-
-        Status roleAttachment = await user.Value.AttachRole(roles, userRoles, RoleName.Root, ct);
-        if (roleAttachment.IsFailure)
-            return roleAttachment.Error;
-
-        saving = await unitOfWork.Save(ct);
-        if (saving.IsFailure)
-            return saving.Error;
-
-        return user;
+        Status handling = await user.PublishEvents(eventsHandler, ct);
+        return handling.IsFailure ? handling.Error : user;
     }
 }

@@ -1,3 +1,5 @@
-﻿namespace Identity.Domain.Users.UseCases.CheckRoot;
+﻿using Identity.Domain.Users.Aggregate;
 
-public sealed record CheckRootResponse(IEnumerable<User> Users);
+namespace Identity.Domain.Users.UseCases.CheckRoot;
+
+public sealed record CheckRootResponse(IEnumerable<IdentityUser> Users);

@@ -1,4 +1,5 @@
 ﻿using Identity.Domain.Users;
+using Identity.Domain.Users.Aggregate;
 using Identity.Domain.Users.Ports.Storage;
 using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Result;
@@ -26,7 +27,7 @@ public sealed record EmailConfirmationTicket
         );
 
     public async Task<Status<EmailConfirmationTicket>> Save(
-        IUserEmailConfirmationTicketsStorage storage,
+        IEmailConfirmationTicketsStorage storage,
         CancellationToken ct = default
     )
     {
@@ -34,11 +35,14 @@ public sealed record EmailConfirmationTicket
         return adding.IsFailure ? adding.Error : this;
     }
 
-    public static EmailConfirmationTicket New(User user, int minutesUntilDestroy = 10)
+    public static EmailConfirmationTicket New(
+        IdentityUser identityUser,
+        int minutesUntilDestroy = 10
+    )
     {
         Guid id = Guid.NewGuid();
         DateTime createdDate = DateTime.UtcNow;
-        UserEmail email = user.Email;
+        UserEmail email = identityUser.Email;
         return new EmailConfirmationTicket(id, createdDate, minutesUntilDestroy, email);
     }
 }

@@ -48,17 +48,21 @@ public class Status
 
     public static Status Failure(Error error) => new(error);
 
-    public static Status Failures(params Status[] statuses)
-    {
-        Status? firstBad = statuses.FirstOrDefault(f => f.IsFailure);
-        return firstBad == null
-            ? throw new ApplicationException("Failure result was not found")
-            : new Status(firstBad);
-    }
-
     public static implicit operator Error(Status status) => status.Error;
 
     public static implicit operator Status(Error error) => Failure(error);
+
+    public static Status Conflict(string message)
+    {
+        Error error = Error.Conflict(message);
+        return new Status(error);
+    }
+
+    public static Status Forbidden(string message)
+    {
+        Error error = Error.Forbidden(message);
+        return new Status(error);
+    }
 }
 
 public class Status<T> : Status
