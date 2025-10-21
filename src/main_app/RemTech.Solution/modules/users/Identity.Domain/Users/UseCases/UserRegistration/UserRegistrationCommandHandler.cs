@@ -42,8 +42,7 @@ public sealed class UserRegistrationCommandHandler(
 
         IdentityUserProfile profile = new(login, email, hashed);
         IdentityUserRoles userRoles = new([role]);
-        IdentityUserSession session = new();
-        IdentityUser user = IdentityUser.Create(profile, session, userRoles);
+        IdentityUser user = IdentityUser.Create(profile, userRoles);
 
         Status status = await user.PublishEvents(eventHandler, ct);
         return status.IsFailure ? status.Error : user;

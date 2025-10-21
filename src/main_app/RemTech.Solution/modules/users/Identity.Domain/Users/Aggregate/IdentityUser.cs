@@ -10,37 +10,36 @@ namespace Identity.Domain.Users.Aggregate;
 
 public sealed class IdentityUser
 {
+    private readonly List<IdentityUserToken> _tokens = [];
     private readonly List<IdentityUserEvent> _events = [];
     private readonly UserId _id;
-    private readonly IdentityUserSession _session;
     private readonly IdentityUserRoles _roles;
     private IdentityUserProfile _profile;
 
-    private IdentityUser(
-        IdentityUserProfile profile,
-        IdentityUserSession session,
-        IdentityUserRoles roles,
-        UserId? id = null
-    )
+    private IdentityUser(IdentityUserProfile profile, IdentityUserRoles roles, UserId? id = null)
     {
         _profile = profile;
-        _session = session;
         _roles = roles;
         _id = id ?? new UserId();
     }
 
     public static IdentityUser Create(
         IdentityUserProfile profile,
-        IdentityUserSession session,
         IdentityUserRoles roles,
         UserId? id = null
     )
     {
-        IdentityUser user = new IdentityUser(profile, session, roles, id);
+        IdentityUser user = new IdentityUser(profile, roles, id);
         if (id == null)
-            user._events.Add(
-                new IdentityUserCreatedEvent(user._id, user._profile, user._session, user._roles)
+        {
+            IdentityUserProfileEventArgs profileEa = profile.ToEventArgs();
+
+            IEnumerable<IdentityUserRoleEventArgs> rolesEa = roles.Roles.Select(r =>
+                r.ToEventArgs()
             );
+
+            user._events.Add(new IdentityUserCreatedEvent(user._id.Id, profileEa, rolesEa));
+        }
         return user;
     }
 
@@ -78,16 +77,61 @@ public sealed class IdentityUser
                     "Admin Пользователь не имеет прав добавления admin пользователей."
                 );
 
-        IdentityUserCreatedEvent creatorInfo = new(_id, _profile, _session, _roles);
+        IdentityUserCreatedEvent creatorInfo = new(
+            _id.Id,
+            _profile.ToEventArgs(),
+            _roles.Roles.Select(r => r.ToEventArgs())
+        );
+
         IdentityUserCreatedEvent createdInfo = new(
-            user._id,
-            user._profile,
-            user._session,
-            user._roles
+            user._id.Id,
+            user._profile.ToEventArgs(),
+            user._roles.Roles.Select(r => r.ToEventArgs())
         );
 
         IdentityUserCreatedByUserEvent @event = new(creatorInfo, createdInfo);
         _events.Add(@event);
+        return Status.Success();
+    }
+
+    public Status FormEmailConfirmationToken()
+    {
+        if (_profile.HasEmailConfirmed())
+            return Status.Conflict("Пользователь уже подтвердил Email.");
+
+        IdentityTokenId tokenId = new();
+        DateTime created = DateTime.UtcNow;
+        DateTime expires = created.AddMinutes(10);
+        string tokenType = "EMAIL_CONFIRMATION";
+        IdentityUserToken token = new(tokenId, _id, created, expires, tokenType);
+
+        EmailConfirmationCreatedTokenEvent @event = new(token, _profile, _id);
+        _events.Add(@event);
+        _tokens.Add(token);
+        return Status.Success();
+    }
+
+    public Status ConfirmEmail(IdentityTokenId tokenId)
+    {
+        if (_profile.HasEmailConfirmed())
+            return Status.Conflict("Пользователь уже подтвердил Email.");
+
+        IdentityUserToken? userToken = _tokens.FirstOrDefault(t => t.Id == tokenId);
+        if (userToken == null)
+            return Status.NotFound("Не найден токен пользователя.");
+
+        if (userToken.HasExpired())
+            return Status.NotFound("Токен закончился.");
+
+        if (!userToken.BelongsToUser(_id))
+            return Status.Conflict("Токен не принадлежит данному пользователю.");
+
+        if (!userToken.IsOfType("EMAIL_CONFIRMATION"))
+            return Status.Conflict("Токен не является токеном подтверждения почты.");
+
+        _profile.ConfirmEmail();
+        _events.Add(new IdentityUserEmailConfirmedEvent(_id, _profile, userToken));
+        _tokens.Remove(userToken);
         return Status.Success();
     }
 
@@ -108,17 +152,15 @@ public sealed class IdentityUser
                     "Admin Пользователь не имеет прав удаления admin пользователей."
                 );
 
-        IdentityUserRemovedEventInfo removerInfo = new(_id, _profile, _session, _roles);
-        IdentityUserRemovedEventInfo removedInfo = new(
-            user._id,
-            user._profile,
-            user._session,
-            user._roles
-        );
+        IdentityUserRemovedEventInfo removerInfo = new(_id, _profile, _roles);
+        IdentityUserRemovedEventInfo removedInfo = new(user._id, user._profile, user._roles);
 
         _events.Add(new IdentityUserRemovedEvent(removerInfo, removedInfo));
         return Status.Success();
     }
+
+    public IdentityUserToken? FindToken(Func<IdentityUserToken, bool> predicate) =>
+        _tokens.FirstOrDefault(predicate);
 
     public async Task<Status> PublishEvents(
         IIdentityUserEventHandler handler,

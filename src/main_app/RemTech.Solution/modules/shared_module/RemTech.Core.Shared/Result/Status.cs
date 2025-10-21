@@ -48,6 +48,12 @@ public class Status
 
     public static Status Failure(Error error) => new(error);
 
+    public static Status NotFound(string message)
+    {
+        Error error = new(message, ErrorCodes.NotFound);
+        return new Status(error);
+    }
+
     public static implicit operator Error(Status status) => status.Error;
 
     public static implicit operator Status(Error error) => Failure(error);

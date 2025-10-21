@@ -7,6 +7,14 @@ namespace RemTech.Shared.Tests;
 
 public static class TestContainerExtensions
 {
+    public static PostgreSqlContainer BuildPgVectorContainer(this PostgreSqlBuilder builder) =>
+        builder
+            .WithImage("pgvector/pgvector:0.8.0-pg17-bookworm")
+            .WithDatabase("database")
+            .WithUsername("username")
+            .WithPassword("password")
+            .Build();
+
     public static DatabaseOptions CreateDatabaseConfiguration(this PostgreSqlContainer container)
     {
         string connectionString = container.GetConnectionString();

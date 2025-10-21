@@ -52,9 +52,8 @@ public sealed class RootCreatesAdminHandler(
         UserPassword notHashed = UserPassword.Create(command.CreatorPassword);
         HashedUserPassword hashed = new HashedUserPassword(notHashed, passwordManager);
         IdentityUserProfile profile = new(login, email, hashed);
-        IdentityUserSession session = new();
         IdentityUserRoles userRoles = new([adminRole]);
-        IdentityUser admin = IdentityUser.Create(profile, session, userRoles);
+        IdentityUser admin = IdentityUser.Create(profile, userRoles);
 
         Status registration = user.RegisterUser(admin);
         if (registration.IsFailure)

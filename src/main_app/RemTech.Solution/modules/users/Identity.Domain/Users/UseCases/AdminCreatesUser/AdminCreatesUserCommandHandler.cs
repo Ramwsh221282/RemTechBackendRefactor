@@ -50,9 +50,8 @@ public sealed class AdminCreatesUserCommandHandler(
         UserEmail email = UserEmail.Create(command.NewUserEmail);
         HashedUserPassword newUserPassword = HashedUserPassword.Random(passwordManager);
         IdentityUserProfile profile = new(login, email, newUserPassword);
-        IdentityUserSession session = new();
         IdentityUserRoles userRoles = new([adminRole]);
-        IdentityUser admin = IdentityUser.Create(profile, session, userRoles);
+        IdentityUser admin = IdentityUser.Create(profile, userRoles);
 
         Status registration = creator.RegisterUser(admin);
         if (registration.IsFailure)

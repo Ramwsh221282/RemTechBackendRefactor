@@ -35,13 +35,12 @@ public sealed class CreateRootUserCommandHandler(
             return Error.NotFound("Роль не найдена.");
 
         UserEmail email = UserEmail.Create(command.Email);
-        UserLogin login = UserLogin.Create(command.Email);
+        UserLogin login = UserLogin.Create(command.Name);
         UserPassword notHashed = UserPassword.Create(command.Password);
         HashedUserPassword hashed = new HashedUserPassword(notHashed, passwordManager);
         IdentityUserProfile profile = new(login, email, hashed);
         IdentityUserRoles userRoles = new([role]);
-        IdentityUserSession session = new();
-        IdentityUser user = IdentityUser.Create(profile, session, userRoles);
+        IdentityUser user = IdentityUser.Create(profile, userRoles);
 
         Status handling = await user.PublishEvents(eventsHandler, ct);
         return handling.IsFailure ? handling.Error : user;

@@ -9,7 +9,7 @@ public sealed record HashedUserPassword
 
     private HashedUserPassword(string password) => Password = password;
 
-    public HashedUserPassword(IPasswordManager manager)
+    private HashedUserPassword(IPasswordManager manager)
     {
         string guidString = Guid.NewGuid().ToString();
         Password = manager.Hash(guidString);
@@ -17,6 +17,13 @@ public sealed record HashedUserPassword
 
     public HashedUserPassword(UserPassword password, IPasswordManager manager) =>
         Password = manager.Hash(password.Password);
+
+    public static Status<HashedUserPassword> Create(string password)
+    {
+        if (string.IsNullOrEmpty(password))
+            return Error.Validation("Пароль пользователя пустой.");
+        return new HashedUserPassword(password);
+    }
 
     public bool VerifyPassword(UserPassword password, IPasswordManager manager, out Error error)
     {
@@ -30,7 +37,6 @@ public sealed record HashedUserPassword
 
     public static HashedUserPassword Random(IPasswordManager manager)
     {
-        string password = manager.Hash(Guid.NewGuid().ToString());
-        return new HashedUserPassword(password);
+        return new HashedUserPassword(manager);
     }
 }

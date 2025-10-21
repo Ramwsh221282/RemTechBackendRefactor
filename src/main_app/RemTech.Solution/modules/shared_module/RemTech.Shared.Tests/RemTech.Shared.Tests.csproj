@@ -9,6 +9,7 @@
     <ProjectReference Include="..\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.10" />
     <PackageReference Include="Testcontainers" Version="4.8.0" />
     <PackageReference Include="Testcontainers.PostgreSql" Version="4.8.0" />
     <PackageReference Include="Testcontainers.RabbitMq" Version="4.8.0" />

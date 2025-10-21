@@ -1,4 +1,5 @@
 ﻿using Identity.Domain.Users.Aggregate;
+using Identity.Domain.Users.Events;
 using Identity.Domain.Users.Ports.Passwords;
 using Identity.Domain.Users.Ports.Storage;
 using Identity.Domain.Users.ValueObjects;
@@ -11,8 +12,16 @@ public sealed class IdentityUserProfile
     public IdentityUserProfile(UserLogin login, UserEmail email, HashedUserPassword password) =>
         (Login, Email, Password) = (login, email, password);
 
+    public IdentityUserProfile(
+        UserLogin login,
+        UserEmail email,
+        HashedUserPassword password,
+        bool emailConfirmed = false
+    ) => (Login, Email, Password, EmailConfirmed) = (login, email, password, emailConfirmed);
+
     public UserLogin Login { get; private set; }
     public UserEmail Email { get; private set; }
+    public bool EmailConfirmed { get; private set; }
     public HashedUserPassword Password { get; private set; }
 
     public async Task<Status<IdentityUserProfile>> ChangeEmail(
@@ -27,6 +36,10 @@ public sealed class IdentityUserProfile
         Email = profile.Email;
         return this;
     }
+
+    public void ConfirmEmail() => EmailConfirmed = true;
+
+    public bool HasEmailConfirmed() => EmailConfirmed;
 
     public bool IsPasswordVerified(
         UserPassword password,
@@ -61,4 +74,7 @@ public sealed class IdentityUserProfile
 
     public void ChangePassword(UserPassword password, IPasswordManager manager) =>
         Password = new HashedUserPassword(password, manager);
+
+    public IdentityUserProfileEventArgs ToEventArgs() =>
+        new(Login.Name, Email.Email, Password.Password, HasEmailConfirmed());
 }

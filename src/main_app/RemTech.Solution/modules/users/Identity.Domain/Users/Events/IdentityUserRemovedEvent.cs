@@ -8,17 +8,12 @@ public sealed record IdentityUserRemovedEventInfo(
     string UserLogin,
     string UserEmail,
     string UserPassword,
-    Guid SessionId,
-    string SessionRefreshToken,
-    string SessionToken,
-    bool SessionExpired,
     IEnumerable<string> RoleNames
 )
 {
     public IdentityUserRemovedEventInfo(
         UserId id,
         IdentityUserProfile profile,
-        IdentityUserSession session,
         IdentityUserRoles roles
     )
         : this(
@@ -26,10 +21,6 @@ public sealed record IdentityUserRemovedEventInfo(
             profile.Login.Name,
             profile.Email.Email,
             profile.Password.Password,
-            session.SessionId,
-            session.SessionRefreshToken,
-            session.SessionToken,
-            session.IsExpired,
             roles.Roles.Select(r => r.Name.Value)
         ) { }
 }

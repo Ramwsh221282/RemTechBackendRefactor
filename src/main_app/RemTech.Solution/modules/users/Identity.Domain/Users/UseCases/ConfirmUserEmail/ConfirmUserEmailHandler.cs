@@ -1,15 +1,15 @@
-﻿using Identity.Domain.EmailTickets;
-using Identity.Domain.Users.Aggregate;
+﻿using Identity.Domain.Users.Aggregate;
+using Identity.Domain.Users.Ports.EventHandlers;
 using Identity.Domain.Users.Ports.Storage;
+using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Cqrs;
 using RemTech.Core.Shared.Result;
 
 namespace Identity.Domain.Users.UseCases.ConfirmUserEmail;
 
 public sealed class ConfirmUserEmailHandler(
-    IEmailConfirmationTicketsStorage tickets,
     IUsersStorage users,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUserEventHandler eventsHandler
 ) : ICommandHandler<ConfirmUserEmailCommand, Status<IdentityUser>>
 {
     public async Task<Status<IdentityUser>> Handle(
@@ -17,18 +17,16 @@ public sealed class ConfirmUserEmailHandler(
         CancellationToken ct = default
     )
     {
-        EmailConfirmationTicket? ticket = await tickets.Get(command.EmailConfirmationId, ct);
-        if (ticket == null)
-            return Error.NotFound("Заявка на подтверждение почты не найдена.");
-
-        IdentityUser? user = await users.Get(ticket.Email, ct);
+        IdentityTokenId id = IdentityTokenId.Create(command.TicketId);
+        IdentityUser? user = await users.Get(id, ct);
         if (user == null)
-            return Error.NotFound("Пользователь не найден.");
+            return Error.NotFound("Пользователь с таким токеном не найден.");
 
-        Status confirming = await user.ConfirmEmail(unitOfWork, tickets, ticket, ct);
-        if (confirming.IsFailure)
-            return confirming.Error;
+        Status confirmation = user.ConfirmEmail(id);
+        if (confirmation.IsFailure)
+            return confirmation.Error;
 
-        return user;
+        Status handling = await user.PublishEvents(eventsHandler, ct);
+        return handling.IsFailure ? handling.Error : user;
     }
 }

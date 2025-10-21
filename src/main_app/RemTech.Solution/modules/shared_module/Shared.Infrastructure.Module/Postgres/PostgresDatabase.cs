@@ -1,7 +1,5 @@
-﻿using Dapper;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Npgsql;
-using Pgvector.Dapper;
 using RemTech.Shared.Configuration.Options;
 
 namespace Shared.Infrastructure.Module.Postgres;
@@ -12,11 +10,10 @@ public sealed class PostgresDatabase
 
     public PostgresDatabase(IOptions<DatabaseOptions> options)
     {
-        SqlMapper.AddTypeHandler(new VectorTypeHandler());
-        DefaultTypeMap.MatchNamesWithUnderscores = true;
         NpgsqlDataSourceBuilder builder = new NpgsqlDataSourceBuilder(
             options.Value.ToConnectionString()
         );
+        builder.UseVector();
         DataSource = builder.Build();
     }
 }
