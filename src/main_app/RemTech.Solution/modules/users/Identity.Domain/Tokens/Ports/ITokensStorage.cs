@@ -8,4 +8,5 @@ public interface ITokensStorage
     Task<UserToken> CreateToken(User user, CancellationToken ct = default);
     Task<UserToken?> Get(Token token, RoleName role, CancellationToken ct = default);
     Task<UserToken?> Get(Token token, CancellationToken ct = default);
+    Task Remove(Token token, CancellationToken ct);
 }

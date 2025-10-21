@@ -1,16 +1,14 @@
-﻿using Identity.Domain.Users.UseCases.UserRegistration.Input;
-using Identity.Domain.Users.UseCases.UserRegistration.Output;
-using Identity.Domain.Users.ValueObjects;
+﻿using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Cqrs;
 using RemTech.Core.Shared.Result;
 
-namespace Identity.Domain.Users.UseCases.UserRegistration.Handlers;
+namespace Identity.Domain.Users.UseCases.UserRegistration.Decorators;
 
 public sealed class UserRegistrationValidatingCommandHandler(
-    ICommandHandler<UserRegistrationCommand, Status<UserRegistrationResponse>> handler
-) : ICommandHandler<UserRegistrationCommand, Status<UserRegistrationResponse>>
+    ICommandHandler<UserRegistrationCommand, Status<User>> handler
+) : ICommandHandler<UserRegistrationCommand, Status<User>>
 {
-    public async Task<Status<UserRegistrationResponse>> Handle(
+    public async Task<Status<User>> Handle(
         UserRegistrationCommand command,
         CancellationToken ct = default
     )
