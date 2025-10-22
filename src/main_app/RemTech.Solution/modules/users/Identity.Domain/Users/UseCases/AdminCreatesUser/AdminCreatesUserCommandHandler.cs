@@ -5,11 +5,11 @@ using Identity.Domain.Roles.Ports;
 using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Aggregate;
 using Identity.Domain.Users.Entities;
-using Identity.Domain.Users.Ports.EventHandlers;
 using Identity.Domain.Users.Ports.Passwords;
 using Identity.Domain.Users.Ports.Storage;
 using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Cqrs;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 using RemTech.Core.Shared.Validation;
 
@@ -20,7 +20,7 @@ public sealed class AdminCreatesUserCommandHandler(
     IRolesStorage roles,
     IPasswordManager passwordManager,
     IValidator<AdminCreatesUserCommand> validator,
-    IIdentityUserEventHandler eventsHandler
+    IDomainEventsDispatcher eventsHandler
 ) : ICommandHandler<AdminCreatesUserCommand, Status<IdentityUser>>
 {
     public async Task<Status<IdentityUser>> Handle(
@@ -42,7 +42,7 @@ public sealed class AdminCreatesUserCommandHandler(
         if (verification.IsFailure)
             return verification.Error;
 
-        Role? adminRole = await roles.Get(RoleName.Admin, ct);
+        IdentityRole? adminRole = await roles.Get(RoleName.Admin, ct);
         if (adminRole == null)
             return Error.NotFound("Роль не найдена.");
 

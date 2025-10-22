@@ -18,22 +18,22 @@ public sealed class AddNewRoleTestsFixture
         _sp = factory.Services;
     }
 
-    public async Task<Status<Role>> CreateRole(string name)
+    public async Task<Status<IdentityRole>> CreateRole(string name)
     {
         AddRoleCommand command = new(name);
         await using AsyncServiceScope scope = _sp.CreateAsyncScope();
         return await scope
-            .GetService<ICommandHandler<AddRoleCommand, Status<Role>>>()
+            .GetService<ICommandHandler<AddRoleCommand, Status<IdentityRole>>>()
             .Handle(command);
     }
 
-    public async Task<Role?> FindRole(string name)
+    public async Task<IdentityRole?> FindRole(string name)
     {
         await using AsyncServiceScope scope = _sp.CreateAsyncScope();
         return await scope.GetService<IRolesStorage>().Get(RoleName.Create(name));
     }
 
-    public async Task<Role?> FindRole(Guid id)
+    public async Task<IdentityRole?> FindRole(Guid id)
     {
         await using AsyncServiceScope scope = _sp.CreateAsyncScope();
         return await scope.GetService<IRolesStorage>().Get(RoleId.Create(id));

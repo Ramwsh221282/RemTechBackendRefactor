@@ -1,28 +1,31 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using Identity.Domain.Roles.ValueObjects;
-using Identity.Domain.Users.Ports.EventHandlers;
 using RemTech.Core.Shared.Cqrs;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 using RemTech.Core.Shared.Validation;
 
 namespace Identity.Domain.Roles.UseCases.AddNewRole;
 
 public sealed class AddRoleHandler(
-    IIdentityUserEventHandler eventHandler,
+    IDomainEventsDispatcher dispatcher,
     IValidator<AddRoleCommand> validator
-) : ICommandHandler<AddRoleCommand, Status<Role>>
+) : ICommandHandler<AddRoleCommand, Status<IdentityRole>>
 {
-    public async Task<Status<Role>> Handle(AddRoleCommand command, CancellationToken ct = default)
+    public async Task<Status<IdentityRole>> Handle(
+        AddRoleCommand command,
+        CancellationToken ct = default
+    )
     {
         ValidationResult? validation = await validator.ValidateAsync(command, ct);
         if (validation.IsValid == false)
             return validation.ValidationError();
 
         RoleName name = RoleName.Create(command.RoleName);
-        Role role = Role.Create(name);
+        IdentityRole identityRole = IdentityRole.Create(name);
 
-        Status processing = await role.PublishEvents(eventHandler, ct);
-        return processing.IsFailure ? processing.Error : role;
+        Status processing = await identityRole.PublishEvents(dispatcher, ct);
+        return processing.IsFailure ? processing.Error : identityRole;
     }
 }

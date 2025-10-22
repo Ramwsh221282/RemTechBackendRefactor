@@ -16,11 +16,11 @@ public sealed class AddNewRoleTests : IClassFixture<IdentityTestApplicationFacto
     [Fact]
     private async Task Add_New_Role_Success()
     {
-        string name = Role.Create(RoleName.User).Name.Value;
-        Status<Role> result = await _fixture.CreateRole(name);
+        string name = IdentityRole.Create(RoleName.User).Name.Value;
+        Status<IdentityRole> result = await _fixture.CreateRole(name);
         Assert.True(result.IsSuccess);
 
-        Role? created = await _fixture.FindRole(name);
+        IdentityRole? created = await _fixture.FindRole(name);
         Assert.NotNull(created);
         Assert.Equal(result.Value.Name.Value, created.Name.Value);
         Assert.Equal(result.Value.Id.Value, created.Id.Value);
@@ -30,7 +30,7 @@ public sealed class AddNewRoleTests : IClassFixture<IdentityTestApplicationFacto
     private async Task Add_New_Role_Empty_Name_Failure()
     {
         string name = "  ";
-        Status<Role> result = await _fixture.CreateRole(name);
+        Status<IdentityRole> result = await _fixture.CreateRole(name);
         Assert.False(result.IsSuccess);
     }
 
@@ -38,16 +38,16 @@ public sealed class AddNewRoleTests : IClassFixture<IdentityTestApplicationFacto
     private async Task Add_New_Role_Long_Name_Failure()
     {
         string name = string.Join(" ,", Enumerable.Range(0, 200).Select(i => i.ToString()));
-        Status<Role> result = await _fixture.CreateRole(name);
+        Status<IdentityRole> result = await _fixture.CreateRole(name);
         Assert.False(result.IsSuccess);
     }
 
     [Fact]
     private async Task Add_Duplicate_Role_Failure()
     {
-        string name = Role.Create(RoleName.User).Name.Value;
+        string name = IdentityRole.Create(RoleName.User).Name.Value;
         await _fixture.CreateRole(name);
-        Status<Role> result = await _fixture.CreateRole(name);
+        Status<IdentityRole> result = await _fixture.CreateRole(name);
         Assert.False(result.IsSuccess);
     }
 }

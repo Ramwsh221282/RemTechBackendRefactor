@@ -1,10 +1,10 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using Identity.Domain.Users.Aggregate;
-using Identity.Domain.Users.Ports.EventHandlers;
 using Identity.Domain.Users.Ports.Storage;
 using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Cqrs;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 using RemTech.Core.Shared.Validation;
 
@@ -12,7 +12,7 @@ namespace Identity.Domain.Users.UseCases.ChangingEmail;
 
 public sealed class ChangeEmailHandler(
     IUsersStorage users,
-    IIdentityUserEventHandler eventsHandler,
+    IDomainEventsDispatcher eventsHandler,
     IValidator<ChangeEmailCommand> validator
 ) : ICommandHandler<ChangeEmailCommand, Status<IdentityUser>>
 {

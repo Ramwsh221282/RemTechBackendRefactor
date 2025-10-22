@@ -1,15 +1,15 @@
 ﻿using Identity.Domain.Users.Aggregate;
-using Identity.Domain.Users.Ports.EventHandlers;
 using Identity.Domain.Users.Ports.Storage;
 using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Cqrs;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 
 namespace Identity.Domain.Users.UseCases.ConfirmUserEmail;
 
 public sealed class ConfirmUserEmailHandler(
     IUsersStorage users,
-    IIdentityUserEventHandler eventsHandler
+    IDomainEventsDispatcher eventsHandler
 ) : ICommandHandler<ConfirmUserEmailCommand, Status<IdentityUser>>
 {
     public async Task<Status<IdentityUser>> Handle(

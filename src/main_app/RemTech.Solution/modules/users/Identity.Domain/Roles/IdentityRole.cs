@@ -1,18 +1,18 @@
 ﻿using Identity.Domain.Roles.Events;
 using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Events;
-using Identity.Domain.Users.Ports.EventHandlers;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 
 namespace Identity.Domain.Roles;
 
-public sealed class Role
+public sealed class IdentityRole
 {
-    private readonly List<IdentityUserEvent> _events = [];
+    private readonly List<IDomainEvent> _events = [];
     public RoleId Id { get; }
     public RoleName Name { get; }
 
-    public Role(RoleId id, RoleName name)
+    public IdentityRole(RoleId id, RoleName name)
     {
         Id = id;
         Name = name;
@@ -22,15 +22,15 @@ public sealed class Role
         new IdentityUserRoleEventArgs(Id.Value, Name.Value);
 
     public async Task<Status> PublishEvents(
-        IIdentityUserEventHandler handler,
+        IDomainEventsDispatcher handler,
         CancellationToken ct = default
-    ) => await handler.Handle(_events, ct);
+    ) => await handler.Dispatch(_events, ct);
 
-    public static Role Create(RoleName name)
+    public static IdentityRole Create(RoleName name)
     {
         RoleId id = new RoleId();
-        Role role = new Role(id, name);
-        role._events.Add(new RoleCreatedEvent(id.Value, name.Value));
-        return role;
+        IdentityRole identityRole = new IdentityRole(id, name);
+        identityRole._events.Add(new RoleCreatedEvent(id.Value, name.Value));
+        return identityRole;
     }
 }

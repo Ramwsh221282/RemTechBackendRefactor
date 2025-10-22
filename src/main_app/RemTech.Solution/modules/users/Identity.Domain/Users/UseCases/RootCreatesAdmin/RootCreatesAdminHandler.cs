@@ -5,11 +5,11 @@ using Identity.Domain.Roles.Ports;
 using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Aggregate;
 using Identity.Domain.Users.Entities;
-using Identity.Domain.Users.Ports.EventHandlers;
 using Identity.Domain.Users.Ports.Passwords;
 using Identity.Domain.Users.Ports.Storage;
 using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Cqrs;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 using RemTech.Core.Shared.Validation;
 
@@ -20,7 +20,7 @@ public sealed class RootCreatesAdminHandler(
     IRolesStorage roles,
     IPasswordManager passwordManager,
     IValidator<RootCreatesAdminCommand> validator,
-    IIdentityUserEventHandler eventHandler
+    IDomainEventsDispatcher dispatcher
 ) : ICommandHandler<RootCreatesAdminCommand, Status<IdentityUser>>
 {
     public async Task<Status<IdentityUser>> Handle(
@@ -43,7 +43,7 @@ public sealed class RootCreatesAdminHandler(
         if (verification.IsFailure)
             return verification.Error;
 
-        Role? adminRole = await roles.Get(RoleName.Admin, ct);
+        IdentityRole? adminRole = await roles.Get(RoleName.Admin, ct);
         if (adminRole == null)
             return Error.NotFound($"Не найдена роль.");
 
@@ -59,7 +59,7 @@ public sealed class RootCreatesAdminHandler(
         if (registration.IsFailure)
             return registration.Error;
 
-        Status handling = await user.PublishEvents(eventHandler, ct);
+        Status handling = await user.PublishEvents(dispatcher, ct);
         return handling.IsFailure ? handling.Error : admin;
     }
 }

@@ -4,12 +4,13 @@ using Dapper;
 using Identity.Domain.Users.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 
 namespace Identity.Adapter.Storage.EventHandlers.IdentityUserCreated;
 
 public sealed class IdentityUserCreatedEventHandler(IdentityDbContext context)
-    : IIdentityStorageAdapterEventHandler<IdentityUserCreatedEvent>
+    : IDomainEventHandler<IdentityUserCreatedEvent>
 {
     public async Task<Status> Handle(
         IdentityUserCreatedEvent @event,

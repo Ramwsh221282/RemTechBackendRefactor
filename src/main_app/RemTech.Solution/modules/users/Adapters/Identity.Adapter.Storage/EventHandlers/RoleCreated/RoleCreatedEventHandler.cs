@@ -2,12 +2,13 @@
 using Dapper;
 using Identity.Domain.Roles.Events;
 using Microsoft.EntityFrameworkCore;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 
 namespace Identity.Adapter.Storage.EventHandlers.RoleCreated;
 
 public sealed class RoleCreatedEventHandler(IdentityDbContext context)
-    : IIdentityStorageAdapterEventHandler<RoleCreatedEvent>
+    : IDomainEventHandler<RoleCreatedEvent>
 {
     public async Task<Status> Handle(RoleCreatedEvent @event, CancellationToken ct = default)
     {

@@ -1,5 +1,6 @@
 ﻿using Identity.Domain.Users.Entities;
 using Identity.Domain.Users.ValueObjects;
+using RemTech.Core.Shared.DomainEvents;
 
 namespace Identity.Domain.Users.Events;
 
@@ -28,4 +29,4 @@ public sealed record IdentityUserRemovedEventInfo(
 public sealed record IdentityUserRemovedEvent(
     IdentityUserRemovedEventInfo RemoverInfo,
     IdentityUserRemovedEventInfo RemovedInfo
-) : IdentityUserEvent;
+) : IDomainEvent;

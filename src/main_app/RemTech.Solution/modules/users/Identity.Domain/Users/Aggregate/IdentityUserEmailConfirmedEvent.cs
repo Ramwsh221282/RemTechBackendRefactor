@@ -1,11 +1,12 @@
 ﻿using Identity.Domain.Users.Entities;
 using Identity.Domain.Users.Events;
 using Identity.Domain.Users.ValueObjects;
+using RemTech.Core.Shared.DomainEvents;
 
 namespace Identity.Domain.Users.Aggregate;
 
 public sealed record IdentityUserEmailConfirmedEvent(Guid UserId, string Email, Guid TokenId)
-    : IdentityUserEvent
+    : IDomainEvent
 {
     public IdentityUserEmailConfirmedEvent(
         UserId userId,

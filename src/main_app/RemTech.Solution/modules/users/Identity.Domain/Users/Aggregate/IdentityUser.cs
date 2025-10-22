@@ -1,9 +1,9 @@
 ﻿using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Entities;
 using Identity.Domain.Users.Events;
-using Identity.Domain.Users.Ports.EventHandlers;
 using Identity.Domain.Users.Ports.Passwords;
 using Identity.Domain.Users.ValueObjects;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 
 namespace Identity.Domain.Users.Aggregate;
@@ -11,7 +11,7 @@ namespace Identity.Domain.Users.Aggregate;
 public sealed class IdentityUser
 {
     private readonly List<IdentityUserToken> _tokens = [];
-    private readonly List<IdentityUserEvent> _events = [];
+    private readonly List<IDomainEvent> _events = [];
     private readonly UserId _id;
     private readonly IdentityUserRoles _roles;
     private IdentityUserProfile _profile;
@@ -163,7 +163,7 @@ public sealed class IdentityUser
         _tokens.FirstOrDefault(predicate);
 
     public async Task<Status> PublishEvents(
-        IIdentityUserEventHandler handler,
+        IDomainEventsDispatcher dispatcher,
         CancellationToken ct = default
-    ) => await handler.Handle(_events, ct);
+    ) => await dispatcher.Dispatch(_events, ct);
 }

@@ -4,7 +4,7 @@ using Identity.Domain.Users.Events;
 
 namespace Identity.Domain.Users.ValueObjects;
 
-public sealed record IdentityUserRoles(IEnumerable<Role> Roles)
+public sealed record IdentityUserRoles(IEnumerable<IdentityRole> Roles)
 {
     public bool HasRole(RoleName name) => Roles.Any(r => r.Name == name);
 

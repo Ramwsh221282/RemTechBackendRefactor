@@ -1,5 +1,6 @@
 ﻿using Identity.Domain.Users.Entities;
 using Identity.Domain.Users.ValueObjects;
+using RemTech.Core.Shared.DomainEvents;
 using IdentityUserToken = Identity.Domain.Users.Entities.IdentityUserToken;
 
 namespace Identity.Domain.Users.Events;
@@ -11,7 +12,7 @@ public sealed record EmailConfirmationCreatedTokenEvent(
     DateTime Expires,
     string TokenType,
     string UserEmail
-) : IdentityUserEvent
+) : IDomainEvent
 {
     public EmailConfirmationCreatedTokenEvent(
         IdentityUserToken token,

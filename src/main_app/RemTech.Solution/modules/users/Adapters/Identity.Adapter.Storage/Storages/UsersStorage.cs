@@ -32,8 +32,10 @@ internal static class UserDataExtensions
         HashedUserPassword password = HashedUserPassword.Create(firstRow.Password);
         IdentityUserProfile profile = new(login, userEmail, password, emailConfirmed);
 
-        IEnumerable<Role> userRoles = rows.Where(r => r.RoleId != null && r.RoleName != null)
-            .Select(row => new Role(
+        IEnumerable<IdentityRole> userRoles = rows.Where(r =>
+                r.RoleId != null && r.RoleName != null
+            )
+            .Select(row => new IdentityRole(
                 RoleId.Create(row.RoleId!.Value),
                 RoleName.Create(row.RoleName!)
             ));

@@ -5,10 +5,10 @@ using Identity.Domain.Roles.Ports;
 using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Aggregate;
 using Identity.Domain.Users.Entities;
-using Identity.Domain.Users.Ports.EventHandlers;
 using Identity.Domain.Users.Ports.Passwords;
 using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Cqrs;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 using RemTech.Core.Shared.Validation;
 
@@ -18,7 +18,7 @@ public sealed class UserRegistrationCommandHandler(
     IPasswordManager passwordManager,
     IRolesStorage roles,
     IValidator<UserRegistrationCommand> validator,
-    IIdentityUserEventHandler eventHandler
+    IDomainEventsDispatcher dispatcher
 ) : ICommandHandler<UserRegistrationCommand, Status<IdentityUser>>
 {
     public async Task<Status<IdentityUser>> Handle(
@@ -31,7 +31,7 @@ public sealed class UserRegistrationCommandHandler(
             return validation.ValidationError();
 
         RoleName userRoleName = RoleName.User;
-        Role? role = await roles.Get(RoleName.User, ct);
+        IdentityRole? role = await roles.Get(RoleName.User, ct);
         if (role == null)
             return Error.NotFound($"Роль {userRoleName.Value} не найдена.");
 
@@ -44,7 +44,7 @@ public sealed class UserRegistrationCommandHandler(
         IdentityUserRoles userRoles = new([role]);
         IdentityUser user = IdentityUser.Create(profile, userRoles);
 
-        Status status = await user.PublishEvents(eventHandler, ct);
+        Status status = await user.PublishEvents(dispatcher, ct);
         return status.IsFailure ? status.Error : user;
     }
 }

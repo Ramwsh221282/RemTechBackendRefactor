@@ -5,10 +5,10 @@ using Identity.Domain.Roles.Ports;
 using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Aggregate;
 using Identity.Domain.Users.Entities;
-using Identity.Domain.Users.Ports.EventHandlers;
 using Identity.Domain.Users.Ports.Passwords;
 using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Cqrs;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 using RemTech.Core.Shared.Validation;
 
@@ -17,7 +17,7 @@ namespace Identity.Domain.Users.UseCases.CreateRoot;
 public sealed class CreateRootUserCommandHandler(
     IRolesStorage roles,
     IPasswordManager passwordManager,
-    IIdentityUserEventHandler eventsHandler,
+    IDomainEventsDispatcher eventsHandler,
     IValidator<CreateRootUserCommand> validator
 ) : ICommandHandler<CreateRootUserCommand, Status<IdentityUser>>
 {
@@ -30,7 +30,7 @@ public sealed class CreateRootUserCommandHandler(
         if (!validation.IsValid)
             return validation.ValidationError();
 
-        Role? role = await roles.Get(RoleName.Root, ct);
+        IdentityRole? role = await roles.Get(RoleName.Root, ct);
         if (role == null)
             return Error.NotFound("Роль не найдена.");
 
