@@ -1,7 +1,7 @@
 ﻿using Identity.Domain.Roles;
-using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Entities;
 using Identity.Domain.Users.Events;
+using Identity.Domain.Users.Policies.RoleChangesProtectionPolicies;
 using Identity.Domain.Users.Ports.Passwords;
 using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.DomainEvents;
@@ -67,22 +67,45 @@ public sealed class IdentityUser
 
     public Status Promote(IdentityUser user, IdentityRole role)
     {
-        if (Roles.HasNotRole(RoleName.Admin) && Roles.HasNotRole(RoleName.Root))
-            return Status.Forbidden(
-                "Пользователь не имеет прав добавления прав другим пользователем."
-            );
-
-        if (user.Roles.HasRole(role.Name))
+        if (user.HasRole(role))
             return Status.Conflict($"У пользователя уже есть роль: {role.Name.Value}");
 
-        if (!Roles.HasRole(RoleName.Root) && role.Name == RoleName.Admin)
-            return Status.Forbidden(
-                "Только Root пользователь имеет право назначения статуса root пользователя другому пользователю."
-            );
+        if (!this.IsRoleChangeAllowed())
+            return Status.Conflict("Нет прав на изменения прав других пользователей.");
 
-        user.Roles = new IdentityUserRoles([role, .. user.Roles.Roles]);
-        user._events.Add(new IdentityUserPromotedEvent(user.Id.Id, role.Id.Value));
+        user.AddRole(role);
         return Status.Success();
+    }
+
+    public Status Demote(IdentityUser user, IdentityRole role)
+    {
+        if (!this.IsRoleChangeAllowed())
+            return Status.Conflict("Нет прав на изменения прав других пользователей.");
+
+        if (!user.CanBeChangedBy(this))
+            return Status.Conflict("Нельзя изменить роль этому пользователю.");
+
+        if (user.HasNotRole(role))
+            return Status.Conflict($"У пользователя нет роли: {role.Name.Value}");
+
+        user.DropRole(role);
+        return Status.Success();
+    }
+
+    private bool HasRole(IdentityRole role) => Roles.HasRole(role);
+
+    private bool HasNotRole(IdentityRole role) => Roles.HasNotRole(role);
+
+    private void AddRole(IdentityRole role)
+    {
+        Roles = Roles.With(role);
+        _events.Add(new IdentityUserPromotedEvent(Id.Id, role.Id.Value));
+    }
+
+    private void DropRole(IdentityRole role)
+    {
+        Roles = Roles.Without(role);
+        _events.Add(new IdentityUserDemotedEvent(Id.Id, role.Id.Value));
     }
 
     public Status FormEmailConfirmationToken()
@@ -123,30 +146,6 @@ public sealed class IdentityUser
         Profile.ConfirmEmail();
         _events.Add(new IdentityUserEmailConfirmedEvent(Id, Profile, userToken));
         _tokens.Remove(userToken);
-        return Status.Success();
-    }
-
-    public Status RemoveUser(IdentityUser user)
-    {
-        if (Roles.HasNotRole(RoleName.Admin) && Roles.HasNotRole(RoleName.Root))
-            return Status.Forbidden("Пользователь не имеет прав удаления пользователей.");
-
-        if (Roles.HasRole(RoleName.Root))
-            if (user.Roles.HasRole(RoleName.Root))
-                return Status.Forbidden(
-                    "Root Пользователь не имеет прав удаления root пользователей."
-                );
-
-        if (Roles.HasRole(RoleName.Admin))
-            if (user.Roles.HasRole(RoleName.Admin))
-                return Status.Forbidden(
-                    "Admin Пользователь не имеет прав удаления admin пользователей."
-                );
-
-        IdentityUserRemovedEventInfo removerInfo = new(Id, Profile, Roles);
-        IdentityUserRemovedEventInfo removedInfo = new(user.Id, user.Profile, user.Roles);
-
-        _events.Add(new IdentityUserRemovedEvent(removerInfo, removedInfo));
         return Status.Success();
     }
 

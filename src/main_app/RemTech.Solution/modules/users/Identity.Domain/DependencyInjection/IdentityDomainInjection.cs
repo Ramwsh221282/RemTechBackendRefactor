@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Identity.Domain.Users.Aggregate;
+using Identity.Domain.Users.UseCases.Common;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.Core.Shared.Cqrs;
 
@@ -11,5 +12,8 @@ public static class IdentityDomainInjection
     {
         services.AddValidatorsFromAssembly(typeof(IdentityUser).Assembly);
         services.AddHandlersFromAssembly(typeof(IdentityUser).Assembly);
+        services.AddScoped<IGetRoleByIdHandle, GetRoleByIdHandle>();
+        services.AddScoped<IGetUserByIdHandle, GetUserByIdHandle>();
+        services.AddScoped<IGetVerifiedUserHandle, GetVerifiedUserHandle>();
     }
 }

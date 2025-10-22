@@ -27,6 +27,6 @@ internal static class UserDataExtensions
     {
         RoleId id = RoleId.Create(role.Id);
         RoleName name = RoleName.Create(role.Name);
-        return new IdentityRole(id, name);
+        return IdentityRole.Create(name, id);
     }
 }

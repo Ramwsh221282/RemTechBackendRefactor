@@ -8,4 +8,7 @@
     <ProjectReference Include="..\..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj" />
     <ProjectReference Include="..\..\Identity.Domain\Identity.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="EventHandlers\Common\" />
+  </ItemGroup>
 </Project>

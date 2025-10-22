@@ -5,9 +5,9 @@ using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Aggregate;
 using Identity.Domain.Users.Ports.Storage;
 using Identity.Domain.Users.UseCases.CreateRoot;
+using Identity.Domain.Users.UseCases.UserDemotesUser;
 using Identity.Domain.Users.UseCases.UserPromotesUser;
 using Identity.Domain.Users.UseCases.UserRegistration;
-using Identity.Domain.Users.UseCases.UserRemovesUser;
 using Identity.Domain.Users.ValueObjects;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.Core.Shared.Cqrs;
@@ -90,12 +90,17 @@ public sealed class IdentityModuleUseCases(IdentityTestApplicationFactory factor
         return await handler.Handle(command);
     }
 
-    public async Task<Status<IdentityUser>> RemoveUserUseCase(Guid removerId, Guid removalId)
+    public async Task<Status<IdentityUser>> DemoteUserUseCase(
+        Guid demoterId,
+        string demoterPassword,
+        Guid demoteId,
+        string roleName
+    )
     {
-        UserRemovesUserCommand command = new(removerId, removalId);
+        UserDemotesUserCommand command = new(demoterId, demoteId, demoterPassword, roleName);
         await using AsyncServiceScope scope = _sp.CreateAsyncScope();
         return await scope
-            .GetService<ICommandHandler<UserRemovesUserCommand, Status<IdentityUser>>>()
+            .GetService<ICommandHandler<UserDemotesUserCommand, Status<IdentityUser>>>()
             .Handle(command);
     }
 

@@ -12,25 +12,21 @@ public sealed class IdentityRole
     public RoleId Id { get; }
     public RoleName Name { get; }
 
-    public IdentityRole(RoleId id, RoleName name)
-    {
-        Id = id;
-        Name = name;
-    }
+    private IdentityRole(RoleId id, RoleName name) => (Id, Name) = (id, name);
 
-    public IdentityUserRoleEventArgs ToEventArgs() =>
-        new IdentityUserRoleEventArgs(Id.Value, Name.Value);
+    public IdentityUserRoleEventArgs ToEventArgs() => new(Id.Value, Name.Value);
 
     public async Task<Status> PublishEvents(
         IDomainEventsDispatcher handler,
         CancellationToken ct = default
     ) => await handler.Dispatch(_events, ct);
 
-    public static IdentityRole Create(RoleName name)
+    public static IdentityRole Create(RoleName name, RoleId? id = null)
     {
-        RoleId id = new RoleId();
-        IdentityRole identityRole = new IdentityRole(id, name);
-        identityRole._events.Add(new RoleCreatedEvent(id.Value, name.Value));
-        return identityRole;
+        RoleId creatingId = id ?? new RoleId();
+        IdentityRole role = new(creatingId, name);
+        if (id == null)
+            role._events.Add(new RoleCreatedEvent(creatingId.Value, name.Value));
+        return role;
     }
 }

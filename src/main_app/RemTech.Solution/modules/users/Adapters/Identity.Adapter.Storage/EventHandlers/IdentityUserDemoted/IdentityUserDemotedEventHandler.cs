@@ -7,17 +7,17 @@ using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 using Shared.Infrastructure.Module.Postgres;
 
-namespace Identity.Adapter.Storage.EventHandlers.IdentityUserPromoted;
+namespace Identity.Adapter.Storage.EventHandlers.IdentityUserDemoted;
 
-public sealed class IdentityUserPromotedEventHandler(
-    PostgresDatabase database,
-    Serilog.ILogger logger
-) : IDomainEventHandler<IdentityUserPromotedEvent>
+public sealed class IdentityUserDemotedEventHandler(
+    Serilog.ILogger logger,
+    PostgresDatabase database
+) : IDomainEventHandler<IdentityUserDemotedEvent>
 {
-    private const string Context = nameof(IdentityUserPromotedEventHandler);
+    private const string Context = nameof(IdentityUserDemotedEventHandler);
 
     public async Task<Status> Handle(
-        IdentityUserPromotedEvent @event,
+        IdentityUserDemotedEvent @event,
         CancellationToken ct = default
     )
     {
@@ -35,7 +35,10 @@ public sealed class IdentityUserPromotedEventHandler(
             if (target.IsFailure)
                 return Status.Failure(target.Error);
 
-            await InsertUserRoleEntry(connection, transaction, @event, ct);
+            Status deletion = await DeleteUserRoleEntry(connection, transaction, @event, ct);
+            if (deletion.IsFailure)
+                return deletion;
+
             transaction.Commit();
             return Status.Success();
         }
@@ -47,19 +50,16 @@ public sealed class IdentityUserPromotedEventHandler(
         }
     }
 
-    private async Task<Status> InsertUserRoleEntry(
+    private async Task<Status> DeleteUserRoleEntry(
         IDbConnection connection,
         IDbTransaction transaction,
-        IdentityUserPromotedEvent @event,
+        IdentityUserDemotedEvent @event,
         CancellationToken ct
     )
     {
         const string insertSql = """
-            INSERT INTO users_module.user_roles
-            (user_id, role_id)
-            VALUES
-            (@user_id, @role_id)
-            ON CONFLICT (user_id, role_id) DO NOTHING
+            DELETE FROM users_module.user_roles
+            WHERE user_id = @user_id AND role_id = @role_id
             """;
 
         CommandDefinition command = new(

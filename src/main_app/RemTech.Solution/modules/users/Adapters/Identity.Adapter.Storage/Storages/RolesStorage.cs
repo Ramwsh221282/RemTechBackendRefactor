@@ -14,7 +14,7 @@ internal static class IdentityRoleDataModelExtensions
         !rows.Any() ? null : rows.First().Map();
 
     public static IdentityRole Map(this IdentityRoleDataModel dm) =>
-        new IdentityRole(RoleId.Create(dm.Id), RoleName.Create(dm.Name));
+        IdentityRole.Create(RoleName.Create(dm.Name), RoleId.Create(dm.Id));
 }
 
 public sealed class RolesStorage(PostgresDatabase database) : IRolesStorage
