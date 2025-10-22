@@ -2,4 +2,4 @@
 
 namespace Identity.Domain.Roles.Events;
 
-public sealed record RoleCreatedEvent(Guid Id, string Name) : IDomainEvent;
+public sealed record RoleCreatedEvent(RoleEventArgs Info) : IDomainEvent;

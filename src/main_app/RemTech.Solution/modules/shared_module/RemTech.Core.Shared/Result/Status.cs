@@ -50,6 +50,12 @@ public class Status
         return new Status(error);
     }
 
+    public static Status Validation(string message)
+    {
+        Error error = new Error(message, ErrorCodes.Validation);
+        return new Status(error);
+    }
+
     public static Status Success() => new();
 
     public static Status Failure(Error error) => new(error);

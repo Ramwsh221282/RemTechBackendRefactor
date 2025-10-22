@@ -9,9 +9,13 @@ using RemTech.Core.Shared.Result;
 
 namespace Identity.Adapter.Storage.EventHandlers.IdentityUserCreated;
 
-public sealed class IdentityUserCreatedEventHandler(IdentityDbContext context)
-    : IDomainEventHandler<IdentityUserCreatedEvent>
+public sealed class IdentityUserCreatedEventHandler(
+    Serilog.ILogger logger,
+    IdentityDbContext context
+) : IDomainEventHandler<IdentityUserCreatedEvent>
 {
+    private const string Context = nameof(IdentityUserCreatedEvent);
+
     public async Task<Status> Handle(
         IdentityUserCreatedEvent @event,
         CancellationToken ct = default
@@ -21,7 +25,7 @@ public sealed class IdentityUserCreatedEventHandler(IdentityDbContext context)
         await using IDbContextTransaction txn = await context.Database.BeginTransactionAsync(ct);
         try
         {
-            IEnumerable<Guid> roleIds = @event.Roles.Select(r => r.RoleId);
+            IEnumerable<Guid> roleIds = @event.Roles.Select(r => r.Id);
             await InsertUser(@event.UserId, @event.Profile, connection, txn, ct);
             await InsertUserRoles(@event.UserId, roleIds, connection, txn, ct);
             await txn.CommitAsync(ct);
@@ -29,7 +33,7 @@ public sealed class IdentityUserCreatedEventHandler(IdentityDbContext context)
         }
         catch (Exception ex)
         {
-            int a = 0;
+            logger.Error("{Context}. Error: {ErrorMessage}.", Context, ex.Message);
             await txn.RollbackAsync(ct);
             throw;
         }

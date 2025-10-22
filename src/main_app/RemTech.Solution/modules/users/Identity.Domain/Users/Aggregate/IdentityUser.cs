@@ -1,4 +1,5 @@
 ﻿using Identity.Domain.Roles;
+using Identity.Domain.Roles.Events;
 using Identity.Domain.Users.Entities;
 using Identity.Domain.Users.Events;
 using Identity.Domain.Users.Policies.RoleChangesProtectionPolicies;
@@ -34,11 +35,7 @@ public sealed class IdentityUser
         if (id == null)
         {
             IdentityUserProfileEventArgs profileEa = profile.ToEventArgs();
-
-            IEnumerable<IdentityUserRoleEventArgs> rolesEa = roles.Roles.Select(r =>
-                r.ToEventArgs()
-            );
-
+            IEnumerable<RoleEventArgs> rolesEa = roles.Roles.Select(r => r.ToEventArgs());
             user._events.Add(new IdentityUserCreatedEvent(user.Id.Id, profileEa, rolesEa));
         }
         return user;
