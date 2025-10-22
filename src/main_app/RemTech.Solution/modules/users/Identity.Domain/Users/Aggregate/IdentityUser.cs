@@ -1,4 +1,5 @@
-﻿using Identity.Domain.Roles.ValueObjects;
+﻿using Identity.Domain.Roles;
+using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Entities;
 using Identity.Domain.Users.Events;
 using Identity.Domain.Users.Ports.Passwords;
@@ -43,10 +44,14 @@ public sealed class IdentityUser
         return user;
     }
 
-    public Status Verify(UserPassword password, IPasswordManager passwordManager) =>
-        Profile.Password.VerifyPassword(password, passwordManager, out Error error)
-            ? Status.Failure(error)
-            : Status.Success();
+    public Status Verify(UserPassword password, IPasswordManager passwordManager)
+    {
+        bool verified = Profile.Password.VerifyPassword(password, passwordManager, out Error error);
+        if (!verified)
+            return Status.Failure(error);
+
+        return Status.Success();
+    }
 
     public void ChangeEmail(UserEmail email)
     {
@@ -60,37 +65,23 @@ public sealed class IdentityUser
         _events.Add(new IdentityUserEmailChangedEvent(Id, Profile));
     }
 
-    public Status RegisterUser(IdentityUser user)
+    public Status Promote(IdentityUser user, IdentityRole role)
     {
         if (Roles.HasNotRole(RoleName.Admin) && Roles.HasNotRole(RoleName.Root))
-            return Status.Forbidden("Пользователь не имеет прав добавления пользователей.");
+            return Status.Forbidden(
+                "Пользователь не имеет прав добавления прав другим пользователем."
+            );
 
-        if (Roles.HasRole(RoleName.Root))
-            if (user.Roles.HasRole(RoleName.Root))
-                return Status.Forbidden(
-                    "Root пользователь не имеет прав добавления root пользователей."
-                );
+        if (user.Roles.HasRole(role.Name))
+            return Status.Conflict($"У пользователя уже есть роль: {role.Name.Value}");
 
-        if (Roles.HasRole(RoleName.Admin))
-            if (user.Roles.HasRole(RoleName.Admin))
-                return Status.Forbidden(
-                    "Admin Пользователь не имеет прав добавления admin пользователей."
-                );
+        if (!Roles.HasRole(RoleName.Root) && role.Name == RoleName.Admin)
+            return Status.Forbidden(
+                "Только Root пользователь имеет право назначения статуса root пользователя другому пользователю."
+            );
 
-        IdentityUserCreatedEvent creatorInfo = new(
-            Id.Id,
-            Profile.ToEventArgs(),
-            Roles.Roles.Select(r => r.ToEventArgs())
-        );
-
-        IdentityUserCreatedEvent createdInfo = new(
-            user.Id.Id,
-            user.Profile.ToEventArgs(),
-            user.Roles.Roles.Select(r => r.ToEventArgs())
-        );
-
-        IdentityUserCreatedByUserEvent @event = new(creatorInfo, createdInfo);
-        _events.Add(@event);
+        user.Roles = new IdentityUserRoles([role, .. user.Roles.Roles]);
+        user._events.Add(new IdentityUserPromotedEvent(user.Id.Id, role.Id.Value));
         return Status.Success();
     }
 

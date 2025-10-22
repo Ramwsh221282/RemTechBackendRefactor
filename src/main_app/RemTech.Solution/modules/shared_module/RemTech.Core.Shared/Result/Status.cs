@@ -44,6 +44,12 @@ public class Status
         IsFailure = status.IsFailure;
     }
 
+    public static Status Internal(string message)
+    {
+        Error error = new Error(message, ErrorCodes.Internal);
+        return new Status(error);
+    }
+
     public static Status Success() => new();
 
     public static Status Failure(Error error) => new(error);
