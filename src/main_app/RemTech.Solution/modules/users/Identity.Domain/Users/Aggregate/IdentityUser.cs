@@ -5,7 +5,6 @@ using Identity.Domain.Users.Events;
 using Identity.Domain.Users.Policies.RoleChangesProtectionPolicies;
 using Identity.Domain.Users.Ports.Passwords;
 using Identity.Domain.Users.ValueObjects;
-using Identity.Messaging.Port.EmailTickets;
 using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 
@@ -67,11 +66,7 @@ public sealed class IdentityUser
         if (HasVerifiedEmail())
             return Status.Conflict("Пользователь уже имеет подтвержденный email.");
 
-        DateTime created = DateTime.UtcNow;
-        DateTime expires = created.AddHours(1);
-        EmailConfirmationTicket ticket = this.FormTicket(created, expires);
-        _events.Add(new UserRequestedEmailConfirmationEvent(ticket));
-        return Status.Success();
+        throw new NotImplementedException();
     }
 
     public Status Promote(IdentityUser user, IdentityRole role)

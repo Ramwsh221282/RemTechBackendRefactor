@@ -6,6 +6,5 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj" />
-    <ProjectReference Include="..\ExternalPorts\Identity.Messaging.Port\Identity.Messaging.Port.csproj" />
   </ItemGroup>
 </Project>
