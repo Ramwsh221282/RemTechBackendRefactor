@@ -20,9 +20,11 @@ public sealed class RoleCreatedEventHandler(IdentityDbContext context)
             ON CONFLICT (name) DO NOTHING
             """;
 
+        RoleEventArgs ea = @event.Info;
+
         CommandDefinition command = new(
             sql,
-            new { id = @event.Id, name = @event.Name },
+            new { id = ea.Id, name = ea.Name },
             cancellationToken: ct
         );
 
@@ -30,7 +32,7 @@ public sealed class RoleCreatedEventHandler(IdentityDbContext context)
         int affected = await connection.ExecuteAsync(command);
 
         return affected == 0
-            ? Status.Conflict($"Роль с названием: {@event.Name} уже существует.")
+            ? Status.Conflict($"Роль с названием: {ea.Name} уже существует.")
             : Status.Success();
     }
 }
