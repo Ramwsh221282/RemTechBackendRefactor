@@ -4,9 +4,10 @@ using Identity.Domain.Roles;
 using Identity.Domain.Roles.Ports;
 using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Aggregate;
+using Identity.Domain.Users.Aggregate.ValueObjects;
+using Identity.Domain.Users.Entities.Profile.ValueObjects;
 using Identity.Domain.Users.Ports.Passwords;
 using Identity.Domain.Users.Ports.Storage;
-using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Cqrs;
 using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
@@ -20,9 +21,9 @@ public sealed class UserPromotesUserHandler(
     IPasswordManager passwordManager,
     IValidator<UserPromotesUserCommand> validator,
     IDomainEventsDispatcher dispatcher
-) : ICommandHandler<UserPromotesUserCommand, Status<IdentityUser>>
+) : ICommandHandler<UserPromotesUserCommand, Status<User>>
 {
-    public async Task<Status<IdentityUser>> Handle(
+    public async Task<Status<User>> Handle(
         UserPromotesUserCommand command,
         CancellationToken ct = default
     )
@@ -33,7 +34,7 @@ public sealed class UserPromotesUserHandler(
 
         UserId promoterId = UserId.Create(command.PromoterId);
         UserPassword promoterPassword = UserPassword.Create(command.PromoterPassword);
-        IdentityUser? promoter = await users.Get(promoterId, ct);
+        User? promoter = await users.Get(promoterId, ct);
         if (promoter == null)
             return Error.NotFound("Вызывающий пользователь не найден.");
 
@@ -47,7 +48,7 @@ public sealed class UserPromotesUserHandler(
             return Error.NotFound($"Несуществующая роль: {roleName.Value}");
 
         UserId toPromoteId = UserId.Create(command.UserId);
-        IdentityUser? toPromote = await users.Get(toPromoteId, ct);
+        User? toPromote = await users.Get(toPromoteId, ct);
         if (toPromote == null)
             return Error.NotFound("Пользователь не найден.");
 

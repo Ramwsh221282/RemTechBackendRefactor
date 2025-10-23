@@ -150,7 +150,7 @@ public sealed class TestUsersFactory : ITestUsersFactory
         if (status.IsFailure)
             return status.Error;
 
-        IdentityUser? created = await _useCases.GetUserByEmailUserCase(userEmail);
+        User? created = await _useCases.GetUserByEmailUserCase(userEmail);
         return created == null ? Error.NotFound("NF") : new UserCaseResult(created, userPassword);
     }
 
@@ -169,7 +169,7 @@ public sealed class TestUsersFactory : ITestUsersFactory
         if (status.IsFailure)
             return status.Error;
 
-        IdentityUser? created = await _useCases.GetUserByEmailUserCase(user.Email);
+        User? created = await _useCases.GetUserByEmailUserCase(user.Email);
         return created == null ? Error.NotFound("NF") : new UserCaseResult(created, user.Password);
     }
 
@@ -183,7 +183,7 @@ public sealed class TestUsersFactory : ITestUsersFactory
         if (status.IsFailure)
             return status.Error;
 
-        IdentityUser? created = await _useCases.GetUserByEmailUserCase(userEmail);
+        User? created = await _useCases.GetUserByEmailUserCase(userEmail);
         return created == null ? Error.NotFound("NF") : new UserCaseResult(created, userPassword);
     }
 }

@@ -10,10 +10,11 @@ public static class IdentityDomainInjection
 {
     public static void InjectIdentityDomain(this IServiceCollection services)
     {
-        services.AddValidatorsFromAssembly(typeof(IdentityUser).Assembly);
-        services.AddHandlersFromAssembly(typeof(IdentityUser).Assembly);
+        services.AddValidatorsFromAssembly(typeof(User).Assembly);
+        services.AddHandlersFromAssembly(typeof(User).Assembly);
         services.AddScoped<IGetRoleByIdHandle, GetRoleByIdHandle>();
         services.AddScoped<IGetUserByIdHandle, GetUserByIdHandle>();
         services.AddScoped<IGetVerifiedUserHandle, GetVerifiedUserHandle>();
+        services.AddScoped<IGetUserByTicketHandle, GetUserByTicketHandle>();
     }
 }

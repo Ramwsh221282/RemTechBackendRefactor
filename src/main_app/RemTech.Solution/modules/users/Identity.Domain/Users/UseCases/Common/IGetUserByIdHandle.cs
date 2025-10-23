@@ -5,5 +5,5 @@ namespace Identity.Domain.Users.UseCases.Common;
 
 public interface IGetUserByIdHandle
 {
-    Task<Status<IdentityUser>> Handle(Guid userId, CancellationToken ct = default);
+    Task<Status<User>> Handle(Guid userId, CancellationToken ct = default);
 }

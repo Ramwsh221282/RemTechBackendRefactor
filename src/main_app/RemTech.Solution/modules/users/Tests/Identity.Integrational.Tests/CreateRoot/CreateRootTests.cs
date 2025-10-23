@@ -14,11 +14,11 @@ public sealed class CreateRootTests(IdentityTestApplicationFactory factory)
         string password = "rootUserPassword!23";
         string email = "rootUser@email.com";
 
-        Status<IdentityUser> root = await UseCases.CreateRootUserUseCase(login, email, password);
+        Status<User> root = await UseCases.CreateRootUserUseCase(login, email, password);
 
         Assert.True(root.IsSuccess);
 
-        IdentityUser? created = await UseCases.GetUserUseCase(root.Value.Id.Id);
+        User? created = await UseCases.GetUserUseCase(root.Value.Id.Id);
 
         Assert.NotNull(created);
         Assert.Equal(login, created.Profile.Login.Name);

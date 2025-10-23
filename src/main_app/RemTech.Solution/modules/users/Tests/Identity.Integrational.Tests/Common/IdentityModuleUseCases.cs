@@ -3,12 +3,15 @@ using Identity.Domain.Roles.Ports;
 using Identity.Domain.Roles.UseCases.AddNewRole;
 using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Aggregate;
+using Identity.Domain.Users.Aggregate.ValueObjects;
+using Identity.Domain.Users.Entities.Profile.ValueObjects;
 using Identity.Domain.Users.Ports.Storage;
+using Identity.Domain.Users.UseCases.ConfirmEmailTicket;
+using Identity.Domain.Users.UseCases.CreateEmailConfirmationTicket;
 using Identity.Domain.Users.UseCases.CreateRoot;
 using Identity.Domain.Users.UseCases.UserDemotesUser;
 using Identity.Domain.Users.UseCases.UserPromotesUser;
 using Identity.Domain.Users.UseCases.UserRegistration;
-using Identity.Domain.Users.ValueObjects;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.Core.Shared.Cqrs;
 using RemTech.Core.Shared.Result;
@@ -55,42 +58,38 @@ public sealed class IdentityModuleUseCases(IdentityTestApplicationFactory factor
         return await scope.GetService<IRolesStorage>().Get(RoleId.Create(id));
     }
 
-    public async Task<IdentityUser?> GetUserUseCase(Guid userId)
+    public async Task<User?> GetUserUseCase(Guid userId)
     {
         await using AsyncServiceScope scope = _sp.CreateAsyncScope();
         IUsersStorage users = scope.ServiceProvider.GetRequiredService<IUsersStorage>();
         return await users.Get(UserId.Create(userId));
     }
 
-    public async Task<IdentityUser?> GetUserByLoginUserCase(string login)
+    public async Task<User?> GetUserByLoginUserCase(string login)
     {
         await using AsyncServiceScope scope = _sp.CreateAsyncScope();
         IUsersStorage users = scope.ServiceProvider.GetRequiredService<IUsersStorage>();
         return await users.Get(UserLogin.Create(login));
     }
 
-    public async Task<IdentityUser?> GetUserByEmailUserCase(string email)
+    public async Task<User?> GetUserByEmailUserCase(string email)
     {
         await using AsyncServiceScope scope = _sp.CreateAsyncScope();
         IUsersStorage users = scope.ServiceProvider.GetRequiredService<IUsersStorage>();
         return await users.Get(UserEmail.Create(email));
     }
 
-    public async Task<Status<IdentityUser>> RegisterUserUseCase(
-        string login,
-        string email,
-        string password
-    )
+    public async Task<Status<User>> RegisterUserUseCase(string login, string email, string password)
     {
         UserRegistrationCommand command = new(login, email, password);
         await using AsyncServiceScope scope = _sp.CreateAsyncScope();
-        ICommandHandler<UserRegistrationCommand, Status<IdentityUser>> handler = scope.GetService<
-            ICommandHandler<UserRegistrationCommand, Status<IdentityUser>>
+        ICommandHandler<UserRegistrationCommand, Status<User>> handler = scope.GetService<
+            ICommandHandler<UserRegistrationCommand, Status<User>>
         >();
         return await handler.Handle(command);
     }
 
-    public async Task<Status<IdentityUser>> DemoteUserUseCase(
+    public async Task<Status<User>> DemoteUserUseCase(
         Guid demoterId,
         string demoterPassword,
         Guid demoteId,
@@ -100,11 +99,11 @@ public sealed class IdentityModuleUseCases(IdentityTestApplicationFactory factor
         UserDemotesUserCommand command = new(demoterId, demoteId, demoterPassword, roleName);
         await using AsyncServiceScope scope = _sp.CreateAsyncScope();
         return await scope
-            .GetService<ICommandHandler<UserDemotesUserCommand, Status<IdentityUser>>>()
+            .GetService<ICommandHandler<UserDemotesUserCommand, Status<User>>>()
             .Handle(command);
     }
 
-    public async Task<Status<IdentityUser>> CreateRootUserUseCase(
+    public async Task<Status<User>> CreateRootUserUseCase(
         string login,
         string email,
         string password
@@ -113,11 +112,29 @@ public sealed class IdentityModuleUseCases(IdentityTestApplicationFactory factor
         CreateRootUserCommand command = new(email, login, password);
         await using AsyncServiceScope scope = _sp.CreateAsyncScope();
         return await scope
-            .GetService<ICommandHandler<CreateRootUserCommand, Status<IdentityUser>>>()
+            .GetService<ICommandHandler<CreateRootUserCommand, Status<User>>>()
             .Handle(command);
     }
 
-    public async Task<Status<IdentityUser>> PromoteUserUseCase(
+    public async Task<Status<User>> CreateEmailConfirmationUseCase(Guid id, string password)
+    {
+        var command = new CreateEmailConfirmationTicketCommand(id, password);
+        await using var scope = _sp.CreateAsyncScope();
+        return await scope
+            .GetService<ICommandHandler<CreateEmailConfirmationTicketCommand, Status<User>>>()
+            .Handle(command);
+    }
+
+    public async Task<Status<User>> ConfirmEmailTicketUseCase(Guid ticketId)
+    {
+        var command = new ConfirmEmailTicketCommand(ticketId);
+        await using var scope = _sp.CreateAsyncScope();
+        return await scope
+            .GetService<ICommandHandler<ConfirmEmailTicketCommand, Status<User>>>()
+            .Handle(command);
+    }
+
+    public async Task<Status<User>> PromoteUserUseCase(
         Guid promoterId,
         string promoterPassword,
         Guid userId,
@@ -127,7 +144,7 @@ public sealed class IdentityModuleUseCases(IdentityTestApplicationFactory factor
         UserPromotesUserCommand command = new(promoterId, userId, promoterPassword, roleName);
         await using AsyncServiceScope scope = _sp.CreateAsyncScope();
         return await scope
-            .GetService<ICommandHandler<UserPromotesUserCommand, Status<IdentityUser>>>()
+            .GetService<ICommandHandler<UserPromotesUserCommand, Status<User>>>()
             .Handle(command);
     }
 }

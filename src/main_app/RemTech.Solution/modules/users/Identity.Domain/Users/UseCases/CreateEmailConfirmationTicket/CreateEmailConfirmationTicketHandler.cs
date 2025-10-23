@@ -13,9 +13,9 @@ public sealed class CreateEmailConfirmationTicketHandler(
     IGetVerifiedUserHandle getVerifiedUser,
     IDomainEventsDispatcher dispatcher,
     IValidator<CreateEmailConfirmationTicketCommand> validator
-) : ICommandHandler<CreateEmailConfirmationTicketCommand, Status<IdentityUser>>
+) : ICommandHandler<CreateEmailConfirmationTicketCommand, Status<User>>
 {
-    public async Task<Status<IdentityUser>> Handle(
+    public async Task<Status<User>> Handle(
         CreateEmailConfirmationTicketCommand command,
         CancellationToken ct = default
     )
@@ -24,11 +24,7 @@ public sealed class CreateEmailConfirmationTicketHandler(
         if (validation.IsValid == false)
             return validation.ValidationError();
 
-        Status<IdentityUser> user = await getVerifiedUser.Handle(
-            command.UserId,
-            command.Password,
-            ct
-        );
+        Status<User> user = await getVerifiedUser.Handle(command.UserId, command.Password, ct);
         if (user.IsFailure)
             return user.Error;
 

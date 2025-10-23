@@ -99,6 +99,43 @@ namespace Identity.Adapter.Storage.Migrations
                     b.ToTable("user_roles", "users_module");
                 });
 
+            modelBuilder.Entity("Identity.Adapter.Storage.DataModels.IdentityUserTicketDataModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created");
+
+                    b.Property<DateTime?>("Deleted")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted");
+
+                    b.Property<DateTime>("Expired")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expired");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("type");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tickets");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("tickets", "users_module");
+                });
+
             modelBuilder.Entity("Identity.Adapter.Storage.DataModels.IdentityUserRoleDataModel", b =>
                 {
                     b.HasOne("Identity.Adapter.Storage.DataModels.IdentityRoleDataModel", null)
@@ -111,7 +148,18 @@ namespace Identity.Adapter.Storage.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_users_user_roles");
+                });
+
+            modelBuilder.Entity("Identity.Adapter.Storage.DataModels.IdentityUserTicketDataModel", b =>
+                {
+                    b.HasOne("Identity.Adapter.Storage.DataModels.IdentityUserDataModel", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_users_tickets");
                 });
 #pragma warning restore 612, 618
         }

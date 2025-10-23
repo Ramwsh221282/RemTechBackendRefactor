@@ -16,9 +16,9 @@ public sealed class UserDemotesUserHandler(
     IGetRoleByIdHandle getRoleById,
     IValidator<UserDemotesUserCommand> validator,
     IDomainEventsDispatcher dispatcher
-) : ICommandHandler<UserDemotesUserCommand, Status<IdentityUser>>
+) : ICommandHandler<UserDemotesUserCommand, Status<User>>
 {
-    public async Task<Status<IdentityUser>> Handle(
+    public async Task<Status<User>> Handle(
         UserDemotesUserCommand command,
         CancellationToken ct = default
     )
@@ -27,7 +27,7 @@ public sealed class UserDemotesUserHandler(
         if (!validation.IsValid)
             return validation.ValidationError();
 
-        Status<IdentityUser> demoter = await getVerified.Handle(
+        Status<User> demoter = await getVerified.Handle(
             command.DemoterId,
             command.DemoterPassword,
             ct
@@ -39,7 +39,7 @@ public sealed class UserDemotesUserHandler(
         if (role.IsFailure)
             return role.Error;
 
-        Status<IdentityUser> target = await getUserById.Handle(command.UserId, ct);
+        Status<User> target = await getUserById.Handle(command.UserId, ct);
         if (target.IsFailure)
             return target.Error;
 

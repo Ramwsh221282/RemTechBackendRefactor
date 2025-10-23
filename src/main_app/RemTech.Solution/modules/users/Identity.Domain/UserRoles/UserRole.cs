@@ -1,5 +1,5 @@
 ﻿using Identity.Domain.Roles.ValueObjects;
-using Identity.Domain.Users.ValueObjects;
+using Identity.Domain.Users.Aggregate.ValueObjects;
 
 namespace Identity.Domain.UserRoles;
 

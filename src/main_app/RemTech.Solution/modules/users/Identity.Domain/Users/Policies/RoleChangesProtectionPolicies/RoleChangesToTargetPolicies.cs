@@ -12,7 +12,7 @@ public static class RoleChangesToTargetPolicies
         new(RoleName.User, RoleName.Root),
     ];
 
-    public static bool CanBeChangedBy(this IdentityUser target, IdentityUser actor)
+    public static bool CanBeChangedBy(this User target, User actor)
     {
         bool allowedAny = false;
         foreach (IdentityRole targetRole in target.Roles.Roles)

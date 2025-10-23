@@ -14,11 +14,7 @@ public sealed class UserRegistrationTests(IdentityTestApplicationFactory factory
         string email = "myEmail@mail.com";
         string password = "myPassword!23";
 
-        Status<IdentityUser> registration = await UseCases.RegisterUserUseCase(
-            login,
-            email,
-            password
-        );
+        Status<User> registration = await UseCases.RegisterUserUseCase(login, email, password);
 
         Assert.True(registration.IsSuccess);
     }
@@ -30,11 +26,7 @@ public sealed class UserRegistrationTests(IdentityTestApplicationFactory factory
         string email = "myEmail@mail.com";
         string password = "myPassword!23";
 
-        Status<IdentityUser> registration = await UseCases.RegisterUserUseCase(
-            login,
-            email,
-            password
-        );
+        Status<User> registration = await UseCases.RegisterUserUseCase(login, email, password);
 
         Assert.True(registration.IsFailure);
     }
@@ -46,11 +38,7 @@ public sealed class UserRegistrationTests(IdentityTestApplicationFactory factory
         string email = "  ";
         string password = "myPassword!23";
 
-        Status<IdentityUser> registration = await UseCases.RegisterUserUseCase(
-            login,
-            email,
-            password
-        );
+        Status<User> registration = await UseCases.RegisterUserUseCase(login, email, password);
 
         Assert.True(registration.IsFailure);
     }
@@ -64,11 +52,7 @@ public sealed class UserRegistrationTests(IdentityTestApplicationFactory factory
         string login = "myLogin";
         string password = "myPassword!23";
 
-        Status<IdentityUser> registration = await UseCases.RegisterUserUseCase(
-            login,
-            email,
-            password
-        );
+        Status<User> registration = await UseCases.RegisterUserUseCase(login, email, password);
 
         Assert.True(registration.IsFailure);
     }

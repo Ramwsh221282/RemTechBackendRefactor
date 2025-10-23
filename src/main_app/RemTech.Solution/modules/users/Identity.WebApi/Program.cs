@@ -1,3 +1,4 @@
+using Identity.Adapter.Notifier;
 using Identity.Adapter.PasswordManager;
 using Identity.Adapter.Storage.DependencyInjection;
 using Identity.Domain.DependencyInjection;
@@ -14,6 +15,7 @@ builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(nameof(Database
 builder.Services.InjectIdentityDomain();
 builder.Services.InjectBcryptPasswordManager();
 builder.Services.InjectIdentityStorageAdapter();
+builder.Services.AddUsersNotifier();
 builder.Services.AddPostgres();
 
 var app = builder.Build();

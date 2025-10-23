@@ -5,9 +5,5 @@ namespace Identity.Domain.Users.UseCases.Common;
 
 public interface IGetVerifiedUserHandle
 {
-    Task<Status<IdentityUser>> Handle(
-        Guid userId,
-        string userPassword,
-        CancellationToken ct = default
-    );
+    Task<Status<User>> Handle(Guid userId, string userPassword, CancellationToken ct = default);
 }

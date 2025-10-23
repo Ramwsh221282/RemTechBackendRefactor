@@ -1,4 +1,7 @@
-﻿using Identity.Adapter.Storage;
+﻿using System.Data;
+using Identity.Adapter.Storage;
+using Identity.Domain.Users.Aggregate;
+using Identity.Notifier.Port;
 using Identity.WebApi;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;

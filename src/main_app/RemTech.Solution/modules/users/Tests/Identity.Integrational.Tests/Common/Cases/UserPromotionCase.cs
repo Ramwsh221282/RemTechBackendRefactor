@@ -22,7 +22,7 @@ public sealed class UserPromotionCase(
         if (status.IsFailure)
             return Failed();
 
-        IdentityUser? created = await @class.UseCases.GetUserUseCase(userId);
+        User? created = await @class.UseCases.GetUserUseCase(userId);
         return created == null ? Failed() : Success(created, userPassword);
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Identity.Adapter.Storage.DataModels;
-using Identity.Domain.Users.ValueObjects;
+using Identity.Domain.Users.Entities.Profile.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -30,6 +30,14 @@ public sealed class IdentityUserDataModelConfiguration
             .WithOne()
             .HasForeignKey(x => x.UserId)
             .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade)
+            .HasConstraintName("fk_users_user_roles");
+        builder
+            .HasMany<IdentityUserTicketDataModel>()
+            .WithOne()
+            .HasForeignKey(t => t.UserId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade)
+            .HasConstraintName("fk_users_tickets");
     }
 }

@@ -4,9 +4,11 @@ using Identity.Domain.Roles;
 using Identity.Domain.Roles.Ports;
 using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Aggregate;
+using Identity.Domain.Users.Aggregate.ValueObjects;
 using Identity.Domain.Users.Entities;
+using Identity.Domain.Users.Entities.Profile;
+using Identity.Domain.Users.Entities.Profile.ValueObjects;
 using Identity.Domain.Users.Ports.Passwords;
-using Identity.Domain.Users.ValueObjects;
 using RemTech.Core.Shared.Cqrs;
 using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
@@ -19,9 +21,9 @@ public sealed class CreateRootUserCommandHandler(
     IPasswordManager passwordManager,
     IDomainEventsDispatcher eventsHandler,
     IValidator<CreateRootUserCommand> validator
-) : ICommandHandler<CreateRootUserCommand, Status<IdentityUser>>
+) : ICommandHandler<CreateRootUserCommand, Status<User>>
 {
-    public async Task<Status<IdentityUser>> Handle(
+    public async Task<Status<User>> Handle(
         CreateRootUserCommand command,
         CancellationToken ct = default
     )
@@ -38,9 +40,9 @@ public sealed class CreateRootUserCommandHandler(
         UserLogin login = UserLogin.Create(command.Name);
         UserPassword notHashed = UserPassword.Create(command.Password);
         HashedUserPassword hashed = new HashedUserPassword(notHashed, passwordManager);
-        IdentityUserProfile profile = new(login, email, hashed);
-        IdentityUserRoles userRoles = new([role]);
-        IdentityUser user = IdentityUser.Create(profile, userRoles);
+        UserProfile profile = new(login, email, hashed);
+        UserRolesCollection userRolesCollection = new([role]);
+        User user = User.Create(profile, userRolesCollection);
 
         Status handling = await user.PublishEvents(eventsHandler, ct);
         return handling.IsFailure ? handling.Error : user;

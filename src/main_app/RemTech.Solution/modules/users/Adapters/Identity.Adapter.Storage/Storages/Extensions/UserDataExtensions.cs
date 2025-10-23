@@ -2,31 +2,74 @@
 using Identity.Domain.Roles;
 using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Aggregate;
-using Identity.Domain.Users.Entities;
-using Identity.Domain.Users.ValueObjects;
+using Identity.Domain.Users.Aggregate.ValueObjects;
+using Identity.Domain.Users.Entities.Profile;
+using Identity.Domain.Users.Entities.Profile.ValueObjects;
+using Identity.Domain.Users.Entities.Tickets;
+using Identity.Domain.Users.Entities.Tickets.ValueObjects;
 
 namespace Identity.Adapter.Storage.Storages.Extensions;
 
 internal static class UserDataExtensions
 {
-    internal static IdentityUser ToIdentityUser(this UserData data)
+    internal static User ToIdentityUser(this UserData data)
     {
-        UserId userId = UserId.Create(data.Id);
-        UserLogin login = UserLogin.Create(data.Name);
-        UserEmail userEmail = UserEmail.Create(data.Email);
-        bool emailConfirmed = data.EmailConfirmed;
-        HashedUserPassword password = HashedUserPassword.Create(data.Password);
-        IdentityUserProfile profile = new(login, userEmail, password, emailConfirmed);
+        var userId = UserId.Create(data.Id);
+        if (userId.IsFailure)
+            throw new ApplicationException("Bad user mapping from db.");
 
-        IEnumerable<IdentityRole> roles = data.Roles.Select(d => d.ToIdentityRole());
-        IdentityUserRoles userRoles = new(roles);
-        return IdentityUser.Create(profile, userRoles, userId);
+        var login = UserLogin.Create(data.Name);
+        if (login.IsFailure)
+            throw new ApplicationException("Bad user mapping from db.");
+
+        var userEmail = UserEmail.Create(data.Email);
+        if (userEmail.IsFailure)
+            throw new ApplicationException("Bad user mapping from db.");
+        bool emailConfirmed = data.EmailConfirmed;
+
+        var password = HashedUserPassword.Create(data.Password);
+        if (password.IsFailure)
+            throw new ApplicationException("Bad user mapping from db.");
+
+        var profile = new UserProfile(login, userEmail, password, emailConfirmed);
+        var roles = new UserRolesCollection(data.Roles.Select(d => d.ToIdentityRole()));
+        var tickets = new UserTicketsCollection(data.Tickets.Select(t => t.ToUserTicket()));
+        var user = User.Create(profile, roles, userId);
+        user = new User(user, tickets);
+        return user;
     }
 
-    internal static IdentityRole ToIdentityRole(this RoleData role)
+    private static IdentityRole ToIdentityRole(this RoleData role)
     {
-        RoleId id = RoleId.Create(role.Id);
-        RoleName name = RoleName.Create(role.Name);
+        var id = RoleId.Create(role.Id);
+        if (id.IsFailure)
+            throw new ApplicationException("Bad user mapping from db.");
+
+        var name = RoleName.Create(role.Name);
+        if (name.IsFailure)
+            throw new ApplicationException("Bad user mapping from db.");
+
         return IdentityRole.Create(name, id);
+    }
+
+    private static UserTicket ToUserTicket(this UserTicketData ticket)
+    {
+        var id = UserTicketId.Create(ticket.Id);
+        if (id.IsFailure)
+            throw new ApplicationException("Bad user mapping from db.");
+
+        var userId = UserTicketIssuerId.Create(ticket.UserId);
+        if (userId.IsFailure)
+            throw new ApplicationException("Bad user mapping from db.");
+
+        var lifeTime = UserTicketLifeTime.Create(ticket.Created, ticket.Expired, ticket.Deleted);
+        if (lifeTime.IsFailure)
+            throw new ApplicationException("Bad user mapping from db.");
+
+        var type = UserTicketType.Create(ticket.Type);
+        if (type.IsFailure)
+            throw new ApplicationException("Bad user mapping from db.");
+
+        return new UserTicket(userId, type, lifeTime, id);
     }
 }

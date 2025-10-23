@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
-using Identity.Domain.Users.ValueObjects;
+using Identity.Domain.Users.Aggregate.ValueObjects;
+using Identity.Domain.Users.Entities.Profile.ValueObjects;
 using RemTech.Core.Shared.Validation;
 
 namespace Identity.Domain.Users.UseCases.CreateEmailConfirmationTicket;

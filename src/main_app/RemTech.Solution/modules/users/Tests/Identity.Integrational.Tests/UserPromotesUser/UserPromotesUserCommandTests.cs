@@ -16,7 +16,7 @@ public sealed class UserPromotesUserCommandTests(IdentityTestApplicationFactory 
         string rootEmail = "root@email.com";
         await UseCases.CreateRootUserUseCase(rootLogin, rootEmail, rootPassword);
 
-        IdentityUser? root = await UseCases.GetUserByEmailUserCase(rootEmail);
+        User? root = await UseCases.GetUserByEmailUserCase(rootEmail);
         Assert.NotNull(root);
 
         string defaultUserLogin = "defaultUser";
@@ -24,7 +24,7 @@ public sealed class UserPromotesUserCommandTests(IdentityTestApplicationFactory 
         string defaultEmail = "defaultEmail@mail.com";
         await UseCases.RegisterUserUseCase(defaultUserLogin, defaultEmail, defaultPassword);
 
-        IdentityUser? defaultUser = await UseCases.GetUserByEmailUserCase(defaultEmail);
+        User? defaultUser = await UseCases.GetUserByEmailUserCase(defaultEmail);
         Assert.NotNull(defaultUser);
 
         Status promotion = await UseCases.PromoteUserUseCase(
@@ -36,7 +36,7 @@ public sealed class UserPromotesUserCommandTests(IdentityTestApplicationFactory 
 
         Assert.True(promotion.IsSuccess);
 
-        IdentityUser? promotedAdmin = await UseCases.GetUserUseCase(defaultUser.Id.Id);
+        User? promotedAdmin = await UseCases.GetUserUseCase(defaultUser.Id.Id);
 
         Assert.NotNull(promotedAdmin);
         Assert.Equal(defaultUserLogin, promotedAdmin.Profile.Login.Name);
@@ -53,14 +53,14 @@ public sealed class UserPromotesUserCommandTests(IdentityTestApplicationFactory 
         string rootEmail = "root@email.com";
         await UseCases.CreateRootUserUseCase(rootLogin, rootEmail, rootPassword);
 
-        IdentityUser? root = await UseCases.GetUserByEmailUserCase(rootEmail);
+        User? root = await UseCases.GetUserByEmailUserCase(rootEmail);
         Assert.NotNull(root);
         string defaultUserLogin = "defaultUser";
         string defaultPassword = "defaultPassword!23";
         string defaultEmail = "defaultEmail@mail.com";
         await UseCases.RegisterUserUseCase(defaultUserLogin, defaultEmail, defaultPassword);
 
-        IdentityUser? defaultUser = await UseCases.GetUserByEmailUserCase(defaultEmail);
+        User? defaultUser = await UseCases.GetUserByEmailUserCase(defaultEmail);
         Assert.NotNull(defaultUser);
 
         Status promotion = await UseCases.PromoteUserUseCase(
@@ -92,21 +92,21 @@ public sealed class UserPromotesUserCommandTests(IdentityTestApplicationFactory 
         string rootPassword = "rootPassword!23";
         string rootEmail = "root@email.com";
         await UseCases.CreateRootUserUseCase(rootLogin, rootEmail, rootPassword);
-        IdentityUser? root = await UseCases.GetUserByEmailUserCase(rootEmail);
+        User? root = await UseCases.GetUserByEmailUserCase(rootEmail);
         Assert.NotNull(root);
 
         string defaultUserLogin = "defaultUser";
         string defaultPassword = "defaultPassword!23";
         string defaultEmail = "defaultEmail@mail.com";
         await UseCases.RegisterUserUseCase(defaultUserLogin, defaultEmail, defaultPassword);
-        IdentityUser? defaultUser = await UseCases.GetUserByEmailUserCase(defaultEmail);
+        User? defaultUser = await UseCases.GetUserByEmailUserCase(defaultEmail);
         Assert.NotNull(defaultUser);
 
         string justUserLogin = "justUserLogin";
         string justPassword = "justUserPassword!23";
         string justUserEmail = "justUserEmail@email.com";
         await UseCases.RegisterUserUseCase(justUserLogin, justUserEmail, justPassword);
-        IdentityUser? justUser = await UseCases.GetUserByEmailUserCase(justUserEmail);
+        User? justUser = await UseCases.GetUserByEmailUserCase(justUserEmail);
         Assert.NotNull(justUser);
 
         await UseCases.PromoteUserUseCase(
