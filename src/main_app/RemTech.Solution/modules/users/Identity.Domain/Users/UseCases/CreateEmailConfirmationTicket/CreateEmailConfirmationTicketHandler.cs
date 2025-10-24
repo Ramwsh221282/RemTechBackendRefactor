@@ -28,7 +28,7 @@ public sealed class CreateEmailConfirmationTicketHandler(
         if (user.IsFailure)
             return user.Error;
 
-        Status ticketCreation = user.Value.FormConfirmationTicket();
+        Status ticketCreation = user.Value.FormEmailConfirmationTicket();
         if (ticketCreation.IsFailure)
             return ticketCreation.Error;
 

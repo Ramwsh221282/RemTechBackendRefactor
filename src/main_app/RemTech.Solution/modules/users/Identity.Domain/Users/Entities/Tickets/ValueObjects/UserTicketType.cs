@@ -10,6 +10,8 @@ public sealed record UserTicketType
         "Session_Remove_Confirmation"
     );
 
+    public static UserTicketType PasswordResetConfirmation = new("Password_Reset");
+
     public const int MaxLength = 100;
     public string Value { get; }
 

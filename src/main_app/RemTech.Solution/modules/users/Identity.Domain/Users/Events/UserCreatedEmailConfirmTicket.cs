@@ -3,15 +3,15 @@ using RemTech.Core.Shared.DomainEvents;
 
 namespace Identity.Domain.Users.Events;
 
-public sealed record UserCreatedTicket(
+public sealed record TicketEventArgs(
     Guid TicketId,
     Guid UserId,
     string Type,
     DateTime Created,
     DateTime Expired
-) : IDomainEvent
+)
 {
-    public UserCreatedTicket(UserTicket ticket)
+    public TicketEventArgs(UserTicket ticket)
         : this(
             ticket.Id.Id,
             ticket.IssuerId.Id,
@@ -19,4 +19,10 @@ public sealed record UserCreatedTicket(
             ticket.LifeTime.Created,
             ticket.LifeTime.Expires
         ) { }
+}
+
+public sealed record UserCreatedEmailConfirmTicket(TicketEventArgs EventArgs) : IDomainEvent
+{
+    public UserCreatedEmailConfirmTicket(UserTicket ticket)
+        : this(new TicketEventArgs(ticket)) { }
 }

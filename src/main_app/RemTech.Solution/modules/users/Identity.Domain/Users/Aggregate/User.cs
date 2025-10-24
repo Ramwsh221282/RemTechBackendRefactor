@@ -37,6 +37,22 @@ public sealed class User
             : ConfirmEmail(ticket);
     }
 
+    public Status FormResetPasswordTicket()
+    {
+        if (!HasVerifiedEmail())
+            return Status.Conflict("Почта пользователя не подтверждена.");
+
+        var issuerId = UserTicketIssuerId.Create(Id.Id);
+        var type = UserTicketType.PasswordResetConfirmation;
+        var created = DateTime.UtcNow;
+        var expires = created.AddHours(1);
+        var lifeTime = UserTicketLifeTime.Create(created, expires);
+        var ticket = new UserTicket(issuerId, type, lifeTime);
+
+        _events.Add(new UserCreatedEmailConfirmTicket(ticket));
+        return Status.Success();
+    }
+
     public Status ConfirmEmail(UserTicket ticket)
     {
         if (HasVerifiedEmail())
@@ -56,7 +72,7 @@ public sealed class User
         return Status.Success();
     }
 
-    public Status FormConfirmationTicket()
+    public Status FormEmailConfirmationTicket()
     {
         if (HasVerifiedEmail())
             return Status.Conflict("Пользователь уже имеет подтвержденный email.");
@@ -69,7 +85,7 @@ public sealed class User
         var ticket = new UserTicket(issuerId, type, lifeTime);
 
         AddTicket(ticket);
-        _events.Add(new UserCreatedTicket(ticket));
+        _events.Add(new UserCreatedEmailConfirmTicket(ticket));
         return Status.Success();
     }
 

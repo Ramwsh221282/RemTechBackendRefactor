@@ -8,6 +8,7 @@ using Identity.Domain.Users.Entities.Profile.ValueObjects;
 using Identity.Domain.Users.Ports.Storage;
 using Identity.Domain.Users.UseCases.ConfirmEmailTicket;
 using Identity.Domain.Users.UseCases.CreateEmailConfirmationTicket;
+using Identity.Domain.Users.UseCases.CreatePasswordResetTicket;
 using Identity.Domain.Users.UseCases.CreateRoot;
 using Identity.Domain.Users.UseCases.UserDemotesUser;
 using Identity.Domain.Users.UseCases.UserPromotesUser;
@@ -131,6 +132,18 @@ public sealed class IdentityModuleUseCases(IdentityTestApplicationFactory factor
         await using var scope = _sp.CreateAsyncScope();
         return await scope
             .GetService<ICommandHandler<ConfirmEmailTicketCommand, Status<User>>>()
+            .Handle(command);
+    }
+
+    public async Task<Status<User>> CreatePasswordResetTicket(
+        string? email = null,
+        string? login = null
+    )
+    {
+        var command = new CreatePasswordResetCommand(email, login);
+        await using var scope = _sp.CreateAsyncScope();
+        return await scope
+            .GetService<ICommandHandler<CreatePasswordResetCommand, Status<User>>>()
             .Handle(command);
     }
 

@@ -8,18 +8,18 @@ using RemTech.Core.Shared.Result;
 using Serilog;
 using Shared.Infrastructure.Module.Postgres;
 
-namespace Identity.Adapter.Storage.EventHandlers.UserCreatedTicket;
+namespace Identity.Adapter.Storage.EventHandlers.UserCreatedEmailConfirmationTicket;
 
-public sealed class UserCreatedTicketHandler(
+public sealed class UserCreatedEmailConfirmationTicketHandler(
     ILogger logger,
     PostgresDatabase database,
     IUsersNotifier notifier
-) : IDomainEventHandler<Domain.Users.Events.UserCreatedTicket>
+) : IDomainEventHandler<Domain.Users.Events.UserCreatedEmailConfirmTicket>
 {
-    private const string Context = nameof(UserCreatedTicketHandler);
+    private const string Context = nameof(UserCreatedEmailConfirmationTicketHandler);
 
     public async Task<Status> Handle(
-        Domain.Users.Events.UserCreatedTicket @event,
+        Domain.Users.Events.UserCreatedEmailConfirmTicket @event,
         CancellationToken ct = default
     )
     {
@@ -49,15 +49,17 @@ public sealed class UserCreatedTicketHandler(
     }
 
     private async Task<Status<User>> GetUser(
-        Domain.Users.Events.UserCreatedTicket @event,
+        Domain.Users.Events.UserCreatedEmailConfirmTicket @event,
         IDbConnection connection,
         IDbTransaction transaction,
         CancellationToken ct
     )
     {
+        Guid userId = @event.EventArgs.UserId;
+
         User? user = await connection.QueryUser(
             ["u.id = @id"],
-            new { id = @event.UserId },
+            new { id = userId },
             transaction,
             true,
             ct
@@ -67,7 +69,7 @@ public sealed class UserCreatedTicketHandler(
     }
 
     private async Task InsertTicket(
-        Domain.Users.Events.UserCreatedTicket @event,
+        Domain.Users.Events.UserCreatedEmailConfirmTicket @event,
         User user,
         IDbConnection connection,
         IDbTransaction transaction,
@@ -81,15 +83,16 @@ public sealed class UserCreatedTicketHandler(
             (@id, @user_id, @type, @created, @expired)
             """;
 
+        var eventArgs = @event.EventArgs;
         var command = new CommandDefinition(
             sql,
             new
             {
-                id = @event.TicketId,
+                id = eventArgs.TicketId,
                 user_id = user.Id.Id,
-                type = @event.Type,
-                created = @event.Created,
-                expired = @event.Expired,
+                type = eventArgs.Type,
+                created = eventArgs.Created,
+                expired = eventArgs.Expired,
             },
             cancellationToken: ct,
             transaction: transaction
@@ -99,10 +102,11 @@ public sealed class UserCreatedTicketHandler(
     }
 
     private UserNotification CreateNotification(
-        Domain.Users.Events.UserCreatedTicket @event,
+        Domain.Users.Events.UserCreatedEmailConfirmTicket @event,
         User user
     )
     {
+        Guid ticketId = @event.EventArgs.TicketId;
         string subject = "Подтверждение почты RemTech агрегатор спецтехники.";
         string message = $"""
             Была подана заявка на подтверждение почты.
@@ -110,6 +114,6 @@ public sealed class UserCreatedTicketHandler(
             <a href="FRONTEND_URL/TOKEN">Подтверждение почты</a>
             """;
 
-        return new UserNotification(@event.TicketId, user.Profile.Email.Email, subject, message);
+        return new UserNotification(ticketId, user.Profile.Email.Email, subject, message);
     }
 }
