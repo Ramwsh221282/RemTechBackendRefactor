@@ -4,15 +4,15 @@ using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 using Shared.Infrastructure.Module.Postgres;
 
-namespace Identity.Adapter.Storage.EventHandlers.UserConfirmedTicket;
+namespace Identity.Adapter.Storage.EventHandlers.UserConfirmedEmail;
 
-public sealed class UserConfirmedTicketHandler(Serilog.ILogger logger, PostgresDatabase database)
-    : IDomainEventHandler<Domain.Users.Events.UserConfirmedTicket>
+public sealed class UserConfirmedEmailHandler(Serilog.ILogger logger, PostgresDatabase database)
+    : IDomainEventHandler<Domain.Users.Events.UserConfirmedEmail>
 {
-    private const string Context = nameof(UserConfirmedTicketHandler);
+    private const string Context = nameof(UserConfirmedEmailHandler);
 
     public async Task<Status> Handle(
-        Domain.Users.Events.UserConfirmedTicket @event,
+        Domain.Users.Events.UserConfirmedEmail @event,
         CancellationToken ct = default
     )
     {
@@ -29,6 +29,14 @@ public sealed class UserConfirmedTicketHandler(Serilog.ILogger logger, PostgresD
             await DeleteUserTicket(@event, connection, transaction, ct);
 
             transaction.Commit();
+
+            logger.Information(
+                "{Context}: User: {Id} confirmed ticket {TicketId}.",
+                Context,
+                @event.UserId,
+                @event.TicketId
+            );
+
             return Status.Success();
         }
         catch (Exception ex)
@@ -40,7 +48,7 @@ public sealed class UserConfirmedTicketHandler(Serilog.ILogger logger, PostgresD
     }
 
     private async Task<Status> UserWithTicketExists(
-        Domain.Users.Events.UserConfirmedTicket @event,
+        Domain.Users.Events.UserConfirmedEmail @event,
         IDbConnection connection,
         IDbTransaction transaction,
         CancellationToken ct = default
@@ -68,7 +76,7 @@ public sealed class UserConfirmedTicketHandler(Serilog.ILogger logger, PostgresD
     }
 
     private async Task DeleteUserTicket(
-        Domain.Users.Events.UserConfirmedTicket @event,
+        Domain.Users.Events.UserConfirmedEmail @event,
         IDbConnection connection,
         IDbTransaction transaction,
         CancellationToken ct = default
@@ -87,7 +95,7 @@ public sealed class UserConfirmedTicketHandler(Serilog.ILogger logger, PostgresD
     }
 
     private async Task UpdateUserEmailConfirmation(
-        Domain.Users.Events.UserConfirmedTicket @event,
+        Domain.Users.Events.UserConfirmedEmail @event,
         IDbConnection connection,
         IDbTransaction transaction,
         CancellationToken ct = default

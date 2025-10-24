@@ -27,10 +27,15 @@ public sealed record UserPassword
         return new UserPassword(password);
     }
 
-    public Status Verification(IPasswordManager manager, HashedUserPassword hashed)
+    public Status Verification(IStringHashAlgorithm manager, HashedUserPassword hashed)
     {
         return !manager.Verify(Password, hashed.Password)
             ? Status.Failure(new Error("Пароль не совпадает.", ErrorCodes.Unauthorized))
             : Status.Success();
+    }
+
+    public HashedUserPassword Hash(IStringHashAlgorithm manager)
+    {
+        return new HashedUserPassword(this, manager);
     }
 }

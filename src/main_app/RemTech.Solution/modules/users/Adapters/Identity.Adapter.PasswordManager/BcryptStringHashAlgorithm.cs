@@ -2,7 +2,7 @@
 
 namespace Identity.Adapter.PasswordManager;
 
-public sealed class BcryptPasswordManager : IPasswordManager
+public sealed class BcryptStringHashAlgorithm : IStringHashAlgorithm
 {
     private const int WorkFactor = 12;
 

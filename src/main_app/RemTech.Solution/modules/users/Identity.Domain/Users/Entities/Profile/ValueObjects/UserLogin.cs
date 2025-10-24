@@ -1,4 +1,5 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using Identity.Domain.Users.Ports.Storage;
+using RemTech.Core.Shared.Result;
 
 namespace Identity.Domain.Users.Entities.Profile.ValueObjects;
 
@@ -18,5 +19,11 @@ public sealed record UserLogin
             return Error.Validation($"Логин пользователя превышает длину: {MaxLength} символов.");
 
         return new UserLogin(name);
+    }
+
+    public async Task<bool> ContainsIn(IUsersStorage storage, CancellationToken ct = default)
+    {
+        var user = await storage.Get(this, ct);
+        return user != null;
     }
 }

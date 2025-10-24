@@ -7,7 +7,7 @@ using RemTech.Core.Shared.Result;
 
 namespace Identity.Domain.Users.UseCases.Common;
 
-public sealed class GetVerifiedUserHandle(IUsersStorage users, IPasswordManager manager)
+public sealed class GetVerifiedUserHandle(IUsersStorage users, IStringHashAlgorithm manager)
     : IGetVerifiedUserHandle
 {
     public async Task<Status<User>> Handle(

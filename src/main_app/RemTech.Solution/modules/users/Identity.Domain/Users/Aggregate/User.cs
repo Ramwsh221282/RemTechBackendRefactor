@@ -20,12 +20,50 @@ public sealed class User
     public UserTicketsCollection Tickets { get; private set; } = UserTicketsCollection.Empty();
     public UserProfile Profile { get; private set; }
 
-    public Status Verify(UserPassword password, IPasswordManager passwordManager)
-    {
-        bool verified = Profile.Password.VerifyPassword(password, passwordManager, out Error error);
-        if (!verified)
-            return Status.Failure(error);
+    public Status Verify(UserPassword password, IStringHashAlgorithm stringHashAlgorithm) =>
+        !Profile.Password.VerifyPassword(password, stringHashAlgorithm, out Error error)
+            ? Status.Failure(error)
+            : Status.Success();
 
+    public Status ResetPassword(
+        UserTicketId ticketId,
+        UserPassword password,
+        IStringHashAlgorithm hash
+    )
+    {
+        UserTicket? ticket = Tickets.Tickets.FirstOrDefault(t => t.Id == ticketId);
+        if (ticket == null)
+            return Status.NotFound("Заявка не найдена.");
+
+        HashedUserPassword hashed = password.Hash(hash);
+        return ResetPassword(ticket, hashed);
+    }
+
+    public Status ResetPassword(UserTicketId ticketId, HashedUserPassword password)
+    {
+        UserTicket? ticket = Tickets.Tickets.FirstOrDefault(t => t.Id == ticketId);
+        return ticket == null
+            ? Status.NotFound("Заявка не найдена.")
+            : ResetPassword(ticket, password);
+    }
+
+    public Status ResetPassword(UserTicket ticket, HashedUserPassword password)
+    {
+        if (!ticket.IsAlive())
+            return Status.Conflict("Заявка просрочена.");
+
+        if (ticket.Type != UserTicketType.PasswordResetConfirmation)
+            return Status.Conflict("Заявка не является заявкой сброса пароля.");
+
+        if (!ticket.BelongsTo(this))
+            return Status.Conflict("Заявка не принадлежит пользователю.");
+
+        Status confirmation = ticket.Confirm(this);
+        if (confirmation.IsFailure)
+            return Status.Failure(confirmation.Error);
+
+        Profile = Profile.Change(password);
+        _events.Add(new UserConfirmedPasswordReset(this, ticket));
         return Status.Success();
     }
 
@@ -42,14 +80,12 @@ public sealed class User
         if (!HasVerifiedEmail())
             return Status.Conflict("Почта пользователя не подтверждена.");
 
-        var issuerId = UserTicketIssuerId.Create(Id.Id);
-        var type = UserTicketType.PasswordResetConfirmation;
         var created = DateTime.UtcNow;
         var expires = created.AddHours(1);
-        var lifeTime = UserTicketLifeTime.Create(created, expires);
-        var ticket = new UserTicket(issuerId, type, lifeTime);
+        var ticket = IssueTicket(UserTicketType.PasswordResetConfirmation.Value, created, expires);
 
-        _events.Add(new UserCreatedEmailConfirmTicket(ticket));
+        AddTicket(ticket);
+        _events.Add(new UserCreatedPasswordResetTicket(ticket));
         return Status.Success();
     }
 
@@ -68,7 +104,7 @@ public sealed class User
         Profile = new UserProfile(Profile, true);
         DropTicket(ticket);
 
-        _events.Add(new UserConfirmedTicket(this, ticket));
+        _events.Add(new UserConfirmedEmail(this, ticket));
         return Status.Success();
     }
 
@@ -79,10 +115,7 @@ public sealed class User
 
         var created = DateTime.UtcNow;
         var expires = created.AddHours(1);
-        var issuerId = UserTicketIssuerId.Create(Id.Id);
-        var type = UserTicketType.EmailConfirmation;
-        var lifeTime = UserTicketLifeTime.Create(created, expires);
-        var ticket = new UserTicket(issuerId, type, lifeTime);
+        var ticket = IssueTicket(UserTicketType.EmailConfirmation.Value, created, expires);
 
         AddTicket(ticket);
         _events.Add(new UserCreatedEmailConfirmTicket(ticket));
@@ -120,6 +153,13 @@ public sealed class User
         IDomainEventsDispatcher dispatcher,
         CancellationToken ct = default
     ) => await dispatcher.Dispatch(_events, ct);
+
+    private UserTicket IssueTicket(string type, DateTime created, DateTime expires) =>
+        new(
+            UserTicketIssuerId.Create(Id.Id),
+            UserTicketType.Create(type),
+            UserTicketLifeTime.Create(created, expires)
+        );
 
     private void AddTicket(UserTicket ticket) =>
         Tickets = new UserTicketsCollection(Tickets, ticket);

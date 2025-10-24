@@ -18,7 +18,7 @@ namespace Identity.Domain.Users.UseCases.CreateRoot;
 
 public sealed class CreateRootUserCommandHandler(
     IRolesStorage roles,
-    IPasswordManager passwordManager,
+    IStringHashAlgorithm stringHashAlgorithm,
     IDomainEventsDispatcher eventsHandler,
     IValidator<CreateRootUserCommand> validator
 ) : ICommandHandler<CreateRootUserCommand, Status<User>>
@@ -39,7 +39,7 @@ public sealed class CreateRootUserCommandHandler(
         UserEmail email = UserEmail.Create(command.Email);
         UserLogin login = UserLogin.Create(command.Name);
         UserPassword notHashed = UserPassword.Create(command.Password);
-        HashedUserPassword hashed = new HashedUserPassword(notHashed, passwordManager);
+        HashedUserPassword hashed = new HashedUserPassword(notHashed, stringHashAlgorithm);
         UserProfile profile = new(login, email, hashed);
         UserRolesCollection userRolesCollection = new([role]);
         User user = User.Create(profile, userRolesCollection);

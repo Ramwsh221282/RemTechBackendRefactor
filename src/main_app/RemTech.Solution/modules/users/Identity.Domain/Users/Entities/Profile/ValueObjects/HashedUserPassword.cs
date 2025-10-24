@@ -9,13 +9,13 @@ public sealed record HashedUserPassword
 
     private HashedUserPassword(string password) => Password = password;
 
-    private HashedUserPassword(IPasswordManager manager)
+    private HashedUserPassword(IStringHashAlgorithm manager)
     {
         string guidString = Guid.NewGuid().ToString();
         Password = manager.Hash(guidString);
     }
 
-    public HashedUserPassword(UserPassword password, IPasswordManager manager) =>
+    public HashedUserPassword(UserPassword password, IStringHashAlgorithm manager) =>
         Password = manager.Hash(password.Password);
 
     public static Status<HashedUserPassword> Create(string password)
@@ -25,7 +25,7 @@ public sealed record HashedUserPassword
         return new HashedUserPassword(password);
     }
 
-    public bool VerifyPassword(UserPassword password, IPasswordManager manager, out Error error)
+    public bool VerifyPassword(UserPassword password, IStringHashAlgorithm manager, out Error error)
     {
         bool verified = manager.Verify(password.Password, Password);
         if (!verified)
@@ -35,7 +35,7 @@ public sealed record HashedUserPassword
         return verified;
     }
 
-    public static HashedUserPassword Random(IPasswordManager manager)
+    public static HashedUserPassword Random(IStringHashAlgorithm manager)
     {
         return new HashedUserPassword(manager);
     }

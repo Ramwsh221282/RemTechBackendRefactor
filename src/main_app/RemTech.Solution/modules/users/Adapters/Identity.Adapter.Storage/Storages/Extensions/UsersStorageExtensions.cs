@@ -2,6 +2,7 @@
 using Dapper;
 using Identity.Adapter.Storage.Storages.Models;
 using Identity.Domain.Users.Aggregate;
+using RemTech.Core.Shared.Result;
 
 namespace Identity.Adapter.Storage.Storages.Extensions;
 
@@ -51,6 +52,134 @@ public static class UsersStorageExtensions
         );
 
         return !users.Any() ? null : users.First();
+    }
+
+    public static DynamicParameters TicketInsertParams(
+        this DynamicParameters parameters,
+        Guid id,
+        Guid userId,
+        string type,
+        DateTime created,
+        DateTime expired
+    )
+    {
+        parameters.Add("@id", id, DbType.Guid);
+        parameters.Add("@user_id", userId, DbType.Guid);
+        parameters.Add("@type", type, DbType.String);
+        parameters.Add("@created", created, DbType.DateTime);
+        parameters.Add("@expired", expired, DbType.DateTime);
+        return parameters;
+    }
+
+    public static async Task InsertTicket(
+        this IDbConnection connection,
+        DynamicParameters parameters,
+        IDbTransaction transaction,
+        CancellationToken ct
+    )
+    {
+        const string sql = """
+            INSERT INTO users_module.tickets
+            (id, user_id, type, created, expired)
+            VALUES
+            (@id, @user_id, @type, @created, @expired)
+            """;
+
+        var command = new CommandDefinition(
+            sql,
+            parameters,
+            cancellationToken: ct,
+            transaction: transaction
+        );
+
+        await connection.ExecuteAsync(command);
+    }
+
+    public static async Task<Status> UpdateUserRow(
+        this IDbConnection connection,
+        IDbTransaction transaction,
+        IEnumerable<string> setClauses,
+        IEnumerable<string> whereClauses,
+        DynamicParameters parameters,
+        CancellationToken ct = default
+    )
+    {
+        if (!setClauses.Any())
+            return Status.Internal("No set clauses provided for user row update.");
+        if (!whereClauses.Any())
+            return Status.Internal("No where clauses provided for user row update.");
+
+        string setClause = setClauses.Any() ? "SET " + string.Join(", ", setClauses) : string.Empty;
+        string whereClause = whereClauses.Any()
+            ? "WHERE " + string.Join(" AND ", whereClauses)
+            : string.Empty;
+        string sql = $"UPDATE users {setClause} {whereClause}";
+
+        CommandDefinition command = new(
+            sql,
+            parameters,
+            cancellationToken: ct,
+            transaction: transaction
+        );
+
+        int affected = await connection.ExecuteAsync(command);
+        return affected > 0 ? Status.Success() : Status.Internal("No rows affected.");
+    }
+
+    public static async Task<Status> BlockTicketedUserRow(
+        this IDbConnection connection,
+        Guid userId,
+        Guid ticketId,
+        IDbTransaction transaction,
+        CancellationToken ct = default
+    )
+    {
+        const string sql = """
+            SELECT 1
+            FROM users_module.users u
+            INNER JOIN users_module.tickets t ON u.id = t.user_id
+            WHERE u.id = @user_id AND t.id = @ticket_id
+            FOR UPDATE OF u, t                                      
+            """;
+
+        var command = new CommandDefinition(
+            sql,
+            new { user_id = userId, ticket_id = ticketId },
+            cancellationToken: ct,
+            transaction: transaction
+        );
+
+        int? exists = await connection.QueryFirstOrDefaultAsync<int?>(command);
+        return exists == null
+            ? Status.NotFound("Пользователь по заявке не найден.")
+            : Status.Success();
+    }
+
+    public static async Task<Status> BlockUserRow(
+        this IDbConnection connection,
+        Guid userId,
+        IDbTransaction transaction,
+        CancellationToken ct = default
+    )
+    {
+        const string sql = """
+            SELECT 1
+            FROM users_module.users u
+            WHERE u.id = @user_id
+            FOR UPDATE OF u                                      
+            """;
+
+        var command = new CommandDefinition(
+            sql,
+            new { user_id = userId },
+            cancellationToken: ct,
+            transaction: transaction
+        );
+
+        int? exists = await connection.QueryFirstOrDefaultAsync<int?>(command);
+        return exists == null
+            ? Status.NotFound("Пользователь по заявке не найден.")
+            : Status.Success();
     }
 
     private static UserData MapUser(

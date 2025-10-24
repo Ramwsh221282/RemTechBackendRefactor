@@ -17,7 +17,7 @@ using RemTech.Core.Shared.Validation;
 namespace Identity.Domain.Users.UseCases.UserRegistration;
 
 public sealed class UserRegistrationCommandHandler(
-    IPasswordManager passwordManager,
+    IStringHashAlgorithm stringHashAlgorithm,
     IRolesStorage roles,
     IValidator<UserRegistrationCommand> validator,
     IDomainEventsDispatcher dispatcher
@@ -40,7 +40,7 @@ public sealed class UserRegistrationCommandHandler(
         UserLogin login = UserLogin.Create(command.UserLogin);
         UserEmail email = UserEmail.Create(command.UserEmail);
         UserPassword notHashed = UserPassword.Create(command.UserPassword);
-        HashedUserPassword hashed = new HashedUserPassword(notHashed, passwordManager);
+        HashedUserPassword hashed = new HashedUserPassword(notHashed, stringHashAlgorithm);
 
         UserProfile profile = new(login, email, hashed);
         UserRolesCollection userRolesCollection = new([role]);

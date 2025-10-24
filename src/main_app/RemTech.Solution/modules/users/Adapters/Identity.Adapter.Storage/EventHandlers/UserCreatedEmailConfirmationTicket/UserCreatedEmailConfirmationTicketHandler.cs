@@ -31,13 +31,21 @@ public sealed class UserCreatedEmailConfirmationTicketHandler(
             if (user.IsFailure)
                 return Status.NotFound("Пользователь не найден.");
 
-            await InsertTicket(@event, user, connection, transaction, ct);
+            await InsertTicket(@event, connection, transaction, ct);
             var notificationBody = CreateNotification(@event, user);
             var notification = await notifier.Notify(notificationBody, transaction, ct);
             if (!notification.IsSuccess)
                 return Status.Conflict(notification.Error);
 
             transaction.Commit();
+
+            logger.Information(
+                "{Context}. User: {Id} created email confirmation ticket. Ticket Id - {TicketId}.",
+                Context,
+                @event.EventArgs.UserId,
+                @event.EventArgs.TicketId
+            );
+
             return Status.Success();
         }
         catch (Exception ex)
@@ -56,7 +64,6 @@ public sealed class UserCreatedEmailConfirmationTicketHandler(
     )
     {
         Guid userId = @event.EventArgs.UserId;
-
         User? user = await connection.QueryUser(
             ["u.id = @id"],
             new { id = userId },
@@ -64,41 +71,26 @@ public sealed class UserCreatedEmailConfirmationTicketHandler(
             true,
             ct
         );
-
         return user == null ? Error.NotFound("Пользователь не найден.") : user;
     }
 
     private async Task InsertTicket(
         Domain.Users.Events.UserCreatedEmailConfirmTicket @event,
-        User user,
         IDbConnection connection,
         IDbTransaction transaction,
         CancellationToken ct
     )
     {
-        const string sql = """
-            INSERT INTO users_module.tickets
-            (id, user_id, type, created, expired)
-            VALUES
-            (@id, @user_id, @type, @created, @expired)
-            """;
-
         var eventArgs = @event.EventArgs;
-        var command = new CommandDefinition(
-            sql,
-            new
-            {
-                id = eventArgs.TicketId,
-                user_id = user.Id.Id,
-                type = eventArgs.Type,
-                created = eventArgs.Created,
-                expired = eventArgs.Expired,
-            },
-            cancellationToken: ct,
-            transaction: transaction
+        DynamicParameters parameters = new();
+        parameters = parameters.TicketInsertParams(
+            eventArgs.TicketId,
+            eventArgs.UserId,
+            eventArgs.Type,
+            eventArgs.Created,
+            eventArgs.Expired
         );
-
-        await connection.ExecuteAsync(command);
+        await connection.InsertTicket(parameters, transaction, ct);
     }
 
     private UserNotification CreateNotification(
@@ -108,7 +100,7 @@ public sealed class UserCreatedEmailConfirmationTicketHandler(
     {
         Guid ticketId = @event.EventArgs.TicketId;
         string subject = "Подтверждение почты RemTech агрегатор спецтехники.";
-        string message = $"""
+        string message = """
             Была подана заявка на подтверждение почты.
             Для подтверждения почты необходимо перейти по ссылке:
             <a href="FRONTEND_URL/TOKEN">Подтверждение почты</a>

@@ -27,6 +27,7 @@ public sealed class UserCreatedEventHandler(Serilog.ILogger logger, IdentityDbCo
             await InsertUser(@event.UserId, @event.Profile, connection, txn, ct);
             await InsertUserRoles(@event.UserId, roleIds, connection, txn, ct);
             await txn.CommitAsync(ct);
+            LogCreatedUserInfo(@event);
             return Status.Success();
         }
         catch (Exception ex)
@@ -92,5 +93,17 @@ public sealed class UserCreatedEventHandler(Serilog.ILogger logger, IdentityDbCo
             transaction: txn.GetDbTransaction()
         );
         await connection.ExecuteAsync(command);
+    }
+
+    private void LogCreatedUserInfo(Domain.Users.Events.UserCreated @event)
+    {
+        var profileArgs = @event.Profile;
+        logger.Information(
+            "{Context}: Created user: {Id} {Login} {Email}",
+            Context,
+            @event.UserId,
+            profileArgs.UserLogin,
+            profileArgs.UserEmail
+        );
     }
 }

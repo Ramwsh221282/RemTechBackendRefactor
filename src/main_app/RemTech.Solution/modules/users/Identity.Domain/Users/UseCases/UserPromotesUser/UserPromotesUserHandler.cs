@@ -18,7 +18,7 @@ namespace Identity.Domain.Users.UseCases.UserPromotesUser;
 public sealed class UserPromotesUserHandler(
     IUsersStorage users,
     IRolesStorage roles,
-    IPasswordManager passwordManager,
+    IStringHashAlgorithm stringHashAlgorithm,
     IValidator<UserPromotesUserCommand> validator,
     IDomainEventsDispatcher dispatcher
 ) : ICommandHandler<UserPromotesUserCommand, Status<User>>
@@ -38,7 +38,7 @@ public sealed class UserPromotesUserHandler(
         if (promoter == null)
             return Error.NotFound("Вызывающий пользователь не найден.");
 
-        Status verification = promoter.Verify(promoterPassword, passwordManager);
+        Status verification = promoter.Verify(promoterPassword, stringHashAlgorithm);
         if (verification.IsFailure)
             return verification.Error;
 

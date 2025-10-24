@@ -1,9 +1,5 @@
-﻿using Identity.Domain.Users.Aggregate;
-using Identity.Domain.Users.Entities.Profile.ValueObjects;
+﻿using Identity.Domain.Users.Entities.Profile.ValueObjects;
 using Identity.Domain.Users.Events;
-using Identity.Domain.Users.Ports.Passwords;
-using Identity.Domain.Users.Ports.Storage;
-using RemTech.Core.Shared.Result;
 
 namespace Identity.Domain.Users.Entities.Profile;
 
@@ -24,60 +20,69 @@ public sealed class UserProfile
     public bool EmailConfirmed { get; private set; }
     public HashedUserPassword Password { get; private set; }
 
-    public async Task<Status<UserProfile>> ChangeEmail(
-        UserProfile profile,
-        IUsersStorage users,
-        CancellationToken ct = default
-    )
-    {
-        if (!await profile.IsEmailUnique(users, ct))
-            return Error.Conflict("Пользователь с такой почтой уже существует.");
-
-        Email = profile.Email;
-        return this;
-    }
-
-    public void ConfirmEmail() => EmailConfirmed = true;
-
     public bool HasEmailConfirmed() => EmailConfirmed;
 
-    public bool IsPasswordVerified(
-        UserPassword password,
-        IPasswordManager manager,
-        out Error error
-    ) => Password.VerifyPassword(password, manager, out error);
+    public UserProfile Confirmed()
+    {
+        return new UserProfile(this, true);
+    }
 
-    public async Task<Status<UserProfile>> ChangeLogin(
-        UserProfile profile,
-        IUsersStorage users,
-        CancellationToken ct = default
+    public UserProfile Change(
+        UserLogin? login = null,
+        UserEmail? email = null,
+        HashedUserPassword? password = null
     )
     {
-        if (!await profile.IsLoginUnique(users, ct))
-            return Error.Conflict("Пользователь с таким логином уже существует.");
-
-        Login = profile.Login;
-        return this;
+        UserProfile updated = login == null ? this : Change(login);
+        updated = email == null ? updated : Change(email);
+        updated = password == null ? updated : Change(password);
+        return updated;
     }
 
-    public async Task<bool> IsLoginUnique(IUsersStorage users, CancellationToken ct = default)
+    public UserProfile Change(HashedUserPassword password)
     {
-        User? user = await users.Get(Login, ct);
-        return user == null;
+        return new UserProfile(this, password);
     }
 
-    public async Task<bool> IsEmailUnique(IUsersStorage users, CancellationToken ct = default)
+    public UserProfile Change(UserEmail email)
     {
-        User? user = await users.Get(Email, ct);
-        return user == null;
+        return new UserProfile(this, email);
     }
 
-    public void ChangePassword(UserPassword password, IPasswordManager manager) =>
-        Password = new HashedUserPassword(password, manager);
+    public UserProfile Change(UserLogin login)
+    {
+        return new UserProfile(this, login);
+    }
 
     public UserProfileEventArgs ToEventArgs() =>
         new(Login.Name, Email.Email, Password.Password, HasEmailConfirmed());
 
     public UserProfile(UserProfile profile, bool confirmed)
         : this(profile.Login, profile.Email, profile.Password, confirmed) { }
+
+    private UserProfile(UserProfile profile, HashedUserPassword password)
+        : this(profile)
+    {
+        Password = password;
+    }
+
+    private UserProfile(UserProfile profile, UserEmail email)
+        : this(profile)
+    {
+        Email = email;
+    }
+
+    private UserProfile(UserProfile profile, UserLogin login)
+        : this(profile)
+    {
+        Login = login;
+    }
+
+    private UserProfile(UserProfile profile)
+    {
+        Login = profile.Login;
+        Email = profile.Email;
+        EmailConfirmed = profile.EmailConfirmed;
+        Password = profile.Password;
+    }
 }

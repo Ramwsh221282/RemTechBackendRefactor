@@ -34,7 +34,7 @@ public sealed class UserTicket
         return Status.Success();
     }
 
-    private bool BelongsTo(User user) => IssuerId.Id == user.Id.Id;
+    public bool BelongsTo(User user) => IssuerId.Id == user.Id.Id;
 
-    private bool IsAlive() => LifeTime.IsAlive();
+    public bool IsAlive() => LifeTime.IsAlive();
 }

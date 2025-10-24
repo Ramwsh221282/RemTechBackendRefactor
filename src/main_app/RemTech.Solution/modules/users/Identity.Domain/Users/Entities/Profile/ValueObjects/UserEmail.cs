@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Identity.Domain.Users.Ports.Storage;
 using RemTech.Core.Shared.Result;
 
 namespace Identity.Domain.Users.Entities.Profile.ValueObjects;
@@ -32,5 +33,11 @@ public sealed class UserEmail
         if (email.Length > 254)
             return Error.Validation("Почта пользователя некорректного формата");
         return new UserEmail(email);
+    }
+
+    public async Task<bool> ContainsIn(IUsersStorage storage, CancellationToken ct = default)
+    {
+        var user = await storage.Get(this, ct);
+        return user != null;
     }
 }
