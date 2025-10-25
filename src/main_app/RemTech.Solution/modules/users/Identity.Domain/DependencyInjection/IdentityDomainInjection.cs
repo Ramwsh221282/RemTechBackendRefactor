@@ -18,5 +18,9 @@ public static class IdentityDomainInjection
         services.AddScoped<IGetUserByTicketHandle, GetUserByTicketHandle>();
         services.AddScoped<IGetUserByEmailHandle, GetUserByEmailHandle>();
         services.AddScoped<IGetUserByLoginHandle, GetUserByLoginHandle>();
+        services.AddScoped<IGetUserHandle, MultiWayGetUserHandle>();
+        services.AddScoped<IManageUserProfileUniqueAttributes, ManageUserProfileUniqueAttributes>();
+        services.AddScoped<IUserEmailUnique, UserEmailUnique>();
+        services.AddScoped<IUserLoginUnique, UserLoginUnique>();
     }
 }

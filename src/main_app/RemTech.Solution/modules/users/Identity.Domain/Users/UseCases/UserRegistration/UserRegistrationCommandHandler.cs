@@ -5,10 +5,10 @@ using Identity.Domain.Roles.Ports;
 using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Users.Aggregate;
 using Identity.Domain.Users.Aggregate.ValueObjects;
-using Identity.Domain.Users.Entities;
 using Identity.Domain.Users.Entities.Profile;
 using Identity.Domain.Users.Entities.Profile.ValueObjects;
 using Identity.Domain.Users.Ports.Passwords;
+using Identity.Domain.Users.UseCases.Common;
 using RemTech.Core.Shared.Cqrs;
 using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
@@ -20,7 +20,8 @@ public sealed class UserRegistrationCommandHandler(
     IStringHashAlgorithm stringHashAlgorithm,
     IRolesStorage roles,
     IValidator<UserRegistrationCommand> validator,
-    IDomainEventsDispatcher dispatcher
+    IDomainEventsDispatcher dispatcher,
+    IManageUserProfileUniqueAttributes uniquesness
 ) : ICommandHandler<UserRegistrationCommand, Status<User>>
 {
     public async Task<Status<User>> Handle(
@@ -45,6 +46,10 @@ public sealed class UserRegistrationCommandHandler(
         UserProfile profile = new(login, email, hashed);
         UserRolesCollection userRolesCollection = new([role]);
         User user = User.Create(profile, userRolesCollection);
+
+        var unique = await uniquesness.HasUniqueProfileAttributes(user, ct);
+        if (unique.IsFailure)
+            return unique.Error;
 
         Status status = await user.PublishEvents(dispatcher, ct);
         return status.IsFailure ? status.Error : user;

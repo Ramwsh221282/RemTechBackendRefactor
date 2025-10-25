@@ -15,11 +15,24 @@ public record Error(string ErrorText, ErrorCodes Code)
     public static Error TokensExpired() =>
         new Error("Expired tokens sessions.", ErrorCodes.Unauthorized);
 
-    public static Error Forbidden() => new("Операция запрещена", ErrorCodes.Forbidden);
-
     public static Error Forbidden(string message) => new(message, ErrorCodes.Forbidden);
 
+    public static Error Unauthorized() => new("Необходима авторизация.", ErrorCodes.Unauthorized);
+
+    public static Error Forbidden() => new("Доступ к ресурсу запрещен.", ErrorCodes.Forbidden);
+
     public Status Status() => new(this);
+
+    public Error Combine(Error other)
+    {
+        if (other.Code != Code)
+            throw new ApplicationException(
+                $"Uncompatible errors. Right code: {Code}. Left code: {other.Code}"
+            );
+
+        string message = string.Join(", ", [ErrorText, other.ErrorText]);
+        return new Error(message, Code);
+    }
 
     public Status<T> Status<T>() => new(this);
 

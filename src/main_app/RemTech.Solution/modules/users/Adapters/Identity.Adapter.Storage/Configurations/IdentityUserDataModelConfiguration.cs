@@ -39,5 +39,8 @@ public sealed class IdentityUserDataModelConfiguration
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade)
             .HasConstraintName("fk_users_tickets");
+
+        builder.HasIndex(x => x.Email).IsUnique().HasDatabaseName("idx_users_email_unique");
+        builder.HasIndex(x => x.Login).IsUnique().HasDatabaseName("idx_users_login_unique");
     }
 }

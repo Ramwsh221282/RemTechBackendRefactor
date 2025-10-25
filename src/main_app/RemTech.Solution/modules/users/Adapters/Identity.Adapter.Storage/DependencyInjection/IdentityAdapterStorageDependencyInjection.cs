@@ -1,6 +1,7 @@
 ﻿using Dapper.FluentMap;
 using Dapper.FluentMap.Configuration;
 using Dapper.FluentMap.Mapping;
+using Identity.Adapter.Storage.Seeding;
 using Identity.Adapter.Storage.Storages;
 using Identity.Domain.Roles.Ports;
 using Identity.Domain.Users.Ports.Storage;
@@ -17,6 +18,8 @@ public static class IdentityAdapterStorageDependencyInjection
         services.AddScoped<IRolesStorage, RolesStorage>();
         services.AddScoped<IdentityDbContext>();
         services.AddDomainEventHandlers(typeof(IdentityDbContext).Assembly);
+        services.AddScoped<IUserSeeding, UserSeeding>();
+        services.AddScoped<IRolesSeeding, RolesSeeding>();
         AddStorageModelMappings();
     }
 
@@ -26,10 +29,9 @@ public static class IdentityAdapterStorageDependencyInjection
 
         IEnumerable<Type> mapperConfigurations = typeof(IdentityDbContext)
             .Assembly.GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract)
+            .Where(t => t is { IsClass: true, IsAbstract: false })
             .Where(t =>
-                t.BaseType != null
-                && t.BaseType.IsGenericType
+                t.BaseType is { IsGenericType: true }
                 && t.BaseType.GetGenericTypeDefinition() == baseMapType
             );
 

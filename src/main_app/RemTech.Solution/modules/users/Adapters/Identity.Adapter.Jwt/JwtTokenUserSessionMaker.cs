@@ -60,9 +60,8 @@ public sealed class JwtTokenUserSessionMaker(
     {
         DateTime expires = DateTime.UtcNow.AddHours(12);
         string token = Guid.NewGuid().ToString();
-        string type = "refresh_token";
 
-        var structure = new { type, details = new { token, expires } };
+        var structure = new { TokenConstants.RefreshToken, details = new { token, expires } };
         string content = JsonSerializer.Serialize(structure);
 
         return new UserSessionInfo(content);

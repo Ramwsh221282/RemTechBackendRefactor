@@ -26,14 +26,24 @@ public class UserSessionsService(
         await storage.Remove(session);
     }
 
-    public async Task<UserSession> Refresh(UserSession session)
+    public async Task<Status<UserSession>> Refresh(UserSession session)
     {
-        await storage.Remove(session);
+        if (!await storage.Contains(session))
+        {
+            await storage.Remove(session);
+            return Error.Unauthorized();
+        }
+
         var userId = GetSubjectId(session);
         if (userId.IsFailure)
-            return EmptySession();
+            return Error.Unauthorized();
+
         var user = await users.Get(userId);
-        return user == null ? EmptySession() : await refresher.Refresh(user, session);
+        if (user == null)
+            return Error.Unauthorized();
+
+        await storage.Remove(session);
+        return await refresher.Refresh(user, session);
     }
 
     public async Task<bool> Validate(UserSession session)

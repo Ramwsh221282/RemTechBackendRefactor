@@ -2,6 +2,7 @@
 
 public interface IUserSessionsStorage
 {
-    public abstract Task Store(UserSession session);
-    public abstract Task Remove(UserSession session);
+    Task Store(UserSession session);
+    Task Remove(UserSession session);
+    Task<bool> Contains(UserSession session);
 }

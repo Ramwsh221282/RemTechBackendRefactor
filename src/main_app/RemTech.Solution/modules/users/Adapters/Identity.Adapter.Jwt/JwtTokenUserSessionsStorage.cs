@@ -17,6 +17,12 @@ public sealed class JwtTokenUserSessionsStorage(RedisCache cache) : IUserSession
         await _database.StringSetAsync(refreshToken, refreshToken, expiresIn);
     }
 
+    public async Task<bool> Contains(UserSession session)
+    {
+        string refreshToken = session.RefreshToken.Token;
+        return await _database.KeyExistsAsync(refreshToken);
+    }
+
     public async Task Remove(UserSession session)
     {
         string refreshToken = session.RefreshToken.Token;
@@ -28,7 +34,7 @@ public sealed class JwtTokenUserSessionsStorage(RedisCache cache) : IUserSession
         if (string.IsNullOrWhiteSpace(refreshToken))
             return DateTime.UtcNow.Subtract(DateTime.UtcNow);
 
-        if (!refreshToken.Contains("refresh_token"))
+        if (!refreshToken.Contains(TokenConstants.RefreshToken))
             return DateTime.UtcNow.Subtract(DateTime.UtcNow);
 
         using JsonDocument document = JsonDocument.Parse(refreshToken);

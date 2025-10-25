@@ -44,6 +44,46 @@ public class Status
         IsFailure = status.IsFailure;
     }
 
+    public bool SameErrors(Status other)
+    {
+        return (_error, other._error) switch
+        {
+            { Item1: null, Item2: null } => true,
+            { Item1: not null, Item2: null } => false,
+            { Item1: null, Item2: not null } => false,
+            { Item1: Error error1, Item2: Error error2 } => (error1.Code, error2.Code) switch
+            {
+                _ when error1.Code != error2.Code => false,
+                _ when error1.Code == error2.Code => true,
+                _ => false,
+            },
+        };
+    }
+
+    public static Status Combined(IEnumerable<Status> statuses)
+    {
+        if (!statuses.Any())
+            throw new ApplicationException("Cannot make a combined status. Enumerable is empty.");
+
+        if (statuses.All(s => s.IsSuccess))
+            return Success();
+
+        bool hasFailure = statuses.Any(s => s.IsFailure);
+        bool hasSuccess = statuses.Any(s => s.IsSuccess);
+
+        if (hasFailure && hasSuccess)
+            throw new ApplicationException("Incompatible statuses. Statuses must be same.");
+
+        var distinctCodes = statuses.Select(s => s.Error.Code).Distinct().ToArray();
+        if (distinctCodes.Length > 1)
+            throw new ApplicationException(
+                "Incompatible statuses. Statuses must be same error code."
+            );
+
+        string errorMessage = string.Join(" ,", statuses.Select(s => s.Error.ErrorText));
+        return new Status(new Error(errorMessage, distinctCodes[0]));
+    }
+
     public static Status Internal(string message)
     {
         Error error = new Error(message, ErrorCodes.Internal);
@@ -55,6 +95,10 @@ public class Status
         Error error = new Error(message, ErrorCodes.Validation);
         return new Status(error);
     }
+
+    public static Status Unauthorized() => new Status(Error.Unauthorized());
+
+    public static Status Forbidden() => new Status(Error.Forbidden());
 
     public static Status Success() => new();
 
