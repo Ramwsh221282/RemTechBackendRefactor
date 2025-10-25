@@ -1,7 +1,11 @@
-﻿using Identity.Domain.Roles;
+﻿using Identity.Adapter.Jwt.Claims;
+using Identity.Adapter.Jwt.Security;
+using Identity.Domain.Roles;
 using Identity.Domain.Roles.Ports;
 using Identity.Domain.Roles.UseCases.AddNewRole;
 using Identity.Domain.Roles.ValueObjects;
+using Identity.Domain.Sessions;
+using Identity.Domain.Sessions.Ports;
 using Identity.Domain.Users.Aggregate;
 using Identity.Domain.Users.Aggregate.ValueObjects;
 using Identity.Domain.Users.Entities.Profile.ValueObjects;
@@ -13,9 +17,12 @@ using Identity.Domain.Users.UseCases.CreateRoot;
 using Identity.Domain.Users.UseCases.UserDemotesUser;
 using Identity.Domain.Users.UseCases.UserPromotesUser;
 using Identity.Domain.Users.UseCases.UserRegistration;
+using Identity.Integrational.Tests.JwtTests;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RemTech.Core.Shared.Cqrs;
 using RemTech.Core.Shared.Result;
+using RemTech.Shared.Configuration.Options;
 using Shared.Infrastructure.Module.DependencyInjection;
 
 namespace Identity.Integrational.Tests.Common;
@@ -38,6 +45,20 @@ public sealed class IdentityModuleUseCases(IdentityTestApplicationFactory factor
         }
     }
 
+    public async Task<UserSession> MakeAuthorizedSession(User user)
+    {
+        await using var scope = _sp.CreateAsyncScope();
+        var service = scope.GetService<UserSessionsService>();
+        return await service.Create(user);
+    }
+
+    public async Task<UserSession> RefreshUserSession(UserSession session)
+    {
+        await using var scope = _sp.CreateAsyncScope();
+        var service = scope.GetService<UserSessionsService>();
+        return await service.Refresh(session);
+    }
+
     public async Task<Status<IdentityRole>> CreateRoleUseCase(string name)
     {
         AddRoleCommand command = new(name);
@@ -45,6 +66,22 @@ public sealed class IdentityModuleUseCases(IdentityTestApplicationFactory factor
         return await scope
             .GetService<ICommandHandler<AddRoleCommand, Status<IdentityRole>>>()
             .Handle(command);
+    }
+
+    public async Task<UserSession> CreateFakeSession(User user, int secondsTillExpire)
+    {
+        await using var scope = _sp.CreateAsyncScope();
+        var claimsFactory = scope.GetService<IJwtTokenClaimsFactory>();
+        var keys = scope.GetService<IRsaSecurityTokenPairStorage>();
+        var options = scope.GetService<IOptions<FrontendOptions>>();
+        FakeJwtSessionTokensMaker fake = new(claimsFactory, keys, options, secondsTillExpire);
+        return await fake.Create(user);
+    }
+
+    public async Task<bool> ValidateSessionToken(UserSession session)
+    {
+        await using var scope = _sp.CreateAsyncScope();
+        return await scope.GetService<UserSessionsService>().Validate(session);
     }
 
     public async Task<IdentityRole?> FindRoleUseCase(string name)

@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\shared_module\RemTech.Shared.Configuration\RemTech.Shared.Configuration.csproj" />
+    <ProjectReference Include="..\Adapters\Identity.Adapter.Jwt\Identity.Adapter.Jwt.csproj" />
     <ProjectReference Include="..\Adapters\Identity.Adapter.Notifier\Identity.Adapter.Notifier.csproj" />
     <ProjectReference Include="..\Adapters\Identity.Adapter.PasswordManager\Identity.Adapter.PasswordManager.csproj" />
     <ProjectReference Include="..\Adapters\Identity.Adapter.Storage\Identity.Adapter.Storage.csproj" />

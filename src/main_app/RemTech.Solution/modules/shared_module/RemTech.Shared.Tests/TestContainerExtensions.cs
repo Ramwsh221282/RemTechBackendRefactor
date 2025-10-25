@@ -2,6 +2,7 @@
 using RemTech.Shared.Configuration.Options;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
+using Testcontainers.Redis;
 
 namespace RemTech.Shared.Tests;
 
@@ -14,6 +15,12 @@ public static class TestContainerExtensions
             .WithUsername("username")
             .WithPassword("password")
             .Build();
+
+    public static RedisContainer BuildRedisContainer(this RedisBuilder builder) =>
+        builder.WithImage("redis:latest").Build();
+
+    public static CacheOptions CreateCacheOptions(this RedisContainer container) =>
+        new() { Host = container.GetConnectionString() };
 
     public static DatabaseOptions CreateDatabaseConfiguration(this PostgreSqlContainer container)
     {

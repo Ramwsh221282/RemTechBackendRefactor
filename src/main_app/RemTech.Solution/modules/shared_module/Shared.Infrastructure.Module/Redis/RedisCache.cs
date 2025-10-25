@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RemTech.Shared.Configuration.Options;
 using StackExchange.Redis;
 
@@ -23,5 +24,13 @@ public sealed class RedisCache
         };
 
         _multiplexer = ConnectionMultiplexer.Connect(opts);
+    }
+}
+
+public static class RedisCacheExtensions
+{
+    public static void AddRedis(this IServiceCollection services)
+    {
+        services.AddSingleton<RedisCache>();
     }
 }

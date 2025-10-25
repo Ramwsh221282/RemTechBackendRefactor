@@ -5,8 +5,10 @@ using StackExchange.Redis;
 
 namespace Identity.Adapter.Jwt.Security;
 
-public sealed class RsaSecurityKeyPairStorage(RedisCache cache) : IRsaSecurityTokenPairStorage
+public sealed class RsaSecurityKeyPairStorage(RedisCache cache, Serilog.ILogger logger)
+    : IRsaSecurityTokenPairStorage
 {
+    private const string Context = nameof(RsaSecurityKeyPairStorage);
     private const string PublicKeyName = "RSA_PUBLIC_KEY";
     private const string PrivateKeyName = "RSA_PRIVATE_KEY";
     private readonly IDatabase _database = cache.Database;
@@ -15,7 +17,10 @@ public sealed class RsaSecurityKeyPairStorage(RedisCache cache) : IRsaSecurityTo
     public async Task Generate()
     {
         if (_generatedFromStart)
+        {
+            logger.Information("{Context}. Keys already generated.", Context);
             return;
+        }
 
         await RemoveKey(PublicKeyName);
         await RemoveKey(PrivateKeyName);
@@ -27,6 +32,7 @@ public sealed class RsaSecurityKeyPairStorage(RedisCache cache) : IRsaSecurityTo
         await StoreKey(PrivateKeyName, privateKey);
         await StoreKey(PublicKeyName, publicKey);
         _generatedFromStart = true;
+        logger.Information("{Context}. Keys generated.", Context);
     }
 
     public async Task<RsaSecurityKey> Get()

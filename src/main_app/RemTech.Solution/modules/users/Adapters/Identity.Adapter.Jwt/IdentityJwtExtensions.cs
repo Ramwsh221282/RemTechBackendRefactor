@@ -1,30 +1,21 @@
 ﻿using Identity.Adapter.Jwt.Claims;
 using Identity.Adapter.Jwt.Security;
-using Identity.Adapter.Jwt.Users;
-using Identity.Jwt.Port;
+using Identity.Domain.Sessions;
+using Identity.Domain.Sessions.Ports;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Identity.Adapter.Jwt;
 
 public static class IdentityJwtExtensions
 {
-    public static void AddIdentityJwt(IServiceCollection services)
+    public static void AddIdentityJwt(this IServiceCollection services)
     {
-        services.AddSingleton<IJwtUserDescriptor, JwtUserDescriptor>();
+        services.AddSingleton<IUserSessionsStorage, JwtTokenUserSessionsStorage>();
+        services.AddSingleton<IUserSessionMaker, JwtTokenUserSessionMaker>();
+        services.AddSingleton<IUserSessionRefresher, JwtTokenUserSessionRefresher>();
+        services.AddSingleton<IUserSessionChecker, JwtTokenUserSessionChecker>();
         services.AddSingleton<IRsaSecurityTokenPairStorage, RsaSecurityKeyPairStorage>();
-        services.AddSingleton<IJwtTokenClaimsFactory, IJwtTokenClaimsFactory>();
-        services.AddJwtUserBaker();
-    }
-
-    private static void AddJwtUserBaker(this IServiceCollection services)
-    {
-        services.AddSingleton<ISessionUserBaker, SessionUserBaker>(sp =>
-        {
-            var descriptor = sp.GetRequiredService<IJwtUserDescriptor>();
-            var keys = sp.GetRequiredService<IRsaSecurityTokenPairStorage>();
-            var claims = sp.GetRequiredService<IJwtTokenClaimsFactory>();
-            var baker = new SessionUserBaker(descriptor, keys, claims);
-            return baker;
-        });
+        services.AddSingleton<IJwtTokenClaimsFactory, UserClaimsJwtFactory>();
+        services.AddScoped<UserSessionsService>();
     }
 }
