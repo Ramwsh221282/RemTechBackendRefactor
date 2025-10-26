@@ -1,4 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+using Dapper.FluentMap;
+using Dapper.FluentMap.Configuration;
+using Dapper.FluentMap.Mapping;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Shared.Infrastructure.Module.DependencyInjection;
 
@@ -14,5 +18,32 @@ public static class DependencyInjectionExtensions
         where T : class
     {
         return scope.ServiceProvider.GetRequiredService<T>();
+    }
+
+    public static void AddStorageModelMappings(this IServiceCollection services, Assembly assembly)
+    {
+        Type baseMapType = typeof(EntityMap<>);
+
+        IEnumerable<Type> mapperConfigurations = assembly
+            .GetTypes()
+            .Where(t => t is { IsClass: true, IsAbstract: false })
+            .Where(t =>
+                t.BaseType is { IsGenericType: true }
+                && t.BaseType.GetGenericTypeDefinition() == baseMapType
+            );
+
+        FluentMapper.Initialize(config =>
+        {
+            foreach (Type mapperConfig in mapperConfigurations)
+            {
+                Type entityType = mapperConfig.BaseType!.GetGenericArguments()[0];
+                object instance = Activator.CreateInstance(mapperConfig)!;
+
+                typeof(FluentMapConfiguration)
+                    .GetMethod("AddMap")!
+                    .MakeGenericMethod(entityType)
+                    .Invoke(config, [instance]);
+            }
+        });
     }
 }

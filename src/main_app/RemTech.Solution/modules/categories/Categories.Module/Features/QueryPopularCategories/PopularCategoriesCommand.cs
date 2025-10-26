@@ -2,4 +2,4 @@
 
 namespace Categories.Module.Features.QueryPopularCategories;
 
-internal sealed record PopularCategoriesCommand : ICommand;
+public sealed record PopularCategoriesCommand : ICommand;

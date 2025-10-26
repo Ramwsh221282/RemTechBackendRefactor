@@ -1,14 +1,10 @@
-﻿using Cleaners.Module.Database;
-using Cleaners.Module.Domain;
-using Npgsql;
+﻿using Cleaners.Module.Domain;
 using RemTech.Core.Shared.Cqrs;
 
 namespace Cleaners.Module.Services.Features.ChangeItemsThreshold;
 
-internal sealed class ChangeItemsThresholdCommandHandler(
-    NpgsqlConnection connection,
-    Serilog.ILogger logger
-) : ICommandHandler<ChangeItemsThresholdCommand, ICleaner>
+internal sealed class ChangeItemsThresholdCommandHandler(ICleaners cleaners, Serilog.ILogger logger)
+    : ICommandHandler<ChangeItemsThresholdCommand, ICleaner>
 {
     public async Task<ICleaner> Handle(
         ChangeItemsThresholdCommand command,
@@ -16,7 +12,6 @@ internal sealed class ChangeItemsThresholdCommandHandler(
     )
     {
         logger.Information("Change items threshold started");
-        ICleaners cleaners = new NpgSqlCleaners(connection);
         ICleaner cleaner = await cleaners.Single(ct);
         cleaner = cleaner.ChangeItemsToCleanThreshold(command.Threshold);
         return cleaner;

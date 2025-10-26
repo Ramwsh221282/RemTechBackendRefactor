@@ -1,6 +1,6 @@
 ﻿using Identity.Domain.Users.Aggregate;
 
-namespace Identity.WebApi.Controllers.Users;
+namespace Identity.WebApi.Responses;
 
 public sealed record UserDto
 {

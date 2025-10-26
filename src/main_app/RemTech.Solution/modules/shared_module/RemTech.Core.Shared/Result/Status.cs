@@ -127,9 +127,13 @@ public class Status
     }
 }
 
-public class Status<T> : Status
+public class Status<T>
 {
     private readonly T _value;
+
+    public Error Error { get; }
+    public bool IsFailure { get; }
+    public bool IsSuccess => !IsFailure;
 
     public T Value
     {
@@ -148,18 +152,22 @@ public class Status<T> : Status
     public Status(T value)
     {
         _value = value;
+        Error = Error.None();
+        IsFailure = false;
     }
 
     public Status(Error error)
-        : base(error)
     {
         _value = default!;
+        Error = error;
+        IsFailure = true;
     }
 
     public Status(Status<T> status)
-        : base(status.Error)
     {
         _value = status._value;
+        Error = status.Error;
+        IsFailure = status.IsFailure;
     }
 
     public Status(ValidationError error)
@@ -175,11 +183,13 @@ public class Status<T> : Status
 
     public static Status<T> Success(T value) => new(value);
 
-    public static new Status<T> Failure(Error error) => new(error);
+    public static Status<T> Failure(Error error) => new(error);
 
     public static implicit operator T(Status<T> status) => status.Value;
 
     public static implicit operator Error(Status<T> status) => status.Error;
+
+    public static implicit operator Status(Status<T> status) => new(status.Error);
 
     public static implicit operator Status<T>(Error error) => Failure(error);
 

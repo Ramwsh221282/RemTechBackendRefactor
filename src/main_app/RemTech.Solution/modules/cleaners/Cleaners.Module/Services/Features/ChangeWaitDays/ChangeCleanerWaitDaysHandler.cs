@@ -1,14 +1,10 @@
-﻿using Cleaners.Module.Database;
-using Cleaners.Module.Domain;
-using Npgsql;
+﻿using Cleaners.Module.Domain;
 using RemTech.Core.Shared.Cqrs;
 
 namespace Cleaners.Module.Services.Features.ChangeWaitDays;
 
-internal sealed class ChangeCleanerWaitDaysHandler(
-    NpgsqlConnection connection,
-    Serilog.ILogger logger
-) : ICommandHandler<ChangeCleanerWaitDays, ICleaner>
+internal sealed class ChangeCleanerWaitDaysHandler(ICleaners cleaners, Serilog.ILogger logger)
+    : ICommandHandler<ChangeCleanerWaitDays, ICleaner>
 {
     public async Task<ICleaner> Handle(
         ChangeCleanerWaitDays command,
@@ -16,7 +12,6 @@ internal sealed class ChangeCleanerWaitDaysHandler(
     )
     {
         logger.Information("Changing cleaner wait days");
-        ICleaners cleaners = new NpgSqlCleaners(connection);
         ICleaner cleaner = await cleaners.Single(ct);
         return cleaner.ChangeWaitDays(command.Days);
     }

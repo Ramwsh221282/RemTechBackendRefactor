@@ -10,6 +10,7 @@ using RemTech.Core.Shared.Cqrs;
 namespace Cleaners.Module.Services.Features.PermantlyEnable;
 
 internal sealed class PermantlyEnableCleanerHandler(
+    ICleaners cleaners,
     NpgsqlConnection connection,
     Serilog.ILogger logger,
     ConnectionFactory rabbitFactory,

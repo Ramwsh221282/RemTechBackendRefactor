@@ -1,11 +1,9 @@
-﻿using Cleaners.Module.Database;
-using Cleaners.Module.Domain;
-using Npgsql;
+﻿using Cleaners.Module.Domain;
 using RemTech.Core.Shared.Cqrs;
 
 namespace Cleaners.Module.Services.Features.DisableCleaner;
 
-internal sealed class DisableCleanerHandler(NpgsqlConnection connection, Serilog.ILogger logger)
+internal sealed class DisableCleanerHandler(ICleaners cleaners, Serilog.ILogger logger)
     : ICommandHandler<DisableCleanerCommand, ICleaner>
 {
     public async Task<ICleaner> Handle(
@@ -14,7 +12,6 @@ internal sealed class DisableCleanerHandler(NpgsqlConnection connection, Serilog
     )
     {
         logger.Information("Disabling cleaner");
-        ICleaners cleaners = new NpgSqlCleaners(connection);
         ICleaner cleaner = await cleaners.Single(ct);
         cleaner = cleaner.StopWork();
         return cleaner;

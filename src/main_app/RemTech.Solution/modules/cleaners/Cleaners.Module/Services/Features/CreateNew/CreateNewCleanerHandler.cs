@@ -1,5 +1,4 @@
 ﻿using Cleaners.Module.Domain;
-using Npgsql;
 using RemTech.Core.Shared.Cqrs;
 
 namespace Cleaners.Module.Services.Features.CreateNew;
