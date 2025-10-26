@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Identity.Domain.Sessions;
+﻿using Identity.Domain.Sessions;
 using Identity.Domain.Sessions.Ports;
 using Shared.Infrastructure.Module.Redis;
 using StackExchange.Redis;
@@ -12,15 +11,16 @@ public sealed class JwtTokenUserSessionsStorage(RedisCache cache) : IUserSession
 
     public async Task Store(UserSession session)
     {
-        string refreshToken = session.RefreshToken.Token;
-        TimeSpan expiresIn = CreateExpiresIn(refreshToken);
+        string refreshToken = session.GetRefreshToken();
+        TimeSpan expiresIn = CreateExpiresIn();
         await _database.StringSetAsync(refreshToken, refreshToken, expiresIn);
     }
 
     public async Task<bool> Contains(UserSession session)
     {
-        string refreshToken = session.RefreshToken.Token;
-        return await _database.KeyExistsAsync(refreshToken);
+        string refreshToken = session.GetRefreshToken();
+        string? token = await _database.StringGetAsync(refreshToken);
+        return !string.IsNullOrWhiteSpace(token);
     }
 
     public async Task Remove(UserSession session)
@@ -29,26 +29,10 @@ public sealed class JwtTokenUserSessionsStorage(RedisCache cache) : IUserSession
         await _database.KeyDeleteAsync(refreshToken);
     }
 
-    private TimeSpan CreateExpiresIn(string refreshToken)
+    private TimeSpan CreateExpiresIn()
     {
-        if (string.IsNullOrWhiteSpace(refreshToken))
-            return DateTime.UtcNow.Subtract(DateTime.UtcNow);
-
-        if (!refreshToken.Contains(TokenConstants.RefreshToken))
-            return DateTime.UtcNow.Subtract(DateTime.UtcNow);
-
-        using JsonDocument document = JsonDocument.Parse(refreshToken);
-        var expires = document
-            .RootElement.GetProperty("details")
-            .GetProperty("expires")
-            .GetString();
-
-        if (string.IsNullOrWhiteSpace(expires))
-            return DateTime.UtcNow.Subtract(DateTime.UtcNow);
-
-        if (!DateTime.TryParse(expires, out DateTime expiresDate))
-            return DateTime.UtcNow.Subtract(DateTime.UtcNow);
-
-        return expiresDate.Subtract(DateTime.UtcNow);
+        var current = DateTime.UtcNow;
+        var last = current.AddHours(7);
+        return last.Subtract(current);
     }
 }

@@ -8,7 +8,7 @@ using Shared.WebApi;
 
 namespace Identity.Adapter.Auth.Middleware;
 
-public sealed class AuthorizationFilter(UserSessionsService service) : IAsyncActionFilter
+public sealed class AuthorizedAccessFilter(UserSessionsService service) : IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(
         ActionExecutingContext context,
@@ -84,15 +84,17 @@ public sealed class AuthorizationFilter(UserSessionsService service) : IAsyncAct
     {
         // попытка обновить сессию через refresh token.
         var refreshed = await service.Refresh(session);
+        if (refreshed.IsFailure)
+            return Error.Unauthorized();
+
         bool verified = await service.Validate(refreshed);
-        return verified ? Error.Unauthorized() : refreshed;
+        return verified ? refreshed : Error.Unauthorized();
     }
 
     private UserSession GetSessionFromContext(ActionExecutingContext context)
     {
         // получение информации о refresh и access токенах из http запроса.
         var accessToken = context.HttpContext.Request.Headers[TokenConstants.AccessToken];
-
         var refreshToken = context.HttpContext.Request.Headers[TokenConstants.RefreshToken];
 
         string accessTokenString = HeaderValueOrEmpty(accessToken);

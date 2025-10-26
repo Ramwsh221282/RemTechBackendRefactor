@@ -78,6 +78,11 @@ public sealed class HttpEnvelope : IResult
         Status status = Status.Forbidden();
         return new HttpEnvelope(status);
     }
+
+    public static HttpEnvelope Ok()
+    {
+        return new HttpEnvelope(null, null, HttpStatusCode.OK);
+    }
 }
 
 public sealed class HttpEnvelope<T> : IResult

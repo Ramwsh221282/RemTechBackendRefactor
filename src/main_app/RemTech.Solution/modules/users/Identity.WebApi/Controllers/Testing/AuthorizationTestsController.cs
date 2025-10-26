@@ -22,7 +22,32 @@ public sealed class AuthorizationTestsController : ControllerBase
     {
         var session = new UserSession(accessToken, refreshToken);
         bool valid = await service.Validate(session);
-        return !valid ? HttpEnvelope.Unauthorized() : HttpEnvelope.NoContent();
+        return !valid ? HttpEnvelope.Unauthorized() : HttpEnvelope.Ok();
+    }
+
+    [HttpPost("refresh-token")]
+    public async Task<IResult> TestRefresh(
+        [FromHeader(Name = TokenConstants.AccessToken)] string accessToken,
+        [FromHeader(Name = TokenConstants.RefreshToken)] string refreshToken,
+        [FromServices] UserSessionsService service
+    )
+    {
+        var session = new UserSession(accessToken, refreshToken);
+        var refreshing = await service.Refresh(session);
+        return new AuthorizedUserSessionResult(refreshing.Value);
+    }
+
+    [HttpGet("with-filter")]
+    [TypeFilter<AuthorizedAccessFilter>]
+    public async Task<IResult> TestWithFilter(
+        [FromHeader(Name = TokenConstants.AccessToken)] string accessToken,
+        [FromHeader(Name = TokenConstants.RefreshToken)] string refreshToken,
+        [FromServices] UserSessionsService service
+    )
+    {
+        var session = new UserSession(accessToken, refreshToken);
+        bool valid = await service.Validate(session);
+        return !valid ? HttpEnvelope.Unauthorized() : HttpEnvelope.Ok();
     }
 
     [HttpPost]

@@ -29,21 +29,14 @@ public class UserSessionsService(
     public async Task<Status<UserSession>> Refresh(UserSession session)
     {
         if (!await storage.Contains(session))
-        {
-            await storage.Remove(session);
             return Error.Unauthorized();
-        }
 
         var userId = GetSubjectId(session);
         if (userId.IsFailure)
             return Error.Unauthorized();
 
         var user = await users.Get(userId);
-        if (user == null)
-            return Error.Unauthorized();
-
-        await storage.Remove(session);
-        return await refresher.Refresh(user, session);
+        return user == null ? Error.Unauthorized() : await refresher.Refresh(user, session);
     }
 
     public async Task<bool> Validate(UserSession session)
