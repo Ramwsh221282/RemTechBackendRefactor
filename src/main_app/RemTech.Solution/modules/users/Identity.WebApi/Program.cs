@@ -1,17 +1,12 @@
 using System.Reflection;
-using Identity.Adapter.Auth.Middleware;
-using Identity.Adapter.Jwt;
-using Identity.Adapter.Notifier;
-using Identity.Adapter.PasswordManager;
-using Identity.Adapter.Storage.DependencyInjection;
-using Identity.Domain.DependencyInjection;
 using Identity.Domain.Roles.ValueObjects;
+using Identity.WebApi;
 using Identity.WebApi.Extensions;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using RemTech.Shared.Configuration.Options;
 using Serilog;
 using Shared.Infrastructure.Module.Postgres;
 using Shared.Infrastructure.Module.Redis;
-using Shared.WebApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,17 +30,11 @@ builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(nameof(Database
 builder.Services.AddOptions<CacheOptions>().BindConfiguration(nameof(CacheOptions));
 builder.Services.AddOptions<FrontendOptions>().BindConfiguration(nameof(FrontendOptions));
 
-builder.Services.AddSingleton(logger);
-builder.Services.InjectIdentityDomain();
-builder.Services.InjectBcryptPasswordManager();
-builder.Services.InjectIdentityStorageAdapter();
-builder.Services.AddUsersNotifier();
 builder.Services.AddPostgres();
 builder.Services.AddRedis();
+builder.Services.TryAddSingleton(logger);
 
-builder.Services.AddUsersNotifier();
-builder.Services.AddIdentityJwt();
-builder.Services.AddSingleton<IRoleAccessChecker, RoleAccessChecker>();
+builder.Services.AddIdentityModule();
 
 var app = builder.Build();
 
