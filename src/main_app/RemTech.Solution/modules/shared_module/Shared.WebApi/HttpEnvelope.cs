@@ -67,6 +67,16 @@ public sealed class HttpEnvelope : IResult
         return new HttpEnvelope(null, null, HttpStatusCode.NoContent);
     }
 
+    public static HttpEnvelope Conflict()
+    {
+        return new HttpEnvelope(null, null, HttpStatusCode.Conflict);
+    }
+
+    public static HttpEnvelope BadRequest()
+    {
+        return new HttpEnvelope(null, null, HttpStatusCode.BadRequest);
+    }
+
     public static HttpEnvelope Unauthorized()
     {
         Status status = Status.Unauthorized();

@@ -173,11 +173,17 @@ public sealed class IdentityModuleUseCases(IdentityTestApplicationFactory factor
     }
 
     public async Task<Status<User>> CreatePasswordResetTicket(
+        Guid? id = null,
         string? email = null,
         string? login = null
     )
     {
-        var command = new CreatePasswordResetCommand(email, login);
+        var command = new CreatePasswordResetCommand(
+            IssuerId: id,
+            IssuerEmail: email,
+            IssuerLogin: login
+        );
+
         await using var scope = _sp.CreateAsyncScope();
         return await scope
             .GetService<ICommandHandler<CreatePasswordResetCommand, Status<User>>>()
