@@ -10,14 +10,16 @@ public static class UsersStorageExtensions
 {
     public static async Task<IEnumerable<User>> QueryUsers(
         this IDbConnection connection,
-        List<string> whereClauses,
+        List<string>? whereClauses = null,
+        List<string>? orderByClauses = null,
+        List<string>? paginationClauses = null,
         object? parameters = null,
         IDbTransaction? transaction = null,
         bool withLock = false,
         CancellationToken ct = default
     )
     {
-        string sql = CreateSql(whereClauses, withLock);
+        string sql = CreateSql(whereClauses, orderByClauses, paginationClauses, withLock);
         CommandDefinition command = new(
             sql,
             parameters,
@@ -45,10 +47,12 @@ public static class UsersStorageExtensions
     {
         IEnumerable<User> users = await connection.QueryUsers(
             whereClauses,
+            orderByClauses: null,
+            paginationClauses: null,
             parameters,
             transaction,
             withLock,
-            ct: ct
+            ct
         );
 
         return !users.Any() ? null : users.First();
@@ -202,12 +206,35 @@ public static class UsersStorageExtensions
         return userData;
     }
 
-    private static string CreateSql(List<string> whereClauses, bool transactional = false)
+    private static string CreateSql(
+        List<string>? whereClauses = null,
+        List<string>? orderByClauses = null,
+        List<string>? paginationClauses = null,
+        bool transactional = false
+    )
     {
-        string whereClause =
-            whereClauses.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", whereClauses);
+        string whereClause = whereClauses switch
+        {
+            null => string.Empty,
+            _ when whereClauses.Count == 0 => string.Empty,
+            _ => "WHERE " + string.Join(" AND ", whereClauses),
+        };
 
-        string transactionClause = transactional ? "FOR UPDATE OF u" : string.Empty;
+        string orderByClause = orderByClauses switch
+        {
+            null => string.Empty,
+            _ when orderByClauses.Count == 0 => string.Empty,
+            _ => "ORDER BY " + string.Join(", ", orderByClauses),
+        };
+
+        string paginationClause = paginationClauses switch
+        {
+            null => string.Empty,
+            _ when paginationClauses.Count == 0 => string.Empty,
+            _ => string.Join("  ", paginationClauses),
+        };
+
+        string transactionClause = transactional ? string.Empty : " FOR UPDATE OF u ";
 
         return $"""
             SELECT
@@ -229,6 +256,8 @@ public static class UsersStorageExtensions
             INNER JOIN users_module.roles r ON r.id = ur.role_id
             LEFT JOIN users_module.tickets t ON u.id = t.user_id
             {whereClause}
+            {orderByClause}
+            {paginationClause}
             {transactionClause}
             """;
     }

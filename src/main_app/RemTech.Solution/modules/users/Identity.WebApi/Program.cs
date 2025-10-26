@@ -1,4 +1,5 @@
 using System.Reflection;
+using Identity.Adapter.Auth.Middleware;
 using Identity.Adapter.Jwt;
 using Identity.Adapter.Notifier;
 using Identity.Adapter.PasswordManager;
@@ -10,6 +11,7 @@ using RemTech.Shared.Configuration.Options;
 using Serilog;
 using Shared.Infrastructure.Module.Postgres;
 using Shared.Infrastructure.Module.Redis;
+using Shared.WebApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,20 +45,43 @@ builder.Services.AddRedis();
 
 builder.Services.AddUsersNotifier();
 builder.Services.AddIdentityJwt();
+builder.Services.AddSingleton<IRoleAccessChecker, RoleAccessChecker>();
 
 var app = builder.Build();
+
+await app.MigrateIdentityModule();
+await app.SeedRoles(RoleName.User.Value, RoleName.Admin.Value, RoleName.Root.Value);
+if (app.Environment.IsDevelopment())
+{
+    await app.SeedUser("testemail@mail.com", "testLogin", "superPassword!23");
+    await app.SeedUser("admin@example.com", "admin", "AdminPass!2024");
+    await app.SeedUser("user1@example.com", "user1", "UserPass!2024");
+    await app.SeedUser("user2@example.com", "user2", "UserPass!2024");
+    await app.SeedUser("test@test.com", "tester", "TestPass!2024");
+    await app.SeedUser("dev@local.dev", "developer", "DevPass!2024");
+    await app.SeedUser("admin@company.com", "admin", "AdminPass!2024");
+    await app.SeedUser("superuser@company.com", "superuser", "SuperPass!2024");
+    await app.SeedUser("manager1@company.com", "manager_a", "ManagerPass!2024");
+    await app.SeedUser("manager2@company.com", "manager_b", "ManagerPass!2024");
+    await app.SeedUser("alice@company.com", "alice", "UserPass!2024");
+    await app.SeedUser("bob@company.com", "bob", "UserPass!2024");
+    await app.SeedUser("charlie@company.com", "charlie", "UserPass!2024");
+    await app.SeedUser("diana@company.com", "diana", "UserPass!2024");
+    await app.SeedUser("evan@company.com", "evan", "UserPass!2024");
+    await app.SeedUser("fiona@company.com", "fiona", "UserPass!2024");
+    await app.SeedUser("alice@company.com", "alice", "UserPass!2024");
+    await app.SeedUser("bob@company.com", "bob", "UserPass!2024");
+    await app.SeedUser("charlie@company.com", "charlie", "UserPass!2024");
+    await app.SeedUser("diana@company.com", "diana", "UserPass!2024");
+    await app.SeedUser("evan@company.com", "evan", "UserPass!2024");
+    await app.SeedUser("fiona@company.com", "fiona", "UserPass!2024");
+    await app.SeedUser("verified@verified.com", "verified_user", "VerifiedPass!2024");
+    await app.SeedUser("unverified@unverified.com", "unverified_user", "UnverifiedPass!2024");
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapControllers();
-
-// await app.MigrateIdentityModule();
-// await app.AddRoles(RoleName.Admin.Value, RoleName.User.Value, RoleName.Root.Value);
-//
-// if (app.Environment.IsDevelopment())
-// {
-//     await app.SeedUser("someuser@mail.com", "somelogin", "somePassword!23");
-// }
 
 app.Run();
 

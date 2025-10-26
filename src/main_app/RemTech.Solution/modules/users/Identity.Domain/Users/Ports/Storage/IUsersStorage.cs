@@ -13,4 +13,5 @@ public interface IUsersStorage
     Task<User?> Get(UserId id, CancellationToken ct = default);
     Task<User?> Get(UserTicketId id, CancellationToken ct = default);
     Task<IEnumerable<User>> Get(RoleName role, CancellationToken ct = default);
+    Task<IEnumerable<User>> Get(UsersSpecification specification, CancellationToken ct = default);
 }

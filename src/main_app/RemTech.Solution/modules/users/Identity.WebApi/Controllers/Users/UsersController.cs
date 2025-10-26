@@ -2,6 +2,7 @@
 using Identity.Adapter.Auth.Middleware;
 using Identity.Domain.Sessions;
 using Identity.Domain.Users.Aggregate;
+using Identity.Domain.Users.Ports.Storage;
 using Identity.Domain.Users.UseCases.Authenticate;
 using Identity.Domain.Users.UseCases.Common;
 using Identity.Domain.Users.UseCases.ConfirmEmailTicket;
@@ -10,6 +11,7 @@ using Identity.Domain.Users.UseCases.CreateEmailConfirmationTicket;
 using Identity.Domain.Users.UseCases.CreatePasswordResetTicket;
 using Identity.Domain.Users.UseCases.CreateRoot;
 using Identity.Domain.Users.UseCases.ReadUserInfo;
+using Identity.Domain.Users.UseCases.ReadUsers;
 using Identity.Domain.Users.UseCases.UserRegistration;
 using Identity.WebApi.Filters;
 using Identity.WebApi.Requests;
@@ -204,7 +206,7 @@ public sealed class UsersController : ControllerBase
     /// - <see cref="HttpEnvelope.NoContent()"/> если пользователь найден.
     /// - <see cref="HttpEnvelope"/> с ошибкой <c>404 Not Found</c>, если пользователь не найден или не указаны параметры.
     /// </returns>
-    [HttpGet]
+    [HttpGet("user")]
     public async Task<IResult> Login(
         [FromQuery(Name = "email")] string? email,
         [FromQuery(Name = "login")] string? login,
@@ -252,5 +254,47 @@ public sealed class UsersController : ControllerBase
         var command = new ConfirmPasswordResetCommand(id, password);
         var status = await handler.Handle(command, ct);
         return status.IsFailure ? new HttpEnvelope(status) : HttpEnvelope.Ok();
+    }
+
+    [HttpGet]
+    public async Task<IResult> GetUsers(
+        [FromQuery(Name = "email")] string? email,
+        [FromQuery(Name = "login")] string? login,
+        [FromQuery(Name = "roles")] IEnumerable<string>? roles,
+        [FromQuery(Name = "ordering")] IEnumerable<string>? ordering,
+        [FromQuery(Name = "order")] string? order,
+        [FromQuery(Name = "page")] int? page,
+        [FromQuery(Name = "pageSize")] int? pageSize,
+        [FromQuery(Name = "verifiedOnly")] bool? verifiedOnly,
+        [FromServices] ICommandHandler<ReadUsersCommand, IEnumerable<User>> handler,
+        CancellationToken ct
+    )
+    {
+        string actualOrder = string.IsNullOrWhiteSpace(order) ? "ASC" : order;
+        order = actualOrder switch
+        {
+            "ASC" => "ASC",
+            "DESC" => "DESC",
+            _ => "ASC",
+        };
+
+        page ??= 1;
+        pageSize ??= 20;
+
+        var speicifaction = new UsersSpecification(
+            login,
+            email,
+            roles,
+            ordering,
+            verifiedOnly,
+            order,
+            page.Value,
+            pageSize.Value
+        );
+
+        var command = new ReadUsersCommand(speicifaction);
+        var result = await handler.Handle(command, ct);
+        var dtos = result.Select(r => new UserDto(r));
+        return HttpEnvelope<IEnumerable<UserDto>>.Ok(dtos);
     }
 }

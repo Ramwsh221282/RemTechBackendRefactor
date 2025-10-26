@@ -21,7 +21,7 @@ public static class UserSeedingExtensions
         await context.Database.MigrateAsync();
     }
 
-    public static async Task AddRoles(this IHost host, params string[] roles)
+    public static async Task SeedRoles(this IHost host, params string[] roles)
     {
         await using var scope = host.Services.CreateAsyncScope();
         var seeder = scope.GetService<IRolesSeeding>();

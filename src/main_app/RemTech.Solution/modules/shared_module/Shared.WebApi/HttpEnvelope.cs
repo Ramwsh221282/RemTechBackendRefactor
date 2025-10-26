@@ -93,6 +93,11 @@ public sealed class HttpEnvelope : IResult
     {
         return new HttpEnvelope(null, null, HttpStatusCode.OK);
     }
+
+    public static HttpEnvelope Ok(object result)
+    {
+        return new HttpEnvelope(result, null, HttpStatusCode.OK);
+    }
 }
 
 public sealed class HttpEnvelope<T> : IResult
@@ -159,6 +164,11 @@ public sealed class HttpEnvelope<T> : IResult
             ErrorCodes.Empty => HttpStatusCode.NoContent,
             _ => HttpStatusCode.InternalServerError,
         };
+
+    public static HttpEnvelope<T> Ok(T result)
+    {
+        return new HttpEnvelope<T>(result, null, HttpStatusCode.OK);
+    }
 
     public static HttpEnvelope<T> Unauthorized()
     {

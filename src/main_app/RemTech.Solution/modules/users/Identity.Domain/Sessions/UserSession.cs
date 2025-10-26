@@ -17,6 +17,13 @@ public class UserSession
     public UserSession(string accessToken, string refreshToken)
         : this(new UserSessionInfo(accessToken), new UserSessionInfo(refreshToken)) { }
 
+    public IEnumerable<string> GetRoleNames()
+    {
+        var dictionary = new UserSessionClaimsDictionary(this);
+        string? propertyInfo = dictionary.GetPropertyInfo("Role");
+        return string.IsNullOrWhiteSpace(propertyInfo) ? [] : [propertyInfo];
+    }
+
     public Status<string> GetRefreshToken()
     {
         Status<string>[] statuses = [TryGetTokenFromGuid(), TryGetTokenFromJson()];

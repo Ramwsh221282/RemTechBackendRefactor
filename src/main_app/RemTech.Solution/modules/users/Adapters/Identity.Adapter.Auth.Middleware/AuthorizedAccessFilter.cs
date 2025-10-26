@@ -15,7 +15,7 @@ public sealed class AuthorizedAccessFilter(UserSessionsService service) : IAsync
         ActionExecutionDelegate next
     )
     {
-        var session = GetSessionFromContext(context);
+        var session = context.GetUserSession();
         if (!await IsSessionVerified(session))
         {
             var refreshing = await TryRefreshUserSession(session);
@@ -89,26 +89,5 @@ public sealed class AuthorizedAccessFilter(UserSessionsService service) : IAsync
 
         bool verified = await service.Validate(refreshed);
         return verified ? refreshed : Error.Unauthorized();
-    }
-
-    private UserSession GetSessionFromContext(ActionExecutingContext context)
-    {
-        // получение информации о refresh и access токенах из http запроса.
-        var accessToken = context.HttpContext.Request.Headers[TokenConstants.AccessToken];
-        var refreshToken = context.HttpContext.Request.Headers[TokenConstants.RefreshToken];
-
-        string accessTokenString = HeaderValueOrEmpty(accessToken);
-        string refreshTokenString = HeaderValueOrEmpty(refreshToken);
-
-        return new UserSession(
-            new UserSessionInfo(accessTokenString),
-            new UserSessionInfo(refreshTokenString)
-        );
-    }
-
-    private string HeaderValueOrEmpty(StringValues value)
-    {
-        // возвращаем пустую строку или значение строки из хедера.
-        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.ToString();
     }
 }
