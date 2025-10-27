@@ -45,14 +45,10 @@ public abstract class Cleaner
 
     public abstract Status UpdateSchedule(int waitDays);
     public abstract Status StartWork();
-
     public abstract Status StartWait();
-
     public abstract Status Disable();
-
     public abstract Status AdjustWorkTimeByTotalSeconds(long totalSeconds);
-
     public abstract Status ChangeItemsToCleanThreshold(int threshold);
-
     public abstract Status CleanItem();
+    public abstract Status UpdateWorkStatistics(CleanerWorkTime time, int processedAmount);
 }

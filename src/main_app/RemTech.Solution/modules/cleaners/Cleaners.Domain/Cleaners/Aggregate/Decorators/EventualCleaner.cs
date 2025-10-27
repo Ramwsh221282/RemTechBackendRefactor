@@ -95,6 +95,13 @@ public sealed class EventualCleaner : Cleaner
         return result;
     }
 
+    public override Status UpdateWorkStatistics(CleanerWorkTime time, int processedAmount)
+    {
+        Status result = _origin.UpdateWorkStatistics(time, processedAmount);
+        _events.Add(new CleanerStatisticsUpdated(_origin));
+        return result;
+    }
+
     public async Task<Status> PublishEvents(
         IDomainEventsDispatcher dispatcher,
         CancellationToken ct = default

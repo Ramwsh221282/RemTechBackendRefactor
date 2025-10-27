@@ -170,6 +170,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cleaner.Adapter.JobSchedule
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cleaner.WebApi", "parsing_services\cleaners\Cleaner.WebApi\Cleaner.WebApi.csproj", "{B8CEB7CE-AA71-45BC-8712-9D05E15492C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cleaner.Adapter.Queues", "modules\cleaners\Adapters\Cleaner.Adapter.Queues\Cleaner.Adapter.Queues.csproj", "{65CA4EE0-F00C-4039-BAE7-4899409523AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -259,6 +261,7 @@ Global
 		{3EEA13F8-2A1D-4A02-9909-FB529AE77A46} = {977FB8B6-5149-48B1-B4FE-A81C58B9688A}
 		{63802D56-89F8-4994-B193-0316D6A1E593} = {B401ED9D-CA07-4AD3-8C75-C8546F25C3FB}
 		{B8CEB7CE-AA71-45BC-8712-9D05E15492C6} = {9A209187-FE22-4439-B37A-1401FCA207CD}
+		{65CA4EE0-F00C-4039-BAE7-4899409523AB} = {B401ED9D-CA07-4AD3-8C75-C8546F25C3FB}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -477,5 +480,9 @@ Global
 		{B8CEB7CE-AA71-45BC-8712-9D05E15492C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8CEB7CE-AA71-45BC-8712-9D05E15492C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8CEB7CE-AA71-45BC-8712-9D05E15492C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65CA4EE0-F00C-4039-BAE7-4899409523AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65CA4EE0-F00C-4039-BAE7-4899409523AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65CA4EE0-F00C-4039-BAE7-4899409523AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65CA4EE0-F00C-4039-BAE7-4899409523AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

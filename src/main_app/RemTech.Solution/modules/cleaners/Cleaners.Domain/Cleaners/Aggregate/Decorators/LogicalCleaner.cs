@@ -90,6 +90,18 @@ public sealed class LogicalCleaner : Cleaner
         return Status.Success();
     }
 
+    public override Status UpdateWorkStatistics(CleanerWorkTime time, int processedAmount)
+    {
+        if (State != WorkState)
+            return Status.Conflict(
+                "Только в рабочем состоянии чистильщик может обновить статистику работы"
+            );
+
+        WorkTime = time;
+        CleanedAmount = processedAmount;
+        return Status.Success();
+    }
+
     private LogicalCleaner(
         CleanerSchedule schedule,
         CleanerWorkTime workTime,

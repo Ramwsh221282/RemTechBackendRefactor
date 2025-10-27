@@ -53,6 +53,7 @@ public sealed class CleanerWorkJob(
         {
             await PublishWorkFinishedEvent(cleaner);
             await cleaners.Remove();
+            await workTime.Reset();
             return 0;
         }
 
