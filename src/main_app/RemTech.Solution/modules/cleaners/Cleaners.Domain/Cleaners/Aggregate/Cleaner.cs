@@ -43,6 +43,7 @@ public abstract class Cleaner
             cleaner.Id
         ) { }
 
+    public abstract Status UpdateSchedule(int waitDays);
     public abstract Status StartWork();
 
     public abstract Status StartWait();

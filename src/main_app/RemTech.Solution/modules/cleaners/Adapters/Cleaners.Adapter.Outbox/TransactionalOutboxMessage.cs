@@ -31,7 +31,7 @@ public sealed class TransactionalOutboxMessage
         _message.ProcessedAttempts += 1;
         string content = _message.Content;
         byte[] bytes = Encoding.UTF8.GetBytes(content);
-        await _channel.BasicPublishAsync("cleaner_processor", _message.Type, body: bytes);
+        await _channel.BasicPublishAsync("cleaners", _message.Type, body: bytes);
         await UpdateAsProcessed();
     }
 
@@ -39,11 +39,11 @@ public sealed class TransactionalOutboxMessage
     {
         _message.Processed = null;
         const string sql = """
-                           UPDATE cleaners_module.outbox SET 
-                               processed = @processed,
-                               last_error = @error 
-                           WHERE id = @id
-                           """;
+            UPDATE cleaners_module.outbox SET 
+                processed = @processed,
+                last_error = @error 
+            WHERE id = @id
+            """;
 
         var command = new CommandDefinition(
             sql,
@@ -64,12 +64,12 @@ public sealed class TransactionalOutboxMessage
     {
         _message.Processed = DateTime.UtcNow;
         const string sql = """
-                           UPDATE cleaners_module.outbox 
-                           SET 
-                               processed_attempts = @processed_attempts, 
-                               processed = @processed 
-                           WHERE id = @id
-                           """;
+            UPDATE cleaners_module.outbox 
+            SET 
+                processed_attempts = @processed_attempts, 
+                processed = @processed 
+            WHERE id = @id
+            """;
 
         var command = new CommandDefinition(
             sql,

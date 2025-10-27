@@ -1,4 +1,5 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using Identity.Contracts;
+using RemTech.Core.Shared.Result;
 
 namespace Identity.Domain.Roles.ValueObjects;
 
@@ -7,11 +8,11 @@ public sealed record RoleName
     public const int MaxLength = 100;
     public string Value { get; }
 
-    public static RoleName User = new("USER");
+    public static readonly RoleName User = new(DefaultRoleNames.User);
 
-    public static RoleName Admin = new("ADMIN");
+    public static readonly RoleName Admin = new(DefaultRoleNames.Admin);
 
-    public static RoleName Root = new("ROOT");
+    public static readonly RoleName Root = new(DefaultRoleNames.Root);
 
     private RoleName(string value) => Value = value;
 

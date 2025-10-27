@@ -12,7 +12,8 @@ public sealed record CleanerWorkStarted(
     int WaitDays,
     int ElapsedSeconds,
     int ElapsedMinutes,
-    int ElapsedHours
+    int ElapsedHours,
+    int ItemsDateDayThreshold
 ) : IDomainEvent
 {
     public CleanerWorkStarted(Cleaner cleaner)
@@ -25,6 +26,7 @@ public sealed record CleanerWorkStarted(
             cleaner.Schedule.WaitDays,
             cleaner.WorkTime.ElapsedSeconds,
             cleaner.WorkTime.ElapsedMinutes,
-            cleaner.WorkTime.ElapsedHours
+            cleaner.WorkTime.ElapsedHours,
+            cleaner.ItemsDateDayThreshold
         ) { }
 }

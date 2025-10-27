@@ -18,7 +18,4 @@
     <ProjectReference Include="..\..\..\shared_module\RemTech.Shared.Tests\RemTech.Shared.Tests.csproj" />
     <ProjectReference Include="..\..\Cleaners.WebApi\Cleaners.WebApi.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ChangeItemsToClean\" />
-  </ItemGroup>
 </Project>

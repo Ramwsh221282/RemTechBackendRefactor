@@ -5,6 +5,19 @@ namespace Cleaners.Domain.Cleaners.Aggregate.Decorators;
 
 public sealed class LogicalCleaner : Cleaner
 {
+    public override Status UpdateSchedule(int waitDays)
+    {
+        if (State == WorkState)
+            return Status.Conflict("Нельзя изменить расписание чистильщика в рабочем состоянии.");
+
+        var updating = Schedule.UpdateSchedule(waitDays);
+        if (updating.IsFailure)
+            return updating;
+
+        Schedule = updating;
+        return Status.Success();
+    }
+
     public override Status StartWork()
     {
         if (State == WorkState)

@@ -1,5 +1,4 @@
-﻿using Cleaners.Domain.Cleaners.Aggregate;
-using Cleaners.Domain.Cleaners.Ports.Cache;
+﻿using Cleaners.Domain.Cleaners.Ports.Cache;
 using Cleaners.Domain.Cleaners.Ports.Storage;
 using Cleaners.Domain.Cleaners.UseCases.CreateCleaner;
 using Cleaners.Domain.Cleaners.UseCases.StartWait;
@@ -24,7 +23,10 @@ public sealed class CleanerStartWaitTests : IClassFixture<CleanersTestHostFactor
     private async Task Not_Existing_Cleaner_Cannot_Start_Waiting()
     {
         var startWait = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<StartWaitCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<StartWaitCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new(Guid.NewGuid()))
         );
         Assert.True(startWait.IsFailure);
@@ -37,34 +39,43 @@ public sealed class CleanerStartWaitTests : IClassFixture<CleanersTestHostFactor
         Assert.True(cleaner.IsSuccess);
 
         var result = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<StartWorkCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<StartWorkCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new(cleaner.Value.Id))
         );
         Assert.True(result.IsSuccess);
 
         var startWait = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<StartWaitCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<StartWaitCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new(result.Value.Id))
         );
         Assert.True(startWait.IsSuccess);
-        Assert.Equal(Cleaner.WaitingState, startWait.Value.State);
+        Assert.Equal(Domain.Cleaners.Aggregate.Cleaner.WaitingState, startWait.Value.State);
 
         var fromDb = await _sp.ScopedExecution(
             scope => scope.GetService<ICleanersStorage>(),
             storage => storage.Get(result.Value.Id)
         );
         Assert.True(fromDb.IsSuccess);
-        Assert.Equal(Cleaner.WaitingState, fromDb.Value.State);
+        Assert.Equal(Domain.Cleaners.Aggregate.Cleaner.WaitingState, fromDb.Value.State);
 
         var fromCache = await _sp.ScopedExecution(
             scope => scope.GetService<ICleanersCachedStorage>(),
             storage => storage.Get(result.Value.Id)
         );
         Assert.True(fromCache.IsSuccess);
-        Assert.Equal(Cleaner.WaitingState, fromCache.Value.State);
+        Assert.Equal(Domain.Cleaners.Aggregate.Cleaner.WaitingState, fromCache.Value.State);
 
         var error = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<StartWaitCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<StartWaitCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new(cleaner.Value.Id))
         );
         Assert.True(error.IsFailure);
@@ -77,31 +88,37 @@ public sealed class CleanerStartWaitTests : IClassFixture<CleanersTestHostFactor
         Assert.True(cleaner.IsSuccess);
 
         var result = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<StartWorkCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<StartWorkCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new(cleaner.Value.Id))
         );
         Assert.True(result.IsSuccess);
 
         var startWait = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<StartWaitCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<StartWaitCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new(result.Value.Id))
         );
         Assert.True(startWait.IsSuccess);
-        Assert.Equal(Cleaner.WaitingState, startWait.Value.State);
+        Assert.Equal(Domain.Cleaners.Aggregate.Cleaner.WaitingState, startWait.Value.State);
 
         var fromDb = await _sp.ScopedExecution(
             scope => scope.GetService<ICleanersStorage>(),
             storage => storage.Get(result.Value.Id)
         );
         Assert.True(fromDb.IsSuccess);
-        Assert.Equal(Cleaner.WaitingState, fromDb.Value.State);
+        Assert.Equal(Domain.Cleaners.Aggregate.Cleaner.WaitingState, fromDb.Value.State);
 
         var fromCache = await _sp.ScopedExecution(
             scope => scope.GetService<ICleanersCachedStorage>(),
             storage => storage.Get(result.Value.Id)
         );
         Assert.True(fromCache.IsSuccess);
-        Assert.Equal(Cleaner.WaitingState, fromCache.Value.State);
+        Assert.Equal(Domain.Cleaners.Aggregate.Cleaner.WaitingState, fromCache.Value.State);
     }
 
     [Fact]
@@ -113,32 +130,36 @@ public sealed class CleanerStartWaitTests : IClassFixture<CleanersTestHostFactor
         var command = new StartWaitCommand(cleaner.Value.Id);
         await using var scope = _sp.CreateAsyncScope();
         var result = await scope
-            .GetService<ICommandHandler<StartWaitCommand, Status<Cleaner>>>()
+            .GetService<
+                ICommandHandler<StartWaitCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+            >()
             .Handle(command);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(Cleaner.WaitingState, result.Value.State);
+        Assert.Equal(Domain.Cleaners.Aggregate.Cleaner.WaitingState, result.Value.State);
 
         await using var scope2 = _sp.CreateAsyncScope();
         var fromDb = await scope2.GetService<ICleanersStorage>().Get();
 
         Assert.True(fromDb.IsSuccess);
-        Assert.Equal(Cleaner.WaitingState, fromDb.Value.State);
+        Assert.Equal(Domain.Cleaners.Aggregate.Cleaner.WaitingState, fromDb.Value.State);
 
         await using var scope3 = _sp.CreateAsyncScope();
         var fromCache = await scope3.GetService<ICleanersCachedStorage>().Get(result.Value.Id);
 
         Assert.True(fromCache.IsSuccess);
-        Assert.Equal(Cleaner.WaitingState, result.Value.State);
+        Assert.Equal(Domain.Cleaners.Aggregate.Cleaner.WaitingState, result.Value.State);
     }
 
-    private async Task<Status<Cleaner>> CreateCleaner()
+    private async Task<Status<Domain.Cleaners.Aggregate.Cleaner>> CreateCleaner()
     {
         var command = new CreateCleanerCommand();
         await using var scope = _sp.CreateAsyncScope();
 
         var cleaner = await scope
-            .GetService<ICommandHandler<CreateCleanerCommand, Status<Cleaner>>>()
+            .GetService<
+                ICommandHandler<CreateCleanerCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+            >()
             .Handle(command);
 
         return cleaner;

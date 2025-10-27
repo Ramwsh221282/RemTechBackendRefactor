@@ -1,5 +1,4 @@
-﻿using Cleaners.Domain.Cleaners.Aggregate;
-using Cleaners.Domain.Cleaners.Ports.Cache;
+﻿using Cleaners.Domain.Cleaners.Ports.Cache;
 using Cleaners.Domain.Cleaners.Ports.Storage;
 using Cleaners.Domain.Cleaners.UseCases.CleanItem;
 using Cleaners.Domain.Cleaners.UseCases.CreateCleaner;
@@ -24,19 +23,28 @@ public sealed class CleanItemTests : IClassFixture<CleanersTestHostFactory>
     private async Task Waiting_cleaner_cannot_clean_item()
     {
         var cleaner = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<CreateCleanerCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<CreateCleanerCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new CreateCleanerCommand())
         );
         Assert.True(cleaner.IsSuccess);
 
         var waiting = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<StartWaitCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<StartWaitCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new(cleaner.Value.Id))
         );
         Assert.True(waiting.IsSuccess);
 
         var itemCleaned = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<CleanItemCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<CleanItemCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new CleanItemCommand(cleaner.Value.Id))
         );
         Assert.True(itemCleaned.IsFailure);
@@ -46,13 +54,19 @@ public sealed class CleanItemTests : IClassFixture<CleanersTestHostFactory>
     private async Task Disabled_cleaner_cannot_clean_item()
     {
         var cleaner = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<CreateCleanerCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<CreateCleanerCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new CreateCleanerCommand())
         );
         Assert.True(cleaner.IsSuccess);
 
         var itemCleaned = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<CleanItemCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<CleanItemCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new CleanItemCommand(cleaner.Value.Id))
         );
         Assert.True(itemCleaned.IsFailure);
@@ -62,19 +76,28 @@ public sealed class CleanItemTests : IClassFixture<CleanersTestHostFactory>
     private async Task Working_Cleaner_cleaned_item()
     {
         var cleaner = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<CreateCleanerCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<CreateCleanerCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new CreateCleanerCommand())
         );
         Assert.True(cleaner.IsSuccess);
 
         var working = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<StartWorkCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<StartWorkCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new StartWorkCommand(cleaner.Value.Id))
         );
         Assert.True(working.IsSuccess);
 
         var itemCleaned = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<CleanItemCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<CleanItemCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new CleanItemCommand(cleaner.Value.Id))
         );
         Assert.True(itemCleaned.IsSuccess);
@@ -98,7 +121,10 @@ public sealed class CleanItemTests : IClassFixture<CleanersTestHostFactory>
     private async Task Not_Existing_Cleaner_cannot_clean_item()
     {
         var result = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<CleanItemCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<CleanItemCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new CleanItemCommand(Guid.Empty))
         );
         Assert.True(result.IsFailure);

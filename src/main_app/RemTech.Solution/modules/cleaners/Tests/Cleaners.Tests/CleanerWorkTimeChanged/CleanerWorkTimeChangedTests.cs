@@ -1,5 +1,4 @@
-﻿using Cleaners.Domain.Cleaners.Aggregate;
-using Cleaners.Domain.Cleaners.Ports.Cache;
+﻿using Cleaners.Domain.Cleaners.Ports.Cache;
 using Cleaners.Domain.Cleaners.Ports.Storage;
 using Cleaners.Domain.Cleaners.UseCases.AdjustWorkTime;
 using Cleaners.Domain.Cleaners.UseCases.CreateCleaner;
@@ -21,20 +20,32 @@ public sealed class CleanerWorkTimeChangedTests : IClassFixture<CleanersTestHost
     private async Task Working_cleaner_changed_work_time()
     {
         var cleaner = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<CreateCleanerCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<CreateCleanerCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new CreateCleanerCommand())
         );
         Assert.True(cleaner.IsSuccess);
 
         var working = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<StartWorkCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<StartWorkCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new StartWorkCommand(cleaner.Value.Id))
         );
         Assert.True(working.IsSuccess);
 
         long workTime = 150000;
         var withChangedTime = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<AdjustWorkTimeCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<
+                        AdjustWorkTimeCommand,
+                        Status<Domain.Cleaners.Aggregate.Cleaner>
+                    >
+                >(),
             handler => handler.Handle(new AdjustWorkTimeCommand(cleaner.Value.Id, workTime))
         );
         Assert.True(withChangedTime.IsSuccess);
@@ -62,12 +73,21 @@ public sealed class CleanerWorkTimeChangedTests : IClassFixture<CleanersTestHost
     private async Task Not_working_cleaner_cannot_change_work_time()
     {
         var cleaner = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<CreateCleanerCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<CreateCleanerCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+                >(),
             handler => handler.Handle(new CreateCleanerCommand())
         );
         long workTime = 150000;
         var withChangedTime = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<AdjustWorkTimeCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<
+                        AdjustWorkTimeCommand,
+                        Status<Domain.Cleaners.Aggregate.Cleaner>
+                    >
+                >(),
             handler => handler.Handle(new AdjustWorkTimeCommand(cleaner.Value.Id, workTime))
         );
         Assert.True(withChangedTime.IsFailure);
@@ -78,7 +98,13 @@ public sealed class CleanerWorkTimeChangedTests : IClassFixture<CleanersTestHost
     {
         long workTime = 150000;
         var withChangedTime = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<AdjustWorkTimeCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<
+                        AdjustWorkTimeCommand,
+                        Status<Domain.Cleaners.Aggregate.Cleaner>
+                    >
+                >(),
             handler => handler.Handle(new AdjustWorkTimeCommand(Guid.NewGuid(), workTime))
         );
         Assert.True(withChangedTime.IsFailure);
@@ -89,7 +115,13 @@ public sealed class CleanerWorkTimeChangedTests : IClassFixture<CleanersTestHost
     {
         long workTime = -150000;
         var withChangedTime = await _sp.ScopedExecution(
-            scope => scope.GetService<ICommandHandler<AdjustWorkTimeCommand, Status<Cleaner>>>(),
+            scope =>
+                scope.GetService<
+                    ICommandHandler<
+                        AdjustWorkTimeCommand,
+                        Status<Domain.Cleaners.Aggregate.Cleaner>
+                    >
+                >(),
             handler => handler.Handle(new AdjustWorkTimeCommand(Guid.NewGuid(), workTime))
         );
         Assert.True(withChangedTime.IsFailure);

@@ -1,6 +1,4 @@
 ﻿using Cleaners.Adapter.Storage.Common;
-using Cleaners.Adapter.Storage.DataModels;
-using Cleaners.Domain.Cleaners.Ports;
 using Cleaners.Domain.Cleaners.Ports.Cache;
 using Cleaners.Domain.Cleaners.Ports.Outbox;
 using RemTech.Core.Shared.DomainEvents;
@@ -37,6 +35,7 @@ public sealed class CleanerWorkStartedEventHandler(
             cleaner.Value.LastRun = @event.LastRun;
             cleaner.Value.NextRun = @event.NextRun;
             cleaner.Value.WaitDays = @event.WaitDays;
+            cleaner.Value.ItemsDateDayThreshold = @event.ItemsDateDayThreshold;
 
             await context.SaveChangesAsync(ct);
             await cached.Invalidate(cleaner.Value.ConvertToDomainModel());

@@ -1,5 +1,4 @@
-﻿using Cleaners.Domain.Cleaners.Aggregate;
-using Cleaners.Domain.Cleaners.Ports.Cache;
+﻿using Cleaners.Domain.Cleaners.Ports.Cache;
 using Cleaners.Domain.Cleaners.Ports.Storage;
 using Cleaners.Domain.Cleaners.UseCases.CreateCleaner;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +25,9 @@ public sealed class CreateCleanerTests : IClassFixture<CleanersTestHostFactory>
         await using var scope = _factory.Services.CreateAsyncScope();
 
         var cleaner = await scope
-            .GetService<ICommandHandler<CreateCleanerCommand, Status<Cleaner>>>()
+            .GetService<
+                ICommandHandler<CreateCleanerCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+            >()
             .Handle(command);
         Assert.True(cleaner.IsSuccess);
 
@@ -52,11 +53,15 @@ public sealed class CreateCleanerTests : IClassFixture<CleanersTestHostFactory>
         await using var scope = _factory.Services.CreateAsyncScope();
 
         await scope
-            .GetService<ICommandHandler<CreateCleanerCommand, Status<Cleaner>>>()
+            .GetService<
+                ICommandHandler<CreateCleanerCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+            >()
             .Handle(command);
 
         var cleaner = await scope
-            .GetService<ICommandHandler<CreateCleanerCommand, Status<Cleaner>>>()
+            .GetService<
+                ICommandHandler<CreateCleanerCommand, Status<Domain.Cleaners.Aggregate.Cleaner>>
+            >()
             .Handle(command);
 
         Assert.True(cleaner.IsFailure);

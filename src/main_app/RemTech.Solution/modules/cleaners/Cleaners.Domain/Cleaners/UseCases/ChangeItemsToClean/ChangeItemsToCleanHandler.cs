@@ -11,10 +11,10 @@ namespace Cleaners.Domain.Cleaners.UseCases.ChangeItemsToClean;
 public sealed class ChangeItemsToCleanHandler(
     ICleanersStorage cleaners,
     IDomainEventsDispatcher dispatcher
-) : ICommandHandler<ChangeItemsToCleanTreshold, Status<Cleaner>>
+) : ICommandHandler<ChangeItemsToCleanTresholdCommand, Status<Cleaner>>
 {
     public async Task<Status<Cleaner>> Handle(
-        ChangeItemsToCleanTreshold command,
+        ChangeItemsToCleanTresholdCommand command,
         CancellationToken ct = default
     )
     {

@@ -25,6 +25,13 @@ public readonly record struct CleanerSchedule
         WaitDays = waitDays;
     }
 
+    public Status<CleanerSchedule> UpdateSchedule(int waitDays)
+    {
+        DateTime lastRun = LastRun ?? DateTime.UtcNow;
+        DateTime nextRun = lastRun.AddDays(waitDays);
+        return Create(lastRun, nextRun, waitDays);
+    }
+
     public CleanerSchedule Adjust()
     {
         DateTime lastRun = DateTime.UtcNow;
@@ -54,6 +61,25 @@ public readonly record struct CleanerSchedule
             return Error.Validation($"Дни ожидания не могут быть менее {MinWaitDaysInterval}");
         if (waitDays > MaxWaitDaysInterval)
             return Error.Validation($"Дни ожидания не могут быть более {MaxWaitDaysInterval}");
+        if (nextRun != null && lastRun != null)
+        {
+            if (lastRun > nextRun)
+                return Error.Validation(
+                    "Некорректные даты расписания. Дата последнего запуска не может быть позже даты следующего запуска."
+                );
+
+            var diffDays = (nextRun.Value - lastRun.Value).TotalDays;
+
+            if (diffDays <= 0)
+                return Error.Validation(
+                    "Разница между датой последнего и следующего запуска должна быть не менее 1 дня."
+                );
+
+            if (diffDays > MaxWaitDaysInterval)
+                return Error.Validation(
+                    "Разница между датой последнего и следующего запуска не должна превышать 7 дней."
+                );
+        }
         return new CleanerSchedule(lastRun, nextRun, waitDays);
     }
 }

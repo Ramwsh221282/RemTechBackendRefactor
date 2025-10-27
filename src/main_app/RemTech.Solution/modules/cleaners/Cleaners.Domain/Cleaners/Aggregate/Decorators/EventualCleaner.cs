@@ -46,6 +46,13 @@ public sealed class EventualCleaner : Cleaner
         return eventual;
     }
 
+    public override Status UpdateSchedule(int waitDays)
+    {
+        Status result = _origin.UpdateSchedule(waitDays);
+        _events.Add(new CleanerScheduleUpdated(_origin));
+        return result;
+    }
+
     public override Status StartWork()
     {
         Status result = _origin.StartWork();

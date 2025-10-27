@@ -1,4 +1,3 @@
-using Cleaners.Adapter.Outbox;
 using Cleaners.Adapter.Storage;
 using Cleaners.Adapters.Cache;
 using Cleaners.Domain;
@@ -23,6 +22,9 @@ builder.Services.AddSerilog();
 builder.Services.AddCleanersDomain();
 
 // builder.Services.AddCleanersOutboxProcessor();
+// builder.Services.AddCleanerJob();
+// builder.Services.AddQuartsHostedService();
+
 builder.Services.AddCleanersStorageAdapter();
 builder.Services.AddCachedCleaners();
 

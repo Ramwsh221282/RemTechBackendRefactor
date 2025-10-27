@@ -1,4 +1,5 @@
-﻿using Cleaners.Adapter.Outbox;
+﻿using Cleaner.Adapter.JobScheduler;
+using Cleaners.Adapter.Outbox;
 using Cleaners.Adapter.Storage;
 using Cleaners.Adapters.Cache;
 using Cleaners.Domain.Cleaners.Ports.Cache;
@@ -16,6 +17,7 @@ using RemTech.Shared.Tests;
 using Shared.Infrastructure.Module.Consumers;
 using Shared.Infrastructure.Module.DependencyInjection;
 using Shared.Infrastructure.Module.Postgres;
+using Shared.Infrastructure.Module.Quartz;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 using Testcontainers.Redis;
@@ -87,6 +89,8 @@ public sealed class CleanersTestHostFactory : WebApplicationFactory<Program>, IA
             services.AddScoped<CleanersDbContext>();
             services.AddScoped<ICleanersCachedStorage, CleanersCachedStorage>();
             services.AddCleanersOutboxProcessor();
+            services.AddCleanerJob();
+            services.AddQuartsHostedService();
         });
     }
 }
