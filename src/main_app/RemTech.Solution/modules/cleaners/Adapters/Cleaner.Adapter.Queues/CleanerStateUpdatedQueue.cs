@@ -81,17 +81,3 @@ public sealed class CleanerStateUpdatedQueue(
         int ProcessedAmount
     );
 }
-
-public sealed class CleanerWorkFinishedEvent(RabbitMqConnectionProvider provider)
-    : BaseExchangedRabbitMqListener(provider)
-{
-    public override void Configure()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Task HandleMessage(object sender, BasicDeliverEventArgs eventArgs)
-    {
-        throw new NotImplementedException();
-    }
-}
