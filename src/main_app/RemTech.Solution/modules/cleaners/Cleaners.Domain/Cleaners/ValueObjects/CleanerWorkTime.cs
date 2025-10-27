@@ -41,9 +41,9 @@ public readonly record struct CleanerWorkTime
         if (totalElapsedSeconds < 0)
             return Error.Validation("Время работы чистильщика не может быть отрицательным.");
 
-        int seconds = (int)(totalElapsedSeconds / 3600);
-        int minutes = (int)(totalElapsedSeconds % 3600 / 60);
-        int hours = (int)(totalElapsedSeconds % 3600 % 60);
+        int hours = (int)(totalElapsedSeconds / 3600);
+        int minutes = (int)((totalElapsedSeconds % 3600) / 60);
+        int seconds = (int)(totalElapsedSeconds % 60);
 
         return Create(seconds, minutes, hours);
     }

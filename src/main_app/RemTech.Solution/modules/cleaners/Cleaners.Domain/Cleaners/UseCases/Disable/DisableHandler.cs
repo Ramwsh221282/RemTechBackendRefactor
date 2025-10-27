@@ -27,6 +27,6 @@ public sealed class DisableHandler(ICleanersStorage cleaners, IDomainEventsDispa
             return disabling.Error;
 
         var handling = await eventual.PublishEvents(dispatcher, ct);
-        return handling.IsFailure ? handling.Error : eventual;
+        return handling.IsFailure ? handling.Error : cleaner;
     }
 }

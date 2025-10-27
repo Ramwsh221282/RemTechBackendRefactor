@@ -1,36 +1,32 @@
 ﻿using System.Data;
 using Cleaners.Domain.Cleaners.Ports.Outbox;
 using Dapper;
-using Microsoft.Extensions.Hosting;
+using Quartz;
 using RabbitMQ.Client;
-using Serilog;
 using Shared.Infrastructure.Module.Consumers;
 using Shared.Infrastructure.Module.Postgres;
 
 namespace Cleaners.Adapter.Outbox;
 
-public sealed class CleanersOutboxProcessor(
+[DisallowConcurrentExecution]
+public sealed class OutboxProcessorJob(
     PostgresDatabase database,
-    ILogger logger,
-    RabbitMqConnectionProvider provider
-) : BackgroundService
+    RabbitMqConnectionProvider rabbit,
+    Serilog.ILogger logger
+) : IJob
 {
-    private const string Context = nameof(CleanersOutboxProcessor);
+    private const string Context = nameof(OutboxProcessorJob);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task Execute(IJobExecutionContext context)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        logger.Information("{Context} processing job.", Context);
+        try
         {
-            try
-            {
-                await DoLogic();
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                logger.Fatal("{Context}. Exception: {ExceptionMessage}.", Context, ex);
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
-            }
+            await DoLogic();
+        }
+        catch (Exception ex)
+        {
+            logger.Error("{Context}. Error message: {Message}.", Context, ex);
         }
     }
 
@@ -38,7 +34,7 @@ public sealed class CleanersOutboxProcessor(
     {
         int processedMessages = 0;
 
-        await using var channel = await provider.ProvideChannel();
+        await using var channel = await rabbit.ProvideChannel();
         using var dbConnection = await database.ProvideConnection();
         using var transaction = dbConnection.BeginTransaction();
 
@@ -50,7 +46,6 @@ public sealed class CleanersOutboxProcessor(
             {
                 // если нет сообщения - простой.
                 logger.Information("{Context} no messages found.", Context);
-                await Task.Delay(TimeSpan.FromSeconds(5));
                 return;
             }
 

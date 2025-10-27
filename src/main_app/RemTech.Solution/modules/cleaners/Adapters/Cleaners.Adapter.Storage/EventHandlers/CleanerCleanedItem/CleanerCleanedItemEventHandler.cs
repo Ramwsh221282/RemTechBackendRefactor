@@ -23,7 +23,7 @@ public sealed class CleanerCleanedItemEventHandler(
         if (cleaner.IsFailure)
             return Status.Failure(cleaner.Error);
 
-        cleaner.Value.ItemsDateDayThreshold = @event.Threshold;
+        cleaner.Value.CleanedAmount = @event.CleanedItemsCount;
 
         var saving = await cleaner.Value.Save(
             "Не удается обновить количество очищенных записей у чистильщика",

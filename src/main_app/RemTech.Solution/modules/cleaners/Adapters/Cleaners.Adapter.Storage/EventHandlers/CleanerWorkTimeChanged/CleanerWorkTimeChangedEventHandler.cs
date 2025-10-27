@@ -1,6 +1,7 @@
 ﻿using Cleaners.Adapter.Storage.Common;
 using Cleaners.Domain.Cleaners.Ports;
 using Cleaners.Domain.Cleaners.Ports.Cache;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 using Serilog;
 
@@ -10,7 +11,7 @@ public sealed class CleanerWorkTimeChangedEventHandler(
     CleanersDbContext context,
     ILogger logger,
     ICleanersCachedStorage cached
-)
+) : IDomainEventHandler<Domain.Cleaners.Events.CleanerWorkTimeChanged>
 {
     public async Task<Status> Handle(
         Domain.Cleaners.Events.CleanerWorkTimeChanged @event,

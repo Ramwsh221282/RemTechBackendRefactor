@@ -21,7 +21,11 @@ public static class CleanersStorageExtensions
             )
             .FirstOrDefaultAsync(ct);
 
-        return cleaner == null ? Error.NotFound("Чистильщик не найден.") : cleaner;
+        if (cleaner == null)
+            return Error.NotFound("Чистильщик не найден.");
+
+        context.Attach(cleaner);
+        return cleaner;
     }
 
     public static async Task<Status<TransactionalCleanerDataModel>> GetLockedCleaner(
@@ -38,9 +42,11 @@ public static class CleanersStorageExtensions
             )
             .FirstOrDefaultAsync(ct);
 
-        return cleaner == null
-            ? Error.NotFound("Чистильщик не найден.")
-            : new TransactionalCleanerDataModel(cleaner, txn, context);
+        if (cleaner == null)
+            return Error.NotFound("Чистильщик не найден.");
+
+        context.Attach(cleaner);
+        return new TransactionalCleanerDataModel(cleaner, txn, context);
     }
 
     public static CleanerDataModel ConvertToDataModel(this Cleaner cleaner)

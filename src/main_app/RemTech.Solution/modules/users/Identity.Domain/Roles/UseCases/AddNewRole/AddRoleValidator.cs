@@ -8,6 +8,6 @@ public sealed class AddRoleValidator : AbstractValidator<AddRoleCommand>
 {
     public AddRoleValidator()
     {
-        RuleFor(c => c.RoleName).MustBeValid(RoleName.Create);
+        RuleFor(c => c.RoleName).MustBeValid(x => RoleName.Create(x));
     }
 }

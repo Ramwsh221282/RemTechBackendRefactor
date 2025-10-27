@@ -29,6 +29,6 @@ public sealed class AdjustWorkTimeHandler(
             return adjusting.Error;
 
         var handling = await eventual.PublishEvents(dispatcher, ct);
-        return handling.IsFailure ? handling.Error : eventual;
+        return handling.IsFailure ? handling.Error : cleaner;
     }
 }

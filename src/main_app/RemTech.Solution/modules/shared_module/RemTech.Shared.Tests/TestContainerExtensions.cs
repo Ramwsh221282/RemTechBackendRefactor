@@ -22,6 +22,9 @@ public static class TestContainerExtensions
     public static CacheOptions CreateCacheOptions(this RedisContainer container) =>
         new() { Host = container.GetConnectionString() };
 
+    public static RabbitMqContainer BuildRabbitMqContainer(this RabbitMqBuilder builder) =>
+        builder.WithImage("rabbitmq:3.11").Build();
+
     public static DatabaseOptions CreateDatabaseConfiguration(this PostgreSqlContainer container)
     {
         string connectionString = container.GetConnectionString();

@@ -27,6 +27,6 @@ public sealed class CleanItemHandler(ICleanersStorage cleaners, IDomainEventsDis
             return result.Error;
 
         var handling = await eventual.PublishEvents(dispatcher, ct);
-        return handling.IsFailure ? handling.Error : eventual;
+        return handling.IsFailure ? handling.Error : cleaner;
     }
 }

@@ -28,13 +28,14 @@ public sealed class CleanersStorage(PostgresDatabase database) : ICleanersStorag
     {
         string sql = CreateSql(whereClauses: ["id = @id"], limitClause: "LIMIT 1");
         var command = new CommandDefinition(sql, new { id }, cancellationToken: ct);
-
         using var connection = await database.ProvideConnection(ct);
-        var cleaner = await connection.QueryFirstOrDefaultAsync<CleanerDataModel>(command);
 
-        return cleaner is null
-            ? Error.NotFound("Чистильщик не найден.")
-            : cleaner.ConvertToDomainModel();
+        var cleaners = await connection.QueryAsync<CleanerDataModel>(command);
+        if (!cleaners.Any())
+            return Error.NotFound("Чистильщик не найден.");
+
+        var cleaner = cleaners.First();
+        return Status<Cleaner>.Success(cleaner.ConvertToDomainModel());
     }
 
     private string CreateSql(List<string>? whereClauses = null, string? limitClause = null)
@@ -48,16 +49,16 @@ public sealed class CleanersStorage(PostgresDatabase database) : ICleanersStorag
 
         string sql = $"""
             SELECT
-            id,
-            cleaned_amount,
-            last_run,
-            next_run,
-            wait_days,
-            state,
-            hours,
-            minutes,
-            seconds,
-            items_date_day_threshold
+            id as id,
+            cleaned_amount as cleaned_amount,
+            last_run as last_run,
+            next_run as next_run,
+            wait_days as wait_days,
+            state as state,
+            hours as hours,
+            minutes as minutes,
+            seconds as seconds,
+            items_date_day_threshold as items_date_day_threshold
             FROM cleaners_module.cleaners
             {whereClause}
             {limit}

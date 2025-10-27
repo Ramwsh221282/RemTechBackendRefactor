@@ -20,13 +20,13 @@ public sealed class StartWorkHandler(ICleanersStorage cleaners, IDomainEventsDis
         if (cleaner.IsFailure)
             return cleaner.Error;
 
-        var eventual = new EventualCleaner(cleaner);
+        var eventual = new EventualCleaner(cleaner.Value);
         var starting = eventual.StartWork();
 
         if (starting.IsFailure)
             return starting.Error;
 
         var handling = await eventual.PublishEvents(dispatcher, ct);
-        return handling.IsFailure ? handling.Error : eventual;
+        return handling.IsFailure ? handling.Error : cleaner;
     }
 }

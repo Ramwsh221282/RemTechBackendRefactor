@@ -20,6 +20,18 @@ public static class DependencyInjectionExtensions
         return scope.ServiceProvider.GetRequiredService<T>();
     }
 
+    public static async Task<T> ScopedExecution<T, TService>(
+        this IServiceProvider provider,
+        Func<AsyncServiceScope, TService> scopeService,
+        Func<TService, Task<T>> resultFn
+    )
+        where TService : class
+    {
+        await using var scope = provider.CreateAsyncScope();
+        var service = scopeService(scope);
+        return await resultFn(service);
+    }
+
     public static void AddStorageModelMappings(this IServiceCollection services, Assembly assembly)
     {
         Type baseMapType = typeof(EntityMap<>);

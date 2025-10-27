@@ -5,9 +5,9 @@ namespace Cleaners.Domain.Cleaners.Aggregate;
 
 public abstract class Cleaner
 {
-    protected const string WorkState = "Работает";
-    protected const string WaitingState = "Ожидает";
-    protected const string DisabledState = "Отключен";
+    public const string WorkState = "Работает";
+    public const string WaitingState = "Ожидает";
+    public const string DisabledState = "Отключен";
     protected static readonly string[] AllowedStates = ["Работает", "Ожидает", "Отключен"];
     public Guid Id { get; }
     public CleanerSchedule Schedule { get; protected set; }

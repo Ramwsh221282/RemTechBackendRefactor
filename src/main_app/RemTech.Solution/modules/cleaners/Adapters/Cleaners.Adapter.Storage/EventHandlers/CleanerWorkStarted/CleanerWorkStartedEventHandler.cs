@@ -30,6 +30,14 @@ public sealed class CleanerWorkStartedEventHandler(
                 return cleaner;
 
             cleaner.Value.State = @event.State;
+            cleaner.Value.CleanedAmount = @event.CleanedAmount;
+            cleaner.Value.Hours = @event.ElapsedHours;
+            cleaner.Value.Minutes = @event.ElapsedMinutes;
+            cleaner.Value.Seconds = @event.ElapsedSeconds;
+            cleaner.Value.LastRun = @event.LastRun;
+            cleaner.Value.NextRun = @event.NextRun;
+            cleaner.Value.WaitDays = @event.WaitDays;
+
             await context.SaveChangesAsync(ct);
             await cached.Invalidate(cleaner.Value.ConvertToDomainModel());
 
