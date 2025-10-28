@@ -15,7 +15,6 @@
   <ItemGroup>
     <ProjectReference Include="..\brands\Brands.Module\Brands.Module.csproj" />
     <ProjectReference Include="..\categories\Categories.Module\Categories.Module.csproj" />
-    <ProjectReference Include="..\cleaners\Cleaners.Module\Cleaners.Module.csproj" />
     <ProjectReference Include="..\geo_locations\GeoLocations.Module\GeoLocations.Module.csproj" />
     <ProjectReference Include="..\mailing\Mailing.Module\Mailing.Module.csproj" />
     <ProjectReference Include="..\models\Models.Module\Models.Module.csproj" />

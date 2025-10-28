@@ -35,27 +35,25 @@ public sealed class CleanerStateUpdatedQueue(
             return;
         }
 
-        var handle = await HandleCommand(@event);
-        if (handle.IsFailure)
-        {
-            logger.Error("{Queue} handled message with error: {Error}.", QueueName, handle.Error);
-        }
-        else
-        {
-            logger.Information("{Queue} handled message.", QueueName);
-        }
+        logger.Information(
+            "{Queue} attempt to handle {Event}.",
+            QueueName,
+            nameof(CleanerStateUpdatedEvent)
+        );
 
+        await HandleCommand(@event);
+        logger.Information("{Queue} handled event.", QueueName);
         await Acknowledge(eventArgs);
     }
 
-    private CleanerStateUpdatedEvent? GetEventInfo(BasicDeliverEventArgs eventArgs)
+    private static CleanerStateUpdatedEvent? GetEventInfo(BasicDeliverEventArgs eventArgs)
     {
         var body = eventArgs.Body;
         var @event = JsonSerializer.Deserialize<CleanerStateUpdatedEvent>(body.Span);
         return @event;
     }
 
-    private async Task<Status> HandleCommand(CleanerStateUpdatedEvent @event)
+    private async Task HandleCommand(CleanerStateUpdatedEvent @event)
     {
         var command = new UpdateWorkStatisticsCommand(
             @event.Id,
@@ -65,7 +63,7 @@ public sealed class CleanerStateUpdatedQueue(
 
         await using var scope = sp.CreateAsyncScope();
 
-        return await scope
+        var result = await scope
             .GetService<
                 ICommandHandler<
                     UpdateWorkStatisticsCommand,
@@ -73,6 +71,15 @@ public sealed class CleanerStateUpdatedQueue(
                 >
             >()
             .Handle(command);
+
+        if (result.IsFailure)
+            logger.Error(
+                "{Queue} handled message with error: {Error}.",
+                QueueName,
+                result.Error.ErrorText
+            );
+        else
+            logger.Information("{Queue} handled message.", QueueName);
     }
 
     private sealed record CleanerStateUpdatedEvent(

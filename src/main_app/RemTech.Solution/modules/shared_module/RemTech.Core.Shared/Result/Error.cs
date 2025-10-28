@@ -34,6 +34,18 @@ public record Error(string ErrorText, ErrorCodes Code)
         return new Error(message, Code);
     }
 
+    public static Error Combined(IEnumerable<Error> errors)
+    {
+        var distinctCodes = errors.Select(er => er.Code).Distinct().ToArray();
+        if (distinctCodes.Length > 1)
+            throw new ApplicationException("Unable to create combined error. Codes are different.");
+
+        var texts = errors.Select(er => er.ErrorText);
+        var text = string.Join(" ,", texts);
+        var code = distinctCodes[0];
+        return new Error(text, code);
+    }
+
     public Status<T> Status<T>() => new(this);
 
     public bool Any() => !(string.IsNullOrWhiteSpace(ErrorText) || Code == ErrorCodes.Empty);
@@ -44,48 +56,5 @@ public record Error(string ErrorText, ErrorCodes Code)
     public static implicit operator Status(Error error)
     {
         return error.Status();
-    }
-}
-
-public sealed record Error<T>(string ErrorText, ErrorCodes Code) : Error(ErrorText, Code)
-{
-    public static implicit operator Status<T>(Error<T> error)
-    {
-        Error upcated = error;
-        return new Status<T>(upcated);
-    }
-
-    public static implicit operator Status(Error<T> error)
-    {
-        Error upcated = error;
-        return new Status(upcated);
-    }
-}
-
-public sealed record ValidationError<T> : ValidationError
-{
-    public ValidationError(string text)
-        : base(text) { }
-
-    public static implicit operator Status<T>(ValidationError<T> validationError)
-    {
-        ValidationError upcated = validationError;
-        return new Status<T>(upcated);
-    }
-
-    public static implicit operator Status(ValidationError<T> validationError)
-    {
-        ValidationError upcated = validationError;
-        return new Status(upcated);
-    }
-
-    public static implicit operator Task<Status<T>>(ValidationError<T> error)
-    {
-        return Task.FromResult<Status<T>>(error);
-    }
-
-    public static implicit operator Task<Status>(ValidationError<T> error)
-    {
-        return Task.FromResult<Status>(error);
     }
 }

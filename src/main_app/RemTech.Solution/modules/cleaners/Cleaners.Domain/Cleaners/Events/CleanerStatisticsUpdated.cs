@@ -1,6 +1,7 @@
-﻿using RemTech.Core.Shared.DomainEvents;
+﻿using Cleaners.Domain.Cleaners.Aggregate;
+using RemTech.Core.Shared.DomainEvents;
 
-namespace Cleaners.Domain.Cleaners.Aggregate.Decorators;
+namespace Cleaners.Domain.Cleaners.Events;
 
 public sealed record CleanerStatisticsUpdated(
     Guid Id,
