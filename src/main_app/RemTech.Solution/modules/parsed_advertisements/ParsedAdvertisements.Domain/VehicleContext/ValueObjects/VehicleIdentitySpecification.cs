@@ -1,4 +1,12 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using ParsedAdvertisements.Domain.BrandContext;
+using ParsedAdvertisements.Domain.BrandContext.ValueObjects;
+using ParsedAdvertisements.Domain.CategoryContext;
+using ParsedAdvertisements.Domain.CategoryContext.ValueObjects;
+using ParsedAdvertisements.Domain.ModelContext;
+using ParsedAdvertisements.Domain.ModelContext.ValueObjects;
+using ParsedAdvertisements.Domain.RegionContext;
+using ParsedAdvertisements.Domain.RegionContext.ValueObjects;
+using RemTech.Core.Shared.Result;
 
 namespace ParsedAdvertisements.Domain.VehicleContext.ValueObjects;
 
@@ -35,16 +43,32 @@ public sealed record VehicleIdentitySpecification
     public Guid ModelId { get; } = Guid.Empty;
 
     public VehicleIdentitySpecification OfCategory(Guid categoryId) =>
-        new(VehicleId, CategoryId, BrandId, LocationId, ModelId);
+        new(VehicleId, categoryId, BrandId, LocationId, ModelId);
 
     public VehicleIdentitySpecification OfBrand(Guid brandId) =>
-        new(VehicleId, CategoryId, BrandId, LocationId, ModelId);
+        new(VehicleId, CategoryId, brandId, LocationId, ModelId);
 
     public VehicleIdentitySpecification OfLocation(Guid locationId) =>
-        new(VehicleId, CategoryId, BrandId, LocationId, ModelId);
+        new(VehicleId, CategoryId, BrandId, locationId, ModelId);
 
     public VehicleIdentitySpecification OfModel(Guid modelId) =>
-        new(VehicleId, CategoryId, BrandId, LocationId, ModelId);
+        new(VehicleId, CategoryId, BrandId, LocationId, modelId);
+
+    public VehicleIdentitySpecification OfCategory(Category category) => OfCategory(category.Id);
+
+    public VehicleIdentitySpecification OfBrand(Brand brand) => OfBrand(brand.Id);
+
+    public VehicleIdentitySpecification OfLocation(Region region) => OfLocation(region.Id);
+
+    public VehicleIdentitySpecification OfModel(Model model) => OfModel(model.Id);
+
+    public VehicleIdentitySpecification OfCategory(CategoryId id) => OfCategory(id.Id);
+
+    public VehicleIdentitySpecification OfBrand(BrandId id) => OfBrand(id.Id);
+
+    public VehicleIdentitySpecification OfLocation(RegionId id) => OfLocation(id.Value);
+
+    public VehicleIdentitySpecification OfModel(ModelId id) => OfModel(id.Value);
 
     public bool IsValid(out Error error)
     {

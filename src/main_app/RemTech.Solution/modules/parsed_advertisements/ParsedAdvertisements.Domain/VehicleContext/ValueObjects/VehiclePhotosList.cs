@@ -1,21 +1,8 @@
-﻿using RemTech.Core.Shared.Result;
+﻿namespace ParsedAdvertisements.Domain.VehicleContext.ValueObjects;
 
-namespace ParsedAdvertisements.Domain.VehicleContext.ValueObjects;
-
-public sealed class VehiclePhotosList
+public sealed record VehiclePhotosList(IReadOnlyList<VehiclePhoto> Photos)
 {
-    private readonly HashSet<VehiclePhoto> _photos;
-
-    private VehiclePhotosList(IEnumerable<VehiclePhoto> photos) => _photos = [.. photos];
-
-    public VehiclePhotosList() => _photos = [];
-
-    public static Status<VehiclePhotosList> Create(IEnumerable<VehiclePhoto> photos)
+    public VehiclePhotosList(UniquePhotoColleciton photos) : this(photos.ToVehiclePhotosList())
     {
-        var array = photos.ToArray();
-        var distinct = photos.DistinctBy(p => p.Path).ToArray();
-        return array.Length != distinct.Length
-            ? Error.Validation("Фотографии техники должны быть уникальными")
-            : new VehiclePhotosList(photos);
     }
 }

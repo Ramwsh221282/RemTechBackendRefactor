@@ -4,7 +4,7 @@ namespace ParsedAdvertisements.Domain.RegionContext.ValueObjects;
 
 public sealed record RegionName
 {
-    private const int MaxLength = 100;
+    public const int MaxLength = 100;
     public string Value { get; }
 
     private RegionName(string value) => Value = value;

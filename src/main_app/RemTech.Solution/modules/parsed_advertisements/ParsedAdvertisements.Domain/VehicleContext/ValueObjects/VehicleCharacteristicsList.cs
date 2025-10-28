@@ -7,6 +7,8 @@ public sealed class VehicleCharacteristicsList
 {
     private readonly HashSet<VehicleCharacteristic> _characteristics;
 
+    public IReadOnlyList<VehicleCharacteristic> Characteristic => _characteristics.ToList();
+
     private VehicleCharacteristicsList(IEnumerable<VehicleCharacteristic> characteristics) =>
         _characteristics = [.. characteristics];
 
@@ -24,9 +26,9 @@ public sealed class VehicleCharacteristicsList
     )
     {
         var array = characteristics.ToArray();
-        var distinct = characteristics.DistinctBy(c => c.CharacteristicId).ToArray();
+        var distinct = array.DistinctBy(c => c.CharacteristicId).ToArray();
         if (distinct.Length != array.Length)
             return Error.Validation("Характеристики техники должны быть уникальными.");
-        return new VehicleCharacteristicsList(characteristics);
+        return new VehicleCharacteristicsList(array);
     }
 }

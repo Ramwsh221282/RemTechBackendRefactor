@@ -5,7 +5,7 @@ namespace Shared.Infrastructure.Module.Quartz;
 
 public static class AddQuartzService
 {
-    public static void AddQuartsHostedService(this IServiceCollection services)
+    public static void ConfigureQuartzScheduler(this IServiceCollection services)
     {
         services.AddQuartzHostedService(q =>
         {

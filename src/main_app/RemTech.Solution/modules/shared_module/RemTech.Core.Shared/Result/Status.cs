@@ -196,43 +196,27 @@ public class Status<T>
     public static implicit operator Status<T>(T value) => Success(value);
 }
 
-public sealed class FirstBadStatus
+public sealed class StatusCollection<T>
 {
-    private readonly List<Status> _statuses = [];
+    private readonly IEnumerable<Status<T>> _statuses;
 
-    public FirstBadStatus(IEnumerable<Status> statuses)
+    public StatusCollection(IEnumerable<Status<T>> statuses)
     {
-        _statuses = statuses.ToList();
+        _statuses = statuses;
     }
 
-    public FirstBadStatus(params Status[] statuses)
+    public bool AllValid(out Error error, out IEnumerable<T> values)
     {
-        _statuses = statuses.ToList();
+        if (_statuses.All(s => s.IsSuccess))
+        {
+            var firstFailure = _statuses.FirstOrDefault(s => s.IsFailure)!;
+            error = firstFailure.Error;
+            values = [];
+            return false;
+        }
+
+        error = Error.None();
+        values = _statuses.Select(v => v.Value);
+        return true;
     }
-
-    public FirstBadStatus Add(Status status)
-    {
-        if (status.IsSuccess)
-            throw new ApplicationException("Статус был удачным.");
-        _statuses.Add(status);
-        return this;
-    }
-
-    public Status Status()
-    {
-        if (_statuses.All(st => st.IsSuccess))
-            throw new ApplicationException(
-                "Нельзя найти первый неудачный статус, когда все статусы удачны"
-            );
-
-        Status? status = _statuses.FirstOrDefault(s => s.IsFailure);
-        if (status == null)
-            throw new ApplicationException("Не был найден первый неудачный статус.");
-
-        return status;
-    }
-
-    public static implicit operator Status(FirstBadStatus status) => status.Status();
-
-    public static implicit operator Error(FirstBadStatus status) => status.Status();
 }

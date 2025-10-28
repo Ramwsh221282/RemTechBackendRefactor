@@ -2,6 +2,8 @@
 using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 using Pgvector.Dapper;
+using RemTech.Core.Shared.Transactions;
+using Shared.Infrastructure.Module.Transactions;
 
 namespace Shared.Infrastructure.Module.Postgres;
 
@@ -23,5 +25,11 @@ public static class PostgresDatabaseExtensions
         SqlMapper.AddTypeHandler(new VectorTypeHandler());
         DefaultTypeMap.MatchNamesWithUnderscores = true;
         services.AddSingleton<PostgresDatabase>();
+        services.AddScoped<ITransactionManager, TransactionManager>();
+    }
+
+    public static ITransactionManager ProvideTransactionManager(this PostgresDatabase database)
+    {
+        return new TransactionManager(database);
     }
 }

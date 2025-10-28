@@ -56,6 +56,7 @@ public sealed class CleanersOutboxProcessor(
 
             try
             {
+                // публикация сообщения.
                 await message.Publish();
                 processedMessages++;
             }
@@ -84,19 +85,19 @@ public sealed class CleanersOutboxProcessor(
     )
     {
         const string sql = """
-            SELECT
-            id,
-            type,
-            content,
-            created,
-            processed,
-            processed_attempts,
-            last_error
-            FROM cleaners_module.outbox
-            WHERE processed IS NULL AND processed_attempts < 20
-            LIMIT 1
-            FOR UPDATE SKIP LOCKED
-            """;
+                           SELECT
+                           id,
+                           type,
+                           content,
+                           created,
+                           processed,
+                           processed_attempts,
+                           last_error
+                           FROM cleaners_module.outbox
+                           WHERE processed IS NULL AND processed_attempts < 20
+                           LIMIT 1
+                           FOR UPDATE SKIP LOCKED
+                           """;
 
         var command = new CommandDefinition(sql, transaction: transaction);
         var message = await connection.QueryFirstOrDefaultAsync<CleanerOutboxMessage>(command);

@@ -1,6 +1,14 @@
-﻿namespace RemTech.Core.Shared.Transactions;
+﻿using System.Data;
+using RemTech.Core.Shared.Result;
 
-public interface ITransactionManager
+namespace RemTech.Core.Shared.Transactions;
+
+public interface ITransactionManager : IDisposable, IAsyncDisposable
 {
-    Task<ITransaction> Create(CancellationToken ct = default);
+    Task Begin(CancellationToken ct = default);
+    Task<Status> Commit(CancellationToken ct = default);
+    void AccessConnection(Action<IDbConnection> action);
+    void AccessConnection(Action<IDbConnection, IDbTransaction> action);
+    Task Execute(Func<IDbConnection, Task> func);
+    Task<T> Execute<T>(Func<IDbConnection, Task<T>> func);
 }

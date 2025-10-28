@@ -5,6 +5,6 @@ namespace ParsedAdvertisements.Domain.BrandContext.Ports;
 
 public interface IBrandsStorage
 {
-    Task<Status<Brand>> Get(string name, ITransaction txn, CancellationToken ct = default);
-    Task Save(Brand brand, ITransaction txn, CancellationToken ct = default);
+    Task<Status<Brand>> Get(string name, ITransactionManager txn, CancellationToken ct = default);
+    Task Save(Brand brand, ITransactionManager txn, CancellationToken ct = default);
 }

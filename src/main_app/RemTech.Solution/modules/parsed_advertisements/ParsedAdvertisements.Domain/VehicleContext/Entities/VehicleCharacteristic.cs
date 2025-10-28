@@ -4,24 +4,41 @@ namespace ParsedAdvertisements.Domain.VehicleContext.Entities;
 
 public sealed record VehicleCharacteristic
 {
-    public Guid VehicleId { get; }
+    public string VehicleId { get; }
     public Guid CharacteristicId { get; }
+    public string CharacteristicName { get; }
+    public string CharacteristicValue { get; }
 
-    private VehicleCharacteristic(Guid vehicleId, Guid characteristicId) =>
-        (VehicleId, CharacteristicId) = (vehicleId, characteristicId);
+    private VehicleCharacteristic(
+        string vehicleId,
+        Guid characteristicId,
+        string characteristicName,
+        string characteristicValue) =>
+        (VehicleId, CharacteristicId, CharacteristicName, CharacteristicValue) =
+        (vehicleId, characteristicId, characteristicName, characteristicValue);
 
-    public static Status<VehicleCharacteristic> Create(Guid vehicleId, Guid characteristicId)
+    public static Status<VehicleCharacteristic> Create(
+        string vehicleId,
+        Guid characteristicId,
+        string characteristicName,
+        string characteristicValue)
     {
-        if (vehicleId == Guid.Empty)
-            return Error.Validation(
-                "Характеристика техники не может иметь пустой идентификатор техники"
-            );
+        if (string.IsNullOrWhiteSpace(vehicleId))
+        {
+            var error = "Характеристика техники не может иметь пустой идентификатор техники";
+            return Error.Validation(error);
+        }
 
         if (characteristicId == Guid.Empty)
-            return Error.Validation(
-                "Характеристика техники не может иметь пустой идентификатор характеристики"
-            );
+        {
+            var error = "Характеристика техники не может иметь пустой идентификатор характеристики";
+            return Error.Validation(error);
+        }
 
-        return new VehicleCharacteristic(vehicleId, characteristicId);
+        return new VehicleCharacteristic(
+            vehicleId,
+            characteristicId,
+            characteristicName,
+            characteristicValue);
     }
 }

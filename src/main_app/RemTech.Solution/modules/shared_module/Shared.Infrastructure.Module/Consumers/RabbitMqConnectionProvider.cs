@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RemTech.Shared.Configuration;
+using RemTech.Shared.Configuration.Options;
 
 namespace Shared.Infrastructure.Module.Consumers;
 

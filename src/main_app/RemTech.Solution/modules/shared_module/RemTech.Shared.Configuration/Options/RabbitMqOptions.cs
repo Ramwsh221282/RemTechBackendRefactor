@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace RemTech.Shared.Configuration;
+namespace RemTech.Shared.Configuration.Options;
 
 public sealed record RabbitMqOptions : IConfigurationPart
 {

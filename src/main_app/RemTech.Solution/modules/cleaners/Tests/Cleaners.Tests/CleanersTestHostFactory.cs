@@ -90,7 +90,7 @@ public sealed class CleanersTestHostFactory : WebApplicationFactory<Program>, IA
             services.AddScoped<ICleanersCachedStorage, CleanersCachedStorage>();
             services.AddCleanersOutboxProcessor();
             services.AddCleanerJob();
-            services.AddQuartsHostedService();
+            services.ConfigureQuartzScheduler();
         });
     }
 }
