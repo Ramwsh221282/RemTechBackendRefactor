@@ -7,6 +7,7 @@ using ParsedAdvertisements.Adapters.Storage;
 using ParsedAdvertisements.Domain;
 using RemTech.Shared.Tests;
 using Shared.Infrastructure.Module.Postgres;
+using Shared.Infrastructure.Module.Postgres.Embeddings;
 using Shared.Infrastructure.Module.Quartz;
 using Shared.Infrastructure.Module.RabbitMq;
 using Shared.Infrastructure.Module.Redis;
@@ -48,6 +49,9 @@ public sealed class ParsedAdvertisementsServices : IAsyncLifetime
         var dbOptions = Options.Create(_dbContainer.CreateDatabaseConfiguration());
         var rabbitOptions = Options.Create(_rabbitMqContainer.CreateRabbitMqConfiguration());
         var redisContainer = Options.Create(_redisContainer.CreateCacheOptions());
+
+        services.AddEmbeddingGenerator(OnnxEmbeddingGenerator.DefaultTokenizerPath,
+            OnnxEmbeddingGenerator.DefaultModelPath);
 
         services.AddSingleton(dbOptions);
         services.AddSingleton(rabbitOptions);
@@ -130,7 +134,9 @@ public sealed class ParsedAdvertisementsServices : IAsyncLifetime
         {
             await dbContext.Database.EnsureDeletedAsync();
         }
-        catch { }
+        catch
+        {
+        }
     }
 
     private async Task EnsureDatabaseCreated(Type type)
@@ -141,6 +147,8 @@ public sealed class ParsedAdvertisementsServices : IAsyncLifetime
         {
             await dbContext.Database.MigrateAsync();
         }
-        catch { }
+        catch
+        {
+        }
     }
 }

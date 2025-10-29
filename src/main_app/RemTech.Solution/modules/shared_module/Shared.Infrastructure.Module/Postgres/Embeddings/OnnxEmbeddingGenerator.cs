@@ -1,32 +1,56 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.ML.OnnxRuntime;
+﻿using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
+using Pgvector;
 
 namespace Shared.Infrastructure.Module.Postgres.Embeddings;
 
 public sealed class OnnxEmbeddingGenerator : IEmbeddingGenerator
 {
-    private static readonly string TokenizerPath = Path.Combine(
+    public static readonly string DefaultTokenizerPath = Path.Combine(
         AppDomain.CurrentDomain.BaseDirectory,
         "tokenizer.onnx"
     );
-    private static readonly string ModelPath = Path.Combine(
+
+    public static readonly string DefaultModelPath = Path.Combine(
         AppDomain.CurrentDomain.BaseDirectory,
         "model.onnx"
     );
 
-    private readonly string _tokenizerPath;
-    private readonly string _modelPath;
-    private readonly InferenceSession _tokenizerSession;
-    private readonly InferenceSession _modelSession;
+    private readonly Lazy<InferenceSession> _tokenizerSessionLazy;
+    private readonly Lazy<InferenceSession> _modelSessionLazy;
+    private bool _tokenizerInferenceCreated;
+    private bool _modelInferenceCreated;
     private bool _disposed;
+
+    private InferenceSession _tokenizer => _tokenizerSessionLazy.Value;
+    private InferenceSession _modelSession => _modelSessionLazy.Value;
 
     public OnnxEmbeddingGenerator(string tokenizerPath, string modelPath)
     {
+        _tokenizerSessionLazy = new Lazy<InferenceSession>(MakeTokenizerSession(tokenizerPath));
+        _modelSessionLazy = new Lazy<InferenceSession>(MakeModelSession(modelPath));
+    }
+
+    private InferenceSession MakeTokenizerSession(string path)
+    {
+        if (_tokenizerInferenceCreated)
+            return _tokenizerSessionLazy.Value;
+
         var tokenizerOptions = new SessionOptions();
         tokenizerOptions.RegisterOrtExtensions();
-        _tokenizerSession = new InferenceSession(TokenizerPath, tokenizerOptions);
-        _modelSession = new InferenceSession(ModelPath);
+        var session = new InferenceSession(path, tokenizerOptions);
+        _tokenizerInferenceCreated = true;
+        return session;
+    }
+
+    private InferenceSession MakeModelSession(string path)
+    {
+        if (_modelInferenceCreated)
+            return _modelSessionLazy.Value;
+
+        var session = new InferenceSession(path);
+        _modelInferenceCreated = true;
+        return session;
     }
 
     public ReadOnlyMemory<float> Generate(string text)
@@ -38,7 +62,7 @@ public sealed class OnnxEmbeddingGenerator : IEmbeddingGenerator
             NamedOnnxValue.CreateFromTensor("inputs", stringTensor),
         ];
 
-        EmbeddingData embeddingData = EmbeddingData.Create(tokenizerInputs, _tokenizerSession);
+        EmbeddingData embeddingData = EmbeddingData.Create(tokenizerInputs, _tokenizer);
         ReadOnlySpan<int> tokenPairs = embeddingData.TokenPairs();
 
         DenseTensor<long> inputIdsTensor = new DenseTensor<long>([1, tokenPairs.Length]);
@@ -60,6 +84,12 @@ public sealed class OnnxEmbeddingGenerator : IEmbeddingGenerator
         ];
 
         return GetEmbeddings(modelInputs, _modelSession);
+    }
+
+    public Vector GenerateVector(string text)
+    {
+        ReadOnlyMemory<float> vector = Generate(text);
+        return new Vector(vector);
     }
 
     private static ReadOnlyMemory<float> GetEmbeddings(
@@ -85,8 +115,8 @@ public sealed class OnnxEmbeddingGenerator : IEmbeddingGenerator
         {
             if (disposing)
             {
-                _tokenizerSession?.Dispose();
-                _modelSession?.Dispose();
+                _tokenizerSessionLazy.Value.Dispose();
+                _tokenizerSessionLazy.Value.Dispose();
             }
 
             _disposed = true;
