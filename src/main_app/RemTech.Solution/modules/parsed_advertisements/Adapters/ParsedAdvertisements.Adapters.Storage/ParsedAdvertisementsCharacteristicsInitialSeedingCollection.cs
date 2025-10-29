@@ -83,6 +83,16 @@ public sealed class ParsedAdvertisementsCharacteristicsInitialSeedingCollection
             "Евро 6",
         ])),
         new(Guid.NewGuid(), "Объём топливного бака", "л.", new HashSet<string>()),
+        new(Guid.NewGuid(), "Марка прицепа", null, new HashSet<string>()),
+        new(Guid.NewGuid(), "Тип прицепа", null, new HashSet<string>()),
+        new(Guid.NewGuid(), "Модель прицепа", null, new HashSet<string>()),
+        new(Guid.NewGuid(), "Тип кабины", null, new HashSet<string>()),
+        new(Guid.NewGuid(), "Задняя подвеска", null, new HashSet<string>(
+        [
+            "Рессорная",
+            "Пневматическая",
+            "Балансирная",
+        ])),
         new(Guid.NewGuid(), "Коробка передач", "л.", new HashSet<string>(
         [
             "Автомат",
@@ -145,6 +155,68 @@ public sealed class ParsedAdvertisementsCharacteristicsInitialSeedingCollection
             "Пружинная",
             "Рессорная",
         ])),
+        new(Guid.NewGuid(), "Тип кабины", null, new HashSet<string>(
+        [
+            "2-х местная без спального",
+            "2-х местная с 1 спальным",
+            "2-х местная с 2 спальными",
+            "3-х местная без спального",
+            "3-х местная с 1 спальным",
+        ])),
+        new(Guid.NewGuid(), "Тип тормозов", null, new HashSet<string>(
+        [
+            "Барабанные",
+            "Дисковые",
+            "Отсутствуют",
+        ])),
+        new(Guid.NewGuid(), "Ход (трактора), ходовая часть", null, new HashSet<string>(
+        [
+            "Колесный",
+            "Гусеничный",
+            "Колесно-гусеничный",
+        ])),
+        new(Guid.NewGuid(), "Привод", null, new HashSet<string>(
+        [
+            "Полный",
+            "Передний",
+            "Задний",
+        ])),
+        new(Guid.NewGuid(), "Привод", null, new HashSet<string>(
+        [
+            "Полный",
+            "Передний",
+            "Задний",
+        ])),
+        new(Guid.NewGuid(), "Тип пресс-подборщика", null, new HashSet<string>(
+        [
+            "Рулонный",
+            "Тюковый",
+        ])),
+        new(Guid.NewGuid(), "Тип пресс-подборщика", null, new HashSet<string>(
+        [
+            "Рулонный",
+            "Тюковый",
+        ])),
+        new(Guid.NewGuid(), "Эксплуатационная масса", "кг.", new HashSet<string>()),
+        new(Guid.NewGuid(), "Грузоподъемность", "т.", new HashSet<string>()),
+        new(Guid.NewGuid(), "Моточасть", "ч.", new HashSet<string>()),
+        new(Guid.NewGuid(), "Длина стрелы", null, new HashSet<string>()),
+        new(Guid.NewGuid(), "Тип двигателя", null, new HashSet<string>(
+        [
+            "Бензин",
+            "Дизель",
+            "Электро",
+        ])),
+        new(Guid.NewGuid(), "Тип грабель", null, new HashSet<string>(
+        [
+            "Колесно-пальцевые",
+            "Ленточный валкователь",
+            "Поперечные",
+            "Роторные",
+            "Снегопах",
+            "Цепные",
+        ])),
+        new(Guid.NewGuid(), "Ширина захвата", "м.", new HashSet<string>()),
     ];
 }
 
