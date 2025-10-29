@@ -14,13 +14,18 @@ public sealed class BrandDataModelEntityTypeConfiguration : IEntityTypeConfigura
         builder.ToTable("brands");
         builder.HasKey(x => x.Id).HasName("pk_brands");
         builder.Property(x => x.Id).HasColumnName("id").IsRequired();
-        builder.Property(x => x.Name).HasColumnName("name").IsRequired().HasMaxLength(BrandName.Length);
+        builder
+            .Property(x => x.Name)
+            .HasColumnName("name")
+            .IsRequired()
+            .HasMaxLength(BrandName.Length);
         builder
             .HasMany<VehicleDataModel>()
             .WithOne()
-            .HasForeignKey(ctx => ctx.BrandId).IsRequired()
+            .HasForeignKey(ctx => ctx.BrandId)
+            .IsRequired()
             .OnDelete(DeleteBehavior.Cascade)
             .HasConstraintName("fk_vehicle_brands");
-        builder.ConfigureEmbeddingProperty();
+        builder.ConfigureEmbeddingProperty("brands");
     }
 }

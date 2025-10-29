@@ -31,7 +31,7 @@ public sealed class UpdateWorkStatisticsHandler(
 
         var eventual = new EventualCleaner(cleaner);
         var workTime = CleanerWorkTime.Create(command.ElapsedSeconds);
-        var updating = eventual.UpdateWorkStatistics(workTime, command.ProcessedItems);
+        var updating = eventual.UpdateWorkStatistics(workTime, (int)command.ProcessedItems);
 
         if (updating.IsFailure)
             return updating.Error;

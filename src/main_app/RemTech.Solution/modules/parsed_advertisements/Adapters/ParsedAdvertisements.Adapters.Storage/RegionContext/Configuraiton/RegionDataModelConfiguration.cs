@@ -14,13 +14,26 @@ public class RegionDataModelConfiguration : IEntityTypeConfiguration<RegionDataM
         builder.ToTable("regions");
         builder.HasKey(x => x.Id).HasName("pk_regions");
         builder.Property(x => x.Id).HasColumnName("id").IsRequired();
-        builder.Property(x => x.Name).HasColumnName("name").IsRequired().HasMaxLength(RegionName.MaxLength);
-        builder.HasMany<VehicleDataModel>()
+
+        builder
+            .Property(x => x.Name)
+            .HasColumnName("name")
+            .IsRequired()
+            .HasMaxLength(RegionName.MaxLength);
+
+        builder.Property(x => x.Kind)
+            .HasColumnName("kind")
+            .IsRequired()
+            .HasMaxLength(RegionKind.MaxLength);
+
+        builder
+            .HasMany<VehicleDataModel>()
             .WithOne()
             .HasForeignKey(ad => ad.LocationId)
             .IsRequired()
             .HasConstraintName("fk_vehicle_locations")
             .OnDelete(DeleteBehavior.Cascade);
-        builder.ConfigureEmbeddingProperty();
+
+        builder.ConfigureEmbeddingProperty("regions");
     }
 }

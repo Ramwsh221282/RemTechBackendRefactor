@@ -33,6 +33,28 @@ public static class ValidationExtensions
         );
     }
 
+    public static IRuleBuilderOptionsConditions<TProperty, TToValidate> MustBeValid<
+        TProperty,
+        TToValidate,
+        TStatus
+    >(
+        this IRuleBuilderInitial<TProperty, TToValidate> builder,
+        Func<TToValidate, Status<TStatus>> statusFn
+    )
+    {
+        return builder.Custom(
+            (
+                (validate, context) =>
+                {
+                    Status<TStatus> status = statusFn(validate);
+                    Status notGeneric = new Status(status.Error);
+                    if (notGeneric.IsFailure)
+                        context.AddFailure(notGeneric.FailureFromStatus());
+                }
+            )
+        );
+    }
+
     private static ValidationFailure FailureFromStatus(this Status status) =>
         new() { ErrorCode = nameof(ErrorCodes.Validation), ErrorMessage = status.Error.ErrorText };
 }

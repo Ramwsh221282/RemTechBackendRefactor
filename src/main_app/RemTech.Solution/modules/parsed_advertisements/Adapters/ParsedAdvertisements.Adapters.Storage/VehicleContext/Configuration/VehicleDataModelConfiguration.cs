@@ -20,20 +20,34 @@ public sealed class VehicleDataModelConfiguration : IEntityTypeConfiguration<Veh
         builder.Property(e => e.IsNds).IsRequired().HasColumnName("is_nds");
         builder.Property(e => e.Url).IsRequired().HasColumnName("url");
         builder.Property(e => e.Domain).IsRequired().HasColumnName("domain");
-        builder.Property(e => e.LocationPath)
+        builder
+            .Property(e => e.LocationPath)
             .IsRequired()
             .HasColumnName("location_path")
             .HasColumnType("ltree");
-        builder.HasIndex(e => e.LocationPath).HasMethod("gist").HasDatabaseName("idx_location_path");
+        builder
+            .HasIndex(e => e.LocationPath)
+            .HasMethod("gist")
+            .HasDatabaseName("idx_location_path");
         builder.Property(e => e.Photos).HasColumnName("photos").HasColumnType("jsonb").IsRequired();
-        builder.ConfigureEmbeddingProperty();
-        builder.HasMany(c => c.Characteristics)
+        builder.ConfigureEmbeddingProperty("vehicles");
+        builder
+            .HasMany(c => c.Characteristics)
             .WithOne()
             .HasForeignKey(ctx => ctx.VehicleId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade)
             .HasConstraintName("fk_vehicle_characteristics");
-        builder.HasIndex(e => new { e.VehicleId, e.BrandId, e.CategoryId, e.ModelId, e.LocationId }).IsUnique();
+        builder
+            .HasIndex(e => new
+            {
+                e.VehicleId,
+                e.BrandId,
+                e.CategoryId,
+                e.ModelId,
+                e.LocationId,
+            })
+            .IsUnique();
         builder.HasIndex(e => e.Price);
     }
 }

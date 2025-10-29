@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using ParsedAdvertisements.Adapters.Storage.BrandContext.DataModels;
 using ParsedAdvertisements.Adapters.Storage.CategoryContext.Configurations;
+using ParsedAdvertisements.Adapters.Storage.CharacteristicContext.DataModels;
 using ParsedAdvertisements.Adapters.Storage.ModelContext.DataModels;
 using ParsedAdvertisements.Adapters.Storage.RegionContext.DataModels;
 using ParsedAdvertisements.Adapters.Storage.VehicleContext.DataModels;
@@ -14,8 +15,9 @@ namespace ParsedAdvertisements.Adapters.Storage;
 public sealed class ParsedAdvertisementsDbContext(IOptions<DatabaseOptions> options) : DbContext
 {
     public DbSet<VehicleDataModel> Vehicles => Set<VehicleDataModel>();
-    public DbSet<VehicleCharacteristicDataModel> VehicleCharacteristics => Set<VehicleCharacteristicDataModel>();
-    public DbSet<Characteristic> Characteristics => Set<Characteristic>();
+    public DbSet<VehicleCharacteristicDataModel> VehicleCharacteristics =>
+        Set<VehicleCharacteristicDataModel>();
+    public DbSet<CharacteristicDataModel> Characteristics => Set<CharacteristicDataModel>();
     public DbSet<CategoryDataModel> Categories => Set<CategoryDataModel>();
     public DbSet<BrandDataModel> Brands => Set<BrandDataModel>();
     public DbSet<ModelDataModel> Models => Set<ModelDataModel>();
@@ -31,6 +33,8 @@ public sealed class ParsedAdvertisementsDbContext(IOptions<DatabaseOptions> opti
         modelBuilder.HasDefaultSchema("parsed_advertisements_module");
         modelBuilder.HasPostgresExtension("ltree");
         modelBuilder.ConfigureWithPgVectorExtension();
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ParsedAdvertisementsDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            typeof(ParsedAdvertisementsDbContext).Assembly
+        );
     }
 }

@@ -14,13 +14,19 @@ public sealed class ModelDataModelConfiguration : IEntityTypeConfiguration<Model
         builder.ToTable("models");
         builder.HasKey(x => x.Id).HasName("pk_models");
         builder.Property(x => x.Id).HasColumnName("id").IsRequired();
-        builder.Property(x => x.Name).HasColumnName("name").IsRequired().HasMaxLength(ModelName.MaxLength);
+        builder
+            .Property(x => x.Name)
+            .HasColumnName("name")
+            .IsRequired()
+            .HasMaxLength(ModelName.MaxLength);
         builder
             .HasMany<VehicleDataModel>()
             .WithOne()
-            .HasForeignKey(ad => ad.ModelId).IsRequired()
+            .HasForeignKey(ad => ad.ModelId)
+            .IsRequired()
             .OnDelete(DeleteBehavior.Cascade)
             .HasConstraintName("fk_vehicle_models");
-        builder.ConfigureEmbeddingProperty();
+
+        builder.ConfigureEmbeddingProperty("models");
     }
 }

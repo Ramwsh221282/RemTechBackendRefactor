@@ -1,14 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-
     <ItemGroup>
         <ProjectReference Include="..\..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj"/>
         <ProjectReference Include="..\..\ParsedAdvertisements.Domain\ParsedAdvertisements.Domain.csproj"/>
     </ItemGroup>
-
+    <ItemGroup>
+        <EmbeddedResource Include="SeedingScripts\regions_seeding.sql"/>
+        <EmbeddedResource Include="SeedingScripts\categories_seeding.sql"/>
+        <EmbeddedResource Include="SeedingScripts\brands_seeding.sql"/>
+    </ItemGroup>
 </Project>

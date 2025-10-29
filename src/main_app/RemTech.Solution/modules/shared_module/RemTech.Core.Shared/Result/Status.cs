@@ -3,8 +3,13 @@
 public class Status
 {
     private readonly Error? _error;
-    public bool IsSuccess { get; }
-    public bool IsFailure { get; }
+
+    public bool IsSuccess => !IsFailure;
+
+    public bool IsFailure
+    {
+        get => _error == null || (_error != null && _error == Error.None());
+    }
 
     public Error Error
     {
@@ -22,16 +27,12 @@ public class Status
 
     public Status()
     {
-        IsSuccess = true;
-        IsFailure = false;
         _error = null;
     }
 
     public Status(Error error)
     {
         _error = error;
-        IsSuccess = false;
-        IsFailure = true;
     }
 
     public Status(ValidationError error)
@@ -40,8 +41,6 @@ public class Status
     public Status(Status status)
     {
         _error = status._error;
-        IsSuccess = status.IsSuccess;
-        IsFailure = status.IsFailure;
     }
 
     public bool SameErrors(Status other)

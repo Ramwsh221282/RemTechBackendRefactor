@@ -186,6 +186,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsedAdvertisements.Adapte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsedAdvertisements.WebApi", "modules\parsed_advertisements\ParsedAdvertisements.WebApi\ParsedAdvertisements.WebApi.csproj", "{5791927C-D0C1-4E0D-A5B3-F3D0C291C057}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4E813414-3409-4D4D-8075-82C4AF87E803}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsedAdvertisements.Tests", "modules\parsed_advertisements\Tests\ParsedAdvertisements.Tests\ParsedAdvertisements.Tests.csproj", "{10DA6A40-5730-4158-A848-A81244067D32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -283,6 +287,8 @@ Global
 		{9D9FEBE4-F211-4303-91B7-BC3E08F76E10} = {F1B3983E-A55B-47A3-B9B5-62651506D900}
 		{3BB3D98F-186A-407F-9652-183F48FD2507} = {F1B3983E-A55B-47A3-B9B5-62651506D900}
 		{5791927C-D0C1-4E0D-A5B3-F3D0C291C057} = {E099BD53-3575-4FAB-8048-FEBEBBB81ECB}
+		{4E813414-3409-4D4D-8075-82C4AF87E803} = {E099BD53-3575-4FAB-8048-FEBEBBB81ECB}
+		{10DA6A40-5730-4158-A848-A81244067D32} = {4E813414-3409-4D4D-8075-82C4AF87E803}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -525,5 +531,9 @@ Global
 		{5791927C-D0C1-4E0D-A5B3-F3D0C291C057}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5791927C-D0C1-4E0D-A5B3-F3D0C291C057}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5791927C-D0C1-4E0D-A5B3-F3D0C291C057}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10DA6A40-5730-4158-A848-A81244067D32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10DA6A40-5730-4158-A848-A81244067D32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10DA6A40-5730-4158-A848-A81244067D32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10DA6A40-5730-4158-A848-A81244067D32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

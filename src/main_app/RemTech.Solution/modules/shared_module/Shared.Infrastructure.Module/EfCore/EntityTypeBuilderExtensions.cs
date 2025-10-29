@@ -10,10 +10,12 @@ public static class EntityTypeBuilderExtensions
     /// Конфигурация колонки для эмбеддинга с индексом hnsw и методом vector_cosine_ops.
     /// </summary>
     /// <param name="builder">Билдер сущности</param>
+    /// <param name="tableName">Название таблицы (чтобы сделать уникальное название индекса)</param>
     /// <typeparam name="TEntity">Сущность</typeparam>
     /// <returns>Билдер сущности</returns>
     public static EntityTypeBuilder<TEntity> ConfigureEmbeddingProperty<TEntity>(
-        this EntityTypeBuilder<TEntity> builder
+        this EntityTypeBuilder<TEntity> builder,
+        string tableName
     )
         where TEntity : class
     {
@@ -22,7 +24,13 @@ public static class EntityTypeBuilderExtensions
             .HasIndex("embedding")
             .HasMethod("hnsw")
             .HasOperators("vector_cosine_ops")
-            .HasDatabaseName("idx_hnsw_record");
+            .HasDatabaseName(CreateIndexName(tableName));
+
         return builder;
+    }
+
+    private static string CreateIndexName(string tableName)
+    {
+        return $"idx_{tableName}_hnsw";
     }
 }
