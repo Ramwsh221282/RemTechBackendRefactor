@@ -1,13 +1,41 @@
 ﻿using System.Data;
 using System.Globalization;
+using System.Reflection;
 using Dapper;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
 using Pgvector;
 using Shared.Infrastructure.Module.Postgres;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace ParsedAdvertisements.Tests;
+
+public static class IDoerFactory
+{
+    public static TechParametersClassificationTests.IDoer Loggable(this TechParametersClassificationTests.IDoer doer)
+    {
+        return TechParametersClassificationTests.LoggingProxy<TechParametersClassificationTests.IDoer>.Create(doer);
+    }
+}
+
+[AttributeUsage(AttributeTargets.Method)]
+public class LoggableAttribute : Attribute
+{
+}
+
+public sealed class ValidatableAttribute<T> : Attribute
+{
+    private readonly Func<T, bool> _validation;
+
+    public ValidatableAttribute(Func<T, bool> validation)
+    {
+        _validation = validation ?? throw new ArgumentNullException(nameof(validation));
+    }
+
+    public bool IsValid(T value)
+    {
+        return _validation(value);
+    }
+}
 
 public sealed class TechParametersClassificationTests : IClassFixture<ParsedAdvertisementsServices>
 {
@@ -16,6 +44,108 @@ public sealed class TechParametersClassificationTests : IClassFixture<ParsedAdve
     public TechParametersClassificationTests(ParsedAdvertisementsServices services)
     {
         _services = services;
+    }
+
+    public class LoggingProxy<T> : DispatchProxy where T : class
+    {
+        private T _target = null!;
+
+        protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
+        {
+            if (targetMethod == null)
+                throw new ApplicationException("Can't execute. Target method is null.");
+
+            if (targetMethod.GetCustomAttribute<LoggableAttribute>() != null)
+            {
+                Console.WriteLine($"Invoking method: {targetMethod.Name}");
+                var result = targetMethod.Invoke(_target, args);
+                return result;
+            }
+
+            return null;
+        }
+
+        public static T Create(T decorated)
+        {
+            object? proxy = Create<T, LoggingProxy<T>>();
+            ((LoggingProxy<T>)proxy!)?.SetParameters(decorated);
+            return (T)proxy!;
+        }
+
+        private void SetParameters(T decorated)
+        {
+            _target = decorated ?? throw new ArgumentNullException(nameof(decorated));
+        }
+    }
+
+    public class ValidatingProxy<T, U> : DispatchProxy where T : class
+    {
+        private T _target = null!;
+
+        protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
+        {
+            if (targetMethod == null)
+                throw new ApplicationException("Can't execute. Target method is null.");
+
+            var attribute = targetMethod.GetCustomAttribute<ValidatableAttribute<U>>();
+            if (attribute != null)
+            {
+                foreach (var @object in args)
+                {
+                    if (@object is not null)
+                    {
+                        if (@object is U u)
+                            attribute.IsValid(u);
+                    }
+                }
+            }
+
+            return targetMethod.Invoke(_target, args);
+        }
+
+        public static T Create(T decorated)
+        {
+            object? proxy = Create<T, ValidatingProxy<T, U>>();
+            ((ValidatingProxy<T, U>)proxy!)?.SetParameters(decorated);
+            return (T)proxy!;
+        }
+
+        private void SetParameters(T decorated)
+        {
+            _target = decorated ?? throw new ArgumentNullException(nameof(decorated));
+        }
+    }
+
+    public interface IDoer
+    {
+        void Do();
+        void NotDo();
+        void Validatble(string value);
+    }
+
+    public sealed class Doer : IDoer
+    {
+        [Loggable]
+        public void Do()
+        {
+        }
+
+        public void NotDo()
+        {
+        }
+
+        public void Validatble([Validatable<string>(x => !string.IsNullOrEmpty(x) && x.Length > 3)] string value)
+        {
+            Console.WriteLine("Valid");
+        }
+    }
+
+    [Fact]
+    private void Proxy_Test()
+    {
+        IDoer doer = new Doer().Loggable();
+        doer.Do();
+        doer.NotDo();
     }
 
     [Fact]
