@@ -6,7 +6,6 @@ using ParsedAdvertisements.Adapters.Storage.CharacteristicContext.DataModels;
 using ParsedAdvertisements.Adapters.Storage.ModelContext.DataModels;
 using ParsedAdvertisements.Adapters.Storage.RegionContext.DataModels;
 using ParsedAdvertisements.Adapters.Storage.VehicleContext.DataModels;
-using ParsedAdvertisements.Domain.CharacteristicContext;
 using RemTech.Shared.Configuration.Options;
 using Shared.Infrastructure.Module.EfCore;
 
@@ -15,8 +14,10 @@ namespace ParsedAdvertisements.Adapters.Storage;
 public sealed class ParsedAdvertisementsDbContext(IOptions<DatabaseOptions> options) : DbContext
 {
     public DbSet<VehicleDataModel> Vehicles => Set<VehicleDataModel>();
+
     public DbSet<VehicleCharacteristicDataModel> VehicleCharacteristics =>
         Set<VehicleCharacteristicDataModel>();
+
     public DbSet<CharacteristicDataModel> Characteristics => Set<CharacteristicDataModel>();
     public DbSet<CategoryDataModel> Categories => Set<CategoryDataModel>();
     public DbSet<BrandDataModel> Brands => Set<BrandDataModel>();
@@ -26,6 +27,7 @@ public sealed class ParsedAdvertisementsDbContext(IOptions<DatabaseOptions> opti
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.ConfigureForPgVector(options.Value.ToConnectionString());
+        optionsBuilder.LogTo(Console.WriteLine);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

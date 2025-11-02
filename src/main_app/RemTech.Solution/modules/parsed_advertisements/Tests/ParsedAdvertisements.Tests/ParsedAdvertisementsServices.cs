@@ -4,6 +4,8 @@ using Microsoft.Extensions.Options;
 using ParsedAdvertisements.Adapters.Messaging;
 using ParsedAdvertisements.Adapters.Outbox;
 using ParsedAdvertisements.Adapters.Storage;
+using ParsedAdvertisements.Adapters.Storage.Migrations;
+using ParsedAdvertisements.Adapters.Storage.Seeding;
 using ParsedAdvertisements.Domain;
 using RemTech.Shared.Tests;
 using Shared.Infrastructure.Module.Postgres;
@@ -83,6 +85,8 @@ public sealed class ParsedAdvertisementsServices : IAsyncLifetime
             typeof(ParsedAdvertisementsOutboxDbContext),
             typeof(ParsedAdvertisementsDbContext)
         );
+
+        await EnsureDatabaseSeeded();
     }
 
     public async Task DisposeAsync()
@@ -130,25 +134,22 @@ public sealed class ParsedAdvertisementsServices : IAsyncLifetime
     {
         await using var scope = _sp.Value.CreateAsyncScope();
         await using var dbContext = (DbContext)scope.ServiceProvider.GetRequiredService(type)!;
-        try
-        {
-            await dbContext.Database.EnsureDeletedAsync();
-        }
-        catch
-        {
-        }
+        await dbContext.Database.MigrateAsync();
     }
 
     private async Task EnsureDatabaseCreated(Type type)
     {
         await using var scope = _sp.Value.CreateAsyncScope();
         await using var dbContext = (DbContext)scope.ServiceProvider.GetRequiredService(type)!;
-        try
-        {
-            await dbContext.Database.MigrateAsync();
-        }
-        catch
-        {
-        }
+        await dbContext.Database.MigrateAsync();
+    }
+
+    private async Task EnsureDatabaseSeeded()
+    {
+        var database = _sp.Value.GetRequiredService<PostgresDatabase>();
+        using var connection = await database.ProvideConnection();
+        var assembly = typeof(ParsedAdvertisementsDbContext).Assembly;
+        FromSqlScriptsRawSeeder seeder = new FromSqlScriptsRawSeeder(assembly, s => !s.Contains("models"));
+        await seeder.SeedData(connection);
     }
 }

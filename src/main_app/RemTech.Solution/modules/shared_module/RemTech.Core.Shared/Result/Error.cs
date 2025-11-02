@@ -10,6 +10,13 @@ public record Error(string ErrorText, ErrorCodes Code)
 
     public static Error Conflict(string errorMessage) => new(errorMessage, ErrorCodes.Conflict);
 
+    public static Error Conflict(string errorTemplate, params object[] arguments)
+    {
+        ErrorCodes code = ErrorCodes.Conflict;
+        string message = string.Format(errorTemplate, arguments);
+        return new Error(message, code);
+    }
+
     public static Error PasswordIncorrect() => new("Пароль неверный", ErrorCodes.Unauthorized);
 
     public static Error TokensExpired() =>

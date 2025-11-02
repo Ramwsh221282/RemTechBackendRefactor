@@ -36,7 +36,9 @@ public class Status
     }
 
     public Status(ValidationError error)
-        : this((Error)error) { }
+        : this((Error)error)
+    {
+    }
 
     public Status(Status status)
     {
@@ -170,7 +172,37 @@ public class Status<T>
     }
 
     public Status(ValidationError error)
-        : this((Error)error) { }
+        : this((Error)error)
+    {
+    }
+
+    public Status<TResult> Select<TResult>(Func<T, TResult> mapper)
+    {
+        if (IsFailure)
+            return Status<TResult>.Failure(Error);
+        return Status<TResult>.Success(mapper(_value));
+    }
+
+    public Status<T> Where(Func<Status<T>, bool> mapper)
+    {
+        if (mapper(this))
+            return this;
+        return Failure(Error);
+    }
+
+    public Status<TResult> SelectMany<TOther, TResult>(
+        Func<T, Status<TOther>> selector,
+        Func<T, TOther, TResult> resultSelector)
+    {
+        if (IsFailure)
+            return Status<TResult>.Failure(Error);
+
+        var otherStatus = selector(_value);
+        if (otherStatus.IsFailure)
+            return Status<TResult>.Failure(otherStatus.Error);
+
+        return Status<TResult>.Success(resultSelector(_value, otherStatus._value));
+    }
 
     public static Status<T> Failures(params Status<T>[] statuses)
     {
@@ -193,29 +225,4 @@ public class Status<T>
     public static implicit operator Status<T>(Error error) => Failure(error);
 
     public static implicit operator Status<T>(T value) => Success(value);
-}
-
-public sealed class StatusCollection<T>
-{
-    private readonly IEnumerable<Status<T>> _statuses;
-
-    public StatusCollection(IEnumerable<Status<T>> statuses)
-    {
-        _statuses = statuses;
-    }
-
-    public bool AllValid(out Error error, out IEnumerable<T> values)
-    {
-        if (_statuses.All(s => s.IsSuccess))
-        {
-            var firstFailure = _statuses.FirstOrDefault(s => s.IsFailure)!;
-            error = firstFailure.Error;
-            values = [];
-            return false;
-        }
-
-        error = Error.None();
-        values = _statuses.Select(v => v.Value);
-        return true;
-    }
 }

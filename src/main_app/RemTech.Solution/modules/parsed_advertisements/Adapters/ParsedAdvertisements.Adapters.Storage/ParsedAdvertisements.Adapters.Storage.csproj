@@ -9,6 +9,11 @@
         <ProjectReference Include="..\..\ParsedAdvertisements.Domain\ParsedAdvertisements.Domain.csproj"/>
     </ItemGroup>
     <ItemGroup>
+        <EmbeddedResource Include="SeedingScripts\0002.models_seeding_1.sql"/>
+        <EmbeddedResource Include="SeedingScripts\0003.models_seeding_2.sql"/>
+        <EmbeddedResource Include="SeedingScripts\0004.models_seeding_3.sql"/>
+        <EmbeddedResource Include="SeedingScripts\0005.models_seeding_4.sql"/>
+        <EmbeddedResource Include="SeedingScripts\0006.models_seeding_5.sql"/>
         <EmbeddedResource Include="SeedingScripts\regions_seeding.sql"/>
         <EmbeddedResource Include="SeedingScripts\categories_seeding.sql"/>
         <EmbeddedResource Include="SeedingScripts\brands_seeding.sql"/>
