@@ -7,7 +7,6 @@ namespace Mailing.Domain.EmailSendingContext;
 public sealed class EmailSenderServiceDispatch(Status<EmailString> email)
 {
     private const StringComparison Comparison = StringComparison.OrdinalIgnoreCase;
-    private readonly Status<NotEmptyString> _dispatchedServiceName = Error.None();
 
     public Status<NotEmptyString> Dispatch() =>
         from email_value in email
@@ -16,17 +15,15 @@ public sealed class EmailSenderServiceDispatch(Status<EmailString> email)
         from gmail_com_dispatch in DispatchedEmailService(email_value, "gmail.com", "smtp.gmail.com")
         select DispatchedEmailService(yandex_dispatch, mail_ru_dispatch, gmail_com_dispatch);
 
-    private Status<NotEmptyString> DispatchedEmailService(params Status<string>[] dispatches)
-    {
-        return dispatches.All(d => d.IsFailure)
+    private Status<NotEmptyString> DispatchedEmailService(params Status<string>[] dispatches) =>
+        dispatches.All(d => d.IsFailure)
             ? Error.Validation(
                 $"Не удается разрешить внешнего провайдера отправки по почте.")
             : NotEmptyString.New(dispatches.Single(el => el.IsSuccess));
-    }
 
     private Status<string> DispatchedEmailService(EmailString email, string domain, string compatibleService)
     {
-        string emailString = email._value;
+        string emailString = email.Fold<string>(str => str);
         return emailString switch
         {
             _ when emailString.EndsWith(domain, Comparison) => compatibleService,

@@ -14,5 +14,6 @@ public delegate T EmailSenderDataSink<out T>(
     string service,
     string password,
     int sendLimit,
-    int currentSent
+    int currentSent,
+    int port = 587
 );
