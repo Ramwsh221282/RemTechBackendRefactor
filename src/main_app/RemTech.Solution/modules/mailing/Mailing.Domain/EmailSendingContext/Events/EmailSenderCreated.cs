@@ -16,6 +16,9 @@ public sealed class EmailSenderCreated : IDomainEvent
     ) => (_id, _email, _service, _password, _limit, _sent, _port) =
         (id, email, service, password, limit, sent, port);
 
+    public void Fold(Action<Guid, string, string, string, int, int, int> action) =>
+        action(_id, _email, _service, _password, _limit, _sent, _port);
+
     internal EmailSenderCreated(EmailSender sender) : this(FromSender(sender))
     {
     }

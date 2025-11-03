@@ -1,7 +1,12 @@
-﻿using Mailing.Domain.EmailSendingContext;
+﻿using System.Data;
+using Dapper;
+using Mailing.Domain.EmailSendingContext;
+using Mailing.Domain.EmailSendingContext.Events;
 using Mailing.Domain.EmailSendingContext.Ports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using RemTech.Core.Shared.DomainEvents;
+using RemTech.Core.Shared.Result;
 using Shared.Infrastructure.Module.Postgres;
 
 namespace Mailing.Adapters.Storage;
@@ -19,25 +24,21 @@ internal sealed class StoredEmailSender
 
     internal static StoredEmailSender Empty => new();
 
-    internal static EmailSenderDataSink<StoredEmailSender> SinkMethod =>
-        (id, email, service, password, limit, current) =>
-            new StoredEmailSender(id, email, service, password, limit, current);
+    private static EmailSenderDataSink<StoredEmailSender> SinkMethod =>
+        ((id, email, service, password, limit, sent, port) =>
+            new StoredEmailSender(id, email, service, password, limit, sent));
 
-    private StoredEmailSender(Guid id,
+    internal StoredEmailSender(
+        Guid id,
         string email,
         string service,
         string password,
         int limit,
-        int currentSended
-    )
-    {
-        _id = id;
-        _email = email;
-        _service = service;
-        _password = password;
-        _sendLimit = limit;
-        _currentSent = currentSended;
-    }
+        int currentSent
+    ) =>
+        (_id, _email, _service, _password, _sendLimit, _currentSent) =
+        (id, email, service, password, limit, currentSent);
+
 
     internal StoredEmailSender()
     {
@@ -54,6 +55,7 @@ internal sealed class StoredEmailSender
         builder.ToTable("email_senders");
         builder.HasKey(s => s._id).HasName("pk_senders");
         builder.Property(s => s._id).HasColumnName("id").IsRequired();
+        builder.Property(s => s._email).HasColumnName("email").IsRequired().HasMaxLength(255);
         builder.Property(s => s._service).HasColumnName("service").IsRequired().HasMaxLength(100);
         builder.Property(s => s._password).HasColumnName("password").IsRequired();
         builder.Property(s => s._sendLimit).HasColumnName("send_limit").IsRequired();
@@ -62,11 +64,80 @@ internal sealed class StoredEmailSender
     }
 }
 
-internal sealed class EmailSenderDataModelConfiguration : IEntityTypeConfiguration<StoredEmailSender>
+internal sealed class EmailSenderDataModelConfiguration
+    : IEntityTypeConfiguration<StoredEmailSender>
 {
-    public void Configure(EntityTypeBuilder<StoredEmailSender> builder) => StoredEmailSender.Configure(builder);
+    public void Configure(EntityTypeBuilder<StoredEmailSender> builder) =>
+        StoredEmailSender.Configure(builder);
 }
 
-public sealed class EmailSendersStorageAdapter(PostgresDatabase database)
+internal sealed class SentMessageDataModel
 {
+    private readonly Guid _id;
+    private readonly Guid _senderId;
+    private readonly string _recipient;
+    private readonly string _subject;
+    private readonly string _body;
+    private readonly DateTime _created;
+
+    internal SentMessageDataModel(
+        Guid id,
+        Guid senderId,
+        string recipient,
+        string subject,
+        string body,
+        DateTime created) =>
+        (_id, _senderId, _recipient, _subject, _body, _created) =
+        (id, senderId, recipient, subject, body, created);
+}
+
+internal sealed class EmailSenderCreatedEventHandler(
+    PostgresDatabase db,
+    Serilog.ILogger logger
+)
+    : IDomainEventHandler<EmailSenderCreated>
+{
+    private const string Context = nameof(EmailSenderCreated);
+
+    public async Task<Status> Handle(EmailSenderCreated @event, CancellationToken ct = default)
+    {
+        const string sql = """
+                           INSERT INTO mailing_module.email_senders
+                           (id, service, password, send_limit, current_sent, email)
+                           VALUES
+                           (@id, @service, @password, @send_limit, @current_sent, @email)
+                           """;
+
+        var parameters = FoldToParameters(@event);
+        CommandDefinition command = new(sql, parameters, cancellationToken: ct);
+        using var connection = await db.ProvideConnection(ct);
+
+        try
+        {
+            await connection.ExecuteAsync(command);
+            var status = Status.Success();
+            logger.Information("{Context} email sender has been inserted.", Context);
+            return status;
+        }
+        catch (Exception ex)
+        {
+            logger.Error("{Context} exception: {Ex}.", Context, ex.Message);
+            return Status.Internal("Не удается сохранить данные почтового сервиса.");
+        }
+    }
+
+    private static DynamicParameters FoldToParameters(EmailSenderCreated @event)
+    {
+        DynamicParameters parameters = new();
+        @event.Fold(((id, email, service, password, limit, sent, port) =>
+        {
+            parameters.Add("@id", id, DbType.Guid);
+            parameters.Add("@service", service, DbType.String);
+            parameters.Add("@password", password, DbType.String);
+            parameters.Add("@send_limit", limit, DbType.Int32);
+            parameters.Add("@current_sent", sent, DbType.Int32);
+            parameters.Add("@email", email, DbType.String);
+        }));
+        return parameters;
+    }
 }
