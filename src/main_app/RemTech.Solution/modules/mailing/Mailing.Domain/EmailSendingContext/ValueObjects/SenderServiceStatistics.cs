@@ -1,4 +1,6 @@
-﻿using Mailing.Domain.EmailSendingContext.Ports;
+﻿using System.Data;
+using Mailing.Domain.EmailSendingContext.Ports;
+using RemTech.Core.Shared.Database;
 using RemTech.Core.Shared.Monads;
 using RemTech.Core.Shared.Result;
 
@@ -35,11 +37,11 @@ public readonly struct SenderServiceStatistics
 
     public bool IsLimitReached() => _currentAmount > _limit;
 
-    public Error StatisticsReachedError(SenderServiceInformation service) =>
-        Error.Conflict("Превышен лимит на отправку сообщений {0} Лимит: {1} Текущий: {2}.",
-            service.Fold<string>((name, _) => name),
-            _limit,
-            _currentAmount);
+    // public Error StatisticsReachedError(SenderServiceInformation service) =>
+    //     Error.Conflict("Превышен лимит на отправку сообщений {0} Лимит: {1} Текущий: {2}.",
+    //         service.Fold<string>((name, _) => name),
+    //         _limit,
+    //         _currentAmount);
 
     public Func<SenderServiceStatistics> OnMessageSent()
     {
@@ -50,5 +52,7 @@ public readonly struct SenderServiceStatistics
 
     public SenderServiceStatistics Reset() => new();
 
-    public T Fold<T>(EmailSenderServiceStatisticsSink<T> use) => use(_limit, _currentAmount);
+    public IDbCommand AddParameter(IDbCommand command) =>
+        command.AddParameter("@limit", _limit, DbType.Int32)
+            .AddParameter("@current_amount", _currentAmount, DbType.Int32);
 }

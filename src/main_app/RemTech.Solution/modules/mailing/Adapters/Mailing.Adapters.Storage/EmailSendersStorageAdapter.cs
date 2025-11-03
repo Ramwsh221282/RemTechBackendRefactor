@@ -89,6 +89,24 @@ internal sealed class SentMessageDataModel
         DateTime created) =>
         (_id, _senderId, _recipient, _subject, _body, _created) =
         (id, senderId, recipient, subject, body, created);
+
+    internal static void Configure(EntityTypeBuilder<SentMessageDataModel> builder)
+    {
+        builder.ToTable("sent_messages");
+        builder.HasKey(m => m._id).HasName("pk_sender_id");
+        builder.Property(m => m._id).HasColumnName("id").IsRequired();
+        builder.Property(m => m._senderId).HasColumnName("sender_id").IsRequired();
+        builder.Property(m => m._body).HasColumnName("body").IsRequired().HasMaxLength(512);
+        builder.Property(m => m._recipient).HasColumnName("recipient").IsRequired().HasMaxLength(255);
+        builder.Property(m => m._created).HasColumnName("created").IsRequired();
+        builder.Property(m => m._subject).HasColumnName("subject").IsRequired().HasMaxLength(255);
+    }
+}
+
+internal sealed class SentMessageEntityTypeConfiguration : IEntityTypeConfiguration<SentMessageDataModel>
+{
+    public void Configure(EntityTypeBuilder<SentMessageDataModel> builder) =>
+        SentMessageDataModel.Configure(builder);
 }
 
 internal sealed class EmailSenderCreatedEventHandler(
@@ -110,6 +128,7 @@ internal sealed class EmailSenderCreatedEventHandler(
 
         var parameters = FoldToParameters(@event);
         CommandDefinition command = new(sql, parameters, cancellationToken: ct);
+
         using var connection = await db.ProvideConnection(ct);
 
         try
@@ -139,5 +158,24 @@ internal sealed class EmailSenderCreatedEventHandler(
             parameters.Add("@email", email, DbType.String);
         }));
         return parameters;
+    }
+}
+
+internal sealed class EmailMessageSentEventHandler(PostgresDatabase database) : IDomainEventHandler<EmailMessageSent>
+{
+    public async Task<Status> Handle(EmailMessageSent @event, CancellationToken ct = default)
+    {
+        // private readonly Guid _id;
+        // private readonly string _email;
+        // private readonly string _service;
+        // private readonly string _password;
+        // private readonly int _sendLimit;
+        // private readonly int _currentSent;
+
+        var senderModel = @event.Fold((sender =>
+        {
+            sender.Fold<StoredEmailSender>((id, email, service, password, sendLimit, current, _) =>
+                new StoredEmailSender(id, email, service, password, sendLimit, current));
+        }));
     }
 }

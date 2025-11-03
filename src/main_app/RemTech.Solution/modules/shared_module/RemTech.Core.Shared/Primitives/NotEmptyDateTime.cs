@@ -14,6 +14,6 @@ public readonly record struct NotEmptyDateTime
     {
         if (value == DateTime.MinValue || value == DateTime.MaxValue)
             return Error.Validation("Дата некорректная");
-        return value;
+        return new NotEmptyDateTime(value);
     }
 }

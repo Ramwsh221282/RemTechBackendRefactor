@@ -1,5 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Data;
+using System.Text.RegularExpressions;
 using Mailing.Domain.EmailSendingContext.Ports;
+using RemTech.Core.Shared.Database;
 using RemTech.Core.Shared.Monads;
 using RemTech.Core.Shared.Primitives;
 using RemTech.Core.Shared.Result;
@@ -25,4 +27,7 @@ public sealed class EmailString
         select new EmailString(value);
 
     public T Fold<T>(EmailSenderEmailSink<T> use) => use(_value);
+
+    public IDbCommand AppendParameter(IDbCommand command) =>
+        command.AddParameter("@email", _value, DbType.String);
 }

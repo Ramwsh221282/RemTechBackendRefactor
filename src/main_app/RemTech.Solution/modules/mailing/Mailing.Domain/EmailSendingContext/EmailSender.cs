@@ -47,17 +47,21 @@ public sealed class EmailSender
         from content in SendedMessageContent.Create(email, subject, body)
         select SendMessage(content);
 
-    public T ProjectTo<T>(EmailSenderDataSink<T> sinkMethod) =>
-        from id in _id.Fold(x => x).AsSuccessStatus()
-        from email in _email.Fold(x => x).AsSuccessStatus()
-        from service_fold in _service.Fold((service, password) => (service, password)).AsSuccessStatus()
-        from stats_fold in _statistics.Fold((limit, current) => (limit, current)).AsSuccessStatus()
-        let service_name = service_fold.service
-        let service_password = service_fold.password
-        let limit = stats_fold.limit
-        let current = stats_fold.current
-        select sinkMethod(id, email, service_name, service_password, limit, current);
+    public Func<Task<Status<Unit>>> Save(IEmailSendersStorage storage) =>
+        async () => await storage.Accept((command) =>
+        {
+            command.CommandText = """
+                                  INSERT INTO mailing_module.senders
+                                  (id, email, service, password, send_limit, current_sent)
+                                  VALUES
+                                  (@id, @email, @service, @password, @send_limit, @current_sent)
+                                  """;
 
+            command = _id.AppendParameter(command);
+            command = _email.AppendParameter(command);
+            command = _service.AddParameter(command);
+            command = _statistics.AddParameter(command);
+        });
 
     private Status<Unit> EnsureLimitNotReached() =>
         _statistics.IsLimitReached()

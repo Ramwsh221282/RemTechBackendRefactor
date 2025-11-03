@@ -1,4 +1,6 @@
-﻿using Mailing.Domain.EmailSendingContext.Ports;
+﻿using System.Data;
+using Mailing.Domain.EmailSendingContext.Ports;
+using RemTech.Core.Shared.Database;
 using RemTech.Core.Shared.Primitives;
 using RemTech.Core.Shared.Result;
 
@@ -21,5 +23,6 @@ public sealed class SenderServiceInformation
         from valid_password in NotEmptyString.New(password).OverrideValidationError("Пароль сервиса почты был пустым")
         select new SenderServiceInformation(valid_service_name, valid_password);
 
-    public T Fold<T>(EmailSenderServiceSink<T> use) => use(_serviceName, _password);
+    public IDbCommand AddParameter(IDbCommand command) =>
+        command.AddParameter("@service", _serviceName).AddParameter("@password", _password);
 }
