@@ -28,6 +28,8 @@ public record Error(string ErrorText, ErrorCodes Code)
 
     public static Error Forbidden() => new("Доступ к ресурсу запрещен.", ErrorCodes.Forbidden);
 
+    public static Error Internal(string message) => new(message, ErrorCodes.Internal);
+
     public Status Status() => new(this);
 
     public Error Combine(Error other)
