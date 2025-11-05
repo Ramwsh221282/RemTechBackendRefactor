@@ -16,7 +16,7 @@ public static class DependencyInjection
     {
         services.AddCache();
         services.AddStorageAdapter();
-        services.AddScoped<CreatePostmanGateway>();
+        services.AddScoped<CreatePostmanInteractor>();
         services.AddScoped<ComposedAsync<ICreatePostmanUseCase, IPostman>>();
         services.AddSingleton<IPostmansFactory>(_ => new PostmansValidatingFactory(new PostmansFactory()));
     }

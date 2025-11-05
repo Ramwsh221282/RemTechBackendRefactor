@@ -10,7 +10,7 @@ using Shared.Infrastructure.Module.Postgres;
 
 namespace Mailing.CompositionRoot.Postmans;
 
-public sealed class CreatePostmanGateway(Serilog.ILogger logger, PostmansCache cache, PostgresDatabase database)
+public sealed class CreatePostmanInteractor(Serilog.ILogger logger, PostmansCache cache, PostgresDatabase database)
 {
     public async Task<Status<IPostman>> Invoke(PostmanConstructionContext context, CancellationToken ct)
     {

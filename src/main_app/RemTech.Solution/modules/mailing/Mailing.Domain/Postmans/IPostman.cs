@@ -1,4 +1,5 @@
 ﻿using Mailing.Domain.PostedMessages;
+using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;
 
 namespace Mailing.Domain.Postmans;

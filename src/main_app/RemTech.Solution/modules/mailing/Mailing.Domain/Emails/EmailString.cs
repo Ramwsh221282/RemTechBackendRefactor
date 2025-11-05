@@ -4,8 +4,8 @@ namespace Mailing.Domain.Emails;
 
 public sealed class EmailString
 {
-    private static readonly Error _invalidEmail = Error.Validation("Формат почты некорректный.");
-    private static readonly Error _emptyEmail = Error.Validation("Почта была пустой.");
+    private static readonly Error InvalidEmail = Error.Validation("Формат почты некорректный.");
+    private static readonly Error EmptyEmail = Error.Validation("Почта была пустой.");
     private readonly string _value;
 
     public EmailString(string value) => _value = value;
@@ -15,19 +15,19 @@ public sealed class EmailString
         error = Error.None();
         if (!IsNotEmpty())
         {
-            error = _emptyEmail;
+            error = EmptyEmail;
             return false;
         }
 
         if (!ContainsValidDomain())
         {
-            error = _invalidEmail;
+            error = InvalidEmail;
             return false;
         }
 
         if (!ContainsSeparator())
         {
-            error = _emptyEmail;
+            error = EmptyEmail;
             return false;
         }
 

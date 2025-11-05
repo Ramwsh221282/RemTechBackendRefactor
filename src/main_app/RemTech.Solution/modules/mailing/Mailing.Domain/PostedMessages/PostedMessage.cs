@@ -1,6 +1,6 @@
 ﻿namespace Mailing.Domain.PostedMessages;
 
-public sealed class PostedMessage(IPostedMessageData Data) : IPostedMessage
+public sealed class PostedMessage(IPostedMessageData data) : IPostedMessage
 {
-    public IPostedMessageData Data { get; } = Data;
+    public IPostedMessageData Data { get; } = data;
 }

@@ -20,9 +20,9 @@ public sealed class CreateEmailSenderTests : IClassFixture<MailingTestServices>
     private async Task Create_sender_success()
     {
         await using AsyncServiceScope scope = _services.Scope();
-        CreatePostmanGateway gateway = scope.GetService<CreatePostmanGateway>();
+        CreatePostmanInteractor interactor = scope.GetService<CreatePostmanInteractor>();
         PostmanConstructionContext context = new(Guid.NewGuid(), "daasd-dsadsasad-dsadsaas", "my_email@mail.com");
-        Status<IPostman> result = await gateway.Invoke(context, CancellationToken.None);
+        Status<IPostman> result = await interactor.Invoke(context, CancellationToken.None);
         Assert.True(result.IsSuccess);
     }
 }
