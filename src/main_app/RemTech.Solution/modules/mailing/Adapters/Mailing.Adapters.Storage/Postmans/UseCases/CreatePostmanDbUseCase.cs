@@ -21,19 +21,20 @@ public sealed class CreatePostmanDbUseCase(
             return result.Error;
 
         IPostman postman = result.Value;
-        delayedExecution.Add(new Async<ICreatePostmanUseCase, Status<IPostman>>(async _ => await Insert(postman)));
+        Async<ICreatePostmanUseCase, IPostman> action = new(async _ => await Insert(postman));
+        delayedExecution.Add(action);
         return result;
     }
 
     private async Task<Status<IPostman>> Insert(IPostman postman)
     {
-        using IDbConnection connection = await database.ProvideConnection(ct);
-        DbPostman dbPostman = new DbPostman(connection, postman);
+        using IDbConnection connection = await database.ProvideConnection(ct: ct);
+        DbPostman dbPostman = new(connection, postman);
 
-        if (await dbPostman.HasUniqueEmail(ct) == false)
-            return Error.Conflict($"Почтовый сервис с почтой: {dbPostman.Email} уже существует.");
+        if (!await dbPostman.HasUniqueEmail(ct))
+            return Error.Conflict($"Почтовый сервис с почтой: {dbPostman.Data.Email} уже существует.");
 
         await dbPostman.Save(ct);
-        return Status<IPostman>.Success(postman);
+        return dbPostman;
     }
 }

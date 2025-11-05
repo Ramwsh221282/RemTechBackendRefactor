@@ -6,19 +6,30 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Mailing.Adapters.Storage.Postmans;
 
+/* Mailing module postmans database schema:
+// CREATE TABLE mailing_module.postmans
+// (
+//     id       UUID PRIMARY KEY,
+//     email    varchar(255) not null UNIQUE,
+//     password varchar(512) not null
+// );
+*/
 internal sealed class DbPostman(IDbConnection connection, IPostman postman) : PostmanEnvelope(postman)
 {
-    internal Guid Id => Data.Id;
-    internal string Email => Data.Email;
-    internal string SmtpPassword => Data.SmtpPassword;
+    private DynamicParameters? _parameters;
 
-    internal static void Configure(EntityTypeBuilder<DbPostman> builder)
+    private DynamicParameters Parameters
     {
-        builder.ToTable("postmans");
-        builder.HasKey(x => x.Id).HasName("pk_postmans");
-        builder.Property(x => x.Id).HasColumnName("id").IsRequired();
-        builder.Property(x => x.Email).HasColumnName("email").IsRequired().HasMaxLength(255);
-        builder.Property(x => x.SmtpPassword).HasColumnName("password").IsRequired().HasMaxLength(512);
+        get
+        {
+            if (_parameters != null)
+                return _parameters;
+            _parameters = new DynamicParameters();
+            _parameters.Add("@email", Data.Email, DbType.String);
+            _parameters.Add("@password", Data.SmtpPassword, DbType.String);
+            _parameters.Add("@id", Data.Id, DbType.Guid);
+            return _parameters;
+        }
     }
 
     public async Task Delete(CancellationToken ct) =>
@@ -27,10 +38,7 @@ internal sealed class DbPostman(IDbConnection connection, IPostman postman) : Po
             DELETE FROM mailing_module.postmans 
             WHERE id = @id
             """,
-            new
-            {
-                id = Id
-            },
+            Parameters,
             cancellationToken: ct));
 
     public async Task Update(CancellationToken ct) =>
@@ -38,15 +46,10 @@ internal sealed class DbPostman(IDbConnection connection, IPostman postman) : Po
             """
             UPDATE mailing_module.postmans
             SET email = @email,
-                smtp_password = @password
+                password = @password
                 WHERE id = @id
             """,
-            new
-            {
-                email = Email,
-                password = SmtpPassword,
-                id = Id
-            },
+            Parameters,
             cancellationToken: ct
         ));
 
@@ -58,12 +61,7 @@ internal sealed class DbPostman(IDbConnection connection, IPostman postman) : Po
             VALUES
             (@id, @email, @password)
             """,
-            new
-            {
-                @id = Id,
-                @email = Email,
-                @password = SmtpPassword
-            },
+            Parameters,
             cancellationToken: ct));
 
     public async Task<bool> HasUniqueEmail(CancellationToken ct) =>
@@ -75,14 +73,6 @@ internal sealed class DbPostman(IDbConnection connection, IPostman postman) : Po
                 WHERE 
                     email = @email);
                 """,
-                new
-                {
-                    @email = Email
-                },
+                Parameters,
                 cancellationToken: ct)));
-
-    private DbPostman() : this(null!, null!)
-    {
-        // ef core
-    }
 }

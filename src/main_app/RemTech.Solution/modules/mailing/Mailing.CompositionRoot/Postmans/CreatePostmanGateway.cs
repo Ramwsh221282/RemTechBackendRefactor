@@ -10,17 +10,19 @@ using Shared.Infrastructure.Module.Postgres;
 
 namespace Mailing.CompositionRoot.Postmans;
 
-public sealed class CreatePostmanGateway
+public sealed class CreatePostmanGateway(Serilog.ILogger logger, PostmansCache cache, PostgresDatabase database)
 {
-    public Task<Status<IPostman>> Invoke(
-        ComposedAsync<ICreatePostmanUseCase, IPostman> execution,
-        Serilog.ILogger logger,
-        PostmansCache cache,
-        IPostmansFactory factory,
-        PostgresDatabase database,
-        CancellationToken ct) =>
-        execution.ExecuteAsync(new CreatePostmanUseCase(factory)
-            .With(f => new CreatePostmanDbUseCase(execution, database, ct, f))
-            .With(f => new CreatePostmanCacheUseCase(execution, cache, f))
-            .With(f => new CreatePostmanLoggingUseCase(logger, f)));
+    public async Task<Status<IPostman>> Invoke(PostmanConstructionContext context, CancellationToken ct)
+    {
+        ComposedAsync<ICreatePostmanUseCase, IPostman> execution = new();
+
+        ICreatePostmanUseCase component =
+            new CreatePostmanUseCase(new PostmansFactory().With(f => new PostmansValidatingFactory(f)))
+                .With(f => new CreatePostmanDbUseCase(execution, database, ct, f))
+                .With(f => new CreatePostmanCacheUseCase(execution, cache, f))
+                .With(f => new CreatePostmanLoggingUseCase(logger, f));
+
+        Status<IPostman> postman = component.Create(context);
+        return postman.IsFailure ? postman.Error : await execution.ExecuteAsync(component);
+    }
 }

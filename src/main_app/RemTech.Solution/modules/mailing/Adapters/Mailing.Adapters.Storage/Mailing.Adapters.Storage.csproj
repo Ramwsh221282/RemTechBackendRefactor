@@ -10,5 +10,8 @@
         <ProjectReference Include="..\..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj"/>
         <ProjectReference Include="..\..\Mailing.Domain\Mailing.Domain.csproj"/>
     </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="./Storage/Migrations/*.sql"/>
+    </ItemGroup>
 
 </Project>

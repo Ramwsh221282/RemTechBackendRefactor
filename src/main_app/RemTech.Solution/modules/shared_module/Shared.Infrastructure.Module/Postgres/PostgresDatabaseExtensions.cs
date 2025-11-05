@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Reflection;
 using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 using Pgvector.Dapper;
@@ -13,10 +14,7 @@ public static class PostgresDatabaseExtensions
     public static async Task<IDbConnection> ProvideConnection(
         this PostgresDatabase database,
         CancellationToken ct = default
-    )
-    {
-        return await database.DataSource.OpenConnectionAsync(ct);
-    }
+    ) => await database.DataSource.OpenConnectionAsync(ct);
 
     public static IDbTransaction ProvideTransaction(this IDbConnection connection) =>
         connection.BeginTransaction();
@@ -27,6 +25,17 @@ public static class PostgresDatabaseExtensions
         DefaultTypeMap.MatchNamesWithUnderscores = true;
         services.AddSingleton<PostgresDatabase>();
         services.AddScoped<ITransactionManager, TransactionManager>();
+        services.AddKeyedTransient<IDatabaseUpgrader, PgVectorUpgrader>(nameof(RemTech));
+    }
+
+    public static void AddUpgrader<TContext>(this IServiceCollection services, string key)
+    {
+        services.AddKeyedTransient<IDatabaseUpgrader, DatabaseUpgrader<TContext>>(key);
+    }
+
+    public static void InvokeUpgrader(this IServiceProvider provider, string key)
+    {
+        provider.GetRequiredKeyedService<IDatabaseUpgrader>(key).ApplyMigrations();
     }
 
     public static void AddEmbeddingGenerator(this IServiceCollection services, string tokenizerPath, string modelPath)
@@ -41,8 +50,6 @@ public static class PostgresDatabaseExtensions
         services.AddSingleton<IEmbeddingGenerator>(generator);
     }
 
-    public static ITransactionManager ProvideTransactionManager(this PostgresDatabase database)
-    {
-        return new TransactionManager(database);
-    }
+    public static ITransactionManager ProvideTransactionManager(this PostgresDatabase database) =>
+        new TransactionManager(database);
 }

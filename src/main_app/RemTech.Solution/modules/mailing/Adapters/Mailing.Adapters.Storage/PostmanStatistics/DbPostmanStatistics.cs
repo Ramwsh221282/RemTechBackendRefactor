@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Mailing.Adapters.Storage.PostmanStatistics;
 
-internal sealed record DbPostmanStatistics(IPostmanSendingStatistics statistics)
-    : PostmanSendingStatisticsEnvelope(statistics)
+internal sealed record DbPostmanStatistics(IPostmanSendingStatistics Statistics)
+    : PostmanSendingStatisticsEnvelope(Statistics)
 {
-    internal Guid Id { get; } = statistics.Data.PostmanId;
-    internal int Limit { get; } = statistics.Data.Limit;
-    internal int CurrentSet { get; } = statistics.Data.CurrentSent;
+    internal Guid Id { get; } = Statistics.Data.PostmanId;
+    internal int Limit { get; } = Statistics.Data.Limit;
+    internal int CurrentSet { get; } = Statistics.Data.CurrentAmount;
 
     internal static void Configure(EntityTypeBuilder<DbPostmanStatistics> builder)
     {

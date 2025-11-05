@@ -20,6 +20,23 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\shared_module\RemTech.Shared.Tests\RemTech.Shared.Tests.csproj"/>
+        <ProjectReference Include="..\..\Adapters\Mailing.Adapters.Cache\Mailing.Adapters.Cache.csproj"/>
+        <ProjectReference Include="..\..\Adapters\Mailing.Adapters.Storage\Mailing.Adapters.Storage.csproj"/>
+        <ProjectReference Include="..\..\Mailing.CompositionRoot\Mailing.CompositionRoot.csproj"/>
+        <ProjectReference Include="..\..\Mailing.Domain\Mailing.Domain.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Update="appsettings.json">
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+        <Content Update="appsettings.Development.json">
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

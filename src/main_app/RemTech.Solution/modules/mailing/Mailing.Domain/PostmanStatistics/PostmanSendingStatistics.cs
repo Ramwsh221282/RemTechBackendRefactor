@@ -1,13 +1,14 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using Mailing.Domain.PostmanStatistics.Factories;
+using RemTech.Core.Shared.Result;
 
 namespace Mailing.Domain.PostmanStatistics;
 
-public sealed record PostmanSendingStatistics(IDbPostmanData Data) : IPostmanSendingStatistics
+public sealed record PostmanSendingStatistics(IPostmanSendingStatisticsData Data) : IPostmanSendingStatistics
 {
     public bool LimitReached(out Error error)
     {
         error = Error.None();
-        if (Data.CurrentSent == Data.Limit)
+        if (Data.CurrentAmount == Data.Limit)
         {
             error = new Error(LimitReachedErrorMessage(), ErrorCodes.Conflict);
             return true;
@@ -17,5 +18,5 @@ public sealed record PostmanSendingStatistics(IDbPostmanData Data) : IPostmanSen
     }
 
     private string LimitReachedErrorMessage() =>
-        $"Сервис отправки по почты превысил ежедневный лимит отправок. Лимит: {Data.Limit}. Текущее: {Data.CurrentSent}";
+        $"Сервис отправки по почты превысил ежедневный лимит отправок. Лимит: {Data.Limit}. Текущее: {Data.CurrentAmount}";
 }

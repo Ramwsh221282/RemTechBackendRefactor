@@ -22,12 +22,12 @@ public sealed class CreatePostmanCacheUseCase(
         return result;
     }
 
-    private Async<ICreatePostmanUseCase, Status<IPostman>> DelayedAction(
+    private Async<ICreatePostmanUseCase, IPostman> DelayedAction(
         IPostman postman) =>
         new(async _ =>
         {
             CachedPostman cached = new(cache, postman);
-            if (await cached.HasUniqueEmail() == false)
+            if (!await cached.HasUniqueEmail())
                 return ErrorOnNotUnqiqueEmail(cached);
             await cached.Save();
             return cached;
