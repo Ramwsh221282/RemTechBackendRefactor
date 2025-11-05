@@ -1,28 +1,32 @@
 ﻿using Mailing.Adapters.Cache.Postmans;
-using Mailing.Adapters.Cache.Postmans.UseCases;
-using Mailing.Adapters.Storage.Postmans.UseCases;
-using Mailing.Domain.Postmans;
+using Mailing.Adapters.Storage.Postmans.Storage;
 using Mailing.Domain.Postmans.Factories;
-using Mailing.Domain.Postmans.UseCases.CreatePostman;
+using Mailing.Domain.Postmans.Factories.Metadata;
+using Mailing.Domain.Postmans.Factories.Statistics;
+using RemTech.Core.Shared.Decorating;
 using RemTech.Core.Shared.Primitives.Async;
-using RemTech.Core.Shared.Result;
 using Shared.Infrastructure.Module.Postgres;
+using Shared.Infrastructure.Module.Redis;
 
 namespace Mailing.CompositionRoot.Postmans;
 
-public sealed class CreatePostmanInteractor(Serilog.ILogger logger, PostmansCache cache, PostgresDatabase database)
+public sealed class CreatePostmanInteractor(
+    PostgresDatabase database,
+    RedisCache cache,
+    Serilog.ILogger logger)
 {
-    public async Task<Status<IPostman>> Invoke(PostmanConstructionContext context, CancellationToken ct)
+    public async Task Invoke(Guid id, string email, string password, CancellationToken ct)
     {
-        ComposedAsync<ICreatePostmanUseCase, IPostman> execution = new();
-
-        ICreatePostmanUseCase component =
-            new CreatePostmanUseCase(new PostmansFactory().With(f => new PostmansValidatingFactory(f)))
-                .With(f => new CreatePostmanDbUseCase(execution, database, ct, f))
-                .With(f => new CreatePostmanCacheUseCase(execution, cache, f))
-                .With(f => new CreatePostmanLoggingUseCase(logger, f));
-
-        Status<IPostman> postman = component.Create(context);
-        return postman.IsFailure ? postman.Error : await execution.ExecuteAsync(component);
+        DelayedAsyncAction action = new();
+        new ComposedPostmanStorages()
+            .Add(new NpgSqlPostmansStorage(database, action, ct))
+            .Add(new RedisPostmans(cache.Database, action))
+            .Save(new PostmansFactory(
+                new PostmanStatisticsFactory().With(f => new PostmanValidOnlyStatisticsFactory(f))
+                    .With(f => new PostmanLoggingStatisticsFactory(logger, f)),
+                new PostmanMetadataFactory().With(f => new PostmanValidOnlyMetadataFactory(f))
+                    .With(f => new PostmanLoggingMetadataFactory(logger, f))
+            ).Construct(id, email, password));
+        await action.Execute();
     }
 }

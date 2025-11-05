@@ -2,7 +2,7 @@
 
 namespace Mailing.Domain.Postmans;
 
-public interface IPostman
+public interface IPostmanMetadata
 {
-    void Save(IPostmansStorage postmansStorage);
+    void Save(IPostmanMetadataStorage storage);
 }

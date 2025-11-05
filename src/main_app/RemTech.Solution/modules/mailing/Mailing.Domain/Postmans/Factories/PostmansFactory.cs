@@ -1,12 +1,20 @@
-﻿using RemTech.Core.Shared.Result;
+﻿using Mailing.Domain.Postmans.Factories.Metadata;
+using Mailing.Domain.Postmans.Factories.Statistics;
 
 namespace Mailing.Domain.Postmans.Factories;
 
-public sealed class PostmansFactory : IPostmansFactory
+public sealed class PostmansFactory(IPostmanStatisticsFactory statistics, IPostmanMetadataFactory metadata)
+    : IPostmansFactory
 {
-    public Status<IPostman> Construct(PostmanConstructionContext context)
-    {
-        PostmanData data = new(context.Id, context.Email, context.SmtpPassword);
-        return new Postman(data);
-    }
+    public IPostman Construct(Guid id, string email, string password, int sendLimit, int currentSend) =>
+        new Postman(metadata.Construct(id, email, password), statistics.Construct(sendLimit, currentSend));
+
+    public IPostman Construct(string email, string password, int sendLimit, int currentSend) =>
+        new Postman(metadata.Construct(email, password), statistics.Construct(sendLimit, currentSend));
+
+    public IPostman Construct(string email, string password) =>
+        new Postman(metadata.Construct(email, password), statistics.Construct());
+
+    public IPostman Construct(Guid id, string email, string password) =>
+        new Postman(metadata.Construct(id, email, password), statistics.Construct());
 }

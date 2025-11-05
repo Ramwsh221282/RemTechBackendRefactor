@@ -10,4 +10,11 @@ public static class DecoratingExtensions
     {
         return decoratorFactory(decoratable);
     }
+
+    public static TDecorated With<TDecoratable, TDecorated>(this TDecoratable decoratable,
+        Func<TDecoratable, TDecorated> decoratorFactory)
+        where TDecoratable : class
+        where TDecorated : class
+        =>
+            decoratorFactory(decoratable);
 }

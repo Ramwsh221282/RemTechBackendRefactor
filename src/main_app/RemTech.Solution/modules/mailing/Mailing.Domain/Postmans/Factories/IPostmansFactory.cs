@@ -1,8 +1,9 @@
-﻿using RemTech.Core.Shared.Result;
-
-namespace Mailing.Domain.Postmans.Factories;
+﻿namespace Mailing.Domain.Postmans.Factories;
 
 public interface IPostmansFactory
 {
-    Status<IPostman> Construct(PostmanConstructionContext context);
+    IPostman Construct(Guid id, string email, string password, int sendLimit, int currentSend);
+    IPostman Construct(string email, string password, int sendLimit, int currentSend);
+    IPostman Construct(string email, string password);
+    IPostman Construct(Guid id, string email, string password);
 }

@@ -1,13 +1,17 @@
-﻿using Mailing.Domain.PostedMessages;
-using RemTech.Core.Shared.DomainEvents;
-using RemTech.Core.Shared.Result;
+﻿using Mailing.Domain.Postmans.Storing;
 
 namespace Mailing.Domain.Postmans;
 
-public sealed record Postman(IPostmanData Data) : IPostman
+internal sealed class Postman(IPostmanMetadata metadata, IPostmanStatistics statistics) : IPostman
 {
-    public Status<IPostedMessage> Post(string email, string subject, string body)
+    public Postman(IPostmanMetadata metadata) : this(metadata, new PostmanStatistics())
     {
-        throw new NotImplementedException();
     }
+
+    public void Save(IPostmansStorage postmansStorage) =>
+        postmansStorage.Save((metadataStorage, statisticsStorage) =>
+        {
+            metadata.Save(metadataStorage);
+            statistics.Save(statisticsStorage);
+        });
 }
