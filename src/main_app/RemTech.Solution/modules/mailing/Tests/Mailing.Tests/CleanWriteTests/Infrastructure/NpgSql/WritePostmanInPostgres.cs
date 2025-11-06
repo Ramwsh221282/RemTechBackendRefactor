@@ -1,5 +1,6 @@
 ﻿using Mailing.Domain.General;
 using Mailing.Tests.CleanWriteTests.Models;
+using RemTech.Core.Shared.Primitives.Async;
 using RemTech.Core.Shared.Result;
 using Shared.Infrastructure.Module.Postgres;
 
@@ -10,23 +11,23 @@ public sealed class WritePostmanInPostgres : IWritePostmanInfrastructureCommand,
     private readonly NpgSqlPostman _postman;
     private event EventHandler<EventArgs> Event;
 
-    public WritePostmanInPostgres(PostgresDatabase db, CancellationToken ct, TaskCompletionSource<Status<Unit>> tcs)
+    public WritePostmanInPostgres(PostgresDatabase db, CancellationToken ct, DelayedUnitStatus container)
     {
         _postman = new NpgSqlPostman(db, ct);
-        Event += async (sender, args) =>
+        Event += async (_, _) =>
         {
             try
             {
                 await InsertPostman();
-                tcs.SetResult(Unit.Value);
+                container.Accept(Unit.Value);
             }
             catch (ConflictOperationException ex)
             {
-                tcs.SetResult(Error.Conflict(ex.Message));
+                container.Accept(Error.Conflict(ex.Message));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                tcs.SetResult(Error.Internal(ex.Message));
+                container.Accept(Error.Internal("Не удается сохранить Postman в БД. Ошибка на стороне приложения."));
             }
         };
     }

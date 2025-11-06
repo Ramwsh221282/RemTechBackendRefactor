@@ -1,11 +1,14 @@
 ﻿using Mailing.Tests.CleanWriteTests.Domain.Implementations;
+using Mailing.Tests.CleanWriteTests.Infrastructure;
 using Mailing.Tests.CleanWriteTests.Infrastructure.NpgSql;
+using Mailing.Tests.CleanWriteTests.Infrastructure.Redis;
 using Mailing.Tests.CleanWriteTests.Interactor.Implementation;
 using Mailing.Tests.CleanWriteTests.Models;
 using Mailing.Tests.CleanWriteTests.Presenter;
+using RemTech.Core.Shared.Primitives.Async;
 using RemTech.Core.Shared.Result;
-using Shared.Infrastructure.Module.DependencyInjection;
 using Shared.Infrastructure.Module.Postgres;
+using Shared.Infrastructure.Module.Redis;
 
 namespace Mailing.Tests;
 
@@ -14,38 +17,76 @@ public sealed class CreateEmailSenderTests(MailingTestServices services) : IClas
     [Fact]
     private async Task Create_sender_OOP_success()
     {
-        await using var scope = services.Scope();
-        var db = scope.GetService<PostgresDatabase>();
-
-        CancellationToken ct = CancellationToken.None;
-        PostmanDto dto = new PostmanDto();
-        TaskCompletionSource<Status<Unit>> tcs = new();
-
-        TestPostmanMetadata meta = new TestPostmanMetadata(Guid.NewGuid(), "test@mail.com", "test-password");
-        TestPostmanStatistics stats = new(0, 0);
-        TestPostman postman = new(meta, stats);
-
-        WritePostmanInPostgres npgPostmanInPostgres = new(db, ct, tcs);
-        WritePostmanInDto presenterPostmanInDto = new(dto);
-        WritePostmanInteractive interactorPostmanInteractive = new(npgPostmanInPostgres, presenterPostmanInDto);
-        WritePostmanByDomain byDomainPostmanBy = new(interactorPostmanInteractive);
-        postman.Write(byDomainPostmanBy);
-        Status<Unit> result = await tcs.Task;
-        Assert.True(result.IsSuccess);
     }
 
-    private async Task Test(PostmanDto dto, TaskCompletionSource<Status<Unit>> tcs, PostgresDatabase db,
+    private async Task<Status<Unit>> Test(
+        PostmanDto dto,
+        DelayedUnitStatus container,
+        PostgresDatabase db,
+        RedisCache cache,
         CancellationToken ct)
     {
-        // todo add cache.
         var meta = new TestPostmanMetadata(Guid.NewGuid(), "test@mail.com", "test-password");
         var stats = new TestPostmanStatistics(0, 0);
         var postman = new TestPostman(meta, stats);
-        var writePg = new WritePostmanInPostgres(db, ct, tcs);
+        var writePg = new WritePostmanInPostgres(db, ct, container);
+        var writeRedis = new WritePostmanInRedis(cache, container);
         var writePresenter = new WritePostmanInDto(dto);
-        var writeInteractive = new WritePostmanInteractive(writePg, writePresenter);
+        var writeComposer = new WritePostmanInfrastructureComposer().Add(writePg).Add(writeRedis);
+        var writeInteractive = new WritePostmanInteractive(writeComposer, writePresenter);
         var writeByDomain = new WritePostmanByDomain(writeInteractive);
         postman.Write(writeByDomain);
-        var result = await tcs.Task;
+        return await container.Read();
     }
+}
+
+public interface IComponent<in TIn, out TOut>
+{
+    TOut Execute(TIn arg);
+}
+
+public sealed class
+    WritePostmanComponent(PostgresDatabase db, RedisCache cache, DelayedUnitStatus container)
+    : IComponent<Parameters<PostmanDto, CancellationToken>,
+        Task<Status<Unit>>>
+{
+    public async Task<Status<Unit>> Execute(Parameters<PostmanDto, CancellationToken> arg)
+    {
+        var meta = new TestPostmanMetadata(arg.First.Id, arg.First.Email, arg.First.Password);
+        var stats = new TestPostmanStatistics(0, 0);
+        var postman = new TestPostman(meta, stats);
+        var writePg = new WritePostmanInPostgres(db, arg.Second, container);
+        var writeRedis = new WritePostmanInRedis(cache, container);
+        var writePresenter = new WritePostmanInDto(arg.First);
+        var writeComposer = new WritePostmanInfrastructureComposer().Add(writePg).Add(writeRedis);
+        var writeInteractive = new WritePostmanInteractive(writeComposer, writePresenter);
+        var writeByDomain = new WritePostmanByDomain(writeInteractive);
+        postman.Write(writeByDomain);
+        return await container.Read();
+    }
+}
+
+public sealed class Future
+{
+    private readonly TaskCompletionSource<Status<Unit>> _tcs;
+
+    public void Complete(Status<Unit> result) => _tcs.TrySetResult(result);
+}
+
+public sealed class Parameters<T1>(T1 first)
+{
+    public T1 First => first;
+}
+
+public sealed class Parameters<T1, T2>(T1 first, T2 second)
+{
+    public T1 First => first;
+    public T2 Second => second;
+}
+
+public sealed class Parameters<T1, T2, T3>(T1 first, T2 second, T3 third)
+{
+    public T1 First => first;
+    public T2 Second => second;
+    public T3 Third => third;
 }
