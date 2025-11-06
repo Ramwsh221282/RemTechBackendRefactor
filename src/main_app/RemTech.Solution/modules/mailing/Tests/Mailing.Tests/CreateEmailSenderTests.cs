@@ -1,81 +1,34 @@
-﻿namespace Mailing.Tests;
+﻿using Mailing.Tests.CleanWriteTests.Domain.Implementations;
+using Mailing.Tests.CleanWriteTests.Infrastructure.NpgSql;
+using Mailing.Tests.CleanWriteTests.Interactor.Implementation;
+using Mailing.Tests.CleanWriteTests.Models;
+using Mailing.Tests.CleanWriteTests.Presenter;
+using RemTech.Core.Shared.Result;
+using Shared.Infrastructure.Module.DependencyInjection;
+using Shared.Infrastructure.Module.Postgres;
 
-public sealed class CreateEmailSenderTests : IClassFixture<MailingTestServices>
+namespace Mailing.Tests;
+
+public sealed class CreateEmailSenderTests(MailingTestServices services) : IClassFixture<MailingTestServices>
 {
-    private readonly MailingTestServices _services;
-
-    public CreateEmailSenderTests(MailingTestServices services)
-    {
-        _services = services;
-    }
-
     [Fact]
     private async Task Create_sender_OOP_success()
     {
-        TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
-        Entities entities = new(tcs);
-        entities.Add(Guid.NewGuid(), "");
-        bool result = await tcs.Task;
-    }
+        await using var scope = services.Scope();
+        var db = scope.GetService<PostgresDatabase>();
 
-    public interface IEntitiesStorage
-    {
-        void Insert(Guid id, string name);
-    }
-
-    public interface IEntitiesObserver
-    {
-        void NotifyCreated(Guid id, string name);
-    }
-
-    public sealed class Entities : IEntitiesStorage, IEntitiesObserver
-    {
-        private event Action<Guid, string> handler;
-
-        public Entities(TaskCompletionSource<bool> tcs)
-        {
-            handler += async (id, name) => await HandleEntityCreation(id, name, tcs);
-        }
-
-        public void Add(Guid id, string entity) => new Entity(id, entity, this);
-
-        public void Insert(Guid id, string name) => Console.WriteLine("Entitiy inserted");
-
-        public void NotifyCreated(Guid id, string name) => handler.Invoke(id, name);
-
-        private async Task HandleEntityCreation(Guid id, string name, TaskCompletionSource<bool> tcs)
-        {
-            await Task.Yield();
-            try
-            {
-                new Entity(id, name).Save(this);
-                tcs.SetResult(true);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception: {ex.Message}");
-                tcs.SetResult(false);
-            }
-        }
-    }
-
-    public sealed class Entity
-    {
-        private readonly Guid _id;
-        private readonly string _name;
-
-        public Entity(Guid id, string name, IEntitiesObserver? observer = null)
-        {
-            _id = id;
-            _name = name;
-            observer?.NotifyCreated(id, name);
-        }
-
-        public void Save(IEntitiesStorage storage)
-        {
-            if (string.IsNullOrWhiteSpace(_name))
-                throw new Exception("invalid name");
-            storage.Insert(_id, _name);
-        }
+        CancellationToken ct = CancellationToken.None;
+        PostmanDto dto = new PostmanDto();
+        TaskCompletionSource<Status<Unit>> tcs = new();
+        TestPostmanMetadata meta = new TestPostmanMetadata(Guid.NewGuid(), "test@mail.com", "test-password");
+        TestPostmanStatistics stats = new(0, 0);
+        TestPostman postman = new(meta, stats);
+        WritePostmanInPostgres npgPostmanInPostgres = new(db, ct, tcs);
+        WritePostmanInDto presenterPostmanInDto = new(dto);
+        WritePostmanInteractive interactorPostmanInteractive = new(npgPostmanInPostgres, presenterPostmanInDto);
+        WritePostmanByDomain byDomainPostmanBy = new(interactorPostmanInteractive);
+        postman.Write(byDomainPostmanBy);
+        Status<Unit> result = await tcs.Task;
+        Assert.True(result.IsSuccess);
     }
 }

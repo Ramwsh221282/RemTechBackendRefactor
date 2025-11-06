@@ -1,0 +1,5 @@
+﻿using Mailing.Tests.CleanWriteTests.Contracts;
+
+namespace Mailing.Tests.CleanWriteTests.Domain;
+
+public interface IWritePostmanDomainCommand : IWritePostmanCommand;

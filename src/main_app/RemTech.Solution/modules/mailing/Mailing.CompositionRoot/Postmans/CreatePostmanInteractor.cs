@@ -1,5 +1,6 @@
 ﻿using Mailing.Adapters.Cache.Postmans;
 using Mailing.Adapters.Storage.Postmans.Storage;
+using Mailing.Domain.General;
 using Mailing.Domain.Postmans.Factories;
 using Mailing.Domain.Postmans.Factories.Metadata;
 using Mailing.Domain.Postmans.Factories.Statistics;
@@ -18,6 +19,8 @@ public sealed class CreatePostmanInteractor(
     public async Task Invoke(Guid id, string email, string password, CancellationToken ct)
     {
         DelayedAsyncAction action = new();
+
+
         new ComposedPostmanStorages()
             .Add(new NpgSqlPostmansStorage(database, action, ct))
             .Add(new RedisPostmans(cache.Database, action))

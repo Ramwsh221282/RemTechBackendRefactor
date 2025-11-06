@@ -204,6 +204,8 @@ public class Status<T>
         return Status<TResult>.Success(resultSelector(_value, otherStatus._value));
     }
 
+    public static Status<T> None() => new(Error.None());
+
     public static Status<T> Failures(params Status<T>[] statuses)
     {
         Status<T>? firstBad = statuses.FirstOrDefault(f => f.IsFailure);
