@@ -1,4 +1,4 @@
-﻿using Mailing.Module.Bus;
+﻿using Mailing.Moduled.Bus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +22,8 @@ public static class UpdateUserPasswordEndpoint
         [FromServices] StringHash hash,
         [FromServices] Serilog.ILogger logger,
         [FromServices] ConnectionMultiplexer multiplexer,
-        [FromHeader(Name = "RemTechAccessTokenId")] string tokenId,
+        [FromHeader(Name = "RemTechAccessTokenId")]
+        string tokenId,
         [FromHeader(Name = "Password")] string password,
         [FromHeader(Name = "NewPassword")] string newPassword,
         CancellationToken ct

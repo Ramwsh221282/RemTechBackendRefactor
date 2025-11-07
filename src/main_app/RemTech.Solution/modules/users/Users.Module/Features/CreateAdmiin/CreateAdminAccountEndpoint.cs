@@ -1,4 +1,4 @@
-﻿using Mailing.Module.Bus;
+﻿using Mailing.Moduled.Bus;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
@@ -25,7 +25,8 @@ public static class CreateAdminAccountEndpoint
         [FromServices] SecurityKeySource securityKey,
         [FromServices] ConnectionMultiplexer multiplexer,
         [FromBody] CreateAdminRequest request,
-        [FromHeader(Name = "RemTechAccessTokenId")] string tokenId,
+        [FromHeader(Name = "RemTechAccessTokenId")]
+        string tokenId,
         CancellationToken ct
     )
     {
@@ -46,10 +47,10 @@ public static class CreateAdminAccountEndpoint
 
             string generatedPassword = Guid.NewGuid().ToString();
             UserRegistrationDetails details = await new User(
-                request.Name,
-                generatedPassword,
-                request.Email
-            )
+                    request.Name,
+                    generatedPassword,
+                    request.Email
+                )
                 .RequireRegistration()
                 .FormDetails()
                 .SaveIn(dataSource, hash, "ADMIN", ct);

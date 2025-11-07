@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using Mailing.Module.Bus;
+using Mailing.Moduled.Bus;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -39,7 +39,8 @@ public static class AddUserByAdminEndpoint
         [FromServices] IOptions<FrontendOptions> frontendUrl,
         [FromServices] Serilog.ILogger logger,
         [FromBody] AddUserByAdminRequest request,
-        [FromHeader(Name = "RemTechAccessTokenId")] string tokenId,
+        [FromHeader(Name = "RemTechAccessTokenId")]
+        string tokenId,
         CancellationToken ct
     )
     {

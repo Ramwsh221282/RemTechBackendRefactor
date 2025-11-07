@@ -1,6 +1,5 @@
 ﻿using Mailing.Adapters.Storage;
-using Mailing.Tests.CleanWriteTests.Infrastructure.NpgSql;
-using Mailing.Tests.CleanWriteTests.Models;
+using Mailing.Domain.Postmans;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RemTech.Shared.Configuration.Options;

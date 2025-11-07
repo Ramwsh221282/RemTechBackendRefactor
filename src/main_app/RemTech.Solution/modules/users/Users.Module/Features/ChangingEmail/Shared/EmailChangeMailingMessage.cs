@@ -1,4 +1,4 @@
-﻿using Mailing.Module.Bus;
+﻿using Mailing.Moduled.Bus;
 using Microsoft.Extensions.Options;
 using RemTech.Shared.Configuration.Options;
 
@@ -22,10 +22,10 @@ internal sealed class EmailChangeMailingMessage(
         return new MailingBusMessage(
             emailTo,
             $"""
-            Ваша почта была изменена, однако Вам нужно подтвердить изменение.
-            Для этого необходимо перейти по ссылке:
-            <a href="{Generate()}">Подтверждение почты</a>
-            """,
+             Ваша почта была изменена, однако Вам нужно подтвердить изменение.
+             Для этого необходимо перейти по ссылке:
+             <a href="{Generate()}">Подтверждение почты</a>
+             """,
             "Изменение почты RemTech агрегатор спецтехники."
         );
     }

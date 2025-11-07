@@ -1,23 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="dbup-core" Version="6.0.4" />
-    <PackageReference Include="dbup-postgresql" Version="6.0.3" />
-    <PackageReference Include="Npgsql" Version="9.0.3" />
-    <PackageReference Include="Serilog" Version="4.3.0" />
-    <PackageReference Include="System.Threading.Channels" Version="9.0.7" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Sources\NpgSql\Database\*.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj" />
-  </ItemGroup>
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj"/>
+        <ProjectReference Include="..\..\shared_module\RemTech.Shared.Configuration\RemTech.Shared.Configuration.csproj"/>
+        <ProjectReference Include="..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj"/>
+        <ProjectReference Include="..\..\shared_module\Shared.WebApi\Shared.WebApi.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Infrastructure\NpgSql\Migrations\001_Mailing_Module_Initial.sql"/>
+        <EmbeddedResource Include="Infrastructure\NpgSql\Migrations\002_Mailing_Module_Postmans.sql"/>
+        <EmbeddedResource Include="Infrastructure\NpgSql\Migrations\003_Mailing_Module_Posted_Messages.sql"/>
+    </ItemGroup>
+
 </Project>

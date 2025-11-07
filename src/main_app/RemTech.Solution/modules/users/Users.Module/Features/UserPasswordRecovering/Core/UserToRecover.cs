@@ -1,5 +1,5 @@
 using System.Data.Common;
-using Mailing.Module.Bus;
+using Mailing.Moduled.Bus;
 using Npgsql;
 using Shared.Infrastructure.Module.Frontend;
 using StackExchange.Redis;

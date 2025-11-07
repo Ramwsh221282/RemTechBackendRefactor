@@ -1,4 +1,4 @@
-using Mailing.Module.Bus;
+using Mailing.Moduled.Bus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

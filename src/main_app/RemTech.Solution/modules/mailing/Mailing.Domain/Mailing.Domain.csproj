@@ -10,4 +10,8 @@
         <ProjectReference Include="..\..\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Folder Include="Postmans\"/>
+    </ItemGroup>
+
 </Project>

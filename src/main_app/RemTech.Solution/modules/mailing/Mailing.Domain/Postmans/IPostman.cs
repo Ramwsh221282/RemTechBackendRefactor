@@ -1,8 +1,0 @@
-﻿using Mailing.Domain.Postmans.Storing;
-
-namespace Mailing.Domain.Postmans;
-
-public interface IPostman
-{
-    void Save(IPostmansStorage postmansStorage);
-}

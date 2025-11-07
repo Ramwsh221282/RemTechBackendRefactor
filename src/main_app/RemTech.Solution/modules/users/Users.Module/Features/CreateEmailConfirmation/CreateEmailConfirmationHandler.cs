@@ -1,5 +1,5 @@
 ﻿using System.Data.Common;
-using Mailing.Module.Bus;
+using Mailing.Moduled.Bus;
 using Npgsql;
 using RemTech.Core.Shared.Cqrs;
 using Shared.Infrastructure.Module.Frontend;
@@ -17,9 +17,9 @@ internal sealed class CreateEmailConfirmationHandler(
 ) : ICommandHandler<CreateEmailConfirmationCommand, Guid>
 {
     private const string Sql = """
-        SELECT email, email_confirmed, password
-        FROM users_module.users WHERE id = @id;
-        """;
+                               SELECT email, email_confirmed, password
+                               FROM users_module.users WHERE id = @id;
+                               """;
 
     public async Task<Guid> Handle(
         CreateEmailConfirmationCommand command,

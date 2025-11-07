@@ -1,5 +1,5 @@
-using Mailing.Module.Bus;
-using Mailing.Module.Public;
+using Mailing.Moduled.Bus;
+using Mailing.Moduled.Public;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

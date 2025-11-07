@@ -1,5 +1,5 @@
-﻿using Mailing.Module.Bus;
-using Mailing.Module.Public;
+﻿using Mailing.Moduled.Bus;
+using Mailing.Moduled.Public;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
@@ -31,7 +31,8 @@ public static class UpdateUserProfileEndpoint
         [FromServices] StringHash hash,
         [FromServices] HasSenderApi senderApi,
         [FromBody] UpdateUserProfileRequest request,
-        [FromHeader(Name = "RemTechAccessTokenId")] string tokenId,
+        [FromHeader(Name = "RemTechAccessTokenId")]
+        string tokenId,
         CancellationToken ct
     )
     {

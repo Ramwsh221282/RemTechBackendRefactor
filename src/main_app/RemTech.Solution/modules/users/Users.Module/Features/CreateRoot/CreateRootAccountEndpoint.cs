@@ -1,4 +1,4 @@
-﻿using Mailing.Module.Bus;
+﻿using Mailing.Moduled.Bus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -30,10 +30,10 @@ public static class CreateRootAccountEndpoint
         try
         {
             UserRegistrationDetails details = await new User(
-                request.Name,
-                request.Password,
-                request.Email
-            )
+                    request.Name,
+                    request.Password,
+                    request.Email
+                )
                 .RequireRegistration()
                 .FormDetails()
                 .SaveIn(dataSource, hash, "ROOT", ct);

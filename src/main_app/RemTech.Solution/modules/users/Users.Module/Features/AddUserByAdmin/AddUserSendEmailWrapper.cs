@@ -1,4 +1,4 @@
-﻿using Mailing.Module.Bus;
+﻿using Mailing.Moduled.Bus;
 using Microsoft.Extensions.Options;
 using RemTech.Core.Shared.Cqrs;
 using RemTech.Core.Shared.Result;

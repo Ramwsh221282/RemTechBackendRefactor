@@ -1,4 +1,4 @@
-﻿using Mailing.Module.Bus;
+﻿using Mailing.Moduled.Bus;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
@@ -19,7 +19,8 @@ public static class RemoveUserByAdminEndpoint
         [FromServices] ConnectionMultiplexer multiplexer,
         [FromServices] MailingBusPublisher publisher,
         [FromQuery] Guid userId,
-        [FromHeader(Name = "RemTechAccessTokenId")] string token,
+        [FromHeader(Name = "RemTechAccessTokenId")]
+        string token,
         CancellationToken ct
     )
     {

@@ -1,5 +1,5 @@
-﻿using Mailing.Module.Contracts;
-using Mailing.Module.Sources;
+﻿using Mailing.Moduled.Contracts;
+using Mailing.Moduled.Sources;
 
 namespace Mailing.Tests;
 

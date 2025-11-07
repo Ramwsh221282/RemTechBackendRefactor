@@ -13,6 +13,7 @@ public sealed class FromFuture<T>(Func<Task<T>> func)
 public sealed class Future(Func<Task> func)
 {
     private readonly Func<Task> _func = func;
+
     public async Task Complete() => await _func();
 
     public Future(Future future) : this(future._func)

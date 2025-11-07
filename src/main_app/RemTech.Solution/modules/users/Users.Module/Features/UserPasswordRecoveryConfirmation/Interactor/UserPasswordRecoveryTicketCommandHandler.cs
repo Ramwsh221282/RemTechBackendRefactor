@@ -1,5 +1,5 @@
 using System.Data.Common;
-using Mailing.Module.Bus;
+using Mailing.Moduled.Bus;
 using Npgsql;
 using RemTech.Core.Shared.Cqrs;
 using StackExchange.Redis;
@@ -71,12 +71,12 @@ internal sealed class UserPasswordRecoveryTicketCommandHandler
     {
         await using NpgsqlCommand sqlCommand = connection.CreateCommand();
         sqlCommand.CommandText = """
-            SELECT
-            users.id as id,
-            users.email as email
-            FROM users_module.users as users
-            WHERE users.id = @id;
-            """;
+                                 SELECT
+                                 users.id as id,
+                                 users.email as email
+                                 FROM users_module.users as users
+                                 WHERE users.id = @id;
+                                 """;
         sqlCommand.Parameters.Add(new NpgsqlParameter<Guid>("id", id));
         await using DbDataReader reader = await sqlCommand.ExecuteReaderAsync(ct);
         if (!await reader.ReadAsync(ct))

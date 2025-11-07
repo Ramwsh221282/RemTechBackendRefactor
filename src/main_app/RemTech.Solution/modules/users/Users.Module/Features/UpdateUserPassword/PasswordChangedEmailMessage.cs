@@ -1,4 +1,4 @@
-﻿using Mailing.Module.Bus;
+﻿using Mailing.Moduled.Bus;
 
 namespace Users.Module.Features.UpdateUserPassword;
 

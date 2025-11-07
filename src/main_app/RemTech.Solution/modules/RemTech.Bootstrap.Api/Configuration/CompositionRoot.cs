@@ -5,7 +5,7 @@ using Categories.Module.Features.QueryCategories;
 using Categories.Module.Features.QueryCategoriesAmount;
 using Categories.Module.Features.QueryPopularCategories;
 using Cleaners.Module.Endpoints;
-using Mailing.Module.Features;
+using Mailing.Moduled.Features;
 using RemTech.ContainedItems.Module.Features.DropSpares;
 using RemTech.ContainedItems.Module.Features.DropVehicles;
 using RemTech.ContainedItems.Module.Features.GetContainedVehiclesAmount;

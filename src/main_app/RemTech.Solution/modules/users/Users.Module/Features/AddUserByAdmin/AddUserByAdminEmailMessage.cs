@@ -1,4 +1,4 @@
-﻿using Mailing.Module.Bus;
+﻿using Mailing.Moduled.Bus;
 using Microsoft.Extensions.Options;
 using RemTech.Shared.Configuration.Options;
 
@@ -20,10 +20,10 @@ internal sealed class AddUserByAdminEmailMessage(
     private MailingBusMessage FormMessage(string emailTo)
     {
         string body = $"""
-            Вы были зарегистрированы на <a href="{_frontendString}">RemTech агрегатор спецтехники</a>
-            Вы можете подтвердить почту: <a href="{Generate()}">Подтверждение почты</a>
-            Ваш пароль для входа: {password}
-            """;
+                       Вы были зарегистрированы на <a href="{_frontendString}">RemTech агрегатор спецтехники</a>
+                       Вы можете подтвердить почту: <a href="{Generate()}">Подтверждение почты</a>
+                       Ваш пароль для входа: {password}
+                       """;
 
         return new MailingBusMessage(
             emailTo,

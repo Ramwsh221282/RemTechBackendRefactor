@@ -1,5 +1,5 @@
-﻿using Mailing.Module.Bus;
-using Mailing.Module.Public;
+﻿using Mailing.Moduled.Bus;
+using Mailing.Moduled.Public;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +25,8 @@ public static class UpdateUserEmailEndpoint
         [FromServices] RedisCache multiplexer,
         [FromServices] HasSenderApi hasSenderApi,
         [FromServices] IOptions<FrontendOptions> frontendUrl,
-        [FromHeader(Name = "RemTechAccessTokenId")] string tokenId,
+        [FromHeader(Name = "RemTechAccessTokenId")]
+        string tokenId,
         [FromHeader(Name = "Password")] string password,
         [FromHeader(Name = "Id")] string id,
         [FromHeader(Name = "NewEmail")] string newEmail,
