@@ -202,8 +202,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mailing.Tests", "modules\ma
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mailing.Adapters.Cache", "modules\mailing\Adapters\Mailing.Adapters.Cache\Mailing.Adapters.Cache.csproj", "{13787DA9-132F-49FC-AFB6-02298FE303A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mailing.CompositionRoot", "modules\mailing\Mailing.CompositionRoot\Mailing.CompositionRoot.csproj", "{4140A764-1F1A-41F0-B120-D853BC02CC0A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -309,7 +307,6 @@ Global
 		{A08806B5-2772-46F6-85C1-39995A8765AB} = {B5E778FE-6E21-4D96-A023-FE888D2D893E}
 		{CB551A73-40EA-4833-AEF5-555E2EB5D8A0} = {A08806B5-2772-46F6-85C1-39995A8765AB}
 		{13787DA9-132F-49FC-AFB6-02298FE303A4} = {23367BAB-54E0-4F72-B7FB-F36F260E8286}
-		{4140A764-1F1A-41F0-B120-D853BC02CC0A} = {B5E778FE-6E21-4D96-A023-FE888D2D893E}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -572,9 +569,5 @@ Global
 		{13787DA9-132F-49FC-AFB6-02298FE303A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13787DA9-132F-49FC-AFB6-02298FE303A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13787DA9-132F-49FC-AFB6-02298FE303A4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4140A764-1F1A-41F0-B120-D853BC02CC0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4140A764-1F1A-41F0-B120-D853BC02CC0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4140A764-1F1A-41F0-B120-D853BC02CC0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4140A764-1F1A-41F0-B120-D853BC02CC0A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,9 +1,11 @@
-﻿using Mailing.Tests.CleanWriteTests.Contracts;
-
-namespace Mailing.Tests.CleanWriteTests.Models;
+﻿namespace Mailing.Tests.CleanWriteTests.Models;
 
 public sealed class TestPostmanStatistics(int sendLimit, int currentSend)
 {
-    public void Write(IWritePostmanStatisticsCommand command) =>
-        command.Execute(sendLimit, currentSend);
+    public PostmanSnapshot Supply(PostmanSnapshot snapshot) =>
+        snapshot with { LimitSend = sendLimit, CurrentSend = currentSend };
+
+    public TestPostmanStatistics() : this(0, 0)
+    {
+    }
 }

@@ -1,6 +1,6 @@
-﻿using Mailing.CompositionRoot;
-using Mailing.Domain.Postmans.Factories;
-using Microsoft.EntityFrameworkCore;
+﻿using Mailing.Adapters.Storage;
+using Mailing.Tests.CleanWriteTests.Infrastructure.NpgSql;
+using Mailing.Tests.CleanWriteTests.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RemTech.Shared.Configuration.Options;
@@ -56,9 +56,10 @@ public sealed class MailingTestServices : IAsyncLifetime
         services.AddSingleton(cache);
         services.AddSingleton(logger);
 
+        services.AddStorageAdapter();
         services.AddRedis();
         services.AddPostgres();
-        services.AddMailingModule();
+        services.AddScoped<IPostmans, NpgSqlPostmans>();
 
         IServiceProvider provider = services.BuildServiceProvider();
         return provider;

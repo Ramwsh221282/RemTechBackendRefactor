@@ -1,5 +1,6 @@
-﻿using System.Data;
-using Dapper;
+﻿using Dapper;
+using Mailing.Tests.CleanWriteTests.Models;
+using RemTech.Core.Shared.Async;
 using Shared.Infrastructure.Module.Postgres;
 
 namespace Mailing.Tests.CleanWriteTests.Infrastructure.NpgSql;
@@ -12,34 +13,30 @@ namespace Mailing.Tests.CleanWriteTests.Infrastructure.NpgSql;
 //     current_sent  INT          NOT NULL,
 //     current_limit INT          NOT NULL
 // );
-public sealed class NpgSqlPostman : IDisposable, IWritePostmanMetadataInfrastructureCommand,
-    IWritePostmanStatisticsInfrastructureCommand
+public sealed class NpgSqlPostman(SqlInteractor interactor, DynamicParameters parameters) : IDisposable
 {
-    private readonly Lazy<Task<IDbConnection>> _lazyConnection;
-    private readonly DynamicParameters _parameters;
-    private readonly CancellationToken _ct;
-    private IDbConnection? _connection;
-
-    public NpgSqlPostman(PostgresDatabase database, CancellationToken ct)
+    internal static NpgSqlPostman FromPostman(PostgresDatabase db, ITestPostman postman)
     {
-        _ct = ct;
-        _parameters = new();
-        _lazyConnection = new(async () => _connection ??= await database.ProvideConnection(ct));
+        DynamicParameters parameters = new DynamicParameters();
+        NpgSqlPostmanMetadata metadata = NpgSqlPostmanMetadata.FromPostman(postman);
+        NpgSqlPostmanStatistics stats = NpgSqlPostmanStatistics.FromPostman(postman);
+        metadata.WriteTo(parameters);
+        stats.WriteTo(parameters);
+        SqlInteractor interactor = new SqlInteractor(() => db.ProvideConnection());
+        return postman.Transform(_ => new NpgSqlPostman(interactor, parameters));
     }
 
-    private Task<IDbConnection> Connection => _lazyConnection.Value;
-
-    public async Task Delete() =>
-        await (await Connection).ExecuteAsync(new CommandDefinition(
+    public Future Delete(CancellationToken ct = default) =>
+        new Future(() => interactor.ExecutePermanent(new CommandDefinition(
             """
-            DELETE FROM mailing_module.postmans 
+            DELETE FROM mailing_module.postmans
             WHERE id = @id
             """,
-            _parameters,
-            cancellationToken: _ct));
+            parameters,
+            cancellationToken: ct)));
 
-    public async Task Update() =>
-        await (await Connection).ExecuteAsync(new CommandDefinition(
+    public Future Update(CancellationToken ct = default) =>
+        new Future(() => interactor.ExecutePermanent(new CommandDefinition(
             """
             UPDATE mailing_module.postmans
             SET email = @email,
@@ -48,51 +45,31 @@ public sealed class NpgSqlPostman : IDisposable, IWritePostmanMetadataInfrastruc
                 current_limit = @current_limit
                 WHERE id = @id
             """,
-            _parameters,
-            cancellationToken: _ct
-        ));
+            parameters,
+            cancellationToken: ct)));
 
-    public async Task Save() =>
-        await (await Connection).ExecuteAsync(new CommandDefinition(
+    public Future Save(CancellationToken ct) =>
+        new(() => interactor.ExecutePermanent(new CommandDefinition(
             """
             INSERT INTO mailing_module.postmans
             (id, email, password, current_sent, current_limit)
             VALUES
             (@id, @email, @password, @current_sent, @current_limit)
             """,
-            _parameters,
-            cancellationToken: _ct));
+            parameters,
+            cancellationToken: ct)));
 
-    public async Task<bool> HasUniqueEmail() =>
-        !(await (await Connection).QuerySingleAsync<bool>(
-            new CommandDefinition(
-                """
-                SELECT 
-                    EXISTS(SELECT 1 FROM mailing_module.postmans 
-                WHERE 
-                    email = @email);
-                """,
-                _parameters,
-                cancellationToken: _ct)));
+    public FromFuture<bool> HasUniqueEmail(CancellationToken ct = default) =>
+        new(new FromFuture<bool>(interactor.ExecutePermanent((conn) =>
+            conn.QuerySingleAsync<bool>(
+                new CommandDefinition(
+                    """
+                    SELECT EXISTS(SELECT 1 FROM mailing_module.postmans
+                    WHERE email = @email
+                    """,
+                    parameters,
+                    cancellationToken: ct)))));
 
-    public void Dispose()
-    {
-        if (!_lazyConnection.IsValueCreated) return;
-        Task<IDbConnection> task = _lazyConnection.Value;
-        if (task.IsCompletedSuccessfully)
-            task.Result.Dispose();
-    }
 
-    public void Execute(in Guid id, in string email, in string password)
-    {
-        _parameters.Add("@id", id, DbType.Guid);
-        _parameters.Add("@email", email, DbType.String);
-        _parameters.Add("@password", password, DbType.String);
-    }
-
-    public void Execute(in int sendLimit, in int currentSend)
-    {
-        _parameters.Add("@current_limit", sendLimit, DbType.Int32);
-        _parameters.Add("@current_sent", currentSend, DbType.Int32);
-    }
+    public void Dispose() => interactor.Dispose();
 }

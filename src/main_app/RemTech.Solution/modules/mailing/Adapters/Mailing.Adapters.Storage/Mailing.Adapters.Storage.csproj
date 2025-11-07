@@ -11,7 +11,7 @@
         <ProjectReference Include="..\..\Mailing.Domain\Mailing.Domain.csproj"/>
     </ItemGroup>
     <ItemGroup>
-        <EmbeddedResource Include="./Storage/Migrations/*.sql"/>
+        <EmbeddedResource Include=".\Migrations\*.sql"/>
     </ItemGroup>
 
 </Project>
