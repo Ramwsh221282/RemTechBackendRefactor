@@ -11,6 +11,11 @@
         <ProjectReference Include="..\..\shared_module\RemTech.Shared.Configuration\RemTech.Shared.Configuration.csproj"/>
         <ProjectReference Include="..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj"/>
         <ProjectReference Include="..\..\shared_module\Shared.WebApi\Shared.WebApi.csproj"/>
+        <ProjectReference Include="..\Mailing.Contracts\Mailing.Contracts.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     </ItemGroup>
 
     <ItemGroup>
