@@ -1,0 +1,53 @@
+﻿using Mailers.Persistence.NpgSql;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using RemTech.NpgSql.Abstractions;
+using RemTech.Tests.Shared;
+using Testcontainers.PostgreSql;
+
+namespace Mailers.Tests;
+
+public sealed class MailersTestsServices : IAsyncLifetime
+{
+    private readonly PostgreSqlContainer _db = new PostgreSqlBuilder().BuildPgVectorContainer();
+    private readonly Lazy<IServiceProvider> _sp;
+    private IServiceProvider Sp => _sp.Value;
+
+    public MailersTestsServices()
+    {
+        _sp = new Lazy<IServiceProvider>(InitializeServices);
+    }
+    
+    public async Task InitializeAsync()
+    {
+        await _db.StartAsync();
+        ApplyDatabaseMigrations();
+    }
+
+    public async Task DisposeAsync()
+    {
+        await _db.StopAsync();
+        await _db.DisposeAsync();
+    }
+
+    public AsyncServiceScope Scope()
+    {
+        return Sp.CreateAsyncScope();
+    }
+    
+    private IServiceProvider InitializeServices()
+    {
+        var services = new ServiceCollection();
+        var dbOptions = Options.Create(_db.CreateDatabaseConfiguration());
+        services.AddSingleton(dbOptions);
+        services.AddPostgres();
+        services.AddMailersPersistance();
+        return services.BuildServiceProvider();
+    }
+    
+    private void ApplyDatabaseMigrations()
+    {
+        var upgrader = Sp.GetRequiredKeyedService<IDbUpgrader>(nameof(MailersDbUpgrader));
+        upgrader.ApplyMigrations();
+    }
+}

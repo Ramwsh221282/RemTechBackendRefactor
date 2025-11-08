@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Testcontainers" Version="4.8.1" />
+      <PackageReference Include="Testcontainers.PostgreSql" Version="4.8.1" />
+      <PackageReference Include="Testcontainers.RabbitMq" Version="4.8.1" />
+      <PackageReference Include="Testcontainers.Redis" Version="4.8.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\RemTech.Functional.Extensions\RemTech.Functional.Extensions.csproj" />
+      <ProjectReference Include="..\RemTech.NpgSql.Abstractions\RemTech.NpgSql.Abstractions.csproj" />
+      <ProjectReference Include="..\RemTech.Primitives.Extensions\RemTech.Primitives.Extensions.csproj" />
+    </ItemGroup>
+
+</Project>
