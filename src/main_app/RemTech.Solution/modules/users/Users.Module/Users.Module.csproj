@@ -21,7 +21,6 @@
         <PackageReference Include="StackExchange.Redis" Version="2.8.58"/>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\mailing\Mailing.Moduled\Mailing.Moduled.csproj"/>
         <ProjectReference Include="..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj"/>
     </ItemGroup>
     <ItemGroup>

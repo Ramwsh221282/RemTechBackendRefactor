@@ -16,7 +16,6 @@
         <ProjectReference Include="..\brands\Brands.Module\Brands.Module.csproj"/>
         <ProjectReference Include="..\categories\Categories.Module\Categories.Module.csproj"/>
         <ProjectReference Include="..\geo_locations\GeoLocations.Module\GeoLocations.Module.csproj"/>
-        <ProjectReference Include="..\mailing\Mailing.Moduled\Mailing.Moduled.csproj"/>
         <ProjectReference Include="..\models\Models.Module\Models.Module.csproj"/>
         <ProjectReference Include="..\parsed_advertisements\RemTech.ContainedItems.Module\RemTech.ContainedItems.Module.csproj"/>
         <ProjectReference Include="..\parsed_advertisements\RemTech.Spares.Module\RemTech.Spares.Module.csproj"/>
