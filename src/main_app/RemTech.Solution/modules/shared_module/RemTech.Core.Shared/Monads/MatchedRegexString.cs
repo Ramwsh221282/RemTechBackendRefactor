@@ -18,6 +18,6 @@ public sealed class MatchedRegexString
     {
         if (!_regex.IsMatch(_value))
             return Status<string>.Failure(onFailure);
-        return _value;
+        return Status<string>.Success(_value);
     }
 }
