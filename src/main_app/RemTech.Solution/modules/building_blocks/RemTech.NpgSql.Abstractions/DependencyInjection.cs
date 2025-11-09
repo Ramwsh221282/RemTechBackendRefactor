@@ -14,6 +14,7 @@ public static class DependencyInjection
             SqlMapper.AddTypeHandler(new VectorTypeHandler());
             DefaultTypeMap.MatchNamesWithUnderscores = true;
             services.AddKeyedSingleton<IDbUpgrader, PgVectorUpgrader>(nameof(PgVectorUpgrader));
+            services.AddScoped<NpgSqlSession>();
         }
     }
 }

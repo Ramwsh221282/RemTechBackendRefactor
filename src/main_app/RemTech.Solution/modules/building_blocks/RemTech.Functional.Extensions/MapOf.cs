@@ -22,12 +22,3 @@ public sealed class MapOf<T, U>
     public U Map(T from) => _mapFunction(from);
     public U this[T key] => _mapFunction(key);
 }
-
-public static class MapOfExtensions
-{
-    public static U Map<T, U>(this T @from, Func<T, U> mapFunction)
-    {
-        MapOf<T, U> map = MapOf.Map(mapFunction);
-        return map.Map(@from);
-    }
-}

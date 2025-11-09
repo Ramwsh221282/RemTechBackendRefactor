@@ -5,6 +5,7 @@ namespace RemTech.Functional.Extensions;
 public class Optional
 {
     public bool HasValue { get; }
+    public bool NoValue => !HasValue;
 
     protected Optional(bool hasValue)
     {

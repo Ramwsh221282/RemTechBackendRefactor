@@ -1,49 +1,23 @@
 ﻿namespace Mailers.Core.MailersContext;
 
-public sealed class Mailer(MailerMetadata metadata, MailerStatistics statistics) : IMailerEventSource
+public sealed record Mailer(MailerMetadata Metadata, MailerStatistics Statistics)
 {
-    private readonly List<IMailerEventTarget> _eventTargets = [];
-    
-    public void Register()
+    public Result<MailerSending> SendEmail(Email to, string subject, string body)
     {
-        var @event = new MailerEvent();
-        metadata.SignRegistration(@event);
-        statistics.SignRegistration(@event);
-        Notify(@event);
-    }
+        if (Statistics.LimitReached())
+            return Conflict("Невозможно отправить сообщение. Превышен лимит отправки данным сервисом.");
 
-    public void Delete()
-    {
-        var @event = new MailerEvent();
-        metadata.SignRegistration(@event);
-        Notify(@event);
-    }
+        if (string.IsNullOrWhiteSpace(subject))
+            return Conflict("Невозможно отправить сообщение. Тема письма не указана.");
 
-    public void Accept(IMailerEventTarget target)
-    {
-        if (_eventTargets.Contains(target)) return;
-        _eventTargets.Add(target);
-    }
+        if (string.IsNullOrWhiteSpace(body))
+            return Conflict("Невозможно отправить сообщение. Тело письма не указано.");
 
-    private void Notify(MailerEvent @event)
-    {
-        foreach (var target in _eventTargets)
-            target.Notify(@event);
-    }
-    
-    public static Result<Mailer> Create(Result<MailerMetadata> metadata, Result<MailerStatistics> statistics, IMailerEventTarget? target = null)
-    {
-        if (metadata.IsFailure) return Validation(metadata);
-        if (statistics.IsFailure) return Validation(statistics);
-        var mailer = new Mailer(metadata.Value, statistics.Value);
-        return mailer;
-    }
-    
-    public static Result<Mailer> Create(Result<MailerMetadata> metadata)
-    {
-        if (metadata.IsFailure) return Validation(metadata);
-        var statistics = new MailerStatistics();
-        var mailer = new Mailer(metadata.Value, statistics);
-        return mailer;
+        MailedMessageMetadata metadata = new(Metadata.Id, Guid.NewGuid());
+        MailedMessageDeliveryInfo delivery = new(to, DateTime.UtcNow);
+        MailedMessageContent content = new(subject, body);
+        MailedMessage message = new(metadata, content, delivery);
+        MailerStatistics increased = Statistics.Increased();
+        return new MailerSending(this with { Statistics =  increased }, message);
     }
 }

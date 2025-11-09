@@ -31,7 +31,7 @@ public class Result
     {
         return new Result<T>(error);
     }
-
+    
     public static Result Failure(Error error)
     {
         return new Result(error);
@@ -59,7 +59,27 @@ public class Result<T> : Result
         !IsSuccess
             ? throw new InvalidOperationException($"Нельзя получить доступ к неуспешному {nameof(Result)}")
             : field!;
-
+    
+    public Result<U> Continue<U>(Func<T, Result<U>> continuation)
+    {
+        return IsFailure ? Failure<U>(Error) : continuation(Value);
+    }
+    
+    public Result<U> Continue<U>(Func<Result<U>> continuation)
+    {
+        return IsFailure ? Failure<U>(Error) : continuation();
+    }
+    
+    public Result<U> Continue<U>(Func<U> continuation)
+    {
+        return IsFailure ? Failure<U>(Error) : Success(continuation());
+    }
+    
+    public Result<U> Continue<U>(U continuation)
+    {
+        return IsFailure ? Failure<U>(Error) : Success(continuation);
+    }
+    
     public static implicit operator Result<T>(T value)
     {
         return new Result<T>(value);

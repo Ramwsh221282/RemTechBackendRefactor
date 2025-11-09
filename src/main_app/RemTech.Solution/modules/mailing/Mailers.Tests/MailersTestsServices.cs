@@ -1,7 +1,7 @@
-﻿using Mailers.Persistence.NpgSql;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Mailers.Application;
+using Mailers.Core;
+using Mailers.Persistence.NpgSql;
 using Microsoft.Extensions.Options;
-using RemTech.NpgSql.Abstractions;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
 
@@ -41,7 +41,9 @@ public sealed class MailersTestsServices : IAsyncLifetime
         var dbOptions = Options.Create(_db.CreateDatabaseConfiguration());
         services.AddSingleton(dbOptions);
         services.AddPostgres();
-        services.AddMailersPersistance();
+        services.AddMailersPersistence();
+        services.AddMailersCore();
+        services.AddMailersApplication();
         return services.BuildServiceProvider();
     }
     
