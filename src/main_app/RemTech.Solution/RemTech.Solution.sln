@@ -206,6 +206,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mailers.Application", "modu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mailers.Web", "modules\mailing\Mailers.Web\Mailers.Web.csproj", "{51F8A255-5C27-485D-8179-E33C1D54A82E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Aes.Encryption", "modules\building_blocks\RemTech.Aes.Encryption\RemTech.Aes.Encryption.csproj", "{A887B0B0-57E9-4681-8E74-38C848A1783A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -312,6 +314,7 @@ Global
 		{84801E8A-846D-4B2E-AF58-C15FB61EB5A7} = {73EE3210-C164-4060-B679-037A4AD5D63A}
 		{F9F89A2F-A446-40D1-8592-3F3F7E9131F9} = {B5E778FE-6E21-4D96-A023-FE888D2D893E}
 		{51F8A255-5C27-485D-8179-E33C1D54A82E} = {B5E778FE-6E21-4D96-A023-FE888D2D893E}
+		{A887B0B0-57E9-4681-8E74-38C848A1783A} = {73EE3210-C164-4060-B679-037A4AD5D63A}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -586,5 +589,9 @@ Global
 		{51F8A255-5C27-485D-8179-E33C1D54A82E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51F8A255-5C27-485D-8179-E33C1D54A82E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51F8A255-5C27-485D-8179-E33C1D54A82E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A887B0B0-57E9-4681-8E74-38C848A1783A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A887B0B0-57E9-4681-8E74-38C848A1783A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A887B0B0-57E9-4681-8E74-38C848A1783A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A887B0B0-57E9-4681-8E74-38C848A1783A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

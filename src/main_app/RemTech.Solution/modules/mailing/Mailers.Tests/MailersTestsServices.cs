@@ -17,7 +17,7 @@ public sealed class MailersTestsServices : IAsyncLifetime
     {
         _sp = new Lazy<IServiceProvider>(InitializeServices);
     }
-    
+
     public async Task InitializeAsync()
     {
         await _db.StartAsync();
@@ -34,19 +34,22 @@ public sealed class MailersTestsServices : IAsyncLifetime
     {
         return Sp.CreateAsyncScope();
     }
-    
+
     private IServiceProvider InitializeServices()
     {
-        var services = new ServiceCollection();
-        var dbOptions = Options.Create(_db.CreateDatabaseConfiguration());
+        ServiceCollection services = new ServiceCollection();
+        IOptions<NpgSqlOptions> dbOptions = Options.Create(_db.CreateDatabaseConfiguration());
+        IOptions<MailersEncryptOptions> options = Options.Create(new MailersEncryptOptions());
+        options.Value.Key = Guid.NewGuid().ToString();
         services.AddSingleton(dbOptions);
         services.AddPostgres();
         services.AddMailersPersistence();
         services.AddMailersCore();
         services.AddMailersApplication();
+        services.AddSingleton(options);
         return services.BuildServiceProvider();
     }
-    
+
     private void ApplyDatabaseMigrations()
     {
         var upgrader = Sp.GetRequiredKeyedService<IDbUpgrader>(nameof(MailersDbUpgrader));

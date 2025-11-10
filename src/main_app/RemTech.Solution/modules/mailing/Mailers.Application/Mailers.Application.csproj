@@ -7,8 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Mailers.Core\Mailers.Core.csproj" />
-      <ProjectReference Include="..\Mailers.Persistence\Mailers.Persistence.csproj" />
+        <ProjectReference Include="..\..\building_blocks\RemTech.Aes.Encryption\RemTech.Aes.Encryption.csproj"/>
+        <ProjectReference Include="..\Mailers.Core\Mailers.Core.csproj"/>
+        <ProjectReference Include="..\Mailers.Persistence\Mailers.Persistence.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Configurations\"/>
     </ItemGroup>
 
 </Project>
