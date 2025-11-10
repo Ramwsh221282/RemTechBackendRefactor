@@ -1,4 +1,5 @@
-﻿using Mailers.Core.MailersContext;
+﻿using Mailers.Application.Configs;
+using Mailers.Core.MailersContext;
 using Mailers.Persistence.NpgSql;
 using Microsoft.Extensions.Options;
 using RemTech.Aes.Encryption;

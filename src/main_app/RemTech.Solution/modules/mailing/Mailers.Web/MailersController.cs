@@ -1,8 +1,10 @@
-﻿using Mailers.Application.Features;
+﻿using System.Net;
+using Mailers.Application.Features;
 using Mailers.Core.MailersContext;
 using Mailers.Persistence.NpgSql;
 using Microsoft.AspNetCore.Mvc;
 using RemTech.Functional.Extensions;
+using RemTech.Functional.Web.Extensions;
 using RemTech.NpgSql.Abstractions;
 
 namespace Mailers.Web;
@@ -12,51 +14,67 @@ namespace Mailers.Web;
 public sealed class MailersController
 {
     [HttpPost]
-    public async Task<IResult> RegisterNewMailer(
+    public async Task<Envelope> RegisterNewMailer(
         [FromBody] RegisterNewMailerRequest request,
         [FromServices] IAsyncFunction<RegisterMailerInApplicationFunctionArgument, Result<Mailer>> function,
         [FromServices] NpgSqlSession dbSession,
         CancellationToken ct)
     {
-        var argument = new RegisterMailerInApplicationFunctionArgument(request.Email, request.SmtpPassword, dbSession);
-        var result = await function.Invoke(argument, ct);
-        return result.IsFailure ? Results.BadRequest(result.Error) : Results.Ok(new MailerResponse(result.Value));
+        RegisterMailerInApplicationFunctionArgument argument = new(request.Email, request.SmtpPassword, dbSession);
+        Result<Mailer> result = await function.Invoke(argument, ct);
+        return result.AsEnvelope(() => new MailerResponse(result.Value));
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IResult> DeleteMailerFromApplication(
+    public async Task<Envelope> DeleteMailerFromApplication(
         [FromRoute] Guid id,
         [FromServices] IAsyncFunction<DeleteMailerFromApplicationFunctionArgument, Result<Mailer>> function,
         [FromServices] NpgSqlSession dbSession,
         CancellationToken ct)
     {
-        var argument = new DeleteMailerFromApplicationFunctionArgument(id, dbSession);
-        var result = await function.Invoke(argument, ct);
-        return result.IsFailure ? Results.BadRequest(result.Error) : Results.Ok(new MailerResponse(result.Value));
+        DeleteMailerFromApplicationFunctionArgument argument = new(id, dbSession);
+        Result<Mailer> result = await function.Invoke(argument, ct);
+        return result.AsEnvelope(() => new MailerResponse(result.Value));
     }
 
     [HttpPost("{id:guid}/ping")]
-    public async Task<IResult> PingMailer(
+    public async Task<Envelope> PingMailer(
         [FromBody] PingMailerSenderRequest request,
         [FromRoute] Guid id,
         [FromServices] IAsyncFunction<PingMailerInApplicationFunctionArgument, Result<Mailer>> function,
         [FromServices] NpgSqlSession dbSession,
         CancellationToken ct)
     {
-        var argument = new PingMailerInApplicationFunctionArgument(request.Id, request.To, dbSession);
-        var result = await function.Invoke(argument, ct);
-        return result.IsFailure ? Results.BadRequest(result.Error) : Results.Ok(new MailerResponse(result.Value));
+        PingMailerInApplicationFunctionArgument argument = new(request.Id, request.To, dbSession);
+        Result<Mailer> result = await function.Invoke(argument, ct);
+        return result.AsEnvelope(() => new MailerResponse(result.Value));
     }
 
+    [HttpPatch("{id:guid}/password")]
+    public async Task<Envelope> ChangeMailerPassword(
+        [FromBody] ChangeMailerSmtpPasswordRequest request,
+        [FromRoute] Guid id,
+        [FromServices] NpgSqlSession dbSession,
+        [FromServices] IAsyncFunction<ChangeMailerSmtpPasswordFunctionArguments, Result<Mailer>> function,
+        CancellationToken ct)
+    {
+        ChangeMailerSmtpPasswordFunctionArguments args = new(id, request.NextPassword, dbSession);
+        Result<Mailer> result = await function.Invoke(args, ct);
+        return result.AsEnvelope(() => new MailerResponse(result.Value));
+    }
+    
     [HttpGet()]
     public async Task<IResult> GetMailerSenders(
         [FromServices] NpgSqlSession dbSession,
         CancellationToken ct)
     {
-        var mailers = await new QueryMailerArguments().GetMany(dbSession, ct);
-        return Results.Ok(mailers.Select(m => new MailerResponse(m)));
+        QueryMailerArguments args = new();
+        IEnumerable<Mailer> mailers = await args.GetMany(dbSession, ct);
+        return Envelope.Map(mailers, m => new MailerResponse(m), HttpStatusCode.OK);
     }
 }
+
+public sealed record ChangeMailerSmtpPasswordRequest(string NextPassword);
 
 public sealed record RegisterNewMailerRequest(string Email, string SmtpPassword);
 

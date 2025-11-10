@@ -14,7 +14,7 @@ public sealed class InsertMailerFunction : IAsyncFunction<InsertMailerFunctionAr
         var mailer = argument.Mailer;
         
         if (!await mailer.HasUniqueEmail(session, ct))
-            return Conflict($"Почтовый отправитель с почтой: {mailer.Metadata.Email} уже существует.");
+            return Conflict($"Почтовый отправитель с почтой: {mailer.Metadata.Email.Value} уже существует.");
         
         await mailer.Insert(session, ct);
         return Unit.Value;

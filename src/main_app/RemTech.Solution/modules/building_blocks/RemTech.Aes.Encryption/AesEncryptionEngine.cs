@@ -1,12 +1,12 @@
-﻿using System.Security.Cryptography;
-using System.Text;
+﻿using System.Text;
 
 namespace RemTech.Aes.Encryption;
 
 internal sealed class AesEncryptionEngine(string keyText)
 {
-    private readonly Lazy<byte[]> _keyBytes = new(() => Encoding.UTF8.GetBytes(keyText));
-    private readonly Lazy<byte[]> _ivBytes = new(() => CreateIvBytes(keyText));
+    private readonly Lazy<byte[]> _keyBytes = new(() => CutStringFor16LengthArrayBytes(keyText));
+    private readonly Lazy<byte[]> _ivBytes = new(() => CutStringFor16LengthArrayBytes(keyText));
+    
     private byte[] Key => _keyBytes.Value;
     private byte[] Iv => _ivBytes.Value;
 
@@ -20,9 +20,10 @@ internal sealed class AesEncryptionEngine(string keyText)
         return new AesEncryptionScope(Key, Iv);
     }
 
-    private static byte[] CreateIvBytes(string keyText)
+    private static byte[] CutStringFor16LengthArrayBytes(string keyText)
     {
-        using var sha256 = SHA256.Create();
-        return sha256.ComputeHash(Encoding.UTF8.GetBytes(keyText)).AsSpan(..16).ToArray();
+        ReadOnlySpan<byte> bytes = Encoding.UTF8.GetBytes(keyText);
+        ReadOnlySpan<byte> cutted = bytes[..16];
+        return cutted.ToArray();
     }
 }

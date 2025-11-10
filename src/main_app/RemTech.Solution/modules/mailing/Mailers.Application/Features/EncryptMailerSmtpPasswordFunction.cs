@@ -1,4 +1,5 @@
-﻿using Mailers.Core.MailersContext;
+﻿using Mailers.Application.Configs;
+using Mailers.Core.MailersContext;
 using Microsoft.Extensions.Options;
 using RemTech.Aes.Encryption;
 
@@ -6,8 +7,7 @@ namespace Mailers.Application.Features;
 
 public sealed record EncryptMailerSmtpPasswordFunctionArgument(Mailer Mailer) : IFunctionArgument;
 
-public sealed class
-    EncryptMailerSmtpPasswordFunction : IAsyncFunction<EncryptMailerSmtpPasswordFunctionArgument, Result<Mailer>>
+public sealed class EncryptMailerSmtpPasswordFunction : IAsyncFunction<EncryptMailerSmtpPasswordFunctionArgument, Result<Mailer>>
 {
     private readonly MailersEncryptOptions _options;
 
