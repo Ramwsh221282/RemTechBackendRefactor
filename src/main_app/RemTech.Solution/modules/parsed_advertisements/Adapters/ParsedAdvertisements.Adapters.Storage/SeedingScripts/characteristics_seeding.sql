@@ -1,1 +1,0 @@
-﻿-- INSERT INTO parsed_advertisements_module.characteristics(id, name, measurement, extras, embedding, extras_embedding);
