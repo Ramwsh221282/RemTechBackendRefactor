@@ -202,6 +202,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsedAdvertisements.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Ner.VehicleParameters", "RemTech.Ner.VehicleParameters\RemTech.Ner.VehicleParameters.csproj", "{0A93BF03-81F2-4627-A167-0CDCE3A96AE3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "identity", "identity", "{5E768BB8-7599-4338-A347-747392B9822C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -306,6 +308,7 @@ Global
 		{09324798-3B71-4DED-8E9F-AFC68DBC44A2} = {E099BD53-3575-4FAB-8048-FEBEBBB81ECB}
 		{599E3BE1-C33A-4117-9C2A-59EC284BA279} = {E099BD53-3575-4FAB-8048-FEBEBBB81ECB}
 		{0A93BF03-81F2-4627-A167-0CDCE3A96AE3} = {73EE3210-C164-4060-B679-037A4AD5D63A}
+		{5E768BB8-7599-4338-A347-747392B9822C} = {79472554-9950-4B72-8B55-F32E46914B0B}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

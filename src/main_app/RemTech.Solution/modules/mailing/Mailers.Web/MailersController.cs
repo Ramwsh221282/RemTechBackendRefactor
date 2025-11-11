@@ -1,11 +1,13 @@
 ﻿using System.Net;
-using Mailers.Application.Features;
-using Mailers.Core.MailersContext;
-using Mailers.Persistence.NpgSql;
+using Mailers.Application.Features.ChangeMailerSmtpPassword;
+using Mailers.Application.Features.CreateMailer;
+using Mailers.Application.Features.DeleteMailer;
+using Mailers.Application.Features.PingMailer;
+using Mailers.Core.MailersModule;
+using Mailers.Persistence.NpgSql.MailersModule;
 using Microsoft.AspNetCore.Mvc;
 using RemTech.Functional.Extensions;
 using RemTech.Functional.Web.Extensions;
-using RemTech.NpgSql.Abstractions;
 
 namespace Mailers.Web;
 
@@ -16,37 +18,34 @@ public sealed class MailersController
     [HttpPost]
     public async Task<Envelope> RegisterNewMailer(
         [FromBody] RegisterNewMailerRequest request,
-        [FromServices] IAsyncFunction<RegisterMailerInApplicationFunctionArgument, Result<Mailer>> function,
-        [FromServices] NpgSqlSession dbSession,
+        [FromServices] CreateMailerUseCase useCase,
         CancellationToken ct)
     {
-        RegisterMailerInApplicationFunctionArgument argument = new(request.Email, request.SmtpPassword, dbSession);
-        Result<Mailer> result = await function.Invoke(argument, ct);
+        CreateMailerArgs args = new(request.Email, request.SmtpPassword, ct);
+        Result<Mailer> result = await useCase.Invoke(args);
         return result.AsEnvelope(() => new MailerResponse(result.Value));
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<Envelope> DeleteMailerFromApplication(
         [FromRoute] Guid id,
-        [FromServices] IAsyncFunction<DeleteMailerFromApplicationFunctionArgument, Result<Mailer>> function,
-        [FromServices] NpgSqlSession dbSession,
+        [FromServices] DeleteMailerUseCase useCase,
         CancellationToken ct)
     {
-        DeleteMailerFromApplicationFunctionArgument argument = new(id, dbSession);
-        Result<Mailer> result = await function.Invoke(argument, ct);
-        return result.AsEnvelope(() => new MailerResponse(result.Value));
+        DeleteMailerArgs args = new(id, ct);
+        Result<Unit> result = await useCase.Invoke(args);
+        return result.AsEnvelope(() => id);
     }
 
     [HttpPost("{id:guid}/ping")]
     public async Task<Envelope> PingMailer(
         [FromBody] PingMailerSenderRequest request,
         [FromRoute] Guid id,
-        [FromServices] IAsyncFunction<PingMailerInApplicationFunctionArgument, Result<Mailer>> function,
-        [FromServices] NpgSqlSession dbSession,
+        [FromServices] PingMailerUseCase useCase,
         CancellationToken ct)
     {
-        PingMailerInApplicationFunctionArgument argument = new(request.Id, request.To, dbSession);
-        Result<Mailer> result = await function.Invoke(argument, ct);
+        PingMailerArgs args = new(id, request.To, ct);
+        Result<Mailer> result = await useCase.Invoke(args);
         return result.AsEnvelope(() => new MailerResponse(result.Value));
     }
 
@@ -54,22 +53,21 @@ public sealed class MailersController
     public async Task<Envelope> ChangeMailerPassword(
         [FromBody] ChangeMailerSmtpPasswordRequest request,
         [FromRoute] Guid id,
-        [FromServices] NpgSqlSession dbSession,
-        [FromServices] IAsyncFunction<ChangeMailerSmtpPasswordFunctionArguments, Result<Mailer>> function,
+        [FromServices] ChangeMailerSmtpPasswordUseCase useCase,
         CancellationToken ct)
     {
-        ChangeMailerSmtpPasswordFunctionArguments args = new(id, request.NextPassword, dbSession);
-        Result<Mailer> result = await function.Invoke(args, ct);
+        ChangeMailerSmtpPasswordArgs args = new(id, request.NextPassword, ct);
+        Result<Mailer> result = await useCase.Invoke(args);
         return result.AsEnvelope(() => new MailerResponse(result.Value));
     }
     
     [HttpGet()]
     public async Task<IResult> GetMailerSenders(
-        [FromServices] NpgSqlSession dbSession,
+        [FromServices] NpgSqlMailersCommands commands,
         CancellationToken ct)
     {
         QueryMailerArguments args = new();
-        IEnumerable<Mailer> mailers = await args.GetMany(dbSession, ct);
+        IEnumerable<Mailer> mailers = await commands.GetMailers(args, ct);
         return Envelope.Map(mailers, m => new MailerResponse(m), HttpStatusCode.OK);
     }
 }
@@ -78,7 +76,7 @@ public sealed record ChangeMailerSmtpPasswordRequest(string NextPassword);
 
 public sealed record RegisterNewMailerRequest(string Email, string SmtpPassword);
 
-public sealed record PingMailerSenderRequest(Guid Id, string To);
+public sealed record PingMailerSenderRequest(string To);
 
 public sealed class MailerResponse
 {
@@ -89,7 +87,7 @@ public sealed class MailerResponse
 
     public MailerResponse(Mailer mailer)
     {
-        Id = mailer.Metadata.Id;
+        Id = mailer.Metadata.Id.Value;
         Email = mailer.Metadata.Email.Value;
         SendLimit = mailer.Statistics.SendCurrent;
         SendCurrent = mailer.Statistics.SendCurrent;

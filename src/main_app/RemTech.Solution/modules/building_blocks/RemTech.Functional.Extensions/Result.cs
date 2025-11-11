@@ -75,11 +75,6 @@ public class Result<T> : Result
         return IsFailure ? Failure<U>(Error) : Success(continuation());
     }
     
-    public Result<U> Continue<U>(U continuation)
-    {
-        return IsFailure ? Failure<U>(Error) : Success(continuation);
-    }
-    
     public static implicit operator Result<T>(T value)
     {
         return new Result<T>(value);
@@ -93,5 +88,41 @@ public class Result<T> : Result
     public static implicit operator T(Result<T> result)
     {
         return result.Value;
+    }
+}
+
+public static class ResultModule
+{
+    extension<T>(Result<T> result)
+    {
+        public Result<U> Continue<U>(Func<T, Result<U>> continuation)
+        {
+            return result.IsFailure ? Result.Failure<U>(result.Error) : continuation(result.Value);
+        }
+        
+        public Result<U> Continue<U>(Func<Result<U>> continuation)
+        {
+            return result.IsFailure ? Result.Failure<U>(result.Error) : continuation();
+        }
+        
+        public Result<U> Continue<U>(Result<U> continuation)
+        {
+            return result.IsFailure ? Result.Failure<U>(result.Error) : continuation;
+        }
+
+        public Result<U> Map<U>(Func<T, Result<U>> map)
+        {
+            return result.IsFailure ? Result.Failure<U>(result.Error) : map(result.Value);
+        }
+        
+        public Result<U> Map<U>(Func<Result<U>> map)
+        {
+            return result.IsFailure ? Result.Failure<U>(result.Error) : map();
+        }
+        
+        public Result<U> Map<U>(Func<U> map)
+        {
+            return result.IsFailure ? Result.Failure<U>(result.Error) : map();
+        }
     }
 }

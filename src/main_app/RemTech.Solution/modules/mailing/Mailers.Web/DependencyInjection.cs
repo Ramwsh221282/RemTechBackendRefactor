@@ -1,7 +1,6 @@
 ﻿using Mailers.Application;
 using Mailers.Application.Configs;
-using Mailers.Core;
-using Mailers.Persistence.NpgSql;
+using Mailers.Persistence.NpgSql.MailersModule;
 using RemTech.NpgSql.Abstractions;
 
 namespace Mailers.Web;
@@ -16,7 +15,6 @@ public static class DependencyInjection
             services.AddOptions<MailersEncryptOptions>().BindConfiguration(nameof(MailersEncryptOptions));
             services.AddPostgres();
             services.AddMailersApplication();
-            services.AddMailersCore();
             services.AddMailersPersistence();
         }
     }

@@ -1,6 +1,5 @@
 ﻿using Mailers.Application;
-using Mailers.Core;
-using Mailers.Persistence.NpgSql;
+using Mailers.Persistence.NpgSql.MailersModule;
 using Microsoft.Extensions.Options;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
@@ -45,12 +44,11 @@ public sealed class MailersTestsServices : IAsyncLifetime
             new MailersEncryptOptions() { Key = Guid.NewGuid().ToString() }
             );
         
-        services.AddSingleton(dbOptions);
         services.AddPostgres();
         services.AddMailersPersistence();
-        services.AddMailersCore();
         services.AddMailersApplication();
         services.AddSingleton(options);
+        services.AddSingleton(dbOptions);
         return services.BuildServiceProvider();
     }
 
