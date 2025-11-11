@@ -18,6 +18,23 @@ public sealed record Mailer(MailerMetadata Metadata, MailerStatistics Statistics
         MailedMessageContent content = new(subject, body);
         MailedMessage message = new(metadata, content, delivery);
         MailerStatistics increased = Statistics.Increased();
-        return new MailerSending(this with { Statistics =  increased }, message);
+        return new MailerSending(this with { Statistics = increased }, message);
+    }
+
+    public Result<MailerSmtpServiceName> ResolveSmtpService()
+    {
+        string email = Metadata.Email.Value;
+        string domainPart = email.Split('@')[^1];
+
+        Result<string> name = email switch
+        {
+            _ when domainPart.Contains("gmail.com") => "smtp.gmail.com",
+            _ when domainPart.Contains("yandex.ru") => "smtp.yandex.ru",
+            _ when domainPart.Contains("mail.ru") => "smtp.mail.ru",
+            _ => Application("Не удается определить Smtp провайдера.")
+        };
+
+        if (name.IsFailure) return name.Error;
+        return new MailerSmtpServiceName(name.Value);
     }
 }
