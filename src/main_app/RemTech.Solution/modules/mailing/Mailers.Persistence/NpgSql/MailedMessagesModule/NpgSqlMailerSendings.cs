@@ -3,7 +3,7 @@ using Dapper;
 using Mailers.Core.MailersModule;
 using RemTech.NpgSql.Abstractions;
 
-namespace Mailers.Persistence.NpgSql.MailerSendingsModule;
+namespace Mailers.Persistence.NpgSql.MailedMessagesModule;
 
 public static class NpgSqlMailerSendings
 {

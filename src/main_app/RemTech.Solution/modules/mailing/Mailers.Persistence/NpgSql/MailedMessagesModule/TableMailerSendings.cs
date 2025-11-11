@@ -1,4 +1,4 @@
-﻿namespace Mailers.Persistence.NpgSql.MailerSendingsModule;
+﻿namespace Mailers.Persistence.NpgSql.MailedMessagesModule;
 
 // CREATE TABLE IF NOT EXISTS mailers_module.mailer_sendings
 // (

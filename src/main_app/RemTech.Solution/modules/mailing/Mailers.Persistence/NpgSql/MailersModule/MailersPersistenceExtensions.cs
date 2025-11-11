@@ -1,5 +1,5 @@
 ﻿using Mailers.Core.MailersModule;
-using Mailers.Persistence.NpgSql.MailerSendingsModule;
+using Mailers.Persistence.NpgSql.MailedMessagesModule;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.NpgSql.Abstractions;
 
