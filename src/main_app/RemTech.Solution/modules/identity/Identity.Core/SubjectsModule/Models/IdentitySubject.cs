@@ -10,27 +10,30 @@ public sealed record IdentitySubject
     private readonly IdentitySubjectCredentials _credentials;
     private readonly IdentitySubjectActivationStatus _activation;
     private readonly IdentitySubjectPermissions _permissions;
-    private readonly IdentitySubjectNotificationTarget _target;
+    private readonly Optional<IdentitySubjectsEventsRegistry> _eventsRegistry;
 
     public IdentitySubject(
         IdentitySubjectMetadata metadata,
         IdentitySubjectCredentials credentials,
         IdentitySubjectActivationStatus status,
         IdentitySubjectPermissions permissions,
-        IdentitySubjectNotificationTarget? listener = null)
+        IdentitySubjectsEventsRegistry? eventsRegistry)
     {
         _metaData = metadata;
         _credentials = credentials;
         _activation = status;
         _permissions = permissions;
-        _target = listener ?? new IdentitySubjectDummyTarget();
+        _eventsRegistry = FromNullable(eventsRegistry);
     }
 
     public Result<IdentitySubject> Registered()
     {
         Result<IdentitySubjectActivationStatus> activated = _activation.Activate();
         if (activated.IsFailure) return activated.Error;
-        _target.Record(new IdentitySubjectRegisteredNotification(_metaData, _credentials, _permissions));
+        
+        _eventsRegistry.ExecuteOnValue(reg => 
+            reg.Record(new IdentitySubjectRegisteredNotification(_metaData, _credentials, _permissions)));
+        
         return this;
     }
 }

@@ -13,14 +13,14 @@ public sealed record NpgSqlSession(NpgSqlConnectionFactory Factory) : IAsyncDisp
     
     public async Task<NpgsqlTransaction> GetTransaction(CancellationToken ct)
     {
-        var connection = await GetConnection(ct);
+        NpgsqlConnection connection = await GetConnection(ct);
         Transaction??= await connection.BeginTransactionAsync(ct);
         return Transaction;
     }
 
     public async Task Execute(CommandDefinition command)
     {
-        var connection = await GetConnection(CancellationToken.None);
+        NpgsqlConnection connection = await GetConnection(CancellationToken.None);
         await connection.ExecuteAsync(command);
     }
     
@@ -34,28 +34,28 @@ public sealed record NpgSqlSession(NpgSqlConnectionFactory Factory) : IAsyncDisp
 
     public async Task<int> CountAffected(CommandDefinition command)
     {
-        var connection = await GetConnection(CancellationToken.None);
+        NpgsqlConnection connection = await GetConnection(CancellationToken.None);
         return await connection.ExecuteAsync(command);   
     }
 
     public async Task<T> QuerySingleRow<T>(CommandDefinition command)
     {
-        var connection = await GetConnection(CancellationToken.None);
-        var result = await connection.QuerySingleAsync<T>(command);
+        NpgsqlConnection connection = await GetConnection(CancellationToken.None);
+        T result = await connection.QuerySingleAsync<T>(command);
         return result;
     }
     
     public async Task<T?> QueryMaybeRow<T>(CommandDefinition command)
     {
-        var connection = await GetConnection(CancellationToken.None);
-        var result = await connection.QueryFirstOrDefaultAsync<T>(command);
+        NpgsqlConnection connection = await GetConnection(CancellationToken.None);
+        T? result = await connection.QueryFirstOrDefaultAsync<T>(command);
         return result;
     }
 
     public async Task<IEnumerable<T>> QueryMultipleRows<T>(CommandDefinition command)
     {
-        var connection = await GetConnection(CancellationToken.None);
-        var result = await connection.QueryAsync<T>(command);
+        NpgsqlConnection connection = await GetConnection(CancellationToken.None);
+        IEnumerable<T> result = await connection.QueryAsync<T>(command);
         return result;
     }
 

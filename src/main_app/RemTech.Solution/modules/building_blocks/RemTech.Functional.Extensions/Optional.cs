@@ -27,6 +27,11 @@ public class Optional
         return new Optional<T>(value);
     }
 
+    public static Optional<T> FromNullable<T>(T? value)
+    {
+        return value is null ? None<T>() : Some(value);
+    }
+    
     public static Optional<T> None<T>()
     {
         return new Optional<T>();
