@@ -23,6 +23,14 @@ public sealed record NpgSqlSession(NpgSqlConnectionFactory Factory) : IAsyncDisp
         var connection = await GetConnection(CancellationToken.None);
         await connection.ExecuteAsync(command);
     }
+    
+    public async Task Execute(DynamicParameters parameters, string sql, CancellationToken ct)
+    {
+        NpgsqlTransaction transaction = await GetTransaction(ct);
+        NpgsqlConnection connection = await GetConnection(CancellationToken.None);
+        CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: transaction);
+        await connection.ExecuteAsync(command);
+    }
 
     public async Task<int> CountAffected(CommandDefinition command)
     {

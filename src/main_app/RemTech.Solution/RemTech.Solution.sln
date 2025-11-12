@@ -206,6 +206,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "identity", "identity", "{5E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.Core", "modules\identity\Identity.Core\Identity.Core.csproj", "{04182889-A805-4E04-B380-5E1BD1D93A4E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.Persistence", "modules\identity\Identity.Persistence\Identity.Persistence.csproj", "{E9471957-F0FA-4757-BA79-0A44DE21DABC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -312,6 +314,7 @@ Global
 		{0A93BF03-81F2-4627-A167-0CDCE3A96AE3} = {73EE3210-C164-4060-B679-037A4AD5D63A}
 		{5E768BB8-7599-4338-A347-747392B9822C} = {79472554-9950-4B72-8B55-F32E46914B0B}
 		{04182889-A805-4E04-B380-5E1BD1D93A4E} = {5E768BB8-7599-4338-A347-747392B9822C}
+		{E9471957-F0FA-4757-BA79-0A44DE21DABC} = {5E768BB8-7599-4338-A347-747392B9822C}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -590,5 +593,9 @@ Global
 		{04182889-A805-4E04-B380-5E1BD1D93A4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{04182889-A805-4E04-B380-5E1BD1D93A4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{04182889-A805-4E04-B380-5E1BD1D93A4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9471957-F0FA-4757-BA79-0A44DE21DABC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9471957-F0FA-4757-BA79-0A44DE21DABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9471957-F0FA-4757-BA79-0A44DE21DABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9471957-F0FA-4757-BA79-0A44DE21DABC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
