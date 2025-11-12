@@ -7,7 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\RemTech.Functional.Extensions\RemTech.Functional.Extensions.csproj" />
+      <ProjectReference Include="..\Identity.Core\Identity.Core.csproj" />
+      <ProjectReference Include="..\Identity.Logging\Identity.Logging.csproj" />
+      <ProjectReference Include="..\Identity.Persistence\Identity.Persistence.csproj" />
     </ItemGroup>
 
 </Project>

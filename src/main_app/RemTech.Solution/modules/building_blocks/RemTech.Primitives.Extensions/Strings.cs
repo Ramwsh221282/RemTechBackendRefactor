@@ -2,6 +2,29 @@
 
 public static class Strings
 {
+    extension(string[] source)
+    {
+        public string Join(char separator)
+        {
+            return Joined(source, separator);
+        }
+        
+        public string Join(string separator)
+        {
+            return Joined(source, separator);
+        }
+    }
+    
+    public static string Joined(string[] source, char separator)
+    {
+        return string.Join(separator, source);
+    }
+    
+    public static string Joined(string[] source, string separator)
+    {
+        return string.Join(separator, source);
+    }
+    
     public static bool EmptyOrWhiteSpace(string? str)
     {
         return string.IsNullOrWhiteSpace(str);

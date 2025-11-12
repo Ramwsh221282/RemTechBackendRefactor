@@ -2,12 +2,25 @@
 
 namespace Identity.Core.SubjectsModule.Notifications.Abstractions;
 
-public sealed class IdentitySubjectsEventsRegistry
+public sealed class SubjectEventsRegistry
 {
     private readonly Dictionary<Type, List<object>> _subscriptions = [];
     private readonly Queue<AsyncResultFn> _queues = [];
+    
+    public SubjectEventsRegistry AddHandlersFor<TEvent>(IEnumerable<AsyncSubjectNotificationHandle<TEvent>> fns) 
+        where TEvent : IdentitySubjectNotification
+    {
+        SubjectEventsRegistry registry = this;
+        
+        foreach (AsyncSubjectNotificationHandle<TEvent> fn in fns)
+        {
+            registry = registry.AddHandlerFor(fn);
+        }
 
-    public IdentitySubjectsEventsRegistry AddHandlerFor<TEvent>(AsyncSubjectNotificationHandle<TEvent> handler) 
+        return registry;
+    }
+    
+    public SubjectEventsRegistry AddHandlerFor<TEvent>(AsyncSubjectNotificationHandle<TEvent> handler) 
         where TEvent : IdentitySubjectNotification
     {
         Type eventType = typeof(TEvent);
@@ -43,5 +56,11 @@ public sealed class IdentitySubjectsEventsRegistry
         }
 
         return Unit.Value;
+    }
+
+    public async Task<Result<T>> OnSuccessProcession<T>(Func<T> function, CancellationToken ct = default)
+    {
+        Result<Unit> processing = await ProcessEvents(ct);
+        return processing.IsFailure ? processing.Error : function();
     }
 }

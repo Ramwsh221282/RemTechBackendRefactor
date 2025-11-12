@@ -5,19 +5,19 @@ namespace Identity.Core.SubjectsModule.Modules;
 
 public static class IdentitySubjectActivationStatusModule
 {
-    extension(IdentitySubjectActivationStatus)
+    extension(SubjectActivationStatus)
     {
-        public static IdentitySubjectActivationStatus Inactive()
+        public static SubjectActivationStatus Inactive()
         {
-            return new IdentitySubjectActivationStatus();
+            return new SubjectActivationStatus();
         }
 
-        public static Result<IdentitySubjectActivationStatus> Create(DateTime activationDate)
+        public static Result<SubjectActivationStatus> Create(DateTime activationDate)
         {
             DateTime now = DateTime.UtcNow.AddMinutes(1);
             if (activationDate == DateTime.MinValue || activationDate == DateTime.MaxValue || activationDate > now)
                 return Validation("Дата активации учетной записи некорректна.");
-            IdentitySubjectActivationStatus @new = new(activationDate);
+            SubjectActivationStatus @new = new(activationDate);
             return Success(@new);
         }
     }

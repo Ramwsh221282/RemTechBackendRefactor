@@ -7,8 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\building_blocks\RemTech.BuildingBlocks.DependencyInjection\RemTech.BuildingBlocks.DependencyInjection.csproj" />
         <ProjectReference Include="..\..\building_blocks\RemTech.NpgSql.Abstractions\RemTech.NpgSql.Abstractions.csproj"/>
         <ProjectReference Include="..\Identity.Core\Identity.Core.csproj"/>
     </ItemGroup>
-
+    
+    <ItemGroup>
+        <EmbeddedResource Include="./NpgSql/Migrations/*.sql" />
+    </ItemGroup>
+    
 </Project>

@@ -22,4 +22,17 @@ public static class DependencyInjection
             _hasConfigured = true;
         }
     }
+
+    extension(IServiceProvider provider)
+    {
+        public void ApplyMigrationsFor(string dbUpgraderName)
+        {
+            provider.GetRequiredKeyedService<IDbUpgrader>(dbUpgraderName).ApplyMigrations();
+        }
+
+        public void ApplyPgVectorMigrations()
+        {
+            provider.GetRequiredKeyedService<IDbUpgrader>(nameof(PgVectorUpgrader)).ApplyMigrations();
+        }
+    }
 }

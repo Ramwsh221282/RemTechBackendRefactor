@@ -59,6 +59,11 @@ public class Result<T> : Result
         !IsSuccess
             ? throw new InvalidOperationException($"Нельзя получить доступ к неуспешному {nameof(Result)}")
             : field!;
+
+    public async Task<Result<U>> ContinueAsync<U>(Func<T, Task<Result<U>>> continuation)
+    {
+        return IsFailure ? Failure<U>(Error) : await continuation(Value);
+    }
     
     public Result<U> Continue<U>(Func<T, Result<U>> continuation)
     {

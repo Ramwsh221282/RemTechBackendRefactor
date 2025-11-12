@@ -7,7 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\RemTech.Functional.Extensions\RemTech.Functional.Extensions.csproj" />
+      <ProjectReference Include="..\RemTech.Primitives.Extensions\RemTech.Primitives.Extensions.csproj" />
     </ItemGroup>
 
 </Project>
