@@ -107,6 +107,19 @@ public sealed record ScopedParametersStorage<T>
         return @item == null ? this : With(name, it => it, dbType);
     }
 
+    public ScopedParametersStorage<T> WithIfNotNull<U,V>(
+        string name, 
+        Func<T, U?> @object, 
+        Func<U, V> property, 
+        DbType dbType)
+    {
+        U? @item = @object(_value);
+        if (@item is null) return this;
+        V field = @property(@item);
+        Parameters.Add(name, field, dbType);
+        return this;
+    }
+
     public DynamicParameters GetParameters() => Parameters;
 }
 
