@@ -31,6 +31,11 @@ public class Optional
     {
         return value is null ? None<T>() : Some(value);
     }
+
+    public static Optional<DateTime> FromNullable(DateTime? value)
+    {
+        return value.HasValue ? Some(value.Value) : None<DateTime>();
+    }
     
     public static Optional<T> None<T>()
     {

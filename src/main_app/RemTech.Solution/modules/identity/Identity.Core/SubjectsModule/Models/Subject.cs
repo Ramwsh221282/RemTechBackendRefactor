@@ -55,7 +55,7 @@ public sealed record SubjectTickets
 
 public sealed record SubjectTicket(Guid Id, string Type, bool Active)
 {
-    internal SubjectTicket(IdentityTicket ticket) : this(ticket.Id, ticket.Type, ticket.Active)
+    internal SubjectTicket(Ticket ticket) : this(ticket.Id, ticket.Type, ticket.Active)
     {
         
     }
@@ -119,7 +119,7 @@ public sealed record Subject
     {
         if (_activation.Activated) return Conflict("Учетная запись уже активирована.");
         SubjectTickets tickets = _tickets.Copy();
-        IdentityTicket activationTicket = IdentityTicket.New(_metaData.Id, IdentityTicketTypes.AccountActivation);
+        Ticket activationTicket = Ticket.New(_metaData.Id, TicketType.AccountActivation);
         SubjectTicket subjectTicket = ToSubjectTicket(activationTicket);
         if (tickets.ContainsLastNotActiveWithSameType(subjectTicket))
             tickets = tickets.WithoutLastActiveOfType(subjectTicket).With(subjectTicket);
@@ -138,7 +138,7 @@ public sealed record Subject
             _permissions.Snapshotted());
     }
 
-    private SubjectTicket ToSubjectTicket(IdentityTicket ticket)
+    private SubjectTicket ToSubjectTicket(Ticket ticket)
     {
         return new SubjectTicket(ticket);
     }

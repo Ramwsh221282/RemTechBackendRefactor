@@ -20,6 +20,26 @@ public static class Strings
         return string.Join(separator, source);
     }
     
+    public static string Joined(List<string> source, char separator)
+    {
+        return string.Join(separator, source);
+    }
+    
+    public static string Joined(IEnumerable<string> source, char separator)
+    {
+        return string.Join(separator, source);
+    }
+    
+    public static string Joined(List<string> source, string separator)
+    {
+        return string.Join(separator, source);
+    }
+    
+    public static string Joined(IEnumerable<string> source, string separator)
+    {
+        return string.Join(separator, source);
+    }
+    
     public static string Joined(string[] source, string separator)
     {
         return string.Join(separator, source);
