@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Npgsql;
+using RemTech.Functional.Extensions;
 
 namespace RemTech.NpgSql.Abstractions;
 
@@ -64,7 +65,32 @@ public sealed record NpgSqlSession(NpgSqlConnectionFactory Factory) : IAsyncDisp
         if (_connection != null) await _connection.DisposeAsync();
         if (Transaction != null) await Transaction.DisposeAsync();
     }
-
+    
+    public async Task<Result<Unit>> ExecuteUnderTransaction(Func<Task> fn, CancellationToken ct)
+    {
+        await GetTransaction(ct);
+        await fn();
+        bool success = await Commited(ct);
+        return success ? Unit.Value : Error.Application("Не удается зафиксировать транзакцию.");
+    }
+    
+    public async Task<Result<T>> ExecuteUnderTransaction<T>(Func<Task<Result<T>>> fn, CancellationToken ct)
+    {
+        await GetTransaction(ct);
+        Result<T> result = await fn();
+        if (result.IsFailure) return result;
+        bool success = await Commited(ct);
+        return success ? result : Error.Application("Не удается зафиксировать транзакцию.");
+    }
+    
+    public async Task<Result<T>> ExecuteUnderTransaction<T>(Func<Task<T>> fn, CancellationToken ct)
+    {
+        await GetTransaction(ct);
+        T result = await fn();
+        bool success = await Commited(ct);
+        return success ? result : Error.Application("Не удается зафиксировать транзакцию.");
+    }
+    
     public async Task<bool> Commited(CancellationToken ct)
     {
         if (Transaction == null) return true;

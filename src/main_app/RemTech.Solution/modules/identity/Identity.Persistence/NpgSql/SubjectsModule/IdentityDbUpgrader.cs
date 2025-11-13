@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using RemTech.NpgSql.Abstractions;
 
-namespace Identity.Persistence.NpgSql;
+namespace Identity.Persistence.NpgSql.SubjectsModule;
 
 public sealed class IdentityDbUpgrader : AbstractDatabaseUpgrader
 {

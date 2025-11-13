@@ -2,26 +2,26 @@
 
 namespace Identity.Core.SubjectsModule.Notifications.Abstractions;
 
-public sealed class SubjectEventsRegistry
+public sealed class NotificationsRegistry
 {
     private readonly Dictionary<Type, List<object>> _subscriptions = [];
     private readonly Queue<AsyncResultFn> _queues = [];
     
-    public SubjectEventsRegistry AddHandlersFor<TEvent>(IEnumerable<AsyncSubjectNotificationHandle<TEvent>> fns) 
-        where TEvent : IdentitySubjectNotification
+    public NotificationsRegistry AddNotificationHandlers<TEvent>(IEnumerable<AsyncNotificationHandle<TEvent>> fns) 
+        where TEvent : Notification
     {
-        SubjectEventsRegistry registry = this;
+        NotificationsRegistry registry = this;
         
-        foreach (AsyncSubjectNotificationHandle<TEvent> fn in fns)
+        foreach (AsyncNotificationHandle<TEvent> fn in fns)
         {
-            registry = registry.AddHandlerFor(fn);
+            registry = registry.AddNotificationHandler(fn);
         }
 
         return registry;
     }
     
-    public SubjectEventsRegistry AddHandlerFor<TEvent>(AsyncSubjectNotificationHandle<TEvent> handler) 
-        where TEvent : IdentitySubjectNotification
+    public NotificationsRegistry AddNotificationHandler<TEvent>(AsyncNotificationHandle<TEvent> handler) 
+        where TEvent : Notification
     {
         Type eventType = typeof(TEvent);
         if (!_subscriptions.TryGetValue(eventType, out List<object>? handlers))
@@ -35,17 +35,17 @@ public sealed class SubjectEventsRegistry
     }
 
     public void Record<TEvent>(TEvent notification) 
-        where TEvent : IdentitySubjectNotification
+        where TEvent : Notification
     {
         Type eventType = typeof(TEvent);
         if (!_subscriptions.TryGetValue(eventType, out List<object>? handlers))
             return;
 
-        foreach (AsyncSubjectNotificationHandle<TEvent> handler in handlers.Cast<AsyncSubjectNotificationHandle<TEvent>>())
+        foreach (AsyncNotificationHandle<TEvent> handler in handlers.Cast<AsyncNotificationHandle<TEvent>>())
             _queues.Enqueue(async (ct) => await handler(notification, ct));
     }
 
-    public async Task<Result<Unit>> ProcessEvents(CancellationToken ct = default)
+    public async Task<Result<Unit>> ProcessNotifications(CancellationToken ct = default)
     {
         while (_queues.Count > 0)
         {
@@ -60,7 +60,7 @@ public sealed class SubjectEventsRegistry
 
     public async Task<Result<T>> OnSuccessProcession<T>(Func<T> function, CancellationToken ct = default)
     {
-        Result<Unit> processing = await ProcessEvents(ct);
+        Result<Unit> processing = await ProcessNotifications(ct);
         return processing.IsFailure ? processing.Error : function();
     }
 }

@@ -7,12 +7,12 @@ namespace Identity.Logging;
 
 public static class SerilogIdentitySubjectsModule
 {
-    public static AsyncSubjectNotificationHandle<IdentitySubjectRegisteredNotification> OnRegistered(
+    public static AsyncNotificationHandle<Registered> OnRegistered(
         ILogger logger,
-        AsyncSubjectNotificationHandle<IdentitySubjectRegisteredNotification> origin) =>
+        AsyncNotificationHandle<Registered> origin) =>
         (async (@event, ct) => await origin.Loggable(logger, @event, ct));
 
-    extension<TEvent>(AsyncSubjectNotificationHandle<TEvent> handle) where TEvent : IdentitySubjectNotification
+    extension<TEvent>(AsyncNotificationHandle<TEvent> handle) where TEvent : Notification
     {
         private async Task<Result<Unit>> Loggable(ILogger logger, TEvent @event, CancellationToken ct)
         {

@@ -36,9 +36,9 @@ public sealed record SubjectPermissions
         return _permissions.Any(p => p.Id == permission.Id || p.Name == permission.Name);
     }
 
-    public IdentitySubjectPermissionSnapshot[] Snapshotted()
+    public SubjectPermissionSnapshot[] Snapshotted()
     {
-        return _permissions.Map(p => new IdentitySubjectPermissionSnapshot(p.Id, p.Name));
+        return _permissions.Map(p => new SubjectPermissionSnapshot(p.Id, p.Name));
     }
     
     internal SubjectPermissions()

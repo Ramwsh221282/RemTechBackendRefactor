@@ -19,15 +19,24 @@ public static class IdentitySubjectsFactoryModule
             return metadata.Continue(creds).Continue(activation).Continue(permissions)
                            .Map(() => new Subject(metadata, creds, activation, permissions));
         }
+
+        public static Result<Subject> Create(string email, string login, string password)
+        {
+            SubjectMetadataConstructionContext meta = new(login, None<Guid>());
+            SubjectCredentialsConstructionContext creds = new(email, password);
+            SubjectActivationConstructionContext status = new(None<DateTime>());
+            SubjectPermissionsConstructionContext perms = new([]);
+            return Create(new IdentitySubjectConstructionContext(meta, creds, status, perms));
+        }
         
-        public static Result<Subject> Create(IdentitySubjectConstructionContext ctx, SubjectEventsRegistry registry)
+        public static Result<Subject> Create(IdentitySubjectConstructionContext ctx, NotificationsRegistry registry)
         {
             Result<Subject> subject = Create(ctx);
             if (subject.IsFailure) return subject.Error;
             return subject.Value.With(registry);
         }
 
-        public static Subject Create(IdentitySubjectSnapshot snapshot)
+        public static Subject Create(SubjectSnapshot snapshot)
         {
             SubjectMetadata metadata = snapshot.MetadataFromSnapshot();
             SubjectCredentials credentials = snapshot.CredentialsFromSnapshot();
@@ -37,7 +46,15 @@ public static class IdentitySubjectsFactoryModule
         }
     }
 
-    extension(IdentitySubjectSnapshot snapshot)
+    extension(SubjectCredentials)
+    {
+        public static Result<SubjectCredentials> Create(SubjectCredentialsConstructionContext ctx)
+        {
+            return ctx.Construct();
+        }
+    }
+    
+    extension(SubjectSnapshot snapshot)
     {
         private SubjectMetadata MetadataFromSnapshot()
         {
@@ -55,7 +72,7 @@ public static class IdentitySubjectsFactoryModule
             return new SubjectPermissions(permissions);
         }
 
-        private IdentitySubjectPermission PermissionFromSnapshot(IdentitySubjectPermissionSnapshot permSnapshot)
+        private IdentitySubjectPermission PermissionFromSnapshot(SubjectPermissionSnapshot permSnapshot)
         {
             return new IdentitySubjectPermission(permSnapshot.Id, permSnapshot.Name);
         }
@@ -75,13 +92,13 @@ public static class IdentitySubjectsFactoryModule
     
     extension(Subject subject)
     {
-        public Subject With(SubjectEventsRegistry registry)
+        public Subject With(NotificationsRegistry registry)
         {
-            return new Subject(subject, registry);
+            return subject.AttachRegistry(registry);
         }
     }
 
-    extension(IdentitySubjectPermissionsConstructionContext ctx)
+    extension(SubjectPermissionsConstructionContext ctx)
     {
         public SubjectPermissions Empty()
         {
@@ -102,7 +119,7 @@ public static class IdentitySubjectsFactoryModule
         }
     }
     
-    extension(IdentitySubjectActivationConstructionContext ctx)
+    extension(SubjectActivationConstructionContext ctx)
     {
         private Result<SubjectActivationStatus> Create()
         {
@@ -112,7 +129,7 @@ public static class IdentitySubjectsFactoryModule
         }
     }
     
-    extension(IdentitySubjectMetadataConstructionContext ctx)
+    extension(SubjectMetadataConstructionContext ctx)
     {
         private Result<SubjectMetadata> Construct()
         {
@@ -121,7 +138,7 @@ public static class IdentitySubjectsFactoryModule
         }
     }
 
-    extension(IdentitySubjectCredentialsConstructionContext ctx)
+    extension(SubjectCredentialsConstructionContext ctx)
     {
         private Result<SubjectCredentials> Construct()
         {

@@ -1,5 +1,6 @@
 ﻿using Identity.Application.EventListeners;
 using Identity.Application.Features;
+using Identity.Application.Features.SubjectRegistration;
 using Identity.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +13,7 @@ public static class DependencyInjection
         public void AddIdentityModule()
         {
             services.AddIdentityPersistenceModule();
-            services.AddScoped<RegisterIdentitySubject>();
+            services.AddScoped<RegisterSubject>();
             services.RegisterEventListeners();
             services.RegisterEventsRegistry();
         }

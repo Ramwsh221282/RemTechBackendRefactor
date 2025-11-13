@@ -4,6 +4,14 @@ namespace RemTech.Primitives.Extensions;
 
 public static class Enumerables
 {
+    extension<T>(IEnumerable<T> enumerable)
+    {
+        public U[] Map<U>(Func<T, U> func)
+        {
+            return enumerable.ToArray().Map(func);
+        }
+    }
+    
     extension<T>(T[] array)
     {
         public U[] Map<U>(Func<T, U> func)

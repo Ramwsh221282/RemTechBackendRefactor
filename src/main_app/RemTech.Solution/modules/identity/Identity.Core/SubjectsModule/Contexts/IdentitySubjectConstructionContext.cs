@@ -1,7 +1,7 @@
 ﻿namespace Identity.Core.SubjectsModule.Contexts;
 
 public sealed record IdentitySubjectConstructionContext(
-    IdentitySubjectMetadataConstructionContext MetaCtx,
-    IdentitySubjectCredentialsConstructionContext CredCtx,
-    IdentitySubjectActivationConstructionContext ActivationCtx,
-    IdentitySubjectPermissionsConstructionContext PermissionsCtx);
+    SubjectMetadataConstructionContext MetaCtx,
+    SubjectCredentialsConstructionContext CredCtx,
+    SubjectActivationConstructionContext ActivationCtx,
+    SubjectPermissionsConstructionContext PermissionsCtx);

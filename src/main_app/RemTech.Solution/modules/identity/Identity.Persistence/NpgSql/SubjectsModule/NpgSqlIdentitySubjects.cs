@@ -6,36 +6,7 @@ using RemTech.Functional.Extensions;
 using RemTech.NpgSql.Abstractions;
 using RemTech.Primitives.Extensions;
 
-namespace Identity.Persistence.NpgSql;
-
-internal sealed record TableSubject(
-    Guid SId,
-    string SLogin,
-    string SEmail,
-    string SPassword,
-    string permissions,
-    bool SActivationDate);
-
-internal sealed record TableSubjectPermission(Guid PId, string PName);
-
-public sealed record NpgSqlIdentitySubjectCommands(
-    NpgSqlSession Session,
-    InsertSubject Insert,
-    DeleteSubject Delete,
-    UpdateSubject Update,
-    IsSubjectEmailUnique IsEmailUnique,
-    IsSubjectLoginUnique IsLoginUnique) : IDisposable, IAsyncDisposable
-{
-    public void Dispose()
-    {
-        Session.Dispose();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await Session.DisposeAsync();
-    }
-}
+namespace Identity.Persistence.NpgSql.SubjectsModule;
 
 public static class NpgSqlIdentitySubjects
 {
@@ -152,7 +123,7 @@ public static class NpgSqlIdentitySubjects
         
         private DynamicParameters TransformToParameters()
         {
-            IdentitySubjectSnapshot snapshot = subject.Snapshotted();
+            SubjectSnapshot snapshot = subject.Snapshotted();
             return NpgSqlParametersStorage.New()
                 .With("@id", snapshot.Id, DbType.Guid)
                 .With("@login", snapshot.Login, DbType.String)

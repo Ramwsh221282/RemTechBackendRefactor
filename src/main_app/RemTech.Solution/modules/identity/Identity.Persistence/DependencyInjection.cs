@@ -2,6 +2,7 @@
 using Identity.Core.SubjectsModule.Contracts;
 using Identity.Core.TicketsModule.Contracts;
 using Identity.Persistence.NpgSql;
+using Identity.Persistence.NpgSql.SubjectsModule;
 using Identity.Persistence.NpgSql.TicketsModule;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.BuildingBlocks.DependencyInjection;
@@ -21,6 +22,7 @@ public static class DependencyInjection
             services.AddKeyedSingleton<IDbUpgrader, IdentityDbUpgrader>(nameof(Identity));
             services.AddSubjectPersistenceDependencies();
             services.AddTicketsPersistenceDependencies();
+            services.AddScoped<NpgSqlIdentityCommands>();
         }
         
         private void AddSubjectPersistenceDependencies()
@@ -30,7 +32,7 @@ public static class DependencyInjection
             services.AddScopedDelegate<UpdateSubject>(Assembly);
             services.AddScopedDelegate<IsSubjectEmailUnique>(Assembly);
             services.AddScopedDelegate<IsSubjectLoginUnique>(Assembly);
-            services.AddScoped<NpgSqlIdentitySubjectCommands>();
+            services.AddScoped<NpgSqlSubjectCommands>();
         }
         
         private void AddTicketsPersistenceDependencies()
@@ -39,7 +41,7 @@ public static class DependencyInjection
             services.AddScopedDelegate<DeleteTicket>(Assembly);
             services.AddScopedDelegate<UpdateTicket>(Assembly);
             services.AddScopedDelegate<GetTicket>(Assembly);
-            services.AddScoped<NpgSqlTicketsCommands>();
+            services.AddScoped<NpgSqlTicketCommands>();
         }
     }
 

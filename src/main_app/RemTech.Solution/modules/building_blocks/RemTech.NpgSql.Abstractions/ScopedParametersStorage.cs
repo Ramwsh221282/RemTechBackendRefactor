@@ -119,6 +119,14 @@ public static class NpgSqlParametersModule
             return new NpgSqlParametersStorage();
         }
     }
+
+    extension<T>(ScopedParametersStorage<T>)
+    {
+        public static ScopedParametersStorage<T> New(T value)
+        {
+            return new ScopedParametersStorage<T>(value);
+        }
+    }
     
     extension(NpgSqlParametersStorage parametersStorage)
     {
