@@ -6,6 +6,7 @@ using Identity.Core.SubjectsModule.Domain.Subjects;
 using Identity.Core.SubjectsModule.Translations;
 using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.Functional.Extensions;
+using RemTech.NpgSql.Abstractions;
 
 namespace Identity.Persistence.Features;
 
@@ -39,6 +40,22 @@ public static class AddSubjectPermissionPersistingUseCase
         Result<Unit> permissionInserting = await subjects.InsertPermission(result, subjectPermission, ct);
         return permissionInserting.IsFailure ? permissionInserting.Error : result;
     };
+
+    internal static AddSubjectPermission AddSubjectPermissionTransactional
+        (NpgSqlSession session, AddSubjectPermission origin) => async args =>
+    {
+        CancellationToken ct = args.Ct;
+        await session.GetTransaction(ct);
+        Result<Subject> result = await origin(args);
+        
+        if (result.IsFailure) 
+            return result.Error;
+        
+        if (!await session.Commited(ct))
+            return Error.Application("Не удается зафиксировать изменения.");
+
+        return result.Value;
+    };
     
     extension(AddSubjectPermission origin)
     {
@@ -47,6 +64,12 @@ public static class AddSubjectPermissionPersistingUseCase
             SubjectsStorage subjects = sp.Resolve<SubjectsStorage>();
             PermissionsStorage permissions = sp.Resolve<PermissionsStorage>();
             return AddSubjectPermission(origin, subjects, permissions);
+        }
+
+        public AddSubjectPermission WithTransaction(IServiceProvider sp)
+        {
+            NpgSqlSession session = sp.Resolve<NpgSqlSession>();
+            return AddSubjectPermissionTransactional(session, origin);
         }
     }
 }

@@ -55,8 +55,8 @@ public sealed class IdentityPersistenceTestsFixture : IAsyncLifetime
         services.AddScoped<AddSubjectPermission>(sp =>
         {
             AddSubjectPermission origin = SubjectUseCases.AddSubjectPermission();
-            AddSubjectPermission withPersistence = origin.WithPersisting(sp);
-            return withPersistence;
+            AddSubjectPermission decorated = origin.WithPersisting(sp).WithTransaction(sp);
+            return decorated;
         });
         
         return services.BuildServiceProvider();
