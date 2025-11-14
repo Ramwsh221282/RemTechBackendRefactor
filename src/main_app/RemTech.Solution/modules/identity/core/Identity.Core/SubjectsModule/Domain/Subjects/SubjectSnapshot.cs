@@ -1,4 +1,5 @@
 ﻿using Identity.Core.SubjectsModule.Domain.Permissions;
+using Identity.Core.SubjectsModule.Domain.Tickets;
 
 namespace Identity.Core.SubjectsModule.Domain.Subjects;
 
@@ -8,4 +9,5 @@ public sealed record SubjectSnapshot(
     string Login,
     string Password,
     DateTime? ActivationDate,
-    SubjectPermissionSnapshot[] Permissions);
+    SubjectPermissionSnapshot[] Permissions,
+    SubjectTicketSnapshot[] Tickets);

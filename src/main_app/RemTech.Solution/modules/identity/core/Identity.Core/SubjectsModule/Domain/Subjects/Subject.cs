@@ -11,12 +11,12 @@ namespace Identity.Core.SubjectsModule.Domain.Subjects;
 
 public sealed record Subject
 {
-    internal SubjectMetadata Metadata { get; init; }
-    internal SubjectCredentials Credentials { get; init; }
-    internal SubjectActivationStatus Activation { get; init; }
-    internal SubjectPermissions Permissions { get; init; }
-    internal SubjectTickets Tickets { get; init; }
-    internal Optional<NotificationsRegistry> Registry { get; init; }
+    private SubjectMetadata Metadata { get; init; }
+    private SubjectCredentials Credentials { get; init; }
+    private SubjectActivationStatus Activation { get; init; }
+    private SubjectPermissions Permissions { get; init; }
+    private SubjectTicketsDictionary Tickets { get; init; }
+    private Optional<NotificationsRegistry> Registry { get; init; }
 
     public Result<Subject> Activated()
     {
@@ -66,6 +66,30 @@ public sealed record Subject
         return withPermission;
     }
 
+    public Result<SubjectTicket> FormTicket(string type)
+    {
+        
+        SubjectTicket ticket = SubjectTicket.Create(type);
+        if (Tickets.Contains(ticket))
+            return Conflict($"Учетная запись уже содержит такую заявку.");
+        SubjectTicket signed = Metadata.Sign(ticket);
+        Registry.ExecuteOnValue(r => r.Record(signed.Raise()));
+        return signed;
+    }
+
+    public bool HasTicket(SubjectTicket ticket)
+    {
+        return Tickets.Contains(ticket);
+    }
+    
+    public Result<SubjectTicket> DropTicket(SubjectTicket ticket)
+    {
+        if (!Tickets.Contains(ticket))
+            return Conflict("Заявка у учетной записи не найдена.");
+        Tickets.Remove(ticket);
+        return ticket;
+    }
+    
     public Result<Subject> RemovePermission(SubjectPermission permission)
     {
         Result<SubjectPermissions> @new = Permissions.Remove(permission);
@@ -99,6 +123,11 @@ public sealed record Subject
         return this with { Registry = Some(registry) };
     }
     
+    public Subject BindRegistry(Optional<NotificationsRegistry> registry)
+    {
+        return this with { Registry = registry };
+    }
+    
     public SubjectSnapshot Snapshot()
     {
         return new SubjectSnapshot(
@@ -107,7 +136,8 @@ public sealed record Subject
             Metadata.Login,
             Credentials.Password,
             Activation.ActivationDate.HasValue ? Activation.ActivationDate.Value : null,
-            Permissions.Snapshotted());
+            Permissions.Snapshotted(),
+            Tickets.Snapshot());
     }
     
     private bool AccountActivated()
@@ -117,22 +147,27 @@ public sealed record Subject
 
     private bool AccountNotActivated() => !AccountActivated();
 
-    private Subject WithUpdatedTickets(SubjectTickets tickets)
+    private Subject WithUpdatedTickets(SubjectTicketsDictionary ticketsDictionary)
     {
-        return this with { Tickets = tickets };
+        return this with { Tickets = ticketsDictionary };
     }
 
     private Subject WithChangedPermissions(SubjectPermissions permissions)
     {
         return this with { Permissions = permissions };
     }
-
+    
+    public SubjectPermission Sign(SubjectPermission permission)
+    {
+        return Metadata.Sign(permission);
+    }
+    
     internal Subject(
         SubjectMetadata metadata,
         SubjectCredentials credentials,
         SubjectActivationStatus status,
         SubjectPermissions permissions,
-        SubjectTickets tickets)
+        SubjectTicketsDictionary tickets)
     {
         Metadata = metadata;
         Credentials = credentials;
@@ -147,7 +182,7 @@ public sealed record Subject
         SubjectCredentials credentials,
         SubjectActivationStatus status,
         SubjectPermissions permissions,
-        SubjectTickets tickets,
+        SubjectTicketsDictionary tickets,
         NotificationsRegistry registry)
     {
         Metadata = metadata;

@@ -1,6 +1,7 @@
 ﻿using Identity.Core.PermissionsModule.Events;
+using Identity.Core.SubjectsModule.Domain.Permissions;
+using Identity.Core.SubjectsModule.Domain.Subjects;
 using Identity.Core.SubjectsModule.Notifications.Abstractions;
-using RemTech.Functional.Extensions;
 
 namespace Identity.Core.PermissionsModule;
 
@@ -23,6 +24,11 @@ public sealed record Permission
         return this with { Registry = Some(registry) };
     }
 
+    public SubjectPermission ToSubjectPermission()
+    {
+        return new SubjectPermission(Id, Name);
+    }
+    
     public Result<Permission> Rename(string otherName)
     {
         Result<Permission> renamed = Permission.Create(otherName, Id);

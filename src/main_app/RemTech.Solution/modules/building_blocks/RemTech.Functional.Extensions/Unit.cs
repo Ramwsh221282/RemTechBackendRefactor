@@ -1,11 +1,12 @@
 ﻿namespace RemTech.Functional.Extensions;
 
-public sealed class Unit
+public sealed record Unit
 {
     public static Unit Value { get; } = new();
 
-    internal Unit()
+    public Unit()
     {
+        
     }
 
     public static Unit<T> UnitOf<T>(T value)
@@ -14,13 +15,13 @@ public sealed class Unit
     }
 }
 
-public sealed class Unit<T>
+public sealed record Unit<T>
 {
     private readonly T _value;
 
     internal Unit(T value)
     {
-        _value = _value;
+        _value = value;
     }
 
     public async Task<Result<Unit>> Executed(Func<T, Task> operation)

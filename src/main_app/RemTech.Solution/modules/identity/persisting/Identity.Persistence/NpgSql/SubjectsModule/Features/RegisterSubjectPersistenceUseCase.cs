@@ -2,7 +2,7 @@
 using Identity.Core.SubjectsModule.Domain.Subjects;
 using RemTech.Functional.Extensions;
 
-namespace Identity.Persistence.Features;
+namespace Identity.Persistence.NpgSql.SubjectsModule.Features;
 
 public static class RegisterSubjectPersistenceUseCase
 {

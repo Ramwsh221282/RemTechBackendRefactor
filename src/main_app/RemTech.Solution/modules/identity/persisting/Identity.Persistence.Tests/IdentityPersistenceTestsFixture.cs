@@ -2,8 +2,10 @@
 using Identity.Core.PermissionsModule.Contracts;
 using Identity.Core.SubjectsModule.Contracts;
 using Identity.Core.SubjectsModule.Domain.Subjects;
-using Identity.Persistence.Features;
-using Identity.UseCases;
+using Identity.Core.SubjectsModule.Domain.Tickets;
+using Identity.Core.SubjectsModule.Notifications.Abstractions;
+using Identity.Persistence.EventListeners;
+using Identity.Persistence.NpgSql.SubjectsModule.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -43,7 +45,7 @@ public sealed class IdentityPersistenceTestsFixture : IAsyncLifetime
         
         services.AddScoped<RegisterSubject>(sp =>
         {
-            RegisterSubject origin = RegisterSubjectUseCase.RegisterSubject();
+            RegisterSubject origin = SubjectUseCases.RegisterSubject;
             RegisterSubject withPersistence = origin.WithPersistence(sp.Resolve<SubjectsStorage>());
             return withPersistence;
         });
@@ -57,7 +59,7 @@ public sealed class IdentityPersistenceTestsFixture : IAsyncLifetime
 
         services.AddScoped<AddSubjectPermission>(sp =>
         {
-            AddSubjectPermission origin = SubjectUseCases.AddSubjectPermission();
+            AddSubjectPermission origin = SubjectUseCases.AddSubjectPermission;
             AddSubjectPermission decorated = origin.WithPersisting(sp).WithTransaction(sp);
             return decorated;
         });
@@ -74,6 +76,16 @@ public sealed class IdentityPersistenceTestsFixture : IAsyncLifetime
             ChangePassword origin = SubjectUseCases.ChangePassword;
             ChangePassword decorated = origin.WithPersisting(sp);
             return decorated;
+        });
+
+        services.AddScoped<RequireActivationTicket>(sp =>
+        {
+            NotificationsRegistry registry = new();
+            RequireActivationTicket core = SubjectUseCases.RequireActivationTicket;
+            RequireActivationTicket persisted = core.WithPersistence(sp, Optional.Some(registry));
+            RequireActivationTicket ticketReacted = persisted.WithTicketsListening(sp, registry);
+            RequireActivationTicket transactional = ticketReacted.WithTransaction(sp);
+            return transactional;
         });
         
         return services.BuildServiceProvider();
@@ -131,6 +143,14 @@ public sealed class IdentityPersistenceTestsFixture : IAsyncLifetime
         SubjectsStorage storage = scope.Resolve<SubjectsStorage>();
         await subject.UpdateIn(storage, CancellationToken.None);
         return subject;
+    }
+
+    public async Task<Result<SubjectTicket>> RequireActivationTicket(Guid subjectId)
+    {
+        RequireActivationTicketArgs args = new(subjectId, Optional.None<Subject>(), Optional<NotificationsRegistry>.None(), CancellationToken.None);
+        await using AsyncServiceScope scope = Scope();
+        RequireActivationTicket useCase = scope.Resolve<RequireActivationTicket>();
+        return await useCase(args);
     }
     
     public async Task<Result<Subject>> AddSubjectPermission(Guid subjectId, Guid permissionId)

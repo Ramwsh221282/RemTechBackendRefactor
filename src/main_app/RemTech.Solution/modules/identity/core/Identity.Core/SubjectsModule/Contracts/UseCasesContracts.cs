@@ -1,7 +1,8 @@
 ﻿using Identity.Core.PermissionsModule;
 using Identity.Core.SubjectsModule.Domain.Permissions;
 using Identity.Core.SubjectsModule.Domain.Subjects;
-using Identity.Core.SubjectsModule.Translations;
+using Identity.Core.SubjectsModule.Domain.Tickets;
+using Identity.Core.SubjectsModule.Notifications.Abstractions;
 
 namespace Identity.Core.SubjectsModule.Contracts;
 
@@ -22,9 +23,23 @@ public delegate Task<Result<Subject>> ChangeEmail(ChangeEmailArgs args);
 public sealed record ChangePasswordArgs(Guid Id, string NextPassword, Optional<Subject> Target, CancellationToken Ct);
 public delegate Task<Result<Subject>> ChangePassword(ChangePasswordArgs args);
 
+public sealed record RequireActivationTicketArgs(Guid SubjectId, Optional<Subject> Target, Optional<NotificationsRegistry> Registry, CancellationToken Ct);
+public delegate Task<Result<SubjectTicket>> RequireActivationTicket(RequireActivationTicketArgs args);
+
 public static class SubjectUseCases
 {
-    public static AddSubjectPermission AddSubjectPermission() => (args) =>
+    public static RequireActivationTicket RequireActivationTicket => args =>
+    {
+        if (args.Target.NoValue) 
+            return Task.FromResult<Result<SubjectTicket>>(NotFound("Учетная запись не найдена."));
+        Subject subject = args.Target.Value.BindRegistry(args.Registry);
+        Result<SubjectTicket> ticket = subject.FormTicket("user.account.activation");
+        return ticket.IsFailure 
+            ? Task.FromResult<Result<SubjectTicket>>(ticket.Error) 
+            : Task.FromResult(ticket);
+    };
+    
+    public static AddSubjectPermission AddSubjectPermission => args =>
     {
         if (args.TargetSubject.NoValue) 
             return Task.FromResult<Result<Subject>>(NotFound("Учетная запись не найдена."));
@@ -35,7 +50,7 @@ public static class SubjectUseCases
         Permission permission = args.TargetPermission.Value;
         Subject subject = args.TargetSubject.Value;
         
-        SubjectPermission subjectPermission = BoundedContextConverter.PermissionToSubjectPermission(permission);
+        SubjectPermission subjectPermission = permission.ToSubjectPermission();
         Result<Subject> withPermission = subject.AddPermission(subjectPermission);
         
         return withPermission.IsFailure 
@@ -70,7 +85,7 @@ public static class SubjectUseCases
             : Task.FromResult(withOtherPassword);
     };
     
-    public static RegisterSubject RegisterSubject() => args =>
+    public static RegisterSubject RegisterSubject => args =>
     {
         string email = args.Email;
         string login = args.Login;

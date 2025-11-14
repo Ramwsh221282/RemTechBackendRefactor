@@ -1,19 +1,15 @@
-﻿using System.Reflection;
-using Identity.Core.SubjectsModule.Contracts;
-using Identity.Core.TicketsModule.Contracts;
+﻿using Identity.Persistence.NpgSql;
 using Identity.Persistence.NpgSql.PermissionsModule;
 using Identity.Persistence.NpgSql.SubjectsModule;
+using Identity.Persistence.NpgSql.SubjectsModule.SubjectTickets;
 using Identity.Persistence.NpgSql.TicketsModule;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.NpgSql.Abstractions;
 
 namespace Identity.Persistence;
 
 public static class DependencyInjection
 {
-    private static readonly Assembly Assembly = typeof(NpgSqlIdentitySubjects).Assembly;
-    
     extension(IServiceCollection services)
     {
         public void AddIdentityPersistenceModule()
@@ -21,17 +17,9 @@ public static class DependencyInjection
             services.AddPostgres();
             services.AddKeyedSingleton<IDbUpgrader, IdentityDbUpgrader>(nameof(Identity));
             services.AddSubjectsStorage();
-            services.AddTicketsPersistenceDependencies();
+            services.AddSubjectTicketsPersistence();
+            services.AddTicketsPersistence();
             services.AddPermissionsStorage();
-        }
-        
-        private void AddTicketsPersistenceDependencies()
-        {
-            services.AddScopedDelegate<InsertTicket>(Assembly);
-            services.AddScopedDelegate<DeleteTicket>(Assembly);
-            services.AddScopedDelegate<UpdateTicket>(Assembly);
-            services.AddScopedDelegate<GetTicket>(Assembly);
-            services.AddScoped<NpgSqlTicketCommands>();
         }
     }
 

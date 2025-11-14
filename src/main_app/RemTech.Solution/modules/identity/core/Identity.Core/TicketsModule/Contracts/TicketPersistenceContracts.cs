@@ -1,6 +1,4 @@
-﻿using RemTech.Functional.Extensions;
-
-namespace Identity.Core.TicketsModule.Contracts;
+﻿namespace Identity.Core.TicketsModule.Contracts;
 
 public sealed record QueryTicketArgs(
     Guid? TicketId = null, 
@@ -8,7 +6,13 @@ public sealed record QueryTicketArgs(
     string? Type = null,
     bool WithLock = false);
 
-public delegate Task<Result<Unit>> InsertTicket(Ticket ticket, CancellationToken ct);
-public delegate Task<Result<Unit>> DeleteTicket(Ticket ticket, CancellationToken ct);
-public delegate Task<Result<Unit>> UpdateTicket(Ticket ticket, CancellationToken ct);
-public delegate Task<Optional<Ticket>> GetTicket(QueryTicketArgs args, CancellationToken ct);
+public sealed record TicketsStorage(
+    Insert Insert, 
+    Delete Delete, 
+    Update Update, 
+    Find Find);
+
+public delegate Task<Result<Unit>> Insert(Ticket ticket, CancellationToken ct);
+public delegate Task<Result<Unit>> Delete(Ticket ticket, CancellationToken ct);
+public delegate Task<Result<Unit>> Update(Ticket ticket, CancellationToken ct);
+public delegate Task<Optional<Ticket>> Find(QueryTicketArgs args, CancellationToken ct);

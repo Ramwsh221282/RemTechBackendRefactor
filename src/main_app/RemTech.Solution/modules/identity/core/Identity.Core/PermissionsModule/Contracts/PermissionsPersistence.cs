@@ -1,6 +1,4 @@
-﻿using RemTech.Functional.Extensions;
-
-namespace Identity.Core.PermissionsModule.Contracts;
+﻿namespace Identity.Core.PermissionsModule.Contracts;
 
 public sealed record PermissionsQueryArgs(
     Guid? Id = null, 

@@ -3,7 +3,7 @@ using Identity.Core.PermissionsModule.Contracts;
 using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.Functional.Extensions;
 
-namespace Identity.Persistence.Features;
+namespace Identity.Persistence.NpgSql.SubjectsModule.Features;
 
 public static class RegisterPermissionPersistingUseCase
 {

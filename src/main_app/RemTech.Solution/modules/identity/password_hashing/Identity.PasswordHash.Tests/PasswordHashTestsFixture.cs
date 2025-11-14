@@ -1,5 +1,4 @@
 ﻿using Identity.Core.SubjectsModule.Contracts;
-using Identity.UseCases;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.BuildingBlocks.DependencyInjection;
 
@@ -25,7 +24,7 @@ public sealed class PasswordHashTestsFixture
         services.AddIdentityPasswordHashing();
         services.AddScoped<RegisterSubject>(sp =>
         {
-            RegisterSubject origin = RegisterSubjectUseCase.RegisterSubject();
+            RegisterSubject origin = SubjectUseCases.RegisterSubject;
             HashPassword hash = sp.Resolve<HashPassword>();
             return origin.WithPasswordHashing(hash);
         });

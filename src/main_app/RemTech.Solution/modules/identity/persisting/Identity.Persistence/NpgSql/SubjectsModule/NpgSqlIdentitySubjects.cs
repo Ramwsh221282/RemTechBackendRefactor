@@ -8,11 +8,13 @@ using Identity.Core.SubjectsModule.Domain.Credentials;
 using Identity.Core.SubjectsModule.Domain.Metadata;
 using Identity.Core.SubjectsModule.Domain.Permissions;
 using Identity.Core.SubjectsModule.Domain.Subjects;
+using Identity.Core.SubjectsModule.Domain.Tickets;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.Functional.Extensions;
 using RemTech.NpgSql.Abstractions;
 using RemTech.Primitives.Extensions;
+using Insert = Identity.Core.SubjectsModule.Contracts.Insert;
 
 namespace Identity.Persistence.NpgSql.SubjectsModule;
 
@@ -87,34 +89,6 @@ public static class NpgSqlIdentitySubjects
             return !exists;
         };
     }
-    
-    public static Find Find(NpgSqlSession session) => async (args, ct) =>
-    {
-        string whereClause = args.WhereClause();
-        if (string.IsNullOrWhiteSpace(whereClause)) return Optional.None<Subject>();
-        string lockClause = args.LockClauseWithAlias("s");
-            
-        string sql =
-            $"""
-             SELECT
-                 s.id as s_id,
-                 s.email as s_email,
-                 s.login as s_login,
-                 s.password as s_password,
-                 s.activation_date as s_activation_date,
-                 (SELECT COALESCE((SELECT jsonb_build_array(jsonb_build_object(
-                     'id', p.id,
-                     'name', p.name)) FROM identity_module.permissions p WHERE p.id = sp.permission_id), '[]'::jsonb)) as s_permissions_json_array
-             FROM identity_module.subjects s
-             LEFT JOIN identity_module.subject_permissions sp ON sp.subject_id = s.id
-             {whereClause}
-             {lockClause}
-             """;
-            
-        CommandDefinition command = args.TransformToCommand(sql, session, ct);
-        TableSubject? subject = await session.QueryMaybeRow<TableSubject>(command);
-        return subject.MaybeToIdentitySubject();
-    };
 
     public static InsertPermission InsertPermission(NpgSqlSession session) => async (subject, permission, ct) =>
     {
@@ -142,6 +116,39 @@ public static class NpgSqlIdentitySubjects
         return Unit.Value;
     };
     
+    public static Find Find(NpgSqlSession session) => async (args, ct) =>
+    {
+        string whereClause = args.WhereClause();
+        if (string.IsNullOrWhiteSpace(whereClause)) return Optional.None<Subject>();
+        string lockClause = args.LockClauseWithAlias("s");
+            
+        string sql =
+            $"""
+             SELECT
+                 s.id as s_id,
+                 s.email as s_email,
+                 s.login as s_login,
+                 s.password as s_password,
+                 s.activation_date as s_activation_date,
+                 (SELECT COALESCE((SELECT jsonb_build_array(jsonb_build_object(
+                     'id', p.id,
+                     'name', p.name)) FROM identity_module.permissions p WHERE p.id = sp.permission_id), '[]'::jsonb)) as s_permissions_json_array,
+                 (SELECT COALESCE((SELECT jsonb_build_array(jsonb_build_object(
+                     'id', t.id,
+                     'creator_id', t.creator_id,
+                     'type', t.type,
+                     'active', t.active)) FROM identity_module.subject_tickets t where t.creator_id = s.id), '[]'::jsonb)) as s_tickets_json_array
+             FROM identity_module.subjects s
+             LEFT JOIN identity_module.subject_permissions sp ON sp.subject_id = s.id
+             {whereClause}
+             {lockClause}
+             """;
+            
+        CommandDefinition command = args.TransformToCommand(sql, session, ct);
+        TableSubject? subject = await session.QueryMaybeRow<TableSubject>(command);
+        return subject.MaybeToIdentitySubject();
+    };
+    
     public static FindMany FindMany(NpgSqlSession session) => async (args, ct) =>
     {
         string whereClause = args.WhereClause();
@@ -157,13 +164,18 @@ public static class NpgSqlIdentitySubjects
                  s.activation_date as s_activation_date,
                  (SELECT COALESCE((SELECT jsonb_build_array(jsonb_build_object(
                      'id', p.id,
-                     'name', p.name)) FROM identity_module.permissions p), '[]'::jsonb)) as s_permissions_json_array
+                     'name', p.name)) FROM identity_module.permissions p WHERE p.id = sp.permission_id), '[]'::jsonb)) as s_permissions_json_array,
+                 (SELECT COALESCE((SELECT jsonb_build_array(jsonb_build_object(
+                     'id', t.id,
+                     'creator_id', t.creator_id,
+                     'type', t.type,
+                     'active', t.active)) FROM identity_module.subject_tickets t where t.creator_id = s.id), '[]'::jsonb)) as s_tickets_json_array
              FROM identity_module.subjects s
              LEFT JOIN identity_module.subject_permissions sp ON sp.subject_id = s.id
              {whereClause}
              {lockClause}
              """;
-            
+        
         CommandDefinition command = args.TransformToCommand(sql, session, ct);
         IEnumerable<TableSubject> subjects = await session.QueryMultipleRows<TableSubject>(command);
         return subjects.ToIdentitySubjects();
@@ -186,7 +198,38 @@ public static class NpgSqlIdentitySubjects
             SubjectCredentials credentials = SubjectCredentials.Create(subject.SEmail, subject.SPassword);
             SubjectActivationStatus activation = SubjectActivationStatus.Create(subject.SActivationDate);
             SubjectPermissions permissions = SubjectPermissions.Create(subject.GetPermissionsFromJsonArray());
-            return Subject.Create(metadata, credentials, activation, permissions);
+            SubjectTicketsDictionary dictionary = subject.GetDictionary();
+            return Subject.Create(metadata, credentials, activation, permissions, dictionary);
+        }
+
+        internal SubjectTicketsDictionary GetDictionary()
+        {
+            string array = subject.STicketsJsonArray;
+            using JsonDocument document = JsonDocument.Parse(array);
+            int length = document.RootElement.GetArrayLength();
+            SubjectTicket[] tickets = new SubjectTicket[length];
+            int index = 0;
+            
+            foreach (JsonElement element in document.RootElement.EnumerateArray())
+            {
+                SubjectTicketSnapshot snapshot = subject.FromJson(element);
+                tickets[index] = SubjectTicket.Create(snapshot);
+                index++;
+            }
+
+            return new SubjectTicketsDictionary(tickets);
+        }
+
+        internal SubjectTicketSnapshot FromJson(JsonElement json)
+        {
+            Guid id = json.GetProperty("id").GetGuid();
+            Guid creatorId = json.GetProperty("creator_id").GetGuid();
+            string? type = json.GetProperty("type").GetString();
+            bool active =  json.GetProperty("active").GetBoolean();
+            if (string.IsNullOrWhiteSpace(type))
+                throw new InvalidOperationException(
+                    $"{nameof(NpgSqlIdentitySubjects)} Invalid ticket type jsonb property in database mapping function.");
+            return new SubjectTicketSnapshot(Optional.Some(creatorId), id, type, active);
         }
         
         internal SubjectPermission[] GetPermissionsFromJsonArray()

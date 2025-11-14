@@ -3,12 +3,11 @@ using Identity.Core.PermissionsModule.Contracts;
 using Identity.Core.SubjectsModule.Contracts;
 using Identity.Core.SubjectsModule.Domain.Permissions;
 using Identity.Core.SubjectsModule.Domain.Subjects;
-using Identity.Core.SubjectsModule.Translations;
 using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.Functional.Extensions;
 using RemTech.NpgSql.Abstractions;
 
-namespace Identity.Persistence.Features;
+namespace Identity.Persistence.NpgSql.SubjectsModule.Features;
 
 public static class AddSubjectPermissionPersistingUseCase
 {
@@ -36,7 +35,7 @@ public static class AddSubjectPermissionPersistingUseCase
         Result<Subject> result = await origin(withEntities);
         if (result.IsFailure) return result.Error;
 
-        SubjectPermission subjectPermission = BoundedContextConverter.PermissionToSubjectPermission(permission.Value);
+        SubjectPermission subjectPermission = permission.Value.ToSubjectPermission();
         Result<Unit> permissionInserting = await subjects.InsertPermission(result, subjectPermission, ct);
         return permissionInserting.IsFailure ? permissionInserting.Error : result;
     };
@@ -47,7 +46,6 @@ public static class AddSubjectPermissionPersistingUseCase
         CancellationToken ct = args.Ct;
         await session.GetTransaction(ct);
         Result<Subject> result = await origin(args);
-        
         if (result.IsFailure) 
             return result.Error;
         

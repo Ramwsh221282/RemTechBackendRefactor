@@ -1,11 +1,10 @@
-﻿CREATE TABLE IF NOT EXISTS identity_module.tickets
+﻿CREATE TABLE IF NOT EXISTS identity_module.subject_tickets
 (
   id UUID PRIMARY KEY,
-  creator_id UUID,
-  type VARCHAR(128) not null,
-  created timestamp not null,
-  closed timestamptz,
+  creator_id UUID NOT NULL,
+  type VARCHAR(128) not null,  
   active boolean,
+  UNIQUE (creator_id, type),
   CONSTRAINT fk_subjects
     FOREIGN KEY (creator_id) REFERENCES identity_module.subjects(id)
         ON DELETE CASCADE ON UPDATE CASCADE

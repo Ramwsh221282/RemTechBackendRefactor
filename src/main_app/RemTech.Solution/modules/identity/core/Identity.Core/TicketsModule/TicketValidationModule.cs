@@ -1,7 +1,4 @@
-﻿using RemTech.Functional.Extensions;
-using RemTech.Primitives.Extensions;
-
-namespace Identity.Core.TicketsModule;
+﻿namespace Identity.Core.TicketsModule;
 
 public static class TicketValidationModule
 {
@@ -15,7 +12,7 @@ public static class TicketValidationModule
             string type = ticket.Type;
             if (Guids.Empty(id)) return Validation("Идентификатор заявки пустой.");
             if (Strings.EmptyOrWhiteSpace(type)) return Validation("Тип заявки пустой.");
-            if (Strings.GreaterThan(type, 128)) return Validation("Тип заявки невалиден.");
+            if (Strings.GreaterThan(type, MaxTypeLength)) return Validation("Тип заявки невалиден.");
             return ticket;
         }
     }

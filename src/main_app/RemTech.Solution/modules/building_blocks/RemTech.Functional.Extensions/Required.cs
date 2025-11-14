@@ -32,6 +32,16 @@ public sealed class Required<T>
         Satisfied = false;
     }
 
+    public Optional<U> MapOptional<U>(Func<T, U> func)
+    {
+        return Satisfied ? Optional.Some(func(Value)) : Optional.None<U>(); 
+    }
+    
+    public U Map<U>(Func<T, U> func)
+    {
+        return func(Value);
+    }
+    
     public Result<U> Map<U>(Func<T, U> mapFn, Error error)
     {
         return Satisfied ? mapFn(Value) : error;

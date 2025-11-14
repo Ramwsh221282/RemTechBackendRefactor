@@ -1,26 +1,19 @@
-﻿using RemTech.Functional.Extensions;
-
-namespace Identity.Core.SubjectsModule.Notifications.Abstractions;
+﻿namespace Identity.Core.SubjectsModule.Notifications.Abstractions;
 
 public sealed class NotificationsRegistry
 {
     private readonly Dictionary<Type, List<object>> _subscriptions = [];
     private readonly Queue<AsyncResultFn> _queues = [];
     
-    public NotificationsRegistry AddNotificationHandlers<TEvent>(IEnumerable<AsyncNotificationHandle<TEvent>> fns) 
+    public void AddNotificationHandlers<TEvent>(IEnumerable<AsyncNotificationHandle<TEvent>> fns) 
         where TEvent : Notification
     {
         NotificationsRegistry registry = this;
-        
         foreach (AsyncNotificationHandle<TEvent> fn in fns)
-        {
-            registry = registry.AddNotificationHandler(fn);
-        }
-
-        return registry;
+            registry.AddNotificationHandler(fn);
     }
     
-    public NotificationsRegistry AddNotificationHandler<TEvent>(AsyncNotificationHandle<TEvent> handler) 
+    public void AddNotificationHandler<TEvent>(AsyncNotificationHandle<TEvent> handler) 
         where TEvent : Notification
     {
         Type eventType = typeof(TEvent);
@@ -31,7 +24,6 @@ public sealed class NotificationsRegistry
         }
         
         handlers.Add(handler);
-        return this;
     }
 
     public void Record<TEvent>(TEvent notification) 
@@ -42,7 +34,7 @@ public sealed class NotificationsRegistry
             return;
 
         foreach (AsyncNotificationHandle<TEvent> handler in handlers.Cast<AsyncNotificationHandle<TEvent>>())
-            _queues.Enqueue(async (ct) => await handler(notification, ct));
+            _queues.Enqueue(async ct => await handler(notification, ct));
     }
 
     public async Task<Result<Unit>> ProcessNotifications(CancellationToken ct = default)

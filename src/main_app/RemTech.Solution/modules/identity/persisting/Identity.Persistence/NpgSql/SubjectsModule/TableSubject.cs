@@ -8,6 +8,7 @@ internal sealed class TableSubject
     public required string SPassword { get; internal init; }
     public required DateTime? SActivationDate { get; internal init; }
     public required string SPermissionsJsonArray { get; internal init; }
+    public required string STicketsJsonArray { get; internal init; }
 
     private TableSubject()
     {

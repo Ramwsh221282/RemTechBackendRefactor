@@ -4,7 +4,7 @@ using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.Functional.Extensions;
 using RemTech.NpgSql.Abstractions;
 
-namespace Identity.Persistence.Features;
+namespace Identity.Persistence.NpgSql.SubjectsModule.Features;
 
 public static class ChangePasswordPersistingUseCase
 {

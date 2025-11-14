@@ -20,7 +20,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\building_blocks\RemTech.Tests.Shared\RemTech.Tests.Shared.csproj" />
-      <ProjectReference Include="..\..\use_cases\Identity.UseCases\Identity.UseCases.csproj" />
       <ProjectReference Include="..\Identity.Persistence\Identity.Persistence.csproj" />
     </ItemGroup>
 
