@@ -19,6 +19,13 @@ public sealed record NpgSqlSession(NpgSqlConnectionFactory Factory) : IAsyncDisp
         return Transaction;
     }
 
+    public async Task<int> WithAffectedCallback(CommandDefinition command, CancellationToken ct)
+    {
+        NpgsqlConnection connection = await GetConnection(ct);
+        int result = await connection.ExecuteAsync(command);
+        return result;
+    }
+
     public async Task Execute(CommandDefinition command)
     {
         NpgsqlConnection connection = await GetConnection(CancellationToken.None);

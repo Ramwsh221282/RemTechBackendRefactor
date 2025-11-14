@@ -5,13 +5,11 @@ public delegate Task<Result<Permission>> RegisterPermission(RegisterPermissionAr
 
 public static class PermissionUseCases
 {
-    internal static RegisterPermission RegisterPermission() =>
+    public static RegisterPermission DefaultRegisterPermission =>
         args =>
         {
             string name = args.Name;
             Result<Permission> permission = Permission.Create(name);
             return Task.FromResult(permission);
         };
-
-    public static RegisterPermission DefaultRegisterPermission => RegisterPermission();
 }

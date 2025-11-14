@@ -8,14 +8,6 @@ public sealed record SubjectCredentials(string Email, string Password)
     {
         return SubjectCredentials.Create(Email, other);
     }
-    
-    public Result<SubjectCredentials> WithOtherPassword(string other, HashPassword hash)
-    {
-        Result<SubjectCredentials> withOther = WithOtherPassword(other);
-        if (withOther.IsFailure) return withOther.Error;
-        string hashed = hash(withOther.Value.Password);
-        return this with { Password = hashed };
-    }
 
     public Result<SubjectCredentials> WithOtherEmail(string other)
     {

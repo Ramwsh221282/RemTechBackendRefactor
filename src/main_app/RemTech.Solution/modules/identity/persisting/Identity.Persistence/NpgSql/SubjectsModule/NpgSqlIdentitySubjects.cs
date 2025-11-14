@@ -45,15 +45,18 @@ public static class NpgSqlIdentitySubjects
                 )));
 
     public static Update UpdateSubject(NpgSqlSession session) => async (subject, ct) =>
-        await Unit.UnitOf(session).Executed(async s =>
-            await s.Execute(subject.ToQuery(
-                $"""
-                UPDATE identity_module.subjects {subject.UpdateClause()}
-                WHERE id = @id
-                """,
-                session, 
-                ct
-            )));
+    {
+        string updateClause = subject.UpdateClause();
+        string sql =
+            $"""
+             UPDATE identity_module.subjects {updateClause}
+             WHERE id = @id
+             """;
+        DynamicParameters parameters = subject.TransformToParameters();
+        CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+        int affected = await session.WithAffectedCallback(command, ct);
+        return affected == 0 ? Error.NotFound("Учетная запись не найдена.") : Unit.Value;
+    };
     
     public static IsEmailUnique IsSubjectEmailUnique(NpgSqlSession session)
     {
@@ -65,6 +68,7 @@ public static class NpgSqlIdentitySubjects
                 $"SELECT EXISTS(SELECT 1 FROM identity_module.subjects {whereClause})",
                 session,
                 ct));
+            
             return !exists;
         };
     }
@@ -79,6 +83,7 @@ public static class NpgSqlIdentitySubjects
                 $"SELECT EXISTS(SELECT 1 FROM identity_module.subjects {whereClause})",
                 session,
                 ct));
+            
             return !exists;
         };
     }
@@ -284,8 +289,8 @@ public static class NpgSqlIdentitySubjects
         {
             List<string> clauses = [];
             if (Guids.NotEmpty(args.Id)) clauses.Add("@id = id");
-            if (Strings.NotEmptyOrWhiteSpace(args.Email)) clauses.Add("@email = @email");
-            if (Strings.NotEmptyOrWhiteSpace(args.Login)) clauses.Add("@login = @login");
+            if (Strings.NotEmptyOrWhiteSpace(args.Email)) clauses.Add("email = @email");
+            if (Strings.NotEmptyOrWhiteSpace(args.Login)) clauses.Add("login = @login");
             return clauses.ToArray();
         }
 

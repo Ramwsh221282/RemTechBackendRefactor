@@ -11,7 +11,7 @@ public static class SubjectStatusFactoryModule
 
         public static Result<SubjectActivationStatus> Create(DateTime? date)
         {
-            return date.HasValue ? Create(date) : Create();
+            return date.HasValue ? Create(date.Value) : Create();
         }
         
         public static Result<SubjectActivationStatus> Create()

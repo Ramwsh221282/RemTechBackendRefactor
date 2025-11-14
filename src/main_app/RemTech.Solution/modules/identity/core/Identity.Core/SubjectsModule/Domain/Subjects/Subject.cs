@@ -11,24 +11,56 @@ namespace Identity.Core.SubjectsModule.Domain.Subjects;
 
 public sealed record Subject
 {
-    internal SubjectMetadata _metadata { get; init; }
+    internal SubjectMetadata Metadata { get; init; }
     internal SubjectCredentials Credentials { get; init; }
-    internal SubjectActivationStatus _activation { get; init; }
-    internal SubjectPermissions _permissions { get; init; }
-    internal SubjectTickets _tickets { get; init; }
-    internal Optional<NotificationsRegistry> _registry { get; init; }
+    internal SubjectActivationStatus Activation { get; init; }
+    internal SubjectPermissions Permissions { get; init; }
+    internal SubjectTickets Tickets { get; init; }
+    internal Optional<NotificationsRegistry> Registry { get; init; }
+
+    public Result<Subject> Activated()
+    {
+        Result<SubjectActivationStatus> status = Activation.Activate();
+        if (status.IsFailure) return status.Error;
+        Subject activated = this with { Activation = status };
+        return activated;
+    }
+
+    public async Task<Result<Unit>> SaveTo(SubjectsStorage storage, CancellationToken ct)
+    {
+        if (!await IsEmailUnique(storage, ct))
+            return Conflict($"Почта: {Credentials.Email} занят.");
+        if (!await IsLoginUnique(storage, ct))
+            return Conflict($"Логин: {Metadata.Login} занят.");
+        return await storage.Insert(this, ct);
+    }
+
+    public async Task<Result<Unit>> UpdateIn(SubjectsStorage storage, CancellationToken ct)
+    {
+        return await storage.Update(this, ct);
+    }
+
+    public async Task<bool> IsEmailUnique(SubjectsStorage storage, CancellationToken ct)
+    {
+        return await storage.IsEmailUnique(Credentials.Email, ct);
+    }
+
+    public async Task<bool> IsLoginUnique(SubjectsStorage storage, CancellationToken ct)
+    {
+        return await storage.IsLoginUnique(Metadata.Login, ct);
+    }
     
     public Result<Subject> Register()
     {
-        Result<SubjectActivationStatus> activated = _activation.Activate();
+        Result<SubjectActivationStatus> activated = Activation.Activate();
         if (activated.IsFailure) return activated.Error;
-        _registry.ExecuteOnValue(reg => reg.Record(new Registered(Snapshot())));
+        Registry.ExecuteOnValue(reg => reg.Record(new Registered(Snapshot())));
         return this;
     }
 
     public Result<Subject> AddPermission(SubjectPermission permission)
     {
-        Result<SubjectPermissions> @new = _permissions.Add(permission);
+        Result<SubjectPermissions> @new = Permissions.Add(permission);
         if (@new.IsFailure) return @new.Error;
         Subject withPermission = WithChangedPermissions(@new);
         return withPermission;
@@ -36,19 +68,19 @@ public sealed record Subject
 
     public Result<Subject> RemovePermission(SubjectPermission permission)
     {
-        Result<SubjectPermissions> @new = _permissions.Remove(permission);
+        Result<SubjectPermissions> @new = Permissions.Remove(permission);
         if (@new.IsFailure) return @new.Error;
         Subject withPermission = WithChangedPermissions(@new);
         return withPermission;
     }
 
-    public Result<Subject> ChangePassword(string nextPassword, HashPassword hash)
+    public Result<Subject> ChangePassword(string nextPassword)
     {
         if (AccountNotActivated()) return Conflict("Нельзя изменить пароль пока учетная запись не активирована");
-        Result<SubjectCredentials> @new = Credentials.WithOtherPassword(nextPassword, hash);
+        Result<SubjectCredentials> @new = Credentials.WithOtherPassword(nextPassword);
         if (@new.IsFailure) return @new.Error;
         Subject withOtherPassword = this with { Credentials = @new.Value };
-        _registry.ExecuteOnValue(r => r.Record(new PasswordChanged(withOtherPassword.Snapshot())));
+        Registry.ExecuteOnValue(r => r.Record(new PasswordChanged(withOtherPassword.Snapshot())));
         return withOtherPassword;
     }
 
@@ -58,41 +90,41 @@ public sealed record Subject
         Result<SubjectCredentials> @new = Credentials.WithOtherEmail(nextEmail);
         if (@new.IsFailure) return @new.Error;
         Subject withOtherCredentials = this with { Credentials = @new.Value };
-        _registry.ExecuteOnValue(r => r.Record(new EmailChanged(withOtherCredentials.Snapshot())));
+        Registry.ExecuteOnValue(r => r.Record(new EmailChanged(withOtherCredentials.Snapshot())));
         return withOtherCredentials;
     }
     
     public Subject BindRegistry(NotificationsRegistry registry)
     {
-        return this with { _registry = Some(registry) };
+        return this with { Registry = Some(registry) };
     }
     
     public SubjectSnapshot Snapshot()
     {
         return new SubjectSnapshot(
-            _metadata.Id,
+            Metadata.Id,
             Credentials.Email,
-            _metadata.Login,
+            Metadata.Login,
             Credentials.Password,
-            _activation.ActivationDate.HasValue ? _activation.ActivationDate.Value : null,
-            _permissions.Snapshotted());
+            Activation.ActivationDate.HasValue ? Activation.ActivationDate.Value : null,
+            Permissions.Snapshotted());
     }
     
     private bool AccountActivated()
     {
-        return _activation.Activated;
+        return Activation.Activated;
     }
 
     private bool AccountNotActivated() => !AccountActivated();
 
     private Subject WithUpdatedTickets(SubjectTickets tickets)
     {
-        return this with { _tickets = tickets };
+        return this with { Tickets = tickets };
     }
 
     private Subject WithChangedPermissions(SubjectPermissions permissions)
     {
-        return this with { _permissions = permissions };
+        return this with { Permissions = permissions };
     }
 
     internal Subject(
@@ -102,12 +134,12 @@ public sealed record Subject
         SubjectPermissions permissions,
         SubjectTickets tickets)
     {
-        _metadata = metadata;
+        Metadata = metadata;
         Credentials = credentials;
-        _activation = status;
-        _permissions = permissions;
-        _tickets = tickets;
-        _registry = None<NotificationsRegistry>();
+        Activation = status;
+        Permissions = permissions;
+        Tickets = tickets;
+        Registry = None<NotificationsRegistry>();
     }
     
     internal Subject(
@@ -118,11 +150,11 @@ public sealed record Subject
         SubjectTickets tickets,
         NotificationsRegistry registry)
     {
-        _metadata = metadata;
+        Metadata = metadata;
         Credentials = credentials;
-        _activation = status;
-        _permissions = permissions;
-        _tickets = tickets;
-        _registry = Some(registry);
+        Activation = status;
+        Permissions = permissions;
+        Tickets = tickets;
+        Registry = Some(registry);
     }
 }

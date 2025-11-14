@@ -14,8 +14,13 @@ public sealed record AddSubjectPermissionArgs(
     Optional<Subject> TargetSubject, 
     Optional<Permission> TargetPermission, 
     CancellationToken Ct);
-
 public delegate Task<Result<Subject>> AddSubjectPermission(AddSubjectPermissionArgs args);
+
+public sealed record ChangeEmailArgs(Guid Id, string NextEmail, Optional<Subject> Target, CancellationToken Ct);
+public delegate Task<Result<Subject>> ChangeEmail(ChangeEmailArgs args);
+
+public sealed record ChangePasswordArgs(Guid Id, string NextPassword, Optional<Subject> Target, CancellationToken Ct);
+public delegate Task<Result<Subject>> ChangePassword(ChangePasswordArgs args);
 
 public static class SubjectUseCases
 {
@@ -37,7 +42,34 @@ public static class SubjectUseCases
             ? Task.FromResult<Result<Subject>>(withPermission.Error) 
             : Task.FromResult(withPermission);
     };
+    
+    public static ChangeEmail ChangeEmail => args =>
+    {
+        if (args.Target.NoValue) return 
+            Task.FromResult<Result<Subject>>(NotFound("Учетная запись не найдена."));
+        
+        Subject subject = args.Target.Value;
+        Result<Subject> withOtherEmail = subject.ChangeEmail(args.NextEmail);
+        return withOtherEmail.IsSuccess 
+            ? Task.FromResult(withOtherEmail) 
+            : Task.FromResult<Result<Subject>>(withOtherEmail.Error);
+    };
 
+    public static ChangePassword ChangePassword => args =>
+    {
+        if (args.Target.NoValue)
+            return Task.FromResult<Result<Subject>>(NotFound("Учетная запись не найдена."));
+
+        Result<Subject> withOtherPassword = args
+            .Target
+            .Value
+            .ChangePassword(args.NextPassword);
+
+        return withOtherPassword.IsFailure 
+            ? Task.FromResult<Result<Subject>>(withOtherPassword.Error) 
+            : Task.FromResult(withOtherPassword);
+    };
+    
     public static RegisterSubject RegisterSubject() => args =>
     {
         string email = args.Email;
