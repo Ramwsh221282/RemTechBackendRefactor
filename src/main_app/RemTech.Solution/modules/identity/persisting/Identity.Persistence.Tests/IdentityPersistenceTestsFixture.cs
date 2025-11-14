@@ -51,6 +51,13 @@ public sealed class IdentityPersistenceTestsFixture : IAsyncLifetime
             RegisterPermission withPersistence = origin.WithPersisting(sp);
             return withPersistence;
         });
+
+        services.AddScoped<AddSubjectPermission>(sp =>
+        {
+            AddSubjectPermission origin = SubjectUseCases.AddSubjectPermission();
+            AddSubjectPermission withPersistence = origin.WithPersisting(sp);
+            return withPersistence;
+        });
         
         return services.BuildServiceProvider();
     }

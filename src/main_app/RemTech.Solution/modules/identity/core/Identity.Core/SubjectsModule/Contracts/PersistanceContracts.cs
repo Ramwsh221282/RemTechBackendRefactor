@@ -1,4 +1,5 @@
-﻿using Identity.Core.SubjectsModule.Domain.Subjects;
+﻿using Identity.Core.SubjectsModule.Domain.Permissions;
+using Identity.Core.SubjectsModule.Domain.Subjects;
 
 namespace Identity.Core.SubjectsModule.Contracts;
 
@@ -13,12 +14,25 @@ public sealed record SubjectsStorage(
     Delete Delete, 
     Update Update,
     IsEmailUnique IsEmailUnique,
-    IsLoginUnique IsLoginUnique);
+    IsLoginUnique IsLoginUnique,
+    Find Find,
+    FindMany FindMany,
+    InsertPermission InsertPermission);
 
 public delegate Task<bool> IsEmailUnique(string email, CancellationToken ct);
 public delegate Task<bool> IsLoginUnique(string login, CancellationToken ct);
-public delegate Task<Result<Unit>> Insert(Subject Subject, CancellationToken ct);
-public delegate Task<Result<Unit>> Delete(Subject Subject, CancellationToken ct);
-public delegate Task<Result<Unit>> Update(Subject Subject, CancellationToken ct);
+public delegate Task<Result<Unit>> Insert(Subject subject, CancellationToken ct);
+public delegate Task<Result<Unit>> Delete(Subject subject, CancellationToken ct);
+public delegate Task<Result<Unit>> Update(Subject subject, CancellationToken ct);
 public delegate Task<Optional<Subject>> Find(SubjectQueryArgs args, CancellationToken ct);
 public delegate Task<IEnumerable<Subject>> FindMany(SubjectQueryArgs args, CancellationToken ct);
+
+public delegate Task<Result<Unit>> InsertPermission(
+    Subject subject, 
+    SubjectPermission permission, 
+    CancellationToken ct);
+
+public delegate Task<Result<Unit>> DeletePermission(
+    Subject subject, 
+    SubjectPermission permission, 
+    CancellationToken ct);

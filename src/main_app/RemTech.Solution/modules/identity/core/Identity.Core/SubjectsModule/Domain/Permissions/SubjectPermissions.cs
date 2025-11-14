@@ -1,5 +1,4 @@
-﻿using RemTech.Functional.Extensions;
-using RemTech.Primitives.Extensions;
+﻿using RemTech.Primitives.Extensions;
 
 namespace Identity.Core.SubjectsModule.Domain.Permissions;
 

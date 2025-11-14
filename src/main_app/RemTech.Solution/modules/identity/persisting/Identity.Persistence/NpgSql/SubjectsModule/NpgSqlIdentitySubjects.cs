@@ -87,8 +87,7 @@ public static class NpgSqlIdentitySubjects
     {
         string whereClause = args.WhereClause();
         if (string.IsNullOrWhiteSpace(whereClause)) return Optional.None<Subject>();
-            
-        string lockClause = args.LockClause();
+        string lockClause = args.LockClauseWithAlias("s");
             
         string sql =
             $"""
@@ -100,7 +99,7 @@ public static class NpgSqlIdentitySubjects
                  s.activation_date as s_activation_date,
                  (SELECT COALESCE((SELECT jsonb_build_array(jsonb_build_object(
                      'id', p.id,
-                     'name', p.name)) FROM identity_module.permissions p), '[]'::jsonb)) as s_permissions_json_array
+                     'name', p.name)) FROM identity_module.permissions p WHERE p.id = sp.permission_id), '[]'::jsonb)) as s_permissions_json_array
              FROM identity_module.subjects s
              LEFT JOIN identity_module.subject_permissions sp ON sp.subject_id = s.id
              {whereClause}
@@ -112,6 +111,32 @@ public static class NpgSqlIdentitySubjects
         return subject.MaybeToIdentitySubject();
     };
 
+    public static InsertPermission InsertPermission(NpgSqlSession session) => async (subject, permission, ct) =>
+    {
+        DynamicParameters parameters = SubjectPermissionParameters(subject, permission);
+        string sql =
+            """
+            INSERT INTO identity_module.subject_permissions(subject_id, permission_id)
+            VALUES (@subject_id, @permission_id)
+            """;
+        CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+        await session.Execute(command);
+        return Unit.Value;
+    };
+
+    public static DeletePermission DeletePermission(NpgSqlSession session) => async (subject, permission, ct) =>
+    {
+        DynamicParameters parameters = SubjectPermissionParameters(subject, permission);
+        string sql =
+            """
+            DELETE FROM identity_module.subject_permissions 
+            WHERE subject_id = @subject_id AND permission_id = @permission_id     
+            """;
+        CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+        await session.Execute(command);
+        return Unit.Value;
+    };
+    
     public static FindMany FindMany(NpgSqlSession session) => async (args, ct) =>
     {
         string whereClause = args.WhereClause();
@@ -138,7 +163,16 @@ public static class NpgSqlIdentitySubjects
         IEnumerable<TableSubject> subjects = await session.QueryMultipleRows<TableSubject>(command);
         return subjects.ToIdentitySubjects();
     };
-
+    
+    private static DynamicParameters SubjectPermissionParameters(Subject subject, SubjectPermission permission)
+    {
+        SubjectSnapshot subjectSnap = subject.Snapshot();
+        return NpgSqlParametersStorage.New()
+            .With("@subject_id", subjectSnap.Id, dbType: DbType.Guid)
+            .With("@permission_id", permission.Id, dbType: DbType.Guid)
+            .GetParameters();
+    }
+    
     extension(TableSubject subject)
     {
         internal Subject ToIdentitySubject()
@@ -234,6 +268,11 @@ public static class NpgSqlIdentitySubjects
         {
             return args.WithLock ? " FOR UPDATE " : string.Empty;
         }
+        
+        private string LockClauseWithAlias(string alias)
+        {
+            return args.WithLock ? $" FOR UPDATE OF {alias}" : string.Empty;
+        }
 
         private string WhereClause()
         {
@@ -262,7 +301,7 @@ public static class NpgSqlIdentitySubjects
         private CommandDefinition TransformToCommand(string sql, NpgSqlSession session, CancellationToken ct)
         {
             return new CommandDefinition(
-                sql, 
+                sql,
                 args.TransformToParameters(), 
                 cancellationToken: ct,
                 transaction: session.Transaction);
@@ -280,6 +319,8 @@ public static class NpgSqlIdentitySubjects
             services.AddScopedDelegate<IsLoginUnique>(Assembly);
             services.AddScopedDelegate<Find>(Assembly);
             services.AddScopedDelegate<FindMany>(Assembly);
+            services.AddScopedDelegate<InsertPermission>(Assembly);
+            services.AddScopedDelegate<DeletePermission>(Assembly);
             services.AddScoped<SubjectsStorage>();
         }
     }

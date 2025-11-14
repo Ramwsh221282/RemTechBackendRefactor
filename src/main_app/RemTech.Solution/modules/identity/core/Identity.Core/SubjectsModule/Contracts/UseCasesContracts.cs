@@ -13,7 +13,7 @@ public sealed record AddSubjectPermissionArgs(
     Guid SubjectId, 
     Optional<Subject> TargetSubject, 
     Optional<Permission> TargetPermission, 
-    CancellationToken ct);
+    CancellationToken Ct);
 
 public delegate Task<Result<Subject>> AddSubjectPermission(AddSubjectPermissionArgs args);
 
@@ -21,17 +21,29 @@ public static class SubjectUseCases
 {
     public static AddSubjectPermission AddSubjectPermission() => (args) =>
     {
-        if (args.TargetSubject.NoValue) return Task.FromResult<Result<Subject>>(NotFound("Учетная запись не найдена."));
-        if (args.TargetPermission.NoValue) return Task.FromResult<Result<Subject>>(NotFound("Разрешение не найдено."));
+        if (args.TargetSubject.NoValue) 
+            return Task.FromResult<Result<Subject>>(NotFound("Учетная запись не найдена."));
+        
+        if (args.TargetPermission.NoValue) 
+            return Task.FromResult<Result<Subject>>(NotFound("Разрешение не найдено."));
 
         Permission permission = args.TargetPermission.Value;
         Subject subject = args.TargetSubject.Value;
         
-        SubjectPermission subjectPermission = SubjectToPermissionTranslations.PermissionToSubjectPermission(permission);
+        SubjectPermission subjectPermission = BoundedContextConverter.PermissionToSubjectPermission(permission);
         Result<Subject> withPermission = subject.AddPermission(subjectPermission);
         
         return withPermission.IsFailure 
             ? Task.FromResult<Result<Subject>>(withPermission.Error) 
             : Task.FromResult(withPermission);
+    };
+
+    public static RegisterSubject RegisterSubject() => args =>
+    {
+        string email = args.Email;
+        string login = args.Login;
+        string password = args.Password;
+        Result<Subject> subject = Subject.Create(email, login, password);
+        return Task.FromResult(subject);
     };
 }
