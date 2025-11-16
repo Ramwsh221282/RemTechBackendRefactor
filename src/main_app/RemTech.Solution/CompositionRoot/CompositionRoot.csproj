@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\modules\identity\Identity.Core\Identity.Core.csproj" />
+      <ProjectReference Include="..\modules\identity\Identity.Logging\Identity.Logging.csproj" />
+      <ProjectReference Include="..\modules\identity\Identity.PasswordHash\Identity.PasswordHash.csproj" />
+      <ProjectReference Include="..\modules\identity\Identity.Persistence\Identity.Persistence.csproj" />
+      <ProjectReference Include="..\modules\mailing\Mailers.Application\Mailers.Application.csproj" />
+      <ProjectReference Include="..\modules\mailing\Mailers.Core\Mailers.Core.csproj" />
+      <ProjectReference Include="..\modules\mailing\Mailers.Persistence\Mailers.Persistence.csproj" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+    
+</Project>

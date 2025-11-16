@@ -24,6 +24,16 @@ public abstract class Error(string message)
         return new NotFoundError(message);
     }
 
+    public static Error Unauthorized(string message)
+    {
+        return new UnauthorizedError(message);
+    }
+
+    public static Error Forbidden(string message)
+    {
+        return new ForbiddenError(message);
+    }
+    
     public static Error Conflict(string message)
     {
         return new ConflictError(message);
@@ -34,6 +44,22 @@ public abstract class Error(string message)
         return new NoneError();
     }
 
+    public sealed class ForbiddenError : Error
+    {
+        internal ForbiddenError(string message) : base(message)
+        {
+            
+        } 
+    }
+    
+    public sealed class UnauthorizedError : Error
+    {
+        internal UnauthorizedError(string message) : base(message)
+        {
+            
+        }
+    }
+    
     public sealed class ValidationError : Error
     {
         internal ValidationError(string message) : base(message)

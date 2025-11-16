@@ -1,10 +1,8 @@
 ﻿using System.Data.Common;
-using Mailing.Moduled.Bus;
 using Npgsql;
 using RemTech.Core.Shared.Cqrs;
 using Users.Module.CommonAbstractions;
 using Users.Module.Features.ChangingEmail.Shared;
-using Users.Module.Features.CreateEmailConfirmation;
 
 namespace Users.Module.Features.UpdateUserPassword;
 

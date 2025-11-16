@@ -4,7 +4,6 @@ using Shared.Infrastructure.Module.Redis;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
 using Users.Module.Features.CreatingNewAccount;
-using Users.Module.Features.VerifyingAdmin;
 
 namespace Users.Module.Models;
 

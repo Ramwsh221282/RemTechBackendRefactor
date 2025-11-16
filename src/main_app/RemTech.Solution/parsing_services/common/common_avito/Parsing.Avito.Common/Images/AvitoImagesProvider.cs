@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using Parsing.SDK.ElementSources;
-using Parsing.SDK.ScrapingArtifacts;
 using PuppeteerSharp;
 
 namespace Parsing.Avito.Common.Images;

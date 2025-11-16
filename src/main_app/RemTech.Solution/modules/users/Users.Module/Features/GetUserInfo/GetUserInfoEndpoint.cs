@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
 using StackExchange.Redis;
-using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Models;
 
 namespace Users.Module.Features.GetUserInfo;

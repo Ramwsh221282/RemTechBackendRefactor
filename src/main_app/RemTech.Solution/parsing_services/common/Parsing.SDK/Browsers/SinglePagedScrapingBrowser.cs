@@ -1,4 +1,3 @@
-using Parsing.SDK.Browsers.PageSources;
 using PuppeteerSharp;
 
 namespace Parsing.SDK.Browsers;

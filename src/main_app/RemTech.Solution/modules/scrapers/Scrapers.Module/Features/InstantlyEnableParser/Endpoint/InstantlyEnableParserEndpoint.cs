@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
 using RabbitMQ.Client;
-using Scrapers.Module.Domain.JournalsContext;
 using Scrapers.Module.Domain.JournalsContext.Cache;
 using Scrapers.Module.Domain.JournalsContext.Features.CreateScraperJournal;
 using Scrapers.Module.Features.InstantlyEnableParser.Exceptions;

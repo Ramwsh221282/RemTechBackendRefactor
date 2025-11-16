@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Pgvector.Dapper;
-using RemTech.Shared.Configuration;
 using RemTech.Shared.Configuration.Options;
 using RemTech.Shared.Tests;
 using Shared.Infrastructure.Module.Postgres.Embeddings;

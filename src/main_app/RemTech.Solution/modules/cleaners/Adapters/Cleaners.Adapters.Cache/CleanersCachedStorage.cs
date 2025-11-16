@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using Cleaners.Domain.Cleaners.Aggregate;
-using Cleaners.Domain.Cleaners.Ports;
 using Cleaners.Domain.Cleaners.Ports.Cache;
 using RemTech.Core.Shared.Result;
 using Shared.Infrastructure.Module.Redis;

@@ -1,12 +1,10 @@
-﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Arguments;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Presenting;
-using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehiclesAmount;
 

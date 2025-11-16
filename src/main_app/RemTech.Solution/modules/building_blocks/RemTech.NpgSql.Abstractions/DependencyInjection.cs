@@ -15,7 +15,7 @@ public static class DependencyInjection
         {
             if (_hasConfigured) return;
             services.TryAddSingleton<NpgSqlConnectionFactory>();
-            services.TryAddKeyedSingleton<IDbUpgrader, PgVectorUpgrader>(nameof(PgVectorUpgrader));
+            services.AddTransient<IDbUpgrader, PgVectorUpgrader>();
             services.TryAddScoped<NpgSqlSession>();
             SqlMapper.AddTypeHandler(new VectorTypeHandler());
             DefaultTypeMap.MatchNamesWithUnderscores = true;

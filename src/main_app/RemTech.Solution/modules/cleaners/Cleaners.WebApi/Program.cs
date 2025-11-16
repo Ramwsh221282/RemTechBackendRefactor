@@ -1,7 +1,6 @@
 using Cleaners.Adapter.Storage;
 using Cleaners.Adapters.Cache;
 using Cleaners.Domain;
-using RemTech.Shared.Configuration;
 using RemTech.Shared.Configuration.Options;
 using Shared.Infrastructure.Module.Postgres;
 using Shared.Infrastructure.Module.RabbitMq;

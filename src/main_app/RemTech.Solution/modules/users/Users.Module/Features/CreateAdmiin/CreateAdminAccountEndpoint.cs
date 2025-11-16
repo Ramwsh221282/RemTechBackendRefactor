@@ -1,12 +1,9 @@
-﻿using Mailing.Moduled.Bus;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
 using Users.Module.Features.CreatingNewAccount;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
-using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Models;
 
 namespace Users.Module.Features.CreateAdmiin;

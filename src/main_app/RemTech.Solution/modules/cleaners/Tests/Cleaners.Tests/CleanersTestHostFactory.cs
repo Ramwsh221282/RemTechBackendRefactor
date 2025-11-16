@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using RemTech.Shared.Configuration;
 using RemTech.Shared.Configuration.Options;
 using RemTech.Shared.Tests;
 using Shared.Infrastructure.Module.Consumers;

@@ -1,5 +1,4 @@
-﻿using GeoLocations.Module.Features.Persisting;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Npgsql;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 

@@ -1,22 +1,10 @@
 ﻿using Avito.Vehicles.Service.VehiclesParsing;
-using Parsing.Avito.Common.BypassFirewall;
-using Parsing.RabbitMq.PublishVehicle;
 using Parsing.RabbitMq.PublishVehicle.Extras;
 using Parsing.SDK.Browsers;
-using Parsing.SDK.Browsers.BrowserLoadings;
-using Parsing.SDK.Browsers.InstantiationModes;
-using Parsing.SDK.Browsers.InstantiationOptions;
-using Parsing.SDK.Browsers.PageSources;
-using Parsing.SDK.ElementSources;
 using Parsing.SDK.ScrapingActions;
-using Parsing.SDK.ScrapingArtifacts;
 using Parsing.Vehicles.Common.ParsedVehicles;
-using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehicleCharacteristics;
-using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePhotos;
-using Parsing.Vehicles.Common.ParsedVehicles.ParsedVehiclePrices;
 using Parsing.Vehicles.Common.TextWriting;
 using PuppeteerSharp;
-using RemTech.Core.Shared.Decorating;
 using Serilog;
 
 namespace Avito.Parsing.Vehicles.Tests;

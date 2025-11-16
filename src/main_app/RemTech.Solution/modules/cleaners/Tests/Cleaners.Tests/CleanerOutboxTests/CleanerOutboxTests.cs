@@ -1,5 +1,4 @@
-﻿using Cleaners.Domain.Cleaners.Aggregate;
-using Cleaners.Domain.Cleaners.Ports.Outbox;
+﻿using Cleaners.Domain.Cleaners.Ports.Outbox;
 using Cleaners.Domain.Cleaners.UseCases.CreateCleaner;
 using Cleaners.Domain.Cleaners.UseCases.StartWork;
 using Dapper;

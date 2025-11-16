@@ -1,5 +1,4 @@
 ﻿using Cleaners.Adapter.Storage.Common;
-using Cleaners.Domain.Cleaners.Ports;
 using Cleaners.Domain.Cleaners.Ports.Cache;
 using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;

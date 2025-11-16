@@ -2,7 +2,6 @@
 using DbUp;
 using DbUp.Engine;
 using Npgsql;
-using RemTech.Shared.Configuration;
 using RemTech.Shared.Configuration.Options;
 
 namespace Shared.Infrastructure.Module.Postgres.DataAccessConfiguration;

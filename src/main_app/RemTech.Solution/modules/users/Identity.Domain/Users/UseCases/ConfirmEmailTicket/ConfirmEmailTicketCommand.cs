@@ -1,5 +1,4 @@
-﻿using FluentValidation.Results;
-using RemTech.Core.Shared.Cqrs;
+﻿using RemTech.Core.Shared.Cqrs;
 
 namespace Identity.Domain.Users.UseCases.ConfirmEmailTicket;
 

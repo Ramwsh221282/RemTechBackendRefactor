@@ -1,15 +1,9 @@
-﻿using Mailing.Moduled.Bus;
-using Mailing.Moduled.Public;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using RemTech.Core.Shared.Cqrs;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.AddUserByAdmin;
-using Users.Module.Features.CreateEmailConfirmation;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
-using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Models;
 
 namespace Users.Module.Features.UpdateUserProfile;

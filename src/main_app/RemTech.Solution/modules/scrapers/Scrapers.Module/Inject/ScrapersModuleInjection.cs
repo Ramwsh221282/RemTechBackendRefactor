@@ -1,6 +1,4 @@
 ﻿using System.Threading.Channels;
-using DbUp;
-using DbUp.Engine;
 using Microsoft.Extensions.DependencyInjection;
 using Scrapers.Module.Domain.JournalsContext.BackgroundServices.AddJournalRecordListener;
 using Scrapers.Module.Domain.JournalsContext.Cache;

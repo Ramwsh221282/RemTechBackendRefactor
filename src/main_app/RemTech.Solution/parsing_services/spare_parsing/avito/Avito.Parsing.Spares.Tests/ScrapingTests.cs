@@ -1,13 +1,8 @@
 ﻿using Avito.Parsing.Spares.Parsing;
-using Microsoft.Extensions.Logging;
 using Parsing.Avito.Common.BypassFirewall;
 using Parsing.Avito.Common.PaginationBar;
 using Parsing.RabbitMq.PublishSpare;
 using Parsing.SDK.Browsers;
-using Parsing.SDK.Browsers.BrowserLoadings;
-using Parsing.SDK.Browsers.InstantiationModes;
-using Parsing.SDK.Browsers.InstantiationOptions;
-using Parsing.SDK.Browsers.PageSources;
 using Parsing.SDK.ScrapingActions;
 using PuppeteerSharp;
 using RemTech.Core.Shared.Decorating;

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Npgsql;
 using RemTech.Core.Shared.Cqrs;
 using Shared.Infrastructure.Module.Postgres;
 using Shared.Infrastructure.Module.Redis;

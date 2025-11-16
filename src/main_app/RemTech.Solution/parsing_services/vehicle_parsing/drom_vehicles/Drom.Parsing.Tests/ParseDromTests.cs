@@ -2,10 +2,6 @@
 using Drom.Parsing.Vehicles.Parsing.Models;
 using Drom.Parsing.Vehicles.Parsing.Utilities;
 using Parsing.SDK.Browsers;
-using Parsing.SDK.Browsers.BrowserLoadings;
-using Parsing.SDK.Browsers.InstantiationModes;
-using Parsing.SDK.Browsers.InstantiationOptions;
-using Parsing.SDK.Browsers.PageSources;
 using Parsing.SDK.ScrapingActions;
 using PuppeteerSharp;
 using Serilog;

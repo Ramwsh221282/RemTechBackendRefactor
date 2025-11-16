@@ -1,5 +1,4 @@
-﻿using Brands.Module.Public;
-using Categories.Module.Public;
+﻿using Categories.Module.Public;
 using GeoLocations.Module.Features.Querying;
 using Models.Module.Public;
 using Npgsql;

@@ -1,5 +1,4 @@
-﻿using Cleaners.Domain.Cleaners.Ports;
-using Cleaners.Domain.Cleaners.Ports.Cache;
+﻿using Cleaners.Domain.Cleaners.Ports.Cache;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cleaners.Adapters.Cache;

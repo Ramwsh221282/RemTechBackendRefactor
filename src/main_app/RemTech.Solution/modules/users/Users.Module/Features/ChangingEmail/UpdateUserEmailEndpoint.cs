@@ -1,6 +1,4 @@
-﻿using Mailing.Moduled.Bus;
-using Mailing.Moduled.Public;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -8,8 +6,6 @@ using Microsoft.Extensions.Options;
 using RemTech.Shared.Configuration.Options;
 using Shared.Infrastructure.Module.Postgres;
 using Shared.Infrastructure.Module.Redis;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
-using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Models;
 
 namespace Users.Module.Features.ChangingEmail;

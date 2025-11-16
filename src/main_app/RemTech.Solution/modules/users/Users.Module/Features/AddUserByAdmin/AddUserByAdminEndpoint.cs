@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using Mailing.Moduled.Bus;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -10,9 +9,6 @@ using Shared.Infrastructure.Module.Postgres;
 using Shared.Infrastructure.Module.Redis;
 using Users.Module.CommonAbstractions;
 using Users.Module.Features.ChangingEmail;
-using Users.Module.Features.CreateEmailConfirmation;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
-using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Models;
 
 namespace Users.Module.Features.AddUserByAdmin;

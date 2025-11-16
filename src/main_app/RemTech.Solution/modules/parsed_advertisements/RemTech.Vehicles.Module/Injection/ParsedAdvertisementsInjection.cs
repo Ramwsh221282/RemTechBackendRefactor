@@ -1,20 +1,8 @@
 ﻿using DbUp;
 using DbUp.Engine;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RemTech.Shared.Configuration.Options;
-using RemTech.Vehicles.Module.Features.QueryBrandsOfCategory;
-using RemTech.Vehicles.Module.Features.QueryConcreteVehicle;
-using RemTech.Vehicles.Module.Features.QueryModelsOfCategoryBrand;
-using RemTech.Vehicles.Module.Features.QueryVehicleBrands;
-using RemTech.Vehicles.Module.Features.QueryVehicleCategories;
-using RemTech.Vehicles.Module.Features.QueryVehicleModels;
-using RemTech.Vehicles.Module.Features.QueryVehicleRegions;
-using RemTech.Vehicles.Module.Features.QueryVehicles.Http;
-using RemTech.Vehicles.Module.Features.QueryVehiclesAmount;
-using RemTech.Vehicles.Module.Features.SimilarVehiclesQuery;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.BackgroundService;
 using Shared.Infrastructure.Module.Postgres;
 

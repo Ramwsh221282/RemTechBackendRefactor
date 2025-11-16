@@ -1,8 +1,6 @@
-﻿using System.Runtime.InteropServices;
-using Parsing.SDK.Browsers.BrowserLoadings;
+﻿using Parsing.SDK.Browsers.BrowserLoadings;
 using Parsing.SDK.Browsers.InstantiationModes;
 using Parsing.SDK.Browsers.InstantiationOptions;
-using Parsing.SDK.Browsers.PathSources;
 using PuppeteerSharp;
 
 namespace Parsing.SDK.Browsers;

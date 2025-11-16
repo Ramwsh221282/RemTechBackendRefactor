@@ -1,7 +1,6 @@
 ﻿using Cleaners.Adapter.Storage.Common;
 using Cleaners.Adapter.Storage.DataModels;
 using Cleaners.Domain.Cleaners.Aggregate;
-using Cleaners.Domain.Cleaners.Ports;
 using Cleaners.Domain.Cleaners.Ports.Storage;
 using Dapper;
 using RemTech.Core.Shared.Result;

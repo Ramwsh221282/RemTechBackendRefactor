@@ -1,4 +1,3 @@
-using Mailing.Moduled.Bus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -6,9 +5,6 @@ using Microsoft.AspNetCore.Routing;
 using Npgsql;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.CreateEmailConfirmation;
-using Users.Module.Features.UserPasswordRecovering.Infrastructure;
-using Users.Module.Features.UserPasswordRecoveryConfirmation.Exceptions;
 using Users.Module.Features.UserPasswordRecoveryConfirmation.Interactor;
 
 namespace Users.Module.Features.UserPasswordRecoveryConfirmation.Endpoint;

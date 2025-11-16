@@ -1,7 +1,5 @@
-using Mailing.Moduled.Bus;
 using Npgsql;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.CreateEmailConfirmation;
 
 namespace Users.Module.Features.UserPasswordRecoveryConfirmation.Interactor;
 

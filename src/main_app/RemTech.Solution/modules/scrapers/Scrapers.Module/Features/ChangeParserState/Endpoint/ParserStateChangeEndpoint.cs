@@ -6,7 +6,6 @@ using Npgsql;
 using Scrapers.Module.Domain.JournalsContext.Cache;
 using Scrapers.Module.Domain.JournalsContext.Exceptions;
 using Scrapers.Module.Domain.JournalsContext.Features.CompleteScraperJournal;
-using Scrapers.Module.Domain.JournalsContext.Persistance;
 using Scrapers.Module.Features.ChangeParserState.Database;
 using Scrapers.Module.Features.ChangeParserState.Exception;
 using Scrapers.Module.Features.ChangeParserState.Logging;

@@ -53,7 +53,7 @@ public static class MailersPersistenceExtensions
 
     extension(IServiceProvider sp)
     {
-        private NpgSqlSession ExtractSessionFromIoC()
+        public NpgSqlSession ExtractSessionFromIoC()
         {
             return sp.GetRequiredService<NpgSqlSession>();
         }

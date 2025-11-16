@@ -1,5 +1,4 @@
 ﻿using Cleaners.Adapter.Storage.Storages;
-using Cleaners.Domain.Cleaners.Ports;
 using Cleaners.Domain.Cleaners.Ports.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.Core.Shared.DomainEvents;

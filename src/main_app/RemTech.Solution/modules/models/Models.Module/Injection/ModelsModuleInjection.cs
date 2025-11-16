@@ -1,6 +1,4 @@
-﻿using DbUp;
-using DbUp.Engine;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Models.Module.Features.AddModelsOnStartup;
 using Models.Module.Public;
 

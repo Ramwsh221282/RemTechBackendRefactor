@@ -1,0 +1,29 @@
+﻿using CompositionRoot.Shared;
+using Identity.Core.SubjectsModule.Contracts;
+using Identity.Core.SubjectsModule.Notifications.Abstractions;
+using Identity.Logging;
+using Identity.Persistence.EventListeners;
+using Identity.Persistence.NpgSql.SubjectsModule.Features;
+using Microsoft.Extensions.DependencyInjection;
+using RemTech.Functional.Extensions;
+
+namespace CompositionRoot.identity.DependencyInjection.Features;
+
+[DependencyInjectionClass]
+public static class RequireActivationTicketInjection
+{
+    [DependencyInjectionMethod]
+    public static void Inject(this IServiceCollection services)
+    {
+        services.AddScoped<RequireActivationTicket>(sp =>
+        {
+            NotificationsRegistry registry = new();
+            RequireActivationTicket core = SubjectUseCases.RequireActivationTicket;
+            RequireActivationTicket persisted = core.WithPersistence(sp, Optional.Some(registry));
+            RequireActivationTicket ticketReacted = persisted.WithTicketsListening(sp, registry);
+            RequireActivationTicket transactional = ticketReacted.WithTransaction(sp);
+            RequireActivationTicket logging = transactional.WithLogging(sp);
+            return logging;
+        });
+    }
+}

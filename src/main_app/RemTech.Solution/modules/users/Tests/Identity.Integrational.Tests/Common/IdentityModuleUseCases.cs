@@ -5,7 +5,6 @@ using Identity.Domain.Roles.Ports;
 using Identity.Domain.Roles.UseCases.AddNewRole;
 using Identity.Domain.Roles.ValueObjects;
 using Identity.Domain.Sessions;
-using Identity.Domain.Sessions.Ports;
 using Identity.Domain.Users.Aggregate;
 using Identity.Domain.Users.Aggregate.ValueObjects;
 using Identity.Domain.Users.Entities.Profile.ValueObjects;

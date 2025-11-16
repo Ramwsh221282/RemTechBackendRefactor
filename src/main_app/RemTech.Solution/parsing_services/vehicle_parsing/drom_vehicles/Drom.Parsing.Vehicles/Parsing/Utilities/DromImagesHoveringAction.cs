@@ -1,5 +1,4 @@
 ﻿using Parsing.SDK.ElementSources;
-using Parsing.SDK.ScrapingActions;
 using PuppeteerSharp;
 
 namespace Drom.Parsing.Vehicles.Parsing.Utilities;

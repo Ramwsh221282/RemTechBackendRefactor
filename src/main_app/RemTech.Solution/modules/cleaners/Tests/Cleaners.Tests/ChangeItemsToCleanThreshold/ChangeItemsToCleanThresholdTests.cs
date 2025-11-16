@@ -1,5 +1,4 @@
-﻿using Cleaners.Domain.Cleaners.Aggregate;
-using Cleaners.Domain.Cleaners.Ports.Cache;
+﻿using Cleaners.Domain.Cleaners.Ports.Cache;
 using Cleaners.Domain.Cleaners.Ports.Storage;
 using Cleaners.Domain.Cleaners.UseCases.ChangeItemsToClean;
 using Cleaners.Domain.Cleaners.UseCases.CreateCleaner;

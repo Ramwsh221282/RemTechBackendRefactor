@@ -1,10 +1,8 @@
 using System.Data.Common;
-using Mailing.Moduled.Bus;
 using Npgsql;
 using RemTech.Core.Shared.Cqrs;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.CreateEmailConfirmation;
 using Users.Module.Features.UserPasswordRecovering.Infrastructure;
 using Users.Module.Features.UserPasswordRecoveryConfirmation.Core;
 using Users.Module.Models;

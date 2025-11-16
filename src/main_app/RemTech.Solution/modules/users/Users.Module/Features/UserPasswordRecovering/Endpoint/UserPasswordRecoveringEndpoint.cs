@@ -1,14 +1,9 @@
-using Mailing.Moduled.Bus;
-using Mailing.Moduled.Public;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using Shared.Infrastructure.Module.Frontend;
 using StackExchange.Redis;
-using Users.Module.Features.UserPasswordRecovering.Core;
-using Users.Module.Features.UserPasswordRecovering.Exceptions;
 using Users.Module.Features.UserPasswordRecovering.Interactor;
 
 namespace Users.Module.Features.UserPasswordRecovering.Endpoint;

@@ -1,7 +1,6 @@
 ﻿using Cleaners.Adapter.Storage.Common;
 using Cleaners.Adapter.Storage.DataModels;
 using Cleaners.Domain.Cleaners.Events;
-using Cleaners.Domain.Cleaners.Ports;
 using Cleaners.Domain.Cleaners.Ports.Cache;
 using RemTech.Core.Shared.DomainEvents;
 using RemTech.Core.Shared.Result;

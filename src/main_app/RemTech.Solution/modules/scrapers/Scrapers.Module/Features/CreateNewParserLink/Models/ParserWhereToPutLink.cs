@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Scrapers.Module.Features.CreateNewParserLink.Exceptions;
+﻿using Scrapers.Module.Features.CreateNewParserLink.Exceptions;
 
 namespace Scrapers.Module.Features.CreateNewParserLink.Models;
 

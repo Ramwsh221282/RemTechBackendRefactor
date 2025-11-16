@@ -1,6 +1,4 @@
-﻿using Cleaners.Module.Injection;
-using RemTech.ContainedItems.Module.Injection;
-using Shared.Infrastructure.Module.Postgres;
+﻿using Shared.Infrastructure.Module.Postgres;
 
 namespace RemTech.Bootstrap.Api.Configuration;
 
