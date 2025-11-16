@@ -17,17 +17,64 @@ public sealed record AddSubjectPermissionArgs(
     CancellationToken Ct);
 public delegate Task<Result<Subject>> AddSubjectPermission(AddSubjectPermissionArgs args);
 
-public sealed record ChangeEmailArgs(Guid Id, string NextEmail, Optional<Subject> Target, CancellationToken Ct);
+public sealed record ChangeEmailArgs(Guid Id, string NextEmail, Optional<Subject> Target, CancellationToken Ct)
+{
+    public static ChangeEmailArgs Default(Guid id, string nextEmail, CancellationToken ct)
+    {
+        return new ChangeEmailArgs(id, nextEmail, None<Subject>(), ct);
+    }
+}
 public delegate Task<Result<Subject>> ChangeEmail(ChangeEmailArgs args);
 
-public sealed record ChangePasswordArgs(Guid Id, string NextPassword, Optional<Subject> Target, CancellationToken Ct);
+public sealed record ChangePasswordArgs(Guid Id, string NextPassword, Optional<Subject> Target, CancellationToken Ct)
+{
+    public static ChangePasswordArgs Default(Guid id, string nextPassword, CancellationToken ct)
+    {
+        return new ChangePasswordArgs(id, nextPassword, None<Subject>(), ct);
+    }
+}
 public delegate Task<Result<Subject>> ChangePassword(ChangePasswordArgs args);
 
-public sealed record RequireActivationTicketArgs(Guid SubjectId, Optional<Subject> Target, Optional<NotificationsRegistry> Registry, CancellationToken Ct);
+public sealed record RequireActivationTicketArgs(
+    Guid SubjectId,
+    Optional<Subject> Target,
+    Optional<NotificationsRegistry> Registry,
+    CancellationToken Ct)
+{
+    public static RequireActivationTicketArgs Default(Guid subjectId, CancellationToken ct)
+    {
+        return new RequireActivationTicketArgs(subjectId, None<Subject>(), None<NotificationsRegistry>(), ct);
+    }
+}
 public delegate Task<Result<SubjectTicket>> RequireActivationTicket(RequireActivationTicketArgs args);
+
+
+public sealed record RequirePasswordResetTicketArgs(
+    Guid SubjectId,
+    Optional<Subject> Target,
+    Optional<NotificationsRegistry> Registry,
+    CancellationToken Ct)
+{
+    public static RequirePasswordResetTicketArgs Default(Guid subjectId, CancellationToken ct)
+    {
+        return new RequirePasswordResetTicketArgs(subjectId, None<Subject>(), None<NotificationsRegistry>(), ct);
+    }
+}
+public delegate Task<Result<SubjectTicket>> RequirePasswordResetTicket(RequirePasswordResetTicketArgs args);
 
 public static class SubjectUseCases
 {
+    public static RequirePasswordResetTicket RequirePasswordResetTicket => args =>
+    {
+        if (args.Target.NoValue)
+            return Task.FromResult<Result<SubjectTicket>>(NotFound("Учетная запись не найдена."));
+        Subject subject = args.Target.Value.BindRegistry(args.Registry);
+        Result<SubjectTicket> ticket = subject.FormTicket("user.account.password.reset");
+        return ticket.IsFailure
+            ? Task.FromResult<Result<SubjectTicket>>(ticket.Error)
+            : Task.FromResult(ticket);
+    };
+    
     public static RequireActivationTicket RequireActivationTicket => args =>
     {
         if (args.Target.NoValue) 

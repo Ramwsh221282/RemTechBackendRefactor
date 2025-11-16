@@ -10,7 +10,7 @@ namespace Identity.Persistence.NpgSql.SubjectsModule.Features;
 
 public static class RequireActivationTicketPersisting
 {
-    internal static RequireActivationTicket RequireActivationTicket(
+    private static RequireActivationTicket RequireActivationTicket(
         SubjectTicketsStorage tickets,
         SubjectsStorage subjects,
         Optional<NotificationsRegistry> registry,
@@ -28,7 +28,7 @@ public static class RequireActivationTicketPersisting
         return saving.IsFailure ? saving.Error : ticket.Value;
     };
 
-    internal static RequireActivationTicket RequireActivationTicket(
+    private static RequireActivationTicket RequireActivationTicket(
         NpgSqlSession session,
         RequireActivationTicket origin) => async args =>
     {

@@ -68,7 +68,6 @@ public sealed record Subject
 
     public Result<SubjectTicket> FormTicket(string type)
     {
-        
         SubjectTicket ticket = SubjectTicket.Create(type);
         if (Tickets.Contains(ticket))
             return Conflict($"Учетная запись уже содержит такую заявку.");

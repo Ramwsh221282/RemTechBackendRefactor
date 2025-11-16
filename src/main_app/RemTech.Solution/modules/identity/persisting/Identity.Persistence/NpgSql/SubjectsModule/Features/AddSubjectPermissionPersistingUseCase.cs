@@ -11,20 +11,14 @@ namespace Identity.Persistence.NpgSql.SubjectsModule.Features;
 
 public static class AddSubjectPermissionPersistingUseCase
 {
-    internal static AddSubjectPermission AddSubjectPermission(
+    private static AddSubjectPermission AddSubjectPermission(
         AddSubjectPermission origin,
         SubjectsStorage subjects,
         PermissionsStorage permissions) => async args =>
     {
-        Guid subjectId = args.SubjectId;
-        Guid permissionId = args.PermissionId;
         CancellationToken ct = args.Ct;
-        
-        SubjectQueryArgs subjectQuery = new(Id: subjectId, WithLock: true);
-        PermissionsQueryArgs permissionQuery = new(Id: permissionId);
-
-        Optional<Subject> subject = await subjects.Find(subjectQuery, ct);
-        Optional<Permission> permission = await permissions.Find(permissionQuery, ct);
+        Optional<Subject> subject = await subjects.GetById(args.SubjectId, ct, true);
+        Optional<Permission> permission = await permissions.GetById(args.PermissionId, ct);
 
         AddSubjectPermissionArgs withEntities = args with
         {
@@ -34,13 +28,13 @@ public static class AddSubjectPermissionPersistingUseCase
         
         Result<Subject> result = await origin(withEntities);
         if (result.IsFailure) return result.Error;
-
+        
         SubjectPermission subjectPermission = permission.Value.ToSubjectPermission();
         Result<Unit> permissionInserting = await subjects.InsertPermission(result, subjectPermission, ct);
         return permissionInserting.IsFailure ? permissionInserting.Error : result;
     };
 
-    internal static AddSubjectPermission AddSubjectPermissionTransactional
+    private static AddSubjectPermission AddSubjectPermissionTransactional
         (NpgSqlSession session, AddSubjectPermission origin) => async args =>
     {
         CancellationToken ct = args.Ct;

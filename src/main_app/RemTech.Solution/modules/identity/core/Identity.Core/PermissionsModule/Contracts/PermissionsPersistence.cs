@@ -5,11 +5,18 @@ public sealed record PermissionsQueryArgs(
     string? Name = null);
 
 public sealed record PermissionsStorage(
-    Insert Insert, 
-    Delete Delete, 
-    Update Update, 
-    Find Find, 
-    FindMany FindMany);
+    Insert Insert,
+    Delete Delete,
+    Update Update,
+    Find Find,
+    FindMany FindMany)
+{
+    public async Task<Optional<Permission>> GetById(Guid id, CancellationToken ct)
+    {
+        PermissionsQueryArgs args = new(Id: id);
+        return await Find(args, ct);
+    }
+}
 
 public delegate Task<Result<Unit>> Insert(Permission permission, CancellationToken ct);
 public delegate Task<Result<Unit>> Delete(Permission permission, CancellationToken ct);

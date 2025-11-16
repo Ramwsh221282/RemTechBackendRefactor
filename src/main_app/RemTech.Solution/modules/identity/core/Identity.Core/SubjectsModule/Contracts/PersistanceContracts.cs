@@ -10,14 +10,21 @@ public sealed record SubjectQueryArgs(
     bool WithLock = false);
 
 public sealed record SubjectsStorage(
-    Insert Insert, 
-    Delete Delete, 
+    Insert Insert,
+    Delete Delete,
     Update Update,
     IsEmailUnique IsEmailUnique,
     IsLoginUnique IsLoginUnique,
     Find Find,
     FindMany FindMany,
-    InsertPermission InsertPermission);
+    InsertPermission InsertPermission)
+{
+    public async Task<Optional<Subject>> GetById(Guid id, CancellationToken ct, bool withLock = default)
+    {
+        SubjectQueryArgs args = new(Id: id, WithLock: withLock);
+        return await Find(args, ct);
+    }
+}
 
 public delegate Task<bool> IsEmailUnique(string email, CancellationToken ct);
 public delegate Task<bool> IsLoginUnique(string login, CancellationToken ct);

@@ -4,6 +4,8 @@ using Identity.Core.SubjectsModule.Contracts;
 using Identity.Core.SubjectsModule.Domain.Subjects;
 using Identity.Core.SubjectsModule.Domain.Tickets;
 using Identity.Core.SubjectsModule.Notifications.Abstractions;
+using Identity.Core.TicketsModule;
+using Identity.Core.TicketsModule.Contracts;
 using Identity.Persistence.EventListeners;
 using Identity.Persistence.NpgSql.SubjectsModule.Features;
 using Microsoft.Extensions.Configuration;
@@ -87,6 +89,16 @@ public sealed class IdentityPersistenceTestsFixture : IAsyncLifetime
             RequireActivationTicket transactional = ticketReacted.WithTransaction(sp);
             return transactional;
         });
+
+        services.AddScoped<RequirePasswordResetTicket>(sp =>
+        {
+            NotificationsRegistry registry = new();
+            RequirePasswordResetTicket core = SubjectUseCases.RequirePasswordResetTicket;
+            RequirePasswordResetTicket persisted = core.WithPersisting(sp, registry);
+            RequirePasswordResetTicket ticketReacted = persisted.WithTicketsListening(sp, registry);
+            RequirePasswordResetTicket transactional = ticketReacted.WithTransaction(sp);
+            return transactional;
+        });
         
         return services.BuildServiceProvider();
     }
@@ -148,9 +160,27 @@ public sealed class IdentityPersistenceTestsFixture : IAsyncLifetime
     public async Task<Result<SubjectTicket>> RequireActivationTicket(Guid subjectId)
     {
         RequireActivationTicketArgs args = new(subjectId, Optional.None<Subject>(), Optional<NotificationsRegistry>.None(), CancellationToken.None);
+        
         await using AsyncServiceScope scope = Scope();
         RequireActivationTicket useCase = scope.Resolve<RequireActivationTicket>();
         return await useCase(args);
+    }
+
+    public async Task<Result<SubjectTicket>> RequirePasswordResetTicket(Guid subjectId)
+    {
+        RequirePasswordResetTicketArgs args = RequirePasswordResetTicketArgs.Default(subjectId, CancellationToken.None);
+        await using AsyncServiceScope scope = Scope();
+        RequirePasswordResetTicket useCase = scope.Resolve<RequirePasswordResetTicket>();
+        return await useCase(args);
+    }
+
+    public async Task<bool> TicketIsCreatedBySubject(Guid subjectId)
+    {
+        QueryTicketArgs args = new(CreatorId: subjectId);
+        await using AsyncServiceScope scope = Scope();
+        TicketsStorage storage = scope.Resolve<TicketsStorage>();
+        Optional<Ticket> ticket = await storage.Find(args, CancellationToken.None);
+        return ticket.HasValue;
     }
     
     public async Task<Result<Subject>> AddSubjectPermission(Guid subjectId, Guid permissionId)

@@ -104,4 +104,9 @@ public sealed class Optional<T> : Optional
     {
         return new Optional<T>();
     }
+
+    public static implicit operator Optional<T>(T value)
+    {
+        return Some(value);
+    }
 }
