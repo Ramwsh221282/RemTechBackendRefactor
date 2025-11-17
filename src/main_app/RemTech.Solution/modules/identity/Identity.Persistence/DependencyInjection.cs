@@ -2,7 +2,6 @@
 using Identity.Persistence.NpgSql.PermissionsModule;
 using Identity.Persistence.NpgSql.SubjectsModule;
 using Identity.Persistence.NpgSql.SubjectsModule.SubjectTickets;
-using Identity.Persistence.NpgSql.TicketsModule;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.NpgSql.Abstractions;
 
@@ -18,7 +17,6 @@ public static class DependencyInjection
             services.AddKeyedSingleton<IDbUpgrader, IdentityDbUpgrader>(nameof(Identity));
             services.AddSubjectsStorage();
             services.AddSubjectTicketsPersistence();
-            services.AddTicketsPersistence();
             services.AddPermissionsStorage();
         }
     }

@@ -5,5 +5,5 @@
     type varchar(128) NOT NULL,
     created timestamptz NOT NULL,
     closed timestamptz,
-    active boolean
+    status varchar(128)
 );

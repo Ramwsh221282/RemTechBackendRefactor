@@ -1,4 +1,4 @@
-﻿namespace Identity.Core.TicketsModule.Contracts;
+﻿namespace Tickets.Core.Contracts;
 
 public sealed record QueryTicketArgs(
     Guid? TicketId = null, 

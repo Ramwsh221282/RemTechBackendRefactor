@@ -4,8 +4,6 @@ using Identity.Core.SubjectsModule.Contracts;
 using Identity.Core.SubjectsModule.Domain.Subjects;
 using Identity.Core.SubjectsModule.Domain.Tickets;
 using Identity.Core.SubjectsModule.Notifications.Abstractions;
-using Identity.Core.TicketsModule;
-using Identity.Core.TicketsModule.Contracts;
 using RemTech.BuildingBlocks.DependencyInjection;
 
 namespace Tests.ModuleFixtures;
@@ -76,15 +74,6 @@ public sealed class IdentityModule
         await using AsyncServiceScope scope = Scope();
         RequirePasswordResetTicket useCase = scope.Resolve<RequirePasswordResetTicket>();
         return await useCase(args);
-    }
-
-    public async Task<bool> TicketIsCreatedBySubject(Guid subjectId)
-    {
-        QueryTicketArgs args = new(CreatorId: subjectId);
-        await using AsyncServiceScope scope = Scope();
-        TicketsStorage storage = scope.Resolve<TicketsStorage>();
-        Optional<Ticket> ticket = await storage.Find(args, CancellationToken.None);
-        return ticket.HasValue;
     }
 
     public async Task<Result<Subject>> AddSubjectPermission(Guid subjectId, Guid permissionId)

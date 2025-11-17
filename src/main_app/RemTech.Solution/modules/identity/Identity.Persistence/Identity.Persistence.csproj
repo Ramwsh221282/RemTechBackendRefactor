@@ -16,4 +16,8 @@
         <EmbeddedResource Include="NpgSql\Migrations\*.sql" />
     </ItemGroup>
     
+    <ItemGroup>
+      <Folder Include="NpgSql\TicketsModule\" />
+    </ItemGroup>
+    
 </Project>

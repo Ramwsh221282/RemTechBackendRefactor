@@ -1,15 +1,16 @@
 ﻿using System.Data;
 using System.Reflection;
 using Dapper;
-using Identity.Core.TicketsModule;
-using Identity.Core.TicketsModule.Contracts;
+using Identity.Persistence.NpgSql.TicketsModule;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.Functional.Extensions;
 using RemTech.NpgSql.Abstractions;
 using RemTech.Primitives.Extensions;
+using Tickets.Core;
+using Tickets.Core.Contracts;
 
-namespace Identity.Persistence.NpgSql.TicketsModule;
+namespace Tickets.Persistence;
 
 // CREATE TABLE IF NOT EXISTS identity_module.tickets
 // (
@@ -78,14 +79,9 @@ public static class NpgSqlTickets
     {
         private Ticket ToTicket()
         {
-            TicketSnapshot snapshot = new(
-                ticket.Id, 
-                ticket.CreatorId, 
-                ticket.Type, 
-                ticket.Created,
-                ticket.Closed, 
-                ticket.Active);
-            return Ticket.Create(snapshot);
+            TicketMetadata metadata = TicketMetadata.Create(ticket.CreatorId, ticket.Id, ticket.Type);
+            TicketLifecycle lifecycle = TicketLifecycle.Create(ticket.Id, ticket.Created, ticket.Closed, ticket.Status);
+            return Ticket.Create(metadata, lifecycle);
         }
     }
     
@@ -137,20 +133,23 @@ public static class NpgSqlTickets
             clauses.Add("type = @type");
             clauses.Add("created = @created");
             clauses.Add("closed = @closed");
-            clauses.Add("active = @active");
+            clauses.Add("status = @status");
             return "SET " + Strings.Joined(clauses, ", ");
         }
         
         private DynamicParameters FillParameters()
         {
-            TicketSnapshot snapshot = ticket.Snapshotted();
+            TicketSnapshot snapshot = ticket.Snapshot();
+            TicketMetadataSnapshot metadata = snapshot.Metadata;
+            TicketLifeCycleSnapshot lifeCycle = snapshot.LifeCycle;
+            
             return NpgSqlParametersStorage.New()
-                .With("@id", snapshot.Id, DbType.Guid)
-                .With("@creator_id", snapshot.CreatorId, DbType.Guid)
-                .With("@type", snapshot.Type, DbType.String)
-                .With("@created", snapshot.Created, DbType.DateTime)
-                .WithValueOrNull("@closed", snapshot.Closed, c => c.HasValue, c => c!.Value, DbType.DateTime)
-                .With("@active", snapshot.Active, DbType.Boolean)
+                .With("@id", metadata.TicketId, DbType.Guid)
+                .With("@creator_id", metadata.CreatorId, DbType.Guid)
+                .With("@type", metadata.Type, DbType.String)
+                .With("@created", lifeCycle.Created, DbType.DateTime)
+                .WithValueOrNull("@closed", lifeCycle.Closed, c => c.HasValue, c => c!.Value, DbType.DateTime)
+                .With("@status", lifeCycle.Status, DbType.Boolean)
                 .GetParameters();
         }
 

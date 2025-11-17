@@ -6,5 +6,5 @@ internal sealed record TableTicket(
     string Type,
     DateTime Created,
     DateTime? Closed,
-    bool Active
+    string Status
 );

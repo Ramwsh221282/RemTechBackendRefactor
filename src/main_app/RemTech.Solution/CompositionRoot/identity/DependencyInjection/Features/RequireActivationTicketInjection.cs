@@ -20,8 +20,8 @@ public static class RequireActivationTicketInjection
             NotificationsRegistry registry = new();
             RequireActivationTicket core = SubjectUseCases.RequireActivationTicket;
             RequireActivationTicket persisted = core.WithPersistence(sp, Optional.Some(registry));
-            RequireActivationTicket ticketReacted = persisted.WithTicketsListening(sp, registry);
-            RequireActivationTicket transactional = ticketReacted.WithTransaction(sp);
+            // RequireActivationTicket ticketReacted = persisted.WithTicketsListening(sp, registry);
+            RequireActivationTicket transactional = persisted.WithTransaction(sp);
             RequireActivationTicket logging = transactional.WithLogging(sp);
             return logging;
         });

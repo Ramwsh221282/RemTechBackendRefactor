@@ -11,4 +11,8 @@
         <ProjectReference Include="..\..\building_blocks\RemTech.Primitives.Extensions\RemTech.Primitives.Extensions.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="TicketsModule\" />
+    </ItemGroup>
+
 </Project>

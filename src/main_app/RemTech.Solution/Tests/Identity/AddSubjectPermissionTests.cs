@@ -21,8 +21,7 @@ public sealed class AddSubjectPermissionTests(CompositionRootFixture fixture)
 
         Subject subject = await _module.RegisterSubject(login, email, password);
         Permission permission = await _module.RegisterPermission(permissionName);
-        Result<Subject> withPermission =
-            await _module.AddSubjectPermission(subject.Snapshot().Id, permission.Snapshot().Id);
+        Result<Subject> withPermission = await _module.AddSubjectPermission(subject.Snapshot().Id, permission.Snapshot().Id);
         Assert.True(withPermission.IsSuccess);
         Guid subjectId = subject.Snapshot().Id;
         Guid permissionId = permission.Snapshot().Id;
@@ -39,10 +38,8 @@ public sealed class AddSubjectPermissionTests(CompositionRootFixture fixture)
 
         Subject subject = await _module.RegisterSubject(login, email, password);
         Permission permission = await _module.RegisterPermission(permissionName);
-        Result<Subject> withPermission =
-            await _module.AddSubjectPermission(subject.Snapshot().Id, permission.Snapshot().Id);
-        Result<Subject> withSamePermission =
-            await _module.AddSubjectPermission(subject.Snapshot().Id, permission.Snapshot().Id);
+        Result<Subject> withPermission = await _module.AddSubjectPermission(subject.Snapshot().Id, permission.Snapshot().Id);
+        Result<Subject> withSamePermission = await _module.AddSubjectPermission(subject.Snapshot().Id, permission.Snapshot().Id);
 
         Assert.True(withPermission.IsSuccess);
         Assert.True(withSamePermission.IsFailure);
