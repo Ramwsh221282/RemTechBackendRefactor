@@ -10,9 +10,11 @@ public sealed record TicketsStorage(
     Insert Insert, 
     Delete Delete, 
     Update Update, 
-    Find Find);
+    Find Find,
+    HasAny HasAny);
 
 public delegate Task<Result<Unit>> Insert(Ticket ticket, CancellationToken ct);
 public delegate Task<Result<Unit>> Delete(Ticket ticket, CancellationToken ct);
 public delegate Task<Result<Unit>> Update(Ticket ticket, CancellationToken ct);
 public delegate Task<Optional<Ticket>> Find(QueryTicketArgs args, CancellationToken ct);
+public delegate Task<bool> HasAny(CancellationToken ct);

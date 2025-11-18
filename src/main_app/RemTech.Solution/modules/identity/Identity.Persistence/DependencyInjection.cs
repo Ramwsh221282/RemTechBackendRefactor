@@ -18,6 +18,7 @@ public static class DependencyInjection
             services.AddSubjectsStorage();
             services.AddSubjectTicketsPersistence();
             services.AddPermissionsStorage();
+            
         }
     }
 

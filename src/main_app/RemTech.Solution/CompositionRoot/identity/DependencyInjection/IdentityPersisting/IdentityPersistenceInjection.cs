@@ -12,7 +12,7 @@ namespace CompositionRoot.identity.DependencyInjection.IdentityPersisting;
 internal static class IdentityPersistenceInjection
 {
     [DependencyInjectionMethod]
-    private static void Inject(this IServiceCollection services)
+    public static void Inject(this IServiceCollection services)
     {
         services.AddTransient<IDbUpgrader, IdentityDbUpgrader>();
         services.AddSubjectsStorage();

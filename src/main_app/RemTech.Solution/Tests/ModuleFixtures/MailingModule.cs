@@ -2,10 +2,11 @@
 
 public sealed class MailingModule
 {
-    private readonly IServiceProvider _sp;
+    private readonly Lazy<IServiceProvider> _lazyProvider;
+    private IServiceProvider Sp => _lazyProvider.Value;
 
-    public MailingModule(IServiceProvider sp)
+    public MailingModule(Lazy<IServiceProvider> lazyProvider)
     {
-        _sp = sp;
+        _lazyProvider = lazyProvider;
     }
 }

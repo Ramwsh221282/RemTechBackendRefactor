@@ -1,4 +1,6 @@
-﻿namespace Tickets.Core;
+﻿using Tickets.Core.Snapshots;
+
+namespace Tickets.Core;
 
 public sealed class TicketMetadata
 {

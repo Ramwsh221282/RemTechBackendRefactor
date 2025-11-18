@@ -1,4 +1,5 @@
-﻿using RemTech.Functional.Extensions;
+﻿using RemTech.BuildingBlocks.DependencyInjection;
+using RemTech.Functional.Extensions;
 using Tickets.Core;
 using Tickets.Core.Contracts;
 
@@ -14,4 +15,12 @@ public static class RegisterTicketUseCase
         if (saving.IsFailure) return saving.Error;
         return ticket;
     };
+
+    extension(RegisterTicket origin)
+    {
+        public RegisterTicket WithPersistence(IServiceProvider sp)
+        {
+            return RegisterTicket(origin, sp.Resolve<TicketsStorage>());
+        }
+    }
 }

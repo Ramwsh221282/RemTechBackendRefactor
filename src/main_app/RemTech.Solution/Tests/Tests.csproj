@@ -22,6 +22,9 @@
     <ItemGroup>
         <ProjectReference Include="..\CompositionRoot\CompositionRoot.csproj"/>
         <ProjectReference Include="..\modules\building_blocks\RemTech.Tests.Shared\RemTech.Tests.Shared.csproj"/>
+        <ProjectReference Include="..\modules\tickets\Tickets.EventListeners\Tickets.EventListeners.csproj" />
+        <ProjectReference Include="..\modules\tickets\Tickets.Logging\Tickets.Logging.csproj" />
+        <ProjectReference Include="..\modules\tickets\Tickets.Persistence\Tickets.Persistence.csproj" />
     </ItemGroup>
 
     <ItemGroup>

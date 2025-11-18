@@ -9,7 +9,7 @@ namespace CompositionRoot.identity.DependencyInjection.IdentityPasswordHashing;
 internal static class IdentityPasswordHashingInjection
 {
     [DependencyInjectionMethod]
-    private static void Inject(this IServiceCollection services)
+    public static void Inject(this IServiceCollection services)
     {
         services.AddOptions<IdentityPasswordHashOptions>()
             .BindConfiguration(nameof(IdentityPasswordHashOptions));

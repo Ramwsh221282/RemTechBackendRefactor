@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Mailers.Application.Features.SendEmailMessage;
 
-public sealed record SendEmailMessageUseCase(NpgSqlMailersCommands Commands, IOptions<MailersEncryptOptions> Encrypt)
+public sealed class SendEmailMessageUseCase(NpgSqlMailersCommands commands, IOptions<MailersEncryptOptions> encrypt)
 {
     public async Task<Result<Mailer>> Invoke(SendEmailMessageArgs args)
     {
@@ -16,14 +16,14 @@ public sealed record SendEmailMessageUseCase(NpgSqlMailersCommands Commands, IOp
         
         MailerDeliveryArgs delivery = new(email, args.Subject, args.Body);
         
-        return await Commands.ExecuteUnderTransaction<Result<Mailer>>(async (pg) =>
+        return await commands.ExecuteUnderTransaction<Result<Mailer>>(async (pg) =>
         {
             QueryMailerArguments queryMailerArgs = new(Id: args.Id);
             
             Optional<Mailer> mailer = await pg.GetMailer(queryMailerArgs, args.Ct);
             if (mailer.NoValue) return NotFound("Почтовый отправитель не найден.");
             
-            Result<MailerSending> sent = await mailer.Value.SendMessage(Encrypt, delivery, args.Ct);
+            Result<MailerSending> sent = await mailer.Value.SendMessage(encrypt, delivery, args.Ct);
             if (sent.IsFailure) return sent.Error;
             
             Result<Unit> insertingSent = await pg.InsertMailerSending(sent, args.Ct);

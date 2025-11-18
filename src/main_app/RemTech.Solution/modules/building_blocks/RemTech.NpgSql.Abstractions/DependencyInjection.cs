@@ -14,8 +14,10 @@ public static class DependencyInjection
         public void AddPostgres()
         {
             if (_hasConfigured) return;
+            services.AddOptions<NpgSqlOptions>().BindConfiguration(nameof(NpgSqlOptions));
             services.TryAddSingleton<NpgSqlConnectionFactory>();
-            services.AddTransient<IDbUpgrader, PgVectorUpgrader>();
+            services.AddTransient<PgVectorUpgrader>();
+            // services.AddTransient<IDbUpgrader, PgVectorUpgrader>();
             services.TryAddScoped<NpgSqlSession>();
             SqlMapper.AddTypeHandler(new VectorTypeHandler());
             DefaultTypeMap.MatchNamesWithUnderscores = true;

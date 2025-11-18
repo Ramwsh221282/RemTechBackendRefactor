@@ -16,14 +16,9 @@ public static class DependcyInjectionExtensions
             .ToArray();
 
         foreach (Type type in array)
-        {
-            MethodInfo? method = type
-                .GetMethods()
-                .FirstOrDefault(m => m.GetCustomAttribute<DependencyInjectionMethodAttribute>() is not null);
-            
-            if (method is null) continue;
-            method.Invoke(null, [services]);
-        }
+            type.GetMethods()
+                .First(m => m.GetCustomAttribute<DependencyInjectionMethodAttribute>() is not null)
+                .Invoke(null, [services]);
     }
 
     public static void ApplyModuleMigrations(this IServiceProvider sp)

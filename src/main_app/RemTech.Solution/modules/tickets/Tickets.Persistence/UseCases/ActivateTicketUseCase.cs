@@ -1,4 +1,5 @@
-﻿using RemTech.Functional.Extensions;
+﻿using RemTech.BuildingBlocks.DependencyInjection;
+using RemTech.Functional.Extensions;
 using Tickets.Core;
 using Tickets.Core.Contracts;
 
@@ -16,4 +17,12 @@ public static class ActivateTicketUseCase
         if (updating.IsFailure) return updating.Error;
         return activated;
     };
+
+    extension(ActivateTicket origin)
+    {
+        public ActivateTicket WithPersistence(IServiceProvider sp)
+        {
+            return ActivateTicket(origin, sp.Resolve<TicketsStorage>());
+        }
+    }
 }

@@ -1,4 +1,5 @@
-﻿using RemTech.Functional.Extensions;
+﻿using RemTech.BuildingBlocks.DependencyInjection;
+using RemTech.Functional.Extensions;
 using Tickets.Core;
 using Tickets.Core.Contracts;
 
@@ -16,4 +17,12 @@ public static class MarkPendingUseCase
         if (saving.IsFailure) return saving.Error;
         return pending;
     };
+
+    extension(MarkPending origin)
+    {
+        public MarkPending WithPersistence(IServiceProvider sp)
+        {
+            return MarkPending(origin, sp.Resolve<TicketsStorage>());
+        }
+    }
 }

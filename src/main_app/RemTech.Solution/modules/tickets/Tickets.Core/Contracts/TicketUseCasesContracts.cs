@@ -1,6 +1,6 @@
 ﻿namespace Tickets.Core.Contracts;
 
-public sealed record RegisterTicketArgs(Guid CreatorId, string Type, CancellationToken Ct);
+public sealed record RegisterTicketArgs(Guid CreatorId, Guid TicketId, string Type, CancellationToken Ct);
 public delegate Task<Result<Ticket>> RegisterTicket(RegisterTicketArgs args);
 
 public sealed record ActivateTicketArgs(Guid CreatorId, Optional<Ticket> Ticket, CancellationToken Ct);

@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace CompositionRoot.identity.DependencyInjection.Features;
 
 [DependencyInjectionClass]
-public static class RegisterPermissionInjection
+internal static class RegisterPermissionInjection
 {
     [DependencyInjectionMethod]
     public static void Inject(this IServiceCollection services)

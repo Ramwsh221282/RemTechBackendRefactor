@@ -12,8 +12,4 @@
       <ProjectReference Include="..\Tickets.Core\Tickets.Core.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <EmbeddedResource Include="Migrations\003.Identity_Tickets.sql" />
-    </ItemGroup>
-
 </Project>

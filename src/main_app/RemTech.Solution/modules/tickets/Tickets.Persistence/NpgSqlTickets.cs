@@ -1,7 +1,6 @@
 ﻿using System.Data;
 using System.Reflection;
 using Dapper;
-using Identity.Persistence.NpgSql.TicketsModule;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.Functional.Extensions;
@@ -9,6 +8,7 @@ using RemTech.NpgSql.Abstractions;
 using RemTech.Primitives.Extensions;
 using Tickets.Core;
 using Tickets.Core.Contracts;
+using Tickets.Core.Snapshots;
 
 namespace Tickets.Persistence;
 
@@ -67,6 +67,14 @@ public static class NpgSqlTickets
         return ticket.ToMaybeTicket();
     };
 
+    public static HasAny HasAny(NpgSqlSession session) => async (ct) =>
+    {
+        const string sql = "SELECT COUNT(*) FROM identity_module.tickets";
+        CommandDefinition command = new(sql, cancellationToken: ct, transaction: session.Transaction);
+        int count = await session.QuerySingleRow<int>(command);
+        return count > 0;
+    };
+    
     extension(TableTicket? ticket)
     {
         private Optional<Ticket> ToMaybeTicket()
@@ -168,7 +176,9 @@ public static class NpgSqlTickets
             services.AddScopedDelegate<Delete>(Assembly);
             services.AddScopedDelegate<Update>(Assembly);
             services.AddScopedDelegate<Find>(Assembly);
+            services.AddScopedDelegate<HasAny>(Assembly);
             services.AddScoped<TicketsStorage>();
+            services.AddTransient<IDbUpgrader, TicketsDbUpgrader>();
         }
     }
 }

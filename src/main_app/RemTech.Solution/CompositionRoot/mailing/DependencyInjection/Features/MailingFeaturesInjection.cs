@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace CompositionRoot.mailing.DependencyInjection.Features;
 
 [DependencyInjectionClass]
-public static class MailingFeaturesInjection
+internal static class MailingFeaturesInjection
 {
     [DependencyInjectionMethod]
     public static void Inject(this IServiceCollection services)

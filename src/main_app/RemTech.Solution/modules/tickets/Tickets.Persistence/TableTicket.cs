@@ -1,4 +1,4 @@
-﻿namespace Identity.Persistence.NpgSql.TicketsModule;
+﻿namespace Tickets.Persistence;
 
 internal sealed record TableTicket(
     Guid Id,

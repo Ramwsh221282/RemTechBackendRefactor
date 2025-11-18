@@ -29,7 +29,6 @@ public static class ChangePasswordLoggingUseCase
             ("""
              Id: {Id}
              Изменил пароль: {Success}
-             Ошибка: {Error}
              """, successProperties);
             return operation;
         };

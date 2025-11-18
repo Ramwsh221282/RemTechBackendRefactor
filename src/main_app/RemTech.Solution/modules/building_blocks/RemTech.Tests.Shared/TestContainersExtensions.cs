@@ -1,5 +1,7 @@
 ﻿using RemTech.NpgSql.Abstractions;
+using RemTech.RabbitMq.Abstractions;
 using Testcontainers.PostgreSql;
+using Testcontainers.RabbitMq;
 
 namespace RemTech.Tests.Shared;
 
@@ -13,14 +15,15 @@ public static class TestContainersExtensions
             .WithPassword("password")
             .Build();
 
+    public static RabbitMqContainer BuildRabbitMqContainer(this RabbitMqBuilder builder) =>
+        builder.WithImage("rabbitmq:3.11").Build();
+    
     // public static RedisContainer BuildRedisContainer(this RedisBuilder builder) =>
     //     builder.WithImage("redis:latest").Build();
     //
     // public static CacheOptions CreateCacheOptions(this RedisContainer container) =>
     //     new() { Host = container.GetConnectionString() };
     //
-    // public static RabbitMqContainer BuildRabbitMqContainer(this RabbitMqBuilder builder) =>
-    //     builder.WithImage("rabbitmq:3.11").Build();
 
     public static NpgSqlOptions CreateDatabaseConfiguration(this PostgreSqlContainer container)
     {
@@ -52,26 +55,26 @@ public static class TestContainersExtensions
         };
     }
 
-    // public static RabbitMqOptions CreateRabbitMqConfiguration(this RabbitMqContainer container)
-    // {
-    //     string connectionString = container.GetConnectionString();
-    //     string[] parts = connectionString.Split('@', StringSplitOptions.RemoveEmptyEntries);
-    //     string[] hostParts = parts[1].Split(':', StringSplitOptions.RemoveEmptyEntries);
-    //
-    //     string host = hostParts[0];
-    //     string port = hostParts[1].Replace("/", string.Empty);
-    //     string[] userParts = parts[0]
-    //         .Split("//", StringSplitOptions.RemoveEmptyEntries)[1]
-    //         .Split(':', StringSplitOptions.RemoveEmptyEntries);
-    //     string username = userParts[0];
-    //     string password = userParts[1];
-    //
-    //     return new RabbitMqOptions()
-    //     {
-    //         HostName = host,
-    //         Port = port,
-    //         Password = password,
-    //         UserName = username,
-    //     };
-    // }
+    public static RabbitMqConnectionOptions CreateRabbitMqConfiguration(this RabbitMqContainer container)
+    {
+        string connectionString = container.GetConnectionString();
+        string[] parts = connectionString.Split('@', StringSplitOptions.RemoveEmptyEntries);
+        string[] hostParts = parts[1].Split(':', StringSplitOptions.RemoveEmptyEntries);
+    
+        string host = hostParts[0];
+        string port = hostParts[1].Replace("/", string.Empty);
+        string[] userParts = parts[0]
+            .Split("//", StringSplitOptions.RemoveEmptyEntries)[1]
+            .Split(':', StringSplitOptions.RemoveEmptyEntries);
+        string username = userParts[0];
+        string password = userParts[1];
+    
+        return new RabbitMqConnectionOptions()
+        {
+            Hostname = host,
+            Port = int.Parse(port),
+            Password = password,
+            Username = username,
+        };
+    }
 }

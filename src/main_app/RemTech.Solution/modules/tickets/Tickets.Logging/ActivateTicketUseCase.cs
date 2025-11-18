@@ -1,4 +1,5 @@
-﻿using RemTech.Functional.Extensions;
+﻿using RemTech.BuildingBlocks.DependencyInjection;
+using RemTech.Functional.Extensions;
 using Serilog;
 using Tickets.Core;
 using Tickets.Core.Contracts;
@@ -33,4 +34,12 @@ public static class ActivateTicketUseCase
 
         return result;
     };
+
+    extension(ActivateTicket origin)
+    {
+        public ActivateTicket WithLogging(IServiceProvider sp)
+        {
+            return ActivateTicket(origin, sp.Resolve<ILogger>());
+        }
+    }
 }

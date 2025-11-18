@@ -1,4 +1,7 @@
-﻿using RemTech.Functional.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection;
+using RemTech.BuildingBlocks.DependencyInjection;
+using RemTech.Functional.Extensions;
+using Serilog;
 using Tickets.Core;
 using Tickets.Core.Contracts;
 
@@ -32,4 +35,12 @@ public static class MarkPendingUseCase
 
         return pending;
     };
+
+    extension(MarkPending origin)
+    {
+        public MarkPending WithLogging(IServiceProvider sp)
+        {
+            return MarkPending(sp.Resolve<ILogger>(), origin);
+        }
+    }
 }

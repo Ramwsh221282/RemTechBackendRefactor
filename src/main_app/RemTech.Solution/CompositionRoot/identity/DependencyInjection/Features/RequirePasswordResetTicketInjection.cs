@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace CompositionRoot.identity.DependencyInjection.Features;
 
 [DependencyInjectionClass]
-public static class RequirePasswordResetTicketInjection
+internal static class RequirePasswordResetTicketInjection
 {
     [DependencyInjectionMethod]
     public static void Inject(this IServiceCollection services)

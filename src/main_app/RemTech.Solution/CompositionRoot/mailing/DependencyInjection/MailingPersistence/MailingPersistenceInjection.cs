@@ -8,7 +8,7 @@ using RemTech.NpgSql.Abstractions;
 namespace CompositionRoot.mailing.DependencyInjection.MailingPersistence;
 
 [DependencyInjectionClass]
-public static class MailingPersistenceInjection
+internal static class MailingPersistenceInjection
 {
     [DependencyInjectionMethod]
     public static void Inject(this IServiceCollection services)

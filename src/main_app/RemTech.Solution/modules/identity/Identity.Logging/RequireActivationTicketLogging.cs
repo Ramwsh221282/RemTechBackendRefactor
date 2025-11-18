@@ -34,7 +34,6 @@ public static class RequireActivationTicketLogging
                 Subject ID: {SId}
                 Ticket ID: {TId}
                 Создана: {Success}
-                Ошибка: {Error}
                 """, [args.SubjectId, id, ticket.IsSuccess, ticket.Error.Message]);
         }
 

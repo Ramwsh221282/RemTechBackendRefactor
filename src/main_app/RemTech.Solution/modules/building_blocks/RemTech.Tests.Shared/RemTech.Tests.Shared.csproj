@@ -17,6 +17,7 @@
       <ProjectReference Include="..\RemTech.Functional.Extensions\RemTech.Functional.Extensions.csproj" />
       <ProjectReference Include="..\RemTech.NpgSql.Abstractions\RemTech.NpgSql.Abstractions.csproj" />
       <ProjectReference Include="..\RemTech.Primitives.Extensions\RemTech.Primitives.Extensions.csproj" />
+      <ProjectReference Include="..\RemTech.RabbitMq.Abstractions\RemTech.RabbitMq.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>

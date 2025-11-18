@@ -1,4 +1,5 @@
 ﻿using RemTech.Primitives.Extensions.SmartEnumerations;
+using Tickets.Core.Snapshots;
 
 namespace Tickets.Core;
 

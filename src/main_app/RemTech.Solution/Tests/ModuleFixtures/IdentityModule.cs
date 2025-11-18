@@ -4,17 +4,20 @@ using Identity.Core.SubjectsModule.Contracts;
 using Identity.Core.SubjectsModule.Domain.Subjects;
 using Identity.Core.SubjectsModule.Domain.Tickets;
 using Identity.Core.SubjectsModule.Notifications.Abstractions;
+using Identity.Outbox;
 using RemTech.BuildingBlocks.DependencyInjection;
 
 namespace Tests.ModuleFixtures;
 
 public sealed class IdentityModule
 {
-    private readonly IServiceProvider _sp;
+    private readonly Lazy<IServiceProvider> _lazyProvider;
+    private IServiceProvider Sp => _lazyProvider.Value;
+    
 
-    public IdentityModule(IServiceProvider sp)
+    public IdentityModule(Lazy<IServiceProvider> lazyProvider)
     {
-        _sp = sp;
+        _lazyProvider = lazyProvider;
     }
 
     public async Task<Result<Permission>> RegisterPermission(string name)
@@ -89,8 +92,22 @@ public sealed class IdentityModule
         return await useCase(args);
     }
 
+    public async Task<bool> OutboxHasMessages()
+    {
+        await using AsyncServiceScope scope = Scope();
+        IdentityOutboxStorage storage = scope.Resolve<IdentityOutboxStorage>();
+        return await storage.HasAny(CancellationToken.None);
+    }
+
+    public async Task<IEnumerable<IdentityOutboxMessage>> GetOutboxMessages(int maxAmount)
+    {
+        await using AsyncServiceScope scope = Scope();
+        IdentityOutboxStorage storage = scope.Resolve<IdentityOutboxStorage>();
+        return await storage.GetPendingMessages(maxAmount, CancellationToken.None);
+    }
+    
     private AsyncServiceScope Scope()
     {
-        return _sp.CreateAsyncScope();
+        return Sp.CreateAsyncScope();
     }
 }
