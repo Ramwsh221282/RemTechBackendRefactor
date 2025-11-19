@@ -23,7 +23,7 @@ public static class DependcyInjectionExtensions
 
     public static void ApplyModuleMigrations(this IServiceProvider sp)
     {
-        var mainUpgrader = sp.GetRequiredService<PgVectorUpgrader>();
+        PgVectorUpgrader mainUpgrader = sp.GetRequiredService<PgVectorUpgrader>();
         mainUpgrader.ApplyMigrations();
         
         IEnumerable<IDbUpgrader> upgraders = sp.GetServices<IDbUpgrader>();

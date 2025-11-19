@@ -18,7 +18,6 @@ internal static class RequirePasswordResetTicketInjection
             NotificationsRegistry registry = new();
             RequirePasswordResetTicket core = SubjectUseCases.RequirePasswordResetTicket;
             RequirePasswordResetTicket persisted = core.WithPersisting(sp, registry);
-            // RequirePasswordResetTicket ticketReacted = persisted.WithTicketsListening(sp, registry);
             RequirePasswordResetTicket transactional = persisted.WithTransaction(sp);
             RequirePasswordResetTicket logging = transactional.WithLogging(sp);
             return logging;
