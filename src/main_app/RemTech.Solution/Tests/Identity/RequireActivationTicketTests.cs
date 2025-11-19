@@ -2,7 +2,6 @@
 using Identity.Core.SubjectsModule.Domain.Tickets;
 using RemTech.BuildingBlocks.DependencyInjection;
 using Tests.ModuleFixtures;
-using Tests.Tickets;
 using Tickets.EventListeners;
 
 namespace Tests.Identity;
@@ -15,7 +14,6 @@ public sealed class RequireActivationTicketTests(CompositionRootFixture fixture)
     [Fact]
     private async Task Require_Subject_Activation_Ticket_Success()
     {
-        // TODO ADD Web Application Factory.
         await using AsyncServiceScope scope = fixture.Scope();
         TicketCreatedEventListener listener = scope.Resolve<TicketCreatedEventListener>();
         await listener.StartAsync(CancellationToken.None);

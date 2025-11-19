@@ -1,50 +1,39 @@
 ﻿using CompositionRoot.Shared;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Quartz;
 using RemTech.RabbitMq.Abstractions;
 using RemTech.Tests.Shared;
-using Serilog;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
-using Tests.Tickets;
 
 namespace Tests.ModuleFixtures;
 
-public sealed class CompositionRootFixture : IAsyncLifetime
+public sealed class CompositionRootFixture : WebApplicationFactory<WebHostApplication.Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
     private readonly RabbitMqContainer _rabbitMqContainer = new RabbitMqBuilder().BuildRabbitMqContainer();
     
-    private readonly Lazy<IServiceProvider> _lazyProvider;
-    private IServiceProvider Sp => _lazyProvider.Value;
-
-    public IdentityModule IdentityModule { get; }
-    public MailingModule MailingModule { get; }
-    public TicketsModule TicketsModule { get; }
-
-    public CompositionRootFixture()
-    {
-        _lazyProvider = new Lazy<IServiceProvider>(BuildProvider);
-        IdentityModule = new(_lazyProvider);
-        MailingModule = new(_lazyProvider);
-        TicketsModule = new(_lazyProvider);
-    }
+    public IdentityModule IdentityModule => new(Services);
+    public MailingModule MailingModule => new (Services);
+    public TicketsModule TicketsModule => new(Services);
 
     public AsyncServiceScope Scope()
     {
-        return _lazyProvider.Value.CreateAsyncScope();
+        return Services.CreateAsyncScope();
     }
 
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
         await _rabbitMqContainer.StartAsync();
-        Sp.ApplyModuleMigrations();
+        Services.ApplyModuleMigrations();
     }
 
-    public async Task DisposeAsync()
+    public new async Task DisposeAsync()
     {
         await _dbContainer.StopAsync();
         await _dbContainer.DisposeAsync();
@@ -52,20 +41,17 @@ public sealed class CompositionRootFixture : IAsyncLifetime
         await _rabbitMqContainer.DisposeAsync();
     }
 
-    private IServiceProvider BuildProvider()
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        IConfiguration configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-        IServiceCollection services = new ServiceCollection();
-        ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
-        services.AddSingleton(logger);
-        services.AddPostgres();
-        services.AddRabbitMq();
-        services.RegisterModules();
-        services.AddSingleton(configuration);
-        services.AddQuartzHostedService(c => c.StartDelay = TimeSpan.FromSeconds(10));
-        ReconfigureRabbitMqOptions(services);
-        ReconfigureNpgSqlOptions(services);
-        return services.BuildServiceProvider();
+        base.ConfigureWebHost(builder);
+        builder.ConfigureTestServices(s =>
+        {
+            s.RemoveAll<NpgSqlOptions>();
+            s.RemoveAll<RabbitMqConnectionOptions>();
+            ReconfigureNpgSqlOptions(s);
+            ReconfigureRabbitMqOptions(s);
+            s.AddQuartzHostedService(c => c.StartDelay = TimeSpan.FromSeconds(10));
+        });
     }
 
     private void ReconfigureRabbitMqOptions(IServiceCollection services)

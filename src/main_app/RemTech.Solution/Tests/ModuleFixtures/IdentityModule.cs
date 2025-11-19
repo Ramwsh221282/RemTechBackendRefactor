@@ -11,13 +11,11 @@ namespace Tests.ModuleFixtures;
 
 public sealed class IdentityModule
 {
-    private readonly Lazy<IServiceProvider> _lazyProvider;
-    private IServiceProvider Sp => _lazyProvider.Value;
-    
+    private readonly IServiceProvider _sp;
 
-    public IdentityModule(Lazy<IServiceProvider> lazyProvider)
+    public IdentityModule(IServiceProvider sp)
     {
-        _lazyProvider = lazyProvider;
+        _sp = sp;
     }
 
     public async Task<Result<Permission>> RegisterPermission(string name)
@@ -108,6 +106,6 @@ public sealed class IdentityModule
     
     private AsyncServiceScope Scope()
     {
-        return Sp.CreateAsyncScope();
+        return _sp.CreateAsyncScope();
     }
 }

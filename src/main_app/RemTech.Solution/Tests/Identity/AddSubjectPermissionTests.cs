@@ -10,7 +10,7 @@ public sealed class AddSubjectPermissionTests(CompositionRootFixture fixture)
     : IClassFixture<CompositionRootFixture>
 {
     private readonly IdentityModule _module = fixture.IdentityModule;
-
+    
     [Fact]
     private async Task AddSubject_Permission_Success()
     {

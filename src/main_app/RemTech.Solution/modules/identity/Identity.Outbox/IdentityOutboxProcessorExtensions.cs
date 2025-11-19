@@ -16,11 +16,12 @@ public static class IdentityOutboxProcessorExtensions
             {
                 q.AddJob<IdentityOutboxProcessor>(c =>
                 {
+                    c.StoreDurably();
                     c.WithIdentity(key);
-                });
-                q.AddTrigger(t =>
+                }).AddTrigger(t =>
                 {
                     t.ForJob(key).WithCronSchedule("*/5 * * * * ?");
+                    t.WithIdentity($"trigger_{nameof(IdentityOutboxProcessor)}");
                 });
             });
         }

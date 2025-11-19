@@ -1,14 +1,13 @@
 ﻿using RemTech.BuildingBlocks.DependencyInjection;
 using Tickets.Core.Contracts;
 
-namespace Tests.Tickets;
+namespace Tests.ModuleFixtures;
 
 public sealed class TicketsModule
 {
-    private readonly Lazy<IServiceProvider> _sp;
-    private IServiceProvider Sp => _sp.Value;
+    private readonly IServiceProvider _sp;
 
-    public TicketsModule(Lazy<IServiceProvider> sp)
+    public TicketsModule(IServiceProvider sp)
     {
         _sp = sp;
     }
@@ -20,7 +19,7 @@ public sealed class TicketsModule
         {
             try
             {
-                await using AsyncServiceScope scope = Sp.CreateAsyncScope();
+                await using AsyncServiceScope scope = _sp.CreateAsyncScope();
                 TicketsStorage storage = scope.ServiceProvider.Resolve<TicketsStorage>();
                 return await storage.HasAny(CancellationToken.None);
             }
