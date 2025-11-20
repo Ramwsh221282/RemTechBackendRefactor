@@ -34,18 +34,12 @@ public abstract record TicketRequiredMessage
         bool hasTicketId = message.TryGetProperty("ticket_id", out JsonElement ticketIdElement);
         bool hasType = message.TryGetProperty("type", out JsonElement typeElement);
         bool hasExtra = message.TryGetProperty("extra", out JsonElement extraElement);
-
-        string? json = null;
-        if (hasExtra)
-        {
-            object? extra = extraElement.Deserialize<object>();
-            json = extra == null ? null : JsonSerializer.Serialize(extra);
-        }
+        string extra = extraElement.GetRawText();
         
         return (hasCreatorId, hasTicketId, hasType) switch
         {
             (true, true, true) => 
-                new ValidRequiredMessage(creatorIdElement.GetGuid(), ticketIdElement.GetGuid(), typeElement.GetString()!, json),
+                new ValidRequiredMessage(creatorIdElement.GetGuid(), ticketIdElement.GetGuid(), typeElement.GetString()!, extra),
             _ => new InvalidRequiredMessage()
         };
     }
