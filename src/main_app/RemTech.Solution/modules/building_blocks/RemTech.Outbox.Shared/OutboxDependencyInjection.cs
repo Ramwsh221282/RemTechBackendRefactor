@@ -1,0 +1,19 @@
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace RemTech.Outbox.Shared;
+
+public static class OutboxDependencyInjection
+{
+    public static void AddOutboxServices(this IServiceCollection services, params string[] dbSchemas)
+    {
+        services.AddSingleton<OutboxServicesRegistry>(sp =>
+        {
+            OutboxServicesRegistry registry = new();
+            
+            foreach (string schema in dbSchemas)
+                registry.AddService(schema);
+            
+            return registry;
+        });
+    }
+}

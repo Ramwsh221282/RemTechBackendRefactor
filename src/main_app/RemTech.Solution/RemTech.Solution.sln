@@ -236,6 +236,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tickets.EventListeners", "m
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebHostApplication", "WebHostApplication\WebHostApplication.csproj", "{76FC6B27-0F0D-4334-8BE5-2212CCCCE4E0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tickets.Outbox", "modules\tickets\Tickets.Outbox\Tickets.Outbox.csproj", "{D07968A1-1536-4C06-AEBD-B80032037FA1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.Outbox.Shared", "modules\building_blocks\RemTech.Outbox.Shared\RemTech.Outbox.Shared.csproj", "{C9724D54-D84E-40C9-8ADF-FE2209AD9E60}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -354,6 +358,8 @@ Global
 		{A3659984-FF44-423E-BCA6-895310E72AE8} = {73EE3210-C164-4060-B679-037A4AD5D63A}
 		{2D149CB0-957A-4EA2-89D4-C9ECCD65018E} = {B5E778FE-6E21-4D96-A023-FE888D2D893E}
 		{7CB925E2-FF69-41B1-8A60-8AA2CBCB6A2B} = {9E39A7B7-62E7-43A9-A88D-90C186C4EE1D}
+		{D07968A1-1536-4C06-AEBD-B80032037FA1} = {9E39A7B7-62E7-43A9-A88D-90C186C4EE1D}
+		{C9724D54-D84E-40C9-8ADF-FE2209AD9E60} = {73EE3210-C164-4060-B679-037A4AD5D63A}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -688,5 +694,13 @@ Global
 		{76FC6B27-0F0D-4334-8BE5-2212CCCCE4E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76FC6B27-0F0D-4334-8BE5-2212CCCCE4E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76FC6B27-0F0D-4334-8BE5-2212CCCCE4E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D07968A1-1536-4C06-AEBD-B80032037FA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D07968A1-1536-4C06-AEBD-B80032037FA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D07968A1-1536-4C06-AEBD-B80032037FA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D07968A1-1536-4C06-AEBD-B80032037FA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9724D54-D84E-40C9-8ADF-FE2209AD9E60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9724D54-D84E-40C9-8ADF-FE2209AD9E60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9724D54-D84E-40C9-8ADF-FE2209AD9E60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9724D54-D84E-40C9-8ADF-FE2209AD9E60}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

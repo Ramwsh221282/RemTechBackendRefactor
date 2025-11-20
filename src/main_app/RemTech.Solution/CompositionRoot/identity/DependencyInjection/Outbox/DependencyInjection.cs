@@ -10,6 +10,7 @@ internal static class DependencyInjection
     [DependencyInjectionMethod]
     public static void Inject(this IServiceCollection services)
     {
+        services.AddIdentityOutbox();
         services.AddIdentityOutboxProcessor();
     }
 }

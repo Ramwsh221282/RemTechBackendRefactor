@@ -5,11 +5,11 @@ namespace Identity.Outbox;
 [DisallowConcurrentExecution]
 public sealed class IdentityOutboxProcessor : IJob
 {
-    private readonly IdentityOutboxProcessorWork _work;
+    private readonly IIdentityOutboxProcessorWork _work;
     private readonly Serilog.ILogger _logger;
     private const string Context = nameof(IdentityOutboxProcessor);
 
-    public IdentityOutboxProcessor(IdentityOutboxProcessorWork work, Serilog.ILogger logger)
+    public IdentityOutboxProcessor(IIdentityOutboxProcessorWork work, Serilog.ILogger logger)
     {
         _work = work;
         _logger = logger;
@@ -18,10 +18,9 @@ public sealed class IdentityOutboxProcessor : IJob
     public async Task Execute(IJobExecutionContext context)
     {
         _logger.Information("{Context} processing job", Context);
-        IdentityOutboxProcessorWork work = _work;
         try
         {
-            await work.ProcessMessages();
+            await _work.ProcessMessages();
             _logger.Information("{Context} job processed", Context);
         }
         catch(Exception ex)

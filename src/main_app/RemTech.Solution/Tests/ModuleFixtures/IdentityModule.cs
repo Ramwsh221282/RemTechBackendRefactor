@@ -6,6 +6,7 @@ using Identity.Core.SubjectsModule.Domain.Tickets;
 using Identity.Core.SubjectsModule.Notifications.Abstractions;
 using Identity.Outbox;
 using RemTech.BuildingBlocks.DependencyInjection;
+using RemTech.Outbox.Shared;
 
 namespace Tests.ModuleFixtures;
 
@@ -92,16 +93,20 @@ public sealed class IdentityModule
 
     public async Task<bool> OutboxHasMessages()
     {
+        OutboxServicesRegistry registry = _sp.Resolve<OutboxServicesRegistry>();
         await using AsyncServiceScope scope = Scope();
-        IdentityOutboxStorage storage = scope.Resolve<IdentityOutboxStorage>();
-        return await storage.HasAny(CancellationToken.None);
+        await using NpgSqlSession session = scope.Resolve<NpgSqlSession>();
+        OutboxService service = registry.GetService(session, "identity_module");
+        return await service.HasAny(CancellationToken.None);
     }
 
-    public async Task<IEnumerable<IdentityOutboxMessage>> GetOutboxMessages(int maxAmount)
+    public async Task<IEnumerable<OutboxMessage>> GetOutboxMessages(int maxAmount)
     {
+        OutboxServicesRegistry registry = _sp.Resolve<OutboxServicesRegistry>();
         await using AsyncServiceScope scope = Scope();
-        IdentityOutboxStorage storage = scope.Resolve<IdentityOutboxStorage>();
-        return await storage.GetPendingMessages(maxAmount, CancellationToken.None);
+        await using NpgSqlSession session = scope.Resolve<NpgSqlSession>();
+        OutboxService service = registry.GetService(session, "identity_module");
+        return await service.GetPendingMessages(maxAmount, CancellationToken.None);
     }
     
     private AsyncServiceScope Scope()

@@ -1,5 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Identity.Outbox.Decorators;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Quartz;
+using RemTech.BuildingBlocks.DependencyInjection;
+using RemTech.NpgSql.Abstractions;
+using RemTech.Outbox.Shared;
+using RemTech.RabbitMq.Abstractions.Publishers;
 
 namespace Identity.Outbox;
 
@@ -9,8 +15,25 @@ public static class IdentityOutboxProcessorExtensions
     {
         public void AddIdentityOutboxProcessor()
         {
-            services.AddSingleton<IdentityOutboxProcessorWork>();
-            services.AddSingleton<IdentityOutboxProcessor>();
+            services.AddTransient<IIdentityOutboxProcessorWork>(sp =>
+            {
+                IHostApplicationLifetime lifetime = sp.GetRequiredService<IHostApplicationLifetime>();
+                NpgSqlConnectionFactory connectionFactory = sp.Resolve<NpgSqlConnectionFactory>();
+                OutboxServicesRegistry registry = sp.Resolve<OutboxServicesRegistry>();
+                RabbitMqPublishers publishers = sp.Resolve<RabbitMqPublishers>();
+                Serilog.ILogger logger = sp.Resolve<Serilog.ILogger>();
+                
+                CancellationTokenSource cts = new();
+                lifetime.ApplicationStopping.Register(() => cts.Cancel());
+                
+                NpgSqlSession session = new(connectionFactory);
+                OutboxService services = registry.GetService(session, "identity_module");
+                IdentityOutboxProcessorWork origin = new(services, publishers, cts.Token);
+                TransactionalOutboxProcessorWork txn = new(logger, session, cts.Token, origin);
+                LoggingTransactionalOutboxProcessorWork logging = new(logger, txn);
+                return logging;
+            });
+            services.AddTransient<IdentityOutboxProcessor>();
             JobKey key = new(nameof(IdentityOutboxProcessor));
             services.AddQuartz(q =>
             {

@@ -11,7 +11,7 @@ public static class MailersPersistenceExtensions
     {
         public void AddMailersPersistence()
         {
-            services.AddKeyedSingleton<IDbUpgrader, MailersDbUpgrader>(nameof(MailersDbUpgrader));
+            services.AddTransient<IDbUpgrader, MailersDbUpgrader>();
             services.AddScoped<InsertMailer>(sp =>
             {
                 NpgSqlSession session = sp.ExtractSessionFromIoC();

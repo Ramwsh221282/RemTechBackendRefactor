@@ -7,6 +7,6 @@ public sealed class IdentityOutboxDbUpgrader : AbstractDatabaseUpgrader
 {
     public IdentityOutboxDbUpgrader(IOptions<NpgSqlOptions> options) : base(options)
     {
-        OfAssembly(typeof(IdentityOutboxMessageModule).Assembly);
+        OfAssembly(typeof(IdentityOutboxProcessor).Assembly);
     }
 }

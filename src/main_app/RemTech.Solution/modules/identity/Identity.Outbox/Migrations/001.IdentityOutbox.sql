@@ -1,4 +1,6 @@
-﻿CREATE TABLE IF NOT EXISTS identity_module.outbox
+﻿CREATE SCHEMA IF NOT EXISTS identity_module;
+
+CREATE TABLE IF NOT EXISTS identity_module.outbox
 (
     id UUID PRIMARY KEY,
     type VARCHAR(255) NOT NULL,

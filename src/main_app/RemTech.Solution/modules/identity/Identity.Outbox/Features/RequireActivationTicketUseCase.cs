@@ -3,6 +3,8 @@ using Identity.Core.SubjectsModule.Contracts;
 using Identity.Core.SubjectsModule.Domain.Tickets;
 using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.Functional.Extensions;
+using RemTech.NpgSql.Abstractions;
+using RemTech.Outbox.Shared;
 
 namespace Identity.Outbox.Features;
 
@@ -15,15 +17,17 @@ public static class RequireActivationTicketUseCase
     
     public static RequireActivationTicket WithOutboxListener(
         RequireActivationTicket origin,
-        IdentityOutboxStorage messages) =>
+        NpgSqlSession session,
+        OutboxServicesRegistry registry) =>
         async args =>
         {
             CancellationToken ct = args.Ct;
             Result<SubjectTicket> result = await origin(args);
             if (result.IsFailure) return result.Error;
             string json = CreateJsonBody(result);
-            IdentityOutboxMessage message = IdentityOutboxMessage.New(Queue, Exchange, RoutingKey, Type, json);
-            await messages.Add(message, ct);
+            OutboxMessage message = OutboxMessage.New(Queue, Exchange, RoutingKey, Type, json);
+            OutboxService service = registry.GetService(session, "identity_module");
+            await service.Add(message, ct);
             return result;
         };
     
@@ -44,8 +48,9 @@ public static class RequireActivationTicketUseCase
     {
         public RequireActivationTicket WithOutboxListener(IServiceProvider sp)
         {
-            IdentityOutboxStorage messages = sp.Resolve<IdentityOutboxStorage>();
-            return WithOutboxListener(origin, messages);
+            OutboxServicesRegistry messages = sp.Resolve<OutboxServicesRegistry>();
+            NpgSqlSession session = sp.Resolve<NpgSqlSession>();
+            return WithOutboxListener(origin, session, messages);
         }
     }
 }

@@ -48,9 +48,9 @@ public sealed class CompositionRootFixture : WebApplicationFactory<WebHostApplic
         base.ConfigureWebHost(builder);
         builder.ConfigureTestServices(s =>
         {
+            s.RegisterOutboxServices("identity_module");
             s.RemoveAll<NpgSqlOptions>();
             s.RemoveAll<RabbitMqConnectionOptions>();
-            s.RemoveAll<TicketCreatedEventListener>();
             ReconfigureNpgSqlOptions(s);
             ReconfigureRabbitMqOptions(s);
             s.AddQuartzHostedService(c =>
