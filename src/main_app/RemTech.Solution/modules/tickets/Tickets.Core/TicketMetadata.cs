@@ -8,6 +8,7 @@ public sealed class TicketMetadata
     private readonly Guid _creatorId;
     private readonly Guid _ticketId;
     private readonly string _type;
+    private readonly string? _extraInformationJson;
 
     public bool IsCreatedBy(Guid creatorId) =>
         _creatorId == creatorId;
@@ -17,18 +18,18 @@ public sealed class TicketMetadata
 
     public TicketMetadataSnapshot Snapshot()
     {
-        return new TicketMetadataSnapshot(_creatorId, _ticketId, _type);
+        return new TicketMetadataSnapshot(_creatorId, _ticketId, _type, _extraInformationJson);
     }
     
-    private TicketMetadata(Guid creatorId, Guid ticketId, string type) =>
-        (_creatorId, _ticketId, _type) = (creatorId, ticketId, type);
+    private TicketMetadata(Guid creatorId, Guid ticketId, string type, string? extraInformationJson) =>
+        (_creatorId, _ticketId, _type, _extraInformationJson) = (creatorId, ticketId, type, extraInformationJson);
 
-    public static Result<TicketMetadata> Create(Guid creatorId, Guid ticketId, string type)
+    public static Result<TicketMetadata> Create(Guid creatorId, Guid ticketId, string type, string? extraInformationJson)
     {
         if (creatorId == Guid.Empty) return Validation("Идентификатор создателя заявки пустой.");
         if (ticketId == Guid.Empty) return Validation("Идентификатор заявки пустой.");
         if (string.IsNullOrWhiteSpace(type)) return Validation("Тип заявки пустой.");
         if (type.Length > MaxTicketTypeLength) return Validation("Тип заявки невалиден.");
-        return new TicketMetadata(creatorId, ticketId, type);
+        return new TicketMetadata(creatorId, ticketId, type, extraInformationJson);
     }
 }

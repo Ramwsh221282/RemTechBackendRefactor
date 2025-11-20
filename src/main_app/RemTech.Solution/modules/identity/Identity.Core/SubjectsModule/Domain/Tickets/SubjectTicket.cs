@@ -12,7 +12,7 @@ public sealed record SubjectTicket
 
     public SubjectTicket SignBy(Subject subject)
     {
-        Guid creatorId = subject.Snapshot().Id;;
+        Guid creatorId = subject.Snapshot().Id;
         return this with { _creatorId = Sign(creatorId) };
     }
 

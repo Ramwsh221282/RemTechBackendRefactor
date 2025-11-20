@@ -46,8 +46,9 @@ public sealed record RequireActivationTicketArgs(
         return new RequireActivationTicketArgs(subjectId, None<Subject>(), None<NotificationsRegistry>(), ct);
     }
 }
-public delegate Task<Result<SubjectTicket>> RequireActivationTicket(RequireActivationTicketArgs args);
 
+public sealed record RequireActivationTicketResult(Subject Subject, SubjectTicket Ticket);
+public delegate Task<Result<RequireActivationTicketResult>> RequireActivationTicket(RequireActivationTicketArgs args);
 
 public sealed record RequirePasswordResetTicketArgs(
     Guid SubjectId,
@@ -123,12 +124,14 @@ public static class SubjectUseCases
     public static RequireActivationTicket RequireActivationTicket => args =>
     {
         if (args.Target.NoValue) 
-            return Task.FromResult<Result<SubjectTicket>>(NotFound("Учетная запись не найдена."));
+            return Task.FromResult<Result<RequireActivationTicketResult>>(NotFound("Учетная запись не найдена."));
         Subject subject = args.Target.Value.BindRegistry(args.Registry);
         Result<SubjectTicket> ticket = subject.FormTicket("user.account.activation");
-        return ticket.IsFailure 
-            ? Task.FromResult<Result<SubjectTicket>>(ticket.Error) 
-            : Task.FromResult(ticket);
+        if (ticket.IsFailure)
+            return Task.FromResult<Result<RequireActivationTicketResult>>(ticket.Error);
+        SubjectSnapshot subjectSnap = subject.Snapshot();
+        SubjectTicketSnapshot ticketSnap = ticket.Value.Snapshot();
+        return Task.FromResult(Success(new RequireActivationTicketResult(subject, ticket)));
     };
     
     public static AddSubjectPermission AddSubjectPermission => args =>

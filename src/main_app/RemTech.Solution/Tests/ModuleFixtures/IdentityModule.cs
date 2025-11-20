@@ -60,7 +60,7 @@ public sealed class IdentityModule
         return subject;
     }
 
-    public async Task<Result<SubjectTicket>> RequireActivationTicket(Guid subjectId)
+    public async Task<Result<RequireActivationTicketResult>> RequireActivationTicket(Guid subjectId)
     {
         RequireActivationTicketArgs args = new(subjectId, Optional.None<Subject>(),
             Optional<NotificationsRegistry>.None(), CancellationToken.None);

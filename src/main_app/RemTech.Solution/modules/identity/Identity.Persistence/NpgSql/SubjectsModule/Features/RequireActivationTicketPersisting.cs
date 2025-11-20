@@ -20,12 +20,12 @@ public static class RequireActivationTicketPersisting
         Optional<Subject> subject = await Subject.From(subjects, query, args.Ct);
         RequireActivationTicketArgs withSubject = args with { Target = subject, Registry = registry };
         
-        Result<SubjectTicket> ticket = await origin(withSubject);
-        if (ticket.IsFailure)
-            return ticket.Error;
+        Result<RequireActivationTicketResult> result = await origin(withSubject);
+        if (result.IsFailure)
+            return result.Error;
         
-        Result<Unit> saving = await ticket.Value.SaveTo(tickets, withSubject.Ct);
-        return saving.IsFailure ? saving.Error : ticket.Value;
+        Result<Unit> saving = await result.Value.Ticket.SaveTo(tickets, withSubject.Ct);
+        return saving.IsFailure ? saving.Error : result.Value;
     };
 
     private static RequireActivationTicket RequireActivationTicket(
@@ -34,7 +34,7 @@ public static class RequireActivationTicketPersisting
     {
         CancellationToken ct = args.Ct;
         await session.GetTransaction(ct);
-        Result<SubjectTicket> result = await origin(args);
+        Result<RequireActivationTicketResult> result = await origin(args);
         
         if (result.IsFailure)
             return result.Error;

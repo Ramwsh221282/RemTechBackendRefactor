@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Identity.Core.SubjectsModule.Contracts;
+using Identity.Core.SubjectsModule.Domain.Subjects;
 using Identity.Core.SubjectsModule.Domain.Tickets;
 using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.Functional.Extensions;
@@ -22,7 +23,7 @@ public static class RequireActivationTicketUseCase
         async args =>
         {
             CancellationToken ct = args.Ct;
-            Result<SubjectTicket> result = await origin(args);
+            Result<RequireActivationTicketResult> result = await origin(args);
             if (result.IsFailure) return result.Error;
             string json = CreateJsonBody(result);
             OutboxMessage message = OutboxMessage.New(Queue, Exchange, RoutingKey, Type, json);
@@ -31,14 +32,20 @@ public static class RequireActivationTicketUseCase
             return result;
         };
     
-    private static string CreateJsonBody(SubjectTicket ticket)
+    private static string CreateJsonBody(RequireActivationTicketResult ticket)
     {
-        SubjectTicketSnapshot ticketSnap = ticket.Snapshot();
+        
+        SubjectTicketSnapshot ticketSnap = ticket.Ticket.Snapshot();
+        SubjectSnapshot subjectSnap = ticket.Subject.Snapshot();
         object body = new
         {
             creator_id = ticketSnap.CreatorId.Value, 
             ticket_id = ticketSnap.Id, 
-            type = Type
+            type = Type,
+            extra = new
+            {
+                confirmation_email = subjectSnap.Email
+            }
         };
         
         return JsonSerializer.Serialize(body);

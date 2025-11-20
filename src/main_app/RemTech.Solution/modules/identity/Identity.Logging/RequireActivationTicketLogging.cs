@@ -1,4 +1,5 @@
 ﻿using Identity.Core.SubjectsModule.Contracts;
+using Identity.Core.SubjectsModule.Domain.Subjects;
 using Identity.Core.SubjectsModule.Domain.Tickets;
 using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.Functional.Extensions;
@@ -12,7 +13,7 @@ public static class RequireActivationTicketLogging
         ILogger logger,
         RequireActivationTicket origin) => async args =>
     {
-        Result<SubjectTicket> ticket = await origin(args);
+        Result<RequireActivationTicketResult> ticket = await origin(args);
         
         if (ticket.IsFailure)
         {
@@ -27,14 +28,21 @@ public static class RequireActivationTicketLogging
         }
         else
         {
-            Guid id = ticket.Value.Snapshot().Id;
+            SubjectSnapshot subjectSnap = ticket.Value.Subject.Snapshot();
+            SubjectTicketSnapshot ticketSnap = ticket.Value.Ticket.Snapshot();
+            
+            Guid id = subjectSnap.Id;
+            Guid ticketId = ticketSnap.Id;
+            string email = subjectSnap.Email;
+            
             logger.Information(
                 """
                 Заявка на активацию учетной записи
                 Subject ID: {SId}
                 Ticket ID: {TId}
+                Subject Email: {email}
                 Создана: {Success}
-                """, [args.SubjectId, id, ticket.IsSuccess, ticket.Error.Message]);
+                """, [id, ticketId, email, ticket.IsSuccess, ticket.Error.Message]);
         }
 
         return ticket;

@@ -28,7 +28,11 @@ public static class IdentityOutboxProcessorExtensions
                 
                 NpgSqlSession session = new(connectionFactory);
                 OutboxService services = registry.GetService(session, "identity_module");
-                IdentityOutboxProcessorWork origin = new(services, publishers, cts.Token);
+
+                IHowToProcessIdentityOutboxMessage howToOrigin = new HowToProcessIdentityOutboxMessage(publishers);
+                IHowToProcessIdentityOutboxMessage howToLogging = new LoggingHowToProcessIdentityOutboxMessage(logger, howToOrigin);
+                
+                IdentityOutboxProcessorWork origin = new(services, howToLogging, cts.Token);
                 TransactionalOutboxProcessorWork txn = new(logger, session, cts.Token, origin);
                 LoggingTransactionalOutboxProcessorWork logging = new(logger, txn);
                 return logging;

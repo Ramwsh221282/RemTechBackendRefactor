@@ -1,13 +1,11 @@
 ﻿using RemTech.Outbox.Shared;
-using RemTech.RabbitMq.Abstractions.Publishers;
-using RemTech.RabbitMq.Abstractions.Publishers.Topic;
 
 namespace Identity.Outbox;
 
 public sealed class IdentityOutboxProcessorWork : IIdentityOutboxProcessorWork
 {
     private readonly OutboxService _service;
-    private readonly RabbitMqPublishers _publishers;
+    private readonly IHowToProcessIdentityOutboxMessage _howTo;
     private readonly CancellationToken _ct;
 
     public async Task<ProcessedOutboxMessages> ProcessMessages()
@@ -21,27 +19,18 @@ public sealed class IdentityOutboxProcessorWork : IIdentityOutboxProcessorWork
     private async Task<ProcessedOutboxMessages> PublishMessages(IEnumerable<OutboxMessage> messages)
     {
         ProcessedOutboxMessages result = new();
-        
         foreach (OutboxMessage message in messages)
-        {
-            IRabbitMqPublisher<TopicPublishOptions> publisher = await _publishers.TopicPublisher();
-            
-            string body = message.Body;
-            string queue = message.Queue;
-            string exchange = message.Exchange;
-            string routingKey = message.RoutingKey;
-            
-            TopicPublishOptions options = new(body, queue, exchange, routingKey);
-            await publisher.Publish(options, _ct);
-            result.Add(message);
-        }
+            await _howTo.ProcessMessage(result, message, _ct);
         return result;
     }
     
-    public IdentityOutboxProcessorWork(OutboxService service, RabbitMqPublishers publishers, CancellationToken ct)
+    public IdentityOutboxProcessorWork(
+        OutboxService service, 
+        IHowToProcessIdentityOutboxMessage howTo,
+        CancellationToken ct)
     {
         _service = service;
-        _publishers = publishers;
+        _howTo = howTo;
         _ct = ct;
     }
 }

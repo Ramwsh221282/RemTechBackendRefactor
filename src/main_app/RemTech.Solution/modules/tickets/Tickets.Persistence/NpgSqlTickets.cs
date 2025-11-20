@@ -19,7 +19,8 @@ namespace Tickets.Persistence;
 //     type varchar(128) NOT NULL,
 //     created timestamptz NOT NULL,
 //     closed timestamptz,
-//     status varchar(128)
+//     status varchar(128),
+//     extra_information_json JSONB,
 // );
 public static class NpgSqlTickets
 {
@@ -30,9 +31,9 @@ public static class NpgSqlTickets
         string sql =
             """
             INSERT INTO tickets_module.tickets
-            (id, creator_id, type, created, closed, status)
+            (id, creator_id, type, created, closed, status, extra_information)
             VALUES
-            (@id, @creator_id, @type, @created, @closed, @status)
+            (@id, @creator_id, @type, @created, @closed, @status, @extra_information::jsonb)
             """;
         CommandDefinition command = ticket.CreateCommand(sql, session, ct);
         await session.Execute(command);
@@ -96,7 +97,7 @@ public static class NpgSqlTickets
     {
         private Ticket ToTicket()
         {
-            TicketMetadata metadata = TicketMetadata.Create(ticket.CreatorId, ticket.Id, ticket.Type);
+            TicketMetadata metadata = TicketMetadata.Create(ticket.CreatorId, ticket.Id, ticket.Type, ticket.ExtraInformation);
             TicketLifecycle lifecycle = TicketLifecycle.Create(ticket.Id, ticket.Created, ticket.Closed, ticket.Status);
             return Ticket.Create(metadata, lifecycle);
         }
@@ -151,6 +152,7 @@ public static class NpgSqlTickets
             clauses.Add("created = @created");
             clauses.Add("closed = @closed");
             clauses.Add("status = @status");
+            clauses.Add("extra_information = @extra_information");
             return "SET " + Strings.Joined(clauses, ", ");
         }
         
@@ -166,6 +168,7 @@ public static class NpgSqlTickets
                 .With("@type", metadata.Type, DbType.String)
                 .With("@created", lifeCycle.Created, DbType.DateTime)
                 .WithValueOrNull("@closed", lifeCycle.Closed, c => c.HasValue, c => c!.Value, DbType.DateTime)
+                .WithValueOrNull("@extra_information", metadata.Extra, e => !string.IsNullOrWhiteSpace(e), s => s, DbType.String)
                 .With("@status", lifeCycle.Status, DbType.String)
                 .GetParameters();
         }

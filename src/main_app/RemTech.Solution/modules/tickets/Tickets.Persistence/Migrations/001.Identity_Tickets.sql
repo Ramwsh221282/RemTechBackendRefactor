@@ -7,5 +7,6 @@ CREATE TABLE IF NOT EXISTS tickets_module.tickets
     type varchar(128) NOT NULL,
     created timestamptz NOT NULL,
     closed timestamptz,
-    status varchar(128)
+    status varchar(128),
+    extra_information jsonb
 );
