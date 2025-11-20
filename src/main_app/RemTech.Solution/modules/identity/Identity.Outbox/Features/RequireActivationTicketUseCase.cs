@@ -8,9 +8,10 @@ namespace Identity.Outbox.Features;
 
 public static class RequireActivationTicketUseCase
 {
-    private const string Type = "require.activation.ticket";
     private const string Queue = "tickets";
+    private const string Exchange = "tickets";
     private const string RoutingKey = "tickets.create";
+    private const string Type = "require.activation.ticket";
     
     public static RequireActivationTicket WithOutboxListener(
         RequireActivationTicket origin,
@@ -20,9 +21,8 @@ public static class RequireActivationTicketUseCase
             CancellationToken ct = args.Ct;
             Result<SubjectTicket> result = await origin(args);
             if (result.IsFailure) return result.Error;
-            
             string json = CreateJsonBody(result);
-            IdentityOutboxMessage message = IdentityOutboxMessage.New(Type, Queue, RoutingKey, json);
+            IdentityOutboxMessage message = IdentityOutboxMessage.New(Queue, Exchange, RoutingKey, Type, json);
             await messages.Add(message, ct);
             return result;
         };
@@ -32,7 +32,7 @@ public static class RequireActivationTicketUseCase
         SubjectTicketSnapshot ticketSnap = ticket.Snapshot();
         object body = new
         {
-            creator_id = ticketSnap.CreatorId, 
+            creator_id = ticketSnap.CreatorId.Value, 
             ticket_id = ticketSnap.Id, 
             type = Type
         };

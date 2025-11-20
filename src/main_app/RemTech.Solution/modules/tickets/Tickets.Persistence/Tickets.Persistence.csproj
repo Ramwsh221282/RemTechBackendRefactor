@@ -11,5 +11,9 @@
       <ProjectReference Include="..\..\building_blocks\RemTech.NpgSql.Abstractions\RemTech.NpgSql.Abstractions.csproj" />
       <ProjectReference Include="..\Tickets.Core\Tickets.Core.csproj" />
     </ItemGroup>
-
+    
+    <ItemGroup>
+        <EmbeddedResource Include="Migrations\*.sql" />
+    </ItemGroup>
+    
 </Project>

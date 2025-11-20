@@ -29,7 +29,7 @@ public static class IdentityOutboxMessageModule
         IdentityOutboxMessage[] array = messages.ToArray();
         
         string values = string.Join(",\n", array.Select((m, i) => 
-            $"(@id{i}, @type{i}, @body{i}, @exchange{i}, @routing_key{i}, @created_at{i}, @processed_at{i}, @retry_count{i})"
+            $"(@id{i}, @type{i}, @body{i}::jsonb, @queue{i}, @exchange{i}, @routing_key{i}, @created_at{i}, @processed_at{i}, @retry_count{i})"
         ));
 
         DynamicParameters parameters = new();
@@ -42,6 +42,7 @@ public static class IdentityOutboxMessageModule
             parameters.Add($"@exchange{i}", message.Exchange, DbType.String);
             parameters.Add($"@routing_key{i}", message.RoutingKey, DbType.String);
             parameters.Add($"@created_at{i}", message.CreatedAt, DbType.DateTime);
+            parameters.Add($"@queue{i}", message.Queue, DbType.String);
             
             if (message.ProcessedAt.HasValue)
                 parameters.Add($"@processed_at{i}", message.ProcessedAt.Value, DbType.DateTime);
@@ -56,12 +57,13 @@ public static class IdentityOutboxMessageModule
                       SET 
                           type = dt.type,
                           body = dt.body,
+                          queue = dt.queue,
                           exchange = dt.exchange,
                           routing_key = dt.routing_key,
                           created_at = dt.created_at,
                           processed_at = dt.processed_at,
                           retry_count = dt.retry_count
-                      FROM (VALUES {values}) AS dt(id, type, body, exchange, routing_key, created_at, processed_at, retry_count)
+                      FROM (VALUES {values}) AS dt(id, type, body, queue, exchange, routing_key, created_at, processed_at, retry_count)
                       WHERE identity_module.outbox.id = dt.id
                       """;
 
@@ -74,9 +76,9 @@ public static class IdentityOutboxMessageModule
         const string sql = 
             """
             INSERT INTO identity_module.outbox
-            (id, type, body, exchange, routing_key, created_at, processed_at, retry_count)
+            (id, type, body, queue, exchange, routing_key, created_at, processed_at, retry_count)
             VALUES
-            (@id, @type, @body::jsonb, @exchange, @routing_key, @created_at, @processed_at, @retry_count)
+            (@id, @type, @body::jsonb, @queue, @exchange, @routing_key, @created_at, @processed_at, @retry_count)
             """;
         await session.Execute(message.CreateCommand(sql, session, ct));
     };
@@ -109,34 +111,23 @@ public static class IdentityOutboxMessageModule
 
     extension(IdentityOutboxMessage)
     {
-        public static IdentityOutboxMessage New(string type, string exchange, string routingKey, string body)
+        public static IdentityOutboxMessage New(
+            string queue, 
+            string exchange, 
+            string routingKey,
+            string type,
+            string body)
         {
             return new IdentityOutboxMessage(
                 Guid.NewGuid(), 
                 type, 
                 body, 
+                queue,
                 exchange, 
                 routingKey, 
                 DateTime.UtcNow, 
                 null,
                 0);
-        }
-    }
-    
-    extension(SubjectTicketSnapshot snapshot)
-    {
-        public IdentityOutboxMessage ToOutboxMessage(string type, string exchange, string routingKey)
-        {
-            string body = JsonSerializer.Serialize(snapshot);
-            return new IdentityOutboxMessage(
-                Guid.NewGuid(), 
-                type, 
-                body, 
-                exchange, 
-                routingKey, 
-                DateTime.UtcNow, 
-                null,
-                5);
         }
     }
         
@@ -157,6 +148,7 @@ public static class IdentityOutboxMessageModule
                 .With("@id", message.Id, DbType.Guid)
                 .With("@type", message.Type, DbType.String)
                 .With("@body", message.Body, DbType.String)
+                .With("@queue", message.Queue, DbType.String)
                 .With("@exchange", message.Exchange, DbType.String)
                 .With("@routing_key", message.RoutingKey, DbType.String)
                 .With("@created_at", message.CreatedAt, DbType.DateTime)
@@ -177,6 +169,19 @@ public static class IdentityOutboxMessageModule
             services.AddScoped<IdentityOutboxStorage>();
             services.AddTransient<IDbUpgrader, IdentityOutboxDbUpgrader>();
             services.AddIdentityOutboxProcessor();
+        }
+    }
+
+    extension(IdentityOutboxStorage)
+    {
+        public static IdentityOutboxStorage Create(NpgSqlSession session)
+        {
+            return new IdentityOutboxStorage(
+                Add(session), 
+                HasAny(session), 
+                GetPendingMessages(session),
+                RemoveMany(session), 
+                UpdateMany(session));
         }
     }
 }

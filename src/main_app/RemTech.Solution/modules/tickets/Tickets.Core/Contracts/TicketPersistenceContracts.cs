@@ -11,10 +11,12 @@ public sealed record TicketsStorage(
     Delete Delete, 
     Update Update, 
     Find Find,
-    HasAny HasAny);
+    HasAny HasAny,
+    FindMany FindMany);
 
 public delegate Task<Result<Unit>> Insert(Ticket ticket, CancellationToken ct);
 public delegate Task<Result<Unit>> Delete(Ticket ticket, CancellationToken ct);
 public delegate Task<Result<Unit>> Update(Ticket ticket, CancellationToken ct);
 public delegate Task<Optional<Ticket>> Find(QueryTicketArgs args, CancellationToken ct);
+public delegate Task<IEnumerable<Ticket>> FindMany(QueryTicketArgs args, CancellationToken ct);
 public delegate Task<bool> HasAny(CancellationToken ct);

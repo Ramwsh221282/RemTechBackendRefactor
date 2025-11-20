@@ -2,7 +2,7 @@
 using Identity.Core.SubjectsModule.Domain.Tickets;
 using Tests.ModuleFixtures;
 
-namespace Tests.Identity;
+namespace Tests.Identity.Features;
 
 public sealed class RequirePasswordResetTicketTests(CompositionRootFixture fixture)
     : IClassFixture<CompositionRootFixture>

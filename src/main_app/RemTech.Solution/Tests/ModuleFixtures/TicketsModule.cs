@@ -1,4 +1,5 @@
 ﻿using RemTech.BuildingBlocks.DependencyInjection;
+using Tickets.Core;
 using Tickets.Core.Contracts;
 
 namespace Tests.ModuleFixtures;
@@ -12,23 +13,17 @@ public sealed class TicketsModule
         _sp = sp;
     }
 
-    public async Task<bool> HasTickets(int waitSeconds = 0)
+    public async Task<bool> HasTickets()
     {
-        using CancellationTokenSource cts = new(TimeSpan.FromSeconds(waitSeconds));
-        while (!cts.IsCancellationRequested)
-        {
-            try
-            {
-                await using AsyncServiceScope scope = _sp.CreateAsyncScope();
-                TicketsStorage storage = scope.ServiceProvider.Resolve<TicketsStorage>();
-                return await storage.HasAny(CancellationToken.None);
-            }
-            catch(OperationCanceledException)
-            {
-                return false;
-            }
-        }
+        await using AsyncServiceScope scope = _sp.CreateAsyncScope();
+        TicketsStorage storage = scope.ServiceProvider.Resolve<TicketsStorage>();
+        return await storage.HasAny(CancellationToken.None);
+    }
 
-        return false;
+    public async Task<IEnumerable<Ticket>> GetTickets()
+    {
+        await using AsyncServiceScope scope = _sp.CreateAsyncScope();
+        TicketsStorage storage = scope.ServiceProvider.Resolve<TicketsStorage>();
+        return await storage.FindMany(new QueryTicketArgs(), CancellationToken.None);
     }
 }

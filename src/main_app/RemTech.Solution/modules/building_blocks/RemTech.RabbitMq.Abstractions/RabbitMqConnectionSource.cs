@@ -1,13 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace RemTech.RabbitMq.Abstractions;
-
-public sealed record DeclareQueueArgs(
-    string QueueName, 
-    string Exchange, 
-    string RoutingKey, 
-    string ExchangeType);
 
 public sealed class RabbitMqConnectionSource
 {
@@ -49,16 +44,13 @@ public sealed class RabbitMqConnectionSource
         return await _lazyConnection.Value;
     }
 
-    public async Task<RabbitMqPublisher> CreatePublisher(string exchange, string routingKey, CancellationToken ct)
-    {
-        IConnection connection = await GetConnection(ct);
-        return new RabbitMqPublisher(await connection.CreateChannelAsync(cancellationToken: ct), exchange, routingKey);
-    }
-
-    public async Task<RabbitMqListener> CreateListener(DeclareQueueArgs args, CancellationToken ct)
+    public async Task<RabbitMqListener> CreateListener(
+        AsyncEventHandler<BasicDeliverEventArgs> handler, 
+        DeclareQueueArgs args, 
+        CancellationToken ct)
     {
         IConnection connection = await GetConnection(ct);
         IChannel channel = await connection.CreateChannelAsync(cancellationToken: ct);
-        return new RabbitMqListener(args, channel);
+        return new RabbitMqListener(handler, args, channel);
     }
 }

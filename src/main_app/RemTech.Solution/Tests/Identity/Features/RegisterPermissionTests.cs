@@ -1,7 +1,7 @@
 ﻿using Identity.Core.PermissionsModule;
 using Tests.ModuleFixtures;
 
-namespace Tests.Identity;
+namespace Tests.Identity.Features;
 
 public sealed class RegisterPermissionTests(CompositionRootFixture fixture) : IClassFixture<CompositionRootFixture>
 {

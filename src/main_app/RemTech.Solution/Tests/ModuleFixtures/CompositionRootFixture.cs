@@ -9,6 +9,7 @@ using RemTech.RabbitMq.Abstractions;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
+using Tickets.EventListeners;
 
 namespace Tests.ModuleFixtures;
 
@@ -16,6 +17,7 @@ public sealed class CompositionRootFixture : WebApplicationFactory<WebHostApplic
 {
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
     private readonly RabbitMqContainer _rabbitMqContainer = new RabbitMqBuilder().BuildRabbitMqContainer();
+    
     
     public IdentityModule IdentityModule => new(Services);
     public MailingModule MailingModule => new (Services);
@@ -38,7 +40,7 @@ public sealed class CompositionRootFixture : WebApplicationFactory<WebHostApplic
         await _dbContainer.StopAsync();
         await _dbContainer.DisposeAsync();
         await _rabbitMqContainer.StopAsync();
-        await _rabbitMqContainer.DisposeAsync();
+        await _rabbitMqContainer.DisposeAsync();        
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -48,9 +50,14 @@ public sealed class CompositionRootFixture : WebApplicationFactory<WebHostApplic
         {
             s.RemoveAll<NpgSqlOptions>();
             s.RemoveAll<RabbitMqConnectionOptions>();
+            s.RemoveAll<TicketCreatedEventListener>();
             ReconfigureNpgSqlOptions(s);
             ReconfigureRabbitMqOptions(s);
-            s.AddQuartzHostedService(c => c.StartDelay = TimeSpan.FromSeconds(10));
+            s.AddQuartzHostedService(c =>
+            {
+                c.AwaitApplicationStarted = true;
+                c.WaitForJobsToComplete = true;
+            });
         });
     }
 

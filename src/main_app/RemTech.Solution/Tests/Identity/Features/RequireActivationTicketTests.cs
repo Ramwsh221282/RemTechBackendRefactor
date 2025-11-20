@@ -1,10 +1,9 @@
 ﻿using Identity.Core.SubjectsModule.Domain.Subjects;
 using Identity.Core.SubjectsModule.Domain.Tickets;
-using RemTech.BuildingBlocks.DependencyInjection;
 using Tests.ModuleFixtures;
-using Tickets.EventListeners;
+using Tickets.Core;
 
-namespace Tests.Identity;
+namespace Tests.Identity.Features;
 
 public sealed class RequireActivationTicketTests(CompositionRootFixture fixture) : IClassFixture<CompositionRootFixture>
 {
@@ -15,9 +14,6 @@ public sealed class RequireActivationTicketTests(CompositionRootFixture fixture)
     private async Task Require_Subject_Activation_Ticket_Success()
     {
         await using AsyncServiceScope scope = fixture.Scope();
-        TicketCreatedEventListener listener = scope.Resolve<TicketCreatedEventListener>();
-        await listener.StartAsync(CancellationToken.None);
-        
         string email = "subject@email.com";
         string login = "subjectLogin";
         string password = "password";
@@ -25,8 +21,12 @@ public sealed class RequireActivationTicketTests(CompositionRootFixture fixture)
         Guid id = subject.Snapshot().Id;
         Result<SubjectTicket> ticket = await _module.RequireActivationTicket(id);
         Assert.True(ticket.IsSuccess);
-        bool has = await _tickets.HasTickets(30);
+        await Task.Delay(TimeSpan.FromSeconds(30));
+        bool has = await _tickets.HasTickets();
+        IEnumerable<Ticket> tickets = await _tickets.GetTickets();
         Assert.True(has);
+        Assert.True(tickets.Count() == 1);
+        // TODO send email message to some email.
     }
 
     [Fact]

@@ -9,8 +9,8 @@ public static class IdentityOutboxProcessorExtensions
     {
         public void AddIdentityOutboxProcessor()
         {
-            services.AddTransient<IdentityOutboxProcessor>();
-            services.AddTransient<IdentityOutboxProcessorWork>();
+            services.AddSingleton<IdentityOutboxProcessorWork>();
+            services.AddSingleton<IdentityOutboxProcessor>();
             JobKey key = new(nameof(IdentityOutboxProcessor));
             services.AddQuartz(q =>
             {

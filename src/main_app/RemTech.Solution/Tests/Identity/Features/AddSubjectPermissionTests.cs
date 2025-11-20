@@ -4,7 +4,7 @@ using Identity.Core.SubjectsModule.Domain.Subjects;
 using RemTech.BuildingBlocks.DependencyInjection;
 using Tests.ModuleFixtures;
 
-namespace Tests.Identity;
+namespace Tests.Identity.Features;
 
 public sealed class AddSubjectPermissionTests(CompositionRootFixture fixture)
     : IClassFixture<CompositionRootFixture>

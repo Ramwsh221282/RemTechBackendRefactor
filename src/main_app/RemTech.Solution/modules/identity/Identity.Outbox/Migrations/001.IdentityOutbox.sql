@@ -3,6 +3,7 @@
     id UUID PRIMARY KEY,
     type VARCHAR(255) NOT NULL,
     body jsonb NOT NULL,
+    queue VARCHAR(255) NOT NULL,
     exchange VARCHAR(255) NOT NULL,
     routing_key VARCHAR(255) NOT NULL,
     created_at timestamptz NOT NULL,

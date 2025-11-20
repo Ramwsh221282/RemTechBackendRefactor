@@ -1,4 +1,6 @@
-﻿CREATE TABLE IF NOT EXISTS identity_module.tickets
+﻿CREATE SCHEMA IF NOT EXISTS tickets_module;
+
+CREATE TABLE IF NOT EXISTS tickets_module.tickets
 (
     id UUID primary key,
     creator_id UUID NOT NULL,

@@ -12,14 +12,14 @@ using Tickets.Core.Snapshots;
 
 namespace Tickets.Persistence;
 
-// CREATE TABLE IF NOT EXISTS identity_module.tickets
+// CREATE TABLE IF NOT EXISTS tickets_module.tickets
 // (
 //     id UUID primary key,
 //     creator_id UUID NOT NULL,
 //     type varchar(128) NOT NULL,
 //     created timestamptz NOT NULL,
 //     closed timestamptz,
-//     active boolean
+//     status varchar(128)
 // );
 public static class NpgSqlTickets
 {
@@ -29,10 +29,10 @@ public static class NpgSqlTickets
     {
         string sql =
             """
-            INSERT INTO identity_module.tickets
-            (id, creator_id, type, created, closed, active)
+            INSERT INTO tickets_module.tickets
+            (id, creator_id, type, created, closed, status)
             VALUES
-            (@id, @creator_id, @type, @created, @closed, @active)
+            (@id, @creator_id, @type, @created, @closed, @status)
             """;
         CommandDefinition command = ticket.CreateCommand(sql, session, ct);
         await session.Execute(command);
@@ -50,7 +50,7 @@ public static class NpgSqlTickets
     public static Update Update(NpgSqlSession session) => async (ticket, ct) =>
     {
         string updateClause = ticket.UpdateClause();
-        string sql = $"UPDATE identity_module.tickets {updateClause} WHERE id = @id";
+        string sql = $"UPDATE tickets_module.tickets {updateClause} WHERE id = @id";
         CommandDefinition command = ticket.CreateCommand(sql, session, ct);
         await session.Execute(command);
         return Unit.Value;
@@ -61,15 +61,24 @@ public static class NpgSqlTickets
         string whereClause = args.WhereClause();
         if (string.IsNullOrWhiteSpace(whereClause)) return Optional<Ticket>.None();
         string lockClause = args.LockClause();
-        string sql = $"SELECT * FROM identity_module.tickets {whereClause} {lockClause}";
+        string sql = $"SELECT * FROM tickets_module.tickets {whereClause} {lockClause}";
         CommandDefinition command = args.CreateCommand(sql, session, ct);
         TableTicket? ticket = await session.QueryMaybeRow<TableTicket>(command);
         return ticket.ToMaybeTicket();
     };
 
+    public static FindMany FindMany(NpgSqlSession session) => async (args, ct) =>
+    {
+        string whereClause = args.WhereClause();
+        string sql = $"SELECT * FROM tickets_module.tickets {whereClause}";
+        CommandDefinition command = args.CreateCommand(sql, session, ct);
+        IEnumerable<TableTicket> tickets = await session.QueryMultipleRows<TableTicket>(command);
+        return tickets.Select(t => t.ToTicket());
+    };
+    
     public static HasAny HasAny(NpgSqlSession session) => async (ct) =>
     {
-        const string sql = "SELECT COUNT(*) FROM identity_module.tickets";
+        const string sql = "SELECT COUNT(*) FROM tickets_module.tickets";
         CommandDefinition command = new(sql, cancellationToken: ct, transaction: session.Transaction);
         int count = await session.QuerySingleRow<int>(command);
         return count > 0;
@@ -157,7 +166,7 @@ public static class NpgSqlTickets
                 .With("@type", metadata.Type, DbType.String)
                 .With("@created", lifeCycle.Created, DbType.DateTime)
                 .WithValueOrNull("@closed", lifeCycle.Closed, c => c.HasValue, c => c!.Value, DbType.DateTime)
-                .With("@status", lifeCycle.Status, DbType.Boolean)
+                .With("@status", lifeCycle.Status, DbType.String)
                 .GetParameters();
         }
 
@@ -177,6 +186,7 @@ public static class NpgSqlTickets
             services.AddScopedDelegate<Update>(Assembly);
             services.AddScopedDelegate<Find>(Assembly);
             services.AddScopedDelegate<HasAny>(Assembly);
+            services.AddScopedDelegate<FindMany>(Assembly);
             services.AddScoped<TicketsStorage>();
             services.AddTransient<IDbUpgrader, TicketsDbUpgrader>();
         }
