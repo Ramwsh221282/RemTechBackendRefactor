@@ -26,7 +26,6 @@ public sealed class RequireActivationTicketTests(CompositionRootFixture fixture)
         IEnumerable<Ticket> tickets = await _tickets.GetTickets();
         Assert.True(has);
         Assert.True(tickets.Count() == 1);
-        // TODO send email message to some email.
     }
 
     [Fact]

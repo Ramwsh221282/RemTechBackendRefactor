@@ -1,8 +1,8 @@
 ﻿using CompositionRoot.Shared;
-using Identity.Outbox;
 using Microsoft.Extensions.DependencyInjection;
+using Tickets.EventListeners;
 
-namespace CompositionRoot.identity.DependencyInjection.Outbox;
+namespace CompositionRoot.tickets.DependencyInjection.TicketRouters;
 
 [DependencyInjectionClass]
 internal static class DependencyInjection
@@ -10,6 +10,6 @@ internal static class DependencyInjection
     [DependencyInjectionMethod]
     public static void Inject(this IServiceCollection services)
     {
-        services.AddIdentityOutbox();
+        services.AddTicketRouters();
     }
 }

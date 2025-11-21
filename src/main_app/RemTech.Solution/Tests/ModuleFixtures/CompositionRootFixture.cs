@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Quartz;
 using RemTech.RabbitMq.Abstractions;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
@@ -52,11 +51,6 @@ public sealed class CompositionRootFixture : WebApplicationFactory<WebHostApplic
             s.RemoveAll<RabbitMqConnectionOptions>();
             ReconfigureNpgSqlOptions(s);
             ReconfigureRabbitMqOptions(s);
-            s.AddQuartzHostedService(c =>
-            {
-                c.AwaitApplicationStarted = true;
-                c.WaitForJobsToComplete = true;
-            });
         });
     }
 

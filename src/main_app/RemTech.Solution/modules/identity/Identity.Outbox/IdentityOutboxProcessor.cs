@@ -1,32 +1,27 @@
 ﻿using Quartz;
+using RemTech.Outbox.Shared;
 
 namespace Identity.Outbox;
 
 [DisallowConcurrentExecution]
-public sealed class IdentityOutboxProcessor : IJob
+[CronSchedule("*/5 * * * * ?")]
+public sealed class IdentityOutboxProcessor(IIdentityOutboxProcessorWork work, Serilog.ILogger logger)
+    : ICronScheduleJob
 {
-    private readonly IIdentityOutboxProcessorWork _work;
-    private readonly Serilog.ILogger _logger;
     private const string Context = nameof(IdentityOutboxProcessor);
 
-    public IdentityOutboxProcessor(IIdentityOutboxProcessorWork work, Serilog.ILogger logger)
-    {
-        _work = work;
-        _logger = logger;
-    }
-    
     public async Task Execute(IJobExecutionContext context)
     {
-        _logger.Information("{Context} processing job", Context);
+        logger.Information("{Context} processing job", Context);
         try
         {
-            await _work.ProcessMessages();
-            _logger.Information("{Context} job processed", Context);
+            await work.ProcessMessages();
+            logger.Information("{Context} job processed", Context);
         }
         catch(Exception ex)
         {
-            _logger.Information("{Context} job failed.", Context);
-            _logger.Information("{Context} job error {Ex}.", Context, ex);
+            logger.Information("{Context} job failed.", Context);
+            logger.Information("{Context} job error {Ex}.", Context, ex);
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using Tickets.Core.Contracts;
-
-namespace Tickets.EventListeners.Routers;
+﻿namespace Tickets.Core.Contracts;
 
 public sealed class TicketRoutersRegistry
 {

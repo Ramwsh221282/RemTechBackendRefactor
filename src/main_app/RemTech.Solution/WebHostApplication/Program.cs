@@ -1,5 +1,4 @@
 using CompositionRoot.Shared;
-using Quartz;
 using RemTech.NpgSql.Abstractions;
 using RemTech.RabbitMq.Abstractions;
 using Serilog;
@@ -11,7 +10,7 @@ builder.Services.AddSingleton(logger);
 builder.Services.AddPostgres();
 builder.Services.AddRabbitMq();
 builder.Services.RegisterModules();
-builder.Services.AddQuartzHostedService(c => c.StartDelay = TimeSpan.FromSeconds(15));
+builder.Services.AddQuartzJobs();
 
 WebApplication app = builder.Build();
 

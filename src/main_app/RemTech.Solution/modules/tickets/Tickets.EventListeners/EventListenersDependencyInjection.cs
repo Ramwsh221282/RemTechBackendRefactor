@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Tickets.Core.Contracts;
-using Tickets.EventListeners.Routers;
 using Tickets.EventListeners.Routers.RequireActivationTicket;
 
 namespace Tickets.EventListeners;
