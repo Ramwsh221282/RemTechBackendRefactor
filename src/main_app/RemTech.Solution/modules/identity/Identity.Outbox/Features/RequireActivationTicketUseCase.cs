@@ -15,11 +15,8 @@ public static class RequireActivationTicketUseCase
     private const string Exchange = "tickets";
     private const string RoutingKey = "tickets.create";
     private const string Type = "require.activation.ticket";
-    
-    public static RequireActivationTicket WithOutboxListener(
-        RequireActivationTicket origin,
-        NpgSqlSession session,
-        OutboxServicesRegistry registry) =>
+
+    private static RequireActivationTicket WithOutboxListener(RequireActivationTicket origin, OutboxService outbox) =>
         async args =>
         {
             CancellationToken ct = args.Ct;
@@ -27,8 +24,7 @@ public static class RequireActivationTicketUseCase
             if (result.IsFailure) return result.Error;
             string json = CreateJsonBody(result);
             OutboxMessage message = OutboxMessage.New(Queue, Exchange, RoutingKey, Type, json);
-            OutboxService service = registry.GetService(session, "identity_module");
-            await service.Add(message, ct);
+            await outbox.Add(message, ct);
             return result;
         };
     
@@ -57,7 +53,8 @@ public static class RequireActivationTicketUseCase
         {
             OutboxServicesRegistry messages = sp.Resolve<OutboxServicesRegistry>();
             NpgSqlSession session = sp.Resolve<NpgSqlSession>();
-            return WithOutboxListener(origin, session, messages);
+            OutboxService outbox = messages.GetService(session, "identity_module");
+            return WithOutboxListener(origin, outbox);
         }
     }
 }

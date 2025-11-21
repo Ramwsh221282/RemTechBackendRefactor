@@ -3,22 +3,24 @@ using RemTech.Functional.Extensions;
 using RemTech.RabbitMq.Abstractions;
 using Tickets.Core;
 
-namespace Tickets.EventListeners;
+namespace Tickets.EventListeners.Points.TicketCreated;
 
-public sealed class TicketCreatedEventListener : RabbitMqListenerHostService
+public sealed class TicketCreatedEventListener(
+    RabbitMqConnectionSource connectionSource, 
+    IServiceProvider sp, 
+    Serilog.ILogger logger)
+    : RabbitMqListenerHostService(connectionSource)
 {
     private const string Queue = "tickets";
     private const string Exchange = "tickets";
     private const string RoutingKey = "tickets.create";
     private const string ExchangeType = "topic";
     private const string MessageName = nameof(TicketCreatedEventListener);
-    private readonly Serilog.ILogger _logger;
-    private readonly IServiceProvider _sp;
+    private const string Context = nameof(TicketCreatedEventListener);
 
-
-    private static AsyncEventHandler<BasicDeliverEventArgs> Handler(IServiceProvider sp, Serilog.ILogger logger)
+    private readonly AsyncEventHandler<BasicDeliverEventArgs> _handler = async (_, @event) =>
     {
-        return async (_, @event) =>
+        try
         {
             JsonMessageFromRabbitMq message = new(@event.Body);
             TicketRequiredMessage ticketRequired = TicketRequiredMessage.FromRabbitMqJson(message);
@@ -29,25 +31,20 @@ public sealed class TicketCreatedEventListener : RabbitMqListenerHostService
                 logger.Information("{Message} handled {Success}", logArgs);
             if (result.IsFailure)
                 logger.Information("{Message} handled {Success}. Error: {Error}", logArgs);
-        };
-    }
+        }
+        catch(Exception ex)
+        {
+            logger.Error("{Context} failed.", Context);
+            logger.Error("{Message}", ex);
+        }
+    };
 
     protected override Func<RabbitMqConnectionSource, CancellationToken, Task<RabbitMqListener>> GetListener()
     {
         return async (source, token) =>
         {
             DeclareQueueArgs args = new(Queue, Exchange, RoutingKey, ExchangeType);
-            return await source.CreateListener(Handler(_sp, _logger), args, token);
+            return await source.CreateListener(_handler, args, token);
         };
-    }
-    
-    public TicketCreatedEventListener(
-        IServiceProvider sp, 
-        RabbitMqConnectionSource connectionSource,
-        Serilog.ILogger logger) 
-        : base(connectionSource)
-    {
-        _sp = sp;
-        _logger = logger;
     }
 }

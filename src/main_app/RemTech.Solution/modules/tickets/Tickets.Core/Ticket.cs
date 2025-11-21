@@ -22,6 +22,11 @@ public sealed class Ticket
         return new Ticket(_lifeCycle, _metadata);
     }
 
+    public bool OfType(string type)
+    {
+        return _metadata.Snapshot().Type == type;
+    }
+    
     public TicketSnapshot Snapshot()
     {
         return new TicketSnapshot(_lifeCycle.Snapshot(), _metadata.Snapshot());

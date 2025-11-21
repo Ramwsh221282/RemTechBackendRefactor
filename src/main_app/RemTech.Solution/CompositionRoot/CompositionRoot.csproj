@@ -18,6 +18,7 @@
       <ProjectReference Include="..\modules\tickets\Tickets.Core\Tickets.Core.csproj" />
       <ProjectReference Include="..\modules\tickets\Tickets.EventListeners\Tickets.EventListeners.csproj" />
       <ProjectReference Include="..\modules\tickets\Tickets.Logging\Tickets.Logging.csproj" />
+      <ProjectReference Include="..\modules\tickets\Tickets.Outbox\Tickets.Outbox.csproj" />
       <ProjectReference Include="..\modules\tickets\Tickets.Persistence\Tickets.Persistence.csproj" />
     </ItemGroup>
 

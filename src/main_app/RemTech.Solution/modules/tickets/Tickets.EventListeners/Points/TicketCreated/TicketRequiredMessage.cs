@@ -5,7 +5,7 @@ using RemTech.Functional.Extensions;
 using Tickets.Core;
 using Tickets.Core.Contracts;
 
-namespace Tickets.EventListeners;
+namespace Tickets.EventListeners.Points.TicketCreated;
 
 public abstract record TicketRequiredMessage
 {
@@ -33,7 +33,7 @@ public abstract record TicketRequiredMessage
         bool hasCreatorId = message.TryGetProperty("creator_id", out JsonElement creatorIdElement);
         bool hasTicketId = message.TryGetProperty("ticket_id", out JsonElement ticketIdElement);
         bool hasType = message.TryGetProperty("type", out JsonElement typeElement);
-        bool hasExtra = message.TryGetProperty("extra", out JsonElement extraElement);
+        message.TryGetProperty("extra", out JsonElement extraElement);
         string extra = extraElement.GetRawText();
         
         return (hasCreatorId, hasTicketId, hasType) switch

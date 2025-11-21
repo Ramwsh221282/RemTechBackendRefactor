@@ -1,6 +1,5 @@
 ﻿using Identity.Core.SubjectsModule.Contracts;
 using Identity.Core.SubjectsModule.Domain.Subjects;
-using Identity.Core.SubjectsModule.Domain.Tickets;
 using Tests.ModuleFixtures;
 using Tickets.Core;
 

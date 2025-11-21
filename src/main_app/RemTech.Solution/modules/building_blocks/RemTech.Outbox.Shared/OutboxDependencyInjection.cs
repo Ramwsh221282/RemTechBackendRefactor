@@ -6,7 +6,7 @@ public static class OutboxDependencyInjection
 {
     public static void AddOutboxServices(this IServiceCollection services, params string[] dbSchemas)
     {
-        services.AddSingleton<OutboxServicesRegistry>(sp =>
+        services.AddSingleton<OutboxServicesRegistry>(_ =>
         {
             OutboxServicesRegistry registry = new();
             

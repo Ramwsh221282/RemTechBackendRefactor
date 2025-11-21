@@ -9,7 +9,6 @@ using RemTech.RabbitMq.Abstractions;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
-using Tickets.EventListeners;
 
 namespace Tests.ModuleFixtures;
 
@@ -48,7 +47,7 @@ public sealed class CompositionRootFixture : WebApplicationFactory<WebHostApplic
         base.ConfigureWebHost(builder);
         builder.ConfigureTestServices(s =>
         {
-            s.RegisterOutboxServices("identity_module");
+            s.RegisterOutboxServices("identity_module", "tickets_module");
             s.RemoveAll<NpgSqlOptions>();
             s.RemoveAll<RabbitMqConnectionOptions>();
             ReconfigureNpgSqlOptions(s);

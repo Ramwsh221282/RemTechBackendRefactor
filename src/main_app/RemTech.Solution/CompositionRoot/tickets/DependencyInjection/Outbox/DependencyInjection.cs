@@ -1,8 +1,8 @@
 ﻿using CompositionRoot.Shared;
 using Microsoft.Extensions.DependencyInjection;
-using Tickets.EventListeners.Points.TicketCreated;
+using Tickets.Outbox;
 
-namespace CompositionRoot.tickets.DependencyInjection.EventsListening;
+namespace CompositionRoot.tickets.DependencyInjection.Outbox;
 
 [DependencyInjectionClass]
 internal static class DependencyInjection
@@ -10,7 +10,6 @@ internal static class DependencyInjection
     [DependencyInjectionMethod]
     public static void Inject(this IServiceCollection services)
     {
-        services.AddSingleton<TicketCreatedEventListener>();
-        services.AddHostedService<TicketCreatedEventListener>();
+        services.AddTicketOutbox();
     }
 }
