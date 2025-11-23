@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Inbox\InboxMessages\Messages\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\..\building_blocks\RemTech.Primitives.Extensions\RemTech.Primitives.Extensions.csproj" />
     </ItemGroup>
 

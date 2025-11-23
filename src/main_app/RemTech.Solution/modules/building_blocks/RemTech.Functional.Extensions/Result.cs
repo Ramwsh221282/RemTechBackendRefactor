@@ -109,6 +109,12 @@ public static class ResultModule
         {
             return result.IsFailure ? Result.Failure<U>(result.Error) : continuation();
         }
+
+        public Result<U> Map<U>(Func<T, U> mapFn)
+        {
+            if (result.IsFailure) return Result.Failure<U>(result.Error);
+            return Result.Success(mapFn(result.Value));
+        }
         
         public Result<U> Continue<U>(Result<U> continuation)
         {

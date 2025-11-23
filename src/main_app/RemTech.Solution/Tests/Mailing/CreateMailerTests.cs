@@ -1,62 +1,43 @@
-﻿using Mailers.Application.Features.CreateMailer;
-using Mailers.Core.MailersModule;
+﻿using Mailing.Presenters.Mailers.AddMailer;
 using Tests.ModuleFixtures;
 
 namespace Tests.Mailing;
 
 public sealed class CreateMailerTests(CompositionRootFixture services) : IClassFixture<CompositionRootFixture>
 {
-    const string email = "mail@email.com";
-    const string password = "sdaddsa-dsadsads-dasdas";
-    private static readonly CancellationToken ct = CancellationToken.None;
+    private const string email = "testMail@gmail.com";
+    private const string password = "sdaddsa-dsadsads-dasdas";
+    private readonly MailingModule _module = services.MailingModule;
 
     [Fact]
     private async Task Create_Mailer_Success()
     {
-        await using AsyncServiceScope scope = services.Scope();
-        CreateMailerUseCase createMailer = scope.ServiceProvider.GetRequiredService<CreateMailerUseCase>();
-        CreateMailerArgs args = new(email, password, ct);
-        Result<Mailer> created = await createMailer.Invoke(args);
-        Assert.True(created.IsSuccess);
+        Result<AddMailerResponse> result = await _module.AddMailer(password, email);
+        Assert.True(result.IsSuccess);
     }
 
     [Fact]
     private async Task Create_Mailer_Duplicate_Email_Failure()
     {
-        await using (AsyncServiceScope scope = services.Scope())
-        {
-            CreateMailerUseCase createMailer = scope.ServiceProvider.GetRequiredService<CreateMailerUseCase>();
-            CreateMailerArgs args = new(email, password, ct);
-            Result<Mailer> created = await createMailer.Invoke(args);
-            Assert.True(created.IsSuccess);
-        }
-
-        await using (AsyncServiceScope scope = services.Scope())
-        {
-            CreateMailerUseCase createMailer = scope.ServiceProvider.GetRequiredService<CreateMailerUseCase>();
-            CreateMailerArgs args = new(email, password, ct);
-            Result<Mailer> created = await createMailer.Invoke(args);
-            Assert.True(created.IsFailure);
-        }
+        await _module.AddMailer(password, email);
+        Result<AddMailerResponse> result = await _module.AddMailer(password, email);
+        Assert.True(result.IsFailure);
     }
 
     [Fact]
     private async Task Create_Mailer_Invalid_Email()
     {
-        await using AsyncServiceScope scope = services.Scope();
-        CreateMailerUseCase createMailer = scope.ServiceProvider.GetRequiredService<CreateMailerUseCase>();
-        CreateMailerArgs args = new("some invalid email", password, ct);
-        Result<Mailer> created = await createMailer.Invoke(args);
-        Assert.True(created.IsFailure);
+        const string invalidEmail = "some invalid email";
+        Result<AddMailerResponse> result = await _module.AddMailer(password, invalidEmail);
+        Assert.True(result.IsFailure);
     }
 
     [Fact]
     private async Task Create_Mailer_Invalid_Password()
     {
-        await using AsyncServiceScope scope = services.Scope();
-        CreateMailerUseCase createMailer = scope.ServiceProvider.GetRequiredService<CreateMailerUseCase>();
-        CreateMailerArgs args = new(email, "    ", ct);
-        Result<Mailer> created = await createMailer.Invoke(args);
-        Assert.True(created.IsFailure);
+        const string invalidPassword = "   ";
+        await _module.AddMailer(password, email);
+        Result<AddMailerResponse> result = await _module.AddMailer(invalidPassword, email);
+        Assert.True(result.IsFailure);
     }
 }

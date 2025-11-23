@@ -1,31 +1,61 @@
 ﻿namespace RemTech.Primitives.Extensions.Exceptions;
 
-public abstract class MessageException(string error) : Exception(error)
+public abstract class ErrorException(string error) : Exception(error)
 {
     public string Error => error;
-    public class ConflictException(string error) : MessageException(error);
-    public class NotFoundException(string error) : MessageException(error);
-    public class ValidationException(string error) : MessageException(error);
-    public class InternalException(string error) : MessageException(error);
+    public class ConflictException(string error) : ErrorException(error);
+    public class NotFoundException(string error) : ErrorException(error);
+    public class ValidationException(string error) : ErrorException(error);
+    public class InternalException(string error) : ErrorException(error);
 
-    public static void Conflict(string message)
+    public static ConflictException Conflict(string message)
     {
-        throw new ConflictException(message);
+        return new ConflictException(message);
     }
     
-    public static void NotFound(string message)
+    public static NotFoundException NotFound(string message)
     {
-        throw new NotFoundException(message);
+        return new NotFoundException(message);
     }
     
-    public static void Validation(string message)
+    public static ValidationException Validation(string message)
     {
-        throw new ValidationException(message);
+        return new ValidationException(message);
+    }
+
+    public static ValidationException ValueNotSet(string valueName)
+    {
+        string message = $"{valueName}. Значение не заполнено.";
+        return Validation(message);
+    }
+
+    public static ValidationException ValueExcess(string valueName, int length)
+    {
+        string message = $"{valueName}. Превышает длину {length}.";
+        return Validation(message);
+    }
+
+    public static ValidationException ValueInvalidFormat(string valueName)
+    {
+        string message = $"{valueName}. Некорректный формат.";
+        return Validation(message);
+    }
+
+    public static ValidationException ValueInvalid(string valueName)
+    {
+        string message = $"{valueName}. Невалидное значение.";
+        return Validation(message);
     }
     
-    public static void Internal(string message)
+    public static ValidationException ValueInvalid(string valueName, string value)
     {
-        throw new InternalException(message);
+        string message = $"{valueName}. Невалидное значение {value}.";
+        return Validation(message);
+    }
+    
+    public static InternalException Internal(string message)
+    {
+        return new InternalException(message);
     }
     
 }

@@ -3,6 +3,7 @@ using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.NpgSql.Abstractions;
 using RemTech.Outbox.Shared;
 using Tickets.Core.Contracts;
+using Tickets.Outbox.Decorators;
 
 namespace Tickets.Outbox;
 

@@ -1,7 +1,7 @@
 ﻿using RemTech.NpgSql.Abstractions;
 using RemTech.Outbox.Shared;
 
-namespace Tickets.Outbox;
+namespace Tickets.Outbox.Decorators;
 
 public sealed class TransactionalTicketsOutboxMessageMethod(
     NpgSqlSession session,

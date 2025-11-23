@@ -12,9 +12,7 @@
       <ProjectReference Include="..\modules\identity\Identity.Outbox\Identity.Outbox.csproj" />
       <ProjectReference Include="..\modules\identity\Identity.PasswordHash\Identity.PasswordHash.csproj" />
       <ProjectReference Include="..\modules\identity\Identity.Persistence\Identity.Persistence.csproj" />
-      <ProjectReference Include="..\modules\mailing\Mailers.Application\Mailers.Application.csproj" />
-      <ProjectReference Include="..\modules\mailing\Mailers.Core\Mailers.Core.csproj" />
-      <ProjectReference Include="..\modules\mailing\Mailers.Persistence\Mailers.Persistence.csproj" />
+      <ProjectReference Include="..\modules\mailing\Mailing.CompositionRoot\Mailing.CompositionRoot.csproj" />
       <ProjectReference Include="..\modules\tickets\Tickets.Core\Tickets.Core.csproj" />
       <ProjectReference Include="..\modules\tickets\Tickets.EventListeners\Tickets.EventListeners.csproj" />
       <ProjectReference Include="..\modules\tickets\Tickets.Logging\Tickets.Logging.csproj" />

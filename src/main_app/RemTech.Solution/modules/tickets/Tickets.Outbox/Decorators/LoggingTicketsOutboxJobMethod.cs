@@ -1,6 +1,6 @@
 ﻿using RemTech.Outbox.Shared;
 
-namespace Tickets.Outbox;
+namespace Tickets.Outbox.Decorators;
 
 public sealed class LoggingTicketsOutboxJobMethod(
     Serilog.ILogger logger, 
