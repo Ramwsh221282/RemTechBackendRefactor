@@ -1,0 +1,68 @@
+﻿using System.Text;
+using System.Text.Json;
+using Mailing.Application.Inbox.CreateInboxMessage;
+using Mailing.Core.Inbox;
+using Mailing.Infrastructure.NpgSql.Inbox;
+using RabbitMQ.Client.Events;
+using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.RabbitMq;
+
+namespace Mailing.Infrastructure.EventListeners;
+
+public sealed class CreateInboxMessageListener(
+    NpgSqlConnectionFactory npgSqlConnectionFactory, 
+    Serilog.ILogger logger,
+    RabbitMqConnectionSource connectionSource) : RabbitMqListenerHostService(connectionSource)
+{
+    private const string Queue = "inbox.messages";
+    private const string Exchange = "inbox.messages";
+    private const string Type = "topic";
+    private const string RoutingKey = "create.inbox.messages";
+    private const string Context = nameof(CreateInboxMessageListener);
+    
+    protected override Func<RabbitMqConnectionSource, CancellationToken, Task<RabbitMqListener>> GetListener()
+    {
+        return async (source, token) =>
+        {
+            DeclareQueueArgs args = new(Queue, Exchange, RoutingKey, Type);
+            AsyncEventHandler<BasicDeliverEventArgs> handler = _handler;
+            return await source.CreateListener(_handler, args, token);
+        };
+    }
+
+    private AsyncEventHandler<BasicDeliverEventArgs> _handler => async (_, @event) =>
+    {
+        try
+        {
+            logger.Information("{Context} received event to create inbox message.", Context);
+            
+            await using NpgSqlSession session = new(npgSqlConnectionFactory);
+            NpgSqlSaveInboxMessageProtocol saveMessageProtocol = new(session);
+            CreateInboxMessageCommandHandler handler = new(logger, saveMessageProtocol);
+            CreateInboxMessageCommand command = MakeCommandFromEvent(@event);
+            InboxMessage result = await handler.Execute(command);
+            
+            logger.Information("""
+                               {Context} message has been saved. Save info:
+                               Target: {TargetEmail}
+                               Subject: {Subject}
+                               """, [ Context, result.TargetEmail.Value, result.Subject.Value, ]);
+        }
+        catch(Exception ex)
+        {
+            logger.Error("{Context} error: {Error}", Context, ex.Message);
+        }
+    };
+
+    private static CreateInboxMessageCommand MakeCommandFromEvent(BasicDeliverEventArgs @event)
+    {
+        string jsonEventBody = Encoding.UTF8.GetString(@event.Body.Span);
+        using JsonDocument document = JsonDocument.Parse(jsonEventBody);
+        JsonElement messageContext = document.RootElement.GetProperty("message_context");
+        string subject = messageContext.GetProperty("subject").GetString() ?? string.Empty;
+        string body = messageContext.GetProperty("body").GetString() ?? string.Empty;
+        string targetEmail = messageContext.GetProperty("target_email").GetString() ?? string.Empty;
+        CreateInboxMessageCommand command = new(targetEmail, subject, body);
+        return command;
+    }
+}

@@ -1,5 +1,5 @@
-﻿using RemTech.NpgSql.Abstractions;
-using RemTech.RabbitMq.Abstractions;
+﻿using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 

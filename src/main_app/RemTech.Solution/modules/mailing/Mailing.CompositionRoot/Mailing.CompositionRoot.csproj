@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\building_blocks\RemTech.BuildingBlocks.DependencyInjection\RemTech.BuildingBlocks.DependencyInjection.csproj" />
       <ProjectReference Include="..\Mailing.Application\Mailing.Application.csproj" />
       <ProjectReference Include="..\Mailing.Infrastructure\Mailing.Infrastructure.csproj" />
       <ProjectReference Include="..\Mailing.Presenters\Mailing.Presenters.csproj" />

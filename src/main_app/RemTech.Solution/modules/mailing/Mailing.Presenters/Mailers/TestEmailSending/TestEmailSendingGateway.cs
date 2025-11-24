@@ -1,9 +1,8 @@
-﻿using Mailing.Application;
-using Mailing.Application.Mailers.SendEmail;
+﻿using Mailing.Application.Mailers.SendEmail;
 using Mailing.Core.Mailers;
-using Mailing.Presenters.Shared;
-using RemTech.Functional.Extensions;
- 
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.Handlers;
+
 namespace Mailing.Presenters.Mailers.TestEmailSending;
 
 public sealed class TestEmailSendingGateway(

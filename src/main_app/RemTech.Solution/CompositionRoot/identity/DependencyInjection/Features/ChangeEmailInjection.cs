@@ -1,6 +1,5 @@
 ﻿using CompositionRoot.Shared;
 using Identity.Core.SubjectsModule.Contracts;
-using Identity.Logging;
 using Identity.Persistence.NpgSql.SubjectsModule.Features;
 using Microsoft.Extensions.DependencyInjection;
 

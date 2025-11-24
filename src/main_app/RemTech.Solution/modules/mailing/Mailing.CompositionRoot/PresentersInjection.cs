@@ -1,9 +1,9 @@
-﻿using Mailing.Presenters;
-using Mailing.Presenters.Inbox.CreateInboxMessage;
+﻿using Mailing.Presenters.Inbox.CreateInboxMessage;
 using Mailing.Presenters.Mailers.AddMailer;
 using Mailing.Presenters.Mailers.TestEmailSending;
 using Mailing.Presenters.Mailers.UpdateMailer;
 using Microsoft.Extensions.DependencyInjection;
+using RemTech.SharedKernel.Core.Handlers;
 
 namespace Mailing.CompositionRoot;
 

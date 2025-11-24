@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\building_blocks\RemTech.Outbox.Shared\RemTech.Outbox.Shared.csproj" />
       <ProjectReference Include="..\Tickets.Persistence\Tickets.Persistence.csproj" />
     </ItemGroup>
     

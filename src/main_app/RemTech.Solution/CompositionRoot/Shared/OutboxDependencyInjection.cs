@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using RemTech.Outbox.Shared;
+using RemTech.SharedKernel.Infrastructure.Outbox;
 
 namespace CompositionRoot.Shared;
 

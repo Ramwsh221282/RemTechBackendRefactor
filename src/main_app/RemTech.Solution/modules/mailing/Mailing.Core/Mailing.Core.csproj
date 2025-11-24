@@ -7,7 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\building_blocks\RemTech.Primitives.Extensions\RemTech.Primitives.Extensions.csproj" />
+      <Folder Include="Common\Protocols\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Core\RemTech.SharedKernel.Core.csproj" />
     </ItemGroup>
 
 </Project>

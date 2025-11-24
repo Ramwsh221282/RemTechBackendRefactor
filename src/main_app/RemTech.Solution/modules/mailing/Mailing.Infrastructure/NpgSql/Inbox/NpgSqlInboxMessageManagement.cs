@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using Mailing.Core.Inbox;
-using RemTech.NpgSql.Abstractions;
+using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Mailing.Infrastructure.NpgSql.Inbox;
 

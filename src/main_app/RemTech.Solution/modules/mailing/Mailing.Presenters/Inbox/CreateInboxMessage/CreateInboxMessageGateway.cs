@@ -1,8 +1,7 @@
-﻿using Mailing.Application;
-using Mailing.Application.Inbox.CreateInboxMessage;
+﻿using Mailing.Application.Inbox.CreateInboxMessage;
 using Mailing.Core.Inbox;
-using Mailing.Presenters.Shared;
-using RemTech.Functional.Extensions;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.Handlers;
 
 namespace Mailing.Presenters.Inbox.CreateInboxMessage;
 

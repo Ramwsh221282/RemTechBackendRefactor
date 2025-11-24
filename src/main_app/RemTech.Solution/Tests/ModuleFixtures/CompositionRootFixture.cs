@@ -1,5 +1,6 @@
 ﻿using CompositionRoot.Shared;
 using Mailing.Infrastructure.AesEncryption;
+using Mailing.Infrastructure.InboxMessageProcessing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -48,18 +49,30 @@ public sealed class CompositionRootFixture : WebApplicationFactory<WebHostApplic
         base.ConfigureWebHost(builder);
         builder.ConfigureTestServices(s =>
         {
-            s.RemoveAll<IOptions<AesEncryptionOptions>>();
-            IConfiguration configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-            s.AddSingleton(configuration);
-            s.AddOptions<AesEncryptionOptions>().BindConfiguration(nameof(AesEncryptionOptions));
             s.RegisterOutboxServices("identity_module", "tickets_module");
             s.RemoveAll<NpgSqlOptions>();
             s.RemoveAll<RabbitMqConnectionOptions>();
+            ReconfigureInboxProcessorProcedure(s);
+            ReconfigureAesEncryptionOptions(s);
             ReconfigureNpgSqlOptions(s);
             ReconfigureRabbitMqOptions(s);
         });
     }
 
+    private void ReconfigureInboxProcessorProcedure(IServiceCollection services)
+    {
+        services.RemoveAll<InboxMessagesProcessorProcedure>();
+        services.AddTransient<InboxMessagesProcessorProtocol, FakeInboxMessagesProcessorProcedure>();
+    }
+    
+    private void ReconfigureAesEncryptionOptions(IServiceCollection services)
+    {
+        services.RemoveAll<IOptions<AesEncryptionOptions>>();
+        IConfiguration configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+        services.AddSingleton(configuration);
+        services.AddOptions<AesEncryptionOptions>().BindConfiguration(nameof(AesEncryptionOptions));
+    }
+    
     private void ReconfigureRabbitMqOptions(IServiceCollection services)
     {
         services.RemoveAll<IOptions<RabbitMqConnectionOptions>>();

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Quartz;
-using RemTech.Outbox.Shared;
+using RemTech.SharedKernel.Infrastructure.Quartz;
 
 namespace CompositionRoot.Shared;
 

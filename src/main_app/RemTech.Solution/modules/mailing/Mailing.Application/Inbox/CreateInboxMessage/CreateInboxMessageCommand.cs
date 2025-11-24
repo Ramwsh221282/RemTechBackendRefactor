@@ -1,4 +1,6 @@
-﻿namespace Mailing.Application.Inbox.CreateInboxMessage;
+﻿using RemTech.SharedKernel.Core.Handlers;
+
+namespace Mailing.Application.Inbox.CreateInboxMessage;
 
 public sealed record CreateInboxMessageCommand(
     string TargetEmail, 

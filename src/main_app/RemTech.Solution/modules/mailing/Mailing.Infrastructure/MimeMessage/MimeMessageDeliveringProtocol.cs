@@ -1,10 +1,11 @@
 ﻿using Mailing.Core.Inbox;
 using Mailing.Core.Mailers;
 using Mailing.Core.Mailers.Protocols;
-using MimeKit;
 using MailKit.Net.Smtp;
 using MailKit.Security;
-using RemTech.Primitives.Extensions.Exceptions;
+using MimeKit;
+using RemTech.SharedKernel.Core.PrimitivesModule.Exceptions;
+using RemTech.SharedKernel.Core.PrimitivesModule.Immutable;
 
 namespace Mailing.Infrastructure.MimeMessage;
 
@@ -14,20 +15,22 @@ public sealed record MimeMessageDeliveringProtocol : MessageDeliveryProtocol
     
     public async Task<DeliveredMessage> Process(Mailer mailer, InboxMessage message, CancellationToken ct)
     {
-        string senderEmail = mailer.Domain.Email.Value;
-        string senderSmtp = mailer.Config.SmtpPassword;
+        Mailer validMailer = mailer.Validated();
+        ImmutableString smtpHost = new(validMailer.Domain.SmtpHost);
+        ImmutableString smtpPassword = new(mailer.Config.SmtpPassword);
+        ImmutableString senderEmail = new(mailer.Domain.Email.Value);
         BodyBuilder builder = new() { TextBody = message.Body.Value };
         MimeKit.MimeMessage mimeMessage = new();
         mimeMessage.Subject = message.Subject.Value;
         mimeMessage.Body = builder.ToMessageBody();
         mimeMessage.To.Add(MailboxAddress.Parse(message.TargetEmail.Value));
-        mimeMessage.From.Add(MailboxAddress.Parse(senderEmail));
+        mimeMessage.From.Add(MailboxAddress.Parse(senderEmail.Read()));
         using SmtpClient client = new();
         try
         {
             client.AuthenticationMechanisms.Add("XOAUTH2");
-            await client.ConnectAsync(mailer.Domain.SmtpHost, Port, SecureSocketOptions.StartTls, ct);
-            await client.AuthenticateAsync(senderEmail, mailer.Config.SmtpPassword, ct);
+            await client.ConnectAsync(smtpHost.Read(), Port, SecureSocketOptions.StartTls, ct);
+            await client.AuthenticateAsync(senderEmail.Read(), smtpPassword.Read(), ct);
             await client.SendAsync(mimeMessage, ct);
             await client.DisconnectAsync(true, ct);
             MailerDomain withIncreasedSend = mailer.Domain.WithIncreasedSend();

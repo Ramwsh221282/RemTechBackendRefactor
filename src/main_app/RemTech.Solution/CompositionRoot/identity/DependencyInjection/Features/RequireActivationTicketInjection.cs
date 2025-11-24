@@ -1,8 +1,6 @@
 ﻿using CompositionRoot.Shared;
 using Identity.Core.SubjectsModule.Contracts;
 using Identity.Core.SubjectsModule.Notifications.Abstractions;
-using Identity.Logging;
-using Identity.Outbox.Features;
 using Identity.Persistence.NpgSql.SubjectsModule.Features;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.Functional.Extensions;

@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\building_blocks\RemTech.BuildingBlocks.DependencyInjection\RemTech.BuildingBlocks.DependencyInjection.csproj" />
       <ProjectReference Include="..\Tickets.Core\Tickets.Core.csproj" />
     </ItemGroup>
 

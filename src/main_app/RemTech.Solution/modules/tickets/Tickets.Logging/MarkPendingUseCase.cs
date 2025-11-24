@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using RemTech.BuildingBlocks.DependencyInjection;
+﻿using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.Functional.Extensions;
 using Serilog;
 using Tickets.Core;

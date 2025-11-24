@@ -1,6 +1,6 @@
 ﻿using Mailing.Core.Inbox;
 using Mailing.Core.Mailers.Protocols;
-using RemTech.Primitives.Extensions.Exceptions;
+using RemTech.SharedKernel.Core.PrimitivesModule.Exceptions;
 
 namespace Mailing.Core.Mailers;
 
@@ -11,24 +11,30 @@ public static class MailersManagement
         public static async Task<Mailer?> GetById(
             Guid id, 
             GetMailerProtocol protocol, 
-            CancellationToken ct)
+            CancellationToken ct,
+            bool withLock = false)
         {
-            return await protocol.ById(id, ct);
+            Mailer? mailer = await protocol.Get(new GetMailerQueryArgs(Id: id, WithLock: withLock), ct);
+            return mailer == null ? null : mailer with { Domain = mailer.Domain.WithResolvedService() };
         }
         
         public static async Task<Mailer?> GetByEmail(
             string email, 
             GetMailerProtocol protocol, 
-            CancellationToken ct)
+            CancellationToken ct,
+            bool withLock = false)
         {
-            return await protocol.ByEmail(email, ct);
+            Mailer? mailer = await protocol.Get(new GetMailerQueryArgs(Email: email, WithLock: withLock), ct);
+            return mailer == null ? null : mailer with { Domain = mailer.Domain.WithResolvedService() };
         }
 
         public static async Task<Mailer?> GetByAvailableSendLimit(
             GetMailerProtocol protocol, 
-            CancellationToken ct)
+            CancellationToken ct,
+            bool withLock = false)
         {
-            return await protocol.AvailableBySendLimit(ct);
+            Mailer? mailer = await protocol.AvailableBySendLimit(withLock, ct);
+            return mailer == null ? null : mailer with { Domain = mailer.Domain.WithResolvedService() };
         }
     }
     
@@ -45,16 +51,12 @@ public static class MailersManagement
             return await protocol.Process(mailer, message, ct);
         }
         
-        public async Task<Mailer> WithEncryptedSmtpPassword(
-            EncryptMailerSmtpPasswordProtocol protocol, 
-            CancellationToken ct)
+        public async Task<Mailer> Encrypted(EncryptMailerSmtpPasswordProtocol protocol, CancellationToken ct)
         {
             return await protocol.WithEncryptedPassword(mailer, ct);
         }
 
-        public async Task<Mailer> WithDecryptedSmtpPassword(
-            DecryptMailerSmtpPasswordProtocol protocol,
-            CancellationToken ct)
+        public async Task<Mailer> Decrypted(DecryptMailerSmtpPasswordProtocol protocol, CancellationToken ct)
         {
             return await protocol.WithDecryptedPassword(mailer, ct);
         }

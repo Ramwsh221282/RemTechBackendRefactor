@@ -4,7 +4,6 @@ using Identity.Core.SubjectsModule.Contracts;
 using Identity.Core.SubjectsModule.Domain.Subjects;
 using Identity.Core.SubjectsModule.Domain.Tickets;
 using Identity.Core.SubjectsModule.Notifications.Abstractions;
-using Identity.Outbox;
 using RemTech.BuildingBlocks.DependencyInjection;
 using RemTech.Outbox.Shared;
 

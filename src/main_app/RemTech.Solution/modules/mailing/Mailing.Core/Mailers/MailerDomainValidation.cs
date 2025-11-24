@@ -1,5 +1,5 @@
 ﻿using Mailing.Core.Common;
-using RemTech.Primitives.Extensions.Exceptions;
+using RemTech.SharedKernel.Core.PrimitivesModule.Exceptions;
 
 namespace Mailing.Core.Mailers;
 

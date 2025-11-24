@@ -1,4 +1,6 @@
-﻿namespace Mailing.Application.Mailers.UpdateMailer;
+﻿using RemTech.SharedKernel.Core.Handlers;
+
+namespace Mailing.Application.Mailers.UpdateMailer;
 
 public record UpdateMailerCommand(
     Guid Id, 

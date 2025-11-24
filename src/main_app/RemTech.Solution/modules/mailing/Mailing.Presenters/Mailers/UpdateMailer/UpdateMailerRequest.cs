@@ -1,8 +1,7 @@
-﻿using Mailing.Application;
-using Mailing.Application.Mailers.UpdateMailer;
+﻿using Mailing.Application.Mailers.UpdateMailer;
 using Mailing.Core.Mailers;
-using Mailing.Presenters.Shared;
-using RemTech.Functional.Extensions;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.Handlers;
 
 namespace Mailing.Presenters.Mailers.UpdateMailer;
 

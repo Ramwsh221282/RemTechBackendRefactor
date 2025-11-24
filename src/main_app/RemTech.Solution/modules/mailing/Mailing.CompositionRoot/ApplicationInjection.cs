@@ -1,11 +1,11 @@
-﻿using Mailing.Application;
-using Mailing.Application.Inbox.CreateInboxMessage;
+﻿using Mailing.Application.Inbox.CreateInboxMessage;
 using Mailing.Application.Mailers.AddMailer;
 using Mailing.Application.Mailers.SendEmail;
 using Mailing.Application.Mailers.UpdateMailer;
 using Mailing.Core.Inbox;
 using Mailing.Core.Mailers;
 using Microsoft.Extensions.DependencyInjection;
+using RemTech.SharedKernel.Core.Handlers;
 
 namespace Mailing.CompositionRoot;
 

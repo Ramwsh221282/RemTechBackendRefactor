@@ -1,4 +1,6 @@
-﻿namespace Mailing.Application.Mailers.SendEmail;
+﻿using RemTech.SharedKernel.Core.Handlers;
+
+namespace Mailing.Application.Mailers.SendEmail;
 
 public sealed record SendEmailCommand(
     string TargetEmail, 

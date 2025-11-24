@@ -1,6 +1,7 @@
 ﻿using Mailing.Core.Common;
 using Mailing.Core.Inbox;
 using Mailing.Core.Inbox.Protocols;
+using RemTech.SharedKernel.Core.Handlers;
 using Serilog;
 
 namespace Mailing.Application.Inbox.CreateInboxMessage;

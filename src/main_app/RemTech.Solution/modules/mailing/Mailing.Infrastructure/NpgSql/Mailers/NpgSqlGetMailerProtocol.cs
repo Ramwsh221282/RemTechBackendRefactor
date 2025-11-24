@@ -1,7 +1,8 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using Mailing.Core.Mailers;
 using Mailing.Core.Mailers.Protocols;
-using RemTech.NpgSql.Abstractions;
+using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Mailing.Infrastructure.NpgSql.Mailers;
 
@@ -14,46 +15,70 @@ namespace Mailing.Infrastructure.NpgSql.Mailers;
 //     send_limit INT NOT NULL,
 //     send_current INT NOT NULL,
 // );
-public sealed record NpgSqlGetMailerProtocol(NpgSqlSession Session) : GetMailerProtocol
+public sealed class NpgSqlGetMailerProtocol(NpgSqlSession session) : GetMailerProtocol
 {
-    public async Task<Mailer?> AvailableBySendLimit(CancellationToken ct = default)
+    public async Task<Mailer?> AvailableBySendLimit(bool withLock = false, CancellationToken ct = default)
     {
         const string sql = "SELECT * FROM mailing_module.mailers WHERE send_current < send_limit";
-        CommandDefinition command = new(sql, cancellationToken: ct, transaction: Session.Transaction);
-        TableMailer? mailer = await Session.QueryMaybeRow<TableMailer>(command);
+        CommandDefinition command = new(sql, cancellationToken: ct, transaction: session.Transaction);
+        TableMailer? mailer = await session.QueryMaybeRow<TableMailer>(command);
         return mailer?.ToMailer();
     }
 
-    public async Task<Mailer?> ByEmail(string email, CancellationToken ct = default)
+    public async Task<Mailer?> Get(GetMailerQueryArgs args, CancellationToken ct = default)
     {
-        const string sql = "SELECT * FROM mailing_module.mailers WHERE email = @email";
-        CommandDefinition command = new(sql, new { email },  cancellationToken: ct, transaction: Session.Transaction);
-        TableMailer? mailer = await Session.QueryMaybeRow<TableMailer>(command);
+        MailerQueryOptions options = new(args);
+        string sql = $"SELECT * FROM mailing_module.mailers {options.WhereClause} {options.LockClause}";
+        CommandDefinition command = options.CreateCommand(sql, session, ct);
+        TableMailer? mailer = await session.QueryMaybeRow<TableMailer>(command);
         return mailer?.ToMailer();
     }
-
-    public async Task<Mailer?> ById(Guid id, CancellationToken ct = default)
+    
+    private sealed record TableMailer(
+        Guid id, 
+        string HashedPassword, 
+        string Service, 
+        string Email, 
+        int SendLimit, 
+        int SendCurrent)
     {
-        const string sql = "SELECT * FROM mailing_module.mailers WHERE @id = id";
-        CommandDefinition command = new(sql, new { id }, cancellationToken: ct, transaction: Session.Transaction);
-        TableMailer? mailer = await Session.QueryMaybeRow<TableMailer>(command);
-        return mailer?.ToMailer();
+        public Mailer ToMailer()
+        {
+            Core.Common.Email email = new(Email);
+            MailerConfig config = new(HashedPassword);
+            MailerDomain domain = new(email, Service, "", SendCurrent, SendLimit);
+            return new Mailer(id, domain.WithResolvedService(), config);
+        }
+    }
+    
+    private sealed class MailerQueryOptions
+    {
+        private readonly DynamicParameters _parameters = new();
+        private readonly List<string> _filters = [];
+        public string LockClause { get; private set; } = string.Empty;
+        public string WhereClause => _filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", _filters);
+
+        public CommandDefinition CreateCommand(string sql, NpgSqlSession session, CancellationToken ct)
+        {
+            CommandDefinition command = new(sql, _parameters, cancellationToken: ct, transaction: session.Transaction);
+            return command;
+        }
+    
+        public MailerQueryOptions(GetMailerQueryArgs args)
+        {
+            if (args.WithLock) LockClause = "FOR UPDATE";
+            if (args.Id.HasValue)
+            {
+                _filters.Add("id = @id");
+                _parameters.Add("@id", args.Id.Value, DbType.Guid);
+            }
+
+            if (!string.IsNullOrWhiteSpace(args.Email))
+            {
+                _filters.Add("@email = email");
+                _parameters.Add("@email", args.Email, DbType.String);
+            }
+        }
     }
 }
 
-public sealed record TableMailer(
-    Guid id, 
-    string HashedPassword, 
-    string Service, 
-    string Email, 
-    int SendLimit, 
-    int SendCurrent)
-{
-    public Mailer ToMailer()
-    {
-        Core.Common.Email email = new(Email);
-        MailerConfig config = new(HashedPassword);
-        MailerDomain domain = new(email, Service, "", SendCurrent, SendLimit);
-        return new Mailer(id, domain.WithResolvedService(), config);
-    }
-}

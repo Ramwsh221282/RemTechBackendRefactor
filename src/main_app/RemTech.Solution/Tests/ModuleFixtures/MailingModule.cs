@@ -1,9 +1,12 @@
-﻿using Mailing.Presenters;
+﻿using Mailing.Infrastructure.NpgSql.Inbox;
+using Mailing.Infrastructure.NpgSql.Seeder;
+using Mailing.Presenters;
 using Mailing.Presenters.Inbox.CreateInboxMessage;
 using Mailing.Presenters.Mailers.AddMailer;
 using Mailing.Presenters.Mailers.TestEmailSending;
 using Mailing.Presenters.Mailers.UpdateMailer;
 using RemTech.BuildingBlocks.DependencyInjection;
+using RemTech.SharedKernel.Core.Handlers;
 
 namespace Tests.ModuleFixtures;
 
@@ -44,6 +47,22 @@ public sealed class MailingModule(IServiceProvider sp)
         return await gateway.Execute(request);
     }
 
+    public async Task<bool> HasInboxMessages()
+    {
+        CancellationToken ct = CancellationToken.None;
+        await using AsyncServiceScope scope = sp.CreateAsyncScope();
+        NpgSqlHasInboxMessagesProtocol protocol = scope.Resolve<NpgSqlHasInboxMessagesProtocol>();
+        return await protocol.Has(ct);
+    }
+    
+    public async Task SeedInboxMessages(int seedAmount = 10)
+    {
+        CancellationToken ct = CancellationToken.None;
+        InboxMessagesSeeder seeder = sp.Resolve<InboxMessagesSeeder>();
+        InboxMessagesSeeder withOtherSeedAmount = seeder.ChangeSeedAmount(seedAmount);
+        await withOtherSeedAmount.ExecuteSeeding(ct);
+    }
+    
     public async Task<Result<UpdateMailerResponse>> UpdateMailer(
         Guid mailerId,
         string newPassword,

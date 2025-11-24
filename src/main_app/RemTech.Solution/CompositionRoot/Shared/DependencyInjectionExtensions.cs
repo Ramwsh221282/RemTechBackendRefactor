@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Mailing.CompositionRoot;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.NpgSql.Abstractions;
+using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace CompositionRoot.Shared;
 

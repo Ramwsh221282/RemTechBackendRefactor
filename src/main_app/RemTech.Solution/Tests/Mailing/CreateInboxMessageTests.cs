@@ -6,7 +6,7 @@ namespace Tests.Mailing;
 public sealed class CreateInboxMessageTests(CompositionRootFixture fixture) : IClassFixture<CompositionRootFixture>
 {
     private const string targetEmail = "testEmail@gmail.com";
-    private const string subject = "test Subject";
+    private const string subject = "test Account";
     private const string testBody = "test Body";
     private readonly MailingModule _module = fixture.MailingModule;
     

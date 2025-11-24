@@ -1,7 +1,8 @@
 ﻿using Mailing.Core.Common;
 using Mailing.Core.Mailers;
 using Mailing.Core.Mailers.Protocols;
-using RemTech.Primitives.Extensions.Exceptions;
+using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.PrimitivesModule.Exceptions;
 using Serilog;
 
 namespace Mailing.Application.Mailers.AddMailer;
@@ -19,9 +20,10 @@ public sealed class AddMailerCommandHandler
         logger.Information("Creating new mailer.");
         Email email = new(Value: args.Email);
         MailerDomain domain = new(Service: "", Email: email, SendLimit: 0, SmtpHost: "", CurrentSend: 0);
+        MailerDomain resolved = domain.WithResolvedService();
         MailerConfig config = new(SmtpPassword: args.Password);
-        Mailer mailer = new(Id: Guid.NewGuid(), Domain: domain.WithResolvedService(), Config: config);
-        Mailer hashed = await mailer.WithEncryptedSmtpPassword(encryptPassword, args.Ct);
+        Mailer mailer = new(Id: Guid.NewGuid(), Domain: resolved, Config: config);
+        Mailer hashed = await mailer.Encrypted(encryptPassword, args.Ct);
         Mailer valid = hashed.Validated();
 
         Mailer? existingByEmail = await Mailer.GetByEmail(email.Value, getProtocol, args.Ct);

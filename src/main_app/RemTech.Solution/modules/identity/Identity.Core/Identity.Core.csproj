@@ -7,12 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\building_blocks\RemTech.Functional.Extensions\RemTech.Functional.Extensions.csproj"/>
-        <ProjectReference Include="..\..\building_blocks\RemTech.Primitives.Extensions\RemTech.Primitives.Extensions.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="TicketsModule\" />
+      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Core\RemTech.SharedKernel.Core.csproj" />
     </ItemGroup>
 
 </Project>
