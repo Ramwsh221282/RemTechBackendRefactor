@@ -17,7 +17,7 @@ public sealed class MailSendingTests(CompositionRootFixture fixture) : IClassFix
     private async Task Send_Email_Success()
     {
         string email = "jimkrauz@gmail.com";
-        string smtpPassword = "lsav arhl dzad rfzd";
+        string smtpPassword = "dasdsa dsadas dasdas dsadas";
         Result<AddMailerResponse> creatingMailer = await _module.AddMailer(smtpPassword, email);
         Assert.True(creatingMailer.IsSuccess);
         Result<TestEmailSendingResponse> result = await _module.TestEmailSending(email, creatingMailer.Value.MailerId);
