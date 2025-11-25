@@ -4,5 +4,5 @@ namespace RemTech.SharedKernel.Core.Handlers;
 
 public interface ITransactionalOperation
 {
-    Task<Result<U>> Execute<U>(AsyncOperationResult<U> operation, CancellationToken ct = default);
+    Task<Result<U>> Execute<U>(AsyncOperation<U> operation, CancellationToken ct = default);
 }

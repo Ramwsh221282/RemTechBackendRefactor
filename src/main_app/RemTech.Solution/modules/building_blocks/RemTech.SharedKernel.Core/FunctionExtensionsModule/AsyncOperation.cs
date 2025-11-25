@@ -7,12 +7,12 @@ public interface IAsyncOperationResult
     Task<Result<Unit>> Process();
 }
 
-public interface IAsyncOperationResult<T>
+public interface IAsyncOperation<T>
 {
     Task<Result<T>> Process();
 }
 
-public sealed class AsyncOperationResult(Func<Task> func) : IAsyncOperationResult
+public sealed class AsyncOperation(Func<Task> func) : IAsyncOperationResult
 {
     public async Task<Result<Unit>> Process()
     {
@@ -29,7 +29,7 @@ public sealed class AsyncOperationResult(Func<Task> func) : IAsyncOperationResul
     }
 }
 
-public sealed class AsyncOperationResult<T>(Func<Task<T>> func) : IAsyncOperationResult<T>
+public sealed class AsyncOperation<T>(Func<Task<T>> func) : IAsyncOperation<T>
 {
     public async Task<Result<T>> Process()
     {

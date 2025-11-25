@@ -5,7 +5,8 @@ namespace RemTech.SharedKernel.Infrastructure.NpgSql;
 
 public sealed class NpgSqlTransactionalOperation(NpgSqlSession session) : ITransactionalOperation
 {
-    public async Task<Result<U>> Execute<U>(AsyncOperationResult<U> operation, CancellationToken ct = default)
+    public async Task<Result<U>> Execute<U>(AsyncOperation<U> operation, CancellationToken ct = default)
+    where U : notnull
     {
         try
         {

@@ -8,6 +8,11 @@ public sealed class Permission
     private readonly Guid _id;
     private readonly string _name;
     private readonly EventsStore? _events;
+
+    public Permission AttachEventStore(EventsStore store)
+    {
+        return new Permission(_id, _name, store);
+    }
     
     public Permission Register()
     {

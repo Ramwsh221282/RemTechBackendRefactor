@@ -12,7 +12,7 @@ public sealed class CreateInboxMessageGateway
     public async Task<Result<CreateInboxMessageResponse>> Execute(CreateInboxMessageRequest request)
     { 
         CreateInboxMessageCommand command = new(request.TargetEmail, request.Subject, request.Body, request.Ct);
-        AsyncOperationResult<InboxMessage> result = new(() => handler.Execute(command));
+        AsyncOperation<InboxMessage> result = new(() => handler.Execute(command));
         Result<InboxMessage> useCaseResult = await result.Process();
         return useCaseResult.Map(v => new CreateInboxMessageResponse(v.TargetEmail.Value, v.Subject.Value, v.Body.Value));
     }

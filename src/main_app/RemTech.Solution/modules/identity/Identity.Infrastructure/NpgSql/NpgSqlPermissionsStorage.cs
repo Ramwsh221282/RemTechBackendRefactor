@@ -1,5 +1,7 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using Identity.Core;
+using Identity.Core.Permissions;
 using Identity.Core.Permissions.Events;
 using RemTech.SharedKernel.Core.PrimitivesModule.Exceptions;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
@@ -59,6 +61,39 @@ public sealed class NpgSqlPermissionsStorage(NpgSqlSession session) :
         });
     }
 
+    public async Task<Permission?> Get(PermissionsQueryArgs args, CancellationToken ct)
+    {
+        string lockClause = args.WithLock ? "FOR UPDATE" : string.Empty;
+        List<string> whereClauses = [];
+        DynamicParameters parameters = new DynamicParameters();
+        
+        if (args.Id.HasValue)
+        {
+            whereClauses.Add("id=@id");
+            parameters.Add("@id", args.Id.Value, DbType.Guid);
+        }
+
+        if (!string.IsNullOrWhiteSpace(args.Name))
+        {
+            whereClauses.Add("name=@name");
+            parameters.Add("@name", args.Name, DbType.String);
+        }
+        
+        string whereClause = whereClauses.Count == 0 
+            ? string.Empty 
+            : "WHERE " + string.Join(" AND ", whereClauses);
+
+        string sql = $"""
+                     SELECT * FROM identity_module.permissions
+                     {whereClause}
+                     {lockClause}
+                     """;
+        
+        CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+        TablePermission? permission = await session.QueryMaybeRow<TablePermission>(command);
+        return permission?.ToPermission();
+    }
+    
     private async Task ValidateNameUniquesness(CancellationToken ct, string name)
     {
         CommandDefinition command = new(
@@ -69,5 +104,13 @@ public sealed class NpgSqlPermissionsStorage(NpgSqlSession session) :
         );
         int count = await session.QuerySingleRow<int>(command);
         if (count > 0) throw ErrorException.Conflict($"Разрешение с названием: {name} уже существует.");
+    }
+
+    private sealed record TablePermission(Guid Id, string Name)
+    {
+        public Permission ToPermission()
+        {
+            return new Permission(Id, Name);
+        }
     }
 }

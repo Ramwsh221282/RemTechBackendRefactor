@@ -17,7 +17,7 @@ public sealed class TestEmailSendingGateway(
             Body: "Тестовое содержание сообщения",
             sendingRequest.Ct,
             SenderId: sendingRequest.SenderId);
-        AsyncOperationResult<DeliveredMessage> result = new(() => handler.Execute(command));
+        AsyncOperation<DeliveredMessage> result = new(() => handler.Execute(command));
         Result<DeliveredMessage> commandResult = await result.Process();
         return commandResult.Map(r => new TestEmailSendingResponse(r.Mailer.Id));
     }
