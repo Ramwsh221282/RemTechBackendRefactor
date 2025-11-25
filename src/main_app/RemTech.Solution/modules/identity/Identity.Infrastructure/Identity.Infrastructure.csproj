@@ -8,11 +8,16 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Infrastructure\RemTech.SharedKernel.Infrastructure.csproj" />
-      <ProjectReference Include="..\Identity.Core\Identity.Core.csproj" />
+      <ProjectReference Include="..\Identity.Application\Identity.Application.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Serilog" Version="4.3.0" />
     </ItemGroup>
-
+    
+    <ItemGroup>
+        <EmbeddedResource Include="Migrations\*.sql" />
+        <EmbeddedResource Include="Accounts\Migrations\*.sql" />
+    </ItemGroup>
+    
 </Project>

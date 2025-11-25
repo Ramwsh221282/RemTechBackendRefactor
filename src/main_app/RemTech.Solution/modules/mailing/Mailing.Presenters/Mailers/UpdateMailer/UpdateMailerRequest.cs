@@ -20,8 +20,8 @@ public sealed class UpdateMailerGateway
     public async Task<Result<UpdateMailerResponse>> Execute(UpdateMailerRequest request)
     {
         UpdateMailerCommand command = new(request.MailerId, request.NewEmail, request.NewSmtpPassword, request.Ct);
-        AsyncOperation<Mailer> command = new(() => handler.Execute(command));
-        Result<Mailer> result = await command.Process();
+        AsyncOperation<Mailer> commandResult = new(() => handler.Execute(command));
+        Result<Mailer> result = await commandResult.Process();
         return result.Map(r => new UpdateMailerResponse(r.Id));
     }
 }

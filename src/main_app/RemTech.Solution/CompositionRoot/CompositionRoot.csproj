@@ -7,18 +7,19 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\modules\identity\Identity.Core\Identity.Core.csproj" />
+      <ProjectReference Include="..\modules\identity\Identity.Application\Identity.Application.csproj" />
+      <ProjectReference Include="..\modules\identity\Identity.CompositionRoot\Identity.CompositionRoot.csproj" />
       <ProjectReference Include="..\modules\mailing\Mailing.CompositionRoot\Mailing.CompositionRoot.csproj" />
-      <ProjectReference Include="..\modules\tickets\Tickets.Core\Tickets.Core.csproj" />
-      <ProjectReference Include="..\modules\tickets\Tickets.EventListeners\Tickets.EventListeners.csproj" />
-      <ProjectReference Include="..\modules\tickets\Tickets.Logging\Tickets.Logging.csproj" />
-      <ProjectReference Include="..\modules\tickets\Tickets.Outbox\Tickets.Outbox.csproj" />
-      <ProjectReference Include="..\modules\tickets\Tickets.Persistence\Tickets.Persistence.csproj" />
     </ItemGroup>
 
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     </ItemGroup>
     
 </Project>

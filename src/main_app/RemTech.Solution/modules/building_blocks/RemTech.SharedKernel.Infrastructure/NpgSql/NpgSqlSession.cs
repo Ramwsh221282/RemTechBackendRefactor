@@ -19,6 +19,11 @@ public sealed record NpgSqlSession(NpgSqlConnectionFactory Factory) : IAsyncDisp
         return Transaction;
     }
 
+    public CommandDefinition FormCommand(string sql, DynamicParameters parameters, CancellationToken ct)
+    {
+        return new CommandDefinition(sql, parameters, cancellationToken: ct, transaction: Transaction);
+    }
+    
     public async Task<int> WithAffectedCallback(CommandDefinition command, CancellationToken ct)
     {
         NpgsqlConnection connection = await GetConnection(ct);

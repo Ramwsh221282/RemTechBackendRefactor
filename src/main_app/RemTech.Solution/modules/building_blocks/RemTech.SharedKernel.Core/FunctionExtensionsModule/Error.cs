@@ -8,6 +8,21 @@ public abstract class Error(string message)
     {
         return new ValidationError(message);
     }
+
+    public static Error NotSet(string valueName)
+    {
+        return new ValidationError($"{valueName} значение не установлено.");
+    }
+
+    public static Error GreaterThan(string valueName, int maxLength)
+    {
+        return new ValidationError($"{valueName} значение превышает длину {maxLength} символов.");
+    }
+
+    public static Error InvalidFormat(string valueName)
+    {
+        return new ValidationError($"{valueName} некорректный формат.");
+    }
     
     public static Error Validation(Result result)
     {
@@ -98,5 +113,10 @@ public abstract class Error(string message)
     public static implicit operator Result(Error error)
     {
         return Result.Failure(error);
+    }
+
+    public static implicit operator string(Error error)
+    {
+        return error.Message;
     }
 }

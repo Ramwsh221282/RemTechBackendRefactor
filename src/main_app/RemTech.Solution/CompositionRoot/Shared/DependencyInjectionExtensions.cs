@@ -1,35 +1,57 @@
-﻿using System.Reflection;
-using Mailing.CompositionRoot;
+﻿using Identity.CompositionRoot;
 using Microsoft.Extensions.DependencyInjection;
+using Quartz;
+using RemTech.SharedKernel.Infrastructure.AesEncryption;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Outbox;
+using RemTech.SharedKernel.Infrastructure.Quartz;
+using Serilog;
 
 namespace CompositionRoot.Shared;
 
 public static class DependencyInjectionExtensions
 {
-    public static void RegisterModules(this IServiceCollection services)
+    extension(IServiceCollection services)
     {
-        services.AddMailingModule();
-        Assembly assembly = typeof(DependencyInjectionExtensions).Assembly;
+        public void RegisterSharedServices()
+        {
+            services.AddPostgres();
+            services.AddAesCryptography();
+            ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+            services.AddSingleton(logger);
+        }
+    
+        public void RegisterModules()
+        {
+            services.AddIdentityModule();
+        }
         
-        Type[] array = assembly
-            .GetTypes()
-            .Where(t => t.GetCustomAttribute<DependencyInjectionClassAttribute>() is not null)
-            .ToArray();
-
-        foreach (Type type in array)
-            type.GetMethods()
-                .First(m => m.GetCustomAttribute<DependencyInjectionMethodAttribute>() is not null)
-                .Invoke(null, [services]);
+        public void RegisterOutboxServices(params string[] schemas)
+        {
+            services.AddOutboxServices(schemas);
+        }
+        
+        public void AddQuartzJobs()
+        {
+            services.AddCronScheduledJobs();
+            services.AddQuartzHostedService(c =>
+            {
+                c.AwaitApplicationStarted = true;
+                c.WaitForJobsToComplete = true;
+            });
+        }
     }
 
-    public static void ApplyModuleMigrations(this IServiceProvider sp)
+    extension(IServiceProvider sp)
     {
-        PgVectorUpgrader mainUpgrader = sp.GetRequiredService<PgVectorUpgrader>();
-        mainUpgrader.ApplyMigrations();
+        public void ApplyModuleMigrations()
+        {
+            PgVectorUpgrader mainUpgrader = sp.GetRequiredService<PgVectorUpgrader>();
+            mainUpgrader.ApplyMigrations();
         
-        IEnumerable<IDbUpgrader> upgraders = sp.GetServices<IDbUpgrader>();
-        foreach (IDbUpgrader upgrader in upgraders)
-            upgrader.ApplyMigrations();
+            IEnumerable<IDbUpgrader> upgraders = sp.GetServices<IDbUpgrader>();
+            foreach (IDbUpgrader upgrader in upgraders)
+                upgrader.ApplyMigrations();
+        }
     }
 }

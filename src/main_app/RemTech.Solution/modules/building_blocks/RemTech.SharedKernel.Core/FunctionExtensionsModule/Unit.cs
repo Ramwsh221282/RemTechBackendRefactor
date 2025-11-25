@@ -4,7 +4,7 @@ public sealed record Unit
 {
     public static Unit Value { get; } = new();
 
-    public Unit()
+    private Unit()
     {
         
     }

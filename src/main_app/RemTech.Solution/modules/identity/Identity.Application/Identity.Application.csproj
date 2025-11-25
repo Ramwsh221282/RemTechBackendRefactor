@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Identity.Application\Identity.Application.csproj" />
-      <ProjectReference Include="..\Identity.Infrastructure\Identity.Infrastructure.csproj" />
+      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Core\RemTech.SharedKernel.Core.csproj" />
+      <ProjectReference Include="..\Identity.Contracts\Identity.Contracts.csproj" />
     </ItemGroup>
 
 </Project>

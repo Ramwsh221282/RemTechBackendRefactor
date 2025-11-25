@@ -24,9 +24,6 @@
         <ProjectReference Include="..\CompositionRoot\CompositionRoot.csproj"/>
         <ProjectReference Include="..\modules\building_blocks\RemTech.Tests.Shared\RemTech.Tests.Shared.csproj"/>
         <ProjectReference Include="..\modules\mailing\Mailing.Core\Mailing.Core.csproj" />
-        <ProjectReference Include="..\modules\tickets\Tickets.EventListeners\Tickets.EventListeners.csproj" />
-        <ProjectReference Include="..\modules\tickets\Tickets.Logging\Tickets.Logging.csproj" />
-        <ProjectReference Include="..\modules\tickets\Tickets.Persistence\Tickets.Persistence.csproj" />
         <ProjectReference Include="..\WebHostApplication\WebHostApplication.csproj" />
     </ItemGroup>
 
@@ -34,6 +31,10 @@
         <None Update="appsettings.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="ModuleFixtures\" />
     </ItemGroup>
 
 </Project>
