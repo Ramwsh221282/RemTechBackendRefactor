@@ -9,17 +9,17 @@ public sealed class LoggingAccount(Serilog.ILogger logger, IAccount origin) : Ac
 {
     private readonly IAccount _origin = origin;
 
-    public override async Task<Result<Unit>> Register(IAccountEncrypter encrypter, IAccountPersister persister, CancellationToken ct = default)
+    public override async Task<Result<IAccount>> Register(IAccountEncrypter encrypter, IAccountPersister persister, CancellationToken ct = default)
     {
         logger.Information("Registering account.");
-        Result<Unit> result = await _origin.Register(encrypter, persister, ct);
+        Result<IAccount> result = await _origin.Register(encrypter, persister, ct);
         if (result.IsFailure)
         {
             logger.Error("Account was not registered. ERROR: {message}", result.Error.Message);
             return result;
         }
         logger.Information("Account has been registered");
-        LogAccountInfo();
+        new LoggingAccount(logger, result.Value).LogAccountInfo();
         return result;
     }
 
@@ -34,7 +34,7 @@ public sealed class LoggingAccount(Serilog.ILogger logger, IAccount origin) : Ac
         }
         
         logger.Information("Account has been activated");
-        LogAccountInfo();
+        new LoggingAccount(logger, result.Value).LogAccountInfo();
         return result;
     }
 
@@ -49,7 +49,7 @@ public sealed class LoggingAccount(Serilog.ILogger logger, IAccount origin) : Ac
         }
         
         logger.Information("Account has been changed");
-        LogAccountInfo();
+        new LoggingAccount(logger, result.Value).LogAccountInfo();
         return result;
     }
 
@@ -68,7 +68,7 @@ public sealed class LoggingAccount(Serilog.ILogger logger, IAccount origin) : Ac
         }
         
         logger.Information("Account has been changed");
-        LogAccountInfo();
+        new LoggingAccount(logger, result.Value).LogAccountInfo();
         return result;
     }
 

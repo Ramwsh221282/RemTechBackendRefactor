@@ -5,7 +5,7 @@ namespace Identity.Application.Accounts.Decorators;
 
 public abstract class AccountEnvelope(IAccount origin) : IAccount
 {
-    public virtual Task<Result<Unit>> Register(
+    public virtual Task<Result<IAccount>> Register(
         IAccountEncrypter encrypter, 
         IAccountPersister persister, 
         CancellationToken ct = default)

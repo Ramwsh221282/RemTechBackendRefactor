@@ -12,7 +12,7 @@ public interface IAccountMessagePublisher
 
 public interface IAccount
 {
-    Task<Result<Unit>> Register(
+    Task<Result<IAccount>> Register(
         IAccountEncrypter encrypter,
         IAccountPersister persister,
         CancellationToken ct = default

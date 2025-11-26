@@ -15,22 +15,21 @@ public sealed class PersistingAccount(IAccount account) : AccountEnvelope(accoun
         CancellationToken ct = default)
     {
         IAccount? account = await persister.Get(args, ct);
-        if (account == null) return Error.NotFound("Учетная запись не найдена.");
-        return Result.Success(account);
+        return account == null ? Error.NotFound("Учетная запись не найдена.") : Result.Success(account);
     }
     
-    public override async Task<Result<Unit>> Register(
+    public override async Task<Result<IAccount>> Register(
         IAccountEncrypter encrypter, 
         IAccountPersister persister, 
         CancellationToken ct = default)
     {
-        Result<Unit> result = await _account.Register(encrypter, persister, ct);
-        IAccountRepresentation representation = _account.Represent(AccountRepresentation.Empty());
+        Result<IAccount> result = await _account.Register(encrypter, persister, ct);
+        IAccountRepresentation representation = result.Value.Represent(AccountRepresentation.Empty());
         Result<Unit> hasUniqueEmail = await ValidateEmailUniquesness(representation, persister, ct);
         if (hasUniqueEmail.IsFailure) return hasUniqueEmail.Error;
         Result<Unit> hasUniqueName = await ValidateNameUniquesness(representation, persister, ct);
         if (hasUniqueName.IsFailure) return hasUniqueName.Error;
-        await persister.Persist(_account, ct);
+        await persister.Persist(result.Value, ct);
         return result;
     }
 
@@ -54,7 +53,7 @@ public sealed class PersistingAccount(IAccount account) : AccountEnvelope(accoun
         IAccountRepresentation representation = updating.Value.Represent(AccountRepresentation.Empty());
         Result<Unit> hasUniqueEmail = await ValidateEmailUniquesness(representation, persister, ct);
         if (hasUniqueEmail.IsFailure) return hasUniqueEmail.Error;
-        await persister.Persist(updating.Value, ct);
+        await persister.Update(updating.Value, ct);
         return updating;
     }
 
@@ -66,11 +65,11 @@ public sealed class PersistingAccount(IAccount account) : AccountEnvelope(accoun
     {
         Result<IAccount> updating = await _account.ChangePassword(newPassword, persister, encrypter, ct);
         if (updating.IsFailure) return updating.Error;
-        await persister.Persist(updating.Value, ct);
+        await persister.Update(updating.Value, ct);
         return updating;
     }
-    
-    public async Task<Result<Unit>> ValidateNameUniquesness(
+
+    private async Task<Result<Unit>> ValidateNameUniquesness(
         IAccountRepresentation representation,
         IAccountPersister persister,
         CancellationToken ct = default
@@ -78,8 +77,8 @@ public sealed class PersistingAccount(IAccount account) : AccountEnvelope(accoun
     {
         return await ValidateNameUniquesness(representation.Data, persister, ct);
     }
-    
-    public async Task<Result<Unit>> ValidateNameUniquesness(
+
+    private async Task<Result<Unit>> ValidateNameUniquesness(
         IAccountData data,
         IAccountPersister persister,
         CancellationToken ct = default
@@ -87,8 +86,8 @@ public sealed class PersistingAccount(IAccount account) : AccountEnvelope(accoun
     {
         return await ValidateNameUniquesness(data.Name, persister, ct);
     }
-    
-    public async Task<Result<Unit>> ValidateNameUniquesness(
+
+    private async Task<Result<Unit>> ValidateNameUniquesness(
         string name,
         IAccountPersister persister,
         CancellationToken ct = default)
@@ -98,8 +97,8 @@ public sealed class PersistingAccount(IAccount account) : AccountEnvelope(accoun
         if (withName != null) return Error.Conflict($"Учетная запись с названием: {name} уже существует.");
         return Unit.Value;
     }
-    
-    public async Task<Result<Unit>> ValidateEmailUniquesness(
+
+    private async Task<Result<Unit>> ValidateEmailUniquesness(
         string email,
         IAccountPersister persister,  
         CancellationToken ct = default)
@@ -110,7 +109,7 @@ public sealed class PersistingAccount(IAccount account) : AccountEnvelope(accoun
         return Unit.Value;
     }
 
-    public async Task<Result<Unit>> ValidateEmailUniquesness(
+    private async Task<Result<Unit>> ValidateEmailUniquesness(
         IAccountRepresentation representation,
         IAccountPersister persister,
         CancellationToken ct = default
@@ -118,8 +117,8 @@ public sealed class PersistingAccount(IAccount account) : AccountEnvelope(accoun
     {
         return await ValidateEmailUniquesness(representation.Data, persister, ct);
     }
-    
-    public async Task<Result<Unit>> ValidateEmailUniquesness(
+
+    private async Task<Result<Unit>> ValidateEmailUniquesness(
         IAccountData data,
         IAccountPersister persister,
         CancellationToken ct = default)

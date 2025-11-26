@@ -6,13 +6,13 @@ namespace Identity.Application.Accounts;
 
 public sealed class Account(AccountData data) : IAccount
 {
-    public async Task<Result<Unit>> Register(
+    public async Task<Result<IAccount>> Register(
         IAccountEncrypter encrypter, 
         IAccountPersister persister, 
         CancellationToken ct = default)
     {
         IAccount encrypted = await encrypter.Encrypt(this, ct);
-        return Unit.Value;
+        return Result.Success(encrypted);
     }
 
     public Task<Result<IAccount>> ChangeEmail(
@@ -21,7 +21,7 @@ public sealed class Account(AccountData data) : IAccount
         CancellationToken ct = default)
     {
         AccountData @new = data with { Email = newEmail };
-        Account updated = new(data);
+        Account updated = new(@new);
         return Task.FromResult(Result.Success<IAccount>(updated));
     }
 
@@ -32,8 +32,8 @@ public sealed class Account(AccountData data) : IAccount
         CancellationToken ct = default)
     {
         AccountData @new = data with { Password = newPassword };
-        Account updated = new(data);
-        IAccount encrypted = await encrypter.Encrypt(this, ct);
+        Account updated = new(@new);
+        IAccount encrypted = await encrypter.Encrypt(updated, ct);
         return Result.Success(encrypted);
     }
 

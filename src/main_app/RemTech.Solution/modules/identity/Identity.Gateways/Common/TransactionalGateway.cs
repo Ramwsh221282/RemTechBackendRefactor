@@ -1,11 +1,12 @@
 ﻿using System.Reflection;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Identity.Gateways.Common;
 
 public sealed class TransactionalGateway<TRequest, TResponse>(
-    ITransactionalOperation transactional,
+    NpgSqlSession session,
     IGateway<TRequest, TResponse> origin)
     : IGateway<TRequest, TResponse>
     where TRequest : IRequest
@@ -14,8 +15,10 @@ public sealed class TransactionalGateway<TRequest, TResponse>(
     public async Task<Result<TResponse>> Execute(TRequest request)
     {
         CancellationToken cancellationToken = InspectForCancellationToken(request);
-        AsyncOperation<TResponse> inner = new(async () => await origin.Execute(request));
-        return await transactional.Execute(inner, cancellationToken);
+        await session.GetTransaction(cancellationToken);
+        Result<TResponse> result = await origin.Execute(request);
+        if (result.IsFailure) return result.Error;
+        return !await session.Commited(cancellationToken) ? Error.Application("Ошибка транзакции.") : result;
     }
 
     private CancellationToken InspectForCancellationToken(TRequest request)
@@ -23,7 +26,7 @@ public sealed class TransactionalGateway<TRequest, TResponse>(
         Type requestType = request.GetType();
         CancellationToken[] tokens = 
             InspectForCancellationTokenUsingFields(requestType, request)
-            .Concat(InspectForCancellationTokenUsingProperties(requestType, requestType))
+            .Concat(InspectForCancellationTokenUsingProperties(requestType, request))
             .ToArray();
         return tokens.Length == 0 ? CancellationToken.None : tokens[0];
     }

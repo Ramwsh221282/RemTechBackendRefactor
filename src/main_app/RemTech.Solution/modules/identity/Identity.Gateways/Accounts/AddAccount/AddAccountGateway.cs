@@ -20,7 +20,7 @@ public sealed class AddAccountGateway(
     {
         AccountData data = AccountData.New(request.Name, request.Email, request.Password);
         IAccount account = new LoggingAccount(logger, new ValidAccount(new PersistingAccount(new Account(data))));
-        Result<Unit> result = await account.Register(encrypter, persister, request.Ct);
-        return result.IsFailure ? result.Error : AccountResponse.Represent(account);
+        Result<IAccount> result = await account.Register(encrypter, persister, request.Ct);
+        return result.IsFailure ? result.Error : AccountResponse.Represent(result.Value);
     }
 }

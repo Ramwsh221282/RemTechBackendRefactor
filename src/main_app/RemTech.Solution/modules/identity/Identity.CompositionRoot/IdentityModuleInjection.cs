@@ -10,6 +10,7 @@ using Identity.Gateways.Common;
 using Identity.Infrastructure;
 using Identity.Infrastructure.Accounts;
 using Microsoft.Extensions.DependencyInjection;
+using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
 
@@ -31,22 +32,18 @@ public static class IdentityModuleInjection
             services.AddScoped<IAccountPersister, NpgSqlAccountPersister>();
             services.AddTransient<IDbUpgrader, IdentityModuleDbUpgrader>();
             
-            services.AddScoped<IGateway<ActivateAccountRequest, AccountResponse>, ActivateAccountGateway>();
             services.AddScoped<IGateway<AddAccountRequest, AccountResponse>, AddAccountGateway>();
+            services.AddScoped<IGateway<ActivateAccountRequest, AccountResponse>, ActivateAccountGateway>();
             services.AddScoped<IGateway<ChangeAccountEmailRequest, AccountResponse>,  ChangeAccountEmailGateway>();
             services.AddScoped<IGateway<ChangeAccountPasswordRequest, AccountResponse>,  ChangeAccountPasswordGateway>();
             services.AddScoped<IGateway<RequireActivationRequest, RequireActivationResponse>, RequireActivationGateway>();
             services.AddScoped<IGateway<RequirePasswordResetRequest, RequirePasswordResetResponse>, RequirePasswordResetGateway>();
-
-            services.Decorate<
-                IGateway<ActivateAccountRequest, AccountResponse>, 
-                TransactionalGateway<ActivateAccountRequest, AccountResponse>>();
             
-            services.Decorate<IGateway<ChangeAccountEmailRequest, AccountResponse>,
+            services.Decorate<
+                IGateway<ChangeAccountEmailRequest, AccountResponse>, 
                 TransactionalGateway<ChangeAccountEmailRequest, AccountResponse>>();
             
-            services.Decorate<
-                IGateway<ChangeAccountPasswordRequest, AccountResponse>,
+            services.Decorate<IGateway<ChangeAccountPasswordRequest, AccountResponse>, 
                 TransactionalGateway<ChangeAccountPasswordRequest, AccountResponse>>();
         }
     }

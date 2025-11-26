@@ -1,6 +1,7 @@
 ﻿using Identity.CompositionRoot;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
+using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.AesEncryption;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
 using RemTech.SharedKernel.Infrastructure.Outbox;

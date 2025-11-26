@@ -8,7 +8,7 @@ public sealed class ValidAccount(IAccount account) : AccountEnvelope(account)
     private readonly AccountValidationTools _tools = new();
     private readonly IAccount _account = account;
 
-    public override async Task<Result<Unit>> Register(
+    public override async Task<Result<IAccount>> Register(
         IAccountEncrypter encrypter, 
         IAccountPersister persister, 
         CancellationToken ct = default)
