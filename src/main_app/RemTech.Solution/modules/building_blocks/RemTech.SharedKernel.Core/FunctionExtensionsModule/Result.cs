@@ -135,6 +135,11 @@ public static class ResultModule
         {
             return result.IsFailure ? Result.Failure<U>(result.Error) : map();
         }
+
+        public async Task<Result<U>> ContinueAsync<U>(Func<Task<U>> fn)
+        {
+            return result.IsFailure ? Result.Failure<U>(result.Error) : await fn();
+        }
     }
 }
 

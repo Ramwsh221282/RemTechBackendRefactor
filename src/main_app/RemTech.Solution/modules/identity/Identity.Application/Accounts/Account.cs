@@ -7,8 +7,8 @@ namespace Identity.Application.Accounts;
 public sealed class Account(AccountData data) : IAccount
 {
     public async Task<Result<IAccount>> Register(
-        IAccountEncrypter encrypter, 
-        IAccountPersister persister, 
+        IAccountCryptography encrypter, 
+        IAccountsStorage persister, 
         CancellationToken ct = default)
     {
         IAccount encrypted = await encrypter.Encrypt(this, ct);
@@ -17,7 +17,7 @@ public sealed class Account(AccountData data) : IAccount
 
     public Task<Result<IAccount>> ChangeEmail(
         string newEmail, 
-        IAccountPersister persister, 
+        IAccountsStorage persister, 
         CancellationToken ct = default)
     {
         AccountData @new = data with { Email = newEmail };
@@ -27,8 +27,8 @@ public sealed class Account(AccountData data) : IAccount
 
     public async Task<Result<IAccount>> ChangePassword(
         string newPassword, 
-        IAccountPersister persister, 
-        IAccountEncrypter encrypter,
+        IAccountsStorage persister, 
+        IAccountCryptography encrypter,
         CancellationToken ct = default)
     {
         AccountData @new = data with { Password = newPassword };
@@ -38,25 +38,26 @@ public sealed class Account(AccountData data) : IAccount
     }
 
     public async Task<Result<Unit>> RequireAccountActivation(
-        IAccountMessagePublisher publisher, 
+        IOnAccountActivationRequiredListener publisher, 
         CancellationToken ct = default)
     {
+        if (IsActivated()) return Error.Conflict("Учетная запись уже активирована.");
         AccountActivationTicketRequired message = new(data.Id, data.Email);
-        await publisher.Publish(message, ct);
-        return Unit.Value;
+        return await publisher.React(data, ct);
     }
 
     public async Task<Result<Unit>> RequirePasswordReset(
-        IAccountMessagePublisher publisher, 
+        IOnAccountPasswordResetRequiredListener publisher, 
         CancellationToken ct = default)
     {
         AccountPasswordResetRequired message = new(data.Id, data.Email);
-        await publisher.Publish(message, ct);
-        return Unit.Value;
+        Result<Unit> result = await publisher.React(data, ct);
+        if (result.IsFailure) return result.Error;
+        return result.Value;
     }
 
     public Task<Result<IAccount>> Activate(
-        IAccountPersister persister, 
+        IAccountsStorage storage, 
         CancellationToken ct)
     {
         AccountData @new = data with { Activated = true };
@@ -64,15 +65,9 @@ public sealed class Account(AccountData data) : IAccount
         return Task.FromResult<Result<IAccount>>(updated);
     }
 
-    public IAccountRepresentation Represent(
-        IAccountRepresentation representation)
+    public AccountData Represent()
     {
-        IAccountRepresentation withId = representation.AddId(data.Id);
-        IAccountRepresentation withName = withId.AddName(data.Name);
-        IAccountRepresentation withEmail = withName.AddEmail(data.Email);
-        IAccountRepresentation withPassword = withEmail.AddPassword(data.Password);
-        IAccountRepresentation withActivated = withPassword.AddActivated(data.Activated);
-        return withActivated;
+        return data;
     }
 
     public bool IsActivated()

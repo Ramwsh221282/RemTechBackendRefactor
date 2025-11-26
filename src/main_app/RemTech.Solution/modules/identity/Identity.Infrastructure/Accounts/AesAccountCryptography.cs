@@ -4,22 +4,20 @@ using RemTech.SharedKernel.Infrastructure.AesEncryption;
 
 namespace Identity.Infrastructure.Accounts;
 
-public sealed class AesAccountCryptography(AesCryptography cryptography) : IAccountEncrypter, IAccountDecrypter
+public sealed class AesAccountCryptography(AesCryptography cryptography) : IAccountCryptography
 {
     public async Task<IAccount> Encrypt(IAccount value, CancellationToken ct = default)
     {
-        IAccountRepresentation representation = value.Represent(AccountRepresentation.Empty());
-        IAccountData data = representation.Data;
+        AccountData data = value.Represent();
         string plainPassword = data.Password;
         string encrypted = await cryptography.EncryptText(plainPassword, ct);
         AccountData updated = AccountData.Copy(password: encrypted, data: data);
-        return new Account(updated);
+        return new Account(updated);   
     }
 
     public async Task<IAccount> Decrypt(IAccount value, CancellationToken ct = default)
     {
-        IAccountRepresentation representation = value.Represent(AccountRepresentation.Empty());
-        IAccountData data = representation.Data;
+        AccountData data = value.Represent();
         string encryptedPassword = data.Password;
         string decrypted = await cryptography.DecryptText(encryptedPassword, ct);
         AccountData updated = AccountData.Copy(password: decrypted, data: data);

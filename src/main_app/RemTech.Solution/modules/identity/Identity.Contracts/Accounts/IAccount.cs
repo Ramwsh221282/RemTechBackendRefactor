@@ -2,53 +2,43 @@
 
 namespace Identity.Contracts.Accounts;
 
-public abstract record AccountMessage;
-
-public interface IAccountMessagePublisher
-{
-    Task Publish<TMessage>(TMessage message, CancellationToken ct = default) 
-        where TMessage : AccountMessage;
-}
-
 public interface IAccount
 {
     Task<Result<IAccount>> Register(
-        IAccountEncrypter encrypter,
-        IAccountPersister persister,
+        IAccountCryptography cryptography,
+        IAccountsStorage storage,
         CancellationToken ct = default
     );
 
     Task<Result<IAccount>> ChangeEmail(
         string newEmail,
-        IAccountPersister persister, 
+        IAccountsStorage storage, 
         CancellationToken ct = default
         );
     
     Task<Result<IAccount>> ChangePassword(
         string newPassword,
-        IAccountPersister persister,
-        IAccountEncrypter encrypter,
+        IAccountsStorage storage,
+        IAccountCryptography cryptography,
         CancellationToken ct = default
         );
     
     Task<Result<Unit>> RequireAccountActivation(
-        IAccountMessagePublisher publisher, 
+        IOnAccountActivationRequiredListener listener, 
         CancellationToken ct = default
         );
 
     Task<Result<Unit>> RequirePasswordReset(
-        IAccountMessagePublisher publisher,
+        IOnAccountPasswordResetRequiredListener listener,
         CancellationToken ct = default
         );
     
     Task<Result<IAccount>> Activate(
-        IAccountPersister persister, 
+        IAccountsStorage storage, 
         CancellationToken ct
         );
 
-    IAccountRepresentation Represent(
-        IAccountRepresentation representation
-        );
+    AccountData Represent();
 
     bool IsActivated();
 }

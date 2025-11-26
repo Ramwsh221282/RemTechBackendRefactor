@@ -1,5 +1,4 @@
-﻿using Identity.Application.Accounts;
-using Identity.Contracts.Accounts;
+﻿using Identity.Contracts.Accounts;
 using RemTech.SharedKernel.Core.Handlers;
 
 namespace Identity.Gateways.Accounts.Responses;
@@ -12,8 +11,7 @@ public sealed record AccountResponse(
 {
     public static AccountResponse Represent(IAccount account)
     {
-        IAccountRepresentation representation = account.Represent(AccountRepresentation.Empty());
-        IAccountData data = representation.Data;
+        AccountData data = account.Represent();
         return new AccountResponse(data.Id, data.Name, data.Email, data.Activated);
     }
 }

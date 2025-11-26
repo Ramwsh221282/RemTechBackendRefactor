@@ -22,7 +22,7 @@ public sealed class ChangeEmailTests(AccountsTestsFixture fixture) : IClassFixtu
         await _facade.MakeAccountActivated(id);
         Result<AccountResponse> changing = await _facade.ChangeEmail(id, otherEmail);
         Assert.True(changing.IsSuccess);
-        Result<IAccountData> accountData = await _facade.GetAccount(id);
+        Result<AccountData> accountData = await _facade.GetAccount(id);
         Assert.True(accountData.IsSuccess);
         Assert.Equal(otherEmail, accountData.Value.Email);
         Assert.NotEqual(defaultEmail, accountData.Value.Email);

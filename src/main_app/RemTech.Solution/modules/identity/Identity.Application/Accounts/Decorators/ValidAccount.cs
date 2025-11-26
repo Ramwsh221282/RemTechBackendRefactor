@@ -9,12 +9,11 @@ public sealed class ValidAccount(IAccount account) : AccountEnvelope(account)
     private readonly IAccount _account = account;
 
     public override async Task<Result<IAccount>> Register(
-        IAccountEncrypter encrypter, 
-        IAccountPersister persister, 
+        IAccountCryptography encrypter, 
+        IAccountsStorage persister, 
         CancellationToken ct = default)
     {
-        IAccountRepresentation representation = Represent(AccountRepresentation.Empty());
-        Result<Unit> validation = _tools.ValidateData(representation.Data);
+        Result<Unit> validation = _tools.ValidateData(_account.Represent());
         if (validation.IsFailure) return validation.Error;
         if (IsActivated()) return Error.Conflict("Учетная запись уже активирована.");
         return await _account.Register(encrypter, persister, ct);
@@ -22,44 +21,44 @@ public sealed class ValidAccount(IAccount account) : AccountEnvelope(account)
 
     public override async Task<Result<IAccount>> ChangeEmail(
         string newEmail, 
-        IAccountPersister persister, 
+        IAccountsStorage persister, 
         CancellationToken ct = default)
     {
         if (!IsActivated()) return Error.Conflict("Учетная запись не активирована.");
-        Result<Unit> validation = _tools.ValidateProperty(Represent(AccountRepresentation.Empty()), email: newEmail);
+        Result<Unit> validation = _tools.ValidateProperty(_account.Represent(), email: newEmail);
         if (validation.IsFailure) return validation.Error;
         return await _account.ChangeEmail(newEmail, persister, ct);
     }
 
     public override async Task<Result<IAccount>> ChangePassword(
         string newPassword, 
-        IAccountPersister persister, 
-        IAccountEncrypter encrypter,
+        IAccountsStorage persister, 
+        IAccountCryptography encrypter,
         CancellationToken ct = default)
     {
         if (!IsActivated()) return Error.Conflict("Учетная запись не активирована.");
-        Result<Unit> validation = _tools.ValidateProperty(Represent(AccountRepresentation.Empty()), password: newPassword);
+        Result<Unit> validation = _tools.ValidateProperty(_account.Represent(), password: newPassword);
         if (validation.IsFailure) return validation.Error;
         return await _account.ChangePassword(newPassword, persister, encrypter, ct);
     }
 
     public override async Task<Result<Unit>> RequireAccountActivation(
-        IAccountMessagePublisher publisher, 
+        IOnAccountActivationRequiredListener listener, 
         CancellationToken ct = default)
     {
         if (IsActivated()) return Error.Conflict("Учетная запись уже активирована.");
-        return await _account.RequireAccountActivation(publisher, ct);
+        return await _account.RequireAccountActivation(listener, ct);
     }
 
     public override async Task<Result<Unit>> RequirePasswordReset(
-        IAccountMessagePublisher publisher, 
+        IOnAccountPasswordResetRequiredListener publisher, 
         CancellationToken ct = default)
     {
         if (!IsActivated()) return Error.Conflict("Учетная запись не активирована.");
         return await _account.RequirePasswordReset(publisher, ct);
     }
 
-    public override async Task<Result<IAccount>> Activate(IAccountPersister persister, CancellationToken ct)
+    public override async Task<Result<IAccount>> Activate(IAccountsStorage persister, CancellationToken ct)
     {
         if (IsActivated()) return Error.Conflict("Учетная запись уже активирована.");
         return await _account.Activate(persister, ct);

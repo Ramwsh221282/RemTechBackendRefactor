@@ -10,31 +10,30 @@ public static class QuartzOutboxDependencyInjection
     {
         public void AddCronScheduledJobs()
         {
-            ServiceDescriptor[] jobs = services.Where(s => s.ServiceType == typeof(ICronScheduleJob)).ToArray();
-            foreach (var job in jobs)
-                services.AddQuartz(q => job.AddJobInQuartz(q));
-        }
-    }
+            Type[] jobTypes = services
+                .Where(s => s.ServiceType == typeof(ICronScheduleJob)).Select(s => s.ImplementationType)
+                .Where(t => t != null)
+                .Cast<Type>()
+                .ToArray();
 
-    extension(ServiceDescriptor descriptor)
-    {
-        private void AddJobInQuartz(IServiceCollectionQuartzConfigurator configurator)
-        {
-            Type jobType = descriptor.ImplementationType!;
-            CronScheduleAttribute? cronSchedule = jobType.GetCustomAttribute<CronScheduleAttribute>();
-            if (cronSchedule == null)
-                throw new ApplicationException($"Job: {jobType.Name} has not Cron Schedule Attribute");
+            if (jobTypes.Length == 0)
+                throw new ApplicationException(
+                    $"Cannot register Cron schedule jobs. There are no {nameof(ICronScheduleJob)} instances registered in service collection.");
             
-            JobKey jobKey = new(jobType.Name);
-            TriggerKey trigger = new($"trigger_{jobType.Name}");
-            
-            configurator.AddJob(jobType, jobKey, c =>
+            services.AddQuartz(q =>
             {
-                c.StoreDurably().WithIdentity(jobKey);
-            });
-            configurator.AddTrigger(t =>
-            {
-                t.ForJob(jobKey).WithIdentity(trigger).WithCronSchedule(cronSchedule.Schedule);
+                foreach (var jobType in jobTypes)
+                {
+                    string typeName = jobType.Name;
+                    CronScheduleAttribute? cronSchedule = jobType.GetCustomAttribute<CronScheduleAttribute>();
+                    if (cronSchedule == null) 
+                        throw new ApplicationException($"{typeName} is implementing: {nameof(ICronScheduleJob)} but has no {nameof(CronScheduleAttribute)} on it.");
+                    
+                    JobKey jobKey = new(typeName);
+                    TriggerKey triggerKey = new($"trigger_{typeName}");
+                    q.AddJob(jobType, jobKey, j => j.StoreDurably());
+                    q.AddTrigger(t => t.ForJob(jobKey).WithIdentity(triggerKey).WithCronSchedule(cronSchedule.Schedule));
+                }
             });
         }
     }

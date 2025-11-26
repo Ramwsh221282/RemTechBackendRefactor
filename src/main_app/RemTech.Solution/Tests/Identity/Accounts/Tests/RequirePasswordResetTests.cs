@@ -1,5 +1,6 @@
 ﻿using Identity.Gateways.Accounts.RequirePasswordReset;
 using Identity.Gateways.Accounts.Responses;
+using Identity.Gateways.AccountTickets.OnAccountTicketPasswordResetRequired;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using Tests.Identity.Accounts.Fixtures;
 
@@ -15,12 +16,18 @@ public sealed class RequirePasswordResetTests(AccountsTestsFixture fixture) : IC
         const string email = "someEmail@mail.com";
         const string name = "someName";
         const string password = "somePassword";
+        const string type = AddAccountTicketOnAccountPasswordResetRequired.Type;
         Result<AccountResponse> result = await _facade.AddAccount(name, email, password);
         Assert.True(result.IsSuccess);
         Guid accountId = result.Value.Id;
         await _facade.MakeAccountActivated(accountId);
         Result<RequirePasswordResetResponse> requiring = await _facade.RequirePasswordReset(accountId);
         Assert.True(requiring.IsSuccess);
+        bool hasOutboxMessage = await _facade.HasOutboxMessageWithType(type);
+        Assert.True(hasOutboxMessage);
+        await Task.Delay(TimeSpan.FromSeconds(10));
+        bool hasOutboxMessageProcessed = await _facade.IsOutboxMessageWithTypeProcessed(type);
+        Assert.True(hasOutboxMessageProcessed);
     }
 
     [Fact]

@@ -3,7 +3,7 @@
 public sealed record Unit
 {
     public static Unit Value { get; } = new();
-
+    
     private Unit()
     {
         

@@ -1,5 +1,4 @@
-﻿using Identity.Application.Accounts;
-using Identity.Application.Accounts.Decorators;
+﻿using Identity.Application.Accounts.Decorators;
 using Identity.Contracts.Accounts;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
@@ -9,7 +8,10 @@ public sealed class LoggingAccount(Serilog.ILogger logger, IAccount origin) : Ac
 {
     private readonly IAccount _origin = origin;
 
-    public override async Task<Result<IAccount>> Register(IAccountEncrypter encrypter, IAccountPersister persister, CancellationToken ct = default)
+    public override async Task<Result<IAccount>> Register(
+        IAccountCryptography encrypter, 
+        IAccountsStorage persister, 
+        CancellationToken ct = default)
     {
         logger.Information("Registering account.");
         Result<IAccount> result = await _origin.Register(encrypter, persister, ct);
@@ -23,7 +25,9 @@ public sealed class LoggingAccount(Serilog.ILogger logger, IAccount origin) : Ac
         return result;
     }
 
-    public override async Task<Result<IAccount>> Activate(IAccountPersister persister, CancellationToken ct)
+    public override async Task<Result<IAccount>> Activate(
+        IAccountsStorage persister, 
+        CancellationToken ct)
     {
         logger.Information("Activating account.");
         Result<IAccount> result = await _origin.Activate(persister, ct);
@@ -38,7 +42,10 @@ public sealed class LoggingAccount(Serilog.ILogger logger, IAccount origin) : Ac
         return result;
     }
 
-    public override async Task<Result<IAccount>> ChangeEmail(string newEmail, IAccountPersister persister, CancellationToken ct = default)
+    public override async Task<Result<IAccount>> ChangeEmail(
+        string newEmail, 
+        IAccountsStorage persister, 
+        CancellationToken ct = default)
     {
         logger.Information("Changing account email");
         Result<IAccount> result = await _origin.ChangeEmail(newEmail, persister, ct);
@@ -55,8 +62,8 @@ public sealed class LoggingAccount(Serilog.ILogger logger, IAccount origin) : Ac
 
     public override async Task<Result<IAccount>> ChangePassword(
         string newPassword, 
-        IAccountPersister persister, 
-        IAccountEncrypter encrypter,
+        IAccountsStorage persister, 
+        IAccountCryptography encrypter,
         CancellationToken ct = default)
     {
         logger.Information("Changing account password");
@@ -72,7 +79,9 @@ public sealed class LoggingAccount(Serilog.ILogger logger, IAccount origin) : Ac
         return result;
     }
 
-    public override async Task<Result<Unit>> RequireAccountActivation(IAccountMessagePublisher publisher, CancellationToken ct = default)
+    public override async Task<Result<Unit>> RequireAccountActivation(
+        IOnAccountActivationRequiredListener publisher, 
+        CancellationToken ct = default)
     {
         logger.Information("Requireing account activation");
         Result<Unit> result = await _origin.RequireAccountActivation(publisher, ct);
@@ -87,7 +96,9 @@ public sealed class LoggingAccount(Serilog.ILogger logger, IAccount origin) : Ac
         return result;
     }
 
-    public override async Task<Result<Unit>> RequirePasswordReset(IAccountMessagePublisher publisher, CancellationToken ct = default)
+    public override async Task<Result<Unit>> RequirePasswordReset(
+        IOnAccountPasswordResetRequiredListener publisher, 
+        CancellationToken ct = default)
     {
         logger.Information("Requireing password reset");
         Result<Unit> result = await _origin.RequirePasswordReset(publisher, ct);
@@ -104,8 +115,7 @@ public sealed class LoggingAccount(Serilog.ILogger logger, IAccount origin) : Ac
 
     private void LogAccountInfo()
     {
-        IAccountRepresentation representation = _origin.Represent(AccountRepresentation.Empty());
-        IAccountData data = representation.Data;
+        AccountData data = _origin.Represent();
         object[] parameters = [data.Id, data.Name, data.Email, data.Activated];
         logger.Information("""
                            ACCOUNT INFO:

@@ -4,6 +4,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.RegisterSharedServices();
 builder.Services.RegisterModules();
+builder.Services.AddQuartzJobs();
 
 WebApplication app = builder.Build();
 app.Services.ApplyModuleMigrations();

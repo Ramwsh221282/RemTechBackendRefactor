@@ -6,58 +6,42 @@ namespace Identity.Application.Accounts.Decorators;
 public abstract class AccountEnvelope(IAccount origin) : IAccount
 {
     public virtual Task<Result<IAccount>> Register(
-        IAccountEncrypter encrypter, 
-        IAccountPersister persister, 
-        CancellationToken ct = default)
-    {
-        return origin.Register(encrypter, persister, ct);
-    }
+        IAccountCryptography cryptography, 
+        IAccountsStorage storage, 
+        CancellationToken ct = default) => 
+        origin.Register(cryptography, storage, ct);
 
     public virtual Task<Result<IAccount>> ChangeEmail(
         string newEmail, 
-        IAccountPersister persister, 
-        CancellationToken ct = default)
-    {
-        return origin.ChangeEmail(newEmail, persister, ct);
-    }
+        IAccountsStorage storage, 
+        CancellationToken ct = default) => 
+        origin.ChangeEmail(newEmail, storage, ct);
 
     public virtual Task<Result<IAccount>> ChangePassword(
         string newPassword, 
-        IAccountPersister persister, 
-        IAccountEncrypter encrypter,
-        CancellationToken ct = default)
-    {
-        return origin.ChangePassword(newPassword, persister, encrypter, ct);
-    }
+        IAccountsStorage storage, 
+        IAccountCryptography cryptography,
+        CancellationToken ct = default) =>
+        origin.ChangePassword(newPassword, storage, cryptography, ct);
 
     public virtual Task<Result<Unit>> RequireAccountActivation(
-        IAccountMessagePublisher publisher, 
-        CancellationToken ct = default)
-    {
-        return origin.RequireAccountActivation(publisher, ct);
-    }
+        IOnAccountActivationRequiredListener listener, 
+        CancellationToken ct = default) =>
+        origin.RequireAccountActivation(listener, ct);
 
     public virtual Task<Result<Unit>> RequirePasswordReset(
-        IAccountMessagePublisher publisher, 
-        CancellationToken ct = default)
-    {
-        return origin.RequirePasswordReset(publisher, ct);
-    }
+        IOnAccountPasswordResetRequiredListener listener, 
+        CancellationToken ct = default) =>
+        origin.RequirePasswordReset(listener, ct);
 
     public virtual Task<Result<IAccount>> Activate(
-        IAccountPersister persister, 
-        CancellationToken ct)
-    {
-        return origin.Activate(persister, ct);
-    }
+        IAccountsStorage storage, 
+        CancellationToken ct) =>
+        origin.Activate(storage, ct);
 
-    public virtual IAccountRepresentation Represent(IAccountRepresentation representation)
-    {
-        return origin.Represent(representation);
-    }
+    public virtual AccountData Represent() =>
+        origin.Represent();
 
-    public virtual bool IsActivated()
-    {
-        return origin.IsActivated();
-    }
+    public virtual bool IsActivated() =>
+        origin.IsActivated();
 }

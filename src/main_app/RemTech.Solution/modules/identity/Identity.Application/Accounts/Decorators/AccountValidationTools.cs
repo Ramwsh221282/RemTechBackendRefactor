@@ -7,7 +7,7 @@ namespace Identity.Application.Accounts.Decorators;
 public sealed class AccountValidationTools
 {
     public Result<Unit> ValidateProperty(
-        IAccountData data,
+        AccountData data,
         string? email = null,
         string? password = null
     )
@@ -15,16 +15,8 @@ public sealed class AccountValidationTools
         AccountData copied = AccountData.Copy(email: email, password: password, data: data);
         return ValidateData(copied);
     }
-
-    public Result<Unit> ValidateProperty(
-        IAccountRepresentation representation,
-        string? email = null,
-        string? password = null)
-    {
-        return ValidateProperty(representation.Data, email, password);
-    }
     
-    public Result<Unit> ValidateData(IAccountData data)
+    public Result<Unit> ValidateData(AccountData data)
     {
         const int maxNameLength = 128;
         const int maxEmailLength = 128;

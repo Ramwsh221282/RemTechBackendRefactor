@@ -1,11 +1,11 @@
 ﻿using Identity.CompositionRoot;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
-using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.AesEncryption;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
 using RemTech.SharedKernel.Infrastructure.Outbox;
 using RemTech.SharedKernel.Infrastructure.Quartz;
+using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using Serilog;
 
 namespace CompositionRoot.Shared;
@@ -20,6 +20,7 @@ public static class DependencyInjectionExtensions
             services.AddAesCryptography();
             ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
             services.AddSingleton(logger);
+            services.AddRabbitMq();
         }
     
         public void RegisterModules()

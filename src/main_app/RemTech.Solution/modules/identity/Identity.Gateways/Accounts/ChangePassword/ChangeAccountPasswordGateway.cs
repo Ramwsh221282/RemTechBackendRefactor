@@ -1,5 +1,4 @@
-﻿using Identity.Application.Accounts;
-using Identity.Application.Accounts.Decorators;
+﻿using Identity.Application.Accounts.Decorators;
 using Identity.Contracts.Accounts;
 using Identity.Gateways.Accounts.Decorators;
 using Identity.Gateways.Accounts.Responses;
@@ -10,9 +9,9 @@ using RemTech.SharedKernel.Core.Handlers;
 namespace Identity.Gateways.Accounts.ChangePassword;
 
 public sealed class ChangeAccountPasswordGateway(
-    IAccountPersister persister,
+    IAccountsStorage persister,
     Serilog.ILogger logger,
-    IAccountEncrypter encrypter
+    IAccountCryptography encrypter
     )
     : IGateway<ChangeAccountPasswordRequest, AccountResponse>
 {
@@ -24,8 +23,7 @@ public sealed class ChangeAccountPasswordGateway(
             request.Ct);
 
         if (fetching.IsFailure) return fetching.Error;
-        AccountData data = AccountData.Copy(fetching.Value);
-        IAccount account = new LoggingAccount(logger, new ValidAccount(new PersistingAccount(new Account(data))));
+        IAccount account = new LoggingAccount(logger, new ValidAccount(new PersistingAccount(fetching.Value)));
         
         Result<IAccount> passwordChanged = await account.ChangePassword(
             request.NewPassword, 

@@ -1,5 +1,4 @@
-﻿using Identity.Application.Accounts;
-using Identity.Application.Accounts.Decorators;
+﻿using Identity.Application.Accounts.Decorators;
 using Identity.Contracts.Accounts;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
@@ -10,119 +9,84 @@ public sealed class PersistingAccount(IAccount account) : AccountEnvelope(accoun
     private readonly IAccount _account = account;
 
     public static async Task<Result<IAccount>> Get(
-        IAccountPersister persister, 
+        IAccountsStorage storage, 
         AccountQueryArgs args, 
         CancellationToken ct = default)
     {
-        IAccount? account = await persister.Get(args, ct);
+        IAccount? account = await storage.Fetch(args, ct);
         return account == null ? Error.NotFound("Учетная запись не найдена.") : Result.Success(account);
     }
     
     public override async Task<Result<IAccount>> Register(
-        IAccountEncrypter encrypter, 
-        IAccountPersister persister, 
+        IAccountCryptography cryptography, 
+        IAccountsStorage storage, 
         CancellationToken ct = default)
     {
-        Result<IAccount> result = await _account.Register(encrypter, persister, ct);
-        IAccountRepresentation representation = result.Value.Represent(AccountRepresentation.Empty());
-        Result<Unit> hasUniqueEmail = await ValidateEmailUniquesness(representation, persister, ct);
+        Result<IAccount> result = await _account.Register(cryptography, storage, ct);
+        Result<Unit> hasUniqueEmail = await ValidateEmailUniquesness(result.Value, storage, ct);
         if (hasUniqueEmail.IsFailure) return hasUniqueEmail.Error;
-        Result<Unit> hasUniqueName = await ValidateNameUniquesness(representation, persister, ct);
+        Result<Unit> hasUniqueName = await ValidateNameUniquesness(result.Value, storage, ct);
         if (hasUniqueName.IsFailure) return hasUniqueName.Error;
-        await persister.Persist(result.Value, ct);
+        await storage.Persist(result.Value, ct);
         return result;
     }
 
     public override async Task<Result<IAccount>> Activate(
-        IAccountPersister persister, 
+        IAccountsStorage storage, 
         CancellationToken ct)
     {
-        Result<IAccount> activation = await _account.Activate(persister, ct);
+        Result<IAccount> activation = await _account.Activate(storage, ct);
         if (activation.IsFailure) return activation.Error;
-        await persister.Update(activation.Value, ct);
+        await storage.Update(activation.Value, ct);
         return activation;
     }
 
     public override async Task<Result<IAccount>> ChangeEmail(
         string newEmail, 
-        IAccountPersister persister, 
+        IAccountsStorage storage, 
         CancellationToken ct = default)
     {
-        Result<IAccount> updating = await  _account.ChangeEmail(newEmail, persister, ct);
+        Result<IAccount> updating = await  _account.ChangeEmail(newEmail, storage, ct);
         if (updating.IsFailure) return updating.Error;
-        IAccountRepresentation representation = updating.Value.Represent(AccountRepresentation.Empty());
-        Result<Unit> hasUniqueEmail = await ValidateEmailUniquesness(representation, persister, ct);
+        Result<Unit> hasUniqueEmail = await ValidateEmailUniquesness(updating.Value, storage, ct);
         if (hasUniqueEmail.IsFailure) return hasUniqueEmail.Error;
-        await persister.Update(updating.Value, ct);
+        await storage.Update(updating.Value, ct);
         return updating;
     }
 
     public override async Task<Result<IAccount>> ChangePassword(
         string newPassword, 
-        IAccountPersister persister, 
-        IAccountEncrypter encrypter,
+        IAccountsStorage storage, 
+        IAccountCryptography cryptography,
         CancellationToken ct = default)
     {
-        Result<IAccount> updating = await _account.ChangePassword(newPassword, persister, encrypter, ct);
+        Result<IAccount> updating = await _account.ChangePassword(newPassword, storage, cryptography, ct);
         if (updating.IsFailure) return updating.Error;
-        await persister.Update(updating.Value, ct);
+        await storage.Update(updating.Value, ct);
         return updating;
     }
 
-    private async Task<Result<Unit>> ValidateNameUniquesness(
-        IAccountRepresentation representation,
-        IAccountPersister persister,
-        CancellationToken ct = default
-    )
-    {
-        return await ValidateNameUniquesness(representation.Data, persister, ct);
-    }
-
-    private async Task<Result<Unit>> ValidateNameUniquesness(
-        IAccountData data,
-        IAccountPersister persister,
-        CancellationToken ct = default
-    )
-    {
-        return await ValidateNameUniquesness(data.Name, persister, ct);
-    }
-
-    private async Task<Result<Unit>> ValidateNameUniquesness(
-        string name,
-        IAccountPersister persister,
+    private static async Task<Result<Unit>> ValidateNameUniquesness(
+        IAccount account,
+        IAccountsStorage storage,
         CancellationToken ct = default)
     {
-        AccountQueryArgs args = new(Name: name);
-        IAccount? withName = await persister.Get(args, ct);
-        if (withName != null) return Error.Conflict($"Учетная запись с названием: {name} уже существует.");
+        AccountData data = account.Represent();
+        AccountQueryArgs args = new(Name: data.Name);
+        IAccount? withName = await storage.Fetch(args, ct);
+        if (withName != null) return Error.Conflict($"Учетная запись с названием: {data.Name} уже существует.");
         return Unit.Value;
     }
 
-    private async Task<Result<Unit>> ValidateEmailUniquesness(
-        string email,
-        IAccountPersister persister,  
+    private static async Task<Result<Unit>> ValidateEmailUniquesness(
+        IAccount account,
+        IAccountsStorage storage,  
         CancellationToken ct = default)
     {
-        AccountQueryArgs args = new(Email: email);
-        IAccount? withEmail = await persister.Get(args, ct);
-        if (withEmail != null) return Error.Conflict($"Учетная запись с почтой: {email} уже существует.");
+        AccountData data = account.Represent();
+        AccountQueryArgs args = new(Email: data.Email);
+        IAccount? withEmail = await storage.Fetch(args, ct);
+        if (withEmail != null) return Error.Conflict($"Учетная запись с почтой: {data.Email} уже существует.");
         return Unit.Value;
-    }
-
-    private async Task<Result<Unit>> ValidateEmailUniquesness(
-        IAccountRepresentation representation,
-        IAccountPersister persister,
-        CancellationToken ct = default
-    )
-    {
-        return await ValidateEmailUniquesness(representation.Data, persister, ct);
-    }
-
-    private async Task<Result<Unit>> ValidateEmailUniquesness(
-        IAccountData data,
-        IAccountPersister persister,
-        CancellationToken ct = default)
-    {
-        return await ValidateEmailUniquesness(data.Email, persister, ct);
     }
 }

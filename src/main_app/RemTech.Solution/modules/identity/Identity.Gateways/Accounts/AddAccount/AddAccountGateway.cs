@@ -10,8 +10,8 @@ using RemTech.SharedKernel.Core.Handlers;
 namespace Identity.Gateways.Accounts.AddAccount;
 
 public sealed class AddAccountGateway(
-    IAccountEncrypter encrypter,
-    IAccountPersister persister,
+    IAccountCryptography encrypter,
+    IAccountsStorage persister,
     Serilog.ILogger logger
     ) :
     IGateway<AddAccountRequest, AccountResponse>

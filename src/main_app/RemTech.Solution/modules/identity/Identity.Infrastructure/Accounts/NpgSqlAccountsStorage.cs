@@ -6,7 +6,7 @@ using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Identity.Infrastructure.Accounts;
 
-public sealed class NpgSqlAccountPersister(NpgSqlSession session) : IAccountPersister
+public sealed class NpgSqlAccountsStorage(NpgSqlSession session) : IAccountsStorage
 {
     public async Task Persist(IAccount instance, CancellationToken ct = default)
     {
@@ -21,7 +21,23 @@ public sealed class NpgSqlAccountPersister(NpgSqlSession session) : IAccountPers
         CommandDefinition command = session.FormCommand(sql, parameters, ct);
         await session.Execute(command);
     }
-
+    
+    public async Task<IAccount?> Fetch(AccountQueryArgs args, CancellationToken ct = default)
+    {
+        (DynamicParameters parameters, string whereClause) filterClause = FilterClauses(args);
+        string lockClause =  LockClause(args);
+        string sql =
+            $"""
+             SELECT * FROM identity_module.accounts
+             {filterClause.whereClause}
+             {lockClause}
+             LIMIT 1
+             """;
+        CommandDefinition command = session.FormCommand( sql, filterClause.parameters, ct);
+        NpgSqlAccountRow? row = await session.QueryMaybeRow<NpgSqlAccountRow>(command);
+        return row?.FormAccount();
+    }
+    
     public async Task Remove(IAccount instance, CancellationToken ct = default)
     {
         const string sql =
@@ -51,26 +67,9 @@ public sealed class NpgSqlAccountPersister(NpgSqlSession session) : IAccountPers
         await session.Execute(command);
     }
 
-    public async Task<IAccount?> Get(AccountQueryArgs args, CancellationToken ct = default)
+    private static DynamicParameters FillParameters(IAccount account)
     {
-        (DynamicParameters parameters, string whereClause) filterClause = FilterClauses(args);
-        string lockClause =  LockClause(args);
-        string sql =
-            $"""
-             SELECT * FROM identity_module.accounts
-             {filterClause.whereClause}
-             {lockClause}
-             LIMIT 1
-             """;
-        CommandDefinition command = session.FormCommand( sql, filterClause.parameters, ct);
-        NpgSqlAccountRow? row = await session.QueryMaybeRow<NpgSqlAccountRow>(command);
-        return row?.FormAccount();
-    }
-
-    private DynamicParameters FillParameters(IAccount account)
-    {
-        IAccountRepresentation representation = account.Represent(AccountRepresentation.Empty());
-        IAccountData data = representation.Data;
+        AccountData data = account.Represent();
         DynamicParameters parameters = new();
         parameters.Add("@id", data.Id, DbType.Guid);
         parameters.Add("@name", data.Name, DbType.String);
@@ -80,7 +79,7 @@ public sealed class NpgSqlAccountPersister(NpgSqlSession session) : IAccountPers
         return parameters;
     }
     
-    private (DynamicParameters parameters, string sql) FilterClauses(AccountQueryArgs args)
+    private static (DynamicParameters parameters, string sql) FilterClauses(AccountQueryArgs args)
     {
         DynamicParameters parameters = new();
         List<string> filters = [];
@@ -106,7 +105,7 @@ public sealed class NpgSqlAccountPersister(NpgSqlSession session) : IAccountPers
         return (parameters, resultSql);
     }
 
-    private string LockClause(AccountQueryArgs args)
+    private static string LockClause(AccountQueryArgs args)
     {
         return args.WithLock ? "FOR UPDATE" : string.Empty;
     }
@@ -118,7 +117,7 @@ public sealed class NpgSqlAccountPersister(NpgSqlSession session) : IAccountPers
         string Password, 
         bool Activated)
     {
-        public AccountData FormAccountData()
+        private AccountData FormAccountData()
         {
             return new AccountData(Id, Name, Email, Password, Activated);
         }

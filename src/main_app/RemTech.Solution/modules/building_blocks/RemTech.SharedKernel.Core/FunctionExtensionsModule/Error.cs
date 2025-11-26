@@ -9,6 +9,12 @@ public abstract class Error(string message)
         return new ValidationError(message);
     }
 
+    public static Error Validation(IEnumerable<string> errors)
+    {
+        string singleMessage = string.Join(Environment.NewLine, errors);
+        return Validation(singleMessage);
+    }
+
     public static Error NotSet(string valueName)
     {
         return new ValidationError($"{valueName} значение не установлено.");

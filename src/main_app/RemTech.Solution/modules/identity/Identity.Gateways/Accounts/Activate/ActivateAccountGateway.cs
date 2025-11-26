@@ -1,5 +1,4 @@
-﻿using Identity.Application.Accounts;
-using Identity.Application.Accounts.Decorators;
+﻿using Identity.Application.Accounts.Decorators;
 using Identity.Contracts.Accounts;
 using Identity.Gateways.Accounts.Decorators;
 using Identity.Gateways.Accounts.Responses;
@@ -10,7 +9,7 @@ using RemTech.SharedKernel.Core.Handlers;
 namespace Identity.Gateways.Accounts.Activate;
 
 public sealed class ActivateAccountGateway(
-    IAccountPersister persister,
+    IAccountsStorage persister,
     Serilog.ILogger logger
 ) 
     : IGateway<ActivateAccountRequest, AccountResponse>
@@ -24,8 +23,7 @@ public sealed class ActivateAccountGateway(
         );
 
         if (fetching.IsFailure) return fetching.Error;
-        AccountData data = AccountData.Copy(fetching.Value);
-        IAccount account = new LoggingAccount(logger, new ValidAccount(new PersistingAccount(new Account(data))));
+        IAccount account = new LoggingAccount(logger, new ValidAccount(new PersistingAccount(fetching.Value)));
         Result<IAccount> activated = await account.Activate(persister, request.Ct);
         return activated.IsFailure ? activated.Error : AccountResponse.Represent(activated.Value);
     }
