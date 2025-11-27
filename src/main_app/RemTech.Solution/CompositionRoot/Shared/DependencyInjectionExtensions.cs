@@ -1,4 +1,5 @@
 ﻿using Identity.CompositionRoot;
+using Mailing.CompositionRoot;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using RemTech.SharedKernel.Infrastructure.AesEncryption;
@@ -46,6 +47,7 @@ public static class DependencyInjectionExtensions
         public void RegisterModules()
         {
             services.AddIdentityModule();
+            services.AddMailingModule();
         }
         
         public void RegisterOutboxServices(params string[] schemas)

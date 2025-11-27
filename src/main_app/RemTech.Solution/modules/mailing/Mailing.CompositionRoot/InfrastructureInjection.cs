@@ -56,7 +56,7 @@ public static class InfrastructureInjection
 
         private void AddEventListeners()
         {
-            services.AddHostedService<CreateInboxMessageListener>();
+            services.AddHostedService<AccountActivationTicketRabbitMqListener>();
         }
         
         private void AddMimeMessageSmtpSendingProtocol()

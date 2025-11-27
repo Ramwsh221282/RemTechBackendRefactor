@@ -18,8 +18,9 @@ public sealed class CreateInboxMessageCommandHandler(
         MessageSubject subject = new(args.Subject);
         MessageBody body = new(args.Body);
         InboxMessage message = new InboxMessage(Guid.NewGuid(), email, subject, body).Validated();
-        await message.Save(protocol, args.Ct);
+        InboxMessage validated = message.Validated();
+        await validated.Save(protocol, args.Ct);
         logger.Information("Pending inbox message created.");
-        return message;
+        return validated;
     }
 }

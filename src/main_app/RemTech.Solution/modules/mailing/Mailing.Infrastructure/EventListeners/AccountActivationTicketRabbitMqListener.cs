@@ -9,16 +9,16 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace Mailing.Infrastructure.EventListeners;
 
-public sealed class CreateInboxMessageListener(
+public sealed class AccountActivationTicketRabbitMqListener(
     NpgSqlConnectionFactory npgSqlConnectionFactory, 
     Serilog.ILogger logger,
     RabbitMqConnectionSource connectionSource) : RabbitMqListenerHostService(connectionSource)
 {
-    private const string Queue = "inbox.messages";
-    private const string Exchange = "inbox.messages";
+    private const string Queue = "identity";
+    private const string Exchange = "identity";
     private const string Type = "topic";
-    private const string RoutingKey = "create.inbox.messages";
-    private const string Context = nameof(CreateInboxMessageListener);
+    private const string RoutingKey = "account.activation.ticket.required";
+    private const string Context = nameof(AccountActivationTicketRabbitMqListener);
     
     protected override Func<RabbitMqConnectionSource, CancellationToken, Task<RabbitMqListener>> GetListener()
     {

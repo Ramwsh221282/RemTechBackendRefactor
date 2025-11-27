@@ -21,7 +21,9 @@ public sealed class AddMailerCommandHandler
         Email email = new(Value: args.Email);
         MailerDomain domain = new(Service: "", Email: email, SendLimit: 0, SmtpHost: "", CurrentSend: 0);
         MailerDomain resolved = domain.WithResolvedService();
+        resolved.Validate();
         MailerConfig config = new(SmtpPassword: args.Password);
+        config.Validate();
         Mailer mailer = new(Id: Guid.NewGuid(), Domain: resolved, Config: config);
         Mailer hashed = await mailer.Encrypted(encryptPassword, args.Ct);
         Mailer valid = hashed.Validated();

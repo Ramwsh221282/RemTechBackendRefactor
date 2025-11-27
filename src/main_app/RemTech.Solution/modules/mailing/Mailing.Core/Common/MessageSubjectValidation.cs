@@ -12,7 +12,7 @@ public static class MessageSubjectValidation
         {
             string value = subject.Value;
             const string valueName = "Тема письма";
-            if (string.IsNullOrEmpty(value)) throw ErrorException.ValueNotSet(valueName);
+            if (string.IsNullOrWhiteSpace(value)) throw ErrorException.ValueNotSet(valueName);
             if (value.Length > MaxLength) throw ErrorException.ValueExcess(valueName, MaxLength);
         }
     }
