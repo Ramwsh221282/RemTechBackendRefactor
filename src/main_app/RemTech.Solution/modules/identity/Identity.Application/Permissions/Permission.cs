@@ -52,6 +52,16 @@ public sealed class Permission(PermissionData data)
         if (errors.Count > 0) return Error.Validation(errors);
         return Unit.Value;
     }
+
+    public bool HasName(string name)
+    {
+        return _data.Name == name;
+    }
+
+    public bool HasId(Guid id)
+    {
+        return _data.Id == id;
+    }
     
     private Permission(Permission permission, IOnPermissionCreatedEventListener listener) 
         : this(permission._data) => _onCreated = listener;

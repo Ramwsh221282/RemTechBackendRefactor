@@ -4,8 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Quartz;
+using Quartz.Spi;
 using RemTech.SharedKernel.Infrastructure.AesEncryption;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Quartz;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
@@ -24,6 +26,12 @@ public static class TestServiceCollectioExtensions
             services.AddSingleton(configuration);
         }
 
+        public void DontUseQuartzServices()
+        {
+            services.RemoveAll<ICronScheduleJob>();
+            services.RemoveAll<IJob>();
+        }
+        
         public void ReconfigureAesOptions()
         {
             services.RemoveAll<IOptions<AesEncryptionOptions>>();

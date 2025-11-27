@@ -22,7 +22,7 @@ public sealed class AddPermissionGateway(
                 .Add(response);
         
         PermissionData data = new(Id: Guid.NewGuid(), Name: request.Name);
-        Result<Unit> result = await new Permission(data).Register(request.Ct);
+        Result<Unit> result = await new Permission(data).AddListener(pipeline).Register(request.Ct);
         return result.IsFailure ? result.Error : response;
     }
 }

@@ -7,8 +7,25 @@ using RemTech.SharedKernel.Infrastructure.Outbox;
 using RemTech.SharedKernel.Infrastructure.Quartz;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace CompositionRoot.Shared;
+
+public sealed class ClassNameLogEnricher : ILogEventEnricher
+{
+    private const string Pattern = "SourceContext";
+    
+    public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+    {
+        if (logEvent.Properties.TryGetValue(Pattern, out var sourceContext))
+        {
+            string fullName = sourceContext.ToString().Trim('\"');
+            string exactTypeName = fullName.Split('.').Last();
+            logEvent.AddOrUpdateProperty(propertyFactory.CreateProperty(Pattern, exactTypeName));
+        }
+    }
+}
 
 public static class DependencyInjectionExtensions
 {
@@ -18,7 +35,10 @@ public static class DependencyInjectionExtensions
         {
             services.AddPostgres();
             services.AddAesCryptography();
-            ILogger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+            ILogger logger = new LoggerConfiguration()
+                .Enrich.With(new ClassNameLogEnricher())
+                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext} {Message}{NewLine}{Exception}")
+                .CreateLogger();
             services.AddSingleton(logger);
             services.AddRabbitMq();
         }

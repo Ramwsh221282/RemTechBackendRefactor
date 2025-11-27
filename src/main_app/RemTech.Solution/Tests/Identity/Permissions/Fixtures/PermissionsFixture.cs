@@ -3,30 +3,26 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
-using Testcontainers.RabbitMq;
 
-namespace Tests.Identity.Accounts.Fixtures;
+namespace Tests.Identity.Permissions.Fixtures;
 
-public sealed class AccountsTestsFixture : 
+public sealed class PermissionsFixture :
     WebApplicationFactory<WebHostApplication.Program>,
     IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
-    private readonly RabbitMqContainer _rabbitMqContainer = new RabbitMqBuilder().BuildRabbitMqContainer();
-    
+    private readonly PostgreSqlContainer _dbContainer = 
+        new PostgreSqlBuilder().BuildPgVectorContainer();
+
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
-        await _rabbitMqContainer.StartAsync();
         Services.ApplyModuleMigrations();
     }
-    
-    public async new Task DisposeAsync()
+
+    public new async Task DisposeAsync()
     {
         await _dbContainer.StopAsync();
         await _dbContainer.DisposeAsync();
-        await _rabbitMqContainer.StopAsync();
-        await _rabbitMqContainer.DisposeAsync();
     }
     
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -34,11 +30,10 @@ public sealed class AccountsTestsFixture :
         base.ConfigureWebHost(builder);
         builder.ConfigureServices(s =>
         {
+            s.DontUseQuartzServices();
             s.ReconfigureConfigurationProvider();
             s.ReconfigureAesOptions();
-            s.ReconfigureRabbitMqOptions(_rabbitMqContainer);
             s.ReconfigurePostgreSqlOptions(_dbContainer);
-            s.ReconfigureQuartzHostedService();
         });
     }
 }
