@@ -34,14 +34,14 @@ public sealed class FakeInboxMessagesProcessorProcedure : InboxMessagesProcessor
                 ));
         }
                 
-        // Mailer encrypted = await dependencies.Execute(async (d, token) =>
-        //     await decrypted.Encrypted(d.EncryptMailer, token), ct);
-        //
-        // await dependencies.Execute(async (d, token) =>
-        //     await d.RemoveManyInboxMessage.Mark(processed, token), ct);
-        //
-        // await dependencies.Execute(async (d, token) =>
-        //     await encrypted.Save(d.SaveMailer, token), ct);
+        Mailer encrypted = await dependencies.Execute(async (d, token) =>
+            await decrypted.Encrypted(d.EncryptMailer, token), ct);
+        
+        await dependencies.Execute(async (d, token) =>
+            await d.MarkProcessed.Mark(processed, token), ct);
+        
+        await dependencies.Execute(async (d, token) =>
+            await encrypted.Save(d.SaveMailer, token), ct);
         
         return new InboxMessagesProcessorResult($"Обработано: {processed.Count} сообщений.");
     }

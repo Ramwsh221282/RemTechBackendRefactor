@@ -1,6 +1,5 @@
 ﻿using Mailing.Core.Mailers.Protocols;
 using Mailing.Infrastructure.InboxMessageProcessing.Protocols;
-using Mailing.Infrastructure.NpgSql.Inbox;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Mailing.Infrastructure.InboxMessageProcessing;
@@ -15,7 +14,7 @@ public sealed record InboxMessagesProcessorProcedureDependencies
     DecryptMailerSmtpPasswordProtocol DecryptMailer,
     MessageDeliveryProtocol DeliverMessage,
     SaveMailerProtocol SaveMailer,
-    NpgSqlMarkProcessedMessagesProtocol MarkProcessed,
+    MarkProcessedMessagesProtocol MarkProcessed,
     Serilog.ILogger Logger
 ) : IDisposable, IAsyncDisposable
 {

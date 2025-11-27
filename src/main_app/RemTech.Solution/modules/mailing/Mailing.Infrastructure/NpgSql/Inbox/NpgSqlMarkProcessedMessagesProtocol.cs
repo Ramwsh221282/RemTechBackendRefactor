@@ -1,10 +1,12 @@
 ﻿using Dapper;
 using Mailing.Core.Inbox;
+using Mailing.Infrastructure.InboxMessageProcessing.Protocols;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Mailing.Infrastructure.NpgSql.Inbox;
 
 public sealed class NpgSqlMarkProcessedMessagesProtocol(NpgSqlSession session)
+: MarkProcessedMessagesProtocol
 {
     public async Task Mark(IEnumerable<InboxMessage> messages, CancellationToken ct)
     {
