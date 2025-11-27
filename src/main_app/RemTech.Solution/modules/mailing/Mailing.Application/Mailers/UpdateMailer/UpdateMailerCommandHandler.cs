@@ -9,12 +9,14 @@ namespace Mailing.Application.Mailers.UpdateMailer;
 public sealed class UpdateMailerCommandHandler (
     GetMailerProtocol getProtocol,
     SaveMailerProtocol saveProtocol,
+    EnsureMailerEmailUniqueProtocol emailUniqueProtocol,
     EncryptMailerSmtpPasswordProtocol encryptProtocol)
     : ICommandHandler<UpdateMailerCommand, Mailer>
 {
     public async Task<Mailer> Execute(UpdateMailerCommand args)
     {
-        Mailer? mailer = await Mailer.GetById(args.Id, getProtocol, args.Ct, withLock: true);
+        CancellationToken ct = args.Ct;
+        Mailer? mailer = await Mailer.GetById(args.Id, getProtocol, ct, withLock: true);
         if (mailer == null) 
             throw ErrorException.NotFound("Конфигурация почтового сервиса не найдена.");
         
@@ -27,9 +29,10 @@ public sealed class UpdateMailerCommandHandler (
         
         updated.Domain.Validate();
         updated.Config.Validate();
+        await emailUniqueProtocol.EnsureEmailUnique(updated, ct);
         
-        Mailer encrypted = await updated.Encrypted(encryptProtocol, args.Ct);
-        await encrypted.Save(saveProtocol, args.Ct);
+        Mailer encrypted = await updated.Encrypted(encryptProtocol, ct);
+        await encrypted.Save(saveProtocol, ct);
         return encrypted;
     }
 }

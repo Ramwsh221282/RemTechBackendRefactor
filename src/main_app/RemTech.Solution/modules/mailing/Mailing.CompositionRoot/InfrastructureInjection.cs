@@ -43,6 +43,7 @@ public static class InfrastructureInjection
             services.AddScoped<GetPendingInboxMessagesProtocol, NpgSqlBatchProcessingInboxMessagesProtocol>();
             services.AddScoped<RemoveManyInboxMessagesProtocol, NpgSqlRemoveManyInboxMessagesProtocol>();
             services.AddScoped<NpgSqlHasInboxMessagesProtocol>();
+            services.AddScoped<EnsureMailerEmailUniqueProtocol, NpgSqlEnsureEmailUniqueProtocol>();
             services.AddTransient<IDbUpgrader, MailingModuleDbUpgrader>();
             services.AddTransient<InboxMessagesSeeder>();
         }

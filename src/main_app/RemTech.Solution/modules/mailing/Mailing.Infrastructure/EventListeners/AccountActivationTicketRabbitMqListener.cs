@@ -4,6 +4,7 @@ using Mailing.Application.Inbox.CreateInboxMessage;
 using Mailing.Core.Inbox;
 using Mailing.Infrastructure.NpgSql.Inbox;
 using RabbitMQ.Client.Events;
+using RemTech.SharedKernel.Core.PrimitivesModule.Exceptions;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
@@ -58,11 +59,21 @@ public sealed class AccountActivationTicketRabbitMqListener(
     {
         string jsonEventBody = Encoding.UTF8.GetString(@event.Body.Span);
         using JsonDocument document = JsonDocument.Parse(jsonEventBody);
-        JsonElement messageContext = document.RootElement.GetProperty("message_context");
-        string subject = messageContext.GetProperty("subject").GetString() ?? string.Empty;
-        string body = messageContext.GetProperty("body").GetString() ?? string.Empty;
-        string targetEmail = messageContext.GetProperty("target_email").GetString() ?? string.Empty;
-        CreateInboxMessageCommand command = new(targetEmail, subject, body);
+        string? ticketId = document.RootElement.GetProperty("ticket_id").GetString();
+        string? accountEmail = document.RootElement.GetProperty("account_email").GetString();
+        string frontendUrl = "dummy.frontend";
+        if (string.IsNullOrWhiteSpace(ticketId))
+            throw ErrorException.Conflict("Ticket id was not present.");
+        if (string.IsNullOrWhiteSpace(accountEmail))
+            throw ErrorException.Conflict("Account email was not present.");
+        
+        const string subject = "Подтверждение почты учетной записи Remtech агрегатор";
+        const string bodyTemplate = """
+                                    Необходимо перейти по ссылке для подтверждения учетной записи {0}/{1}
+                                    """;
+        
+        string body = string.Format(bodyTemplate, frontendUrl, ticketId);
+        CreateInboxMessageCommand command = new(accountEmail, subject, body);
         return command;
     }
 }

@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using RemTech.SharedKernel.Infrastructure.AesEncryption;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
-using RemTech.SharedKernel.Infrastructure.Outbox;
 using RemTech.SharedKernel.Infrastructure.Quartz;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using Serilog;
@@ -48,11 +47,6 @@ public static class DependencyInjectionExtensions
         {
             services.AddIdentityModule();
             services.AddMailingModule();
-        }
-        
-        public void RegisterOutboxServices(params string[] schemas)
-        {
-            services.AddOutboxServices(schemas);
         }
         
         public void AddQuartzJobs()

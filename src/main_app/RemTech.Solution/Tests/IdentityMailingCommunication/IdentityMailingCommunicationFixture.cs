@@ -1,6 +1,8 @@
 ﻿using CompositionRoot.Shared;
+using Mailing.Infrastructure.InboxMessageProcessing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
@@ -21,7 +23,9 @@ public sealed class IdentityMailingCommunicationFixture : WebApplicationFactory<
             s.ReconfigureAesOptions();
             s.ReconfigurePostgreSqlOptions(_dbContainer);
             s.ReconfigureRabbitMqOptions(_rabbitMqContainer);
-            s.DontUseQuartzServices();
+            s.ReconfigureQuartzHostedService();
+            s.RemoveAll<InboxMessagesProcessorProtocol>();
+            s.TryAddTransient<InboxMessagesProcessorProtocol, FakeInboxMessagesProcessorProcedure>();
         });
     }
 
