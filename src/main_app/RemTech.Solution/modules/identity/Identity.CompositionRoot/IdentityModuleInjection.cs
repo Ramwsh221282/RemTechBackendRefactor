@@ -1,6 +1,10 @@
 ﻿using Identity.Application.Permissions.Contracts;
+using Identity.Contracts.AccountPermissions.Contracts;
 using Identity.Contracts.Accounts;
 using Identity.Contracts.AccountTickets.Contracts;
+using Identity.Gateways.AccountPermissions.AttachPermissionToAccount;
+using Identity.Gateways.AccountPermissions.DetachPermissionFromAccount;
+using Identity.Gateways.AccountPermissions.Shared;
 using Identity.Gateways.Accounts.Activate;
 using Identity.Gateways.Accounts.AddAccount;
 using Identity.Gateways.Accounts.ChangeEmail;
@@ -16,8 +20,12 @@ using Identity.Gateways.Permissions.AddPermission;
 using Identity.Gateways.Permissions.RenamePermission;
 using Identity.Gateways.Quartz.OutboxProcessor;
 using Identity.Infrastructure;
+using Identity.Infrastructure.AccountPermissions;
+using Identity.Infrastructure.AccountPermissions.EventListeners.OnRegistered;
+using Identity.Infrastructure.AccountPermissions.EventListeners.OnRemoved;
 using Identity.Infrastructure.Accounts;
 using Identity.Infrastructure.AccountTickets;
+using Identity.Infrastructure.ACL;
 using Identity.Infrastructure.Outbox;
 using Identity.Infrastructure.Permissions;
 using Identity.Infrastructure.Permissions.EventListeners.OnCreate;
@@ -39,6 +47,7 @@ public static class IdentityModuleInjection
             services.RegisterAccountContextDependencies();
             services.RegisterAccountTicketsContextDependencies();
             services.RegisterPermissionDependencies();
+            services.RegisterAccountPermissionsContext();
             services.RegisterOutbox();
         }
         
@@ -125,6 +134,25 @@ public static class IdentityModuleInjection
                 registry.AddPublishers(publishers);
                 return registry;
             });
+        }
+
+        private void RegisterAccountPermissionsContext()
+        {
+            services.AddScoped<
+                    IGateway<AttachPermissionToAccountRequest, AccountPermissionResponse>,
+                    AttachPermissionToAccountGateway>();
+            
+            services.AddScoped<
+                IGateway<DetachPermissionFromAccountRequest, AccountPermissionResponse>,
+                DetachPermissionFromAccountGateway>();
+
+            services.AddScoped<QueryAccountAndPermission>();
+            services.AddScoped<NpgSqlOnAccountPermissionRegisteredEventListener>();
+            services.AddScoped<NpgSqlOnAccountPermissionRemovedEventListener>();
+            services.AddScoped<LoggingOnAccountPermissionRemovedEventListener>();
+            services.AddScoped<LoggingOnRegisteredAccountPermissionEventListener>();
+            services.AddScoped<IAccountPermissionsStorage, NpgSqlAccountPermissionsStorage>();
+            services.AddScoped<NpgSqlAccountPermissionsStorage>();
         }
     }
 }
