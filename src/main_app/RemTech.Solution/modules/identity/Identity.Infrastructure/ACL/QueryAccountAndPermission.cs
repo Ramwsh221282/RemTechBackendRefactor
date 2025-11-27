@@ -1,5 +1,7 @@
 ﻿using System.Data;
 using Dapper;
+using Dapper.FluentMap;
+using Dapper.FluentMap.Mapping;
 using Identity.Application.AccountPermissions;
 using Identity.Contracts.AccountPermissions;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
@@ -39,11 +41,25 @@ public sealed class QueryAccountAndPermission(NpgSqlSession session)
             result.PermissionName
         ));
     }
+    
+    // private sealed class AccountAndPermissionQueryMap : EntityMap<AccountAndPermissionQueryResult>
+    // {
+    //     public AccountAndPermissionQueryMap()
+    //     {
+    //         Map(x => x.AccountId).ToColumn("account_id");
+    //         Map(x => x.PermissionId).ToColumn("permission_id");
+    //         Map(x => x.AccountEmail).ToColumn("account_email");
+    //         Map(x => x.AccountName).ToColumn("account_name");
+    //         Map(x => x.PermissionName).ToColumn("permission_name");
+    //     }
+    // }
 
-    private sealed record AccountAndPermissionQueryResult(
-        Guid AccountId,
-        Guid PermissionId,
-        string AccountEmail,
-        string PermissionName,
-        string AccountName);
+    private sealed class AccountAndPermissionQueryResult
+    {
+        public required Guid AccountId { get; init; } 
+        public required Guid PermissionId { get; init; }
+        public required string AccountEmail { get; init; }
+        public required string PermissionName { get; init; }
+        public required string AccountName { get; init; }
+    }
 }

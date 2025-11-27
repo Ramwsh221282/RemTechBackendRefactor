@@ -14,9 +14,9 @@ public sealed class AddAccountTests(AccountsTestsFixture fixture) : IClassFixtur
     [Fact]
     private async Task Add_Account_Success()
     {
-        Result<AccountResponse> response = await _facade.AddAccount(name, email, password);
+        Result<AccountResponse> response = await _facade.AddAccount.Invoke(name, email, password);
         Assert.True(response.IsSuccess);
-        bool exists = await _facade.AccountCreated(response.Value.Id);
+        bool exists = await _facade.AccountCreated.Invoke(response.Value.Id);
         Assert.True(exists);
     }
 
@@ -24,7 +24,7 @@ public sealed class AddAccountTests(AccountsTestsFixture fixture) : IClassFixtur
     private async Task Add_Account_Bad_Name_Failure()
     {
         const string badName = "";
-        Result<AccountResponse> response = await _facade.AddAccount(badName, email, password);
+        Result<AccountResponse> response = await _facade.AddAccount.Invoke(badName, email, password);
         Assert.True(response.IsFailure);
     }
 
@@ -32,7 +32,7 @@ public sealed class AddAccountTests(AccountsTestsFixture fixture) : IClassFixtur
     private async Task Add_Account_Bad_Email_Failure()
     {
         const string badEmail = "";
-        Result<AccountResponse> response = await _facade.AddAccount(name, badEmail, password);
+        Result<AccountResponse> response = await _facade.AddAccount.Invoke(name, badEmail, password);
         Assert.True(response.IsFailure);
     }
 
@@ -40,7 +40,7 @@ public sealed class AddAccountTests(AccountsTestsFixture fixture) : IClassFixtur
     private async Task Add_Account_Bad_Password_Failure()
     {
         const string badPassword = "";
-        Result<AccountResponse> response = await _facade.AddAccount(name, email, badPassword);
+        Result<AccountResponse> response = await _facade.AddAccount.Invoke(name, email, badPassword);
         Assert.True(response.IsFailure);
     }
 
@@ -48,8 +48,8 @@ public sealed class AddAccountTests(AccountsTestsFixture fixture) : IClassFixtur
     private async Task Add_Account_Email_Is_Not_Free_Failure()
     {
         const string otherName = "otherName";
-        await _facade.AddAccount(name, email, password);
-        Result<AccountResponse> response = await _facade.AddAccount(otherName, email, password);
+        await _facade.AddAccount.Invoke(name, email, password);
+        Result<AccountResponse> response = await _facade.AddAccount.Invoke(otherName, email, password);
         Assert.True(response.IsFailure);
     }
 
@@ -57,8 +57,8 @@ public sealed class AddAccountTests(AccountsTestsFixture fixture) : IClassFixtur
     private async Task Add_Account_Name_Is_Not_Free_Failure()
     {
         const string otherEmail = "otherEmail@mail.com";
-        await _facade.AddAccount(name, email, password);
-        Result<AccountResponse> response = await _facade.AddAccount(name, otherEmail, password);
+        await _facade.AddAccount.Invoke(name, email, password);
+        Result<AccountResponse> response = await _facade.AddAccount.Invoke(name, otherEmail, password);
         Assert.True(response.IsFailure);
     }
 }

@@ -14,10 +14,10 @@ public sealed class ActivateAccountTests(AccountsTestsFixture fixture) : IClassF
         const string name = "someName";
         const string email = "someEmail@mail.com";
         const string password = "somePassword";
-        Result<AccountResponse> result = await _facade.AddAccount(name, email, password);
+        Result<AccountResponse> result = await _facade.AddAccount.Invoke(name, email, password);
         Assert.True(result.IsSuccess);
         Guid accountId = result.Value.Id;
-        Result<AccountResponse> activation = await _facade.Activate(accountId);
+        Result<AccountResponse> activation = await _facade.ActivateAccount.Invoke(accountId);
         Assert.True(activation.IsSuccess);
     }
 
@@ -27,18 +27,18 @@ public sealed class ActivateAccountTests(AccountsTestsFixture fixture) : IClassF
         const string name = "someName";
         const string email = "someEmail@mail.com";
         const string password = "somePassword";
-        Result<AccountResponse> result = await _facade.AddAccount(name, email, password);
+        Result<AccountResponse> result = await _facade.AddAccount.Invoke(name, email, password);
         Assert.True(result.IsSuccess);
         Guid accountId = result.Value.Id;
-        await _facade.Activate(accountId);
-        Result<AccountResponse> activation = await _facade.Activate(accountId);
+        await _facade.ActivateAccount.Invoke(accountId);
+        Result<AccountResponse> activation = await _facade.ActivateAccount.Invoke(accountId);
         Assert.True(activation.IsFailure);
     }
     
     [Fact]
     private async Task Activate_Not_Existing_Account_Failure()
     {
-        Result<AccountResponse> activation = await _facade.Activate(Guid.NewGuid());
+        Result<AccountResponse> activation = await _facade.ActivateAccount.Invoke(Guid.NewGuid());
         Assert.True(activation.IsFailure);
     }
 }

@@ -16,13 +16,13 @@ public sealed class ChangeEmailTests(AccountsTestsFixture fixture) : IClassFixtu
         const string name = "testName";
         const string password = "TestPassword";
         const string otherEmail = "otherEmail@mail.com";
-        Result<AccountResponse> result = await _facade.AddAccount(name, defaultEmail, password);
+        Result<AccountResponse> result = await _facade.AddAccount.Invoke(name, defaultEmail, password);
         Assert.True(result.IsSuccess);
         Guid id = result.Value.Id;
-        await _facade.MakeAccountActivated(id);
-        Result<AccountResponse> changing = await _facade.ChangeEmail(id, otherEmail);
+        await _facade.StabAccountActivated.Invoke(id);
+        Result<AccountResponse> changing = await _facade.ChangeAccountEmail.Invoke(id, otherEmail);
         Assert.True(changing.IsSuccess);
-        Result<AccountData> accountData = await _facade.GetAccount(id);
+        Result<AccountData> accountData = await _facade.GetAccount.Invoke(id);
         Assert.True(accountData.IsSuccess);
         Assert.Equal(otherEmail, accountData.Value.Email);
         Assert.NotEqual(defaultEmail, accountData.Value.Email);
@@ -32,7 +32,7 @@ public sealed class ChangeEmailTests(AccountsTestsFixture fixture) : IClassFixtu
     private async Task Change_Email_Account_Not_Found()
     {
         const string otherEmail = "otherEmail@mail.com";
-        Result<AccountResponse> changing = await _facade.ChangeEmail(Guid.NewGuid(), otherEmail);
+        Result<AccountResponse> changing = await _facade.ChangeAccountEmail.Invoke(Guid.NewGuid(), otherEmail);
         Assert.True(changing.IsFailure);
     }
     
@@ -43,9 +43,9 @@ public sealed class ChangeEmailTests(AccountsTestsFixture fixture) : IClassFixtu
         const string name = "testName";
         const string password = "TestPassword";
         const string otherEmail = "otherEmail@mail.com";
-        Result<AccountResponse> result = await _facade.AddAccount(name, defaultEmail, password);
+        Result<AccountResponse> result = await _facade.AddAccount.Invoke(name, defaultEmail, password);
         Guid id = result.Value.Id;
-        Result<AccountResponse> changing = await _facade.ChangeEmail(id, otherEmail);
+        Result<AccountResponse> changing = await _facade.ChangeAccountEmail.Invoke(id, otherEmail);
         Assert.True(changing.IsFailure);
     }
     
@@ -56,11 +56,11 @@ public sealed class ChangeEmailTests(AccountsTestsFixture fixture) : IClassFixtu
         const string name = "testName";
         const string password = "TestPassword";
         const string otherEmail = "   ";
-        Result<AccountResponse> result = await _facade.AddAccount(name, defaultEmail, password);
+        Result<AccountResponse> result = await _facade.AddAccount.Invoke(name, defaultEmail, password);
         Assert.True(result.IsSuccess);
         Guid id = result.Value.Id;
-        await _facade.MakeAccountActivated(id);
-        Result<AccountResponse> changing = await _facade.ChangeEmail(id, otherEmail);
+        await _facade.StabAccountActivated.Invoke(id);
+        Result<AccountResponse> changing = await _facade.ChangeAccountEmail.Invoke(id, otherEmail);
         Assert.True(changing.IsFailure);
     }
 }

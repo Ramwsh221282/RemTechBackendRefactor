@@ -15,14 +15,14 @@ public sealed class ChangePasswordTests(AccountsTestsFixture fixture) : IClassFi
         const string name = "someName";
         const string password = "mySeriousPassword";
         const string otherPassword = "otherPassword";
-        Result<AccountResponse> account = await _facade.AddAccount(name, email, password);
+        Result<AccountResponse> account = await _facade.AddAccount.Invoke(name, email, password);
         Assert.True(account.IsSuccess);
         Guid accountId = account.Value.Id;
-        await _facade.MakeAccountActivated(accountId);
-        Assert.True(await _facade.IsEncryptedPasswordEqualToPlain(accountId, password));
-        Result<AccountResponse> changingPassword = await _facade.ChangePassword(accountId, otherPassword);
+        await _facade.StabAccountActivated.Invoke(accountId);
+        Assert.True(await _facade.AccountPasswordEquals.Invoke(accountId, password));
+        Result<AccountResponse> changingPassword = await _facade.ChangeAccountPassword.Invoke(accountId, otherPassword);
         Assert.True(changingPassword.IsSuccess);
-        Assert.True(await _facade.IsEncryptedPasswordEqualToPlain(accountId, otherPassword));
+        Assert.True(await _facade.AccountPasswordEquals.Invoke(accountId, otherPassword));
     }
 
     [Fact]
@@ -32,10 +32,10 @@ public sealed class ChangePasswordTests(AccountsTestsFixture fixture) : IClassFi
         const string name = "someName";
         const string password = "mySeriousPassword";
         const string otherPassword = "otherPassword";
-        Result<AccountResponse> account = await _facade.AddAccount(name, email, password);
+        Result<AccountResponse> account = await _facade.AddAccount.Invoke(name, email, password);
         Assert.True(account.IsSuccess);
         Guid accountId = account.Value.Id;
-        Result<AccountResponse> changingPassword = await _facade.ChangePassword(accountId, otherPassword);
+        Result<AccountResponse> changingPassword = await _facade.ChangeAccountPassword.Invoke(accountId, otherPassword);
         Assert.True(changingPassword.IsFailure);
     }
 
@@ -46,10 +46,10 @@ public sealed class ChangePasswordTests(AccountsTestsFixture fixture) : IClassFi
         const string name = "someName";
         const string password = "mySeriousPassword";
         const string otherPassword = "   ";
-        Result<AccountResponse> account = await _facade.AddAccount(name, email, password);
+        Result<AccountResponse> account = await _facade.AddAccount.Invoke(name, email, password);
         Assert.True(account.IsSuccess);
         Guid accountId = account.Value.Id;
-        Result<AccountResponse> changingPassword = await _facade.ChangePassword(accountId, otherPassword);
+        Result<AccountResponse> changingPassword = await _facade.ChangeAccountPassword.Invoke(accountId, otherPassword);
         Assert.True(changingPassword.IsFailure);
     }
     
@@ -57,7 +57,7 @@ public sealed class ChangePasswordTests(AccountsTestsFixture fixture) : IClassFi
     private async Task Change_Password_Account_Not_Found_Failure()
     {
         const string otherPassword = "otherPassword";
-        Result<AccountResponse> changingPassword = await _facade.ChangePassword(Guid.NewGuid(), otherPassword);
+        Result<AccountResponse> changingPassword = await _facade.ChangeAccountPassword.Invoke(Guid.NewGuid(), otherPassword);
         Assert.True(changingPassword.IsFailure);
     }
 }
