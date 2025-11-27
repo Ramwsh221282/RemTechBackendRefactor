@@ -36,7 +36,7 @@ public sealed class InboxMessagesProcessorProcedure : InboxMessagesProcessorProt
             await decrypted.Encrypted(d.EncryptMailer, token), ct);
         
         await dependencies.Execute(async (d, token) =>
-            await d.RemoveManyInboxMessage.Remove(processed, token), ct);
+            await d.MarkProcessed.Mark(processed, token), ct);
         
         await dependencies.Execute(async (d, token) =>
             await encrypted.Save(d.SaveMailer, token), ct);

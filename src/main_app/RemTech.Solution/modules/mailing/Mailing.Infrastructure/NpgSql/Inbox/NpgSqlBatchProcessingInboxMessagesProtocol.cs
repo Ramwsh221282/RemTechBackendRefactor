@@ -13,7 +13,17 @@ public sealed class NpgSqlBatchProcessingInboxMessagesProtocol(NpgSqlSession ses
     
     public async IAsyncEnumerable<InboxMessage> GetPendingMessages(CancellationToken ct)
     {
-        const string sql = "SELECT * FROM mailing_module.inbox_messages WHERE id > @lastId ORDER BY id LIMIT @limit";
+        const string sql = """
+                           SELECT
+                           id,
+                           recipient_email,
+                           subject,
+                           body
+                           FROM mailing_module.inbox_messages 
+                           WHERE id > @lastId 
+                           ORDER BY id 
+                           LIMIT @limit
+                           """;
         Guid lastId = Guid.Empty;
         while (true)
         {

@@ -18,14 +18,13 @@ public sealed class RequireActivationTicketTests(
     private readonly AddAccount _addAccount = new(fixture.Services);
     private readonly RequireActivationByAccount _requireActivationByAccount = new(fixture.Services);
     private readonly IsOutboxMessageWithTypeProcessed _isOutboxMessageWithTypeProcessed = new(fixture.Services);
-    private readonly EnsureHasInboxMessage _ensureHasInboxMessage = new(fixture.Services);
     
     [Fact]
     private async Task Ensure_Has_Pending_Inbox_Message()
     {
         const string mailingEmail = "rem_tech_demo@mail.ru";
         const string mailingPassword = "RhUXBTF78WeXYk6ehELq";
-        const string identityEmail = "someEmail@mail.com";
+        const string identityEmail = "jimkrauz@gmail.com";
         const string identityName = "someName";
         const string identityPassword = "somePassword";
         const string outboxMessageType = AddAccountTicketOnAccountActivationRequested.Type;
@@ -44,7 +43,7 @@ public sealed class RequireActivationTicketTests(
         bool hasMessageProcessed = await _isOutboxMessageWithTypeProcessed.Invoke(outboxMessageType);
         Assert.True(hasMessageProcessed);
 
-        bool hasInboxMessage = await _ensureHasInboxMessage.HasInboxMessage();
+        bool hasInboxMessage = await _mailingFeatures.EnsureHasInboxMessageProcessed();
         Assert.True(hasInboxMessage);
     }
 }

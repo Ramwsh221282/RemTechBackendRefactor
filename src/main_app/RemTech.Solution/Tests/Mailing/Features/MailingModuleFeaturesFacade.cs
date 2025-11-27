@@ -1,7 +1,5 @@
 ﻿using Mailing.Core.Mailers;
 using Mailing.Core.Mailers.Protocols;
-using Mailing.Infrastructure.AesEncryption;
-using Mailing.Infrastructure.NpgSql.Mailers;
 using Mailing.Presenters.Inbox.CreateInboxMessage;
 using Mailing.Presenters.Mailers.AddMailer;
 using Mailing.Presenters.Mailers.UpdateMailer;
@@ -16,7 +14,13 @@ public sealed class MailingModuleFeaturesFacade(IServiceProvider sp)
     private readonly CreateInboxMessageFeature _createInboxMessageFeature = new(sp);
     private readonly AddMailerFeature _addMailerFeature = new(sp);
     private readonly UpdateMailerFeature _updateMailerFeature = new(sp);
+    private readonly EnsureHasInboxMessageProcessed _ensureHasInboxMessageProcessed = new(sp);
 
+    public async Task<bool> EnsureHasInboxMessageProcessed()
+    {
+        return await _ensureHasInboxMessageProcessed.Invoke();
+    }
+    
     public async Task<Result<CreateInboxMessageResponse>> CreateInboxMessage(
         string targetEmail,
         string subject,

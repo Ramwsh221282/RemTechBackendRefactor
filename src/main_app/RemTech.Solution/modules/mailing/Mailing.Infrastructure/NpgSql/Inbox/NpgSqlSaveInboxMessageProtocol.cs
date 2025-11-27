@@ -19,9 +19,9 @@ public sealed class NpgSqlSaveInboxMessageProtocol(NpgSqlSession session) : Save
         const string sql =
             """
             INSERT INTO mailing_module.inbox_messages
-            (id, recipient_email, subject, body)
+            (id, recipient_email, subject, body, has_processed)
             VALUES
-            (@id, @recipient_email, @subject, @body)
+            (@id, @recipient_email, @subject, @body, FALSE)
             """;
         CommandDefinition command = message.ToCommand(sql, session, ct);
         await session.Execute(command);
