@@ -153,6 +153,14 @@ public static class IdentityModuleInjection
             services.AddScoped<LoggingOnRegisteredAccountPermissionEventListener>();
             services.AddScoped<IAccountPermissionsStorage, NpgSqlAccountPermissionsStorage>();
             services.AddScoped<NpgSqlAccountPermissionsStorage>();
+            
+            services.Decorate<
+                IGateway<AttachPermissionToAccountRequest, AccountPermissionResponse>,
+                TransactionalGateway<AttachPermissionToAccountRequest, AccountPermissionResponse>>();
+            
+            services.Decorate<
+                IGateway<DetachPermissionFromAccountRequest, AccountPermissionResponse>,
+                TransactionalGateway<DetachPermissionFromAccountRequest, AccountPermissionResponse>>();
         }
     }
 }

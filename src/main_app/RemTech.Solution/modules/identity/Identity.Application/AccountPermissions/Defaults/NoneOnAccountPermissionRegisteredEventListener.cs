@@ -2,9 +2,9 @@
 using Identity.Contracts.AccountPermissions.Contracts;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
-namespace Identity.Application.AccountPermissions;
+namespace Identity.Application.AccountPermissions.Defaults;
 
-public sealed class NoneOnAccountPermissionRemovedEventListener : IOnAccountPermissionRemovedEventListener
+public sealed class NoneOnAccountPermissionRegisteredEventListener : IOnAccountPermissionCreatedEventListener
 {
     public Task<Result<Unit>> React(
         AccountPermissionData data, 
