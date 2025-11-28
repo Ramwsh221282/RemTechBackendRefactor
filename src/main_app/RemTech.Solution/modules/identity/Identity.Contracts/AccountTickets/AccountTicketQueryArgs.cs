@@ -1,4 +1,4 @@
-﻿using Identity.Contracts.Shared.Contracts;
+﻿using RemTech.SharedKernel.Core.InfrastructureContracts;
 
 namespace Identity.Contracts.AccountTickets;
 

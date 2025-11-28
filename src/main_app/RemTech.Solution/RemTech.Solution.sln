@@ -224,6 +224,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsersControl.Core", "modu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsersControl.Infrastructure", "modules\parsers_control\ParsersControl.Infrastructure\ParsersControl.Infrastructure.csproj", "{1EDA8C73-993C-47CF-ABB0-296ECE6117CB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsersControl.Presenters", "modules\parsers_control\ParsersControl.Presenters\ParsersControl.Presenters.csproj", "{85ECC6B4-4545-4EF4-A823-8F5181D65B1D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsersControl.CompositionRoot", "modules\parsers_control\ParsersControl.CompositionRoot\ParsersControl.CompositionRoot.csproj", "{469E95F3-A3AD-4B53-A016-6D166B9F72D2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -336,6 +340,8 @@ Global
 		{C11197B8-719C-4730-8975-495FDAABAE79} = {79472554-9950-4B72-8B55-F32E46914B0B}
 		{EFE0C247-BF15-40AD-98CE-2C9BAC47252E} = {C11197B8-719C-4730-8975-495FDAABAE79}
 		{1EDA8C73-993C-47CF-ABB0-296ECE6117CB} = {C11197B8-719C-4730-8975-495FDAABAE79}
+		{85ECC6B4-4545-4EF4-A823-8F5181D65B1D} = {C11197B8-719C-4730-8975-495FDAABAE79}
+		{469E95F3-A3AD-4B53-A016-6D166B9F72D2} = {C11197B8-719C-4730-8975-495FDAABAE79}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -646,5 +652,13 @@ Global
 		{1EDA8C73-993C-47CF-ABB0-296ECE6117CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EDA8C73-993C-47CF-ABB0-296ECE6117CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EDA8C73-993C-47CF-ABB0-296ECE6117CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85ECC6B4-4545-4EF4-A823-8F5181D65B1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85ECC6B4-4545-4EF4-A823-8F5181D65B1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85ECC6B4-4545-4EF4-A823-8F5181D65B1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85ECC6B4-4545-4EF4-A823-8F5181D65B1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{469E95F3-A3AD-4B53-A016-6D166B9F72D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{469E95F3-A3AD-4B53-A016-6D166B9F72D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{469E95F3-A3AD-4B53-A016-6D166B9F72D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{469E95F3-A3AD-4B53-A016-6D166B9F72D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

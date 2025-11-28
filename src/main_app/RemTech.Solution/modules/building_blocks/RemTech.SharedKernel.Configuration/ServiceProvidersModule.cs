@@ -17,5 +17,14 @@ public static class ServiceProvidersModule
         {
             return provider.GetRequiredService<TService>();
         }
+
+        public async Task<TResult> ExecuteInScope<TRequiredService, TResult>(
+            Func<TRequiredService, Task<TResult>> func)
+            where TRequiredService : notnull
+        {
+            await using AsyncServiceScope scope = provider.CreateAsyncScope();
+            TRequiredService service = scope.Resolve<TRequiredService>();
+            return await func(service);
+        }
     }
 }

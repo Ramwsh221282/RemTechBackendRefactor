@@ -1,4 +1,4 @@
-﻿namespace Identity.Contracts.Shared.Contracts;
+﻿namespace RemTech.SharedKernel.Core.InfrastructureContracts;
 
 public interface IMessagePublisher<in TMessage> where TMessage : Message
 {

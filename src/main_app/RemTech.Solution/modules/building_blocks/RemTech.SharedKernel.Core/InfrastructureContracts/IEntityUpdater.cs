@@ -1,4 +1,4 @@
-﻿namespace Identity.Contracts.Shared.Contracts;
+﻿namespace RemTech.SharedKernel.Core.InfrastructureContracts;
 
 public interface IEntityUpdater<in TInstance> where TInstance : class
 {

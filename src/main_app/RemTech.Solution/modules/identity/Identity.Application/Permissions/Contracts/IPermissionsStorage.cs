@@ -1,5 +1,5 @@
 ﻿using Identity.Contracts.Permissions;
-using Identity.Contracts.Shared.Contracts;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
 
 namespace Identity.Application.Permissions.Contracts;
 

@@ -8,6 +8,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Infrastructure\RemTech.SharedKernel.Infrastructure.csproj" />
+      <ProjectReference Include="..\ParsersControl.Core\ParsersControl.Core.csproj" />
     </ItemGroup>
-
+    
+    <ItemGroup>
+        <EmbeddedResource Include="Migrations\*.sql" />
+    </ItemGroup>
+    
 </Project>

@@ -1,6 +1,7 @@
 ﻿using Identity.CompositionRoot;
 using Mailing.CompositionRoot;
 using Microsoft.Extensions.DependencyInjection;
+using ParsersControl.CompositionRoot;
 using Quartz;
 using RemTech.SharedKernel.Infrastructure.AesEncryption;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
@@ -47,6 +48,7 @@ public static class DependencyInjectionExtensions
         {
             services.AddIdentityModule();
             services.AddMailingModule();
+            services.AddParsersControlModule();
         }
         
         public void AddQuartzJobs()
