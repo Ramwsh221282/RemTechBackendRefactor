@@ -29,6 +29,27 @@ public sealed class StatefulParser(RegisteredParser registered, ParserWorkTurner
     public async Task<Result<Unit>> StartWork(CancellationToken ct = default) =>
         await UpdateState(t => t.StartWork(ct), ct);
 
+    public static async Task<Result<StatefulParser>> FromStorage(
+        Func<IStatefulParsersStorage, CancellationToken, Task<StatefulParser?>> receiving,
+        IStatefulParsersStorage storage,
+        CancellationToken ct = default)
+    {
+        StatefulParser? parser = await receiving(storage, ct);
+        if (parser == null) return Error.NotFound("Парсер не найден.");
+        return parser;
+    }
+
+    public StatefulParser AddListener(IOnStatefulParserStateChangedEventListener listener)
+    {
+        return new StatefulParser(this, listener);
+    }
+    
+    private StatefulParser(StatefulParser parser, IOnStatefulParserStateChangedEventListener listener)
+    : this(parser._registered, parser._workTurner)
+    {
+        _listener = listener;
+    }
+    
     private async Task<Result<Unit>> UpdateState(
         Func<ParserWorkTurner, Task<Result<ParserWorkTurner>>> stateChangeFn,
         CancellationToken ct

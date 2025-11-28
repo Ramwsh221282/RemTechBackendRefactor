@@ -4,6 +4,16 @@ namespace ParsersControl.Core.ParserWorkTurning;
 
 public abstract record ParserState(string Value)
 {
+    private static readonly ParserState[] _states = [new Enabled(), new Disabled(), new Waiting(), new Working()];
+    
+    public static Result<ParserState> FromString(string input)
+    {
+        const string propertyName = "Состояние работы парсера";
+        bool anyStateMatches = _states.Any(s => s.Value == input);
+        if (!anyStateMatches) return Error.InvalidFormat(propertyName);
+        return _states.First(s => s.Value == input);
+    }
+    
     public sealed record Enabled() : ParserState("Включен")
     {
         public override Result<ParserState> SwitchTo(ParserState state)
