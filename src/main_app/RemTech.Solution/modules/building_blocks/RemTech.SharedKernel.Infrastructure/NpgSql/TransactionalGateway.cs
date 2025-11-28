@@ -1,9 +1,8 @@
 ﻿using System.Reflection;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
 
-namespace Identity.Gateways.Common;
+namespace RemTech.SharedKernel.Infrastructure.NpgSql;
 
 public sealed class TransactionalGateway<TRequest, TResponse>(
     NpgSqlSession session,

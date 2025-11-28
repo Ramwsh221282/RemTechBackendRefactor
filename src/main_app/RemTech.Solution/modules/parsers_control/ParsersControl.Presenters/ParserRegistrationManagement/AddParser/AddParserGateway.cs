@@ -1,11 +1,13 @@
 ﻿using ParsersControl.Core.ParserRegistrationManagement;
 using ParsersControl.Infrastructure.ParserRegistrationManagement.EventListeners;
+using ParsersControl.Infrastructure.ParserWorkTurning.ACL.RegisterDisabledParserOnParserRegistration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 
 namespace ParsersControl.Presenters.ParserRegistrationManagement.AddParser;
 
 public sealed class AddParserGateway(
+    RegisterDisableParserOnParserRegistrationEventListener onParserRegistered,
     LoggingOnParserRegisteredEventListener loggingListener,
     NpgSqlOnParserRegisteredEventListener npgSqlListener
 ) 
@@ -17,6 +19,7 @@ public sealed class AddParserGateway(
         ParserRegistrationOffice office = new(new ParserData(Guid.NewGuid(), request.Type, request.Domain));
         ParserRegistrationOffice observed = office.AddListener(loggingListener
             .Wrap(npgSqlListener)
+            .Wrap(onParserRegistered)
             .Wrap(response));
 
         Result<Unit> registration = await observed.Register(request.Ct);

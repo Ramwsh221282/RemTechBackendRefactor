@@ -11,4 +11,8 @@
       <ProjectReference Include="..\ParsersControl.Presenters\ParsersControl.Presenters.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Scrutor" Version="7.0.0" />
+    </ItemGroup>
+
 </Project>

@@ -9,3 +9,8 @@ CREATE TABLE IF NOT EXISTS parsers_control_module.registered_parsers(
 
 CREATE INDEX IF NOT EXISTS idx_registered_parsers_type ON parsers_control_module.registered_parsers(type);
 CREATE INDEX IF NOT EXISTS idx_registered_parsers_domain ON parsers_control_module.registered_parsers(domain);
+
+CREATE TABLE IF NOT EXISTS parsers_control_module.work_states(
+  id uuid primary key,
+  state varchar(128)  
+);
