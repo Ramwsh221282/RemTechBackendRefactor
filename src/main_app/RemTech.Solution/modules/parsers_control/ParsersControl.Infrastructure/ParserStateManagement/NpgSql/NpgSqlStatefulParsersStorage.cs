@@ -41,7 +41,7 @@ public sealed class NpgSqlStatefulParsersStorage(NpgSqlSession session) : IState
         DynamicParameters parameters = new();
         if (args.Id.HasValue)
         {
-            filters.Add("id=@id");
+            filters.Add("p.id=@id");
             parameters.Add("@id", args.Id.Value);
         }
         

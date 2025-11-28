@@ -2,6 +2,8 @@
 
 public sealed class RegisteredParser(ParserData data)
 {
+    public Guid Id() => data.Id;
+    
     public void Write(
         Action<Guid>? writeId = null,
         Action<string>? writeDomain = null,

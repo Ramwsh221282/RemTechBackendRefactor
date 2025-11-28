@@ -6,7 +6,7 @@ namespace Tests.ParsersControl.Tests;
 
 public sealed class AddParserTests(ParsersControlFixture fixture) : IClassFixture<ParsersControlFixture>
 {
-    private readonly RegisteredParsersFacade _facade = new(fixture.Services);
+    private readonly ParserControlFeaturesFacade _facade = new(fixture.Services);
 
     [Fact]
     private async Task Register_Parser_Success()
@@ -15,6 +15,9 @@ public sealed class AddParserTests(ParsersControlFixture fixture) : IClassFixtur
         const string type = "transport";
         Result<AddParserResponse> result = await _facade.AddParser(domain, type);
         Assert.True(result.IsSuccess);
+        Guid parserId = result.Value.Id;
+        bool exists = await _facade.EnsureParserExists(parserId);
+        Assert.True(exists);
     }
 
     [Fact]

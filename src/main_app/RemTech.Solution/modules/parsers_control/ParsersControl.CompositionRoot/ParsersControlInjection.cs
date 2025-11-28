@@ -1,14 +1,28 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using ParsersControl.Core.ParserLinksManagement;
+using ParsersControl.Core.ParserLinksManagement.Contracts;
 using ParsersControl.Core.ParserRegistrationManagement.Contracts;
 using ParsersControl.Core.ParserStateManagement.Contracts;
 using ParsersControl.Core.ParserWorkTurning.Contracts;
 using ParsersControl.Infrastructure.Migrations;
+using ParsersControl.Infrastructure.ParserLinkManagement.Listeners.ParserLinkIgnoredListener;
+using ParsersControl.Infrastructure.ParserLinkManagement.Listeners.ParserLinkParserAttachedListener;
+using ParsersControl.Infrastructure.ParserLinkManagement.Listeners.ParserLinkRenamedListener;
+using ParsersControl.Infrastructure.ParserLinkManagement.Listeners.ParserLinkUnignoredListener;
+using ParsersControl.Infrastructure.ParserLinkManagement.Listeners.ParserLinkUrlChangedListener;
+using ParsersControl.Infrastructure.ParserLinkManagement.NpgSql;
 using ParsersControl.Infrastructure.ParserRegistrationManagement.EventListeners;
 using ParsersControl.Infrastructure.ParserRegistrationManagement.NpgSql;
 using ParsersControl.Infrastructure.ParserStateManagement.EventListeners;
 using ParsersControl.Infrastructure.ParserStateManagement.NpgSql;
 using ParsersControl.Infrastructure.ParserWorkTurning.ACL.RegisterDisabledParserOnParserRegistration;
 using ParsersControl.Infrastructure.ParserWorkTurning.NpgSql;
+using ParsersControl.Presenters.ParserLinkManagement.AttachParserLink;
+using ParsersControl.Presenters.ParserLinkManagement.ChangeUrlParserLink;
+using ParsersControl.Presenters.ParserLinkManagement.Common;
+using ParsersControl.Presenters.ParserLinkManagement.IgnoreParserLink;
+using ParsersControl.Presenters.ParserLinkManagement.RenameParserLink;
+using ParsersControl.Presenters.ParserLinkManagement.UnignoreParserLink;
 using ParsersControl.Presenters.ParserRegistrationManagement.AddParser;
 using ParsersControl.Presenters.ParserStateManagement.Common;
 using ParsersControl.Presenters.ParserStateManagement.Disable;
@@ -16,6 +30,8 @@ using ParsersControl.Presenters.ParserStateManagement.Enable;
 using ParsersControl.Presenters.ParserStateManagement.PermanentDisable;
 using ParsersControl.Presenters.ParserStateManagement.StartWaiting;
 using ParsersControl.Presenters.ParserStateManagement.StartWorking;
+using RemTech.SharedKernel.Configuration;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
 
@@ -31,6 +47,7 @@ public static class ParsersControlInjection
             services.RegisterParserRegistrationContext();
             services.RegisterParserWorkTurningContext();
             services.RegisterParserStateManagementContext();
+            services.RegisterParserLinksManagementContext();
         }
         
         private void RegisterSharedDependencies()
@@ -82,6 +99,69 @@ public static class ParsersControlInjection
         {
             services.AddScoped<RegisterDisableParserOnParserRegistrationEventListener>();
             services.AddScoped<IParserWorkTurnersStorage, NpgSqlParserWorkTurnersStorage>();
+        }
+
+        private void RegisterParserLinksManagementContext()
+        {
+            services.AddScoped<IParserLinksStorage, NpgSqlParserLinksStorage>();
+            
+            services.AddScoped<IParserLinkIgnoredListener, LoggingParserLinkIgnoredListener>();
+            services.AddScoped<IParserLinkIgnoredListener, NpgSqlParserLinkIgnoredListener>();
+
+            services.AddScoped<IParserLinkParserAttached, LoggingParserLinkAttachedListener>();
+            services.AddScoped<IParserLinkParserAttached, NpgSqlParserLinkAttachedListener>();
+
+            services.AddScoped<IParserLinkRenamedListener, LoggingParserLinkRenamedListener>();
+            services.AddScoped<IParserLinkRenamedListener, NpgSqlParserLinkRenamedListener>();
+
+            services.AddScoped<IParserLinkUnignoredListener, LoggingParserLinkUnignoredListener>();
+            services.AddScoped<IParserLinkUnignoredListener, NpgSqlParserLinkUnignoredListener>();
+
+            services.AddScoped<IParserLinkUrlChangedListener, LoggingParserLinkUrlChangedListener>();
+            services.AddScoped<IParserLinkUrlChangedListener, NpgSqlParserLinkUrlChangedListener>();
+
+            services.AddScoped<FetchParserLinkById>(sp =>
+            {
+                IParserLinksStorage storage = sp.Resolve<IParserLinksStorage>();
+                return async (id, ct) =>
+                {
+                    ParserLinkQueryArgs query = new(Id: id);
+                    ParserLink? link = await storage.Fetch(query, ct);
+                    if (link == null) return Error.NotFound("Ссылка парсера не найдена.");
+                    return link;
+                };
+            });
+            
+            services.AddScoped<IGateway<AttachParserLinkRequest, ParserLinkResponse>, AttachParserLinkGateway>();
+            services.AddScoped<IGateway<ChangeParserLinkRequest, ParserLinkResponse>, ChangeParserLinkGateway>();
+            services.AddScoped<IGateway<IgnoreParserLinkRequest, ParserLinkResponse>, IgnoreParserLinkGateway>();
+            services.AddScoped<IGateway<RenameParserLinkRequest, ParserLinkResponse>, RenameParserLinkGateway>();
+            services.AddScoped<IGateway<UnignoreParserLinkRequest, ParserLinkResponse>, UnignoreParserLinkGateway>();
+            
+            services.Decorate<
+                IGateway<AttachParserLinkRequest, ParserLinkResponse>,
+                TransactionalGateway<AttachParserLinkRequest, ParserLinkResponse>
+            >();
+            
+            services.Decorate<
+                IGateway<ChangeParserLinkRequest, ParserLinkResponse>,
+                TransactionalGateway<ChangeParserLinkRequest, ParserLinkResponse>
+            >();
+            
+            services.Decorate<
+                IGateway<IgnoreParserLinkRequest, ParserLinkResponse>,
+                TransactionalGateway<IgnoreParserLinkRequest, ParserLinkResponse>
+            >();
+            
+            services.Decorate<
+                IGateway<RenameParserLinkRequest, ParserLinkResponse>,
+                TransactionalGateway<RenameParserLinkRequest, ParserLinkResponse>
+            >();
+            
+            services.Decorate<
+                IGateway<UnignoreParserLinkRequest, ParserLinkResponse>,
+                TransactionalGateway<UnignoreParserLinkRequest, ParserLinkResponse>
+            >();
         }
         
         private void RegisterParserRegistrationContext()
