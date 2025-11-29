@@ -12,7 +12,8 @@ public static class ParserLinkInfrastructureExtensions
         {
             ParserLinkQueryArgs query = new(ParserId: parserId, Name: data.Name, Url: data.Url);
             ParserLink? link = await storage.Fetch(query, ct);
-            return Error.Conflict("У парсера уже есть ссылка с таким URL и названием");
+            if (link != null) return Error.Conflict("У парсера уже есть ссылка с таким URL и названием");
+            return Unit.Value;
         }
     }
 }

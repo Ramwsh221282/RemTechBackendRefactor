@@ -12,5 +12,14 @@ CREATE INDEX IF NOT EXISTS idx_registered_parsers_domain ON parsers_control_modu
 
 CREATE TABLE IF NOT EXISTS parsers_control_module.work_states(
   id uuid primary key,
-  state varchar(128)  
+  state varchar(128) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS parsers_control_module.links(
+  id uuid primary key,
+  name varchar(256) NOT NULL,
+  url text NOT NULL,
+  is_ignored boolean NOT NULL,
+  parser_id uuid,
+  UNIQUE (name, url, parser_id)
 );

@@ -11,7 +11,7 @@ public sealed class NpgSqlParserLinksStorage(NpgSqlSession session) : IParserLin
     public async Task Persist(ParserLink instance, CancellationToken ct = default)
     {
         const string sql = """
-                           INSERT INTO parser_control_module.links
+                           INSERT INTO parsers_control_module.links
                            (id, name, url, is_ignored, parser_id)
                            VALUES
                            (@id, @name, @url, @is_ignored, @parser_id);
@@ -32,7 +32,7 @@ public sealed class NpgSqlParserLinksStorage(NpgSqlSession session) : IParserLin
                       url,
                       is_ignored,
                       parser_id
-                      FROM parser_control_module.links
+                      FROM parsers_control_module.links
                       {filterSql}
                       {lockClause}
                       LIMIT 1
@@ -45,7 +45,7 @@ public sealed class NpgSqlParserLinksStorage(NpgSqlSession session) : IParserLin
     public async Task Update(ParserLink instance, CancellationToken ct = default)
     {
         const string sql = """
-                           UPDATE parser_control_module.links 
+                           UPDATE parsers_control_module.links 
                            SET
                                name = @name,
                                url = @url,

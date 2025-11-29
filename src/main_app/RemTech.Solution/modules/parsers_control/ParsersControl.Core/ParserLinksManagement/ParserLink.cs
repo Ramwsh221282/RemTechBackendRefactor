@@ -51,9 +51,11 @@ public sealed class ParserLink(ParserLinkData data)
 
     public async Task<Result<ParserLink>> AttachToParser(Guid id, CancellationToken ct)
     {
-        Result<Unit> validation = ValidateState();
+        ParserLink attached = new ParserLink(_data with { ParserId = id });
+        ParserLink copied = attached.Copy(attached);
+        Result<Unit> validation = copied.ValidateState();
         if (validation.IsFailure) return validation.Error;
-        Result<Unit> attaching = await _onAttached.React(id, _data, ct);
+        Result<Unit> attaching = await _onAttached.React(id, copied._data, ct);
         return attaching.IsFailure ? attaching.Error : this;
     }
 
