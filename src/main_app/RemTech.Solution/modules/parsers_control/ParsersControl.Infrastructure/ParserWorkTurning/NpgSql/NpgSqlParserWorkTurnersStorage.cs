@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using Dapper;
-using ParsersControl.Core.ParserWorkTurning;
-using ParsersControl.Core.ParserWorkTurning.Contracts;
+using ParsersControl.Core.ParserWorkStateManagement;
+using ParsersControl.Core.ParserWorkStateManagement.Contracts;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace ParsersControl.Infrastructure.ParserWorkTurning.NpgSql;

@@ -17,9 +17,15 @@ public sealed class AddParserTests(ParsersControlFixture fixture) : IClassFixtur
         Assert.True(result.IsSuccess);
         Guid parserId = result.Value.Id;
         bool exists = await _facade.EnsureParserExists(parserId);
+        bool statisticsExists = await _facade.HasParserStatistic(parserId);
+        bool stateExists = await _facade.HasParserState(parserId);
+        bool scheduleExists = await _facade.EnsureHasSchedule(parserId);
         Assert.True(exists);
+        Assert.True(statisticsExists);
+        Assert.True(stateExists);
+        Assert.True(scheduleExists);
     }
-
+    
     [Fact]
     private async Task Register_Parser_Domain_Invalid()
     {

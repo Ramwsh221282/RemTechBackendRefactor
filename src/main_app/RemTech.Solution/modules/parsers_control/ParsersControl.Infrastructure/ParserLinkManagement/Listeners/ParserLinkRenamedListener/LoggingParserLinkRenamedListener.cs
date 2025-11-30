@@ -1,13 +1,13 @@
 ﻿using ParsersControl.Core.ParserLinksManagement;
 using ParsersControl.Core.ParserLinksManagement.Contracts;
-using ParsersControl.Infrastructure.ParserLinkManagement.Listeners.ParserLinkIgnoredListener;
+using ParsersControl.Infrastructure.ParserLinkManagement.Common;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace ParsersControl.Infrastructure.ParserLinkManagement.Listeners.ParserLinkRenamedListener;
 
 public sealed class LoggingParserLinkRenamedListener(Serilog.ILogger logger) : IParserLinkRenamedListener
 {
-    private readonly Serilog.ILogger _logger = logger;
+    private readonly Serilog.ILogger _logger = logger.ForContext<IParserLinkRenamedListener>();
     
     public Task<Result<Unit>> React(ParserLinkData data, CancellationToken ct = default)
     {

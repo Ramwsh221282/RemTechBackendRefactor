@@ -2,8 +2,10 @@
 using ParsersControl.Core.ParserLinksManagement;
 using ParsersControl.Core.ParserLinksManagement.Contracts;
 using ParsersControl.Core.ParserRegistrationManagement.Contracts;
+using ParsersControl.Core.ParserScheduleManagement.Contracts;
 using ParsersControl.Core.ParserStateManagement.Contracts;
-using ParsersControl.Core.ParserWorkTurning.Contracts;
+using ParsersControl.Core.ParserStatisticsManagement.Contracts;
+using ParsersControl.Core.ParserWorkStateManagement.Contracts;
 using ParsersControl.Infrastructure.Migrations;
 using ParsersControl.Infrastructure.ParserLinkManagement.Listeners.ParserLinkIgnoredListener;
 using ParsersControl.Infrastructure.ParserLinkManagement.Listeners.ParserLinkParserAttachedListener;
@@ -13,8 +15,16 @@ using ParsersControl.Infrastructure.ParserLinkManagement.Listeners.ParserLinkUrl
 using ParsersControl.Infrastructure.ParserLinkManagement.NpgSql;
 using ParsersControl.Infrastructure.ParserRegistrationManagement.EventListeners;
 using ParsersControl.Infrastructure.ParserRegistrationManagement.NpgSql;
+using ParsersControl.Infrastructure.ParserScheduleManagement.Listeners.OnCreated;
+using ParsersControl.Infrastructure.ParserScheduleManagement.Listeners.OnParserCreated;
+using ParsersControl.Infrastructure.ParserScheduleManagement.Listeners.OnUpdated;
+using ParsersControl.Infrastructure.ParserScheduleManagement.NpgSql;
 using ParsersControl.Infrastructure.ParserStateManagement.EventListeners;
 using ParsersControl.Infrastructure.ParserStateManagement.NpgSql;
+using ParsersControl.Infrastructure.ParserStatistics.EventListeners.OnCreated;
+using ParsersControl.Infrastructure.ParserStatistics.EventListeners.OnParserRegistered;
+using ParsersControl.Infrastructure.ParserStatistics.EventListeners.OnUpdated;
+using ParsersControl.Infrastructure.ParserStatistics.NpgSql;
 using ParsersControl.Infrastructure.ParserWorkTurning.ACL.RegisterDisabledParserOnParserRegistration;
 using ParsersControl.Infrastructure.ParserWorkTurning.NpgSql;
 using ParsersControl.Presenters.ParserLinkManagement.AttachParserLink;
@@ -24,12 +34,18 @@ using ParsersControl.Presenters.ParserLinkManagement.IgnoreParserLink;
 using ParsersControl.Presenters.ParserLinkManagement.RenameParserLink;
 using ParsersControl.Presenters.ParserLinkManagement.UnignoreParserLink;
 using ParsersControl.Presenters.ParserRegistrationManagement.AddParser;
+using ParsersControl.Presenters.ParserScheduleManagement.Common;
+using ParsersControl.Presenters.ParserScheduleManagement.SetFinishedDate;
+using ParsersControl.Presenters.ParserScheduleManagement.UpdateWaitDays;
 using ParsersControl.Presenters.ParserStateManagement.Common;
 using ParsersControl.Presenters.ParserStateManagement.Disable;
 using ParsersControl.Presenters.ParserStateManagement.Enable;
 using ParsersControl.Presenters.ParserStateManagement.PermanentDisable;
 using ParsersControl.Presenters.ParserStateManagement.StartWaiting;
 using ParsersControl.Presenters.ParserStateManagement.StartWorking;
+using ParsersControl.Presenters.ParserStatisticsManagement.Common;
+using ParsersControl.Presenters.ParserStatisticsManagement.UpdateElapsedSeconds;
+using ParsersControl.Presenters.ParserStatisticsManagement.UpdateProcessed;
 using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
@@ -48,6 +64,8 @@ public static class ParsersControlInjection
             services.RegisterParserWorkTurningContext();
             services.RegisterParserStateManagementContext();
             services.RegisterParserLinksManagementContext();
+            services.RegisterParserStatisticsManagementContext();
+            services.RegisterParserScheduleManagementContext();
         }
         
         private void RegisterSharedDependencies()
@@ -57,6 +75,76 @@ public static class ParsersControlInjection
             services.AddTransient<IDbUpgrader, ParsersControlModuleDbUpgrader>();
         }
 
+        private void RegisterParserStatisticsManagementContext()
+        {
+            services.AddScoped<IParserStatisticsCreatedEventListener, NpgSqlOnParserStatisticsCreatedEventListener>();
+            services.AddScoped<IParserStatisticsCreatedEventListener, LoggingOnParserStatisticsCreatedEventListener>();
+
+            services.AddScoped<IParserStatisticsUpdatedEventListener, NpgSqlOnParserStatisticsUpdatedEventListener>();
+            services.AddScoped<IParserStatisticsUpdatedEventListener, LoggingOnParserStatisticsUpdatedEventListener>();
+
+            services.AddScoped<NpgSqlOnParserStatisticsCreatedEventListener>();
+            services.AddScoped<LoggingOnParserStatisticsCreatedEventListener>();
+            services.AddScoped<NpgSqlOnParserStatisticsUpdatedEventListener>();
+            services.AddScoped<LoggingOnParserStatisticsUpdatedEventListener>();
+            services.AddScoped<RegisterEmptyStatisticsOnParserRegisteredListener>();
+            services.AddScoped<IParserStatisticsStorage, NpgSqlParserStatisticsStorage>();
+            
+            services.AddScoped<
+                IGateway<UpdateParserElapsedSecondsRequest, ParserStatisticsUpdateResponse>,
+                UpdateParserElapsedSecondsGateway>();
+            
+            services.AddScoped<
+                IGateway<UpdateParserProcessedRequest, ParserStatisticsUpdateResponse>,
+                UpdateParserProcessedGateway>();
+            
+            services.Decorate<
+                IGateway<UpdateParserElapsedSecondsRequest, ParserStatisticsUpdateResponse>,
+                TransactionalGateway<UpdateParserElapsedSecondsRequest, ParserStatisticsUpdateResponse>
+            >();
+            
+            services.Decorate<
+                IGateway<UpdateParserProcessedRequest, ParserStatisticsUpdateResponse>,
+                TransactionalGateway<UpdateParserProcessedRequest, ParserStatisticsUpdateResponse>
+            >();
+        }
+
+        private void RegisterParserScheduleManagementContext()
+        {
+            services.AddScoped<IParserScheduleStorage, NpgSqlParserSchedulesStorage>();
+            services.AddScoped<IParserScheduleCreatedEventListener, LoggingParserScheduleCreatedEventListener>();
+            services.AddScoped<IParserScheduleCreatedEventListener, NpgSqlParserScheduleCreatedListener>();
+            services.AddScoped<IParserScheduleUpdatedEventListener, LoggingParserScheduleUpdatedListener>();
+            services.AddScoped<IParserScheduleUpdatedEventListener, NpgSqlParserScheduleUpdatedListener>();
+            
+            services.AddScoped<NpgSqlParserSchedulesStorage>();
+            services.AddScoped<LoggingParserScheduleCreatedEventListener>();
+            services.AddScoped<NpgSqlParserScheduleCreatedListener>();
+            services.AddScoped<LoggingParserScheduleUpdatedListener>();
+            services.AddScoped<NpgSqlParserScheduleUpdatedListener>();
+            
+            services.AddScoped<AddScheduleForParserOnParserCreatedEventListener>();
+            
+            services.AddScoped<
+                IGateway<UpdateWaitDaysRequest, ParserScheduleUpdateResponse>,
+                UpdateWaitDaysGateway>();
+
+            services.AddScoped<
+                IGateway<SetFinishedDateRequest, ParserScheduleUpdateResponse>,
+                SetFinishedDateGateway
+            >();
+
+            services.Decorate<
+                IGateway<UpdateWaitDaysRequest, ParserScheduleUpdateResponse>,
+                TransactionalGateway<UpdateWaitDaysRequest, ParserScheduleUpdateResponse>
+            >();
+            
+            services.Decorate<
+                IGateway<SetFinishedDateRequest, ParserScheduleUpdateResponse>,
+                TransactionalGateway<SetFinishedDateRequest, ParserScheduleUpdateResponse>
+            >();
+        }
+        
         private void RegisterParserStateManagementContext()
         {
             services.AddScoped<IOnStatefulParserStateChangedEventListener, NpgSqlOnStatefulParserStateChangedEventListener>();

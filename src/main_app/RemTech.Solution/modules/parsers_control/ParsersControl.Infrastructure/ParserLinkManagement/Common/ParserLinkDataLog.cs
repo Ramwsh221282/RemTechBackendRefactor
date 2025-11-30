@@ -1,6 +1,6 @@
 ﻿using ParsersControl.Core.ParserLinksManagement;
 
-namespace ParsersControl.Infrastructure.ParserLinkManagement.Listeners.ParserLinkIgnoredListener;
+namespace ParsersControl.Infrastructure.ParserLinkManagement.Common;
 
 public sealed class ParserLinkDataLog
 {

@@ -2,7 +2,7 @@
 using ParsersControl.Core.ParserRegistrationManagement;
 using ParsersControl.Core.ParserStateManagement;
 using ParsersControl.Core.ParserStateManagement.Contracts;
-using ParsersControl.Core.ParserWorkTurning;
+using ParsersControl.Core.ParserWorkStateManagement;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
 

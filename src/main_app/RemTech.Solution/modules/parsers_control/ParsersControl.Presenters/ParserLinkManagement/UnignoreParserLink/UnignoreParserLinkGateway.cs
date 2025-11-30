@@ -15,7 +15,6 @@ public sealed class UnignoreParserLinkGateway (
     public async Task<Result<ParserLinkResponse>> Execute(UnignoreParserLinkRequest request)
     {
         CancellationToken ct = request.Ct;
-        ParserLinkQueryArgs query = new(Id: request.Id);
         Result<ParserLink> fetching = await fetch(request.Id, ct);
         if (fetching.IsFailure) return fetching.Error;
         PipeLineParserLinkUnignoredListener pipeline = new(listeners);

@@ -20,6 +20,19 @@ CREATE TABLE IF NOT EXISTS parsers_control_module.links(
   name varchar(256) NOT NULL,
   url text NOT NULL,
   is_ignored boolean NOT NULL,
-  parser_id uuid,
+  parser_id uuid NOT NULL,
   UNIQUE (name, url, parser_id)
+);
+
+CREATE TABLE IF NOT EXISTS parsers_control_module.statistics(
+  id uuid primary key,
+  processed int not null,
+  elapsed_seconds bigint not null
+);
+
+CREATE TABLE IF NOT EXISTS parsers_control_module.schedules
+(
+    id uuid primary key,
+    finished_at timestamptz,
+    wait_days integer
 );

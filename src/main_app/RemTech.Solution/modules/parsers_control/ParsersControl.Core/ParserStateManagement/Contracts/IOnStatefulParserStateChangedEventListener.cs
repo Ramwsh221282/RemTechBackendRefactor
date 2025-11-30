@@ -1,5 +1,5 @@
 ﻿using ParsersControl.Core.ParserRegistrationManagement;
-using ParsersControl.Core.ParserWorkTurning;
+using ParsersControl.Core.ParserWorkStateManagement;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace ParsersControl.Core.ParserStateManagement.Contracts;
