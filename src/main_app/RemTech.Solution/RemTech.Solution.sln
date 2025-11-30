@@ -228,6 +228,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsersControl.Presenters",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsersControl.CompositionRoot", "modules\parsers_control\ParsersControl.CompositionRoot\ParsersControl.CompositionRoot.csproj", "{469E95F3-A3AD-4B53-A016-6D166B9F72D2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsersControl.Endpoints", "modules\parsers_control\ParsersControl.Endpoints\ParsersControl.Endpoints.csproj", "{9FA3F99D-D716-4414-9FD0-1EC594704C3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -342,6 +344,7 @@ Global
 		{1EDA8C73-993C-47CF-ABB0-296ECE6117CB} = {C11197B8-719C-4730-8975-495FDAABAE79}
 		{85ECC6B4-4545-4EF4-A823-8F5181D65B1D} = {C11197B8-719C-4730-8975-495FDAABAE79}
 		{469E95F3-A3AD-4B53-A016-6D166B9F72D2} = {C11197B8-719C-4730-8975-495FDAABAE79}
+		{9FA3F99D-D716-4414-9FD0-1EC594704C3F} = {C11197B8-719C-4730-8975-495FDAABAE79}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -660,5 +663,9 @@ Global
 		{469E95F3-A3AD-4B53-A016-6D166B9F72D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{469E95F3-A3AD-4B53-A016-6D166B9F72D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{469E95F3-A3AD-4B53-A016-6D166B9F72D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FA3F99D-D716-4414-9FD0-1EC594704C3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FA3F99D-D716-4414-9FD0-1EC594704C3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FA3F99D-D716-4414-9FD0-1EC594704C3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FA3F99D-D716-4414-9FD0-1EC594704C3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

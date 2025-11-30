@@ -221,7 +221,7 @@ public static class ParsersControlInjection
             });
             
             services.AddScoped<IGateway<AttachParserLinkRequest, ParserLinkResponse>, AttachParserLinkGateway>();
-            services.AddScoped<IGateway<ChangeParserLinkRequest, ParserLinkResponse>, ChangeParserLinkGateway>();
+            services.AddScoped<IGateway<ChangeParserLinkUrlRequest, ParserLinkResponse>, ChangeParserLinkUrlGateway>();
             services.AddScoped<IGateway<IgnoreParserLinkRequest, ParserLinkResponse>, IgnoreParserLinkGateway>();
             services.AddScoped<IGateway<RenameParserLinkRequest, ParserLinkResponse>, RenameParserLinkGateway>();
             services.AddScoped<IGateway<UnignoreParserLinkRequest, ParserLinkResponse>, UnignoreParserLinkGateway>();
@@ -232,8 +232,8 @@ public static class ParsersControlInjection
             >();
             
             services.Decorate<
-                IGateway<ChangeParserLinkRequest, ParserLinkResponse>,
-                TransactionalGateway<ChangeParserLinkRequest, ParserLinkResponse>
+                IGateway<ChangeParserLinkUrlRequest, ParserLinkResponse>,
+                TransactionalGateway<ChangeParserLinkUrlRequest, ParserLinkResponse>
             >();
             
             services.Decorate<

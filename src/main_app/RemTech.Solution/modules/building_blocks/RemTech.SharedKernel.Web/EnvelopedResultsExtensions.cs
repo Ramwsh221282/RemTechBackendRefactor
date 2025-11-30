@@ -5,22 +5,6 @@ namespace RemTech.SharedKernel.Web;
 
 public static class EnvelopedResultsExtensions
 {
-
-    extension(Envelope)
-    {
-        public static Envelope Map<T,U>(IEnumerable<T> source, Func<T,U> func, HttpStatusCode code)
-        {
-            IEnumerable<U> results = source.Select(func);
-            return new Envelope((int)code, results, null);
-        }
-        
-        public static Envelope Map<T,U>(IEnumerable<T> source, Func<T,U> func, HttpStatusCode code, string message)
-        {
-            IEnumerable<U> results = source.Select(func);
-            return new Envelope((int)code, results, message);
-        }
-    }
-    
     extension(Result result)
     {
         public Envelope AsEnvelope()
@@ -38,8 +22,8 @@ public static class EnvelopedResultsExtensions
             string? message = result.ResolveMessage();
             return new Envelope(code, body, message);
         }
-        
-        public int ResolveStatusCode()
+
+        private int ResolveStatusCode()
         {
             HttpStatusCode code = result.IsSuccess switch
             {
@@ -50,7 +34,7 @@ public static class EnvelopedResultsExtensions
             return (int)code;
         }
 
-        public string? ResolveMessage()
+        private string? ResolveMessage()
         {
             string? message = result.IsFailure ? result.Error.Message : null;
             return message;

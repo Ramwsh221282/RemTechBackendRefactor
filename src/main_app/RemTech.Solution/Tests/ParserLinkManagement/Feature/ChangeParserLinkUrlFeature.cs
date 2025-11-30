@@ -15,10 +15,10 @@ public sealed class ChangeParserLinkUrlFeature(IServiceProvider sp)
     )
     {
         CancellationToken ct = CancellationToken.None;
-        ChangeParserLinkRequest request = new(linkId, newUrl, ct);
+        ChangeParserLinkUrlRequest urlRequest = new(linkId, newUrl, ct);
         await using AsyncServiceScope scope = sp.CreateAsyncScope();
-        IGateway<ChangeParserLinkRequest, ParserLinkResponse> service =
-            scope.Resolve<IGateway<ChangeParserLinkRequest, ParserLinkResponse>>();
-        return await service.Execute(request);
+        IGateway<ChangeParserLinkUrlRequest, ParserLinkResponse> service =
+            scope.Resolve<IGateway<ChangeParserLinkUrlRequest, ParserLinkResponse>>();
+        return await service.Execute(urlRequest);
     }
 }

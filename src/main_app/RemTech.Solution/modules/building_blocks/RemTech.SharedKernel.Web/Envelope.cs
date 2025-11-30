@@ -5,20 +5,20 @@ namespace RemTech.SharedKernel.Web;
 
 public sealed class Envelope : IResult
 {
-    private int _statusCode { get; }
-    private object? _body { get; }
-    private string? _error { get; }
+    private int StatusCode { get; }
+    private object? Body { get; }
+    private string? Error { get; }
 
     public Envelope(int statusCode, object? body, string? error)
     {
-        _statusCode = statusCode;
-        _body = body;
-        _error = error;
+        StatusCode = statusCode;
+        Body = body;
+        Error = error;
     }
 
     public async Task ExecuteAsync(HttpContext httpContext)
     {
-        httpContext.Response.StatusCode = _statusCode;
+        httpContext.Response.StatusCode = StatusCode;
         httpContext.Response.ContentType = "application/json; charset=utf-8";
         string jsonBody = Serialized();
         await httpContext.Response.WriteAsync(jsonBody);
@@ -27,9 +27,9 @@ public sealed class Envelope : IResult
     private string Serialized()
     {
         Dictionary<string, object?> data = [];
-        data.Add("statusCode", _statusCode);
-        data.Add("body", _body);
-        data.Add("error", _error);
+        data.Add("statusCode", StatusCode);
+        data.Add("body", Body);
+        data.Add("error", Error);
         return JsonSerializer.Serialize(data);
     }
 }

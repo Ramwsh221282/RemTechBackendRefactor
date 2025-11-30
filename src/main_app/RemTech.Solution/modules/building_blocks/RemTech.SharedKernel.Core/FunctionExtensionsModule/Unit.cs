@@ -40,5 +40,10 @@ public static class UnitModule
             await operation();
             return Unit.Value;
         }
+
+        public static Result<Unit> ValidationUnit(IEnumerable<string> errors)
+        {
+            return errors.Any() ? Error.Validation(errors) : Unit.Value;
+        }
     }
 }
