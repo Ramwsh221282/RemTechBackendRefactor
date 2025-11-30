@@ -8,11 +8,11 @@ namespace Tests.ParsersControl.Tests;
 public sealed class ParserStateChangeTests(ParsersControlFixture fixture) : IClassFixture<ParsersControlFixture>
 {
     private readonly ParserControlFeaturesFacade _facade = new(fixture.Services);
-    const string type = "test-type";
-    const string domain = "test-domain";
+    private const string Type = "test-type";
+    private const string Domain = "test-domain";
 
     [Fact]
-    private async Task Enable_Parser_From_Creating_Success()
+    private async Task Enable_Parser_From_Creating_Failure()
     {
         Guid parserId = await CreatedParserId();
         Result<ParserStateChangeResponse> enabling = await _facade.EnableParser(parserId);
@@ -132,7 +132,7 @@ public sealed class ParserStateChangeTests(ParsersControlFixture fixture) : ICla
     
     private async Task<Guid> CreatedParserId()
     {
-        Result<AddParserResponse> parser = await _facade.AddParser(domain, type);
+        Result<AddParserResponse> parser = await _facade.AddParser(Domain, Type);
         Assert.True(parser.IsSuccess);
         Guid parserId = parser.Value.Id;
         return parserId;

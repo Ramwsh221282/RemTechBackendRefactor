@@ -1,5 +1,5 @@
-﻿using ParsersControl.Core.ParserStateManagement;
-using ParsersControl.Core.ParserStateManagement.Contracts;
+﻿using ParsersControl.Core.ParserWorkStateManagement;
+using ParsersControl.Core.ParserWorkStateManagement.Contracts;
 
 namespace ParsersControl.Presenters.ParserStateManagement.Common;
 
@@ -7,8 +7,8 @@ public interface IGatewayRequestWithParserFetchById
 {
     public Guid Id { get; }
 
-    public Func<IStatefulParsersStorage, CancellationToken, Task<StatefulParser?>> FetchMethod()
+    public Func<IParserWorkStatesStorage, CancellationToken, Task<ParserWorkTurner?>> FetchMethod()
     {
-        return (storage, token) => storage.Fetch(new StatefulParserQueryArgs(Id: Id), token);
+        return (storage, token) => storage.Fetch(new ParserWorkTurnerQueryArgs(Id: Id), token);
     }
 }

@@ -2,5 +2,4 @@
 
 namespace ParsersControl.Core.ParserWorkStateManagement.Contracts;
 
-public interface IParserWorkTurnersStorage :
-    IEntityPersister<ParserWorkTurner>;
+public sealed record ParserWorkTurnerQueryArgs(Guid? Id = null, bool WithLock = false) : EntityFetchArgs;

@@ -2,7 +2,7 @@
 using ParsersControl.Infrastructure.ParserRegistrationManagement.EventListeners;
 using ParsersControl.Infrastructure.ParserScheduleManagement.Listeners.OnParserCreated;
 using ParsersControl.Infrastructure.ParserStatistics.EventListeners.OnParserRegistered;
-using ParsersControl.Infrastructure.ParserWorkTurning.ACL.RegisterDisabledParserOnParserRegistration;
+using ParsersControl.Infrastructure.ParserWorkStateManagement.ACL.RegisterDisabledParserOnParserRegistration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 

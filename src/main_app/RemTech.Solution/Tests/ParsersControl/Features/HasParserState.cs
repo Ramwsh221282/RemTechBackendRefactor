@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using ParsersControl.Core.ParserStateManagement;
-using ParsersControl.Core.ParserStateManagement.Contracts;
+using ParsersControl.Core.ParserWorkStateManagement;
+using ParsersControl.Core.ParserWorkStateManagement.Contracts;
 using RemTech.SharedKernel.Configuration;
 
 namespace Tests.ParsersControl.Features;
@@ -9,10 +9,10 @@ public sealed class HasParserState(IServiceProvider sp)
 {
     public async Task<bool> Invoke(Guid id)
     {
-        StatefulParserQueryArgs args = new(id);
+        ParserWorkTurnerQueryArgs args = new(id);
         await using AsyncServiceScope scope = sp.CreateAsyncScope();
-        IStatefulParsersStorage storage = scope.Resolve<IStatefulParsersStorage>();
-        StatefulParser? parser = await storage.Fetch(args, CancellationToken.None);
+        IParserWorkStatesStorage storage = scope.Resolve<IParserWorkStatesStorage>();
+        ParserWorkTurner? parser = await storage.Fetch(args, CancellationToken.None);
         return parser != null;
     }
 }

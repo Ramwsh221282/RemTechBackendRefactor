@@ -3,7 +3,6 @@ using ParsersControl.Core.ParserLinksManagement;
 using ParsersControl.Core.ParserLinksManagement.Contracts;
 using ParsersControl.Core.ParserRegistrationManagement.Contracts;
 using ParsersControl.Core.ParserScheduleManagement.Contracts;
-using ParsersControl.Core.ParserStateManagement.Contracts;
 using ParsersControl.Core.ParserStatisticsManagement.Contracts;
 using ParsersControl.Core.ParserWorkStateManagement.Contracts;
 using ParsersControl.Infrastructure.Migrations;
@@ -19,14 +18,13 @@ using ParsersControl.Infrastructure.ParserScheduleManagement.Listeners.OnCreated
 using ParsersControl.Infrastructure.ParserScheduleManagement.Listeners.OnParserCreated;
 using ParsersControl.Infrastructure.ParserScheduleManagement.Listeners.OnUpdated;
 using ParsersControl.Infrastructure.ParserScheduleManagement.NpgSql;
-using ParsersControl.Infrastructure.ParserStateManagement.EventListeners;
-using ParsersControl.Infrastructure.ParserStateManagement.NpgSql;
 using ParsersControl.Infrastructure.ParserStatistics.EventListeners.OnCreated;
 using ParsersControl.Infrastructure.ParserStatistics.EventListeners.OnParserRegistered;
 using ParsersControl.Infrastructure.ParserStatistics.EventListeners.OnUpdated;
 using ParsersControl.Infrastructure.ParserStatistics.NpgSql;
-using ParsersControl.Infrastructure.ParserWorkTurning.ACL.RegisterDisabledParserOnParserRegistration;
-using ParsersControl.Infrastructure.ParserWorkTurning.NpgSql;
+using ParsersControl.Infrastructure.ParserWorkStateManagement.ACL.RegisterDisabledParserOnParserRegistration;
+using ParsersControl.Infrastructure.ParserWorkStateManagement.EventListeners.OnStateChanged;
+using ParsersControl.Infrastructure.ParserWorkStateManagement.NpgSql;
 using ParsersControl.Presenters.ParserLinkManagement.AttachParserLink;
 using ParsersControl.Presenters.ParserLinkManagement.ChangeUrlParserLink;
 using ParsersControl.Presenters.ParserLinkManagement.Common;
@@ -147,10 +145,12 @@ public static class ParsersControlInjection
         
         private void RegisterParserStateManagementContext()
         {
-            services.AddScoped<IOnStatefulParserStateChangedEventListener, NpgSqlOnStatefulParserStateChangedEventListener>();
-            services.AddScoped<IOnStatefulParserStateChangedEventListener, LoggingOnStatefulParserStateChangeEventListener>();
-            services.AddScoped<IStatefulParsersStorage, NpgSqlStatefulParsersStorage>();
-
+            services.AddScoped<IParserWorkStatesStorage, NpgSqlParserWorkStatesStorage>();
+            services.AddScoped<IParserStateChangedEventListener, LoggingOnParserWorkStateChangedEventListener>();
+            services.AddScoped<IParserStateChangedEventListener, NpgSqlOnParserWorkStateChangedEventListener>();
+            services.AddScoped<NpgSqlParserWorkStatesStorage>();
+            services.AddScoped<LoggingOnParserWorkStateChangedEventListener>();
+            services.AddScoped<NpgSqlOnParserWorkStateChangedEventListener>();
             services.AddScoped<IGateway<DisableParserRequest, ParserStateChangeResponse>, DisableParserGateway>();
             services.AddScoped<IGateway<EnableParserGatewayRequest,  ParserStateChangeResponse>, EnableParserGateway>();
             services.AddScoped<IGateway<PermanentDisableRequest, ParserStateChangeResponse>, PermanentDisableGateway>();
@@ -186,7 +186,7 @@ public static class ParsersControlInjection
         private void RegisterParserWorkTurningContext()
         {
             services.AddScoped<RegisterDisableParserOnParserRegistrationEventListener>();
-            services.AddScoped<IParserWorkTurnersStorage, NpgSqlParserWorkTurnersStorage>();
+            services.AddScoped<IParserWorkStatesStorage, NpgSqlParserWorkStatesStorage>();
         }
 
         private void RegisterParserLinksManagementContext()

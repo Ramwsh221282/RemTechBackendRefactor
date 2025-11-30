@@ -59,37 +59,21 @@ public sealed class ParserStatistic(ParserStatisticData data)
         writeElapsedSeconds?.Invoke(_data.TotalSecondsElapsed);
     }
 
-    public ParserStatistic AddListener(IParserStatisticsUpdatedEventListener onUpdated)
+    public ParserStatistic AddListener(IParserStatisticsUpdatedEventListener onUpdated) => new(this, onUpdated: onUpdated);
+    public ParserStatistic AddListener(IParserStatisticsCreatedEventListener onCreated) => new(this, onCreated: onCreated);
+
+    private ParserStatistic(
+        ParserStatistic origin, 
+        IParserStatisticsCreatedEventListener? onCreated = null,
+        IParserStatisticsUpdatedEventListener? onUpdated = null)
+    : this(origin._data)
     {
-        return new ParserStatistic(this, onUpdated);
+        _onCreated = onCreated ?? origin._onCreated;
+        _onUpdated = onUpdated ?? origin._onUpdated;
     }
 
-    public ParserStatistic AddListener(IParserStatisticsCreatedEventListener onCreated)
-    {
-        return new ParserStatistic(this, onCreated);
-    }
-    
-    public ParserStatistic(ParserStatistic statistic, IParserStatisticsCreatedEventListener onCreated)
-        : this(statistic._data)
-    {
-        _onCreated = onCreated;
-    }
-
-    public ParserStatistic(ParserStatistic statistic, IParserStatisticsUpdatedEventListener onUpdated)
-        : this(statistic._data)
-    {
-        _onUpdated = onUpdated;
-    }
-
-    public bool ProcessedEqualsTo(int processed)
-    {
-        return _data.Processed == processed;
-    }
-
-    public bool ElapsedEqualsTo(long elapsedSeconds)
-    {
-        return _data.TotalSecondsElapsed == elapsedSeconds;
-    }
+    public bool ProcessedEqualsTo(int processed) => _data.Processed == processed;
+    public bool ElapsedEqualsTo(long elapsedSeconds) => _data.TotalSecondsElapsed == elapsedSeconds;
     
     private Result<Unit> Validate()
     {

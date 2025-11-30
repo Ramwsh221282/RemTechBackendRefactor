@@ -6,30 +6,16 @@ namespace ParsersControl.Core.ParserWorkStateManagement;
 
 public sealed class ParserWorkTurner(ParserWorkTurnerState state)
 {
-    private readonly IOnParserEnabledEventListener _onEnabled =
-            new NoneOnParserEnabledEventListener();
-    
-    private readonly IOnParserDisabledEventListener _onDisabled =
-            new NoneOnParserDisabledEventListener();
-    
-    private readonly IOnParserStartWaitingEventListener _onStartWait =
-            new NoneOnParsedStartWaitingEventListener();
-    
-    private readonly IOnParserStartWorkEventListener _onStartWork =
-            new NoneOnParserStartWorkEventListener();
-    
-    private readonly IOnParserStopWorkEventListener _onStopWork =
-            new NoneOnParserStopWorkEventListener();
-    
-    private readonly IOnPermanentStopWorkEventListener _onPermanentStopWork =
-            new NoneOnPermanentStopWorkEventListener();
+    private readonly ParserWorkTurnerState _state = state;
+    private readonly IParserStateChangedEventListener _stateChanged = 
+        new NoneParserStateChangedEventListener();
     
     public async Task<Result<ParserWorkTurner>> Enable(CancellationToken ct = default)
     {
         return await UpdateState(s => 
                 s.SwitchState(new ParserState.Enabled()), 
             (res, t) =>
-                _onEnabled.React(res, t), ct);
+                _stateChanged.React(res, t), ct);
     }
 
     public async Task<Result<ParserWorkTurner>> Disable(CancellationToken ct = default)
@@ -37,15 +23,15 @@ public sealed class ParserWorkTurner(ParserWorkTurnerState state)
         return await UpdateState(s => 
                 s.SwitchState(new ParserState.Disabled()), 
             (res, t) =>
-                _onDisabled.React(res, t), ct);
+                _stateChanged.React(res, t), ct);
     }
 
     public async Task<Result<ParserWorkTurner>> StartWait(CancellationToken ct = default)
     {
-        return await UpdateState(s => 
-                s.SwitchState(new ParserState.Waiting()), 
-            (res, t) =>
-                _onStartWait.React(res, t), ct);
+        return await UpdateState(
+            s => s.SwitchState(new ParserState.Waiting()), 
+            (res, t) => _stateChanged.React(res, t), ct
+            );
     }
 
     public async Task<Result<ParserWorkTurner>> StartWork(CancellationToken ct = default)
@@ -53,7 +39,7 @@ public sealed class ParserWorkTurner(ParserWorkTurnerState state)
         return await UpdateState(s => 
                 s.SwitchState(new ParserState.Working()), 
             (res, t) => 
-                _onStartWork.React(res, t), ct);
+                _stateChanged.React(res, t), ct);
     }
     
     public async Task<Result<ParserWorkTurner>> StopWork(CancellationToken ct = default)
@@ -61,14 +47,14 @@ public sealed class ParserWorkTurner(ParserWorkTurnerState state)
         return await UpdateState(s => 
                 s.SwitchState(new ParserState.Disabled()), 
             (res, t) =>
-                _onStopWork.React(res, t), ct);
+                _stateChanged.React(res, t), ct);
     }
 
     public async Task<Result<ParserWorkTurner>> PermanentStopWork(CancellationToken ct)
     {
-        ParserWorkTurnerState @updated = state with { State = new ParserState.Disabled() };
-        ParserWorkTurner parserWorkTurner = new(@updated);
-        Result<Unit> react = await _onPermanentStopWork.React(@updated, ct);
+        ParserWorkTurnerState updated = _state with { State = new ParserState.Disabled() };
+        ParserWorkTurner parserWorkTurner = new(updated);
+        Result<Unit> react = await _stateChanged.React(updated, ct);
         return react.IsFailure ? react.Error : parserWorkTurner;
     }
 
@@ -77,20 +63,31 @@ public sealed class ParserWorkTurner(ParserWorkTurnerState state)
         Action<string>? writeState = null
         )
     {
-        writeId?.Invoke(state.Id);
-        writeState?.Invoke(state.State.Value);
+        writeId?.Invoke(_state.Id);
+        writeState?.Invoke(_state.State.Value);
     }
     
     private async Task<Result<ParserWorkTurner>> UpdateState(
         Func<ParserWorkTurnerState, Result<ParserWorkTurnerState>> stateSwitchFn,
-        Func<Result<ParserWorkTurnerState>, CancellationToken, Task<Result<Unit>>> listenerReactFn,
+        Func<ParserWorkTurnerState, CancellationToken, Task<Result<Unit>>> listenerReactFn,
         CancellationToken ct
         )
     {
-        Result<ParserWorkTurnerState> dataRes = stateSwitchFn(state);
+        Result<ParserWorkTurnerState> dataRes = stateSwitchFn(_state);
         if (dataRes.IsFailure) return dataRes.Error;
-        Result<Unit> react = await listenerReactFn(dataRes, ct);
+        Result<Unit> react = await listenerReactFn(dataRes.Value, ct);
         if (react.IsFailure) return react.Error;
         return new ParserWorkTurner(dataRes);
+    }
+
+    public ParserWorkTurner AddListener(IParserStateChangedEventListener? stateChanged = null) => new(this, stateChanged);
+    
+    private ParserWorkTurner(
+        ParserWorkTurner origin,
+        IParserStateChangedEventListener? stateChanged = null
+        )
+        : this(origin._state)
+    {
+        _stateChanged = stateChanged ?? origin._stateChanged;
     }
 }

@@ -4,14 +4,14 @@ namespace ParsersControl.Core.ParserWorkStateManagement;
 
 public abstract record ParserState(string Value)
 {
-    private static readonly ParserState[] _states = [new Enabled(), new Disabled(), new Waiting(), new Working()];
+    private static readonly ParserState[] States = [new Enabled(), new Disabled(), new Waiting(), new Working()];
     
     public static Result<ParserState> FromString(string input)
     {
         const string propertyName = "Состояние работы парсера";
-        bool anyStateMatches = _states.Any(s => s.Value == input);
+        bool anyStateMatches = States.Any(s => s.Value == input);
         if (!anyStateMatches) return Error.InvalidFormat(propertyName);
-        return _states.First(s => s.Value == input);
+        return States.First(s => s.Value == input);
     }
     
     public sealed record Enabled() : ParserState("Включен")
@@ -34,8 +34,8 @@ public abstract record ParserState(string Value)
             return state switch
             {
                 Disabled => Error.Conflict("Парсер уже выключен"),
-                Waiting => Error.Conflict("Парсер должен быть включен"),
                 Working => Error.Conflict("Парсер должен быть включен"),
+                Waiting => Error.Conflict("Парсер должен быть включен"),
                 _ => state
             };
         }
@@ -61,7 +61,7 @@ public abstract record ParserState(string Value)
             return state switch
             {
                 Waiting => Error.Conflict("Парсер уже в ожидании"),
-                Enabled => Error.Conflict("Парсер уже работает"),
+                Enabled => Error.Conflict("Парсер уже включен"),
                 _ => state
             };
         }

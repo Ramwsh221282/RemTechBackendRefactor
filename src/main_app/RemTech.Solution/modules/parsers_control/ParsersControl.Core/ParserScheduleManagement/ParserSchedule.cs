@@ -60,12 +60,14 @@ public sealed class ParserSchedule(ParserScheduleData data)
     private ParserSchedule(ParserSchedule schedule, IParserScheduleCreatedEventListener listener)
     : this(schedule._data)
     {
+        _onUpdated = schedule._onUpdated;
         _onCreated = listener;
     }
 
     private ParserSchedule(ParserSchedule schedule, IParserScheduleUpdatedEventListener listener)
     : this(schedule._data)
     {
+        _onCreated = schedule._onCreated;
         _onUpdated = listener;
     }
     

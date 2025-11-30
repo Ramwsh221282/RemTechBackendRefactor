@@ -1,6 +1,6 @@
-﻿using ParsersControl.Core.ParserStateManagement;
-using ParsersControl.Core.ParserStateManagement.Contracts;
-using ParsersControl.Infrastructure.ParserStateManagement.EventListeners;
+﻿using ParsersControl.Core.ParserWorkStateManagement;
+using ParsersControl.Core.ParserWorkStateManagement.Contracts;
+using ParsersControl.Core.ParserWorkStateManagement.Defaults;
 using ParsersControl.Presenters.ParserStateManagement.Common;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
@@ -8,24 +8,19 @@ using RemTech.SharedKernel.Core.Handlers;
 namespace ParsersControl.Presenters.ParserStateManagement.Enable;
 
 public sealed class EnableParserGateway(
-    IEnumerable<IOnStatefulParserStateChangedEventListener> listeners,
-    IStatefulParsersStorage parsers)
+    IEnumerable<IParserStateChangedEventListener> listeners,
+    IParserWorkStatesStorage storage)
     : IGateway<EnableParserGatewayRequest, ParserStateChangeResponse>
 {
+    private readonly ParserStateChangedEventListenersPipeline _pipeLine = new(listeners);
+    
     public async Task<Result<ParserStateChangeResponse>> Execute(EnableParserGatewayRequest request)
     {
         CancellationToken ct = request.Ct;
-        ParserStateChangeResponse response = new();
-        StatefulParserQueryArgs args = new(Id: request.Id);
-        IGatewayRequestWithParserFetchById idRequester = request;
-        Result<StatefulParser> parser = await StatefulParser.FromStorage(idRequester.FetchMethod(), parsers, request.Ct);
-        if (parser.IsFailure) return parser.Error;
-
-        IEnumerable<IOnStatefulParserStateChangedEventListener> withResponse = [..listeners, response];
-        OnStatefulParserStateChangedPipeline pipeline = new(listeners);
-        StatefulParser observed = parser.Value.AddListener(pipeline);
-        Result<Unit> result = await observed.Enable(ct);
-
-        return result.IsFailure ? result.Error : response;
+        ParserWorkTurner? turner = await storage.Fetch(new ParserWorkTurnerQueryArgs(request.Id), ct);
+        if (turner == null) return Error.NotFound("Парсер не найден.");
+        ParserWorkTurner observed = turner.AddListener(_pipeLine);
+        Result<ParserWorkTurner> result = await observed.Enable(ct);
+        return result.IsFailure ? result.Error : new ParserStateChangeResponse(result.Value);
     }
 }

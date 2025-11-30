@@ -59,54 +59,25 @@ public sealed class ParserLink(ParserLinkData data)
         return attaching.IsFailure ? attaching.Error : this;
     }
 
-    public ParserLink AddListener(IParserLinkRenamedListener listener)
-    {
-        return new ParserLink(this, listener);
-    }
+    public ParserLink AddListener(IParserLinkRenamedListener listener) => new(this, onRenamed: listener);
+    public ParserLink AddListener(IParserLinkUrlChangedListener listener) => new(this, onUrlChanged: listener);
+    public ParserLink AddListener(IParserLinkIgnoredListener listener) => new(this, onIgnored: listener);
+    public ParserLink AddListener(IParserLinkUnignoredListener listener) => new(this, onUnignored: listener);
+    public ParserLink AddListener(IParserLinkParserAttached listener) => new(this, onAttached: listener);
 
-    public ParserLink AddListener(IParserLinkUrlChangedListener listener)
+    private ParserLink(ParserLink origin, 
+        IParserLinkRenamedListener? onRenamed = null,
+        IParserLinkUrlChangedListener? onUrlChanged = null,
+        IParserLinkIgnoredListener? onIgnored = null,
+        IParserLinkUnignoredListener? onUnignored = null,
+        IParserLinkParserAttached? onAttached = null) 
+        : this(origin._data)
     {
-        return new ParserLink(this, listener);
-    }
-
-    public ParserLink AddListener(IParserLinkIgnoredListener listener)
-    {
-        return new ParserLink(this, listener);
-    }
-
-    public ParserLink AddListener(IParserLinkUnignoredListener listener)
-    {
-        return new ParserLink(this, listener);
-    }
-
-    public ParserLink AddListener(IParserLinkParserAttached listener)
-    {
-        return new ParserLink(this, listener);
-    }
-
-    public ParserLink(ParserLink origin, IParserLinkIgnoredListener listener) : this(origin._data)
-    {
-        _onIgnored = listener;
-    }
-
-    public ParserLink(ParserLink origin, IParserLinkParserAttached listener) : this(origin._data)
-    {
-        _onAttached = listener;
-    }
-
-    public ParserLink(ParserLink origin, IParserLinkRenamedListener listener) : this(origin._data)
-    {
-        _onRenamed = listener;
-    }
-
-    public ParserLink(ParserLink origin, IParserLinkUnignoredListener listener) : this(origin._data)
-    {
-        _onUnignored = listener;
-    }
-
-    public ParserLink(ParserLink origin, IParserLinkUrlChangedListener listener) : this(origin._data)
-    {
-        _onUrlChanged = listener;
+        _onRenamed = onRenamed ?? origin._onRenamed;
+        _onUrlChanged = onUrlChanged ?? origin._onUrlChanged;
+        _onIgnored = onIgnored ?? origin._onIgnored;
+        _onUnignored = onUnignored ?? origin._onUnignored;
+        _onAttached = onAttached ?? origin._onAttached;
     }
 
     public void Write(
@@ -126,12 +97,9 @@ public sealed class ParserLink(ParserLinkData data)
     private ParserLink Copy(ParserLink origin, string? name = null, string? url = null, bool? ignorance = null)
     {
         ParserLinkData changingData = origin._data;
-        if (name != null)
-            changingData = changingData with { Name = name };
-        if (url != null)
-            changingData = changingData with { Url = url };
-        if (ignorance != null)
-            changingData = changingData with { Ignored = ignorance.Value };
+        if (name != null) changingData = changingData with { Name = name };
+        if (url != null) changingData = changingData with { Url = url };
+        if (ignorance != null) changingData = changingData with { Ignored = ignorance.Value };
         return new ParserLink(changingData)
             .AddListener(_onRenamed)
             .AddListener(_onIgnored)
@@ -148,11 +116,11 @@ public sealed class ParserLink(ParserLinkData data)
         const string idName = "идентификатор ссылки парсера";
         const string parserIdName = "идентификатор парсера";
         const int maxNameLength = 256;
-        if (data.Id == Guid.Empty) errors.Add(Error.NotSet(urlName));
-        if (string.IsNullOrWhiteSpace(data.Url)) errors.Add(Error.NotSet(urlName));
-        if (string.IsNullOrWhiteSpace(data.Name)) errors.Add(Error.NotSet(nameName));
-        if (data.Name.Length > maxNameLength) errors.Add(Error.GreaterThan(nameName, maxNameLength));
-        if (data.ParserId == Guid.Empty) errors.Add(Error.NotSet(parserIdName));
+        if (_data.Id == Guid.Empty) errors.Add(Error.NotSet(idName));
+        if (string.IsNullOrWhiteSpace(_data.Url)) errors.Add(Error.NotSet(urlName));
+        if (string.IsNullOrWhiteSpace(_data.Name)) errors.Add(Error.NotSet(nameName));
+        if (_data.Name.Length > maxNameLength) errors.Add(Error.GreaterThan(nameName, maxNameLength));
+        if (_data.ParserId == Guid.Empty) errors.Add(Error.NotSet(parserIdName));
         return errors.Count == 0 ? Unit.Value : Error.Validation(errors);
     }
 }
