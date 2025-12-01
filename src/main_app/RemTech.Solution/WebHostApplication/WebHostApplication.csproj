@@ -8,6 +8,14 @@
 
     <ItemGroup>
       <ProjectReference Include="..\CompositionRoot\CompositionRoot.csproj" />
+      <ProjectReference Include="..\modules\parsers_control\ParsersControl.Endpoints\ParsersControl.Endpoints.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="oqo0.SwaggerThemes" Version="1.4.3" />
+      <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.0.0" />
+      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.0.0" />
+      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.0" />
     </ItemGroup>
 
 </Project>

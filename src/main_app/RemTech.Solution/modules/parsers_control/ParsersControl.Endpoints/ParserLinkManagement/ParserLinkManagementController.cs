@@ -29,7 +29,7 @@ public sealed class ParserLinkManagementController
         return result.AsEnvelope();
     }
 
-    [HttpPatch("/{id:guid}/url")]
+    [HttpPatch("{id:guid}/url")]
     public async Task<Envelope> ChangeUrl(
         [FromBody] ParserLinkChangeUrlFrontendRequest request,
         [FromRoute(Name = "id")] Guid linkId,
@@ -42,7 +42,7 @@ public sealed class ParserLinkManagementController
         return result.AsEnvelope();
     }
 
-    [HttpPatch("/{id:guid}/ignored")]
+    [HttpPatch("{id:guid}/ignored")]
     public async Task<Envelope> Ignore(
         [FromRoute(Name = "id")] Guid linkId,
         [FromServices] IGateway<IgnoreParserLinkRequest, ParserLinkResponse> handler,
@@ -53,7 +53,7 @@ public sealed class ParserLinkManagementController
         return result.AsEnvelope();
     }
 
-    [HttpPatch("/{id:guid}/unignored")]
+    [HttpPatch("{id:guid}/unignored")]
     public async Task<Envelope> Unignore(
         [FromRoute(Name = "id")] Guid linkId,
         [FromServices] IGateway<UnignoreParserLinkRequest, ParserLinkResponse> handler,
@@ -65,7 +65,7 @@ public sealed class ParserLinkManagementController
         return result.AsEnvelope();
     }
 
-    [HttpPatch("/{id:guid}/name")]
+    [HttpPatch("{id:guid}/name")]
     public async Task<Envelope> ChangeName(
         [FromRoute(Name = "id")] Guid linkId,
         [FromQuery(Name = "name")] string name,
