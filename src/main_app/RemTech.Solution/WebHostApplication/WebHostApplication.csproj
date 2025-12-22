@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\CompositionRoot\CompositionRoot.csproj" />
-      <ProjectReference Include="..\modules\parsers_control\ParsersControl.Endpoints\ParsersControl.Endpoints.csproj" />
     </ItemGroup>
 
     <ItemGroup>

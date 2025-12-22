@@ -8,7 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\shared_module\RemTech.Shared.Configuration\RemTech.Shared.Configuration.csproj" />
-      <ProjectReference Include="..\ParsersControl.Presenters\ParsersControl.Presenters.csproj" />
+      <ProjectReference Include="..\ParsersControl.Infrastructure\ParsersControl.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>

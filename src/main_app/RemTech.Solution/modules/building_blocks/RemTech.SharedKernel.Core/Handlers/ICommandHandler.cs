@@ -1,7 +1,9 @@
-﻿namespace RemTech.SharedKernel.Core.Handlers;
+﻿using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+
+namespace RemTech.SharedKernel.Core.Handlers;
 
 public interface ICommandHandler<in TCommand, TResult>
     where TCommand : ICommand
 {
-    Task<TResult> Execute(TCommand command);
+    Task<Result<TResult>> Execute(TCommand command);
 }

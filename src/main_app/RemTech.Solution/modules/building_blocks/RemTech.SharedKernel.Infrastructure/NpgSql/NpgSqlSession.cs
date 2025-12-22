@@ -1,4 +1,6 @@
-﻿using Dapper;
+﻿using System.Data;
+using System.Data.Common;
+using Dapper;
 using Npgsql;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
@@ -116,6 +118,26 @@ public sealed record NpgSqlSession(NpgSqlConnectionFactory Factory) : IAsyncDisp
             await Transaction.RollbackAsync(ct);
             throw;
         }
+    }
+
+    public async Task<T?> QuerySingleUsingReader<T>(CommandDefinition command, Func<IDataReader, T> mapper) where T : notnull
+    {
+        NpgsqlConnection connection = await GetConnection(CancellationToken.None);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+        List<T> result = [];
+        while (await reader.ReadAsync())
+            result.Add(mapper(reader));
+        return result.Count == 0 ? default : result[0];
+    }
+
+    public async Task<T[]> QueryMultipleUsingReader<T>(CommandDefinition command, Func<IDataReader, T> mapper) where T : notnull
+    {
+        NpgsqlConnection connection = await GetConnection(CancellationToken.None);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+        List<T> result = [];
+        while (await reader.ReadAsync())
+            result.Add(mapper(reader));
+        return result.ToArray();
     }
     
     public async Task<bool> Commited(CancellationToken ct)

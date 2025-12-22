@@ -27,6 +27,7 @@ public sealed class ParsersControlFixture : WebApplicationFactory<WebHostApplica
         base.ConfigureWebHost(builder);
         builder.ConfigureServices(s =>
         {
+            
             s.ReconfigureConfigurationProvider();
             s.ReconfigurePostgreSqlOptions(_container);
             s.DontUseQuartzServices();

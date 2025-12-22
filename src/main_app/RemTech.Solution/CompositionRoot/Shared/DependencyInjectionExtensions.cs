@@ -3,30 +3,14 @@ using Mailing.CompositionRoot;
 using Microsoft.Extensions.DependencyInjection;
 using ParsersControl.CompositionRoot;
 using Quartz;
+using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.AesEncryption;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
 using RemTech.SharedKernel.Infrastructure.Quartz;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using Serilog;
-using Serilog.Core;
-using Serilog.Events;
 
 namespace CompositionRoot.Shared;
-
-public sealed class ClassNameLogEnricher : ILogEventEnricher
-{
-    private const string Pattern = "SourceContext";
-    
-    public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
-    {
-        if (logEvent.Properties.TryGetValue(Pattern, out var sourceContext))
-        {
-            string fullName = sourceContext.ToString().Trim('\"');
-            string exactTypeName = fullName.Split('.').Last();
-            logEvent.AddOrUpdateProperty(propertyFactory.CreateProperty(Pattern, exactTypeName));
-        }
-    }
-}
 
 public static class DependencyInjectionExtensions
 {
