@@ -14,6 +14,16 @@ CREATE TABLE IF NOT EXISTS parsers_control_module.registered_parsers(
   UNIQUE (type, domain)
 );
 
+CREATE TABLE if not exists parsers_control_module.parser_links(
+id uuid primary key,
+parser_id uuid not null,
+name varchar(255) not null,
+url text not null,
+CONSTRAINT fk_parser_id FOREIGN KEY(parser_id) REFERENCES parsers_control_module.registered_parsers(id),
+UNIQUE (parser_id, name),
+UNIQUE (parser_id, url)
+);
+
 CREATE INDEX IF NOT EXISTS idx_registered_parsers_type ON parsers_control_module.registered_parsers(type);
 CREATE INDEX IF NOT EXISTS idx_registered_parsers_domain ON parsers_control_module.registered_parsers(domain);
 

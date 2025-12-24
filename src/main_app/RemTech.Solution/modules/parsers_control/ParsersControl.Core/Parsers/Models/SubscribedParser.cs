@@ -1,4 +1,5 @@
-﻿using ParsersControl.Core.Parsers.Contracts;
+﻿using ParsersControl.Core.ParserLinks.Models;
+using ParsersControl.Core.Parsers.Contracts;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace ParsersControl.Core.Parsers.Models;
@@ -10,16 +11,18 @@ public sealed class SubscribedParser : ISubscribedParser
         SubscribedParserIdentity identity,
         SubscribedParserStatistics statistics,
         SubscribedParserState state,
-        SubscribedParserSchedule schedule
-    )
-    {
-        Id = id;
-        Identity = identity;
-        Statistics = statistics;
-        State = state;
-        Schedule = schedule;        
-    }
+        SubscribedParserSchedule schedule,
+        IReadOnlyList<SubscribedParserLink> links
+    ) : this(id, identity, statistics, state, schedule) => Links = [..links];
     
+    public SubscribedParser(SubscribedParserId id,
+        SubscribedParserIdentity identity,
+        SubscribedParserStatistics statistics,
+        SubscribedParserState state,
+        SubscribedParserSchedule schedule) => 
+        (Id, Identity, Statistics, State, Schedule, Links) = (id, identity, statistics, state, schedule, []);
+
+    public IReadOnlyList<SubscribedParserLink> Links { get; private set; }
     public SubscribedParserId Id { get; }
     public SubscribedParserIdentity Identity { get; }
     public SubscribedParserStatistics Statistics { get; private set; }
@@ -56,6 +59,15 @@ public sealed class SubscribedParser : ISubscribedParser
         return this;
     }
 
+    public Result<SubscribedParserLink> AddLink(SubscribedParserLinkUrlInfo urlInfo)
+    {
+        if (ContainsLinkWithName(urlInfo))
+            return Error.Conflict($"Парсер уже содержит ссылку с именем {urlInfo.Name}.");
+        if (ContainsLinkWithUrl(urlInfo))
+            return Error.Conflict($"Парсер уже содержит ссылку с адресом {urlInfo.Url}.");
+        return SubscribedParserLink.New(this, urlInfo);
+    }
+    
     public SubscribedParser ResetWorkTime()
     {
         Statistics = Statistics.ResetWorkTime();
@@ -132,5 +144,15 @@ public sealed class SubscribedParser : ISubscribedParser
         SubscribedParser parser = new SubscribedParser(id, identity, statistics, state, schedule);
         await repository.Add(parser, ct: ct);
         return parser;
+    }
+
+    private bool ContainsLinkWithName(SubscribedParserLinkUrlInfo urlInfo)
+    {
+        return Links.Any(link => link.UrlInfo.Name == urlInfo.Name);
+    }
+
+    private bool ContainsLinkWithUrl(SubscribedParserLinkUrlInfo urlInfo)
+    {
+        return Links.Any(link => link.UrlInfo.Url == urlInfo.Url);
     }
 }

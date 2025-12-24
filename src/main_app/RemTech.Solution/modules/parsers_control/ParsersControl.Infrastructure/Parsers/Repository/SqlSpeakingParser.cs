@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
@@ -15,6 +16,29 @@ public sealed class SqlSpeakingParser(
     private ISubscribedParser Inner { get; set; } = inner;
     private CancellationToken CancellationToken { get; } = ct;
     private NpgSqlSession Session { get; } = session;
+
+    public Result<SubscribedParserLink> AddLink(SubscribedParserLinkUrlInfo urlInfo)
+    {
+        Result<SubscribedParserLink> result = Inner.AddLink(urlInfo);
+        if (result.IsFailure) return result.Error;
+        
+        const string sql = """
+                           INSERT INTO parsers_control_module.parser_links
+                           (id, parser_id, name, url)
+                           VALUES (@id, @parser_id, @name, @url);
+                           """;
+        
+        object parameters = new
+        {
+            id = result.Value.Id.Value,
+            parser_id = result.Value.ParserId.Value,
+            name = result.Value.UrlInfo.Name,
+            url = result.Value.UrlInfo.Url
+        };
+        
+        EnqueueChangeRequest(sql, parameters);
+        return result;
+    }
 
     public Result<SubscribedParser> Enable()
     {
@@ -65,12 +89,7 @@ public sealed class SqlSpeakingParser(
                            WHERE id = @id
                            """;
         
-        object parameters = new
-        {
-            elapsed_seconds = totalElapsedSeconds, 
-            id = result.Value.Id.Value
-        };
-        
+        object parameters = new { elapsed_seconds = totalElapsedSeconds, id = result.Value.Id.Value };
         EnqueueChangeRequest(sql, parameters);
         Inner = result.Value;
         return result.Value;
@@ -86,11 +105,10 @@ public sealed class SqlSpeakingParser(
                            """;
         
         object parameters = new
-        {
+        { 
             elapsed_seconds = result.Statistics.WorkTime.TotalElapsedSeconds, 
             id = result.Id.Value
         };
-        
         EnqueueChangeRequest(sql, parameters);
         Inner = result;
         return result;
@@ -105,12 +123,7 @@ public sealed class SqlSpeakingParser(
                            WHERE id = @id
                            """;
         
-        object parameters = new
-        {
-            processed = result.Statistics.ParsedCount.Value, 
-            id = result.Id.Value
-        };
-        
+        object parameters = new { processed = result.Statistics.ParsedCount.Value, id = result.Id.Value };
         EnqueueChangeRequest(sql, parameters);
         Inner = result;
         return result;
@@ -226,12 +239,7 @@ public sealed class SqlSpeakingParser(
                            WHERE id = @id
                            """;
         
-        object parameters = new
-        {
-            next_run = nextRun,
-            id = result.Value.Id.Value
-        };
-        
+        object parameters = new { next_run = nextRun, id = result.Value.Id.Value };
         EnqueueChangeRequest(sql, parameters);
         Inner = result.Value;
         return result;
