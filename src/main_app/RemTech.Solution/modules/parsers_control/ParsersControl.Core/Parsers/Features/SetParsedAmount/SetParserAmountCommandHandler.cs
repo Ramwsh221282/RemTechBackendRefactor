@@ -11,32 +11,42 @@ public sealed class SetParserAmountCommandHandler(
     ISubscribedParsersRepository repository
 ) : ICommandHandler<SetParsedAmountCommand, SubscribedParser>
 {
-    public async Task<Result<SubscribedParser>> Execute(SetParsedAmountCommand command)
+    public async Task<Result<SubscribedParser>> Execute(
+        SetParsedAmountCommand command, 
+        CancellationToken ct = default)
     {
-        ITransactionScope scope = await transactionSource.BeginTransaction();
-        Result<ISubscribedParser> parser = await GetRequiredParser(command);
+        ITransactionScope scope = await transactionSource.BeginTransaction(ct);
+        Result<ISubscribedParser> parser = await GetRequiredParser(command, ct);
         Result<SubscribedParser> result = SetRequiredAmount(command, parser);
-        Result saving = await SaveChanges(scope, parser, result);
+        Result saving = await SaveChanges(scope, parser, result, ct);
         if (saving.IsFailure) return saving.Error;
-        return result;        
+        return result;
     }
 
-    private async Task<Result> SaveChanges(ITransactionScope scope, Result<ISubscribedParser> parser, Result<SubscribedParser> result)
+    private async Task<Result> SaveChanges(
+        ITransactionScope scope, 
+        Result<ISubscribedParser> parser, 
+        Result<SubscribedParser> result,
+        CancellationToken ct)
     {
         if (parser.IsFailure) return Result.Failure(parser.Error);
         if (result.IsFailure) return Result.Failure(result.Error);
         await repository.Save(parser.Value);
-        return await scope.Commit();
+        return await scope.Commit(ct);
     }
     
-    private async Task<Result<ISubscribedParser>> GetRequiredParser(SetParsedAmountCommand command)
+    private async Task<Result<ISubscribedParser>> GetRequiredParser(
+        SetParsedAmountCommand command,
+        CancellationToken ct = default)
     {
         SubscribedParserQuery query = new(Id: command.Id, WithLock: true);
-        Result<ISubscribedParser> parser = await repository.Get(query);
+        Result<ISubscribedParser> parser = await repository.Get(query, ct: ct);
         return parser;
     }
     
-    private Result<SubscribedParser> SetRequiredAmount(SetParsedAmountCommand command, Result<ISubscribedParser> parser)
+    private Result<SubscribedParser> SetRequiredAmount(
+        SetParsedAmountCommand command, 
+        Result<ISubscribedParser> parser)
     {
         if (parser.IsFailure) return parser.Error;
         return parser.Value.AddParserAmount(command.Amount);

@@ -35,6 +35,16 @@ public sealed class SubscribedParser : ISubscribedParser
         Statistics = updated.Value;
         return this;
     }
+
+    public Result<SubscribedParser> Enable()
+    {
+        if (State.IsWorking())
+            return Error.Conflict($"Парсер в состоянии {State.Value}. Невозможно включить.");
+        if (State.IsSleeping())
+            return Error.Conflict($"Парсер в состоянии {State.Value}. Невозможно включить.");
+        State = SubscribedParserState.Sleeping;
+        return this;
+    }
     
     public Result<SubscribedParser> AddWorkTime(long totalElapsedSeconds)
     {
@@ -110,16 +120,17 @@ public sealed class SubscribedParser : ISubscribedParser
     public static async Task<Result<SubscribedParser>> CreateNew(
         SubscribedParserId id, 
         SubscribedParserIdentity identity, 
-        ISubscribedParsersRepository repository)
+        ISubscribedParsersRepository repository,
+        CancellationToken ct = default)
     {
-        if (await repository.Exists(identity)) 
+        if (await repository.Exists(identity, ct: ct)) 
             return Error.Conflict($"Парсер для домена {identity.DomainName} и типа {identity.ServiceType} уже существует.");
         
         SubscribedParserStatistics statistics = SubscribedParserStatistics.New();
         SubscribedParserState state = SubscribedParserState.Disabled;
         SubscribedParserSchedule schedule = SubscribedParserSchedule.New();
         SubscribedParser parser = new SubscribedParser(id, identity, statistics, state, schedule);
-        await repository.Add(parser);
+        await repository.Add(parser, ct: ct);
         return parser;
     }
 }

@@ -4,6 +4,7 @@ namespace ParsersControl.Core.Parsers.Models;
 
 public interface ISubscribedParser
 {
+    Result<SubscribedParser> Enable();
     Result<SubscribedParser> AddParserAmount(int amount);
     Result<SubscribedParser> AddWorkTime(long totalElapsedSeconds);
     SubscribedParser ResetWorkTime();

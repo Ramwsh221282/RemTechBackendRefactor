@@ -12,28 +12,27 @@ public sealed class StartParserCommandHandler(
     IOnParserStartedListener listener
 ) : ICommandHandler<StartParserCommand, SubscribedParser>
 {
-    public async Task<Result<SubscribedParser>> Execute(StartParserCommand command)
+    public async Task<Result<SubscribedParser>> Execute(StartParserCommand command, CancellationToken ct = default)
     {
-        ITransactionScope scope = await transactionSource.BeginTransaction();
-        
-        Result<ISubscribedParser> parser = await GetRequiredParser(command);
+        ITransactionScope scope = await transactionSource.BeginTransaction(ct: ct);
+        Result<ISubscribedParser> parser = await GetRequiredParser(command, ct);
         Result<SubscribedParser> starting = CallParserWorkInvocation(parser);
-        Result saving = await SaveChanges(parser, repository, scope);
+        Result saving = await SaveChanges(parser, starting, repository, scope, ct);
         if (saving.IsFailure) return saving.Error;
-        
         await NotifyListener(saving, starting.Value);
         return starting;
     }
 
     private async Task NotifyListener(Result saveResult, SubscribedParser parser)
     {
+        if (saveResult.IsFailure) return;
         await listener.Handle(parser);
     }
     
-    private async Task<Result<ISubscribedParser>> GetRequiredParser(StartParserCommand command)
+    private async Task<Result<ISubscribedParser>> GetRequiredParser(StartParserCommand command, CancellationToken ct)
     {
         SubscribedParserQuery query = new(Id: command.Id, WithLock: true);
-        Result<ISubscribedParser> parser = await repository.Get(query);
+        Result<ISubscribedParser> parser = await repository.Get(query, ct: ct);
         return parser;
     }
 
@@ -45,11 +44,14 @@ public sealed class StartParserCommandHandler(
 
     private async Task<Result> SaveChanges(
         Result<ISubscribedParser> parser, 
+        Result<SubscribedParser> starting, 
         ISubscribedParsersRepository repository, 
-        ITransactionScope scope)
+        ITransactionScope scope,
+        CancellationToken ct)
     {
+        if (starting.IsFailure) return Result.Failure(starting.Error);
         if (parser.IsFailure) return Result.Failure(parser.Error);
         await repository.Save(parser.Value);
-        return await scope.Commit();
+        return await scope.Commit(ct);
     }
 }

@@ -11,36 +11,44 @@ public sealed class ChangeScheduleCommandHandler(
     ISubscribedParsersRepository repository
 ) : ICommandHandler<ChangeScheduleCommand, SubscribedParser>
 {
-    public async Task<Result<SubscribedParser>> Execute(ChangeScheduleCommand command)
+    public async Task<Result<SubscribedParser>> Execute(ChangeScheduleCommand command, CancellationToken ct = default)
     {
-        ITransactionScope scope = await transactionSource.BeginTransaction();
-        Result<ISubscribedParser> parser = await GetRequiredParser(command);
+        ITransactionScope scope = await transactionSource.BeginTransaction(ct);
+        Result<ISubscribedParser> parser = await GetRequiredParser(command, ct);
         Result<SubscribedParser> result = SetRequiredSchedule(command, parser);
-        Result saving = await SaveChanges(scope, parser, result);
+        Result saving = await SaveChanges(scope, parser, result, ct);
         if (saving.IsFailure) return saving.Error;
         return result; 
     }
 
-    private async Task<Result> SaveChanges(ITransactionScope scope, Result<ISubscribedParser> parser, Result<SubscribedParser> result)
+    private async Task<Result> SaveChanges(
+        ITransactionScope scope, 
+        Result<ISubscribedParser> parser, 
+        Result<SubscribedParser> result,
+        CancellationToken ct)
     {
         if (parser.IsFailure) return Result.Failure(parser.Error);
         if (result.IsFailure) return Result.Failure(result.Error);
         await repository.Save(parser.Value);
-        Result commit = await scope.Commit();
+        Result commit = await scope.Commit(ct);
         return commit;
     }
     
-    private Result<SubscribedParser> SetRequiredSchedule(ChangeScheduleCommand command, Result<ISubscribedParser> parser)
+    private Result<SubscribedParser> SetRequiredSchedule(
+        ChangeScheduleCommand command, 
+        Result<ISubscribedParser> parser)
     {
         if (parser.IsFailure) return parser.Error;
         Result<SubscribedParser> result = parser.Value.ChangeScheduleWaitDays(command.WaitDays);
         return result;
     }
     
-    private async Task<Result<ISubscribedParser>> GetRequiredParser(ChangeScheduleCommand command)
+    private async Task<Result<ISubscribedParser>> GetRequiredParser(
+        ChangeScheduleCommand command,
+        CancellationToken ct)
     {
         SubscribedParserQuery query = new(Id: command.Id, WithLock: true);
-        Result<ISubscribedParser> parser = await repository.Get(query);
+        Result<ISubscribedParser> parser = await repository.Get(query, ct: ct);
         return parser;
     }
 }

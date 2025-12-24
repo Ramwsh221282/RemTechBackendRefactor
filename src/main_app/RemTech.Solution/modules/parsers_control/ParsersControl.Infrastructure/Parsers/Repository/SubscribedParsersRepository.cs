@@ -49,7 +49,10 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
     public async Task Save(ISubscribedParser parser)
     {
         if (parser is SqlSpeakingParser speaking)
+        {
             await speaking.Save();
+            return;
+        }
         throw new NotSupportedException($"Unsupported parser type for saving: {parser.GetType().Name}");
     }
 

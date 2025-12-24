@@ -8,7 +8,7 @@ public sealed class LoggingHandler<TCommand, TResult>(Serilog.ILogger logger, IC
     private Serilog.ILogger Logger { get; } = logger.ForContext<TCommand>();
     private string CommandName { get; } = typeof(TCommand).Name;
     
-    public async Task<Result<TResult>> Execute(TCommand command)
+    public async Task<Result<TResult>> Execute(TCommand command, CancellationToken ct = default)
     {
         Logger.Information("Executing command: {Command}. Payload: {Payload}", CommandName, command.ToString());
         Result<TResult> result = await handler.Execute(command);

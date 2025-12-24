@@ -15,7 +15,24 @@ public sealed class SqlSpeakingParser(
     private ISubscribedParser Inner { get; set; } = inner;
     private CancellationToken CancellationToken { get; } = ct;
     private NpgSqlSession Session { get; } = session;
-    
+
+    public Result<SubscribedParser> Enable()
+    {
+        Result<SubscribedParser> result = Inner.Enable();
+        if (result.IsFailure) return result.Error;
+
+        const string sql = """
+                           UPDATE parsers_control_module.registered_parsers
+                           SET state = @state
+                           WHERE id = @id
+                           """;
+        
+        object parameters = new { state = result.Value.State.Value, id = result.Value.Id.Value };
+        EnqueueChangeRequest(sql, parameters);
+        Inner = result.Value;
+        return result;
+    }
+
     public Result<SubscribedParser> AddParserAmount(int amount)
     {
         Result<SubscribedParser> result = Inner.AddParserAmount(amount);
@@ -113,7 +130,7 @@ public sealed class SqlSpeakingParser(
         object parameters = new
         {
             state = result.Value.State.Value,
-            started_at = result.Value.Schedule.StartedAt!.Value,
+            started_at = result.Value.Schedule.StartedAt,
             id = result.Value.Id.Value
         };
         
@@ -135,7 +152,7 @@ public sealed class SqlSpeakingParser(
         object parameters = new
         {
             state = result.State.Value,
-            finished_at = result.Schedule.FinishedAt!.Value,
+            finished_at = result.Schedule.FinishedAt,
             id = result.Id.Value
         };
         
@@ -149,9 +166,10 @@ public sealed class SqlSpeakingParser(
         return FinishWork();
     }
 
-    public SubscribedParser FinishWork()
+    public Result<SubscribedParser> FinishWork()
     {
-        SubscribedParser result = Inner.FinishWork();
+        Result<SubscribedParser> result = Inner.FinishWork();
+        if (result.IsFailure) return result.Error;
         
         const string sql = """
                            UPDATE parsers_control_module.registered_parsers
@@ -161,14 +179,14 @@ public sealed class SqlSpeakingParser(
         
         object parameters = new
         {
-            state = result.State.Value,
-            finished_at = result.Schedule.FinishedAt!.Value,
-            next_run = result.Schedule.NextRun!.Value,
-            id = result.Id.Value
+            state = result.Value.State.Value,
+            finished_at = result.Value.Schedule.FinishedAt,
+            next_run = result.Value.Schedule.NextRun,
+            id = result.Value.Id.Value
         };
         
         EnqueueChangeRequest(sql, parameters);
-        Inner = result;
+        Inner = result.Value;
         return result;
     }
 
@@ -185,8 +203,10 @@ public sealed class SqlSpeakingParser(
         
         object parameters = new
         {
-            wait_days = waitDays, 
-            next_run = result.Value.Schedule.NextRun!.Value, 
+            wait_days = waitDays,
+            next_run = result.Value.Schedule.NextRun.HasValue 
+                ? result.Value.Schedule.NextRun!.Value 
+                : (object)null!,
             id = result.Value.Id.Value
         };
         
@@ -228,7 +248,7 @@ public sealed class SqlSpeakingParser(
     private void EnqueueChangeRequest(string sql, object parameters)
     {
         CommandDefinition command = CreateCommand(sql, parameters);
-        PendingTasks.Enqueue(session.Execute(command));
+        PendingTasks.Enqueue(Session.Execute(command));
     }
     
     private CommandDefinition CreateCommand(string sql, object parameters)
