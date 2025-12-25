@@ -42,16 +42,6 @@ public sealed class SubscribedParser : ISubscribedParser
         Statistics = updated.Value;
         return this;
     }
-
-    public Result<SubscribedParser> Enable()
-    {
-        if (State.IsWorking())
-            return Error.Conflict($"Парсер в состоянии {State.Value}. Невозможно включить.");
-        if (State.IsSleeping())
-            return Error.Conflict($"Парсер в состоянии {State.Value}. Невозможно включить.");
-        State = SubscribedParserState.Sleeping;
-        return this;
-    }
     
     public Result<SubscribedParser> AddWorkTime(long totalElapsedSeconds)
     {
@@ -67,11 +57,13 @@ public sealed class SubscribedParser : ISubscribedParser
     {
         if (State.IsWorking())
             return Error.Conflict($"Для добавления ссылки парсер должен быть в состоянии {SubscribedParserState.Disabled.Value} или {SubscribedParserState.Sleeping.Value}.");
-        if (ContainsLinkWithName(urlInfo))
-            return Error.Conflict($"Парсер уже содержит ссылку с именем {urlInfo.Name}.");
-        if (ContainsLinkWithUrl(urlInfo))
-            return Error.Conflict($"Парсер уже содержит ссылку с адресом {urlInfo.Url}.");
-        return SubscribedParserLink.New(this, urlInfo);
+        SubscribedParserLink link = SubscribedParserLink.New(this, urlInfo);
+        if (ContainsLinkWithName(link))
+            return Error.Conflict($"Парсер уже содержит ссылку с именем {link.UrlInfo.Name}.");
+        if (ContainsLinkWithUrl(link))
+            return Error.Conflict($"Парсер уже содержит ссылку с адресом {link.UrlInfo.Url}.");
+        AddLinkToCollection(link);
+        return link;
     }
     
     public SubscribedParser ResetWorkTime()
@@ -137,11 +129,74 @@ public sealed class SubscribedParser : ISubscribedParser
         if (link is null) return Error.NotFound($"Ссылка не найдена.");
         return link;
     }
+    
+    public Result<SubscribedParserLink> ChangeLinkActivity(SubscribedParserLink link, bool isActive)
+    {
+        if (State.IsWorking())
+            return Error.Conflict($"Парсер в состоянии {State.Value}. Невозможно изменить активность ссылки.");
+        if (!BelongsToParser(link)) 
+            return Error.Conflict($"Ссылка {link.Id.Value} не принадлежит парсеру {Id.Value}.");
+        if (isActive) link.Enable();
+        else link.Disable();
+        return link;
+    }
 
     public SubscribedParser Disable()
     {
         State = SubscribedParserState.Disabled;
         Schedule = Schedule.WithFinishedAt(DateTime.UtcNow);
+        return this;
+    }
+
+    public Result<SubscribedParserLink> RemoveLink(SubscribedParserLink link)
+    {
+        if (!State.IsDisabled() && !State.IsSleeping())
+            return Error.Conflict($"Для удаления ссылки парсер должен быть в состоянии {SubscribedParserState.Disabled.Value} или {SubscribedParserState.Sleeping.Value}.");
+        if (!BelongsToParser(link))
+            return Error.Conflict($"Ссылка {link.Id.Value} не принадлежит парсеру {Id.Value}.");
+        Links = Links.Where(l => l.Id != link.Id).ToArray();
+        return link;
+    }
+
+    public Result<SubscribedParserLink> AddLinkParsedAmount(SubscribedParserLink link, int count)
+    {
+        if (!State.IsWorking())
+            return Error.Conflict($"Для добавления количества обработанных данных парсер должен быть в состоянии {SubscribedParserState.Working.Value}.");
+        if (!BelongsToParser(link))
+            return Error.Conflict($"Ссылка {link.Id.Value} не принадлежит парсеру {Id.Value}.");
+        link.AddParsedCount(count);
+        return link;
+    }
+
+    public Result<SubscribedParserLink> AddLinkWorkTime(SubscribedParserLink link, long totalElapsedSeconds)
+    {
+        if (!State.IsWorking())
+            return Error.Conflict($"Для добавления времени работы парсер должен быть в состоянии {SubscribedParserState.Working.Value}.");
+        if (!BelongsToParser(link))
+            return Error.Conflict($"Ссылка {link.Id.Value} не принадлежит парсеру {Id.Value}.");
+        link.AddWorkTime(totalElapsedSeconds);
+        return link;
+    }
+
+    public Result<SubscribedParserLink> EditLink(SubscribedParserLink link, string? newName, string? newUrl)
+    {
+        if (!BelongsToParser(link))
+            return Error.Conflict($"Ссылка {link.Id.Value} не принадлежит парсеру {Id.Value}.");
+        Result<SubscribedParserLink> editResult = link.Edit(newName, newUrl);
+        if (editResult.IsFailure) return Result.Failure<SubscribedParserLink>(editResult.Error);
+        if (ContainsLinkWithName(editResult.Value))
+            return Error.Conflict($"Парсер уже содержит ссылку с именем {editResult.Value.UrlInfo.Name}.");
+        if (ContainsLinkWithUrl(editResult.Value))
+            return Error.Conflict($"Парсер уже содержит ссылку с адресом {editResult.Value.UrlInfo.Url}.");
+        return editResult;
+    }
+
+    public Result<SubscribedParser> Enable()
+    {
+        if (State.IsSleeping())
+            return Error.Conflict($"Парсер уже в состоянии {State.Value}.");
+        State = SubscribedParserState.Sleeping;
+        Schedule = Schedule.WithStartedAt(DateTime.UtcNow);
         return this;
     }
     
@@ -172,13 +227,14 @@ public sealed class SubscribedParser : ISubscribedParser
         return parser;
     }
 
-    private bool ContainsLinkWithName(SubscribedParserLinkUrlInfo urlInfo)
-    {
-        return Links.Any(link => link.UrlInfo.Name == urlInfo.Name);
-    }
+    private bool BelongsToParser(SubscribedParserLink link) =>
+        link.ParserId == Id;
+    
+    private bool ContainsLinkWithName(SubscribedParserLink link) =>
+        Links.Any(l => l.UrlInfo.Name == link.UrlInfo.Name && l.Id != link.Id);
 
-    private bool ContainsLinkWithUrl(SubscribedParserLinkUrlInfo urlInfo)
-    {
-        return Links.Any(link => link.UrlInfo.Url == urlInfo.Url);
-    }
+    private void AddLinkToCollection(SubscribedParserLink link) => Links = [..Links, link];
+    
+    private bool ContainsLinkWithUrl(SubscribedParserLink link) =>
+        Links.Any(l => l.UrlInfo.Url == link.UrlInfo.Url && l.Id != link.Id);
 }

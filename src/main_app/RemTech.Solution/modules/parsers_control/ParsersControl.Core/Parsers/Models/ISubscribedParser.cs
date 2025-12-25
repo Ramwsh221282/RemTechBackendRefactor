@@ -5,8 +5,12 @@ namespace ParsersControl.Core.Parsers.Models;
 
 public interface ISubscribedParser
 {
-    Result<SubscribedParserLink> AddLink(SubscribedParserLinkUrlInfo urlInfo);
+    Result<SubscribedParserLink> RemoveLink(SubscribedParserLink link);
+    Result<SubscribedParserLink> AddLinkParsedAmount(SubscribedParserLink link, int count);
+    Result<SubscribedParserLink> AddLinkWorkTime(SubscribedParserLink link, long totalElapsedSeconds);
+    Result<SubscribedParserLink> EditLink(SubscribedParserLink link, string? newName, string? newUrl);
     Result<SubscribedParser> Enable();
+    Result<SubscribedParserLink> AddLink(SubscribedParserLinkUrlInfo urlInfo);
     Result<SubscribedParser> AddParserAmount(int amount);
     Result<SubscribedParser> AddWorkTime(long totalElapsedSeconds);
     SubscribedParser ResetWorkTime();
@@ -19,4 +23,5 @@ public interface ISubscribedParser
     Result<SubscribedParserLink> FindLink(Func<SubscribedParserLinkUrlInfo, bool> predicate);
     Result<SubscribedParserLink> FindLink(Guid id);
     Result<SubscribedParserLink> FindLink(SubscribedParserLinkId id);
+    Result<SubscribedParserLink> ChangeLinkActivity(SubscribedParserLink link, bool isActive);
 }

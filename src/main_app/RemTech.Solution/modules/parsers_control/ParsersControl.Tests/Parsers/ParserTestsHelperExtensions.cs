@@ -1,12 +1,17 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using ParsersControl.Core.Contracts;
 using ParsersControl.Core.Features.AddParserLink;
+using ParsersControl.Core.Features.ChangeLinkActivity;
+using ParsersControl.Core.Features.DeleteLinkFromParser;
 using ParsersControl.Core.Features.EnableParser;
+using ParsersControl.Core.Features.SetLinkParsedAmount;
+using ParsersControl.Core.Features.SetLinkWorkTime;
 using ParsersControl.Core.Features.StartParserWork;
 using ParsersControl.Core.Features.StopParserWork;
 using ParsersControl.Core.Features.SubscribeParser;
 using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
+using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 
@@ -67,6 +72,18 @@ public static class ParserTestsHelperExtensions
             return await handler.Execute(command);
         }
     
+        public async Task<Result<SubscribedParserLink>> ChangeLinkActivity(
+            Guid parserId, 
+            Guid linkId, 
+            bool activity)
+        {
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            ICommandHandler<ChangeLinkActivityCommand, SubscribedParserLink> service =
+                scope.ServiceProvider.Resolve<ICommandHandler<ChangeLinkActivityCommand, SubscribedParserLink>>();
+            ChangeLinkActivityCommand command = new(parserId, linkId, activity);
+            return await service.Execute(command);
+        }
+        
         public async Task<Result<SubscribedParser>> SleepParser(Guid id)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
@@ -82,6 +99,39 @@ public static class ParserTestsHelperExtensions
             ICommandHandler<StopParserWorkCommand, SubscribedParser> handler =
                 scope.ServiceProvider.GetRequiredService<ICommandHandler<StopParserWorkCommand, SubscribedParser>>();
             StopParserWorkCommand command = new(id);
+            return await handler.Execute(command);
+        }
+
+        public async Task<Result<SubscribedParserLink>> SetLinkParsedAmount(
+            Guid parserId,
+            Guid linkId,
+            int amount)
+        {
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            ICommandHandler<SetLinkParsedAmountCommand, SubscribedParserLink> handler =
+                scope.ServiceProvider.GetRequiredService<ICommandHandler<SetLinkParsedAmountCommand, SubscribedParserLink>>();
+            SetLinkParsedAmountCommand command = new(parserId, linkId, amount);
+            return await handler.Execute(command);
+        }
+
+        public async Task<Result<SubscribedParserLink>> SetLinkWorkTime(
+            Guid parserId,
+            Guid linkId,
+            long totalElapsedSeconds)
+        {
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            ICommandHandler<SetLinkWorkingTimeCommand, SubscribedParserLink> handler =
+                scope.ServiceProvider.GetRequiredService<ICommandHandler<SetLinkWorkingTimeCommand, SubscribedParserLink>>();
+            SetLinkWorkingTimeCommand command = new(parserId, linkId, totalElapsedSeconds);
+            return await handler.Execute(command);
+        }
+
+        public async Task<Result<SubscribedParserLink>> RemoveLink(Guid parserId, Guid linkId)
+        {
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            ICommandHandler<DeleteLinkFromParserCommand, SubscribedParserLink> handler =
+                scope.ServiceProvider.GetRequiredService<ICommandHandler<DeleteLinkFromParserCommand, SubscribedParserLink>>();
+            DeleteLinkFromParserCommand command = new(parserId, linkId);
             return await handler.Execute(command);
         }
     }

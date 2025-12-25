@@ -16,7 +16,6 @@ public sealed record SubscribedParserState
     public bool IsWorking() => Value == _working;
     public bool IsDisabled() => Value == _disabled;
     public bool IsSleeping() => Value == _sleeping;
-    
     public static SubscribedParserState Sleeping => new(_sleeping);
     public static SubscribedParserState Working => new(_working);
     public static SubscribedParserState Disabled => new(_disabled);
