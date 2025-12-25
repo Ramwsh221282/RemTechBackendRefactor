@@ -1,6 +1,4 @@
-﻿using Users.Module.Features.CreatingNewAccount.Exceptions;
-
-namespace Users.Module.CommonAbstractions;
+﻿namespace Users.Module.CommonAbstractions;
 
 internal sealed class PasswordValidation(string password)
 {

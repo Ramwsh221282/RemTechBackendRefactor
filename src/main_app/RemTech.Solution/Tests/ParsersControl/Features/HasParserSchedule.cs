@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using ParsersControl.Core.ParserScheduleManagement;
-using ParsersControl.Core.ParserScheduleManagement.Contracts;
 using RemTech.SharedKernel.Configuration;
 
 namespace Tests.ParsersControl.Features;

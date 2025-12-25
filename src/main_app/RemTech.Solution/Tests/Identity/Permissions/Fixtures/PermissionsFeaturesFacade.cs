@@ -1,5 +1,4 @@
-﻿using System.Security;
-using Identity.Application.Permissions;
+﻿using Identity.Application.Permissions;
 using Identity.Contracts.Permissions;
 using Identity.Gateways.Permissions.AddPermission;
 using Identity.Gateways.Permissions.RenamePermission;

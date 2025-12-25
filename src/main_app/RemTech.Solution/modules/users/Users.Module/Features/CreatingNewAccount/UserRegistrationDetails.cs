@@ -1,7 +1,6 @@
 ﻿using System.Data.Common;
 using Npgsql;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
 
 namespace Users.Module.Features.CreatingNewAccount;
 

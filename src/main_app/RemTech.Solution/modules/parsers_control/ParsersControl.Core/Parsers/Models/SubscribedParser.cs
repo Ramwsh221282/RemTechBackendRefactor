@@ -1,15 +1,19 @@
-﻿using ParsersControl.Core.ParserLinks.Models;
-using ParsersControl.Core.Parsers.Contracts;
+﻿using ParsersControl.Core.Common;
+using ParsersControl.Core.Contracts;
+using ParsersControl.Core.ParserLinks.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace ParsersControl.Core.Parsers.Models;
 
 public sealed class SubscribedParser : ISubscribedParser
 {
+    public SubscribedParser(SubscribedParser parser, IEnumerable<SubscribedParserLink> links)
+        : this(parser.Id, parser.Identity, parser.Statistics, parser.State, parser.Schedule, [..links]) { }
+    
     public SubscribedParser(
         SubscribedParserId id,
         SubscribedParserIdentity identity,
-        SubscribedParserStatistics statistics,
+        ParsingStatistics statistics,
         SubscribedParserState state,
         SubscribedParserSchedule schedule,
         IReadOnlyList<SubscribedParserLink> links
@@ -17,7 +21,7 @@ public sealed class SubscribedParser : ISubscribedParser
     
     public SubscribedParser(SubscribedParserId id,
         SubscribedParserIdentity identity,
-        SubscribedParserStatistics statistics,
+        ParsingStatistics statistics,
         SubscribedParserState state,
         SubscribedParserSchedule schedule) => 
         (Id, Identity, Statistics, State, Schedule, Links) = (id, identity, statistics, state, schedule, []);
@@ -25,7 +29,7 @@ public sealed class SubscribedParser : ISubscribedParser
     public IReadOnlyList<SubscribedParserLink> Links { get; private set; }
     public SubscribedParserId Id { get; }
     public SubscribedParserIdentity Identity { get; }
-    public SubscribedParserStatistics Statistics { get; private set; }
+    public ParsingStatistics Statistics { get; private set; }
     public SubscribedParserState State { get; private set; }
     public SubscribedParserSchedule Schedule { get; private set; }
 
@@ -33,7 +37,7 @@ public sealed class SubscribedParser : ISubscribedParser
     {
         if (!State.IsWorking()) 
             return Error.Conflict($"Для добавления количества обработанных данных парсер должен быть в состоянии {SubscribedParserState.Working.Value}.");
-        Result<SubscribedParserStatistics> updated = Statistics.IncreaseParsedCount(amount);
+        Result<ParsingStatistics> updated = Statistics.IncreaseParsedCount(amount);
         if (updated.IsFailure) return updated.Error;
         Statistics = updated.Value;
         return this;
@@ -53,7 +57,7 @@ public sealed class SubscribedParser : ISubscribedParser
     {
         if (!State.IsWorking()) 
             return Error.Conflict($"Для добавления времени работы парсер должен быть в состоянии {SubscribedParserState.Working.Value}.");
-        Result<SubscribedParserStatistics> updated = Statistics.AddWorkTime(totalElapsedSeconds);
+        Result<ParsingStatistics> updated = Statistics.AddWorkTime(totalElapsedSeconds);
         if (updated.IsFailure) return updated.Error;
         Statistics = updated.Value;
         return this;
@@ -61,6 +65,8 @@ public sealed class SubscribedParser : ISubscribedParser
 
     public Result<SubscribedParserLink> AddLink(SubscribedParserLinkUrlInfo urlInfo)
     {
+        if (State.IsWorking())
+            return Error.Conflict($"Для добавления ссылки парсер должен быть в состоянии {SubscribedParserState.Disabled.Value} или {SubscribedParserState.Sleeping.Value}.");
         if (ContainsLinkWithName(urlInfo))
             return Error.Conflict($"Парсер уже содержит ссылку с именем {urlInfo.Name}.");
         if (ContainsLinkWithUrl(urlInfo))
@@ -111,6 +117,27 @@ public sealed class SubscribedParser : ISubscribedParser
         return this;
     }
 
+    public Result<SubscribedParserLink> FindLink(Func<SubscribedParserLinkUrlInfo, bool> predicate)
+    {
+        SubscribedParserLink? link = Links.FirstOrDefault(l => predicate(l.UrlInfo));
+        if (link is null) return Error.NotFound($"Ссылка не найдена.");
+        return link;
+    }
+
+    public Result<SubscribedParserLink> FindLink(Guid id)
+    {
+        SubscribedParserLink? link = Links.FirstOrDefault(l => l.Id.Value == id);
+        if (link is null) return Error.NotFound($"Ссылка не найдена.");
+        return link;
+    }
+
+    public Result<SubscribedParserLink> FindLink(SubscribedParserLinkId id)
+    {
+        SubscribedParserLink? link = Links.FirstOrDefault(l => l.Id == id);
+        if (link is null) return Error.NotFound($"Ссылка не найдена.");
+        return link;
+    }
+
     public SubscribedParser Disable()
     {
         State = SubscribedParserState.Disabled;
@@ -137,8 +164,7 @@ public sealed class SubscribedParser : ISubscribedParser
     {
         if (await repository.Exists(identity, ct: ct)) 
             return Error.Conflict($"Парсер для домена {identity.DomainName} и типа {identity.ServiceType} уже существует.");
-        
-        SubscribedParserStatistics statistics = SubscribedParserStatistics.New();
+        ParsingStatistics statistics = ParsingStatistics.New();
         SubscribedParserState state = SubscribedParserState.Disabled;
         SubscribedParserSchedule schedule = SubscribedParserSchedule.New();
         SubscribedParser parser = new SubscribedParser(id, identity, statistics, state, schedule);

@@ -16,4 +16,7 @@ public interface ISubscribedParser
     Result<SubscribedParser> FinishWork();
     Result<SubscribedParser> ChangeScheduleWaitDays(int waitDays);
     Result<SubscribedParser> ChangeScheduleNextRun(DateTime nextRun);
+    Result<SubscribedParserLink> FindLink(Func<SubscribedParserLinkUrlInfo, bool> predicate);
+    Result<SubscribedParserLink> FindLink(Guid id);
+    Result<SubscribedParserLink> FindLink(SubscribedParserLinkId id);
 }

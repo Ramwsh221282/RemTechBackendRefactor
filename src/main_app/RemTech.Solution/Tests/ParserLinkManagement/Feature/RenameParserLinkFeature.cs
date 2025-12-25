@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using ParsersControl.Presenters.ParserLinkManagement.Common;
-using ParsersControl.Presenters.ParserLinkManagement.RenameParserLink;
 using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;

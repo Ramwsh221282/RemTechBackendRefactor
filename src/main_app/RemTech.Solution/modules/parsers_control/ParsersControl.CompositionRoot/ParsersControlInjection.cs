@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using ParsersControl.Core.Parsers;
-using ParsersControl.Core.Parsers.Contracts;
+using ParsersControl.Core;
+using ParsersControl.Core.Contracts;
 using ParsersControl.Infrastructure.Migrations;
 using ParsersControl.Infrastructure.Parsers.Repository;
 using RemTech.SharedKernel.Infrastructure.NpgSql;

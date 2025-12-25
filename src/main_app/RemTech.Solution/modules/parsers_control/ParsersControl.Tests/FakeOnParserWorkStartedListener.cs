@@ -1,4 +1,4 @@
-﻿using ParsersControl.Core.Parsers.Contracts;
+﻿using ParsersControl.Core.Contracts;
 using ParsersControl.Core.Parsers.Models;
 
 namespace ParsersControl.Tests;

@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using ParsersControl.Core.Parsers.Contracts;
-using ParsersControl.Core.Parsers.Features.EnableParser;
-using ParsersControl.Core.Parsers.Features.StartParserWork;
-using ParsersControl.Core.Parsers.Features.StopParserWork;
-using ParsersControl.Core.Parsers.Features.SubscribeParser;
+using ParsersControl.Core.Contracts;
+using ParsersControl.Core.Features.AddParserLink;
+using ParsersControl.Core.Features.EnableParser;
+using ParsersControl.Core.Features.StartParserWork;
+using ParsersControl.Core.Features.StopParserWork;
+using ParsersControl.Core.Features.SubscribeParser;
+using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
@@ -21,12 +23,22 @@ public static class ParserTestsHelperExtensions
             ICommandHandler<SubscribeParserCommand, SubscribedParser> handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<SubscribeParserCommand, SubscribedParser>>();
             return await handler.Execute(command);
         }
+    
+        public async Task<Result<SubscribedParserLink>> AddLink(Guid parserId, string linkUrl, string linkName)
+        {
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            AddParserLinkCommand command = new(parserId, linkUrl, linkName);
+            ICommandHandler<AddParserLinkCommand, SubscribedParserLink> handler =
+                scope.ServiceProvider.GetRequiredService<ICommandHandler<AddParserLinkCommand, SubscribedParserLink>>();
+            return await handler.Execute(command);
+        }
 
-        public async Task<Result<ISubscribedParser>> GetParser(Guid id)
+        public async Task<Result<ISubscribedParser>> GetParser(Guid parserId)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
             ISubscribedParsersRepository repository = scope.ServiceProvider.GetRequiredService<ISubscribedParsersRepository>();
-            return await repository.Get(new SubscribedParserQuery(Id: id));
+            SubscribedParserQuery query = new(Id: parserId);
+            return await repository.Get(query);
         }
         
         public async Task<bool> EnsureSaved(Guid id)

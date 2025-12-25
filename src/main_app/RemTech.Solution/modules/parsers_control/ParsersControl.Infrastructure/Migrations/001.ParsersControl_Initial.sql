@@ -19,6 +19,9 @@ id uuid primary key,
 parser_id uuid not null,
 name varchar(255) not null,
 url text not null,
+elapsed_seconds bigint not null,
+processed int not null,
+is_active boolean not null,
 CONSTRAINT fk_parser_id FOREIGN KEY(parser_id) REFERENCES parsers_control_module.registered_parsers(id),
 UNIQUE (parser_id, name),
 UNIQUE (parser_id, url)
@@ -26,12 +29,3 @@ UNIQUE (parser_id, url)
 
 CREATE INDEX IF NOT EXISTS idx_registered_parsers_type ON parsers_control_module.registered_parsers(type);
 CREATE INDEX IF NOT EXISTS idx_registered_parsers_domain ON parsers_control_module.registered_parsers(domain);
-
-CREATE TABLE IF NOT EXISTS parsers_control_module.links(
-  id uuid primary key,
-  name varchar(256) NOT NULL,
-  url text NOT NULL,
-  is_ignored boolean NOT NULL,
-  parser_id uuid NOT NULL,
-  UNIQUE (name, url, parser_id)
-);

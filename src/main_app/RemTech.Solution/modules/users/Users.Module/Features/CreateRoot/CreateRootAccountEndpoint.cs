@@ -1,5 +1,4 @@
-﻿using Mailing.Moduled.Bus;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -7,7 +6,6 @@ using Npgsql;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
 using Users.Module.Features.CreatingNewAccount;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
 using Users.Module.Models;
 
 namespace Users.Module.Features.CreateRoot;

@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using ParsersControl.Presenters.ParserScheduleManagement.Common;
-using ParsersControl.Presenters.ParserScheduleManagement.UpdateWaitDays;
 using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;

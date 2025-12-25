@@ -1,5 +1,4 @@
 ﻿using Identity.Application.AccountPermissions;
-using Identity.Gateways.AccountPermissions.AttachPermissionToAccount;
 using Identity.Gateways.AccountPermissions.Shared;
 using Identity.Infrastructure.AccountPermissions.EventListeners.OnRemoved;
 using Identity.Infrastructure.ACL;

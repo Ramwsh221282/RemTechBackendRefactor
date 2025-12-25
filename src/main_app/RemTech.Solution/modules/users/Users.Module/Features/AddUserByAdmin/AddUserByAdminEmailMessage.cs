@@ -1,5 +1,4 @@
-﻿using Mailing.Moduled.Bus;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using RemTech.Shared.Configuration.Options;
 
 namespace Users.Module.Features.AddUserByAdmin;

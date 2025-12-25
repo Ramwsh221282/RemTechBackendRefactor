@@ -1,5 +1,3 @@
-using Users.Module.Features.UserPasswordRecovering.Exceptions;
-
 namespace Users.Module.Features.UserPasswordRecovering.Core;
 
 internal sealed class UserRecoveringDispatcher

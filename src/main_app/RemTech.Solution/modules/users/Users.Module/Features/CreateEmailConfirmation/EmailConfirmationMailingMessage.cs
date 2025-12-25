@@ -1,7 +1,4 @@
-﻿using Mailing.Moduled.Bus;
-using Shared.Infrastructure.Module.Frontend;
-
-namespace Users.Module.Features.CreateEmailConfirmation;
+﻿namespace Users.Module.Features.CreateEmailConfirmation;
 
 internal sealed class EmailConfirmationMailingMessage(
     FrontendUrl frontendUrl,

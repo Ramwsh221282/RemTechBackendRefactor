@@ -1,6 +1,5 @@
 ﻿using Npgsql;
 using Shared.Infrastructure.Module.Postgres;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
 
 namespace Users.Module.Features.ChangingEmail.Shared;
 

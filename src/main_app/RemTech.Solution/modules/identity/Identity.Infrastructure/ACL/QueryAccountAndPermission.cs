@@ -1,7 +1,5 @@
 ﻿using System.Data;
 using Dapper;
-using Dapper.FluentMap;
-using Dapper.FluentMap.Mapping;
 using Identity.Application.AccountPermissions;
 using Identity.Contracts.AccountPermissions;
 using RemTech.SharedKernel.Infrastructure.NpgSql;

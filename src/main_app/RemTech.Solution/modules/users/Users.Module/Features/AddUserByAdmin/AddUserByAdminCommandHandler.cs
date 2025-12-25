@@ -5,7 +5,6 @@ using RemTech.Core.Shared.Cqrs;
 using RemTech.Core.Shared.Result;
 using Shared.Infrastructure.Module.Postgres;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
 
 namespace Users.Module.Features.AddUserByAdmin;
 

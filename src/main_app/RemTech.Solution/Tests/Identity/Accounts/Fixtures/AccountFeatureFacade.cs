@@ -1,5 +1,4 @@
-﻿using Tests.Identity.CommonFeatures;
-using Tests.Identity.CommonFeatures.Accounts;
+﻿using Tests.Identity.CommonFeatures.Accounts;
 using Tests.Identity.CommonFeatures.IdentityOutbox;
 
 namespace Tests.Identity.Accounts.Fixtures;

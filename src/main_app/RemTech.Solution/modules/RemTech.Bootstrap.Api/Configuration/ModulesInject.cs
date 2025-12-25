@@ -1,8 +1,6 @@
 ﻿using Brands.Module.Injection;
 using Categories.Module.Injection;
-using Cleaners.Module.Injection;
 using GeoLocations.Module.Injection;
-using Mailing.Moduled.Injection;
 using Models.Module.Injection;
 using RemTech.Bootstrap.Api.Injection;
 using RemTech.ContainedItems.Module.Injection;

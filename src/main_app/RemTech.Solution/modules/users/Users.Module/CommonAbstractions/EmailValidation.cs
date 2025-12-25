@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
 
 namespace Users.Module.CommonAbstractions;
 

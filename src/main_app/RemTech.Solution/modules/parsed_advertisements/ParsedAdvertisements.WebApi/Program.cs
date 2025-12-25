@@ -1,13 +1,3 @@
-using ParsedAdvertisements.Adapters.Messaging;
-using ParsedAdvertisements.Adapters.Outbox;
-using ParsedAdvertisements.Adapters.Storage;
-using ParsedAdvertisements.Domain;
-using RemTech.Shared.Configuration.Options;
-using Shared.Infrastructure.Module.Postgres;
-using Shared.Infrastructure.Module.Quartz;
-using Shared.Infrastructure.Module.RabbitMq;
-using Shared.Infrastructure.Module.Redis;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(nameof(DatabaseOptions));

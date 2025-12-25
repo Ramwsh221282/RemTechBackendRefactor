@@ -1,8 +1,6 @@
 ﻿using System.Data.Common;
-using Mailing.Moduled.Bus;
 using Npgsql;
 using RemTech.Core.Shared.Cqrs;
-using Shared.Infrastructure.Module.Frontend;
 using StackExchange.Redis;
 using Users.Module.Features.ChangingEmail;
 using Users.Module.Features.ChangingEmail.Shared;

@@ -1,10 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using ParsersControl.Core.Parsers.Features.EnableParser;
-using ParsersControl.Core.Parsers.Features.StartParserWork;
-using ParsersControl.Core.Parsers.Features.StopParserWork;
-using ParsersControl.Core.Parsers.Models;
+﻿using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.Handlers;
 
 namespace ParsersControl.Tests.Parsers.StopParser;
 

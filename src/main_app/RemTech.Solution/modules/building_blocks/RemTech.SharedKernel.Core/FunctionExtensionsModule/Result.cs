@@ -1,5 +1,27 @@
 ﻿namespace RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
+public static class ResultExtensions
+{
+    extension(Task<Result> source)
+    {
+        public async Task<Result<T>> Map<T>(Func<T> onSuccess)
+        {
+            Result result = await source;
+            Result<T> other = result.IsSuccess ? Result.Success(onSuccess()) : Result.Failure<T>(result.Error);
+            return other;
+        }
+    }
+
+    extension<T>(Result<T> source)
+    {
+        public Result<T> Map(Func<T> onSuccess)
+        {
+            Result<T> other = !source.IsSuccess ? Result.Failure<T>(source.Error) : Result.Success(onSuccess());
+            return other;
+        }
+    }
+}
+
 public class Result
 {
     public Error Error { get; } = Error.NoError();
@@ -11,12 +33,19 @@ public class Result
         Error = error;
         IsSuccess = false;
     }
-
+    
     internal Result()
     {
         IsSuccess = true;
     }
 
+    public Result<T> Map<T>(Func<T> onSuccess)
+    {
+        if (IsSuccess) 
+            return Success(onSuccess());
+        return Failure<T>(Error);
+    }
+    
     public static Result Success()
     {
         return new Result();

@@ -1,6 +1,4 @@
-﻿using ParsersControl.Core.ParserRegistrationManagement;
-using ParsersControl.Core.ParserRegistrationManagement.Contracts;
-using RemTech.SharedKernel.Configuration;
+﻿using RemTech.SharedKernel.Configuration;
 
 namespace Tests.ParsersControl.Features;
 

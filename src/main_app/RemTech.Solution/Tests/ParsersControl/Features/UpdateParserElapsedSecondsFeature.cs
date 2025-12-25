@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using ParsersControl.Presenters.ParserStatisticsManagement.Common;
-using ParsersControl.Presenters.ParserStatisticsManagement.UpdateElapsedSeconds;
 using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;

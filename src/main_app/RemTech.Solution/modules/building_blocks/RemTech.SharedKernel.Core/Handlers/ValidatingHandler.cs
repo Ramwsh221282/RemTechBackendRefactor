@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using Scrutor;
 
 namespace RemTech.SharedKernel.Core.Handlers;
 

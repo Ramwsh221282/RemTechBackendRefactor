@@ -10,27 +10,40 @@ public static class DbDataReaderExtensions
         Type requiredType = typeof(T);
         return requiredType switch
         {
-            Type t when t == typeof(int) => GetInt32<T>(reader, columnName),
-            Type t when t == typeof(long) => GetInt64<T>(reader, columnName),
-            Type t when t == typeof(Guid) => GetGuid<T>(reader, columnName),
-            Type t when t == typeof(string) => GetString<T>(reader, columnName),
-            Type t when t == typeof(DateTime) => GetDateTime<T>(reader, columnName),
+            { } t when t == typeof(bool) => GetBoolean<T>(reader, columnName),
+            { } t when t == typeof(int) => GetInt32<T>(reader, columnName),
+            { } t when t == typeof(long) => GetInt64<T>(reader, columnName),
+            { } t when t == typeof(Guid) => GetGuid<T>(reader, columnName),
+            { } t when t == typeof(string) => GetString<T>(reader, columnName),
+            { } t when t == typeof(DateTime) => GetDateTime<T>(reader, columnName),
             _ => throw new NotSupportedException($"Unsupported type {requiredType.Name}")
         };
     }
 
+    public static bool IsNull(this IDataReader reader, string columnName)
+    {
+        return reader.IsDBNull(reader.GetOrdinal(columnName));
+    }
+    
     public static T? GetNullable<T>(this IDataReader reader, string columnName) where T : struct
     {
         Type requiredType = typeof(T);
         return requiredType switch
         {
-            Type t when t == typeof(int) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetInt32<T>(reader, columnName),
-            Type t when t == typeof(long) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetInt64<T>(reader, columnName),
-            Type t when t == typeof(Guid) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetGuid<T>(reader, columnName),
-            Type t when t == typeof(string) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetString<T>(reader, columnName),
-            Type t when t == typeof(DateTime) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetDateTime<T>(reader, columnName),
+            { } t when t == typeof(bool) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetBoolean<T>(reader, columnName),
+            { } t when t == typeof(int) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetInt32<T>(reader, columnName),
+            { } t when t == typeof(long) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetInt64<T>(reader, columnName),
+            { } t when t == typeof(Guid) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetGuid<T>(reader, columnName),
+            { } t when t == typeof(string) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetString<T>(reader, columnName),
+            { } t when t == typeof(DateTime) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetDateTime<T>(reader, columnName),
             _ => throw new NotSupportedException($"Unsupported type {requiredType.Name}")
         };
+    }
+    
+    private static T GetBoolean<T>(IDataReader reader, string columnName)
+    {
+        bool value = reader.GetBoolean(reader.GetOrdinal(columnName));
+        return Unsafe.As<bool, T>(ref value);
     }
     
     private static T GetInt32<T>(IDataReader reader, string columnName)

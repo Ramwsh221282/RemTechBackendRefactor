@@ -24,8 +24,8 @@ public sealed class SqlSpeakingParser(
         
         const string sql = """
                            INSERT INTO parsers_control_module.parser_links
-                           (id, parser_id, name, url)
-                           VALUES (@id, @parser_id, @name, @url);
+                           (id, parser_id, name, url, is_active, processed, elapsed_seconds)
+                           VALUES (@id, @parser_id, @name, @url, @is_active, @processed, @elapsed_seconds);
                            """;
         
         object parameters = new
@@ -33,7 +33,10 @@ public sealed class SqlSpeakingParser(
             id = result.Value.Id.Value,
             parser_id = result.Value.ParserId.Value,
             name = result.Value.UrlInfo.Name,
-            url = result.Value.UrlInfo.Url
+            url = result.Value.UrlInfo.Url,
+            is_active = result.Value.Active,
+            processed = result.Value.Statistics.ParsedCount.Value,
+            elapsed_seconds = result.Value.Statistics.WorkTime.TotalElapsedSeconds
         };
         
         EnqueueChangeRequest(sql, parameters);
@@ -243,6 +246,21 @@ public sealed class SqlSpeakingParser(
         EnqueueChangeRequest(sql, parameters);
         Inner = result.Value;
         return result;
+    }
+
+    public Result<SubscribedParserLink> FindLink(Func<SubscribedParserLinkUrlInfo, bool> predicate)
+    {
+        return Inner.FindLink(predicate);
+    }
+
+    public Result<SubscribedParserLink> FindLink(Guid id)
+    {
+        return Inner.FindLink(id);
+    }
+
+    public Result<SubscribedParserLink> FindLink(SubscribedParserLinkId id)
+    {
+        return Inner.FindLink(id);
     }
 
     public async Task Save()

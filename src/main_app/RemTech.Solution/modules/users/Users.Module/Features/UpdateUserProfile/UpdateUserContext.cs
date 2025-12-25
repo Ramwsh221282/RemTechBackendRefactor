@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using Mailing.Moduled.Bus;
 
 namespace Users.Module.Features.UpdateUserProfile;
 

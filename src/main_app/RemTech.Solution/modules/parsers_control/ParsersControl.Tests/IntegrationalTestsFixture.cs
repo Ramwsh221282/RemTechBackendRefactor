@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using ParsersControl.CompositionRoot;
-using ParsersControl.Core.Parsers.Contracts;
+using ParsersControl.Core.Contracts;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.NpgSql;
 using RemTech.Tests.Shared;

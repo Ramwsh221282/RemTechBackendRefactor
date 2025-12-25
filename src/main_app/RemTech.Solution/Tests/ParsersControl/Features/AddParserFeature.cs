@@ -1,5 +1,4 @@
-﻿using ParsersControl.Presenters.ParserRegistrationManagement.AddParser;
-using RemTech.SharedKernel.Configuration;
+﻿using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 

@@ -1,5 +1,4 @@
-﻿using Cleaners.Module.Contracts.ItemCleaned;
-using RemTech.Core.Shared.Cqrs;
+﻿using RemTech.Core.Shared.Cqrs;
 
 namespace RemTech.ContainedItems.Module.Features.RemoveContainedItem;
 

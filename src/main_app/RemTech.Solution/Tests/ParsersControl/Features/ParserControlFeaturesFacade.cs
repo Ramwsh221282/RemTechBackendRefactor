@@ -1,8 +1,4 @@
-﻿using ParsersControl.Presenters.ParserRegistrationManagement.AddParser;
-using ParsersControl.Presenters.ParserScheduleManagement.Common;
-using ParsersControl.Presenters.ParserStateManagement.Common;
-using ParsersControl.Presenters.ParserStatisticsManagement.Common;
-using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+﻿using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Tests.ParsersControl.Features;
 

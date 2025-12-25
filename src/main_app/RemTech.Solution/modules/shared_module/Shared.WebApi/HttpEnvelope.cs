@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Http;
-using RemTech.Core.Shared.Result;
 
 namespace Shared.WebApi;
 

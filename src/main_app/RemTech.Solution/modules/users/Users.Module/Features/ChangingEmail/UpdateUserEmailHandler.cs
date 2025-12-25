@@ -1,6 +1,4 @@
-﻿using Mailing.Moduled.Bus;
-using Mailing.Moduled.Public;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using RemTech.Core.Shared.Cqrs;
 using RemTech.Shared.Configuration.Options;
 using Shared.Infrastructure.Module.Postgres;

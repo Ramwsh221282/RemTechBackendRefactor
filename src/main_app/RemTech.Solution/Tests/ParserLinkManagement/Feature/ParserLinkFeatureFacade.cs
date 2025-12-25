@@ -1,5 +1,4 @@
-﻿using ParsersControl.Presenters.ParserLinkManagement.Common;
-using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+﻿using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Tests.ParserLinkManagement.Feature;
 

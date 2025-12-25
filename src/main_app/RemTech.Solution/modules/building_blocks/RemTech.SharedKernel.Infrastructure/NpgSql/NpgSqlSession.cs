@@ -120,7 +120,10 @@ public sealed record NpgSqlSession(NpgSqlConnectionFactory Factory) : IAsyncDisp
         }
     }
 
-    public async Task<T?> QuerySingleUsingReader<T>(CommandDefinition command, Func<IDataReader, T> mapper) where T : notnull
+    public async Task<T?> QuerySingleUsingReader<T>(
+        CommandDefinition command, 
+        Func<IDataReader, T> mapper) 
+        where T : notnull
     {
         NpgsqlConnection connection = await GetConnection(CancellationToken.None);
         await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
@@ -128,6 +131,29 @@ public sealed record NpgSqlSession(NpgSqlConnectionFactory Factory) : IAsyncDisp
         while (await reader.ReadAsync())
             result.Add(mapper(reader));
         return result.Count == 0 ? default : result[0];
+    }
+
+    public async Task<(T? mainEntity, List<U> relatedEntities)> QuerySingleUsingReader<T, U>(
+        CommandDefinition command,
+        Func<IDataReader, T> mainEntityMapper,
+        Func<IDataReader, U?> relatedEntityMapper,
+        IEqualityComparer<T> comparer)
+    {
+        NpgsqlConnection connection = await GetConnection(CancellationToken.None);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+        Dictionary<T, List<U>> mappings = new(comparer);
+        while (await reader.ReadAsync())
+        {
+            T mainEntity = mainEntityMapper(reader);
+            
+            if (!mappings.ContainsKey(mainEntity))
+                mappings.Add(mainEntity, []);
+            
+            U? related = relatedEntityMapper(reader);
+            if (related != null)
+                mappings[mainEntity].Add(related);
+        }
+        return mappings.Count == 0 ? default : (mappings.First().Key, mappings[mappings.First().Key]);
     }
 
     public async Task<T[]> QueryMultipleUsingReader<T>(CommandDefinition command, Func<IDataReader, T> mapper) where T : notnull
