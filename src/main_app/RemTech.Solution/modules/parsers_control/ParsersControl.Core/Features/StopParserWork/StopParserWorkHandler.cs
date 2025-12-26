@@ -2,12 +2,12 @@
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Core.Handlers.Attributes;
 
 namespace ParsersControl.Core.Features.StopParserWork;
 
+[TransactionalHandler]    
 public sealed class StopParserWorkHandler(
-    ITransactionSource transactionSource,
     ISubscribedParsersRepository repository
 ) : ICommandHandler<StopParserWorkCommand, SubscribedParser>
 {
@@ -15,23 +15,18 @@ public sealed class StopParserWorkHandler(
         StopParserWorkCommand command, 
         CancellationToken ct = default)
     {
-        ITransactionScope scope = await transactionSource.BeginTransaction(ct: ct);
         Result<ISubscribedParser> parser = await GetRequiredParser(command, ct);
         Result<SubscribedParser> finished = FinishWork(parser);
-        Result saving = await SaveChanges(parser, scope, repository, ct);
+        Result saving = await SaveChanges(parser);
         if (saving.IsFailure) return saving.Error;
         return finished;
     }
 
-    private async Task<Result> SaveChanges(
-        Result<ISubscribedParser> parser, 
-        ITransactionScope scope, 
-        ISubscribedParsersRepository repository, 
-        CancellationToken ct = default)
+    private async Task<Result> SaveChanges(Result<ISubscribedParser> parser)
     {
         if (parser.IsFailure) return Result.Failure(parser.Error);
         await repository.Save(parser.Value);
-        return await scope.Commit(ct);
+        return Result.Success();
     }
     
     private Result<SubscribedParser> FinishWork(Result<ISubscribedParser> parser)

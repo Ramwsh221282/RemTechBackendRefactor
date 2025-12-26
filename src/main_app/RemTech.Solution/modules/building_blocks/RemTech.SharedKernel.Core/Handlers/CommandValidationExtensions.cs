@@ -11,14 +11,41 @@ public static class CommandValidationExtensions
         Func<TProperty, Result> validation
         )
     {
-        return builder.Custom(((validate, context) =>
+        return builder.Custom((validate, context) =>
+        {
+            Result result = validation(validate);
+            if (result.IsFailure)
+            {
+                string error = result.Error.Message;
+                context.AddFailure(new ValidationFailure() { ErrorMessage = error });
+            }
+        });
+    }
+
+    public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> AllMustBeValid<T, TProperty>(
+        this IRuleBuilderInitial<T, IEnumerable<TProperty>> builder,
+        Func<TProperty, Result> validation
+        )
+    {
+        return builder.Custom(
+            (validate, context) =>
+            {
+                var failures = new List<ValidationFailure>();
+                foreach (TProperty item in validate)
                 {
-                    Result result = validation(validate);
+                    Result result = validation(item);
                     if (result.IsFailure)
                     {
                         string error = result.Error.Message;
-                        context.AddFailure(new ValidationFailure() { ErrorMessage = error });
+                        failures.Add(new ValidationFailure() { ErrorMessage = error });
                     }
-                }));
+                }
+                if (failures.Count > 0)
+                {
+                    foreach (ValidationFailure failure in failures)
+                        context.AddFailure(failure);
+                }
+            }
+        );        
     }
 }

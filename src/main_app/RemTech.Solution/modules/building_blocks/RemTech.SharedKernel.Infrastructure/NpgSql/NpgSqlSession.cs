@@ -181,6 +181,12 @@ public sealed record NpgSqlSession(NpgSqlConnectionFactory Factory) : IAsyncDisp
             return false;
         }
     }
+
+    public async Task ExecuteBulk(string sql, object[] parameters)
+    {
+        NpgsqlConnection connection = await GetConnection(CancellationToken.None);
+        await connection.ExecuteAsync(sql, parameters);
+    }
     
     public void Dispose()
     {

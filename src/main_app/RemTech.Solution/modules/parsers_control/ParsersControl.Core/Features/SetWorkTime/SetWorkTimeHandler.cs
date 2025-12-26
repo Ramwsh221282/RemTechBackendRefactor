@@ -2,12 +2,12 @@
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Core.Handlers.Attributes;
 
 namespace ParsersControl.Core.Features.SetWorkTime;
 
+[TransactionalHandler]
 public sealed class SetWorkTimeHandler(
-    ITransactionSource transactionSource,
     ISubscribedParsersRepository repository
 ) : ICommandHandler<SetWorkTimeCommand, SubscribedParser>
 {
@@ -15,24 +15,19 @@ public sealed class SetWorkTimeHandler(
         SetWorkTimeCommand command, 
         CancellationToken ct = default)
     {
-        ITransactionScope scope = await transactionSource.BeginTransaction(ct: ct);
         Result<ISubscribedParser> parser = await GetRequiredParser(command, ct);
         Result<SubscribedParser> result = SetRequiredTime(command, parser);
-        Result saving = await SaveChanges(parser, result, scope, ct);
-        if (saving.IsFailure) return saving.Error;
-        return result;
+        return await SaveChanges(parser, result).Map(() => result.Value);
     }
 
     private async Task<Result> SaveChanges(
         Result<ISubscribedParser> parser, 
-        Result<SubscribedParser> result, 
-        ITransactionScope scope,
-        CancellationToken ct = default)
+        Result<SubscribedParser> result)
     {
         if (parser.IsFailure) return Result.Failure(parser.Error);
         if (result.IsFailure) return Result.Failure(result.Error);
         await repository.Save(parser.Value);
-        return await scope.Commit(ct);
+        return Result.Success();
     }
     
     private async Task<Result<ISubscribedParser>> GetRequiredParser(

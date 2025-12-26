@@ -3,36 +3,33 @@ using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Core.Handlers.Attributes;
 
 namespace ParsersControl.Core.Features.SetLinkParsedAmount;
 
+[TransactionalHandler]
 public sealed class SetLinkParsedAmountHandler(
-    ITransactionSource transactionSource, 
-    ISubscribedParsersRepository parsers)
-    : ICommandHandler<SetLinkParsedAmountCommand, SubscribedParserLink>
+    ISubscribedParsersRepository parsers
+) : ICommandHandler<SetLinkParsedAmountCommand, SubscribedParserLink>
 {
     public async Task<Result<SubscribedParserLink>> Execute(
         SetLinkParsedAmountCommand command, 
         CancellationToken ct = default)
     {
-        ITransactionScope scope = await transactionSource.BeginTransaction(ct);
         Result<ISubscribedParser> parser = await GetRequiredParser(command.ParserId, ct);
         Result<SubscribedParserLink> link = SetLinkParsedAmount(parser, command.LinkId, command.Amount);
-        return await SaveChanges(parser, link, scope, ct).Map(() => link.Value);
+        return await SaveChanges(parser, link).Map(() => link.Value);
     }
 
     private async Task<Result> SaveChanges(
         Result<ISubscribedParser> parser,
-        Result<SubscribedParserLink> link,
-        ITransactionScope txn,
-        CancellationToken ct
+        Result<SubscribedParserLink> link
     )
     {
         if (parser.IsFailure) return Result.Failure(parser.Error);
         if (link.IsFailure) return Result.Failure(link.Error);
         await parsers.Save(parser.Value);
-        return await txn.Commit(ct);
+        return Result.Success();
     }
     
     private Result<SubscribedParserLink> SetLinkParsedAmount(

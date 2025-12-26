@@ -3,41 +3,41 @@ using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Core.Handlers.Attributes;
 
 namespace ParsersControl.Core.Features.AddParserLink;
 
-public sealed class AddParserLinkHandler(
-    ISubscribedParsersRepository repository,
-    ITransactionSource transactionSource) : ICommandHandler<AddParserLinkCommand, SubscribedParserLink>
+[TransactionalHandler]
+public sealed class AddParserLinkHandler(ISubscribedParsersRepository repository) 
+    : ICommandHandler<AddParserLinkCommand, IEnumerable<SubscribedParserLink>>
 {
-    public async Task<Result<SubscribedParserLink>> Execute(
+    public async Task<Result<IEnumerable<SubscribedParserLink>>> Execute(
         AddParserLinkCommand command, 
         CancellationToken ct = default)
     {
-        ITransactionScope scope = await transactionSource.BeginTransaction(ct);
         Result<ISubscribedParser> parser = await GetRequiredParser(command.ParserId, ct);
-        Result<SubscribedParserLink> link = AddLink(parser, command.LinkUrl, command.LinkName);
-        return await SaveChanges(link, parser, scope, ct).Map(() => link.Value);
+        Result<IEnumerable<SubscribedParserLink>> links = AddLinks(parser, command.Links);
+        return await SaveChanges(links, parser).Map(() => links.Value);
     }
 
     private async Task<Result> SaveChanges(
-        Result<SubscribedParserLink> result,
-        Result<ISubscribedParser> parser,
-        ITransactionScope txn,
-        CancellationToken ct)
+        Result<IEnumerable<SubscribedParserLink>> result, 
+        Result<ISubscribedParser> parser)
     {
         if (parser.IsFailure) return Result.Failure(parser.Error);
         if (result.IsFailure) return Result.Failure(result.Error);
         await repository.Save(parser.Value);
-        return await txn.Commit(ct: ct);
+        return Result.Success();
     }
     
-    private Result<SubscribedParserLink> AddLink(Result<ISubscribedParser> parser, string linkUrl, string linkName)
+    private Result<IEnumerable<SubscribedParserLink>> AddLinks(
+        Result<ISubscribedParser> parser, 
+        IEnumerable<AddParserLinkCommandArg> args)
     {
         if (parser.IsFailure) return parser.Error;
-        SubscribedParserLinkUrlInfo info = SubscribedParserLinkUrlInfo.Create(linkUrl, linkName);
-        return parser.Value.AddLink(info);
+        IEnumerable<SubscribedParserLinkUrlInfo> infos = args
+            .Select(arg => SubscribedParserLinkUrlInfo.Create(arg.LinkUrl, arg.LinkName).Value);
+        return parser.Value.AddLinks(infos);
     }
     
     private async Task<Result<ISubscribedParser>> GetRequiredParser(Guid id, CancellationToken ct)

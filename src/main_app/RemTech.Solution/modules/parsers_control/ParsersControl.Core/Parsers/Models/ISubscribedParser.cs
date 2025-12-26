@@ -10,7 +10,7 @@ public interface ISubscribedParser
     Result<SubscribedParserLink> AddLinkWorkTime(SubscribedParserLink link, long totalElapsedSeconds);
     Result<SubscribedParserLink> EditLink(SubscribedParserLink link, string? newName, string? newUrl);
     Result<SubscribedParser> Enable();
-    Result<SubscribedParserLink> AddLink(SubscribedParserLinkUrlInfo urlInfo);
+    Result<IEnumerable<SubscribedParserLink>> AddLinks(IEnumerable<SubscribedParserLinkUrlInfo> urlInfos);
     Result<SubscribedParser> AddParserAmount(int amount);
     Result<SubscribedParser> AddWorkTime(long totalElapsedSeconds);
     SubscribedParser ResetWorkTime();

@@ -96,20 +96,20 @@ public sealed class SqlSpeakingParser(
         Inner = result.Value;
         return result;
     }
-    
-    public Result<SubscribedParserLink> AddLink(SubscribedParserLinkUrlInfo urlInfo)
+
+    public Result<IEnumerable<SubscribedParserLink>> AddLinks(IEnumerable<SubscribedParserLinkUrlInfo> urlInfos)
     {
-        Result<SubscribedParserLink> result = Inner.AddLink(urlInfo);
+        Result<IEnumerable<SubscribedParserLink>> result = Inner.AddLinks(urlInfos);
         if (result.IsFailure) return result.Error;
         
         const string sql = """
                            INSERT INTO parsers_control_module.parser_links
                            (id, parser_id, name, url, is_active, processed, elapsed_seconds)
-                           VALUES (@id, @parser_id, @name, @url, @is_active, @processed, @elapsed_seconds);
+                           VALUES (@id, @parser_id, @name, @url, @is_active, @processed, @elapsed_seconds)
                            """;
-        
-        object parameters = ExtractLinkParameters(result.Value);
-        EnqueueChangeRequest(sql, parameters);
+
+        object[] parameters = result.Value.Select(ExtractLinkParameters).ToArray();
+        PendingTasks.Enqueue(Session.ExecuteBulk(sql, parameters));
         return result;
     }
 

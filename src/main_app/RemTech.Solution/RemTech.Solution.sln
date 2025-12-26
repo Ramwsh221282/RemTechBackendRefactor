@@ -186,6 +186,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsersControl.Tests", "mod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsersControl.WebApi", "modules\parsers_control\ParsersControl.WebApi\ParsersControl.WebApi.csproj", "{3B3C4C25-7475-4CD8-96A6-3D8AD01EB35A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsersControl.RabbitMQ.Listeners", "modules\parsers_control\ParsersControl.RabbitMQ.Listeners\ParsersControl.RabbitMQ.Listeners.csproj", "{07895B43-6DBE-437A-8C1D-3340F44DF0AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -280,6 +282,7 @@ Global
 		{469E95F3-A3AD-4B53-A016-6D166B9F72D2} = {C11197B8-719C-4730-8975-495FDAABAE79}
 		{2BA20D1E-3A87-49A8-8B76-894347279F2C} = {C11197B8-719C-4730-8975-495FDAABAE79}
 		{3B3C4C25-7475-4CD8-96A6-3D8AD01EB35A} = {C11197B8-719C-4730-8975-495FDAABAE79}
+		{07895B43-6DBE-437A-8C1D-3340F44DF0AB} = {C11197B8-719C-4730-8975-495FDAABAE79}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -550,5 +553,9 @@ Global
 		{3B3C4C25-7475-4CD8-96A6-3D8AD01EB35A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B3C4C25-7475-4CD8-96A6-3D8AD01EB35A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B3C4C25-7475-4CD8-96A6-3D8AD01EB35A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07895B43-6DBE-437A-8C1D-3340F44DF0AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07895B43-6DBE-437A-8C1D-3340F44DF0AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07895B43-6DBE-437A-8C1D-3340F44DF0AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07895B43-6DBE-437A-8C1D-3340F44DF0AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

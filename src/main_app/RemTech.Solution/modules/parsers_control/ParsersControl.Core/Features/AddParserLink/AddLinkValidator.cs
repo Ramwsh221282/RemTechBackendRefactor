@@ -10,6 +10,6 @@ public sealed class AddLinkValidator : AbstractValidator<AddParserLinkCommand>
     public AddLinkValidator()
     {
         RuleFor(x => x.ParserId).MustBeValid(SubscribedParserId.Create);
-        RuleFor(x => new { x.LinkUrl, x.LinkName }).MustBeValid(x => SubscribedParserLinkUrlInfo.Create(x.LinkUrl, x.LinkName));
+        RuleFor(x => x.Links).AllMustBeValid(x => SubscribedParserLinkUrlInfo.Create(x.LinkUrl, x.LinkName));
     }
 }

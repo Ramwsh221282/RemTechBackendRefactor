@@ -32,7 +32,7 @@ public static class ParserTestsHelperExtensions
         public async Task<Result<SubscribedParserLink>> AddLink(Guid parserId, string linkUrl, string linkName)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
-            AddParserLinkCommand command = new(parserId, linkUrl, linkName);
+            AddParserLinkCommand command = new(parserId, [ new AddParserLinkCommandArg(linkUrl, linkName) ]);
             ICommandHandler<AddParserLinkCommand, SubscribedParserLink> handler =
                 scope.ServiceProvider.GetRequiredService<ICommandHandler<AddParserLinkCommand, SubscribedParserLink>>();
             return await handler.Execute(command);

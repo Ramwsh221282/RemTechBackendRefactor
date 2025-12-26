@@ -1,4 +1,5 @@
-﻿using ParsersControl.Core.Common;
+﻿using System.Diagnostics;
+using ParsersControl.Core.Common;
 using ParsersControl.Core.Contracts;
 using ParsersControl.Core.ParserLinks.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -32,6 +33,24 @@ public sealed class SubscribedParser : ISubscribedParser
     public ParsingStatistics Statistics { get; private set; }
     public SubscribedParserState State { get; private set; }
     public SubscribedParserSchedule Schedule { get; private set; }
+
+    public Result<IEnumerable<SubscribedParserLink>> AddLinks(IEnumerable<SubscribedParserLinkUrlInfo> urlInfos)
+    {
+        if (State.IsWorking()) 
+            return Error.Conflict($"Для добавления ссылок парсер должен быть в состоянии {SubscribedParserState.Disabled.Value} или {SubscribedParserState.Sleeping.Value}.");
+        List<SubscribedParserLink> newLinks = new();
+        foreach (SubscribedParserLinkUrlInfo info in urlInfos)
+        {
+            SubscribedParserLink link = SubscribedParserLink.New(this, info);
+            if (ContainsLinkWithName(link))
+                return Error.Conflict($"Парсер уже содержит ссылку с именем {link.UrlInfo.Name}.");
+            if (ContainsLinkWithUrl(link))
+                return Error.Conflict($"Парсер уже содержит ссылку с адресом {link.UrlInfo.Url}.");
+            newLinks.Add(link);
+        }
+        Links = [..Links, ..newLinks];
+        return newLinks;
+    }
 
     public Result<SubscribedParser> AddParserAmount(int amount)
     {
@@ -80,13 +99,24 @@ public sealed class SubscribedParser : ISubscribedParser
 
     public Result<SubscribedParser> StartWork()
     {
-        if (State.IsWorking())
-            return Error.Conflict($"Парсер уже в состоянии {State.Value}.");
-        if (State.IsDisabled())
-            return Error.Conflict($"Парсер в состоянии {State.Value}. Невозможно начать работу.");
-        State = SubscribedParserState.Working;
-        Schedule = Schedule.WithStartedAt(DateTime.UtcNow);
-        return this;
+        (bool isWorking, bool isDisabled, bool hasNoLinks, bool allLinksInactive) =
+            (State.IsWorking(), State.IsDisabled(), HasNoLinks(), AllLinksAreInactive());
+
+        Func<Result<SubscribedParser>> operation = (isWorking, isDisabled, hasNoLinks, allLinksInactive) switch
+        {
+            (false, false, false, false) => () =>
+            {
+                State = SubscribedParserState.Working;
+                Schedule = Schedule.WithStartedAt(DateTime.UtcNow);
+                return this;
+            },
+            (_, _, true, _) => () => Error.Conflict($"Парсер не содержит ссылок."),
+            (_, _, _, true) => () => Error.Conflict($"Парсер не содержит активных ссылок."),
+            (_, true, _, _) => () => Error.Conflict($"Парсер в состоянии {State.Value}. Невозможно начать работу."),
+            (true, _, _, _) => () => Error.Conflict($"Парсер уже в состоянии {State.Value}."),
+        };
+
+        return operation();
     }
 
     public Result<SubscribedParser> ChangeScheduleWaitDays(int waitDays)
@@ -237,4 +267,14 @@ public sealed class SubscribedParser : ISubscribedParser
     
     private bool ContainsLinkWithUrl(SubscribedParserLink link) =>
         Links.Any(l => l.UrlInfo.Url == link.UrlInfo.Url && l.Id != link.Id);
+
+    private bool HasNoLinks()
+    {
+        return Links.Count == 0;
+    }
+
+    private bool AllLinksAreInactive()
+    {
+        return Links.All(l => l.Active == false);
+    }
 }

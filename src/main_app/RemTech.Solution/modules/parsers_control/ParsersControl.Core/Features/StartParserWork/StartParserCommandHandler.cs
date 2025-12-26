@@ -1,23 +1,22 @@
-﻿using ParsersControl.Core.Contracts;
+﻿using  ParsersControl.Core.Contracts;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Core.Handlers.Attributes;
 
 namespace ParsersControl.Core.Features.StartParserWork;
 
+[TransactionalHandler]
 public sealed class StartParserCommandHandler(
-    ITransactionSource transactionSource,
     ISubscribedParsersRepository repository,
     IOnParserStartedListener listener
 ) : ICommandHandler<StartParserCommand, SubscribedParser>
 {
     public async Task<Result<SubscribedParser>> Execute(StartParserCommand command, CancellationToken ct = default)
     {
-        ITransactionScope scope = await transactionSource.BeginTransaction(ct: ct);
         Result<ISubscribedParser> parser = await GetRequiredParser(command, ct);
         Result<SubscribedParser> starting = CallParserWorkInvocation(parser);
-        Result saving = await SaveChanges(parser, starting, repository, scope, ct);
+        Result saving = await SaveChanges(parser, starting);
         if (saving.IsFailure) return saving.Error;
         await NotifyListener(saving, starting.Value);
         return starting;
@@ -44,14 +43,11 @@ public sealed class StartParserCommandHandler(
 
     private async Task<Result> SaveChanges(
         Result<ISubscribedParser> parser, 
-        Result<SubscribedParser> starting, 
-        ISubscribedParsersRepository repository, 
-        ITransactionScope scope,
-        CancellationToken ct)
+        Result<SubscribedParser> starting)
     {
         if (starting.IsFailure) return Result.Failure(starting.Error);
         if (parser.IsFailure) return Result.Failure(parser.Error);
         await repository.Save(parser.Value);
-        return await scope.Commit(ct);
+        return Result.Success();
     }
 }

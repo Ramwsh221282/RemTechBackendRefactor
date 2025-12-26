@@ -2,9 +2,11 @@
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Attributes;
 
 namespace ParsersControl.Core.Features.SubscribeParser;
 
+[TransactionalHandler]
 public sealed class SubscribeParserHandler(
     ISubscribedParsersRepository repository,
     IOnParserSubscribedListener listener) 
