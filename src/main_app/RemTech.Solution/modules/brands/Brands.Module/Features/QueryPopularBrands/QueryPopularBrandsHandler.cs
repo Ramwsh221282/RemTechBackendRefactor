@@ -1,34 +1,32 @@
-﻿using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
-using Shared.Infrastructure.Module.Postgres.PgCommandsBetter;
+﻿using Brands.Module.Responses;
+using Dapper;
+using RemTech.Core.Shared.Cqrs;
+using Shared.Infrastructure.Module.Postgres;
 
 namespace Brands.Module.Features.QueryPopularBrands;
 
-internal sealed class QueryPopularBrandsHandler(NpgsqlConnection connection)
-    : ICommandHandler<QueryPopularBrandsCommand, IEnumerable<PopularBrandsResponse>>
+internal sealed class QueryPopularBrandsHandler(PostgresDatabase database)
+    : ICommandHandler<QueryPopularBrandsCommand, IEnumerable<BrandDto>>
 {
     private const string Sql = """
-        SELECT b.name as brand_name, b.id as brand_id, COUNT(p.id) as vehicles_amount FROM brands_module.brands b
+        SELECT 
+            b.name as name, 
+            b.id as id, 
+            COUNT(p.id) as items_count 
+        FROM brands_module.brands b
         LEFT JOIN parsed_advertisements_module.parsed_vehicles p ON b.id = p.brand_id                             
         GROUP BY b.name, b.id HAVING(COUNT(p.id) > 0)
-        ORDER BY vehicles_amount DESC
+        ORDER BY items_count DESC
         LIMIT 6;
         """;
-    private const string BrandNameColumn = "brand_name";
-    private const string BrandIdColumn = "brand_id";
 
-    public async Task<IEnumerable<PopularBrandsResponse>> Handle(
+    public async Task<IEnumerable<BrandDto>> Handle(
         QueryPopularBrandsCommand command,
         CancellationToken ct = default
-    ) =>
-        await connection
-            .Command()
-            .WithQueryString(Sql)
-            .ClosureReader(ct)
-            .AsBlockOf<PopularBrandsResponse>()
-            .Map(r => new PopularBrandsResponse(
-                r.GetString(r.GetOrdinal(BrandNameColumn)),
-                r.GetGuid(r.GetOrdinal(BrandIdColumn))
-            ))
-            .Results(ct);
+    )
+    {
+        var sqlCommand = new CommandDefinition(Sql, cancellationToken: ct);
+        using var connection = await database.ProvideConnection(ct);
+        return await connection.QueryAsync<BrandDto>(sqlCommand);
+    }
 }

@@ -1,6 +1,4 @@
-﻿using Mailing.Module.Bus;
-
-namespace Users.Module.Features.UpdateUserPassword;
+﻿namespace Users.Module.Features.UpdateUserPassword;
 
 internal sealed class PasswordChangedEmailMessage(MailingBusPublisher publisher)
 {

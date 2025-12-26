@@ -1,10 +1,8 @@
 ﻿using System.Data.Common;
 using System.Text;
 using Npgsql;
-using Pgvector;
 using RemTech.Vehicles.Module.Features.QueryVehicles;
 using RemTech.Vehicles.Module.Features.QueryVehicles.Specifications;
-using Shared.Infrastructure.Module.Postgres.Embeddings;
 using Shared.Infrastructure.Module.Postgres.PgCommands;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehiclesAmount;

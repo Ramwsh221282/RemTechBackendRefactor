@@ -1,8 +1,6 @@
 ﻿using Brands.Module.Injection;
 using Categories.Module.Injection;
-using Cleaners.Module.Injection;
 using GeoLocations.Module.Injection;
-using Mailing.Module.Injection;
 using Models.Module.Injection;
 using RemTech.Bootstrap.Api.Injection;
 using RemTech.ContainedItems.Module.Injection;
@@ -15,12 +13,9 @@ namespace RemTech.Bootstrap.Api.Configuration;
 
 public static class ModulesInject
 {
-    public static void InjectModules(
-        this IServiceCollection services,
-        RemTechApplicationSettings settings
-    )
+    public static void InjectModules(this IServiceCollection services)
     {
-        services.InjectCommonInfrastructure(settings);
+        services.InjectCommonInfrastructure();
         services.InjectScrapersModule();
         services.InjectMailingModule();
         services.InjectUsersModule();

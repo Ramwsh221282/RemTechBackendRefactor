@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using RabbitMQ.Client;
+﻿using RabbitMQ.Client;
 using Shared.Infrastructure.Module.RabbitMq;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;

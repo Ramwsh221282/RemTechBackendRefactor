@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicleRegions;
 

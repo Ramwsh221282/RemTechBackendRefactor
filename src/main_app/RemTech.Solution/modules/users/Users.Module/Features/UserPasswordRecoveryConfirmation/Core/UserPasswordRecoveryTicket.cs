@@ -1,5 +1,3 @@
-using Users.Module.Features.UserPasswordRecoveryConfirmation.Exceptions;
-
 namespace Users.Module.Features.UserPasswordRecoveryConfirmation.Core;
 
 internal sealed class UserPasswordRecoveryTicket

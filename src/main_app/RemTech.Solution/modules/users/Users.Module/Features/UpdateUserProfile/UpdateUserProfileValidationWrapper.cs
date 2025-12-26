@@ -1,4 +1,4 @@
-﻿using Shared.Infrastructure.Module.Cqrs;
+﻿using RemTech.Core.Shared.Cqrs;
 using Users.Module.CommonAbstractions;
 
 namespace Users.Module.Features.UpdateUserProfile;

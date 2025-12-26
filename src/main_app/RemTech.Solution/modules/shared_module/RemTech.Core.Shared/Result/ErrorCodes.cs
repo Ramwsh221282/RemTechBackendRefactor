@@ -7,4 +7,6 @@ public enum ErrorCodes
     Conflict,
     Internal,
     Empty,
+    Unauthorized,
+    Forbidden,
 }

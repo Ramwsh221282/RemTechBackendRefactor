@@ -1,10 +1,7 @@
-﻿using Mailing.Module.Bus;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using StackExchange.Redis;
-using Users.Module.Features.CreateEmailConfirmation;
-using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Models;
 
 namespace Users.Module.Features.RemoveUserByAdmin;
@@ -19,7 +16,8 @@ public static class RemoveUserByAdminEndpoint
         [FromServices] ConnectionMultiplexer multiplexer,
         [FromServices] MailingBusPublisher publisher,
         [FromQuery] Guid userId,
-        [FromHeader(Name = "RemTechAccessTokenId")] string token,
+        [FromHeader(Name = "RemTechAccessTokenId")]
+        string token,
         CancellationToken ct
     )
     {

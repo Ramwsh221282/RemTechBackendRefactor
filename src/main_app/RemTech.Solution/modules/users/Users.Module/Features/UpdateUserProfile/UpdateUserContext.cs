@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using Mailing.Module.Bus;
 
 namespace Users.Module.Features.UpdateUserProfile;
 
@@ -46,8 +45,8 @@ internal sealed class UpdateUserContext
         string to = _email;
         string subject = "Изменение данных учетной записи";
         StringBuilder bodyBuilder = new StringBuilder(
-            "Ваши данные учетной записи были изменены. Рекомендуем снова авторизоваться в системе, чтобы изменения вступили в силу."
-        )
+                "Ваши данные учетной записи были изменены. Рекомендуем снова авторизоваться в системе, чтобы изменения вступили в силу."
+            )
             .AppendLine($"Почта: {_email}")
             .AppendLine($"Псевдоним: {_name}");
         if (!string.IsNullOrWhiteSpace(_password))

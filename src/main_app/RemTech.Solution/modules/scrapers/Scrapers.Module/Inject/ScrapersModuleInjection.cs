@@ -1,6 +1,4 @@
 ﻿using System.Threading.Channels;
-using DbUp;
-using DbUp.Engine;
 using Microsoft.Extensions.DependencyInjection;
 using Scrapers.Module.Domain.JournalsContext.BackgroundServices.AddJournalRecordListener;
 using Scrapers.Module.Domain.JournalsContext.Cache;
@@ -28,18 +26,5 @@ public static class ScrapersModuleInjection
         services.AddSingleton<IIncreaseProcessedPublisher, IncreaseProcessedPublisher>();
         services.AddSingleton<ParserStateCachedStorage>();
         services.AddSingleton<ActiveScraperJournalsCache>();
-    }
-
-    public static void UpDatabase(string connectionString)
-    {
-        EnsureDatabase.For.PostgresqlDatabase(connectionString);
-        UpgradeEngine upgrader = DeployChanges
-            .To.PostgresqlDatabase(connectionString)
-            .WithScriptsEmbeddedInAssembly(typeof(ScrapersModuleInjection).Assembly)
-            .LogToConsole()
-            .Build();
-        DatabaseUpgradeResult result = upgrader.PerformUpgrade();
-        if (!result.Successful)
-            throw new ApplicationException("Failed to create scrapers database.");
     }
 }

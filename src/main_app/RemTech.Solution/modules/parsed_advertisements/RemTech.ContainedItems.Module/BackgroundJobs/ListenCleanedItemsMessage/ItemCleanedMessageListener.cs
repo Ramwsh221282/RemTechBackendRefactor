@@ -1,5 +1,4 @@
 ﻿using System.Threading.Channels;
-using Cleaners.Module.Contracts.ItemCleaned;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using RemTech.ContainedItems.Module.Features.RemoveContainedItem;

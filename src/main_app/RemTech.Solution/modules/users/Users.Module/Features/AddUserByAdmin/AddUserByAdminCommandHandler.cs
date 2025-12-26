@@ -1,14 +1,15 @@
 ﻿using System.Data;
 using System.Data.Common;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
+using RemTech.Core.Shared.Result;
+using Shared.Infrastructure.Module.Postgres;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
 
 namespace Users.Module.Features.AddUserByAdmin;
 
-internal sealed class AddUserByAdminCommandHandler(NpgsqlDataSource dataSource, StringHash hash)
-    : ICommandHandler<AddUserByAdminCommand, AddUserByAdminResult>
+internal sealed class AddUserByAdminCommandHandler(PostgresDatabase dataSource, StringHash hash)
+    : ICommandHandler<AddUserByAdminCommand, Status<AddUserByAdminResult>>
 {
     private const string InsertUserSql = """
         INSERT INTO users_module.users
@@ -22,17 +23,23 @@ internal sealed class AddUserByAdminCommandHandler(NpgsqlDataSource dataSource, 
     private const string AttachUserRoleSql =
         "INSERT INTO users_module.user_roles(user_id, role_id) VALUES(@user_id, @role_id)";
 
-    public async Task<AddUserByAdminResult> Handle(
+    public async Task<Status<AddUserByAdminResult>> Handle(
         AddUserByAdminCommand command,
         CancellationToken ct = default
     )
     {
-        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
+        await using NpgsqlConnection connection = await dataSource.DataSource.OpenConnectionAsync(
+            ct
+        );
         await using NpgsqlTransaction transaction = await connection.BeginTransactionAsync(ct);
+
         try
         {
             (Guid userId, string password) data = await InsertUser(command, connection, ct);
-            Guid role = await GetRoleId(command, connection, ct);
+            Status<Guid> role = await GetRoleId(command, connection, ct);
+            if (role.IsFailure)
+                return role.Error;
+
             await AttachUserRole(data.userId, role, connection, ct);
             await transaction.CommitAsync(ct);
             return new AddUserByAdminResult(
@@ -93,7 +100,7 @@ internal sealed class AddUserByAdminCommandHandler(NpgsqlDataSource dataSource, 
         return (userId, password);
     }
 
-    private async Task<Guid> GetRoleId(
+    private async Task<Status<Guid>> GetRoleId(
         AddUserByAdminCommand command,
         NpgsqlConnection connection,
         CancellationToken ct
@@ -104,7 +111,7 @@ internal sealed class AddUserByAdminCommandHandler(NpgsqlDataSource dataSource, 
         sqlCommand.Parameters.Add(new NpgsqlParameter<string>("@name", command.Role));
         await using DbDataReader reader = await sqlCommand.ExecuteReaderAsync(ct);
         if (!await reader.ReadAsync(ct))
-            throw new RoleNotFoundException(command.Role);
+            return Error.NotFound($"Роль не найдена: {command.Role}");
         Guid id = reader.GetGuid(0);
         return id;
     }

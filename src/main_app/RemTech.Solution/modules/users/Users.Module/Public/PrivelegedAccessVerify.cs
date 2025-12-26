@@ -1,6 +1,5 @@
 ﻿using Npgsql;
 using Users.Module.Features.AuthenticatingUserAccount;
-using Users.Module.Models;
 
 namespace Users.Module.Public;
 

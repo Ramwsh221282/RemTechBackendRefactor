@@ -1,7 +1,5 @@
-using Mailing.Module.Bus;
 using Npgsql;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.CreateEmailConfirmation;
 
 namespace Users.Module.Features.UserPasswordRecoveryConfirmation.Interactor;
 
@@ -31,8 +29,8 @@ internal sealed class UserWithRecoveredPassword(Guid id, string email)
     {
         await using NpgsqlCommand command = connection.CreateCommand();
         command.CommandText = """
-            UPDATE users_module.users SET password = @password WHERE id = @id 
-            """;
+                              UPDATE users_module.users SET password = @password WHERE id = @id 
+                              """;
         command.Parameters.Add(new NpgsqlParameter<string>("@password", password));
         command.Parameters.Add(new NpgsqlParameter<Guid>("@id", _id));
         int affected = await command.ExecuteNonQueryAsync(ct);

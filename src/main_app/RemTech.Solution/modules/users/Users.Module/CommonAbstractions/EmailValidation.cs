@@ -1,11 +1,10 @@
 ﻿using System.Text.RegularExpressions;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
 
 namespace Users.Module.CommonAbstractions;
 
 internal sealed class EmailValidation
 {
-    private static Regex EmailValidityRegex = new(
+    private static readonly Regex EmailValidityRegex = new(
         @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
         RegexOptions.Compiled
     );

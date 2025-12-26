@@ -1,5 +1,4 @@
-﻿using Brands.Module.Public;
-using Categories.Module.Public;
+﻿using Categories.Module.Public;
 using GeoLocations.Module.Features.Querying;
 using Models.Module.Public;
 using Npgsql;
@@ -26,7 +25,7 @@ public sealed class BackgroundJobTransportAdvertisementSinking
         IAddContainedItemsPublisher containedPublisher,
         IBrandsPublicApi brandsApi,
         IModelPublicApi modelApi,
-        ICategoryPublicApi categoryApi,
+        IGetCategoryApi getCategoryApi,
         ConnectionFactory rabbitConnectionFactory,
         NpgsqlDataSource connection,
         IEmbeddingGenerator generator,
@@ -47,7 +46,7 @@ public sealed class BackgroundJobTransportAdvertisementSinking
                         new BrandSpecifying(
                             brandsApi,
                             new CategorySpecifying(
-                                categoryApi,
+                                getCategoryApi,
                                 new PgLocationSinking(
                                     locationsQuery,
                                     new PgModelSinking(

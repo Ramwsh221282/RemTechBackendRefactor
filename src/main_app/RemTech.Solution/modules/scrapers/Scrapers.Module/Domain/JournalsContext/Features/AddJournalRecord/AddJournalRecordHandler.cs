@@ -1,7 +1,7 @@
 ﻿using Npgsql;
+using RemTech.Core.Shared.Cqrs;
 using Scrapers.Module.Domain.JournalsContext.Cache;
 using Scrapers.Module.Domain.JournalsContext.Persistance;
-using Shared.Infrastructure.Module.Cqrs;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace Scrapers.Module.Domain.JournalsContext.Features.AddJournalRecord;

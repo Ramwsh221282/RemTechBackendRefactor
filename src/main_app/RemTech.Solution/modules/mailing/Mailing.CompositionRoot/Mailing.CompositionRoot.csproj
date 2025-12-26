@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Mailing.Application\Mailing.Application.csproj" />
+      <ProjectReference Include="..\Mailing.Infrastructure\Mailing.Infrastructure.csproj" />
+      <ProjectReference Include="..\Mailing.Presenters\Mailing.Presenters.csproj" />
+    </ItemGroup>
+
+</Project>

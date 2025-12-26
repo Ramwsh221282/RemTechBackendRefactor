@@ -1,7 +1,4 @@
-﻿using Mailing.Module.Bus;
-using Shared.Infrastructure.Module.Frontend;
-
-namespace Users.Module.Features.CreateEmailConfirmation;
+﻿namespace Users.Module.Features.CreateEmailConfirmation;
 
 internal sealed class EmailConfirmationMailingMessage(
     FrontendUrl frontendUrl,
@@ -21,10 +18,10 @@ internal sealed class EmailConfirmationMailingMessage(
         return new MailingBusMessage(
             emailTo,
             $"""
-            Была подана заявка на подтверждение почты.
-            Для подтверждения почты необходимо перейти по ссылке:
-            <a href="{Generate()}">Подтверждение почты</a>
-            """,
+             Была подана заявка на подтверждение почты.
+             Для подтверждения почты необходимо перейти по ссылке:
+             <a href="{Generate()}">Подтверждение почты</a>
+             """,
             "Подтверждение почты RemTech агрегатор спецтехники."
         );
     }

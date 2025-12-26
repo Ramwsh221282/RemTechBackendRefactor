@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
-using Shared.Infrastructure.Module.Json;
+using RemTech.Core.Shared.Json;
+using Shared.Infrastructure.Module.Redis;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
 using Users.Module.Features.CreatingNewAccount;
-using Users.Module.Features.VerifyingAdmin;
 
 namespace Users.Module.Models;
 
@@ -43,14 +43,14 @@ internal sealed class UserJwt
         return source.Provide(key, _tokenId);
     }
 
-    public async Task<UserJwt> Deleted(ConnectionMultiplexer multiplexer)
+    public async Task<UserJwt> Deleted(RedisCache multiplexer)
     {
-        IDatabase database = multiplexer.GetDatabase();
+        IDatabase database = multiplexer.Database;
         await database.KeyDeleteAsync(Key());
         return this;
     }
 
-    public async Task StoreInCache(ConnectionMultiplexer multiplexer)
+    public async Task StoreInCache(RedisCache multiplexer)
     {
         string value = new JsonObjectSnapshot()
             .With(nameof(_userId), _userId)
@@ -62,8 +62,8 @@ internal sealed class UserJwt
             .With(nameof(_token), _token)
             .With(nameof(_refreshToken), _refreshToken)
             .Read();
-        IDatabase database = multiplexer.GetDatabase();
-        await database.StringSetAsync(Key(), value, TimeSpan.FromDays(7));
+
+        await multiplexer.Database.StringSetAsync(Key(), value, TimeSpan.FromDays(7));
     }
 
     public string Key() => $"user_jwt_{_tokenId.ToString()}";
@@ -73,9 +73,9 @@ internal sealed class UserJwt
         return _role == role;
     }
 
-    public async Task<UserJwt> Provide(ConnectionMultiplexer multiplexer)
+    public async Task<UserJwt> Provide(RedisCache cache)
     {
-        IDatabase database = multiplexer.GetDatabase();
+        IDatabase database = cache.Database;
         string? value = await database.StringGetAsync(Key());
         if (string.IsNullOrEmpty(value))
             throw new UnableToGetUserJwtValueException();

@@ -10,7 +10,50 @@ public record Error(string ErrorText, ErrorCodes Code)
 
     public static Error Conflict(string errorMessage) => new(errorMessage, ErrorCodes.Conflict);
 
+    public static Error Conflict(string errorTemplate, params object[] arguments)
+    {
+        ErrorCodes code = ErrorCodes.Conflict;
+        string message = string.Format(errorTemplate, arguments);
+        return new Error(message, code);
+    }
+
+    public static Error PasswordIncorrect() => new("Пароль неверный", ErrorCodes.Unauthorized);
+
+    public static Error TokensExpired() =>
+        new Error("Expired tokens sessions.", ErrorCodes.Unauthorized);
+
+    public static Error Forbidden(string message) => new(message, ErrorCodes.Forbidden);
+
+    public static Error Unauthorized() => new("Необходима авторизация.", ErrorCodes.Unauthorized);
+
+    public static Error Forbidden() => new("Доступ к ресурсу запрещен.", ErrorCodes.Forbidden);
+
+    public static Error Internal(string message) => new(message, ErrorCodes.Internal);
+
     public Status Status() => new(this);
+
+    public Error Combine(Error other)
+    {
+        if (other.Code != Code)
+            throw new ApplicationException(
+                $"Uncompatible errors. Right code: {Code}. Left code: {other.Code}"
+            );
+
+        string message = string.Join(", ", [ErrorText, other.ErrorText]);
+        return new Error(message, Code);
+    }
+
+    public static Error Combined(IEnumerable<Error> errors)
+    {
+        var distinctCodes = errors.Select(er => er.Code).Distinct().ToArray();
+        if (distinctCodes.Length > 1)
+            throw new ApplicationException("Unable to create combined error. Codes are different.");
+
+        var texts = errors.Select(er => er.ErrorText);
+        var text = string.Join(" ,", texts);
+        var code = distinctCodes[0];
+        return new Error(text, code);
+    }
 
     public Status<T> Status<T>() => new(this);
 
@@ -22,74 +65,5 @@ public record Error(string ErrorText, ErrorCodes Code)
     public static implicit operator Status(Error error)
     {
         return error.Status();
-    }
-}
-
-public sealed record Error<T>(string ErrorText, ErrorCodes Code) : Error(ErrorText, Code)
-{
-    public static implicit operator Status<T>(Error<T> error)
-    {
-        Error upcated = error;
-        return new Status<T>(upcated);
-    }
-
-    public static implicit operator Status(Error<T> error)
-    {
-        Error upcated = error;
-        return new Status(upcated);
-    }
-}
-
-public record ValidationError
-{
-    private readonly string _text;
-    private readonly ErrorCodes _code;
-
-    public ValidationError(string text)
-    {
-        _text = text;
-        _code = ErrorCodes.Validation;
-    }
-
-    public Status Status() => new(this);
-
-    public Status<T> Status<T>() => new(this);
-
-    public static implicit operator Error(ValidationError validationError)
-    {
-        return new Error(validationError._text, validationError._code);
-    }
-
-    public static implicit operator Status(ValidationError validationError)
-    {
-        return validationError.Status();
-    }
-}
-
-public sealed record ValidationError<T> : ValidationError
-{
-    public ValidationError(string text)
-        : base(text) { }
-
-    public static implicit operator Status<T>(ValidationError<T> validationError)
-    {
-        ValidationError upcated = validationError;
-        return new Status<T>(upcated);
-    }
-
-    public static implicit operator Status(ValidationError<T> validationError)
-    {
-        ValidationError upcated = validationError;
-        return new Status(upcated);
-    }
-
-    public static implicit operator Task<Status<T>>(ValidationError<T> error)
-    {
-        return Task.FromResult<Status<T>>(error);
-    }
-
-    public static implicit operator Task<Status>(ValidationError<T> error)
-    {
-        return Task.FromResult<Status>(error);
     }
 }

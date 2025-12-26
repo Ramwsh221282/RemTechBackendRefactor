@@ -1,11 +1,8 @@
-using Mailing.Module.Bus;
-using Shared.Infrastructure.Module.Frontend;
 using StackExchange.Redis;
-using Users.Module.Features.ChangingEmail.Exceptions;
+using Users.Module.Features.ChangingEmail;
 using Users.Module.Features.ChangingEmail.Shared;
 using Users.Module.Features.CreateEmailConfirmation;
 using Users.Module.Features.UserPasswordRecovering.Core;
-using Users.Module.Features.UserPasswordRecovering.Exceptions;
 
 namespace Users.Module.Features.UserPasswordRecovering.Infrastructure;
 
@@ -56,17 +53,17 @@ internal sealed class WhenEmailNotConfirmedRecoveringMethod : IUserRecoveringMet
         return new MailingBusMessage(
             email,
             $"""
-            Была подана заявка на сброс пароля.
-            Ваша почта не была подтверждена, но она была указана при регистрации.
+             Была подана заявка на сброс пароля.
+             Ваша почта не была подтверждена, но она была указана при регистрации.
 
-            1. Перед тем как восстановить пароль, Вам необходимо подтвердить вашу почту.
-            Для подтверждения почты необходимо перейти по ссылке:
-            <a href="{GenerateEmailConfirmationUrl(confirmEmailKey)}">Подтверждение почты</a>
+             1. Перед тем как восстановить пароль, Вам необходимо подтвердить вашу почту.
+             Для подтверждения почты необходимо перейти по ссылке:
+             <a href="{GenerateEmailConfirmationUrl(confirmEmailKey)}">Подтверждение почты</a>
 
-            2. После подтверждения почты, Вы можете сбросить пароль.
-            Для сброса пароля необходимо перейти по ссылке: 
-            <a href="{GeneratePasswordResetUrl(resetPasswordKey)}">Сброс пароля</a>
-            """,
+             2. После подтверждения почты, Вы можете сбросить пароль.
+             Для сброса пароля необходимо перейти по ссылке: 
+             <a href="{GeneratePasswordResetUrl(resetPasswordKey)}">Сброс пароля</a>
+             """,
             "Инструкция по сбросу пароля RemTech аггрегатор."
         );
     }

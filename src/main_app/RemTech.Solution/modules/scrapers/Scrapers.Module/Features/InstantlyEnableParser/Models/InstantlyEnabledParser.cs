@@ -1,5 +1,4 @@
-﻿using Scrapers.Module.Domain.JournalsContext;
-using Scrapers.Module.Domain.JournalsContext.Features.CreateScraperJournal;
+﻿using Scrapers.Module.Domain.JournalsContext.Features.CreateScraperJournal;
 using Scrapers.Module.Features.InstantlyEnableParser.Endpoint;
 
 namespace Scrapers.Module.Features.InstantlyEnableParser.Models;

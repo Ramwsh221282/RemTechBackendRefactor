@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+        
+    <ItemGroup>
+        <Using Include="ParsingSDK" />
+        <Using Include="AvitoFirewallBypass" />
+        <Using Include="ParserSubscriber" />
+        <Using Include="ParsingSDK.TextProcessing" />
+        <Using Include="RemTech.SharedKernel.Infrastructure" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <EmbeddedResource Include="Database\*.sql"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="AvitoFirewallBypass" Version="1.0.1" />
+      <PackageReference Include="ParserSubscriber" Version="1.0.0" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.2" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Quartz" Version="1.0.0" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.0" />
+    </ItemGroup>
+
+</Project>

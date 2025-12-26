@@ -1,13 +1,6 @@
-﻿using Brands.Module.Features.AddBrandsOnStartup;
-using Brands.Module.Features.QueryBrands;
-using Brands.Module.Features.QueryBrandsAmount;
-using Brands.Module.Features.QueryPopularBrands;
-using Brands.Module.Public;
-using DbUp;
-using DbUp.Engine;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
+﻿using Brands.Module.Public.GetBrand;
 using Microsoft.Extensions.DependencyInjection;
+using RemTech.Core.Shared.Cqrs;
 
 namespace Brands.Module.Injection;
 
@@ -15,20 +8,7 @@ public static class BrandsModuleInjection
 {
     public static void InjectBrandsModule(this IServiceCollection services)
     {
-        services.AddHostedService<SeedingBrandsOnStartup>();
-        services.AddSingleton<IBrandsPublicApi, BrandsPublicApi>();
-    }
-
-    public static void UpDatabase(string connectionString)
-    {
-        EnsureDatabase.For.PostgresqlDatabase(connectionString);
-        UpgradeEngine upgrader = DeployChanges
-            .To.PostgresqlDatabase(connectionString)
-            .WithScriptsEmbeddedInAssembly(typeof(SeedingBrandsOnStartup).Assembly)
-            .LogToConsole()
-            .Build();
-        DatabaseUpgradeResult result = upgrader.PerformUpgrade();
-        if (!result.Successful)
-            throw new ApplicationException("Failed to create brands module database.");
+        services.AddHandlersFromAssembly(typeof(BrandsModuleInjection).Assembly);
+        services.AddScoped<IGetBrandApi, GetBrandApi>();
     }
 }

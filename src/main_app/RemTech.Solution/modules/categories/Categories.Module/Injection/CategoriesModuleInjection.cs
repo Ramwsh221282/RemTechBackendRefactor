@@ -1,13 +1,6 @@
-﻿using Categories.Module.Features.AddCategoriesOnStartup;
-using Categories.Module.Features.QueryCategories;
-using Categories.Module.Features.QueryCategoriesAmount;
-using Categories.Module.Features.QueryPopularCategories;
-using Categories.Module.Public;
-using DbUp;
-using DbUp.Engine;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
+﻿using Categories.Module.Public;
 using Microsoft.Extensions.DependencyInjection;
+using RemTech.Core.Shared.Cqrs;
 
 namespace Categories.Module.Injection;
 
@@ -15,20 +8,7 @@ public static class CategoriesModuleInjection
 {
     public static void InjectCategoriesModule(this IServiceCollection services)
     {
-        services.AddHostedService<SeedingCategoriesOnStartup>();
-        services.AddSingleton<ICategoryPublicApi, CategoryPublicApi>();
-    }
-
-    public static void UpDatabase(string connectionString)
-    {
-        EnsureDatabase.For.PostgresqlDatabase(connectionString);
-        UpgradeEngine upgrader = DeployChanges
-            .To.PostgresqlDatabase(connectionString)
-            .WithScriptsEmbeddedInAssembly(typeof(SeedingCategoriesOnStartup).Assembly)
-            .LogToConsole()
-            .Build();
-        DatabaseUpgradeResult result = upgrader.PerformUpgrade();
-        if (!result.Successful)
-            throw new ApplicationException("Failed to create categories module database.");
+        services.AddHandlersFromAssembly(typeof(CategoriesModuleInjection).Assembly);
+        services.AddSingleton<IGetCategoryApi, GetCategoryApi>();
     }
 }

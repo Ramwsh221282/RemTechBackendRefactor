@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Routing;
 using Npgsql;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
 using Users.Module.Models;
 
 namespace Users.Module.Features.CreatingNewAccount;

@@ -1,6 +1,4 @@
-﻿using Users.Module.Features.ChangingEmail.Exceptions;
-
-namespace Users.Module.Features.ChangingEmail.Shared;
+﻿namespace Users.Module.Features.ChangingEmail.Shared;
 
 internal sealed class EmailConfirmationKeyGeneration(ConfirmationEmailsCache cache)
 {

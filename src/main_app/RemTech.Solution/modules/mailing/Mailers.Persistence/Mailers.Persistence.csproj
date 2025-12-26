@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\building_blocks\RemTech.Functional.Extensions\RemTech.Functional.Extensions.csproj"/>
+        <ProjectReference Include="..\..\building_blocks\RemTech.NpgSql.Abstractions\RemTech.NpgSql.Abstractions.csproj"/>
+        <ProjectReference Include="..\..\building_blocks\RemTech.Primitives.Extensions\RemTech.Primitives.Extensions.csproj" />
+        <ProjectReference Include="..\Mailers.Core\Mailers.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="./NpgSql/Migrations/*.sql"/>
+    </ItemGroup>
+    
+</Project>

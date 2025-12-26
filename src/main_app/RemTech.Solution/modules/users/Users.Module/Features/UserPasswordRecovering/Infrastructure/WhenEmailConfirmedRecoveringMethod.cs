@@ -1,8 +1,5 @@
-using Mailing.Module.Bus;
-using Shared.Infrastructure.Module.Frontend;
 using StackExchange.Redis;
 using Users.Module.Features.UserPasswordRecovering.Core;
-using Users.Module.Features.UserPasswordRecovering.Exceptions;
 
 namespace Users.Module.Features.UserPasswordRecovering.Infrastructure;
 
@@ -41,10 +38,10 @@ internal sealed class WhenEmailConfirmedRecoveringMethod : IUserRecoveringMethod
         return new MailingBusMessage(
             email,
             $"""
-            Была подана заявка на сброс пароля.
-            Для сброса пароля необходимо перейти по ссылке: 
-            <a href="{GeneratePasswordResetUrl(resetPasswordKey)}">Сброс пароля</a>
-            """,
+             Была подана заявка на сброс пароля.
+             Для сброса пароля необходимо перейти по ссылке: 
+             <a href="{GeneratePasswordResetUrl(resetPasswordKey)}">Сброс пароля</a>
+             """,
             "Инструкция по сбросу пароля RemTech аггрегатор."
         );
     }

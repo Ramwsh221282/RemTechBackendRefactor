@@ -1,7 +1,5 @@
-﻿using Mailing.Module.Bus;
-using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
-using Users.Module.Features.CreateEmailConfirmation;
+﻿using Npgsql;
+using RemTech.Core.Shared.Cqrs;
 
 namespace Users.Module.Features.RemoveUserByAdmin;
 
@@ -30,6 +28,7 @@ internal sealed class RemoveUserByAdminHandler(
                 await reader.DisposeAsync();
                 throw new UserNotFoundException();
             }
+
             string email = reader.GetString(0);
             await reader.DisposeAsync();
             MailingBusMessage message = new MailingBusMessage(

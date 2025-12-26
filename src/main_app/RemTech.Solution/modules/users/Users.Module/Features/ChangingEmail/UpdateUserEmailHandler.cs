@@ -1,22 +1,20 @@
-﻿using Mailing.Module.Bus;
-using Mailing.Module.Public;
-using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
-using Shared.Infrastructure.Module.Frontend;
-using StackExchange.Redis;
+﻿using Microsoft.Extensions.Options;
+using RemTech.Core.Shared.Cqrs;
+using RemTech.Shared.Configuration.Options;
+using Shared.Infrastructure.Module.Postgres;
+using Shared.Infrastructure.Module.Redis;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.ChangingEmail.Exceptions;
 using Users.Module.Features.ChangingEmail.Shared;
 
 namespace Users.Module.Features.ChangingEmail;
 
 internal sealed class UpdateUserEmailHandler(
-    NpgsqlDataSource dataSource,
+    PostgresDatabase dataSource,
     MailingBusPublisher publisher,
     Serilog.ILogger logger,
-    ConnectionMultiplexer multiplexer,
+    RedisCache multiplexer,
     HasSenderApi hasSenderApi,
-    FrontendUrl frontendUrl,
+    IOptions<FrontendOptions> frontendUrl,
     ConfirmationEmailsCache cache
 ) : ICommandHandler<UpdateUserEmailCommand, UpdateUserEmailResponse>
 {
@@ -28,21 +26,27 @@ internal sealed class UpdateUserEmailHandler(
         new EmailValidation().ValidateEmail(command.NewEmail);
         if (!await hasSenderApi.HasSender())
             throw new SendersAreNotAvailableYetException();
+
         if (!await IsAuthorized(command))
             throw new UnauthorizedAccessException();
+
         await new ChangeEmailTransaction(dataSource).Execute(command.NewEmail, command.UserId, ct);
+
         Guid confirmationKey = await new EmailConfirmationKeyGeneration(cache).Generate(
             command.UserId
         );
+
         await new EmailChangeMailingMessage(frontendUrl, confirmationKey, publisher).Send(
             command.NewEmail,
             ct
         );
+
         logger.Information(
             "User {Guid} has updated email by self {Email}.",
             command.UserId,
             command.NewEmail
         );
+
         return new UpdateUserEmailResponse(command.UserId, command.NewEmail);
     }
 

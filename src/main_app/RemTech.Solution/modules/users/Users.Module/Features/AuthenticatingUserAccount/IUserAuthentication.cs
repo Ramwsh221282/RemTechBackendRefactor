@@ -1,11 +1,11 @@
-﻿using Npgsql;
+﻿using Shared.Infrastructure.Module.Postgres;
 
 namespace Users.Module.Features.AuthenticatingUserAccount;
 
 internal interface IUserAuthentication
 {
     Task<AuthenticatedUser> Authenticate(
-        NpgsqlDataSource dataSource,
+        PostgresDatabase dataSource,
         CancellationToken ct = default
     );
 }

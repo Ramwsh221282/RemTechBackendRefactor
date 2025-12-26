@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
+using Shared.Infrastructure.Module.Postgres;
 using Users.Module.Features.CreatingNewAccount;
 
 namespace Users.Module.Features.CheckRoot;
@@ -22,16 +23,20 @@ public static class EnsureRootCreatedEndpoint
         """;
 
     private static async Task<IResult> Handle(
-        [FromServices] NpgsqlDataSource dataSource,
+        [FromServices] PostgresDatabase dataSource,
         [FromServices] Serilog.ILogger logger,
         CancellationToken ct
     )
     {
+        await using NpgsqlConnection connection = await dataSource.DataSource.OpenConnectionAsync(
+            ct
+        );
+
+        await using NpgsqlCommand command = connection.CreateCommand();
+        command.CommandText = Sql;
+
         try
         {
-            await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(ct);
-            await using NpgsqlCommand command = connection.CreateCommand();
-            command.CommandText = Sql;
             object? result = await command.ExecuteScalarAsync(ct);
             int number = (int)result!;
             return Results.Ok(number != 0);

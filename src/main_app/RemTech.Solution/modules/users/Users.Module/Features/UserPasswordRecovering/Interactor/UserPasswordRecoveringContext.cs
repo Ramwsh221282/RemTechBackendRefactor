@@ -1,5 +1,5 @@
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using Users.Module.Features.UserPasswordRecovering.Core;
 
 namespace Users.Module.Features.UserPasswordRecovering.Interactor;

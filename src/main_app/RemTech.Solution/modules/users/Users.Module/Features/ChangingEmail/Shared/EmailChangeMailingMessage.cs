@@ -1,10 +1,10 @@
-﻿using Mailing.Module.Bus;
-using Shared.Infrastructure.Module.Frontend;
+﻿using Microsoft.Extensions.Options;
+using RemTech.Shared.Configuration.Options;
 
 namespace Users.Module.Features.ChangingEmail.Shared;
 
 internal sealed class EmailChangeMailingMessage(
-    FrontendUrl frontendUrl,
+    IOptions<FrontendOptions> frontendUrl,
     Guid confirmationKey,
     MailingBusPublisher publisher
 )
@@ -16,22 +16,22 @@ internal sealed class EmailChangeMailingMessage(
         await publisher.Send(FormMessage(emailTo), ct);
     }
 
-    public MailingBusMessage FormMessage(string emailTo)
+    private MailingBusMessage FormMessage(string emailTo)
     {
         return new MailingBusMessage(
             emailTo,
             $"""
-            Ваша почта была изменена, однако Вам нужно подтвердить изменение.
-            Для этого необходимо перейти по ссылке:
-            <a href="{Generate()}">Подтверждение почты</a>
-            """,
+             Ваша почта была изменена, однако Вам нужно подтвердить изменение.
+             Для этого необходимо перейти по ссылке:
+             <a href="{Generate()}">Подтверждение почты</a>
+             """,
             "Изменение почты RemTech агрегатор спецтехники."
         );
     }
 
-    public string Generate()
+    private string Generate()
     {
-        string frontendUrlString = frontendUrl.Read();
+        string frontendUrlString = frontendUrl.Value.FrontendUrl;
         string keyString = confirmationKey.ToString();
         return string.Format(Template, frontendUrlString, keyString);
     }

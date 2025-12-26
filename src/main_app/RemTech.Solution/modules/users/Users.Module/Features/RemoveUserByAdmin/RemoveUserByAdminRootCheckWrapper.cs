@@ -1,7 +1,6 @@
 ﻿using System.Data.Common;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
-using Users.Module.Features.CreateEmailConfirmation;
+using RemTech.Core.Shared.Cqrs;
 using Users.Module.Models;
 
 namespace Users.Module.Features.RemoveUserByAdmin;

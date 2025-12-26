@@ -1,6 +1,6 @@
 ﻿using Npgsql;
 using RemTech.ContainedItems.Module.Features.DropVehicles;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using Users.Module.Public;
 
 namespace RemTech.ContainedItems.Module.Features.DropSpares;

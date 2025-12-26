@@ -1,7 +1,5 @@
 ﻿using System.Text;
 using Npgsql;
-using Pgvector;
-using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Spares.Module.Features.QuerySpareTotals;
 

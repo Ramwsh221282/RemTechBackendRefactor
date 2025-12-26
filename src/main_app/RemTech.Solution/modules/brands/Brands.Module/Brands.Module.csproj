@@ -14,6 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj" />
+    <ProjectReference Include="..\..\shared_module\Shared.WebApi\Shared.WebApi.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Database\*.sql" />

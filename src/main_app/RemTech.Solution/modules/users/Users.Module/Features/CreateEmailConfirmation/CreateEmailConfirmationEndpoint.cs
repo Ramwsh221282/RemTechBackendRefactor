@@ -1,12 +1,9 @@
-﻿using Mailing.Module.Bus;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
-using Shared.Infrastructure.Module.Frontend;
 using StackExchange.Redis;
-using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Models;
 
 namespace Users.Module.Features.CreateEmailConfirmation;
@@ -22,7 +19,8 @@ public static class CreateEmailConfirmationEndpoint
         [FromServices] FrontendUrl frontendUrl,
         [FromServices] MailingBusPublisher publisher,
         [FromServices] Serilog.ILogger logger,
-        [FromHeader(Name = "RemTechAccessTokenId")] string tokenId,
+        [FromHeader(Name = "RemTechAccessTokenId")]
+        string tokenId,
         [FromHeader(Name = "Password")] string password,
         CancellationToken ct
     )

@@ -1,12 +1,7 @@
 ﻿using System.Data.Common;
-using Mailing.Module.Bus;
-using Mailing.Module.Public;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.AddUserByAdmin;
-using Users.Module.Features.ChangingEmail.Exceptions;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
 
 namespace Users.Module.Features.UpdateUserProfile;
 
@@ -45,6 +40,7 @@ internal sealed class UpdateUserRoleHandler(
                 throw new NameDuplicateException();
             throw;
         }
+
         UpdateUserProfileResult result = context.PrintResult(command);
         await context.SendEmailMessage(publisher, ct);
         return result;
@@ -63,6 +59,7 @@ internal sealed class UpdateUserRoleHandler(
             context.AddEmail(command.PreviousDetails.UserEmail);
             return;
         }
+
         await using NpgsqlCommand sqlCommand = connection.CreateCommand();
         string sql = string.Intern("UPDATE users_module.users SET email = @email WHERE id = @id;");
         sqlCommand.CommandText = sql;
@@ -85,6 +82,7 @@ internal sealed class UpdateUserRoleHandler(
             context.AddName(command.PreviousDetails.UserName);
             return;
         }
+
         await using NpgsqlCommand sqlCommand = connection.CreateCommand();
         string sql = string.Intern("UPDATE users_module.users SET name = @name WHERE id = @id;");
         sqlCommand.CommandText = sql;
@@ -107,6 +105,7 @@ internal sealed class UpdateUserRoleHandler(
             context.AddRole(command.PreviousDetails.UserRole);
             return;
         }
+
         await using NpgsqlCommand sqlCommand = connection.CreateCommand();
         sqlCommand.CommandText = string.Intern(
             "SELECT r.id FROM users_module.roles r WHERE r.name = @name;"
@@ -118,6 +117,7 @@ internal sealed class UpdateUserRoleHandler(
             await reader.DisposeAsync();
             throw new RoleNotFoundException(details.NewUserRole);
         }
+
         Guid roleId = reader.GetGuid(0);
         await reader.DisposeAsync();
         sqlCommand.CommandText = string.Intern(

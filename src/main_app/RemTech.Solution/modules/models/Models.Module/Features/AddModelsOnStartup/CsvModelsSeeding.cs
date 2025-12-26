@@ -4,7 +4,6 @@ using CsvHelper.Configuration;
 using Microsoft.Extensions.Hosting;
 using Models.Module.Types;
 using Npgsql;
-using Pgvector;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace Models.Module.Features.AddModelsOnStartup;

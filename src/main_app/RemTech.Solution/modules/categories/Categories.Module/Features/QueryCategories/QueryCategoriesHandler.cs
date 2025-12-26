@@ -1,65 +1,86 @@
-﻿using System.Data.Common;
-using System.Text;
-using Npgsql;
+﻿using System.Data;
+using Categories.Module.Responses;
+using Dapper;
 using Pgvector;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
+using Shared.Infrastructure.Module.Postgres;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace Categories.Module.Features.QueryCategories;
 
 internal sealed class QueryCategoriesHandler(
-    NpgsqlConnection connection,
+    PostgresDatabase database,
     IEmbeddingGenerator generator
-) : ICommandHandler<QueryCategoriesCommand, IEnumerable<QueryCategoriesResult>>
+) : ICommandHandler<QueryCategoriesCommand, QueryCategoriesResponse>
 {
-    private const int PageSize = 30;
-
-    private const string Sql = """
-        SELECT c.id, c.name, COUNT(v.id)
-        FROM parsed_advertisements_module.parsed_vehicles v
-        LEFT JOIN categories_module.categories c ON c.id = v.kind_id
-        GROUP BY c.id, c.name
-        """;
-    private const string EmbeddingParam = "@embedding";
-    private const string EmbeddingOrdering = " ORDER BY c.embedding <=> @embedding ";
-    private const string PaginationSqlPart = " LIMIT @limit OFFSET @offset ";
-    private const string LimitParam = "@limit";
-    private const string OffsetParam = "@offset";
-
-    public async Task<IEnumerable<QueryCategoriesResult>> Handle(
+    public async Task<QueryCategoriesResponse> Handle(
         QueryCategoriesCommand command,
         CancellationToken ct = default
     )
     {
-        if (command.Page <= 0)
-            return [];
-        int offset = (command.Page - 1) * PageSize;
-        await using NpgsqlCommand sqlCommand = connection.CreateCommand();
-        StringBuilder sqlBuilder = new StringBuilder(Sql);
+        List<string> whereClauses = [];
+        List<string> orderByClauses = [];
+        List<string> paginationClauses = [];
+        DynamicParameters parameters = new();
 
-        if (!string.IsNullOrWhiteSpace(command.Text))
+        if (!string.IsNullOrWhiteSpace(command.Name))
         {
-            sqlBuilder = sqlBuilder.AppendLine(EmbeddingOrdering);
-            Vector vector = new Vector(generator.Generate(command.Text));
-            sqlCommand.Parameters.AddWithValue(EmbeddingParam, vector);
+            whereClauses.Add("name ILIKE @name");
+            parameters.Add("@name", $"%{command.Name}%", DbType.String);
         }
 
-        sqlBuilder = sqlBuilder.AppendLine(PaginationSqlPart);
-        sqlCommand.Parameters.AddWithValue(LimitParam, PageSize);
-        sqlCommand.Parameters.AddWithValue(OffsetParam, offset);
-        sqlCommand.CommandText = sqlBuilder.ToString();
-
-        await using DbDataReader reader = await sqlCommand.ExecuteReaderAsync(ct);
-        if (!reader.HasRows)
-            return [];
-        List<QueryCategoriesResult> results = [];
-        while (await reader.ReadAsync(ct))
+        if (!string.IsNullOrWhiteSpace(command.TextSearch))
         {
-            Guid id = reader.GetGuid(0);
-            string name = reader.GetString(1);
-            long itemsCount = reader.GetInt64(2);
-            results.Add(new QueryCategoriesResult(id, name, itemsCount));
+            orderByClauses.Add("embedding <=> @embedding");
+            Vector vector = new Vector(generator.Generate(command.TextSearch));
+            parameters.Add("@embedding", vector);
         }
-        return results;
+
+        orderByClauses.Add($"name {command.OrderMode}");
+        int limit = command.PageSize;
+        int offset = (command.Page - 1) * limit;
+        paginationClauses.Add("LIMIT @limit");
+        paginationClauses.Add("OFFSET @offset");
+        parameters.Add("@limit", limit);
+        parameters.Add("@offset", offset);
+
+        string whereClause =
+            whereClauses.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", whereClauses);
+        string orderByClause =
+            orderByClauses.Count == 0
+                ? string.Empty
+                : "ORDER BY " + string.Join(", ", orderByClauses);
+        string paginationClause = string.Join(" ", paginationClauses);
+
+        string sql = $"""
+            SELECT 
+                c.id,
+                c.name,
+                COUNT(*) OVER () AS count,
+                (SELECT COUNT(*) FROM parsed_advertisements_module.parsed_vehicles v WHERE v.category_id = c.id) AS items_count
+            FROM categories_module.categories c
+            {whereClause}
+            {orderByClause}
+            {paginationClause}
+            """;
+
+        var sqlCommand = new CommandDefinition(sql, parameters, cancellationToken: ct);
+        using var connection = await database.ProvideConnection(ct);
+        var data = await connection.QueryAsync<QueryCategoryModel>(sqlCommand);
+
+        if (!data.Any())
+            return new QueryCategoriesResponse(0, []);
+
+        long count = data.First().Count;
+        var brands = data.Select(d => new CategoryDto(d.Id, d.Name, d.ItemsCount));
+        return new QueryCategoriesResponse(count, brands);
+    }
+
+    private sealed class QueryCategoryModel
+    {
+        public required Guid Id { get; init; }
+        public required string Name { get; init; }
+        public required long Count { get; init; }
+        public required long ItemsCount { get; init; }
     }
 }

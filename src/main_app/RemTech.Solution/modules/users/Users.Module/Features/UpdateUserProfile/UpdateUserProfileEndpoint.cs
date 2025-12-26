@@ -1,16 +1,9 @@
-﻿using Mailing.Module.Bus;
-using Mailing.Module.Public;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.AddUserByAdmin;
-using Users.Module.Features.ChangingEmail.Exceptions;
-using Users.Module.Features.CreateEmailConfirmation;
-using Users.Module.Features.CreatingNewAccount.Exceptions;
-using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Models;
 
 namespace Users.Module.Features.UpdateUserProfile;
@@ -32,7 +25,8 @@ public static class UpdateUserProfileEndpoint
         [FromServices] StringHash hash,
         [FromServices] HasSenderApi senderApi,
         [FromBody] UpdateUserProfileRequest request,
-        [FromHeader(Name = "RemTechAccessTokenId")] string tokenId,
+        [FromHeader(Name = "RemTechAccessTokenId")]
+        string tokenId,
         CancellationToken ct
     )
     {

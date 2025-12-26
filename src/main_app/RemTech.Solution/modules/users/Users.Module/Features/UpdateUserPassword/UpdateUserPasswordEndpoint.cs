@@ -1,13 +1,10 @@
-﻿using Mailing.Module.Bus;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Npgsql;
 using StackExchange.Redis;
 using Users.Module.CommonAbstractions;
-using Users.Module.Features.CreateEmailConfirmation;
-using Users.Module.Features.VerifyingAdmin;
 using Users.Module.Models;
 
 namespace Users.Module.Features.UpdateUserPassword;
@@ -22,7 +19,8 @@ public static class UpdateUserPasswordEndpoint
         [FromServices] StringHash hash,
         [FromServices] Serilog.ILogger logger,
         [FromServices] ConnectionMultiplexer multiplexer,
-        [FromHeader(Name = "RemTechAccessTokenId")] string tokenId,
+        [FromHeader(Name = "RemTechAccessTokenId")]
+        string tokenId,
         [FromHeader(Name = "Password")] string password,
         [FromHeader(Name = "NewPassword")] string newPassword,
         CancellationToken ct

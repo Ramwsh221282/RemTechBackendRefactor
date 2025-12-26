@@ -1,4 +1,4 @@
-﻿using Shared.Infrastructure.Module.Cqrs;
+﻿using RemTech.Core.Shared.Cqrs;
 
 namespace RemTech.Vehicles.Module.Features.QueryVehicleBrands;
 

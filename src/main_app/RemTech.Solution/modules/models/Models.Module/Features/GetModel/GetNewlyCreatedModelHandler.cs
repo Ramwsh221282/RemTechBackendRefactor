@@ -1,7 +1,7 @@
 ﻿using Models.Module.Types;
 using Npgsql;
 using Pgvector;
-using Shared.Infrastructure.Module.Cqrs;
+using RemTech.Core.Shared.Cqrs;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace Models.Module.Features.GetModel;

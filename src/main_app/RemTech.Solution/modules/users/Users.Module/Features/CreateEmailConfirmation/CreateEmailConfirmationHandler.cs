@@ -1,10 +1,8 @@
 ﻿using System.Data.Common;
-using Mailing.Module.Bus;
 using Npgsql;
-using Shared.Infrastructure.Module.Cqrs;
-using Shared.Infrastructure.Module.Frontend;
+using RemTech.Core.Shared.Cqrs;
 using StackExchange.Redis;
-using Users.Module.Features.ChangingEmail.Exceptions;
+using Users.Module.Features.ChangingEmail;
 using Users.Module.Features.ChangingEmail.Shared;
 
 namespace Users.Module.Features.CreateEmailConfirmation;
@@ -17,9 +15,9 @@ internal sealed class CreateEmailConfirmationHandler(
 ) : ICommandHandler<CreateEmailConfirmationCommand, Guid>
 {
     private const string Sql = """
-        SELECT email, email_confirmed, password
-        FROM users_module.users WHERE id = @id;
-        """;
+                               SELECT email, email_confirmed, password
+                               FROM users_module.users WHERE id = @id;
+                               """;
 
     public async Task<Guid> Handle(
         CreateEmailConfirmationCommand command,
