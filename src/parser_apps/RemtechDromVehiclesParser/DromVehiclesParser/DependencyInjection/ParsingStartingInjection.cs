@@ -3,7 +3,9 @@ using DromVehiclesParser.Parsers.Models;
 using DromVehiclesParser.Parsing.ParsingStages.Database;
 using DromVehiclesParser.Parsing.ParsingStages.Models;
 using ParsingSDK.ParserInvokingContext;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace DromVehiclesParser.DependencyInjection;
@@ -31,11 +33,13 @@ public static class ParsingStartingInjection
                 NpgSqlConnectionFactory npgSql = sp.GetRequiredService<NpgSqlConnectionFactory>();
                 Serilog.ILogger logger = sp.GetRequiredService<Serilog.ILogger>().ForContext<ParserStartQueueHandle>();
 
-                return async (@event) =>
+                return async @event =>
                 {
                     CancellationToken ct = CancellationToken.None;
                     logger.Information("Received message to start parser.");
                     await using NpgSqlSession session = new(npgSql);
+                    NpgSqlTransactionSource transactionSource = new(session);
+                    ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
 
                     try
                     {
@@ -55,7 +59,12 @@ public static class ParsingStartingInjection
                         await stage.Save(session);
                         await parser.Persist(session, ct);
                         await links.PersistMany(session);
-                        await session.UnsafeCommit(ct);
+                        Result result = await transaction.Commit(ct);
+                        if (result.IsFailure)
+                        {
+                            logger.Fatal(result.Error, "Failed to commit transaction");
+                            return;
+                        }
 
                         logger.Information("""
                                            Saved parser work stage:

@@ -2,7 +2,9 @@
 using AvitoSparesParser.AvitoSpareContext.Extensions;
 using AvitoSparesParser.ParsingStages.Extensions;
 using ParsingSDK.Parsing;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.ParsingStages.Processes;
 
@@ -14,6 +16,8 @@ public static class ParsingFinalizationProcess
         {
             deps.Deconstruct(out NpgSqlConnectionFactory npgSql, out Serilog.ILogger logger, out _, out _, out _);
             await using NpgSqlSession session = new(npgSql);
+            NpgSqlTransactionSource source = new(session);
+            ITransactionScope scope = await source.BeginTransaction(ct);
             
             Maybe<ParsingStage> finalization = await GetFinalizationStage(session, ct);
             if (!finalization.HasValue) return;
@@ -22,24 +26,21 @@ public static class ParsingFinalizationProcess
             if (CanSwitchNextStage(spares))
             {
                 await SwitchNextStage(finalization.Value, session, logger, ct);
-                await FinishTransaction(session, logger, ct);
+                await FinishTransaction(scope, logger, ct);
                 return;
             }
             
             await SendResultsToMainBackend(spares, session, logger);
-            await FinishTransaction(session, logger, ct);
+            await FinishTransaction(scope, logger, ct);
         };
     }
 
-    private static async Task FinishTransaction(NpgSqlSession session, Serilog.ILogger logger, CancellationToken ct)
+    private static async Task FinishTransaction(ITransactionScope scope, Serilog.ILogger logger, CancellationToken ct)
     {
-        try
+        Result commit = await scope.Commit();
+        if (commit.IsFailure)
         {
-            await session.UnsafeCommit(ct);
-        }
-        catch (Exception ex)
-        {
-            logger.Error(ex, "Failed to commit transaction");
+            logger.Error(commit.Error, "Failed to commit transaction.");
         }
     }
     

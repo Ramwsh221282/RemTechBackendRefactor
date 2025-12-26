@@ -4,7 +4,9 @@ using AvitoSparesParser.Commands.ExtractConcretePageItem;
 using AvitoSparesParser.ParsingStages.Extensions;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Infrastructure.Database;
 using ILogger = Serilog.ILogger;
 
 namespace AvitoSparesParser.ParsingStages.Processes;
@@ -17,7 +19,8 @@ public static class ConcreteItemExtractingProcess
         {
             ILogger logger = deps.Logger.ForContext<ParserStageProcess>();
             await using NpgSqlSession session = new(deps.NpgSql);
-            await session.UseTransaction(ct);
+            NpgSqlTransactionSource source = new(session);
+            ITransactionScope scope = await source.BeginTransaction(ct);
             
             Maybe<ParsingStage> stage = await GetConcreteItemsStage(session, ct);
             if (!stage.HasValue) return;
@@ -26,11 +29,12 @@ public static class ConcreteItemExtractingProcess
             if (CanSwitchNextStage(catalogueSpares))
             {
                 await SwitchNextStage(stage.Value, session, logger, ct);
+                await FinishTransaction(scope, logger, ct);
                 return;
             }
             
             await ProcessConcreteItemsExtraction(catalogueSpares, deps, session);
-            await FinishTransaction(session, logger, ct);
+            await FinishTransaction(scope, logger, ct);
         };
     }
     
@@ -56,7 +60,6 @@ public static class ConcreteItemExtractingProcess
     {
         ParsingStage finalization = stage.ToFinalizationStage();
         await finalization.Update(session, ct);
-        await session.UnsafeCommit(ct);
         logger.Information("Switched to {Stage} stage.", finalization.Name);
     }
 
@@ -96,16 +99,12 @@ public static class ConcreteItemExtractingProcess
         }
     }
 
-    private static async Task FinishTransaction(NpgSqlSession session, ILogger logger, CancellationToken ct)
+    private static async Task FinishTransaction(ITransactionScope scope, ILogger logger, CancellationToken ct)
     {
-        try
+        Result commit = await scope.Commit();
+        if (commit.IsFailure)
         {
-            await session.UnsafeCommit(ct);
-            logger.Information("Session finished successfully.");
-        }
-        catch(Exception ex)
-        {
-            logger.Error(ex, "Failed to commit transaction");
+            logger.Error(commit.Error, "Failed to commit transaction.");
         }
     }
 }

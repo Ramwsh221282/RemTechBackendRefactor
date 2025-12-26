@@ -2,10 +2,8 @@
 using ParsersControl.Core;
 using ParsersControl.Core.Contracts;
 using ParsersControl.Infrastructure.Listeners;
-using ParsersControl.Infrastructure.Migrations;
 using ParsersControl.Infrastructure.Parsers.Repository;
-using ParsersControl.RabbitMQ.Listeners;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace ParsersControl.CompositionRoot;
 
@@ -17,7 +15,6 @@ public static class ParsersControlInjection
         {
             services.RegisterPersistence();
             services.RegisterUseCaseHandler();
-            services.AddParsersControlBackgroundServices();
             services.RegisterEventListeners();
         }
 
@@ -25,6 +22,10 @@ public static class ParsersControlInjection
         {
             services.AddScoped<IOnParserSubscribedListener, OnParserSubscribedEventListener>();
             services.AddScoped<IOnParserStartedListener, OnParserStartedEventListener>();
+            services.Scan(x => x.FromAssemblies(typeof(ParserSubscribeConsumer).Assembly)
+                .AddClasses(classes => classes.AssignableTo<IConsumer>())
+                .AsSelfWithInterfaces()
+                .WithTransientLifetime());
         }
         
         private void RegisterPersistence()

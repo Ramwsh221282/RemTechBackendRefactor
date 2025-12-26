@@ -5,7 +5,9 @@ using DromVehiclesParser.Parsing.ParsingStages.Database;
 using DromVehiclesParser.Parsing.ParsingStages.Models;
 using DromVehiclesParser.ResultsExporing.TextFileExporting;
 using ParsingSDK.Parsing;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
 
@@ -18,6 +20,8 @@ public static class FinalizationStage
             deps.Deconstruct(out _, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger dLogger, out IExporter<TextFile> exporter);
             Serilog.ILogger logger = dLogger.ForContext<ParsingStage>();
             await using NpgSqlSession session = new(npgSql);
+            NpgSqlTransactionSource transactionSource = new(session);
+            ITransactionScope transaction = await transactionSource.BeginTransaction(ct); 
             
             Maybe<ParserWorkStage> stage = await GetFinalizationStage(session);
             if (!stage.HasValue) return;
@@ -30,12 +34,12 @@ public static class FinalizationStage
                 await RemoveCataloguePagesInformation(session, ct);
                 await RemoveItemsInformation(session, ct); 
                 await SwitchNextStage(stage, session, logger, ct);
-                await FinishTransaction(session, logger, ct);
+                await FinishTransaction(transaction, logger, ct);
                 return;
             }
             
             await FinalizeAdvertisements(advertisements, session, logger, exporter, ct);
-            await FinishTransaction(session, logger, ct);
+            await FinishTransaction(transaction, logger, ct);
         };
     }
 
@@ -52,16 +56,12 @@ public static class FinalizationStage
         return advertisements.Length == 0;
     }
     
-    private static async Task FinishTransaction(NpgSqlSession session, Serilog.ILogger logger, CancellationToken ct)
+    private static async Task FinishTransaction(ITransactionScope transaction, Serilog.ILogger logger, CancellationToken ct)
     {
-        try
+        Result result = await transaction.Commit(ct);
+        if (result.IsFailure)
         {
-            await session.UnsafeCommit(ct);
-            logger.Information("Transaction committed");
-        }
-        catch (Exception ex)
-        {
-            logger.Fatal(ex, "Failed to commit transaction");
+            logger.Fatal(result.Error, "Failed to commit transaction");
         }
     }
     

@@ -1,7 +1,7 @@
 using System.Data;
 using AvitoSparesParser.Common;
 using Dapper;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.CatalogueParsing.Extensions;
 
@@ -28,18 +28,7 @@ public static class AvitoCataloguePageStoring
             {lockClause}
             """;
             CommandDefinition command = session.FormCommand(sql, parameters, ct);
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            List<AvitoCataloguePage> pages = [];
-            while (reader.Read())
-            {
-                Guid id = reader.GetGuid(reader.GetOrdinal("id"));
-                string url = reader.GetString(reader.GetOrdinal("url"));
-                bool processed = reader.GetBoolean(reader.GetOrdinal("processed"));
-                int retryCount = reader.GetInt32(reader.GetOrdinal("retry_count"));
-                pages.Add(new AvitoCataloguePage(id, url, new RetryCounter(retryCount), new ProcessedMarker(processed)));
-            }
-
-            return [.. pages];
+            return await session.QueryMultipleUsingReader(command, CreateBy);
         }
     }
 
@@ -53,7 +42,7 @@ public static class AvitoCataloguePageStoring
             VALUES 
             (@id, @url, @processed, @retry_count);
             """;
-            IEnumerable<object> parameters = pages.Select(p => p.ExtractParameters());
+            object[] parameters = pages.Select(p => p.ExtractParameters()).ToArray();
             await session.ExecuteBulk(sql, parameters);
         }
 
@@ -65,7 +54,7 @@ public static class AvitoCataloguePageStoring
             SET processed = @processed, retry_count = @retry_count
             WHERE id = @id
             """;
-            IEnumerable<object> parameters = pages.Select(p => p.ExtractParameters());
+            object[] parameters = pages.Select(p => p.ExtractParameters()).ToArray();
             await session.ExecuteBulk(sql, parameters);
         }
     }
@@ -100,5 +89,14 @@ public static class AvitoCataloguePageStoring
 
             return filters.Count == 0 ? (parameters, string.Empty) : (parameters, "WHERE " + string.Join(" AND ", filters));
         }
+    }
+    
+    private static AvitoCataloguePage CreateBy(IDataReader reader)
+    {
+        Guid id = reader.GetGuid(reader.GetOrdinal("id"));
+        string url = reader.GetString(reader.GetOrdinal("url"));
+        bool processed = reader.GetBoolean(reader.GetOrdinal("processed"));
+        int retryCount = reader.GetInt32(reader.GetOrdinal("retry_count"));
+        return new AvitoCataloguePage(id, url, new RetryCounter(retryCount), new ProcessedMarker(processed));
     }
 }

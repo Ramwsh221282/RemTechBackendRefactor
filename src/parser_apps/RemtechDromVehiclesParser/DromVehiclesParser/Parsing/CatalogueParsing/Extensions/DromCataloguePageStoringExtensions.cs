@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using DromVehiclesParser.Parsing.CatalogueParsing.Models;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace DromVehiclesParser.Parsing.CatalogueParsing.Extensions;
 
@@ -24,18 +24,7 @@ public static class DromCataloguePageStoringExtensions
             ";
 
             CommandDefinition command = session.FormCommand(sql, parameters, ct);
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            List<DromCataloguePage> pages = new List<DromCataloguePage>();
-            
-            while (reader.Read())
-            {
-                string url = reader.GetString(reader.GetOrdinal("url"));
-                bool processed = reader.GetBoolean(reader.GetOrdinal("processed"));
-                int retryCount = reader.GetInt32(reader.GetOrdinal("retry_count"));
-                pages.Add(new DromCataloguePage(url, retryCount, processed));
-            }
-            
-            return pages.ToArray();
+            return await session.QueryMultipleUsingReader(command, FromReader);
         }
     }
     
@@ -47,7 +36,7 @@ public static class DromCataloguePageStoringExtensions
             INSERT INTO drom_vehicles_parser.catalogue_pages (url, processed, retry_count)
             VALUES (@url, @processed, @retry_count)
             ON CONFLICT (url) DO NOTHING";
-            IEnumerable<object> parameters = pages.Select(p => p.ExtractParameters());
+            object[] parameters = [..pages.Select(p => p.ExtractParameters())];
             await session.ExecuteBulk(sql, parameters);
         }
 
@@ -59,7 +48,7 @@ public static class DromCataloguePageStoringExtensions
                 retry_count = @retry_count
             WHERE url = @url";
 
-            IEnumerable<object> parameters = pages.Select(p => p.ExtractParameters()); 
+            object[] parameters = [..pages.Select(p => p.ExtractParameters())]; 
             await session.ExecuteBulk(sql, parameters);
         }
     }
@@ -107,5 +96,13 @@ public static class DromCataloguePageStoringExtensions
         {
             return query.WithLock ? "FOR UPDATE SKIP LOCKED" : string.Empty;
         }
+    }
+    
+    private static DromCataloguePage FromReader(IDataReader reader)
+    {
+        string url = reader.GetString(reader.GetOrdinal("url"));
+        bool processed = reader.GetBoolean(reader.GetOrdinal("processed"));
+        int retryCount = reader.GetInt32(reader.GetOrdinal("retry_count"));
+        return new DromCataloguePage(url, retryCount, processed);
     }
 }

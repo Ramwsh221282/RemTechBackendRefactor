@@ -1,7 +1,9 @@
 using AvitoFirewallBypass;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Infrastructure.Database;
 using RemTechAvitoVehiclesParser.ParserWorkStages.Common;
 using RemTechAvitoVehiclesParser.ParserWorkStages.Common.Commands.ExtractConcreteItem;
 using RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Extensions;
@@ -25,7 +27,8 @@ public static class ConcreteItemParsingProcessImplementation
 
             Serilog.ILogger logger = dLogger.ForContext<WorkStageProcess>();
             await using NpgSqlSession session = new(npgSql);
-            await session.UseTransaction(ct);
+            NpgSqlTransactionSource transactionSource = new(session);
+            ITransactionScope txn = await transactionSource.BeginTransaction(ct);
 
             WorkStageQuery stageQuery = new(Name: WorkStageConstants.ConcreteItemStageName, WithLock: true);
             Maybe<ParserWorkStage> workStage = await ParserWorkStage.GetSingle(session, stageQuery, ct);
@@ -37,7 +40,7 @@ public static class ConcreteItemParsingProcessImplementation
             {
                 workStage.Value.ToFinalizationStage();
                 await workStage.Value.Update(session, ct);
-                await session.UnsafeCommit(ct);
+                await txn.Commit(ct);
                 logger.Information("Switched to: {Stage}", workStage.Value.Name);
                 return;
             }
@@ -73,15 +76,8 @@ public static class ConcreteItemParsingProcessImplementation
             await browser.DestroyAsync();
             await items.UpdateFull(session);
 
-            try
-            {
-                await session.UnsafeCommit(ct);
-                logger.Information("Committed transaction.");
-            }
-            catch(Exception ex)
-            {
-                logger.Error(ex, "Error at committing transaction");
-            }
+            Result commit = await txn.Commit(ct);
+            if (commit.IsFailure) logger.Error(commit.Error, "Error at committing transaction");
         };
     }
 }

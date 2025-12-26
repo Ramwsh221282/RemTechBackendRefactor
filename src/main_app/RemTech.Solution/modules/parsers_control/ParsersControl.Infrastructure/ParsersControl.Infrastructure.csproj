@@ -7,7 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Infrastructure\RemTech.SharedKernel.Infrastructure.csproj" />
+      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Infrastructure.Database\RemTech.SharedKernel.Infrastructure.Database.csproj" />
+      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Infrastructure.RabbitMq\RemTech.SharedKernel.Infrastructure.RabbitMq.csproj" />
       <ProjectReference Include="..\ParsersControl.Core\ParsersControl.Core.csproj" />
     </ItemGroup>
     

@@ -10,6 +10,7 @@ public sealed class ParserWorkStagesTest(IntegrationalTestsFixture fixture) : IC
     [Fact]
     public async Task Test_Parser_Work_Stages()
     {
+        await Task.Delay(TimeSpan.FromSeconds(5));
         await PublishStartParser();
         await Task.Delay(TimeSpan.FromMinutes(30));
     }

@@ -1,7 +1,7 @@
 using AvitoFirewallBypass;
 using ParsingSDK.Parsing;
 using ParsingSDK.TextProcessing;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages;
 

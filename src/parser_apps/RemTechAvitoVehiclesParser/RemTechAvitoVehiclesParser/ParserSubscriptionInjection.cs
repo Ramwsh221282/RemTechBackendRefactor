@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using ParserSubscriber.SubscribtionContext;
 using ParserSubscriber.SubscribtionContext.Options;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
-using RemTech.SharedKernel.Infrastructure.RabbitMq;
+using RemTech.SharedKernel.Configurations;
+using RabbitMqConnectionSource = RemTech.SharedKernel.Infrastructure.RabbitMq.RabbitMqConnectionSource;
 
 namespace RemTechAvitoVehiclesParser;
 

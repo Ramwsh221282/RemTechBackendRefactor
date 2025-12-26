@@ -1,6 +1,6 @@
 ﻿using DromVehiclesParser.ResultsExporing.TextFileExporting;
 using ParsingSDK.Parsing;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
 

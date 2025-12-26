@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.Handlers;
+using Scrutor;
 
 namespace ParsersControl.Core;
 
@@ -14,6 +15,7 @@ public static class ParsersDependencyInjection
         
         services.Scan(x => x.FromAssemblies([assembly])
             .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<,>)))
+            .UsingRegistrationStrategy(RegistrationStrategy.Skip)
             .AsSelfWithInterfaces()
             .WithScopedLifetime()
         );
@@ -21,6 +23,8 @@ public static class ParsersDependencyInjection
         services.AddValidatorsFromAssembly(assembly);
         services.RegisterLoggingHandlers();
         services.RegisterValidatingHandlers();
+        services.RegisterTransactionalHandlers();
+        services.UseTransactionalHandlers();
         services.UseValidatingHandlers();
         services.UseLoggingHandlers();
     }

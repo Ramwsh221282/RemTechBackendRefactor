@@ -1,6 +1,6 @@
 using System.Data;
 using Dapper;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.ParserStartConfiguration.Extensions;
 
@@ -60,23 +60,7 @@ public static class ProcessingParserStoringExtensions
             {lockClause}
             """;
             CommandDefinition command = session.FormCommand(sql, parameters, ct: ct);
-            List<ProcessingParserLink> links = [];
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            while (reader.Read())
-            {
-                Guid id = reader.GetGuid(reader.GetOrdinal("id"));
-                string url = reader.GetString(reader.GetOrdinal("url"));
-                bool processed = reader.GetBoolean(reader.GetOrdinal("processed"));
-                int retry_count = reader.GetInt32(reader.GetOrdinal("retry_count"));
-                links.Add(new ProcessingParserLink(
-                    id,
-                    url,
-                    new Common.RetryCounter(retry_count),
-                    new Common.ProcessedMarker(processed)
-                ));
-            }
-
-            return [.. links];
+            return await session.QueryMultipleUsingReader(command, CreateBy);
         }
     }
 
@@ -91,7 +75,7 @@ public static class ProcessingParserStoringExtensions
                 retry_count = @retry_count
             WHERE id = @id
             """;
-            IEnumerable<object> parameters = links.Select(link => link.ExtractParameters());
+            object[] parameters = links.Select(link => link.ExtractParameters()).ToArray();
             await session.ExecuteBulk(sql, parameters);
         }
 
@@ -103,7 +87,7 @@ public static class ProcessingParserStoringExtensions
             VALUES
             (@id, @url, @processed, @retry_count)
             """;
-            IEnumerable<object> parameters = links.Select(link => link.ExtractParameters());
+            object[] parameters = links.Select(link => link.ExtractParameters()).ToArray();
             await session.ExecuteBulk(sql, parameters);
         }
     }
@@ -142,5 +126,19 @@ public static class ProcessingParserStoringExtensions
             processed = link.Marker.Processed,
             retry_count = link.Counter.Value,
         };
+    }
+
+    private static ProcessingParserLink CreateBy(IDataReader reader)
+    {
+        Guid id = reader.GetGuid(reader.GetOrdinal("id"));
+        string url = reader.GetString(reader.GetOrdinal("url"));
+        bool processed = reader.GetBoolean(reader.GetOrdinal("processed"));
+        int retry_count = reader.GetInt32(reader.GetOrdinal("retry_count"));
+        return new ProcessingParserLink(
+            id,
+            url,
+            new Common.RetryCounter(retry_count),
+            new Common.ProcessedMarker(processed)
+        );
     }
 }

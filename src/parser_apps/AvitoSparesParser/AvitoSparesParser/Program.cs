@@ -1,29 +1,15 @@
-using AvitoSparesParser.Database;
-using AvitoSparesParser.ParserStartConfiguration;
-using AvitoSparesParser.ParserSubscription;
-using AvitoSparesParser.ParsingStages;
+using AvitoSparesParser.Extensions;
+using RemTech.SharedKernel.Core.Logging;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+bool isDevelopment = builder.Environment.IsDevelopment();
 
-// builder.Services.RegisterParserDependencies(conf =>
-// {
-//         conf.AddSingleton<IOptions<ScrapingBrowserOptions>>(_ => Options.Create(new ScrapingBrowserOptions
-//         {
-//             Headless = false,
-//         }));
-// });
-
-builder.Services.RegisterAvitoFirewallBypass();
-builder.Services.RegisterSharedInfrastructure();
-builder.Services.RegisterDatabaseUpgrader();
-builder.Services.RegisterParserSubscriptionProcess();
-builder.Services.RegisterParserStartQueue();
-builder.Services.RegisterParserWorkStages();
-builder.Services.RegisterTextTransformerBuilder();
-builder.Services.AddQuartzServices();
-
+builder.Services.RegisterLogging();
+builder.Services.RegisterDependenciesForParsing(isDevelopment);
+builder.Services.RegisterInfrastructureDependencies(isDevelopment);
 WebApplication app = builder.Build();
-app.Services.ApplyDatabaseMigrations();
+app.Services.ApplyModuleMigrations();
 app.Run();
 
 namespace AvitoSparesParser

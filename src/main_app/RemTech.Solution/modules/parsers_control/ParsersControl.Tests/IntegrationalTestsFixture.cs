@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using ParsersControl.CompositionRoot;
 using ParsersControl.Core.Contracts;
+using ParsersControl.Tests.Parsers.SubscribeParser;
 using RemTech.SharedKernel.Core.Logging;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
@@ -24,11 +25,11 @@ public sealed class IntegrationalTestsFixture : WebApplicationFactory<ParsersCon
         {
             s.AddPostgres();
             s.RegisterLogging();
-            s.AddParsersControlModule();
             s.ReRegisterNpgSqlOptions(_dbContainer);
             s.ReRegisterRabbitMqOptions(_rabbitContainer);
             s.AddScoped<IOnParserSubscribedListener, FakeOnParserSubscribedListener>();
             s.AddScoped<IOnParserStartedListener, FakeOnParserWorkStartedListener>();
+            s.AddTransient<FakeParserSubscribeProducer>();
         });
     }
 

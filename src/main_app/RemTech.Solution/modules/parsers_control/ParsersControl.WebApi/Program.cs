@@ -1,7 +1,8 @@
 using ParsersControl.CompositionRoot;
 using ParsersControl.Infrastructure.Migrations;
+using ParsersControl.WebApi.Extensions;
 using RemTech.SharedKernel.Core.Logging;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using SwaggerThemes;
 
@@ -10,6 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.RegisterLogging();
+builder.Services.AddInfrastructureConfiguration();
 builder.Services.AddPostgres();
 builder.Services.AddRabbitMq();
 builder.Services.AddMigrations([typeof(ParsersTableMigration).Assembly]);

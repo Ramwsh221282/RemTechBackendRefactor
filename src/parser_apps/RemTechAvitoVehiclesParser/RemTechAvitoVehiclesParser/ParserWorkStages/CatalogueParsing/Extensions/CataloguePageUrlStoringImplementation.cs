@@ -1,6 +1,6 @@
 using System.Data;
 using Dapper;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing.Extensions;
 
@@ -24,18 +24,15 @@ public static class CataloguePageUrlStoringImplementation
                 {lockClause}
                 {limitClause}
                 """;
+            
             CommandDefinition command = session.FormCommand(sql, parameters, ct);
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            List<CataloguePageUrl> urls = [];
-            while (reader.Read())
+            return await session.QueryMultipleUsingReader(command, r =>
             {
-                string url = reader.GetString(reader.GetOrdinal("url"));
-                bool processed = reader.GetBoolean(reader.GetOrdinal("was_processed"));
-                int retryCount = reader.GetInt32(reader.GetOrdinal("retry_count"));
-                urls.Add(new CataloguePageUrl(url, processed, retryCount));
-            }
-
-            return [.. urls];
+                string url = r.GetString(r.GetOrdinal("url"));
+                bool processed = r.GetBoolean(r.GetOrdinal("was_processed"));
+                int retryCount = r.GetInt32(r.GetOrdinal("retry_count"));
+                return new CataloguePageUrl(url, processed, retryCount);
+            });
         }
     }
 
@@ -49,7 +46,8 @@ public static class CataloguePageUrlStoringImplementation
                     retry_count = @retry_count
                 WHERE url = @url;
                 """;
-            IEnumerable<object> parameters = urls.Select(l => l.ExtractParameters());
+            
+            object[] parameters = [..urls.Select(l => l.ExtractParameters())];
             await session.ExecuteBulk(sql, parameters);
         }
 
@@ -61,7 +59,8 @@ public static class CataloguePageUrlStoringImplementation
                 VALUES
                 (@url, @processed, @retry_count) ON CONFLICT (url) DO NOTHING;
                 """;
-            IEnumerable<object> parameters = urls.Select(l => l.ExtractParameters());
+            
+            object[] parameters = [..urls.Select(l => l.ExtractParameters())];
             await session.ExecuteBulk(sql, parameters);
         }
     }

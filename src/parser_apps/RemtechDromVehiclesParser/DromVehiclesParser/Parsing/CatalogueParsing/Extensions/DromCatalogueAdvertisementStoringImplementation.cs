@@ -2,8 +2,7 @@
 using System.Text.Json;
 using Dapper;
 using DromVehiclesParser.Parsing.CatalogueParsing.Models;
-using DromVehiclesParser.Shared.NpgSql;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace DromVehiclesParser.Parsing.CatalogueParsing.Extensions;
 
@@ -30,17 +29,7 @@ public static class DromCatalogueAdvertisementStoringImplementation
                 ";
 
             CommandDefinition command = session.FormCommand(sql, parameters, ct);
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            List<DromCatalogueAdvertisement> advertisements = [];
-            while (reader.Read())
-                advertisements.Add(new(
-                    reader.GetProperty<string>("id"),
-                    reader.GetProperty<string>("url"),
-                    JsonSerializer.Deserialize<string[]>(reader.GetProperty<string>("photos"))!.ToList(),
-                    reader.GetProperty<bool>("processed"),
-                    reader.GetProperty<int>("retry_count")
-                ));
-            return advertisements.ToArray();
+            return await session.QueryMultipleUsingReader(command, FromReader);
         }
     }
     
@@ -53,7 +42,7 @@ public static class DromCatalogueAdvertisementStoringImplementation
                                VALUES (@id, @url, @photos::jsonb, @processed, @retry_count)
                                ON CONFLICT (id) DO NOTHING
                                """;
-            IEnumerable<object> parameters = advertisements.Select(ad => ad.ExtractParameters());
+            object[] parameters = [..advertisements.Select(ad => ad.ExtractParameters())];
             await session.ExecuteBulk(sql, parameters);
         }
     }
@@ -131,5 +120,16 @@ public static class DromCatalogueAdvertisementStoringImplementation
                 ? "FOR UPDATE" 
                 : string.Empty;
         }
+    }
+
+    private static DromCatalogueAdvertisement FromReader(IDataReader reader)
+    {
+        return new DromCatalogueAdvertisement(
+            reader.GetString(reader.GetOrdinal("id")),
+            reader.GetString(reader.GetOrdinal("url")),
+            JsonSerializer.Deserialize<string[]>(reader.GetString(reader.GetOrdinal("photos")))!.ToList(),
+            reader.GetBoolean(reader.GetOrdinal("processed")),
+            reader.GetInt32(reader.GetOrdinal("retry_count"))
+        );
     }
 }

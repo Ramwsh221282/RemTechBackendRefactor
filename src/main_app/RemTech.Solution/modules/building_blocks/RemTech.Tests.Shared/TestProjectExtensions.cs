@@ -3,8 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
-using RemTech.SharedKernel.Infrastructure.RabbitMq;
+using Quartz;
+using RemTech.SharedKernel.Configurations;
+using RemTech.SharedKernel.Infrastructure.Quartz;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 
@@ -12,6 +13,28 @@ namespace RemTech.Tests.Shared;
 
 public static class TestProjectExtensions
 {
+    public static void ReRegisterCronScheduleJobs(this IServiceCollection services)
+    {
+        IEnumerable<ServiceDescriptor> jobs = services.Where(s => s.ServiceType == typeof(ICronScheduleJob));
+        services.RemoveAll<ICronScheduleJob>();
+        foreach (ServiceDescriptor job in jobs)
+            services.AddTransient(job.ServiceType, job.ImplementationType!);
+    }
+
+    public static void ReRegisterQuartzHostedService(
+        this IServiceCollection services,
+        Action<QuartzHostedServiceOptions>? configure = null)
+    {
+        ServiceDescriptor? quartzHostedService = services
+            .FirstOrDefault(s => s.ServiceType == typeof(IHostedService) &&
+            s.ImplementationType == typeof(QuartzHostedService));
+        
+        if (quartzHostedService != null)
+            services.Remove(quartzHostedService);
+
+        services.AddQuartzHostedService(configure);
+    }
+    
     public static void ReRegisterAppsettingsJsonConfiguration(this IServiceCollection services)
     {
         IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
@@ -28,15 +51,15 @@ public static class TestProjectExtensions
 
     public static void ReRegisterRabbitMqOptions(this IServiceCollection services, RabbitMqContainer container)
     {
-        services.RemoveAll<IOptions<RabbitMqConnectionOptions>>();
-        IOptions<RabbitMqConnectionOptions> options = Options.Create(container.CreateRabbitMqConfiguration());
+        services.RemoveAll<IOptions<RabbitMqOptions>>();
+        IOptions<RabbitMqOptions> options = Options.Create(container.CreateRabbitMqConfiguration());
         services.AddSingleton(options);
     }
 
     public static void ReRegisterBackgroundService<T>(this IServiceCollection services) 
         where T : class, IHostedService
     {
-        ServiceDescriptor? registeredService = services.FirstOrDefault(s => s.ServiceType == typeof(T));
+        ServiceDescriptor? registeredService = services.FirstOrDefault(s => s.ServiceType == typeof(IHostedService) && s.ImplementationType == typeof(T));
         if (registeredService == null) 
             throw new InvalidOperationException($"Cannot find registered service for {typeof(T)} when re registering background service.");
         services.RemoveAll(registeredService.ServiceType);
@@ -91,7 +114,7 @@ public static class TestProjectExtensions
         };
     }
 
-    public static RabbitMqConnectionOptions CreateRabbitMqConfiguration(this RabbitMqContainer container)
+    public static RabbitMqOptions CreateRabbitMqConfiguration(this RabbitMqContainer container)
     {
         string connectionString = container.GetConnectionString();
         string[] parts = connectionString.Split('@', StringSplitOptions.RemoveEmptyEntries);
@@ -105,7 +128,7 @@ public static class TestProjectExtensions
         string username = userParts[0];
         string password = userParts[1];
     
-        return new RabbitMqConnectionOptions()
+        return new RabbitMqOptions()
         {
             Hostname = host,
             Port = int.Parse(port),

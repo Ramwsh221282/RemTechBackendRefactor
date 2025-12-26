@@ -6,7 +6,9 @@ using DromVehiclesParser.Parsing.ParsingStages.Database;
 using DromVehiclesParser.Parsing.ParsingStages.Models;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
 
@@ -18,6 +20,8 @@ public static class CatalogueAdvertisementsExtractingStage
         {
             deps.Deconstruct(out BrowserFactory factory, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger logger, out _);
             await using NpgSqlSession session = new(npgSql);
+            NpgSqlTransactionSource transactionSource = new(session);
+            ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
             
             Maybe<ParserWorkStage> stage = await GetCatalogueStage(session, ct);
             if (!stage.HasValue) return;
@@ -26,12 +30,12 @@ public static class CatalogueAdvertisementsExtractingStage
             if (CanSwitchNextStage(pages))
             {
                 await SwitchNextStage(stage, session, logger, ct);
-                await FinishTransaction(session, logger, ct); 
+                await FinishTransaction(transaction, logger, ct); 
                 return;
             }
             
             await ExtractCatalogueAdvertisements(pages, factory, session, logger);
-            await FinishTransaction(session, logger, ct);
+            await FinishTransaction(transaction, logger, ct);
         };
     }
 
@@ -86,18 +90,14 @@ public static class CatalogueAdvertisementsExtractingStage
     }
     
     private static async Task FinishTransaction(
-        NpgSqlSession session, 
+        ITransactionScope transaction, 
         Serilog.ILogger logger, 
         CancellationToken ct)
     {
-        try
+        Result result = await transaction.Commit(ct);
+        if (result.IsFailure)
         {
-            await session.UnsafeCommit(ct);
-            logger.Information("Transaction committed");
-        }
-        catch (Exception ex)
-        {
-            logger.Fatal(ex, "Failed to commit transaction");
+            logger.Fatal(result.Error, "Failed to commit transaction");
         }
     }
     

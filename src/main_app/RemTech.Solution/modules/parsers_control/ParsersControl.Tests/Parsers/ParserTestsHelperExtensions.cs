@@ -11,7 +11,7 @@ using ParsersControl.Core.Features.StopParserWork;
 using ParsersControl.Core.Features.SubscribeParser;
 using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
-using RemTech.SharedKernel.Configuration;
+using ParsersControl.Tests.Parsers.SubscribeParser;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 
@@ -21,6 +21,14 @@ public static class ParserTestsHelperExtensions
 {
     extension(IServiceProvider services)
     {
+        public async Task InvokeSubscriptionFromExternalService(string domain, string type, Guid id)
+        {
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            FakeParserSubscribeProducer producer =
+                scope.ServiceProvider.GetRequiredService<FakeParserSubscribeProducer>();
+            await producer.Publish(id, domain, type);
+        }
+        
         public async Task<Result<SubscribedParser>> InvokeSubscription(string domain, string type, Guid id)
         {
             SubscribeParserCommand command = new(id, domain, type);
@@ -79,7 +87,7 @@ public static class ParserTestsHelperExtensions
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
             ICommandHandler<ChangeLinkActivityCommand, SubscribedParserLink> service =
-                scope.ServiceProvider.Resolve<ICommandHandler<ChangeLinkActivityCommand, SubscribedParserLink>>();
+                scope.ServiceProvider.GetRequiredService<ICommandHandler<ChangeLinkActivityCommand, SubscribedParserLink>>();
             ChangeLinkActivityCommand command = new(parserId, linkId, activity);
             return await service.Execute(command);
         }

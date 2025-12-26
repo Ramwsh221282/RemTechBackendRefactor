@@ -10,7 +10,7 @@ public sealed class ParserStartTest(IntegrationalTestsFixture fixture) : IClassF
     [Fact]
     private async Task Test_Parser_Start()
     {
-        await Task.Delay(TimeSpan.FromSeconds(10));
+        await Task.Delay(TimeSpan.FromSeconds(5));
         await PublishParserStart();
         await Task.Delay(TimeSpan.FromMinutes(10));
     }

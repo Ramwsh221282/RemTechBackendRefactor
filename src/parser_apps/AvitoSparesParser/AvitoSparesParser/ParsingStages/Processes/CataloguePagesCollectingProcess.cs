@@ -6,7 +6,9 @@ using AvitoSparesParser.ParserStartConfiguration.Extensions;
 using AvitoSparesParser.ParsingStages.Extensions;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.ParsingStages.Processes;
 
@@ -25,7 +27,9 @@ public static class CataloguePagesCollectingProcess
             
             Serilog.ILogger logger = dLogger.ForContext<ParserStageProcess>();
             await using NpgSqlSession session = new(npgSql);
-            await session.UseTransaction(ct);
+            NpgSqlTransactionSource source = new(session);
+            ITransactionScope scope = await source.BeginTransaction(ct);
+ 
             
             Maybe<ParsingStage> stage = await GetPaginationStage(session, ct);
             if (!stage.HasValue) return;
@@ -34,11 +38,12 @@ public static class CataloguePagesCollectingProcess
             if (CanSwitchNextStage(links))
             {
                 await SwitchNextStage(stage.Value, session, logger, ct);
+                await FinishTransaction(scope, logger, ct);
                 return;
             }
 
             await ProcessPagedUrlExtraction(links, browsers, factory, session, logger);
-            await FinishTransaction(session, logger, ct);
+            await FinishTransaction(scope, logger, ct);
         };
     }
     
@@ -71,7 +76,6 @@ public static class CataloguePagesCollectingProcess
     {
         ParsingStage catalogueStage = stage.ToCatalogueStage();
         await catalogueStage.Update(session, ct);
-        await session.UnsafeCommit(ct);
         logger.Information("Switched to: {Stage}", catalogueStage.Name);
     }
 
@@ -117,15 +121,12 @@ public static class CataloguePagesCollectingProcess
         return link;
     }
 
-    private static async Task FinishTransaction(NpgSqlSession session, Serilog.ILogger logger, CancellationToken ct)
+    private static async Task FinishTransaction(ITransactionScope scope, Serilog.ILogger logger, CancellationToken ct)
     {
-        try
+        Result commit = await scope.Commit();
+        if (commit.IsFailure)
         {
-            await session.UnsafeCommit(ct);
-        }
-        catch (Exception ex)
-        {
-            logger.Error(ex, "Error at committing transaction.");
+            logger.Error(commit.Error, "Failed to commit transaction.");
         }
     }
 }

@@ -1,7 +1,7 @@
 using AvitoSparesParser.ParsingStages.Extensions;
 using ParsingSDK.Parsing;
 using Quartz;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.Quartz;
 
 namespace AvitoSparesParser.ParsingStages;

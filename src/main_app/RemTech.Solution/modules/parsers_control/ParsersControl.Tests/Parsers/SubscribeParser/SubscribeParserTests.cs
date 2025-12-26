@@ -10,6 +10,18 @@ public sealed class SubscribeParserTests(
     private IServiceProvider Services { get; } = fixture.Services;
 
     [Fact]
+    private async Task Subscribe_Parser_Using_ExternalService()
+    {
+        string domain = "Some Domain";
+        string type = "Some Type";
+        Guid id = Guid.NewGuid();
+        await Services.InvokeSubscriptionFromExternalService(domain, type, id);
+        await Task.Delay(TimeSpan.FromSeconds(10));
+        Result<ISubscribedParser> parser = await Services.GetParser(id);
+        Assert.True(parser.IsSuccess);
+    }
+    
+    [Fact]
     private async Task Subscribe_Parser_Ensure_Subscribed()
     {
         string domain = "Some Domain";

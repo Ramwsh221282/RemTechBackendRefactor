@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using ParserSubscriber.SubscribtionContext;
 using ParserSubscriber.SubscribtionContext.Options;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Configurations;
 using RabbitMQProvider = RemTech.SharedKernel.Infrastructure.RabbitMq.RabbitMqConnectionSource;
 
 namespace AvitoSparesParser.ParserSubscription;
@@ -28,7 +28,7 @@ public static class ParserSubscriptionProcessInjection
             serv.AddSingleton<RabbitMqConnectionProvider>(sp =>
                 {
                     RabbitMQProvider source = sp.GetRequiredService<RabbitMQProvider>();
-                    return (ct) => source.GetConnection(ct);
+                    return (ct) => source.GetConnection(ct).AsTask();
                 });
         };
     

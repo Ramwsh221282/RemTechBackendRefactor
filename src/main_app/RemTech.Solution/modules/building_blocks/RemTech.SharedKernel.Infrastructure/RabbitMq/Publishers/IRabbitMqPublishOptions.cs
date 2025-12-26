@@ -1,3 +1,0 @@
-﻿namespace RemTech.SharedKernel.Infrastructure.RabbitMq.Publishers;
-
-public interface IRabbitMqPublishOptions;

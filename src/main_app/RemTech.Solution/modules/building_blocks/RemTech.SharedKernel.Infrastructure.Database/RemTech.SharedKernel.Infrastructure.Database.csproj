@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Version>1.0.2</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Dapper" Version="2.1.66" />
+      <PackageReference Include="FluentMigrator" Version="7.2.0" />
+      <PackageReference Include="FluentMigrator.Abstractions" Version="7.2.0" />
+      <PackageReference Include="FluentMigrator.Extensions.Postgres" Version="7.2.0" />
+      <PackageReference Include="FluentMigrator.Runner.Core" Version="7.2.0" />
+      <PackageReference Include="FluentMigrator.Runner.Postgres" Version="7.2.0" />
+      <PackageReference Include="Npgsql" Version="10.0.1" />
+      <PackageReference Include="Pgvector" Version="0.3.2" />
+      <PackageReference Include="Pgvector.Dapper" Version="0.3.1" />
+      <PackageReference Include="Serilog" Version="4.3.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\RemTech.SharedKernel.Configurations\RemTech.SharedKernel.Configurations.csproj" />
+      <ProjectReference Include="..\RemTech.SharedKernel.Core\RemTech.SharedKernel.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Migrations\" />
+    </ItemGroup>
+
+</Project>

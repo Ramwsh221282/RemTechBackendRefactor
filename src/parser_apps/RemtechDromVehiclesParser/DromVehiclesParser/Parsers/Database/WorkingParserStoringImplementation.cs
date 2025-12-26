@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using DromVehiclesParser.Parsers.Models;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace DromVehiclesParser.Parsers.Database;
 

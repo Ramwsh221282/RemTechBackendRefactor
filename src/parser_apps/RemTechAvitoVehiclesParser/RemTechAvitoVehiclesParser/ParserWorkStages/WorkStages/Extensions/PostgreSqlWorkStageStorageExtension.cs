@@ -1,8 +1,9 @@
 using Dapper;
 using ParsingSDK.Parsing;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
 using RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Models;
 using System.Data;
+using RemTech.SharedKernel.Infrastructure.Database;
+
 namespace RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Extensions;
 
 public static class PostgreSqlWorkStageStorageExtension
@@ -28,16 +29,14 @@ public static class PostgreSqlWorkStageStorageExtension
             LIMIT 1
             """;
             CommandDefinition command = session.FormCommand(sql, parameters, ct);
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            while (reader.Read())
+            ParserWorkStage? result = await session.QuerySingleUsingReader(command, reader =>
             {
                 Guid id = reader.GetGuid(reader.GetOrdinal("id"));
                 string name = reader.GetString(reader.GetOrdinal("name"));
-                ParserWorkStage stage = ParserWorkStage.Create(id, name);
-                return Maybe<ParserWorkStage>.Some(stage);
-            }
-
-            return Maybe<ParserWorkStage>.None();
+                return ParserWorkStage.Create(id, name);
+            });
+            
+            return result is null ? Maybe<ParserWorkStage>.None() : Maybe<ParserWorkStage>.Some(result);
         }
     }
 
@@ -51,7 +50,8 @@ public static class PostgreSqlWorkStageStorageExtension
             SET name = @name 
             WHERE id = @id
             """;
-            CommandDefinition command = session.FormCommand(sql, stage.Parameters, ct);
+            object parameters = stage.Parameters;
+            CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
             await session.Execute(command);
         }
 
@@ -62,7 +62,8 @@ public static class PostgreSqlWorkStageStorageExtension
             INSERT INTO avito_parser_module.work_stages(id, name)
             VALUES(@id, @name)
             """;
-            CommandDefinition command = session.FormCommand(sql, stage.Parameters, ct);
+            object parameters = stage.Parameters;
+            CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
             await session.Execute(command);
         }
 

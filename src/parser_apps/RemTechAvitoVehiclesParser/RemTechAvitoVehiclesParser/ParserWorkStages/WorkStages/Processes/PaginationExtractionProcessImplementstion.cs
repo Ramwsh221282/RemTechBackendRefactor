@@ -1,6 +1,8 @@
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Infrastructure.Database;
 using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing;
 using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing.Extensions;
 using RemTechAvitoVehiclesParser.ParserWorkStages.Common.Commands.CreateCataloguePageUrls;
@@ -20,19 +22,20 @@ public static class PaginationExtractionProcessImplementation
             {
                 Serilog.ILogger logger = deps.Logger.ForContext<WorkStageProcess>();
                 await using NpgSqlSession session = new(deps.NpgSql);
-                await session.UseTransaction(ct);
+                NpgSqlTransactionSource transactionSource = new(session);
+                ITransactionScope txn = await transactionSource.BeginTransaction(ct);
                 WorkStageQuery stageQuery = new(Name: WorkStageConstants.EvaluationStageName, WithLock: true);
                 Maybe<ParserWorkStage> evalStage = await ParserWorkStage.GetSingle(session, stageQuery, ct);
                 if (!evalStage.HasValue)
                     return;
-
+                
                 ProcessingParserLinkQuery linksQuery = new(UnprocessedOnly: true, RetryLimit: 10, WithLock: true);
                 ProcessingParserLink[] links = await ProcessingParserLink.GetMany(session, linksQuery, ct: ct);
                 if (links.Length == 0)
                 {
                     evalStage.Value.ToCatalogueStage();
                     await evalStage.Value.Update(session, ct);
-                    await session.UnsafeCommit(ct);
+                    await txn.Commit(ct);
                     logger.Information("Switched to stage: {Name}", evalStage.Value.Name);
                     return;
                 }
@@ -70,16 +73,8 @@ public static class PaginationExtractionProcessImplementation
                 await browser.DestroyAsync();
                 await links.UpdateMany(session);
 
-                try
-                {
-                    await session.UnsafeCommit(ct);
-                    logger.Information("Committed transaction.");
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex, "Could not commit transaction");
-                }
-
+                Result commit = await txn.Commit(ct);
+                if (commit.IsFailure) logger.Error(commit.Error, "Error at committing transaction");
                 logger.Information("Pagination extracting finished.");
             };
     }

@@ -1,6 +1,6 @@
 using System.Data;
 using Dapper;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace RemTechAvitoVehiclesParser.ParserWorkStages.PaginationParsing.Extensions;
 
@@ -16,7 +16,7 @@ public static class ProcessingParserLinkStoringImplementation
                 VALUES
                 (@id, @url, @was_processed, @retry_count);
                 """;
-            IEnumerable<object> parameters = links.Select(l => l.ExtractParameters());
+            object[] parameters = [..links.Select(l => l.ExtractParameters())];
             await session.ExecuteBulk(sql, parameters);
         }
 
@@ -28,7 +28,7 @@ public static class ProcessingParserLinkStoringImplementation
                     retry_count = @retry_count
                 WHERE id = @id;            
                 """;
-            IEnumerable<object> parameters = links.Select(l => l.ExtractParameters());
+            object[] parameters = [..links.Select(l => l.ExtractParameters())];
             await session.ExecuteBulk(sql, parameters);
         }
     }
@@ -53,20 +53,9 @@ public static class ProcessingParserLinkStoringImplementation
                     {filterSql}
                     {lockClause}                
                 """;
+            
             CommandDefinition command = session.FormCommand(sql, parameters, ct);
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            List<ProcessingParserLink> result = [];
-            while (reader.Read())
-            {
-                Guid id = reader.GetGuid(reader.GetOrdinal("id"));
-                string url = reader.GetString(reader.GetOrdinal("url"));
-                int retryCount = reader.GetInt32(reader.GetOrdinal("retry_count"));
-                bool wasProcessed = reader.GetBoolean(reader.GetOrdinal("was_processed"));
-                ProcessingParserLink link = new(id, url, wasProcessed, retryCount);
-                result.Add(link);
-            }
-
-            return [.. result];
+            return await session.QueryMultipleUsingReader(command, FromReader);
         }
     }
 
@@ -108,5 +97,15 @@ public static class ProcessingParserLinkStoringImplementation
         {
             return query.WithLock ? "FOR UPDATE" : string.Empty;
         }
+    }
+
+    private static ProcessingParserLink FromReader(IDataReader reader)
+    {
+        Guid id = reader.GetGuid(reader.GetOrdinal("id"));
+        string url = reader.GetString(reader.GetOrdinal("url"));
+        int retryCount = reader.GetInt32(reader.GetOrdinal("retry_count"));
+        bool wasProcessed = reader.GetBoolean(reader.GetOrdinal("was_processed"));
+        ProcessingParserLink link = new(id, url, wasProcessed, retryCount);
+        return link;
     }
 }

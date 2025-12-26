@@ -10,22 +10,22 @@ public static class HandlerDecoratorsInjection
     {
         public void RegisterLoggingHandlers()
         {
-            Assembly assembly = typeof(ILoggingCommandHandler<,>).Assembly;
-            services.Scan(x => x.FromAssemblies([assembly])
-                .AddClasses(classes => classes.AssignableTo(typeof(ILoggingCommandHandler<,>)))
-                .UsingRegistrationStrategy(RegistrationStrategy.Skip)
-                .AsSelfWithInterfaces()
-                .WithScopedLifetime());
+            services.AddScoped(typeof(ILoggingCommandHandler<,>), typeof(LoggingHandler<,>));
         }
 
         public void RegisterValidatingHandlers()
         {
-            Assembly assembly = typeof(IValidatingCommandHandler<,>).Assembly;
-            services.Scan(x => x.FromAssemblies([assembly])
-                .AddClasses(classes => classes.AssignableTo(typeof(IValidatingCommandHandler<,>)))
-                .UsingRegistrationStrategy(RegistrationStrategy.Skip)
-                .AsSelfWithInterfaces()
-                .WithScopedLifetime());
+            services.AddScoped(typeof(IValidatingCommandHandler<,>), typeof(ValidatingHandler<,>));
+        }
+        
+        public void RegisterTransactionalHandlers()
+        {
+            services.AddScoped(typeof(ITransactionalCommandHandler<,>), typeof(TransactionalHandler<,>));
+        }
+        
+        public void UseTransactionalHandlers()
+        {
+            services.TryDecorate(typeof(ICommandHandler<,>), typeof(TransactionalHandler<,>));
         }
 
         public void UseLoggingHandlers()

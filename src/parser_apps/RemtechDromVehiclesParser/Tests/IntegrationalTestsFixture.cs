@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Infrastructure;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
@@ -21,9 +20,15 @@ public sealed class IntegrationalTestsFixture : WebApplicationFactory<DromVehicl
 
         builder.ConfigureServices(s =>
         {
-            s.ReconfigurePostgreSqlOptions(_dbContainer);
-            s.ReconfigureRabbitMqOptions(_brokerContainer);
-            s.ReconfigureQuartzHostedService();
+            s.ReRegisterCronScheduleJobs();
+            s.ReRegisterQuartzHostedService(c =>
+            {
+                c.WaitForJobsToComplete = true;
+                c.WaitForJobsToComplete = true;
+            });
+            s.ReRegisterAppsettingsJsonConfiguration();
+            s.ReRegisterRabbitMqOptions(_brokerContainer);
+            s.ReRegisterNpgSqlOptions(_dbContainer);
             s.AddHostedService<FakeParserSubscriptionQueue>();
             s.AddTransient<FakeParserSubscriptionPublisher>();
             s.AddTransient<FakeParserStartPublisher>();
@@ -34,7 +39,6 @@ public sealed class IntegrationalTestsFixture : WebApplicationFactory<DromVehicl
     {
         await _dbContainer.StartAsync();
         await _brokerContainer.StartAsync();
-        Services.ApplyDatabaseMigrations();
     }
 
     public new async Task DisposeAsync()

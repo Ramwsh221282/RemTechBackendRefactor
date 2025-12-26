@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using ParsingSDK;
 using ParsingSDK.ParserInvokingContext;
-using RemTech.SharedKernel.Infrastructure;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
@@ -24,13 +23,17 @@ public sealed class IntegrationalTestsFixture : WebApplicationFactory<AvitoSpare
 
         builder.ConfigureServices(services =>
         {
-            services.ReconfigureConfigurationProvider();
-            services.ReconfigurePostgreSqlOptions(_dbContainer);
-            services.ReconfigureRabbitMqOptions(_rabbitMq);
-            services.ReconfigureQuartzHostedService();
+            services.ReRegisterAppsettingsJsonConfiguration();
+            services.ReRegisterCronScheduleJobs();
+            services.ReRegisterQuartzHostedService(c =>
+            {
+                c.StartDelay = TimeSpan.FromSeconds(10);
+                c.WaitForJobsToComplete = true;
+            });
+            services.ReRegisterNpgSqlOptions(_dbContainer);
+            services.ReRegisterRabbitMqOptions(_rabbitMq);
             services.RegisterParserStartOptionsByAppsettings();
             services.AddTransient<FakeStartParserPublisher>();
-            ReconfigureBrowserOptions(services);
         });
     }
 
@@ -38,7 +41,6 @@ public sealed class IntegrationalTestsFixture : WebApplicationFactory<AvitoSpare
     {
         await _dbContainer.StartAsync();
         await _rabbitMq.StartAsync();
-        Services.ApplyDatabaseMigrations();
     }
 
     public new async Task DisposeAsync()
@@ -47,15 +49,5 @@ public sealed class IntegrationalTestsFixture : WebApplicationFactory<AvitoSpare
         await _dbContainer.DisposeAsync();
         await _rabbitMq.StopAsync();
         await _rabbitMq.DisposeAsync();
-    }
-
-    private static void ReconfigureBrowserOptions(IServiceCollection services)
-    {
-        services.RemoveAll<IOptions<ScrapingBrowserOptions>>();
-        services.RegisterParserDependencies(optionsConfiguration: conf =>
-        {
-            conf.Headless = false;
-            conf.DevelopmentMode = true;
-        });
     }
 }

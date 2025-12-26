@@ -1,7 +1,6 @@
-using System.Data;
 using Dapper;
 using ParsingSDK.Parsing;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.ParsingStages.Extensions;
 
@@ -23,12 +22,12 @@ public static class ParsingStageStoringExtensions
             {lockClause}
             """;
             CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            return reader.Read() switch
+            ParsingStage? stage = await session.QuerySingleUsingReader(command, reader =>
             {
-                false => Maybe<ParsingStage>.None(),
-                true => Maybe<ParsingStage>.Some(new ParsingStage(reader.GetGuid(0), reader.GetString(1))),
-            };
+                return new ParsingStage(reader.GetGuid(0), reader.GetString(1));
+            });
+            
+            return stage is null ? Maybe<ParsingStage>.None() : Maybe<ParsingStage>.Some(stage);
         }
     }
 

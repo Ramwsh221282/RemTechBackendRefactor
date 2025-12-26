@@ -2,7 +2,9 @@
 using AvitoSparesParser.ParsingStages;
 using AvitoSparesParser.ParsingStages.Extensions;
 using ParsingSDK.ParserInvokingContext;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using ILogger = Serilog.ILogger;
 
@@ -36,7 +38,8 @@ public static class ParserStartConfigurationInjection
                 return async ea =>
                 {
                     await using NpgSqlSession session = new(npgSql);
-                    await session.UseTransaction();
+                    NpgSqlTransactionSource source = new(session);
+                    ITransactionScope scope = await source.BeginTransaction();
 
                     if (await ProcessingParser.Exists(session))
                     {
@@ -51,7 +54,13 @@ public static class ParserStartConfigurationInjection
                     await stage.Save(session);
                     await parser.Add(session);
                     await links.AddMany(session);
-                    await session.UnsafeCommit(CancellationToken.None);
+                    
+                    Result commit = await scope.Commit();
+                    if (commit.IsFailure)
+                    {
+                        logger.Error(commit.Error, "Failed to commit transaction for parser {Domain} {Type}", parser.Domain, parser.Type);
+                        return;
+                    }
 
                     logger.Information("Parser {Domain} {Type} has been registered with links count: {Count}.",
                         parser.Domain, parser.Type, links.Length);

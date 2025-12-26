@@ -1,13 +1,25 @@
-using RemTech.SharedKernel.Infrastructure;
+using Quartz;
+using RemTech.SharedKernel.Core.Logging;
+using RemTech.SharedKernel.Infrastructure.Database;
+using RemTech.SharedKernel.Infrastructure.Quartz;
 using RemTechAvitoVehiclesParser;
-using RemTechAvitoVehiclesParser.Parsing.BackgroundTasks;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-builder.Services.RegisterDependenciesForParsing();
+bool isDevelopment = builder.Environment.IsDevelopment();
+
+builder.Services.RegisterLogging();
+builder.Services.RegisterDependenciesForParsing(isDevelopment);
 builder.Services.RegisterAvitoStartQueue();
-builder.Services.RegisterInfrastructureDependencies();
+builder.Services.RegisterInfrastructureDependencies(isDevelopment);
+builder.Services.AddCronScheduledJobs();
+builder.Services.AddQuartzHostedService(c =>
+{
+    c.WaitForJobsToComplete = true;
+    c.StartDelay = TimeSpan.FromSeconds(10);
+});
+
 WebApplication app = builder.Build();
-app.Services.ApplyDatabaseMigrations();
+app.Services.ApplyModuleMigrations();
 app.Run();
 
 namespace RemTechAvitoVehiclesParser

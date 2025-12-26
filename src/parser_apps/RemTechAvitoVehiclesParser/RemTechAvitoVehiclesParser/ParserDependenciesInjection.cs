@@ -10,21 +10,25 @@ public static class ParserDependenciesInjection
 {
     extension(IServiceCollection services)
     {
-        public void RegisterDependenciesForParsing()
+        public void RegisterDependenciesForParsing(bool isDevelopment)
         {
             services.RegisterParserWorkStagesContext();
             services.RegisterParserSubscription();
             services.RegisterTextTransformerBuilder();
             services.RegisterAvitoFirewallBypass();
-            services.RegisterParserDependencies(conf =>
+            
+            if (isDevelopment)
             {
-                IOptions<ScrapingBrowserOptions> options = Options.Create(new ScrapingBrowserOptions()
+                services.RegisterParserDependencies(conf =>
                 {
-                    Headless = false,
-                    BrowserPath = "C:\\Users\\ramwsh\\Desktop\\avito_vehicles_parser\\RemTechAvitoVehiclesParser\\RemTechAvitoVehiclesParser\\Tests\\bin\\Debug\\net10.0\\Chromium\\Win64-1559811\\chrome-win\\chrome.exe"
+                    IOptions<ScrapingBrowserOptions> options = Options.Create(new ScrapingBrowserOptions()
+                    {
+                        DevelopmentMode = true,
+                        Headless = false,
+                    });
+                    conf.AddSingleton(options);
                 });
-                conf.AddSingleton(options);
-            });
+            }
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using DromVehiclesParser.Parsing.ParsingStages;
-using DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
+﻿using DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
 using DromVehiclesParser.ResultsExporing.TextFileExporting;
 using ParsingSDK;
 using ParsingSDK.TextProcessing;
@@ -10,14 +9,18 @@ public static class DependenciesForParsingInjection
 {
     extension(IServiceCollection services)
     {
-        public void RegisterDependenciesForParsing()
+        public void RegisterDependenciesForParsing(bool isDevelopment)
         {
-            services.RegisterTextTransformerBuilder();
-            services.RegisterParserDependencies(options =>
+            if (isDevelopment)
             {
-                options.DevelopmentMode = true;
-                options.Headless = false;
-            });
+                services.RegisterParserDependencies(options =>
+                {
+                    options.DevelopmentMode = true;
+                    options.Headless = false;
+                });
+            }
+            
+            services.RegisterTextTransformerBuilder();
             services.AddSingleton<IExporter<TextFile>, TextFileExporter>();
             services.AddSingleton<ParsingStageDependencies>();
         }

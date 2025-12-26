@@ -2,7 +2,7 @@
 using Dapper;
 using DromVehiclesParser.Parsing.ParsingStages.Models;
 using ParsingSDK.Parsing;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace DromVehiclesParser.Parsing.ParsingStages.Database;
 

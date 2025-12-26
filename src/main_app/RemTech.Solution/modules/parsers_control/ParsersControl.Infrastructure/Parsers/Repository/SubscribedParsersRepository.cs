@@ -5,7 +5,7 @@ using ParsersControl.Core.Contracts;
 using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace ParsersControl.Infrastructure.Parsers.Repository;
 

@@ -1,12 +1,14 @@
 ﻿using ParsingSDK.ParserInvokingContext;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using RemTechAvitoVehiclesParser.ParserWorkStages.PaginationParsing;
 using RemTechAvitoVehiclesParser.ParserWorkStages.PaginationParsing.Extensions;
 using RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Extensions;
 using RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Models;
 
-namespace RemTechAvitoVehiclesParser.Parsing.BackgroundTasks;
+namespace RemTechAvitoVehiclesParser;
 
 public static class ParserWorkStartInjection
 {
@@ -30,10 +32,12 @@ public static class ParserWorkStartInjection
             {
                 NpgSqlConnectionFactory npgSql = sp.GetRequiredService<NpgSqlConnectionFactory>();
                 Serilog.ILogger logger = sp.GetRequiredService<Serilog.ILogger>();
-                return async (ea) =>
+                return async ea =>
                 {
                     await using NpgSqlSession session = new(npgSql);
-                    await session.UseTransaction();
+                    NpgSqlTransactionSource txnSource = new(session);
+                    ITransactionScope txnScope = await txnSource.BeginTransaction(CancellationToken.None);
+                    
                     if (await ProcessingParser.HasAny(session))
                     {
                         logger.Information("There is already a parser in progress. Declining.");
@@ -46,23 +50,30 @@ public static class ParserWorkStartInjection
                     await stage.Persist(session);
                     await parser.Persist(session);
                     await links.PersistMany(session);
-                    await session.UnsafeCommit(CancellationToken.None);
-
-                    logger.Information(
-                        """
-                        Added parser to process:
-                        Domain: {domain}
-                        Type: {type}
-                        Id: {id}
-                        Stage: {Stage}
-                        Links: {Count}
-                        """,
-                        parser.Domain,
-                        parser.Type,
-                        parser.Id,
-                        stage.Name,
-                        links.Length
-                    );
+                    Result commit = await txnScope.Commit();
+                    
+                    if (commit.IsFailure)
+                    {
+                        logger.Error(commit.Error, "Error at committing transaction");
+                    }
+                    else
+                    {
+                        logger.Information(
+                            """
+                            Added parser to process:
+                            Domain: {domain}
+                            Type: {type}
+                            Id: {id}
+                            Stage: {Stage}
+                            Links: {Count}
+                            """,
+                            parser.Domain,
+                            parser.Type,
+                            parser.Id,
+                            stage.Name,
+                            links.Length
+                        );
+                    }
                 };
             });
         }

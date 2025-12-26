@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using System.Text.Json;
 using Dapper;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.AvitoSpareContext.Extensions;
 
@@ -33,10 +33,7 @@ public static class AvitoSpareStoringImplementation
                           {limitClause}
                           """;
             CommandDefinition command = session.FormCommand(sql, parameters, ct);
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            List<AvitoSpare> spares = [];
-            while (reader.Read()) spares.Add(CreateBy(reader));
-            return spares.ToArray();
+            return await session.QueryMultipleUsingReader(command, CreateBy);
         }
 
         private static AvitoSpare CreateBy(IDataReader reader)
@@ -73,7 +70,7 @@ public static class AvitoSpareStoringImplementation
         public async Task RemoveMany(NpgSqlSession session)
         {
             const string sql = "DELETE FROM avito_spares_parser.spares WHERE id = ANY(@ids)";
-            IEnumerable<object> parameters = spares.Select(s => s.Id);
+            object[] parameters = spares.Select(s => s.Id).ToArray();
             await session.ExecuteBulk(sql, parameters);
         }
         
@@ -87,7 +84,7 @@ public static class AvitoSpareStoringImplementation
                 (@id, @url, @price, @is_nds, @address, @photos::jsonb, @oem, @processed, @retry_count)
                 ON CONFLICT (id) DO NOTHING
                 """;
-            IEnumerable<object> parameters = spares.Select(spare => spare.ExtractCatalogueRepresentationParameters());
+            object[] parameters = spares.Select(spare => spare.ExtractCatalogueRepresentationParameters()).ToArray();
             await session.ExecuteBulk(sql, parameters);
         }
 
@@ -101,7 +98,7 @@ public static class AvitoSpareStoringImplementation
                 (@id, @url, @price, @is_nds, @address, @photos::jsonb, @oem, @type, @title, @processed, @retry_count)
                 ON CONFLICT (id) DO UPDATE SET type = @type, title = @title, processed = @processed, retry_count = @retry_count
                 """;
-            IEnumerable<object> parameters = spares.Select(spare => spare.ExtractConcreteRepresentationParameters());
+            object[] parameters = spares.Select(spare => spare.ExtractConcreteRepresentationParameters()).ToArray();
             await session.ExecuteBulk(sql, parameters);
         }
     }

@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Dapper;
 using DromVehiclesParser.Parsing.ConcreteItemParsing.Models;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace DromVehiclesParser.Parsing.ConcreteItemParsing.Extensions;
 
@@ -35,32 +35,7 @@ public static class DromAdvertisementFromPageStoringImplementation
                                ";
             
             CommandDefinition command = new(sql, transaction: session.Transaction, cancellationToken: ct);
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            List<DromAdvertisementFromPage> advertisements = [];
-            
-            while (reader.Read())
-            {
-                string id = reader.GetString(reader.GetOrdinal("id"));
-                string url = reader.GetString(reader.GetOrdinal("url"));
-                string[] photos = JsonSerializer.Deserialize<string[]>(reader.GetString(reader.GetOrdinal("photos")))!;
-                long price = reader.GetInt64(reader.GetOrdinal("price"));
-                bool isNds = reader.GetBoolean(reader.GetOrdinal("is_nds"));
-                string title = reader.GetString(reader.GetOrdinal("title"));
-                string address = reader.GetString(reader.GetOrdinal("address"));
-                string characteristicsJson = reader.GetString(reader.GetOrdinal("characteristics"))!;
-                Dictionary<string, string> ctx = JsonSerializer.Deserialize<Dictionary<string, string>>(characteristicsJson)!;
-                advertisements.Add(new(
-                    Id: id,
-                    Url: url,
-                    Photos: photos.ToList(),
-                    Characteristics: ctx,
-                    Price: price,
-                    IsNds: isNds,
-                    Title: title,
-                    Address: address
-                ));
-            }
-            return advertisements.ToArray();
+            return await session.QueryMultipleUsingReader(command, FromReader);
         }
     }
     
@@ -77,7 +52,7 @@ public static class DromAdvertisementFromPageStoringImplementation
                                    address = @address
                                WHERE id = @id; 
                                """;
-            IEnumerable<object> parameters = advertisements.Select(ad => ad.ExtractParameters());
+            object[] parameters = [..advertisements.Select(ad => ad.ExtractParameters())];
             await session.ExecuteBulk(sql, parameters);
         }
 
@@ -122,5 +97,28 @@ public static class DromAdvertisementFromPageStoringImplementation
                 ? "FOR UPDATE" 
                 : string.Empty;
         }
+    }
+
+    private static DromAdvertisementFromPage FromReader(IDataReader reader)
+    {
+        string id = reader.GetString(reader.GetOrdinal("id"));
+        string url = reader.GetString(reader.GetOrdinal("url"));
+        string[] photos = JsonSerializer.Deserialize<string[]>(reader.GetString(reader.GetOrdinal("photos")))!;
+        long price = reader.GetInt64(reader.GetOrdinal("price"));
+        bool isNds = reader.GetBoolean(reader.GetOrdinal("is_nds"));
+        string title = reader.GetString(reader.GetOrdinal("title"));
+        string address = reader.GetString(reader.GetOrdinal("address"));
+        string characteristicsJson = reader.GetString(reader.GetOrdinal("characteristics"))!;
+        Dictionary<string, string> ctx = JsonSerializer.Deserialize<Dictionary<string, string>>(characteristicsJson)!;
+        return new DromAdvertisementFromPage(
+            Id: id,
+            Url: url,
+            Photos: photos.ToList(),
+            Characteristics: ctx,
+            Price: price,
+            IsNds: isNds,
+            Title: title,
+            Address: address
+        );
     }
 }

@@ -6,7 +6,9 @@ using AvitoSparesParser.Commands.ExtractCataloguePageItems;
 using AvitoSparesParser.ParsingStages.Extensions;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.ParsingStages.Processes;
 
@@ -18,7 +20,8 @@ public static class CatalogueItemsExtractingProcess
         {
             Serilog.ILogger logger = deps.Logger.ForContext<ParserStageProcess>();
             await using NpgSqlSession session = new(deps.NpgSql);
-            await session.UseTransaction(ct);
+            NpgSqlTransactionSource source = new(session);
+            ITransactionScope scope = await source.BeginTransaction(ct);
 
             Maybe<ParsingStage> stage = await GetCatalogueStage(session, ct);
             if (!stage.HasValue) return;
@@ -27,23 +30,21 @@ public static class CatalogueItemsExtractingProcess
             if (CanSwitchToNextStage(pages))
             {
                 await SwitchToNextStage(logger, stage.Value, session, ct);
+                await FinishTransaction(scope, logger, ct);
                 return;
             }
             
             await ExtractCataloguePageItems(pages, logger, deps.Browsers, deps.Bypasses, session);
-            await FinishTransaction(session, logger, ct);
+            await FinishTransaction(scope, logger, ct);
         };
     }
 
-    private static async Task FinishTransaction(NpgSqlSession session, Serilog.ILogger logger, CancellationToken ct)
+    private static async Task FinishTransaction(ITransactionScope scope, Serilog.ILogger logger, CancellationToken ct)
     {
-        try
+        Result commit = await scope.Commit();
+        if (commit.IsFailure)
         {
-            await session.UnsafeCommit(ct);
-        }
-        catch (Exception ex)
-        {
-            logger.Error(ex, "Failed to commit transaction.");
+            logger.Error(commit.Error, "Failed to commit transaction.");
         }
     }
     
@@ -115,7 +116,6 @@ public static class CatalogueItemsExtractingProcess
     {
         ParsingStage concreteItemsStage = stage.ToConcreteItemsStage();
         await concreteItemsStage.Update(session, ct);
-        await session.UnsafeCommit(ct);
         logger.Information("Switched to stage: {Stage}", concreteItemsStage.Name);
     }
 }

@@ -1,5 +1,5 @@
 using Dapper;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace RemTechAvitoVehiclesParser.ParserWorkStages.PaginationParsing.Extensions;
 
@@ -32,7 +32,8 @@ public static class ProcessingParserStoringImplementation
                 VALUES
                 (@id, @domain, @type)
                 """;
-            CommandDefinition command = session.FormCommand(sql, parser.ExtractParameters(), ct);
+            
+            CommandDefinition command = new CommandDefinition(sql, parser.ExtractParameters(), transaction: session.Transaction, cancellationToken: ct);
             await session.Execute(command);
         }
 

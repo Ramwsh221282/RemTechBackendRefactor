@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Infrastructure\RemTech.SharedKernel.Infrastructure.csproj" />
       <ProjectReference Include="..\Mailing.Application\Mailing.Application.csproj" />
     </ItemGroup>
 

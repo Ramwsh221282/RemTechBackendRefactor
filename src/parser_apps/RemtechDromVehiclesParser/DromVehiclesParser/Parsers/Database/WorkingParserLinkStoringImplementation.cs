@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using DromVehiclesParser.Parsers.Models;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace DromVehiclesParser.Parsers.Database;
 
@@ -26,27 +26,7 @@ public static class WorkingParserLinkStoringImplementation
                           """;
             
             CommandDefinition command = session.FormCommand(sql, parameters, ct);
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            List<WorkingParserLink> links = [];
-            
-            while (reader.Read())
-            {
-                Guid id = reader.GetGuid(reader.GetOrdinal("id"));
-                string url = reader.GetString(reader.GetOrdinal("url"));
-                bool processed = reader.GetBoolean(reader.GetOrdinal("processed"));
-                int retryCount = reader.GetInt32(reader.GetOrdinal("retry_count"));
-
-                WorkingParserLink link = new WorkingParserLink(
-                    Id: id,
-                    Url: url,
-                    Processed: processed, 
-                    RetryCount: retryCount
-                );
-
-                links.Add(link);
-            }
-
-            return links.ToArray();
+            return await session.QueryMultipleUsingReader(command, FromReader);
         }
     }
     
@@ -61,7 +41,7 @@ public static class WorkingParserLinkStoringImplementation
                                (@id, @url, @processed, @retry_count)
                                ON CONFLICT (id) DO NOTHING
                                """;
-            IEnumerable<object> parameters = links.Select(l => l.ExtractParameters());
+            object[] parameters = [..links.Select(l => l.ExtractParameters())];
             await session.ExecuteBulk(sql, parameters);
         }
 
@@ -72,7 +52,7 @@ public static class WorkingParserLinkStoringImplementation
                                SET processed = @processed, retry_count = @retry_count
                                WHERE id = @id;
                                """;
-            IEnumerable<object> parameters = links.Select(l => l.ExtractParameters());
+            object[] parameters = [..links.Select(l => l.ExtractParameters())];
             await session.ExecuteBulk(sql, parameters);
         }
     }
@@ -115,5 +95,14 @@ public static class WorkingParserLinkStoringImplementation
                 ? (parameters, string.Empty)
                 : (parameters, "WHERE " + string.Join(" AND ", filters));
         }
+    }
+
+    private static WorkingParserLink FromReader(IDataReader reader)
+    {
+        Guid id = reader.GetGuid(reader.GetOrdinal("id"));
+        string url = reader.GetString(reader.GetOrdinal("url"));
+        bool processed = reader.GetBoolean(reader.GetOrdinal("processed"));
+        int retryCount = reader.GetInt32(reader.GetOrdinal("retry_count"));
+        return new WorkingParserLink(Id: id, Url: url, Processed: processed, RetryCount: retryCount);
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Infrastructure;
+using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.Tests.Shared;
 using RemTechAvitoVehiclesParser;
 using Testcontainers.PostgreSql;
@@ -21,10 +21,15 @@ public sealed class IntegrationalTestsFixture : WebApplicationFactory<RemTechAvi
 
         builder.ConfigureServices(s =>
         {
-            s.ReconfigureConfigurationProvider();
-            s.ReconfigurePostgreSqlOptions(_dbContainer);
-            s.ReconfigureRabbitMqOptions(_brokerContainer);
-            s.ReconfigureQuartzHostedService();
+            s.ReRegisterCronScheduleJobs();
+            s.ReRegisterQuartzHostedService(o =>
+            {
+                o.WaitForJobsToComplete = true;
+                o.StartDelay = TimeSpan.FromSeconds(10);
+            });
+            s.ReRegisterAppsettingsJsonConfiguration();
+            s.ReRegisterNpgSqlOptions(_dbContainer);
+            s.ReRegisterRabbitMqOptions(_brokerContainer);
             s.RegisterParserSubscription();
             s.AddTransient<FakeStartParserPublisher>();
         });
@@ -34,7 +39,6 @@ public sealed class IntegrationalTestsFixture : WebApplicationFactory<RemTechAvi
     {
         await _dbContainer.StartAsync();
         await _brokerContainer.StartAsync();
-        Services.ApplyDatabaseMigrations();
     }
 
     public new async Task DisposeAsync()

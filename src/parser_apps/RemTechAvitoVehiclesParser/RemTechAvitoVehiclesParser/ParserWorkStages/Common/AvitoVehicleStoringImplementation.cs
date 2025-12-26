@@ -1,7 +1,7 @@
 using System.Data;
 using System.Text.Json;
 using Dapper;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace RemTechAvitoVehiclesParser.ParserWorkStages.Common;
 
@@ -38,10 +38,7 @@ public static class AvitoVehicleStoringImplementation
                  """;
             
             CommandDefinition command = session.FormCommand(sql, parameters, ct);
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            List<AvitoVehicle> result = [];
-            while (reader.Read()) result.Add(AsConcreteItem(reader));
-            return [.. result];
+            return await session.QueryMultipleUsingReader(command, AsCatalogueItem);
         }
         
         public static async Task<AvitoVehicle[]> GetAsCatalogueRepresentation(
@@ -71,10 +68,7 @@ public static class AvitoVehicleStoringImplementation
             """;
             
             CommandDefinition command = session.FormCommand(sql, parameters, ct);
-            using IDataReader reader = await session.ExecuteReader(command, ct);
-            List<AvitoVehicle> result = [];
-            while (reader.Read()) result.Add(AsCatalogueItem(reader));
-            return [.. result];
+            return await session.QueryMultipleUsingReader(command, AsCatalogueItem);
         }
     }
 
@@ -90,14 +84,14 @@ public static class AvitoVehicleStoringImplementation
             (@id, @url, @was_processed, @retry_count, @price, @is_nds, @address, @photos::jsonb)
             ON CONFLICT (id) DO NOTHING;
             """;
-            IEnumerable<object> parameters = items.Select(ExtractParameters);
+            object[] parameters = [..items.Select(ExtractParameters)];
             await session.ExecuteBulk(sql, parameters);
         }
 
         public async Task Remove(NpgSqlSession session)
         {
             const string sql = "DELETE FROM avito_parser_module.items WHERE id = @id";
-            IEnumerable<object> parameters = items.Select(i => new { id = i.CatalogueRepresentation.Id });
+            object[] parameters = [..items.Select(i => new { id = i.CatalogueRepresentation.Id })];
             await session.ExecuteBulk(sql, parameters);
         }
         
@@ -113,7 +107,7 @@ public static class AvitoVehicleStoringImplementation
                 WHERE id = @id;
                 """;
             
-            IEnumerable<object> parameters = items.Select(ResolveParameterByConcreteItemInitialization);
+            object[] parameters = [..items.Select(ResolveParameterByConcreteItemInitialization)];
             await session.ExecuteBulk(sql, parameters);
         }
     }
