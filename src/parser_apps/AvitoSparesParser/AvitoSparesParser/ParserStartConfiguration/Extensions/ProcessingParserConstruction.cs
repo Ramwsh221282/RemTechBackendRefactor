@@ -14,7 +14,7 @@ public static class ProcessingParserConstruction
             string json = Encoding.UTF8.GetString(ea.Body.Span);
             using JsonDocument document = JsonDocument.Parse(json);
 
-            JsonElement linksElement = document.RootElement.GetProperty("links");
+            JsonElement linksElement = document.RootElement.GetProperty("parser_links");
             List<ProcessingParserLink> result = new(linksElement.GetArrayLength());
 
             foreach (JsonElement jsonLink in linksElement.EnumerateArray())

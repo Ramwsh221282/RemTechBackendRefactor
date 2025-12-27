@@ -30,7 +30,6 @@ public static class DependencyInjectionExtensions
                 
                 services.RegisterAvitoFirewallBypass();
                 services.RegisterParserSubscriptionProcess();
-                services.RegisterParserStartQueue();
                 services.RegisterParserWorkStages();
                 services.RegisterTextTransformerBuilder();
             }

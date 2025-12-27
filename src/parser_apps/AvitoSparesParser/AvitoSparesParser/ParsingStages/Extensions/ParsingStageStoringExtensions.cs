@@ -8,6 +8,13 @@ public static class ParsingStageStoringExtensions
 {
     extension(ParsingStage)
     {
+        public static async Task Delete(NpgSqlSession session, CancellationToken ct = default)
+        {
+            const string sql = "DELETE FROM avito_spares_parser.stages";
+            CommandDefinition command = new(sql, cancellationToken: ct, transaction: session.Transaction);
+            await session.Execute(command);
+        }
+        
         public static async Task<Maybe<ParsingStage>> GetStage(
             NpgSqlSession session,
             ParsingStageQuery query,

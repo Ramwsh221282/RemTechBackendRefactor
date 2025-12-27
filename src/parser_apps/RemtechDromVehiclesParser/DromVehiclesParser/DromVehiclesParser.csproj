@@ -7,16 +7,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="ParserSubscriber" Version="1.0.0" />
+      <PackageReference Include="ParserSubscriber" Version="1.0.2" />
       <PackageReference Include="ParsingSDK" Version="1.0.0" />
       <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.4" />
       <PackageReference Include="RemTech.SharedKernel.Infrastructure.Quartz" Version="1.0.0" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.0" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.3" />
       <PackageReference Include="Scrutor" Version="7.0.0" />
     </ItemGroup>
     
     <ItemGroup>
         <EmbeddedResource Include="Shared/NpgSql/*.sql" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="RabbitMq\Listeners\" />
     </ItemGroup>
     
 </Project>

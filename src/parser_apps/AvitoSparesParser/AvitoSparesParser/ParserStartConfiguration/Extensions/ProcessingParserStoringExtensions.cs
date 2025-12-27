@@ -6,8 +6,25 @@ namespace AvitoSparesParser.ParserStartConfiguration.Extensions;
 
 public static class ProcessingParserStoringExtensions
 {
+    extension(ProcessingParserLink)
+    {
+        public static async Task DeleteAllLinks(NpgSqlSession session, CancellationToken ct = default)
+        {
+            const string sql = "DELETE FROM avito_spares_parser.processing_parser_links";
+            CommandDefinition command = new(sql, cancellationToken: ct, transaction: session.Transaction);
+            await session.Execute(command);
+        }
+    }
+    
     extension(ProcessingParser)
     {
+        public static async Task DeleteAllParsers(NpgSqlSession session, CancellationToken ct = default)
+        {
+            const string sql = "DELETE FROM avito_spares_parser.processing_parsers";
+            CommandDefinition command = new(sql, cancellationToken: ct, transaction: session.Transaction);
+            await session.Execute(command);
+        }
+        
         public static async Task<bool> Exists(NpgSqlSession session)
         {
             const string sql = "SELECT EXISTS (SELECT 1 FROM avito_spares_parser.processing_parsers)";

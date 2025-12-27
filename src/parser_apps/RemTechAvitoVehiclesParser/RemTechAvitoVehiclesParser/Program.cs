@@ -3,16 +3,19 @@ using Quartz;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.Quartz;
+using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using RemTechAvitoVehiclesParser;
+using RemTechAvitoVehiclesParser.RabbitMq.Consumers;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 bool isDevelopment = builder.Environment.IsDevelopment();
 
 builder.Services.RegisterLogging();
 builder.Services.RegisterDependenciesForParsing(isDevelopment);
-builder.Services.RegisterAvitoStartQueue();
 builder.Services.RegisterInfrastructureDependencies(isDevelopment);
 builder.Services.AddCronScheduledJobs();
+builder.Services.AddTransient<IConsumer, ParserStartConsumer>();
+builder.Services.AddHostedService<AggregatedConsumersHostedService>();
 builder.Services.AddQuartzHostedService(c =>
 {
     c.WaitForJobsToComplete = true;
@@ -20,13 +23,21 @@ builder.Services.AddQuartzHostedService(c =>
 });
 
 WebApplication app = builder.Build();
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    _ = Task.Run(async () =>
+    {
+        await app.Services.RunParserSubscription();
+    });
+});
+
 if (args.Contains("--rollback-migrations"))
 {
     app.Services.RollBackModuleMigrations();
 }
 
 app.Services.ApplyModuleMigrations();
-await app.Services.RunParserSubscription();
 app.Run();
 
 namespace RemTechAvitoVehiclesParser
