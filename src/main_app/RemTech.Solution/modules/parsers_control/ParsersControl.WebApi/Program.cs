@@ -1,10 +1,6 @@
-using System.Reflection;
-using FluentMigrator.Runner;
-using Microsoft.Extensions.Options;
 using ParsersControl.CompositionRoot;
 using ParsersControl.Infrastructure.Migrations;
 using ParsersControl.WebApi.Extensions;
-using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
@@ -18,6 +14,7 @@ builder.Services.RegisterLogging();
 builder.Services.AddInfrastructureConfiguration();
 builder.Services.AddPostgres();
 builder.Services.AddRabbitMq();
+builder.Services.AddParsersControlModule();
 builder.Services.AddMigrations(new[] { typeof(ParsersTableMigration).Assembly });
 
 WebApplication app = builder.Build();

@@ -14,9 +14,9 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
     private const string Queue = "parsers.create";
     private const string Exchange = "parsers";
     private const string RoutingKey = Queue;
-
     private Serilog.ILogger Logger { get; } = logger.ForContext<ParserSubscribeConsumer>();
-    private IChannel? Channel { get; set; }
+    private IChannel? _channel;
+    private IChannel Channel => _channel ?? throw new InvalidOperationException("Channel is not initialized.");
     private AsyncEventingBasicConsumer? Consumer { get; set; }
 
     public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
@@ -27,11 +27,11 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
             publisherConfirmationsEnabled: true,
             publisherConfirmationTrackingEnabled: true);
 
-        Channel = await connection.CreateChannelAsync(options, cancellationToken: ct);
-        await DeclareExchange(Channel, ct);
-        await DeclareQueue(Channel, ct);
-        await BindQueue(Channel, ct);
-        Consumer = CreateConsumer(Channel);
+        _channel = await connection.CreateChannelAsync(options, cancellationToken: ct);
+        await DeclareExchange(_channel, ct);
+        await DeclareQueue(_channel, ct);
+        await BindQueue(_channel, ct);
+        Consumer = CreateConsumer(_channel);
         
         Logger.Information("Initialized channel.");
     }
@@ -42,7 +42,7 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
         if (Consumer is null) throw new InvalidOperationException("Consumer is not initialized.");
         await Channel.BasicConsumeAsync(
             queue: Queue,
-            autoAck: true,
+            autoAck: false,
             consumer: Consumer,
             cancellationToken: ct);
     }
@@ -55,60 +55,49 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
         Logger.Information("Channel shut down.");
     }
 
-    private static async Task DeclareExchange(IChannel channel, CancellationToken ct)
-    {
+    private static async Task DeclareExchange(IChannel channel, CancellationToken ct) =>
         await channel.ExchangeDeclareAsync(
             exchange: Exchange,
             type: "topic",
             durable: true,
             autoDelete: false,
             cancellationToken: ct);
-    }
     
-    private static async Task DeclareQueue(IChannel channel, CancellationToken ct)
-    {
+    private static async Task DeclareQueue(IChannel channel, CancellationToken ct) =>
         await channel.QueueDeclareAsync(
             queue: Queue,
             durable: true,
             exclusive: false,
             autoDelete: false,
             cancellationToken: ct);
-    }
     
-    private static async Task BindQueue(IChannel channel, CancellationToken ct)
-    {
+    private static async Task BindQueue(IChannel channel, CancellationToken ct) =>
         await channel.QueueBindAsync(
             queue: Queue,
             exchange: Exchange,
             routingKey: RoutingKey,
             cancellationToken: ct);
-    }
 
     private AsyncEventingBasicConsumer CreateConsumer(IChannel channel)
     {
-        if (Channel is null) throw new InvalidOperationException("Channel is not initialized.");
-        
         AsyncEventingBasicConsumer consumer = new(channel);
         consumer.ReceivedAsync += async (_, @event) =>
         {
             Logger.Information("Handling message.");
+            ulong deliveryTag = @event.DeliveryTag;
             try
             {
                 SubscribeParserMessage message = SubscribeParserMessage.Create(@event);
                 await using AsyncServiceScope scope = services.CreateAsyncScope();
-                ICommandHandler<SubscribeParserCommand, SubscribedParser> handler =
-                    scope.ServiceProvider
-                        .GetRequiredService<ICommandHandler<SubscribeParserCommand, SubscribedParser>>();
+                var handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<SubscribeParserCommand, SubscribedParser>>();
                 SubscribeParserCommand command = new(message.parser_id, message.parser_domain, message.parser_type);
                 await handler.Execute(command);
+                await Channel.BasicAckAsync(deliveryTag, false);
             }
             catch (Exception ex)
             {
-                Logger.Fatal("Failed to process message. {Ex}", ex);
-            }
-            finally
-            {
-                await Channel.BasicAckAsync(@event.DeliveryTag, false);
+                Logger.Fatal(ex, "Failed to process message. DeliveryTag: {DeliveryTag}", deliveryTag);
+                await Channel.BasicNackAsync(deliveryTag, false, true);
             }
         };
         
@@ -118,8 +107,8 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
     private sealed class SubscribeParserMessage
     {
         public Guid parser_id { get; set; }
-        public string parser_domain { get; set; }
-        public string parser_type { get; set; }
+        public string parser_domain { get; set; } = null!;
+        public string parser_type { get; set; } = null!;
 
         public static SubscribeParserMessage Create(BasicDeliverEventArgs @event)
         {

@@ -17,17 +17,22 @@ public sealed class AggregatedConsumersHostedService(
     {
         Logger.Information("Initializing aggregated consumers.");
         IConnection connection = await ConnectionSource.GetConnection(stoppingToken);
-        IEnumerable<Task> initializeTasks = Consumers.Select(c => Task.Run(() => c.InitializeChannel(connection, stoppingToken)));
-        await Task.WhenAll(initializeTasks);
+        foreach (IConsumer consumer in Consumers)
+            await consumer.InitializeChannel(connection, stoppingToken);
+        
         Logger.Information("Aggregated consumers initialized. Starting consumers.");
-        IEnumerable<Task> startTasks = Consumers.Select(c => Task.Run(() => c.StartConsuming(stoppingToken)));
+        IEnumerable<Task> startTasks = Consumers.Select(c => Task.Run(async () =>
+        { 
+            await c.StartConsuming(stoppingToken);
+        }));
         await Task.WhenAll(startTasks);
+        Logger.Information("Consumers started.");
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         Logger.Information("Shutting down parsers control event listeners.");
-        IEnumerable<Task> tasks = Consumers.Select(c => Task.Run(() => c.Shutdown(cancellationToken)));
+        IEnumerable<Task> tasks = Consumers.Select(c => c.Shutdown(cancellationToken));
         await Task.WhenAll(tasks);
         Logger.Information("Parsers control event listeners shut down.");
     }

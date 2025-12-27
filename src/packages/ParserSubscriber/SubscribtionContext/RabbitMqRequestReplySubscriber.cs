@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using ParserSubscriber.SubscribtionContext.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using Serilog;
 
 namespace ParserSubscriber.SubscribtionContext;
@@ -11,7 +12,7 @@ namespace ParserSubscriber.SubscribtionContext;
 public sealed class RabbitMqRequestReplySubscriber : IParserSubscriber
 {
     public RabbitMqRequestReplySubscriber(
-        RabbitMqConnectionProvider rabbitMq,
+        RabbitMqConnectionSource rabbitMq,
         ParserSubscriptionPublisher publisher,
         IOptions<RabbitMqRequestReplyResponseListeningQueueOptions> options,
         SubscriptionStorage storage,
@@ -34,7 +35,7 @@ public sealed class RabbitMqRequestReplySubscriber : IParserSubscriber
     private ParserSubscriptionPublisher Publisher { get; }
     private SubscriptionStorage Storage { get; }
     private AsyncEventHandler<BasicDeliverEventArgs> EventHandler { get; }
-    private RabbitMqConnectionProvider RabbitMq { get; }
+    private RabbitMqConnectionSource RabbitMq { get; }
 
     public async Task<ParserSubscribtion> Subscribe(CancellationToken ct = default)
     {
@@ -62,10 +63,11 @@ public sealed class RabbitMqRequestReplySubscriber : IParserSubscriber
             """, logProperties);
 
         CreateChannelOptions channelOpts = new(true, true);
-        ResponseQueueChannel = await (await RabbitMq(ct)).CreateChannelAsync(channelOpts, ct);
-        await ResponseQueueChannel.ExchangeDeclareAsync(exchange, ExchangeType.Topic, durable: true, autoDelete: false, cancellationToken: ct);
-        await ResponseQueueChannel.QueueDeclareAsync(queue, durable: false, exclusive: false, autoDelete: false, cancellationToken: ct);
-        await ResponseQueueChannel.QueueBindAsync(queue, exchange, routingKey, cancellationToken: ct);
+        IConnection connection = await RabbitMq.GetConnection();
+        ResponseQueueChannel = await connection.CreateChannelAsync(channelOpts);
+        await ResponseQueueChannel.ExchangeDeclareAsync(exchange, ExchangeType.Topic, durable: true, autoDelete: false);
+        await ResponseQueueChannel.QueueDeclareAsync(queue, durable: false, exclusive: false, autoDelete: false);
+        await ResponseQueueChannel.QueueBindAsync(queue, exchange, routingKey);
 
         Logger?.Information("Temporary response listener queue created");
         Logger?.Information("Attaching AsyncEventingBasicConsumer for temporary response listener queue");

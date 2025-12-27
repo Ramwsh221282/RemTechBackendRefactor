@@ -1,22 +1,21 @@
 using System.Data.Common;
 using Dapper;
 using Npgsql;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using RemTech.SharedKernel.Infrastructure.Database;
 using Serilog;
 
 namespace ParserSubscriber.SubscribtionContext;
 
-public sealed class SubscriptionStorage(NpgSqlProvider npgSqlProvider, ILogger? logger)
+public sealed class SubscriptionStorage(NpgSqlConnectionFactory connectionFactory, ILogger? logger)
 {
     private ILogger? Logger { get; } = logger?.ForContext<SubscriptionStorage>();
-    
-    private string ConnectionString => npgSqlProvider.ConnectionString;
     private string SchemaName { get; set; } = string.Empty;
 
     public async Task<ParserSubscribtion?> GetSubscription(CancellationToken ct = default)
     {
-        NpgsqlDataSourceBuilder builder = new(ConnectionString);
-        await using var dataSource = builder.Build();
-        await using var connection = await dataSource.OpenConnectionAsync(ct);
+        await using NpgSqlSession session = new(connectionFactory);
         Logger?.Information("Schema name: {Schema}", SchemaName);
         var sql =
             $"""
@@ -29,34 +28,29 @@ public sealed class SubscriptionStorage(NpgSqlProvider npgSqlProvider, ILogger? 
              """;
         
         CommandDefinition command = new(sql, cancellationToken: ct);
-        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
-        ParserSubscribtion? result = null;
-        
-        while (await reader.ReadAsync(ct))
+        return await session.QuerySingleUsingReader(command, reader =>
         {
             Guid id = reader.GetGuid(reader.GetOrdinal("id"));
             string domain = reader.GetString(reader.GetOrdinal("domain"));
             string type = reader.GetString(reader.GetOrdinal("type"));
             DateTime created = reader.GetDateTime(reader.GetOrdinal("created"));
-            result = new ParserSubscribtion(id, domain, type, created); 
-        }
-        
-        return result;
+            return new ParserSubscribtion(id, domain, type, created);
+        });
     }
     
     public async Task InitializeSubscriptionStorage()
     {
         Logger?.Information("Initializing parsers subscription storage.");
-        NpgsqlDataSourceBuilder builder = new(ConnectionString);
-        await using var dataSource = builder.Build();
-        await using var connection = await dataSource.OpenConnectionAsync();
-        await using var transaction = await connection.BeginTransactionAsync();
+        await using NpgSqlSession session = new(connectionFactory);
+        NpgSqlTransactionSource transactionSource = new(session);
+        ITransactionScope transaction = await transactionSource.BeginTransaction();
+        
         Logger?.Information("Schema name: {Schema}", SchemaName);
-        var schemaSql =
+        string schemaSql =
             $"""
              CREATE SCHEMA IF NOT EXISTS {SchemaName}
              """;
-        var tableSql =
+        string tableSql =
             $"""
              CREATE TABLE IF NOT EXISTS {SchemaName}.subscriptions
              (
@@ -66,9 +60,16 @@ public sealed class SubscriptionStorage(NpgSqlProvider npgSqlProvider, ILogger? 
                  created timestamptz not null
              )
              """;
-        await connection.ExecuteAsync(schemaSql, transaction: transaction);
-        await connection.ExecuteAsync(tableSql, transaction: transaction);
-        await transaction.CommitAsync();
+        
+        await session.Execute(new CommandDefinition(schemaSql, transaction: session.Transaction));
+        await session.Execute(new CommandDefinition(tableSql, transaction: session.Transaction));
+        Result result = await transaction.Commit();
+        if (!result.IsSuccess)
+        {
+            Logger?.Error(result.Error, "Failed to initialize parsers subscription storage.");
+            throw new Exception(result.Error);
+        }
+        
         Logger?.Information("Initialized parsers subscription storage.");
     }
 
@@ -84,18 +85,23 @@ public sealed class SubscriptionStorage(NpgSqlProvider npgSqlProvider, ILogger? 
             type = subscribtion.Type,
             created = subscribtion.Subscribed
         };
-        NpgsqlDataSourceBuilder builder = new(ConnectionString);
-        await using var dataSource = builder.Build();
-        await using var connection = await dataSource.OpenConnectionAsync();
-        await using var transaction = await connection.BeginTransactionAsync();
+        await using NpgSqlSession session = new(connectionFactory);
+        NpgSqlTransactionSource transactionSource = new(session);
+        ITransactionScope transaction = await transactionSource.BeginTransaction();
+        
         var sql =
             $"""
              INSERT INTO {SchemaName}.subscriptions (id, domain, type, created)
              VALUES (@id, @domain, @type, @created) ON CONFLICT (id) DO NOTHING
              """;
-        var affected = await connection.ExecuteAsync(sql, parameters, transaction);
-        await transaction.CommitAsync();
-        if (affected == 0) Logger?.Warning("Subscription already exists.");
+        await session.Execute(new CommandDefinition(sql, parameters, transaction: session.Transaction));
+        
+        Result commit = await transaction.Commit();
+        if (!commit.IsSuccess)
+        {
+            Logger?.Error(commit.Error, "Failed to save parser subscription.");
+            throw new Exception(commit.Error);
+        }
         Logger?.Information(
             """ 
             Saved parser subscription.

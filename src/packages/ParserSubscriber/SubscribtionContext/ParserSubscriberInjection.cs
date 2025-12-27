@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using RemTech.SharedKernel.Infrastructure.Database;
+using Serilog;
 
 namespace ParserSubscriber.SubscribtionContext;
 
@@ -6,14 +8,9 @@ public static class ParserSubscriberInjection
 {
     extension(IServiceCollection services)
     {
-        public void RegisterParserSubscriber<T>(
-            Action<IServiceCollection> rabbitMqProviderConfiguration,
-            Action<IServiceCollection> npgSqlProviderConfiguration,
-            string schemaName)
+        public void RegisterParserSubscriber<T>(string schemaName)
             where T : class, IParserSubscriber
         {
-            rabbitMqProviderConfiguration(services);
-            npgSqlProviderConfiguration(services);
             services.AddTransient<IParserSubscriber, T>();
             services.RegisterSubscriptionStorage(schemaName);
             services.RegisterPublisher();
@@ -23,9 +20,9 @@ public static class ParserSubscriberInjection
         {
             services.AddSingleton<SubscriptionStorage>(sp =>
             {
-                var logger = sp.GetService<Serilog.ILogger>();
-                var provider = sp.GetRequiredService<NpgSqlProvider>();
-                SubscriptionStorage storage = new(provider, logger);
+                ILogger? logger = sp.GetService<ILogger>();
+                NpgSqlConnectionFactory factory = sp.GetRequiredService<NpgSqlConnectionFactory>();
+                SubscriptionStorage storage = new(factory, logger);
                 storage.SetSchema(schemaName);
                 return storage;
             });

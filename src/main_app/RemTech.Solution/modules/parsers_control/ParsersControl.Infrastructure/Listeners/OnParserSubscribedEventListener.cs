@@ -53,6 +53,7 @@ public sealed class OnParserSubscribedEventListener(
         await channel.ExchangeDeclareAsync(exchange: exchange, durable: true, autoDelete: false, type: "topic");
         await channel.QueueDeclareAsync(queue: queue, durable: false, autoDelete: false, exclusive: false);
         await channel.QueueBindAsync(queue: queue, exchange: exchange, routingKey: routingKey);
+        await channel.BasicPublishAsync(exchange: exchange, routingKey: routingKey, body: body, cancellationToken: ct);
         Logger.Information("Published message to exchange {Exchange}, routing key {RoutingKey}", exchange, routingKey);
     }
 }

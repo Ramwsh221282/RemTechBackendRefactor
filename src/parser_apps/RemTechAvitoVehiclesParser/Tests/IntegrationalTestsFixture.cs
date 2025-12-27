@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.Tests.Shared;
 using RemTechAvitoVehiclesParser;
 using Testcontainers.PostgreSql;

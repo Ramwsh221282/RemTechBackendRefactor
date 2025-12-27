@@ -4,10 +4,11 @@ using RabbitMQ.Client;
 
 namespace RemTech.SharedKernel.Infrastructure.RabbitMq;
 
-public sealed class RabbitMqProducer(RabbitMqConnectionSource connectionSource)
+public sealed class RabbitMqProducer(Serilog.ILogger logger, RabbitMqConnectionSource connectionSource)
 {
     private IChannel? Channel { get; set; }
     private SemaphoreSlim Semaphore { get; } = new(1);
+    private Serilog.ILogger Logger { get; } = logger.ForContext<RabbitMqProducer>();
 
     public async Task PublishDirectAsync<T>(
         T message,
@@ -17,39 +18,62 @@ public sealed class RabbitMqProducer(RabbitMqConnectionSource connectionSource)
         CancellationToken ct = default
     )
     {
-        await Semaphore.WaitAsync().ConfigureAwait(false);
+        IConnection connection = await connectionSource.GetConnection(ct);
+        IChannel channel = await GetChannel(connection, ct);
+        ReadOnlyMemory<byte> body = SerializeMessage(message);
+        BasicProperties properties = new BasicProperties() { Persistent = options.Persistent };
 
+        Logger.Debug("Publishing message. Blocking until semaphore is available.");
+        await Semaphore.WaitAsync(ct);
         try
         {
-            IConnection connection = await connectionSource.GetConnection(ct);
-            IChannel channel = await GetChannel(connection, ct);
-            string jsonMessage = JsonSerializer.Serialize(message);
-            ReadOnlyMemory<byte> body = Encoding.UTF8.GetBytes(jsonMessage);
-            BasicProperties properties = new BasicProperties() { Persistent = options.Persistent };
-            
             await channel.BasicPublishAsync(
-                exchange: exchange, 
-                routingKey: routingKey, 
-                basicProperties: properties, 
-                cancellationToken: ct, 
-                body: body, 
-                mandatory: true);
+                exchange: exchange,
+                routingKey: routingKey,
+                basicProperties: properties,
+                cancellationToken: ct,
+                body: body,
+                mandatory: false);
+            Logger.Information("Message published.");
         }
         finally
         {
             Semaphore.Release();
+            Logger.Debug("Semaphore released.");
         }
     }
-
+    
+    private static ReadOnlyMemory<byte> SerializeMessage<T>(T message)
+    {
+        string jsonMessage = JsonSerializer.Serialize(message);
+        ReadOnlyMemory<byte> body = Encoding.UTF8.GetBytes(jsonMessage);
+        return body;
+    }
+    
     private ValueTask<IChannel> GetChannel(IConnection connection, CancellationToken ct)
     {
-        if (Channel is not null && Channel.IsOpen) return new ValueTask<IChannel>(Channel);
+        Logger.Debug("Getting channel.");
+        if (Channel is not null && Channel.IsOpen)
+        {
+            Logger.Information("Channel is initialized and open. Returning existing instance.");
+            return new ValueTask<IChannel>(Channel);
+        }
         
         async ValueTask<IChannel> CreateAsync()
         {
-            IChannel channel = await connection.CreateChannelAsync(cancellationToken: ct);
-            Channel = channel;
-            return channel;
+            Logger.Information("Creating channel. Blocking until semaphore is available.");
+            await Semaphore.WaitAsync();
+            try
+            {
+                Channel ??= await connection.CreateChannelAsync(cancellationToken: ct);
+                Logger.Information("Channel created and stored.");
+                return Channel;
+            }
+            finally
+            {
+                Semaphore.Release();
+                Logger.Debug("Semaphore released.");
+            }
         }
         
         return CreateAsync();
