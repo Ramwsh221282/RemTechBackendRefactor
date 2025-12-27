@@ -20,7 +20,7 @@ public static class AdvertisementsExtactingFromitsPageStage
         public static ParsingStage ExtractAdvertisementsFromItsPage => async (deps, ct) =>
         {
             
-            deps.Deconstruct(out BrowserFactory factory, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger dLogger, out _);
+            deps.Deconstruct(out BrowserFactory factory, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger dLogger, out _, out _);
             Serilog.ILogger logger = dLogger.ForContext<ParsingStage>();
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource transactionSource = new(session);

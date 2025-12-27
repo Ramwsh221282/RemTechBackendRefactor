@@ -23,7 +23,7 @@ public static class CataloguePagesCollectingProcess
                 out Serilog.ILogger dLogger, 
                 out AvitoBypassFactory factory, 
                 out BrowserFactory browsers, 
-                out _);
+                out _, out _);
             
             Serilog.ILogger logger = dLogger.ForContext<ParserStageProcess>();
             await using NpgSqlSession session = new(npgSql);

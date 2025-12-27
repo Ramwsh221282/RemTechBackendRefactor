@@ -8,6 +8,16 @@ public static class CataloguePageUrlStoringImplementation
 {
     extension(CataloguePageUrl)
     {
+        public static async Task DeleteAll(NpgSqlSession session, CancellationToken ct = default)
+        {
+            const string sql = """
+                DELETE FROM avito_parser_module.catalogue_urls;
+                """;
+            
+            CommandDefinition command = new CommandDefinition(sql, cancellationToken: ct, transaction: session.Transaction);
+            await session.Execute(command);
+        }
+        
         public static async Task<CataloguePageUrl[]> GetMany(
             NpgSqlSession session,
             CataloguePageUrlQuery query,

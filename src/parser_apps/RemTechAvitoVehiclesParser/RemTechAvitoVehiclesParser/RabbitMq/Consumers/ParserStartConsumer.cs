@@ -60,7 +60,7 @@ public sealed class ParserStartConsumer(
             
             if (await ProcessingParser.HasAny(session))
             {
-                logger.Information("There is already a parser in progress. Declining.");
+                Logger.Information("There is already a parser in progress. Declining.");
                 return;
             }
 

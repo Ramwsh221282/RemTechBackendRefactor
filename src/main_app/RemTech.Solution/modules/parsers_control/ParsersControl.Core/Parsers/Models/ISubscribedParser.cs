@@ -5,6 +5,7 @@ namespace ParsersControl.Core.Parsers.Models;
 
 public interface ISubscribedParser
 {
+    Result<SubscribedParser> FinishWork(long totalElapsedSeconds);
     Result<SubscribedParser> PermantlyEnable();
     SubscribedParser PermantlyDisable();
     Result<SubscribedParserLink> RemoveLink(SubscribedParserLink link);

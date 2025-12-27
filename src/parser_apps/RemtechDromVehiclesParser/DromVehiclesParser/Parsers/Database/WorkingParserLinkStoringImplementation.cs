@@ -9,6 +9,13 @@ public static class WorkingParserLinkStoringImplementation
 {
     extension(WorkingParserLink)
     {
+        public static async Task DeleteAll(NpgSqlSession session, CancellationToken ct = default)
+        {
+            const string sql = "DELETE FROM drom_vehicles_parser.working_parser_links";
+            CommandDefinition command = session.FormCommand(sql, null, ct);
+            await session.Execute(command);
+        }
+        
         public static async Task<WorkingParserLink[]> GetMany(NpgSqlSession session, WorkingParserLinkQuery query, CancellationToken ct = default)
         {
             (DynamicParameters parameters, string filterSql) = query.WhereClause();

@@ -28,14 +28,8 @@ public static class ParsersControlInjection
                 .WithTransientLifetime());
         }
         
-        private void RegisterPersistence()
-        {
-            services.AddScoped<ISubscribedParsersRepository, SubscribedParsersRepository>();
-        }
+        private void RegisterPersistence() => services.AddScoped<ISubscribedParsersRepository, SubscribedParsersRepository>();
 
-        private void RegisterUseCaseHandler()
-        {
-            services.RegisterParserControlHandlers();
-        }
+        private void RegisterUseCaseHandler() => services.RegisterParserControlHandlers();
     }
 }

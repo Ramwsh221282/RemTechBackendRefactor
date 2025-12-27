@@ -16,7 +16,7 @@ public static class WorkingParserConstruction
             Guid id = document.RootElement.GetProperty("parser_id").GetGuid();
             string domain = document.RootElement.GetProperty("parser_domain").GetString()!;
             string type = document.RootElement.GetProperty("parser_type").GetString()!;
-            return new WorkingParser(id, domain, type);
+            return new WorkingParser(id, domain, type, DateTime.UtcNow, EndDateTime: null);
         }
     }
 }

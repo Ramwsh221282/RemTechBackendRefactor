@@ -6,6 +6,19 @@ namespace RemTechAvitoVehiclesParser.ParserWorkStages.PaginationParsing.Extensio
 
 public static class ProcessingParserLinkStoringImplementation
 {
+    extension(ProcessingParserLink)
+    {
+        public static async Task DeleteAll(NpgSqlSession session, CancellationToken ct = default)
+        {
+            const string sql = """
+                DELETE FROM avito_parser_module.parser_links;
+                """;
+            
+            CommandDefinition command = new CommandDefinition(sql, cancellationToken: ct, transaction: session.Transaction);
+            await session.Execute(command); 
+        }
+    }
+    
     extension(IEnumerable<ProcessingParserLink> links)
     {
         public async Task PersistMany(NpgSqlSession session)

@@ -21,8 +21,6 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 
     public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
     {
-        Logger.Information("Initializing channel.");
-        
         CreateChannelOptions options = new(
             publisherConfirmationsEnabled: true,
             publisherConfirmationTrackingEnabled: true);
@@ -32,8 +30,6 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
         await DeclareQueue(_channel, ct);
         await BindQueue(_channel, ct);
         Consumer = CreateConsumer(_channel);
-        
-        Logger.Information("Initialized channel.");
     }
 
     public async Task StartConsuming(CancellationToken ct = default)
@@ -50,9 +46,7 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
     public async Task Shutdown(CancellationToken ct = default)
     {
         if (Channel is null) throw new InvalidOperationException("Channel is not initialized.");
-        Logger.Information("Shutting down channel.");
         await Channel.DisposeAsync();
-        Logger.Information("Channel shut down.");
     }
 
     private static async Task DeclareExchange(IChannel channel, CancellationToken ct) =>

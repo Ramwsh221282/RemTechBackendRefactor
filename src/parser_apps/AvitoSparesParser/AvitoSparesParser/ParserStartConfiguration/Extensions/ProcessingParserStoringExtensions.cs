@@ -4,6 +4,8 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.ParserStartConfiguration.Extensions;
 
+public sealed record ProcessingParserQuery(Guid? Id = null, bool WithLock = false);
+
 public static class ProcessingParserStoringExtensions
 {
     extension(ProcessingParserLink)
@@ -23,6 +25,35 @@ public static class ProcessingParserStoringExtensions
             const string sql = "DELETE FROM avito_spares_parser.processing_parsers";
             CommandDefinition command = new(sql, cancellationToken: ct, transaction: session.Transaction);
             await session.Execute(command);
+        }
+
+        public static async Task<ProcessingParser> Get(ProcessingParserQuery query, NpgSqlSession session, CancellationToken ct = default)
+        {
+            (DynamicParameters parameters, string filterSql) = WhereClause(query);
+            string lockClause = LockClause(query);
+            string sql = $"""
+            SELECT
+            id as id,
+            domain as domain,
+            type as type,
+            finished as finished,
+            entered as entered
+            FROM avito_spares_parser.processing_parsers
+            {filterSql}
+            {lockClause}
+            """;
+            CommandDefinition command = session.FormCommand(sql, parameters, ct: ct);
+            ProcessingParser? parser = await session.QuerySingleUsingReader(command, reader =>
+            {
+                Guid id = reader.GetValue<Guid>("id");
+                string domain = reader.GetValue<string>("domain");
+                string type = reader.GetValue<string>("type");
+                DateTime entered = reader.GetValue<DateTime>("entered");
+                DateTime? finished = reader.GetNullable<DateTime>("finished");
+                return new ProcessingParser(id, domain, type, entered, finished);
+            });
+            
+            return parser ?? throw new InvalidOperationException($"Parser not found for query {query}");
         }
         
         public static async Task<bool> Exists(NpgSqlSession session)
@@ -157,5 +188,24 @@ public static class ProcessingParserStoringExtensions
             new Common.RetryCounter(retry_count),
             new Common.ProcessedMarker(processed)
         );
+    }
+
+    private static (DynamicParameters parameters, string filterSql) WhereClause(ProcessingParserQuery query)
+    {
+        List<string> filters = [];
+        DynamicParameters parameters = new();
+
+        if (query.Id.HasValue)
+        {
+            filters.Add("id = @id");
+            parameters.Add("id", query.Id.Value);
+        }
+
+        return filters.Count == 0 ? (parameters, string.Empty) : (parameters, "WHERE " + string.Join(" AND ", filters));
+    }
+
+    private static string LockClause(ProcessingParserQuery query)
+    {
+        return query.WithLock ? "FOR UPDATE" : string.Empty;
     }
 }

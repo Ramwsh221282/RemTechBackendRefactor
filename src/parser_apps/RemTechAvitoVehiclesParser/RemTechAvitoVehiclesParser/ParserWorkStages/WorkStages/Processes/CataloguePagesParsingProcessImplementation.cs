@@ -25,7 +25,8 @@ public static class CataloguePagesParsingProcessImplementation
                     out AvitoBypassFactory bypasses,
                     out _,
                     out Serilog.ILogger dLogger,
-                    out NpgSqlConnectionFactory npgSql
+                    out NpgSqlConnectionFactory npgSql,
+                    out _
                 );
 
                 Serilog.ILogger logger = dLogger.ForContext<WorkStageProcess>();

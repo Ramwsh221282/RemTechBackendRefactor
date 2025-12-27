@@ -2,7 +2,7 @@
 
 namespace DromVehiclesParser.Shared.NpgSql;
 
-[TimestampedMigration(year: 2025, month: 12, day: 5, hour: 5, minute: 2)]
+[Migration(1766858985)]
 public sealed class WorkStagesMigration : Migration
 {
     public override void Up()

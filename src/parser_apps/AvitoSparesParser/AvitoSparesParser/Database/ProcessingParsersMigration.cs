@@ -11,8 +11,8 @@ public sealed class ProcessingParsersMigration : Migration
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("domain").AsString(128).NotNullable()
             .WithColumn("type").AsString(128).NotNullable()
-            .WithColumn("finished").AsDateTimeOffset().Nullable()
-            .WithColumn("entered").AsDateTimeOffset().NotNullable();
+            .WithColumn("finished").AsDateTime().Nullable()
+            .WithColumn("entered").AsDateTime().NotNullable();
     }
 
     public override void Down()
