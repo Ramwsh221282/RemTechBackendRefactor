@@ -1,4 +1,5 @@
 using DromVehiclesParser.DependencyInjection;
+using ParserSubscriber.SubscribtionContext;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
 
@@ -12,6 +13,7 @@ builder.Services.RegisterInfrastructureDependencies(isDevelopment);
 
 WebApplication app = builder.Build();
 app.Services.ApplyModuleMigrations();
+await app.Services.RunParserSubscription();
 app.Run();
 
 namespace DromVehiclesParser

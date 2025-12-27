@@ -28,11 +28,12 @@ public static class DatabaseExtensions
 
         public void AddMigrations(Assembly[] assemblies)
         {
-            Assembly[] withPgVectorAssembly = [typeof(PgVectorMigration).Assembly, ..assemblies];
+            Assembly[] withPgVectorAssembly = [..assemblies, typeof(PgVectorMigration).Assembly];
             services.AddFluentMigratorCore()
                 .ConfigureRunner(rb => rb
                     .AddPostgres()
-                    .WithGlobalConnectionString(ConnectionString)
+                    .WithGlobalConnectionString(
+                        sp => sp.GetRequiredService<IOptions<NpgSqlOptions>>().Value.ToConnectionString())
                     .ScanIn(withPgVectorAssembly).For.Migrations())
                 .AddLogging(lb => lb.AddFluentMigratorConsole());
         }
@@ -54,12 +55,7 @@ public static class DatabaseExtensions
         {
             using IServiceScope scope = provider.CreateScope();
             IMigrationRunner runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
-            SortedList<long, IMigrationInfo> migrations = runner.MigrationLoader.LoadMigrations();
-            foreach (KeyValuePair<long, IMigrationInfo> migrationPair in migrations)
-            {
-                IMigrationInfo migration = migrationPair.Value;
-                runner.Up(migration.Migration);
-            }
+            runner.MigrateUp();
         }
 
         public void RollBackModuleMigrations()

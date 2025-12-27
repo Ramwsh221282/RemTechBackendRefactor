@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using ParsersControl.CompositionRoot;
 using ParsersControl.Core.Contracts;
 using ParsersControl.Tests.Parsers.SubscribeParser;
 using RemTech.SharedKernel.Core.Logging;

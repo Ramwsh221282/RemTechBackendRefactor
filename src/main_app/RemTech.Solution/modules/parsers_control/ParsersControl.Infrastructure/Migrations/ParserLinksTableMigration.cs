@@ -2,7 +2,7 @@ using FluentMigrator;
 
 namespace ParsersControl.Infrastructure.Migrations;
 
-[TimestampedMigration(year: 2025, month: 12, day: 5, hour: 5, minute: 6)]
+[Migration(3, description: "Create parser links table")]
 public sealed class ParserLinksTableMigration : Migration
 {
     public override void Up()

@@ -1,3 +1,4 @@
+using ParserSubscriber.SubscribtionContext;
 using Quartz;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -19,7 +20,13 @@ builder.Services.AddQuartzHostedService(c =>
 });
 
 WebApplication app = builder.Build();
+if (args.Contains("--rollback-migrations"))
+{
+    app.Services.RollBackModuleMigrations();
+}
+
 app.Services.ApplyModuleMigrations();
+await app.Services.RunParserSubscription();
 app.Run();
 
 namespace RemTechAvitoVehiclesParser

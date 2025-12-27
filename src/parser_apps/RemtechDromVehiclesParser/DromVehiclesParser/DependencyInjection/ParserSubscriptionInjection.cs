@@ -32,7 +32,7 @@ public static class ParserSubscriptionInjection
         services.AddSingleton<RabbitMqConnectionProvider>(sp =>
         {
             RabbitMqConnectionSource source = sp.GetRequiredService<RabbitMqConnectionSource>();
-            RabbitMqConnectionProvider provider = async ct => await source.GetConnection(ct);
+            RabbitMqConnectionProvider provider = ct => source.GetConnection(ct).AsTask();
             return provider;
         });
     };

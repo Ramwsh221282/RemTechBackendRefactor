@@ -2,7 +2,7 @@
 
 namespace ParsersControl.Infrastructure.Migrations;
 
-[TimestampedMigration(year: 2025, month: 12, day: 5, hour: 5, minute: 5)]
+[Migration(2, description: "Create parsers table and parsers control mode schema")]
 public sealed class ParsersTableMigration : Migration
 {
     public override void Up()

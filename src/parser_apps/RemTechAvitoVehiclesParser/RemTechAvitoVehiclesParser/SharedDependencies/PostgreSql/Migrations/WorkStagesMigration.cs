@@ -2,7 +2,7 @@
 
 namespace RemTechAvitoVehiclesParser.SharedDependencies.PostgreSql.Migrations;
 
-[TimestampedMigration(year: 2025, month: 12, day: 5, hour: 5, minute: 5)]
+[Migration(1766811852)]
 public sealed class WorkStagesMigration : Migration
 {
     public override void Up()
