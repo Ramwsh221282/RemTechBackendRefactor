@@ -3,6 +3,7 @@ using AvitoSparesParser.ParserStartConfiguration;
 using AvitoSparesParser.ParserSubscription;
 using AvitoSparesParser.ParsingStages;
 using Microsoft.Extensions.Options;
+using ParsingSDK.RabbitMq;
 using Quartz;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -28,6 +29,7 @@ public static class DependencyInjectionExtensions
                     }));
                 });
                 
+                services.AddFinishParserProducer();
                 services.RegisterAvitoFirewallBypass();
                 services.RegisterParserSubscriptionProcess();
                 services.RegisterParserWorkStages();

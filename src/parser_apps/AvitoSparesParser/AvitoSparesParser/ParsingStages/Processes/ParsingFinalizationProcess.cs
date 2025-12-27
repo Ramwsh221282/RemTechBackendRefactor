@@ -6,6 +6,7 @@ using AvitoSparesParser.ParserStartConfiguration;
 using AvitoSparesParser.ParserStartConfiguration.Extensions;
 using AvitoSparesParser.ParsingStages.Extensions;
 using ParsingSDK.Parsing;
+using ParsingSDK.RabbitMq;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -18,7 +19,12 @@ public static class ParsingFinalizationProcess
     {
         public static ParserStageProcess Finalization => async (deps, ct) =>
         {
-            deps.Deconstruct(out NpgSqlConnectionFactory npgSql, out Serilog.ILogger logger, out _, out _, out _);
+            deps.Deconstruct(
+                out NpgSqlConnectionFactory npgSql, 
+                out Serilog.ILogger logger, 
+                out _, out _, out _, out 
+                FinishParserProducer finishProducer);
+            
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource source = new(session);
             ITransactionScope scope = await source.BeginTransaction(ct);
@@ -29,6 +35,7 @@ public static class ParsingFinalizationProcess
             AvitoSpare[] spares = await GetCompletedAvitoSpares(session, ct);
             if (CanSwitchNextStage(spares))
             {
+                await FinishParser(session, deps.FinishProducer, deps.Logger, ct);
                 await FinalizeParser(session, deps.Logger, ct);
                 await FinishTransaction(scope, deps.Logger, ct);
                 return;
@@ -39,6 +46,16 @@ public static class ParsingFinalizationProcess
         };
     }
 
+    private static async Task FinishParser(NpgSqlSession session, FinishParserProducer finishProducer, Serilog.ILogger logger, CancellationToken ct)
+    {
+        ProcessingParserQuery query = new(WithLock: true);
+        ProcessingParser parser = await ProcessingParser.Get(query, session, ct);
+        Guid id = parser.Id;
+        long elapsed = parser.Finish().TotalElapsedSeconds();
+        await finishProducer.Publish(new FinishParserMessage(id, elapsed), ct);
+        logger.Information("Finished parser {Id} in {Elapsed} seconds.", id, elapsed);
+    }
+    
     private static async Task FinishTransaction(ITransactionScope scope, Serilog.ILogger logger, CancellationToken ct)
     {
         Result commit = await scope.Commit();
