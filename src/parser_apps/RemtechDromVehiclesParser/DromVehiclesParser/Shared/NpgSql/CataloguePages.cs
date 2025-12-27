@@ -2,7 +2,7 @@ using FluentMigrator;
 
 namespace DromVehiclesParser.Shared.NpgSql;
 
-[TimestampedMigration(year: 2025, month: 12, day: 5, hour: 5, minute: 5)]
+[Migration(1766859113)]
 public sealed class CataloguePages : Migration
 {
     public override void Up()

@@ -1,10 +1,13 @@
 ﻿using Dapper;
+using DromVehiclesParser.Parsers.Database;
+using DromVehiclesParser.Parsers.Models;
 using DromVehiclesParser.Parsing.ConcreteItemParsing.Extensions;
 using DromVehiclesParser.Parsing.ConcreteItemParsing.Models;
 using DromVehiclesParser.Parsing.ParsingStages.Database;
 using DromVehiclesParser.Parsing.ParsingStages.Models;
 using DromVehiclesParser.ResultsExporing.TextFileExporting;
 using ParsingSDK.Parsing;
+using ParsingSDK.RabbitMq;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -17,7 +20,7 @@ public static class FinalizationStage
     {
         public static ParsingStage Finalization => async (deps, ct) =>
         {
-            deps.Deconstruct(out _, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger dLogger, out IExporter<TextFile> exporter);
+            deps.Deconstruct(out _, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger dLogger, out IExporter<TextFile> exporter, out FinishParserProducer finishProducer);
             Serilog.ILogger logger = dLogger.ForContext<ParsingStage>();
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource transactionSource = new(session);
@@ -29,11 +32,8 @@ public static class FinalizationStage
             DromAdvertisementFromPage[] advertisements = await GetAdvertisementsForFinalization(session);
             if (CanSwitchNextStage(advertisements))
             {
-                await RemoveWorkingParserInformation(session, ct);
-                await RemoveWorkingParserLinksInformation(session, ct);
-                await RemoveCataloguePagesInformation(session, ct);
-                await RemoveItemsInformation(session, ct); 
-                await ParserWorkStage.ClearTable(session, ct);
+                await FinishParser(session, finishProducer, logger, ct);
+                await FinalizeParsing(session, logger, ct);
                 await FinishTransaction(transaction, logger, ct);
                 return;
             }
@@ -42,13 +42,27 @@ public static class FinalizationStage
             await FinishTransaction(transaction, logger, ct);
         };
     }
-
-    private static async Task SwitchNextStage(Maybe<ParserWorkStage> stage, NpgSqlSession session,
-        Serilog.ILogger logger, CancellationToken ct)
+    
+    private static async Task FinalizeParsing(NpgSqlSession session, Serilog.ILogger logger, CancellationToken ct)
     {
-        ParserWorkStage sleepStage = stage.Value.SleepStage();
-        await sleepStage.Update(session, ct);
-        logger.Information("Switched to stage: {Name}", sleepStage.StageName);
+        await RemoveWorkingParserInformation(session, ct);
+        await RemoveWorkingParserLinksInformation(session, ct);
+        await RemoveCataloguePagesInformation(session, ct);
+        await RemoveItemsInformation(session, ct); 
+        await ParserWorkStage.ClearTable(session, ct);
+        await WorkingParser.DeleteAll(session, ct);
+        await WorkingParserLink.DeleteAll(session, ct);
+        logger.Information("Parsing finalized");
+    }
+
+    private static async Task FinishParser(NpgSqlSession session, FinishParserProducer producer, Serilog.ILogger logger, CancellationToken ct)
+    {
+        WorkingParserQuery query = new(WithLock: true);
+        WorkingParser parser = await WorkingParser.Get(session, query, ct);
+        long totalElapsed = parser.Finish().TotalElapsedInSeconds();
+        Guid id = parser.Id;
+        await producer.Publish(new FinishParserMessage(id, totalElapsed), ct);
+        logger.Information("Parser finished: {Id} ({TotalElapsed} seconds)", id, totalElapsed);
     }
     
     private static bool CanSwitchNextStage(DromAdvertisementFromPage[] advertisements)

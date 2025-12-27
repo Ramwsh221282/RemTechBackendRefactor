@@ -19,7 +19,7 @@ public static class PagedUrlsExtractingStage
     {
         public static ParsingStage Pagination => async (deps, ct) =>
         {
-            deps.Deconstruct(out BrowserFactory browsers, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger dLogger, out _);
+            deps.Deconstruct(out BrowserFactory browsers, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger dLogger, out _, out _);
             Serilog.ILogger logger = dLogger.ForContext<ParsingStage>();
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource transactionSource = new(session);

@@ -2,12 +2,12 @@ using FluentMigrator;
 
 namespace DromVehiclesParser.Shared.NpgSql;
 
-[TimestampedMigration(year: 2025, month: 12, day: 5, hour: 5, minute: 1)]
+[Migration(1766858979)]
 public sealed class SchemaMigration : Migration
 {
     public override void Up()
     {
-        Create.Schema("drom_vehicles_parser");
+        Execute.Sql("CREATE SCHEMA IF NOT EXISTS drom_vehicles_parser;");
     }
 
     public override void Down()

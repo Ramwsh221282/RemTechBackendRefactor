@@ -18,7 +18,7 @@ public static class CatalogueAdvertisementsExtractingStage
     {
         public static ParsingStage CatalogueAdvertisementsExtraction => async (deps, ct) =>
         {
-            deps.Deconstruct(out BrowserFactory factory, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger logger, out _);
+            deps.Deconstruct(out BrowserFactory factory, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger logger, out _, out _);
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource transactionSource = new(session);
             ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
