@@ -97,7 +97,7 @@ public sealed class StartParserConsumer(
                                    Type: {Type}
                                    Links Count: {LinksCount}
                                    """, parser.Id, parser.Domain, parser.Type, links.Length);
-            
+            await Channel.BasicAckAsync(@event.DeliveryTag, false);
         }
         catch (Exception e)
         {
