@@ -16,7 +16,16 @@ public sealed class ParsingStageBackgroundInvoker(ParserStageDependencies depend
         if (stage.HasValue == false) return;
 
         ParserStageProcess process = ParserStageProcessRouter.ResolveStageByName(stage.Value);
-        await process(dependencies, context.CancellationToken);
+
+        try
+        {
+            dependencies.Logger.Information("Processing stage {Stage}", stage.Value);
+            await process(dependencies, context.CancellationToken);
+        }
+        catch (Exception e)
+        {
+            dependencies.Logger.Fatal(e, "Error while processing stage {Stage}", stage.Value);
+        }
     }
 
     private async Task<Maybe<ParsingStage>> GetStage(CancellationToken ct)

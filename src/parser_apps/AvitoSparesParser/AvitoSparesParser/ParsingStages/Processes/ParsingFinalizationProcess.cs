@@ -1,5 +1,9 @@
 ﻿using AvitoSparesParser.AvitoSpareContext;
 using AvitoSparesParser.AvitoSpareContext.Extensions;
+using AvitoSparesParser.CatalogueParsing;
+using AvitoSparesParser.CatalogueParsing.Extensions;
+using AvitoSparesParser.ParserStartConfiguration;
+using AvitoSparesParser.ParserStartConfiguration.Extensions;
 using AvitoSparesParser.ParsingStages.Extensions;
 using ParsingSDK.Parsing;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -25,8 +29,8 @@ public static class ParsingFinalizationProcess
             AvitoSpare[] spares = await GetCompletedAvitoSpares(session, ct);
             if (CanSwitchNextStage(spares))
             {
-                await SwitchNextStage(finalization.Value, session, logger, ct);
-                await FinishTransaction(scope, logger, ct);
+                await FinalizeParser(session, deps.Logger, ct);
+                await FinishTransaction(scope, deps.Logger, ct);
                 return;
             }
             
@@ -57,11 +61,14 @@ public static class ParsingFinalizationProcess
         return stage;        
     }
 
-    private static async Task SwitchNextStage(ParsingStage stage, NpgSqlSession session, Serilog.ILogger logger, CancellationToken ct)
+    private static async Task FinalizeParser(NpgSqlSession session, Serilog.ILogger logger, CancellationToken ct)
     {
-        ParsingStage completed = stage.ToEmptyStage();
-        await completed.Update(session, ct);
-        logger.Information("Switched to {Stage} stage.", completed.Name);
+        await AvitoSpare.DeleteAll(session, ct);
+        await ParsingStage.Delete(session, ct);
+        await ProcessingParser.DeleteAllParsers(session, ct);
+        await ProcessingParserLink.DeleteAllLinks(session, ct);
+        await AvitoCataloguePage.DeleteAll(session, ct);
+        logger.Information("Finalized {Stage}");
     }
     
     private static bool CanSwitchNextStage(AvitoSpare[] spares)

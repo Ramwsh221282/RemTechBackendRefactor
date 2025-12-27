@@ -2,7 +2,7 @@ using FluentMigrator;
 
 namespace AvitoSparesParser.Database;
 
-[TimestampedMigration(year: 2025, month: 12, day: 5, hour: 5, minute: 6)]
+[Migration(1766848328)]
 public sealed class SparesMigration : Migration
 {
     public override void Up()

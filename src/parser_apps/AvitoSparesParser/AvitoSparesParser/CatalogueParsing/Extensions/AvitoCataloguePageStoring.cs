@@ -7,6 +7,16 @@ namespace AvitoSparesParser.CatalogueParsing.Extensions;
 
 public static class AvitoCataloguePageStoring
 {
+    extension(AvitoCataloguePage)
+    {
+        public static async Task DeleteAll(NpgSqlSession session, CancellationToken ct = default)
+        {
+            const string sql = "DELETE FROM avito_spares_parser.catalogue_pages";
+            CommandDefinition command = new(sql, cancellationToken: ct, transaction: session.Transaction);
+            await session.Execute(command);
+        }
+    }
+    
     extension(IEnumerable<AvitoCataloguePage>)
     {
         public static async Task<AvitoCataloguePage[]> GetMany(

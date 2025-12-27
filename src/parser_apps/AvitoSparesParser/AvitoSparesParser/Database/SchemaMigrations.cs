@@ -2,12 +2,12 @@
 
 namespace AvitoSparesParser.Database;
 
-[TimestampedMigration(year: 2025, month: 12, day: 5, hour: 5, minute: 1)]
+[Migration(1766848275)]
 public sealed class SchemaMigrations : Migration
 {
     public override void Up()
     {
-        Create.Schema("avito_spares_parser");
+        Execute.Sql("CREATE schema if not exists avito_spares_parser");
     }
 
     public override void Down()

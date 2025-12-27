@@ -9,6 +9,13 @@ public static class AvitoSpareStoringImplementation
 {
     extension(AvitoSpare)
     {
+        public static async Task DeleteAll(NpgSqlSession session, CancellationToken ct = default)
+        {
+            const string sql = "DELETE FROM avito_spares_parser.spares";
+            CommandDefinition command = new(sql, cancellationToken: ct, transaction: session.Transaction);
+            await session.Execute(command);
+        }
+        
         public static async Task<AvitoSpare[]> Query(NpgSqlSession session, AvitoSpareQuery query, CancellationToken ct = default)
         {
             (DynamicParameters parameters, string filterSql) = WhereClause(query);
@@ -70,8 +77,12 @@ public static class AvitoSpareStoringImplementation
         public async Task RemoveMany(NpgSqlSession session)
         {
             const string sql = "DELETE FROM avito_spares_parser.spares WHERE id = ANY(@ids)";
-            object[] parameters = spares.Select(s => s.Id).ToArray();
-            await session.ExecuteBulk(sql, parameters);
+            object parameters = new
+            {
+                ids = spares.Select(s => s.Id).ToArray()
+            };
+            CommandDefinition command = new(sql, parameters, transaction: session.Transaction);
+            await session.Execute(command);
         }
         
         public async Task PersistAsCatalogueRepresentationMany(NpgSqlSession session)

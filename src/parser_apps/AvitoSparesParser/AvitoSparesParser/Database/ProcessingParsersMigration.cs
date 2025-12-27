@@ -2,7 +2,7 @@
 
 namespace AvitoSparesParser.Database;
 
-[TimestampedMigration(year: 2025, month: 12, day: 5, hour: 5, minute: 3)]
+[Migration(1766848301)]
 public sealed class ProcessingParsersMigration : Migration
 {
     public override void Up()
