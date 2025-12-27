@@ -1,6 +1,7 @@
 ﻿using AvitoFirewallBypass;
 using Microsoft.Extensions.Options;
 using ParsingSDK;
+using ParsingSDK.RabbitMq;
 using ParsingSDK.TextProcessing;
 using RemTechAvitoVehiclesParser.ParserWorkStages;
 
@@ -16,6 +17,7 @@ public static class ParserDependenciesInjection
             services.RegisterParserSubscription();
             services.RegisterTextTransformerBuilder();
             services.RegisterAvitoFirewallBypass();
+            services.AddFinishParserProducer();
             
             if (isDevelopment)
             {

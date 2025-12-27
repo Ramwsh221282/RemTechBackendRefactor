@@ -25,21 +25,19 @@ public sealed class ParserFinishListener(
     
     public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
     {
-        Logger.Information("Initializing channel. {Queue} {Exchange} {RoutingKey}", Queue, Exchange, RoutingKey);
-        await TopicConsumerInitialization.InitializeChannel(rabbitMq, Exchange, Queue, RoutingKey, ct);
-        Logger.Information("Channel initialized. {Queue} {Exchange} {RoutingKey}", Queue, Exchange, RoutingKey);
+        _channel = await TopicConsumerInitialization.InitializeChannel(rabbitMq, Exchange, Queue, RoutingKey, ct);
     }
 
     public async Task StartConsuming(CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        AsyncEventingBasicConsumer consumer = new(Channel);
+        consumer.ReceivedAsync += Handler;
+        await Channel.BasicConsumeAsync(Queue, false, consumer, cancellationToken: ct);
     }
 
     public async Task Shutdown(CancellationToken ct = default)
     {
-        Logger.Information("Shutting down channel. {Queue} {Exchange} {RoutingKey}", Queue, Exchange, RoutingKey);
         await Channel.CloseAsync(ct);
-        Logger.Information("Channel shut down. {Queue} {Exchange} {RoutingKey}", Queue, Exchange, RoutingKey);
     }
 
     private AsyncEventHandler<BasicDeliverEventArgs> Handler => async (sender, ea) =>

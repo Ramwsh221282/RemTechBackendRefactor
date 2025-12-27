@@ -10,6 +10,16 @@ public static class PostgreSqlWorkStageStorageExtension
 {
     extension(ParserWorkStage)
     {
+        public static async Task DeleteAll(NpgSqlSession session, CancellationToken ct = default)
+        {
+            const string sql = """
+                DELETE FROM avito_parser_module.work_stages;
+                """;
+            
+            CommandDefinition command = new CommandDefinition(sql, cancellationToken: ct, transaction: session.Transaction);
+            await session.Execute(command);
+        }
+        
         public static async Task<Maybe<ParserWorkStage>> GetSingle(
             NpgSqlSession session,
             WorkStageQuery query,

@@ -13,27 +13,102 @@ public sealed class AggregatedConsumersHostedService(
     private IEnumerable<IConsumer> Consumers { get; } = consumers;
     private RabbitMqConnectionSource ConnectionSource { get; } = connectionSource;
     
+    private IConnection? _connection;
+    private IConnection Connection => _connection ?? throw new InvalidOperationException("Connection is not initialized.");
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         Logger.Information("Initializing aggregated consumers.");
-        IConnection connection = await ConnectionSource.GetConnection(stoppingToken);
-        foreach (IConsumer consumer in Consumers)
-            await consumer.InitializeChannel(connection, stoppingToken);
-        
-        Logger.Information("Aggregated consumers initialized. Starting consumers.");
-        IEnumerable<Task> startTasks = Consumers.Select(c => Task.Run(async () =>
-        { 
-            await c.StartConsuming(stoppingToken);
-        }));
-        await Task.WhenAll(startTasks);
-        Logger.Information("Consumers started.");
+        _connection = await ConnectionSource.GetConnection(stoppingToken);
+
+        await InitializeConsumers(Consumers, _connection, Logger, stoppingToken);
+        await StartConsuming(Consumers, Logger, stoppingToken);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         Logger.Information("Shutting down parsers control event listeners.");
-        IEnumerable<Task> tasks = Consumers.Select(c => c.Shutdown(cancellationToken));
-        await Task.WhenAll(tasks);
+        
+        IEnumerable<Task> shutdownTasks = Consumers.Select(async c =>
+        {
+            try
+            {
+                await c.Shutdown(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error while shutting down consumer {ConsumerType}", c.GetType().FullName);
+            }
+        });
+
+        await Task.WhenAll(shutdownTasks);
+        
+        try
+        {
+            Logger.Information("Closing RabbitMQ connection.");
+            Connection.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Error while closing RabbitMQ connection.");
+        }
+
         Logger.Information("Parsers control event listeners shut down.");
+    }
+
+    private static async Task InitializeConsumers(
+        IEnumerable<IConsumer> consumers,
+        IConnection connection,
+        Serilog.ILogger logger,
+        CancellationToken ct)
+    {
+        var initTasks = consumers.Select(async c =>
+        {
+            try
+            {
+                await c.InitializeChannel(connection, ct);
+                logger.Information("Initialized consumer {ConsumerType}", c.GetType().FullName);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                logger.Warning("Initialization of consumer {ConsumerType} was canceled.", c.GetType().FullName);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to initialize consumer {ConsumerType}", c.GetType().FullName);
+                throw;
+            }
+        });
+
+        await Task.WhenAll(initTasks);
+        logger.Information("Consumers initialized.");
+    }
+
+    private static async Task StartConsuming(
+        IEnumerable<IConsumer> consumers,
+        Serilog.ILogger logger,
+        CancellationToken ct)
+    {
+        var startTasks = consumers.Select(async c =>
+        {
+            try
+            {
+                await c.StartConsuming(ct);
+                logger.Information("Started consuming for {ConsumerType}", c.GetType().FullName);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                logger.Warning("StartConsuming for {ConsumerType} was canceled before start.", c.GetType().FullName);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to start consuming for {ConsumerType}", c.GetType().FullName);
+                throw;
+            }
+        });
+        
+        await Task.WhenAll(startTasks);
+        logger.Information("Consumers started.");
     }
 }
