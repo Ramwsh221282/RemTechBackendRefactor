@@ -15,7 +15,7 @@
     <PackageReference Include="RemTech.SharedKernel.Configurations" Version="1.0.0" />
     <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.4" />
     <PackageReference Include="RemTech.SharedKernel.Infrastructure.Quartz" Version="1.0.0" />
-    <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.2" />
+    <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.3" />
     <PackageReference Include="Scrutor" Version="7.0.0" />
     <PackageReference
       Include="Sdcb.OpenCvSharp4.mini.runtime.ubuntu.22.04-x64"

@@ -20,6 +20,13 @@ public static class ParsersDependencyInjection
             .WithScopedLifetime()
         );
         
+        services.Scan(x => x.FromAssemblies([assembly])
+            .AddClasses(classes => classes.AssignableTo(typeof(IEventTransporter<,>)))
+            .UsingRegistrationStrategy(RegistrationStrategy.Skip)
+            .AsSelfWithInterfaces()
+            .WithScopedLifetime()
+        );
+        
         services.AddValidatorsFromAssembly(assembly);
         services.RegisterLoggingHandlers();
         services.RegisterValidatingHandlers();

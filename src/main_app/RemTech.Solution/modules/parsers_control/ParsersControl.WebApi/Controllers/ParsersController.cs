@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ParsersControl.Core.Features.AddParserLink;
+using ParsersControl.Core.Features.EnableParser;
+using ParsersControl.Core.Features.PermantlyDisableParsing;
+using ParsersControl.Core.Features.PermantlyStartParsing;
 using ParsersControl.Core.Features.StartParserWork;
 using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
@@ -24,7 +27,40 @@ public sealed class ParsersController : ControllerBase
         Result<SubscribedParser> result = await handler.Execute(command, ct);
         return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
     }
+    
+    [HttpPatch("{id:guid}/permantly-start")]
+    public async Task<Envelope> PermantlyStartParser(
+        [FromRoute(Name = "id")] Guid id,
+        [FromServices] ICommandHandler<PermantlyStartParsingCommand, SubscribedParser> handler,
+        CancellationToken ct)
+    {
+        PermantlyStartParsingCommand command = new(Id: id);
+        Result<SubscribedParser> result = await handler.Execute(command, ct);
+        return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
+    }
 
+    [HttpPatch("{id:guid}/permantly-disable")]
+    public async Task<Envelope> PermantlyDisableParser(
+        [FromRoute(Name = "id")] Guid id,
+        [FromServices] ICommandHandler<PermantlyDisableParsingCommand, SubscribedParser> handler,
+        CancellationToken ct)
+    {
+        PermantlyDisableParsingCommand command = new(Id: id);
+        Result<SubscribedParser> result = await handler.Execute(command, ct);
+        return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
+    }
+    
+    [HttpPatch("{id:guid}/enable")]
+    public async Task<Envelope> ChangeParserActivity(
+        [FromRoute(Name = "id")] Guid id,
+        [FromServices] ICommandHandler<EnableParserCommand, SubscribedParser> handler,
+        CancellationToken ct)
+    {
+        EnableParserCommand command = new(Id: id);
+        Result<SubscribedParser> result = await handler.Execute(command, ct);
+        return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
+    }
+    
     [HttpPost("{id:guid}/links")]
     public async Task<Envelope> AddLinksToParser(
         [FromRoute (Name = "id")] Guid id,

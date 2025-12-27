@@ -178,6 +178,12 @@ public sealed class SubscribedParser : ISubscribedParser
         return this;
     }
 
+    public SubscribedParser PermantlyDisable()
+    {
+        State = SubscribedParserState.Disabled;
+        return this;
+    }
+
     public Result<SubscribedParserLink> RemoveLink(SubscribedParserLink link)
     {
         if (!State.IsDisabled() && !State.IsSleeping())

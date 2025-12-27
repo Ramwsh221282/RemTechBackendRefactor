@@ -146,7 +146,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
         int? waitDays = reader.GetNullable<int>("parser_wait_days");
 
         SubscribedParserId parserId = SubscribedParserId.Create(id);
-        SubscribedParserIdentity identity = SubscribedParserIdentity.Create(type, domain);
+        SubscribedParserIdentity identity = SubscribedParserIdentity.Create(domain, type);
         ParsingStatistics statistics = new(
             ParsingWorkTime.FromTotalElapsedSeconds(elapsedSeconds), 
             ParsedCount.Create(processed));
