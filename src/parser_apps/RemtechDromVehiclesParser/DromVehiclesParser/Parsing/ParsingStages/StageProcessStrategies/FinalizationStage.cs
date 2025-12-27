@@ -33,7 +33,7 @@ public static class FinalizationStage
                 await RemoveWorkingParserLinksInformation(session, ct);
                 await RemoveCataloguePagesInformation(session, ct);
                 await RemoveItemsInformation(session, ct); 
-                await SwitchNextStage(stage, session, logger, ct);
+                await ParserWorkStage.ClearTable(session, ct);
                 await FinishTransaction(transaction, logger, ct);
                 return;
             }

@@ -32,7 +32,7 @@ public static class ParserWorkStageStoringImplementation
             r => r.Finished
         );
     }
-
+    
     extension(TableRow? row)
     {
         private Maybe<ParserWorkStage> MaybeStage() => row == null 

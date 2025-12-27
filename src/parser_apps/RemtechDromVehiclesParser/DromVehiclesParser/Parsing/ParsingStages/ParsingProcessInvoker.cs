@@ -25,20 +25,31 @@ public sealed class ParsingProcessInvoker(ParsingStageDependencies dependencies)
             return;
         }
         
-        ParserWorkStage stage = await GetCurrentParsingStage(ct);
-        ParsingStage process = ParsingStageRouter.ResolveByStageName(stage);
+        Maybe<ParserWorkStage> stage = await GetCurrentParsingStage(ct);
+        ParsingStage process = ResolveStage(stage);
         
-        Dependencies.Logger.Information("Invoking stage - {Name}.", stage.StageName);
-        await process(Dependencies, ct);
-        Dependencies.Logger.Information("Parsing stage - {Name} completed.", stage.StageName);
+        try
+        {
+            await process(Dependencies, ct);
+            Dependencies.Logger.Information("Parsing stage completed.");
+        }
+        catch(Exception e)
+        {
+            Dependencies.Logger.Fatal(e, "Error while invoking parsing stage");
+        }
     }
 
-    private async Task<ParserWorkStage> GetCurrentParsingStage(CancellationToken ct)
+    private ParsingStage ResolveStage(Maybe<ParserWorkStage> stage)
+    {
+        if (!stage.HasValue) return ParsingStage.Sleep;
+        return ParsingStageRouter.ResolveByStageName(stage.Value);
+    }
+    
+    private async Task<Maybe<ParserWorkStage>> GetCurrentParsingStage(CancellationToken ct)
     {
         await using NpgSqlSession session = new(Dependencies.NpgSql);
         var query = new ParserWorkStageStoringImplementation.ParserWorkStageQuery();
-        Maybe<ParserWorkStage> stage = await ParserWorkStage.FromDb(session, query, ct);
-        return stage.Value;
+        return await ParserWorkStage.FromDb(session, query, ct);
     }
 
     private async Task<bool> EnsureHasWorkingParsers(CancellationToken ct)

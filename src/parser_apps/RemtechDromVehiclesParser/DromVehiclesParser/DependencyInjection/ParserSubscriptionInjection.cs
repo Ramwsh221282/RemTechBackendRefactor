@@ -1,8 +1,5 @@
-﻿using Microsoft.Extensions.Options;
-using ParserSubscriber.SubscribtionContext;
+﻿using ParserSubscriber.SubscribtionContext;
 using ParserSubscriber.SubscribtionContext.Options;
-using RemTech.SharedKernel.Configurations;
-using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace DromVehiclesParser.DependencyInjection;
 
@@ -13,11 +10,7 @@ public static class ParserSubscriptionInjection
         public void RegisterParserSubscription()
         {
             services.RegisterRabbitMqResponseReplyListeningOptions();
-            services.RegisterParserSubscriber<RabbitMqRequestReplySubscriber>(
-                RabbitMqProvidingConfiguration,
-                NpgSqlProvidingConfiguration,
-                "drom_vehicles_parser"
-                );
+            services.RegisterParserSubscriber<RabbitMqRequestReplySubscriber>("drom_vehicles_parser");
         }
 
         private void RegisterRabbitMqResponseReplyListeningOptions()
@@ -26,23 +19,4 @@ public static class ParserSubscriptionInjection
                 .BindConfiguration(nameof(RabbitMqRequestReplyResponseListeningQueueOptions));
         }
     }
-
-    private static Action<IServiceCollection> RabbitMqProvidingConfiguration => services =>
-    {
-        services.AddSingleton<RabbitMqConnectionProvider>(sp =>
-        {
-            RabbitMqConnectionSource source = sp.GetRequiredService<RabbitMqConnectionSource>();
-            RabbitMqConnectionProvider provider = ct => source.GetConnection(ct).AsTask();
-            return provider;
-        });
-    };
-
-    private static Action<IServiceCollection> NpgSqlProvidingConfiguration => services =>
-    {
-        services.AddSingleton<NpgSqlProvider>(sp =>
-        {
-            IOptions<NpgSqlOptions> options = sp.GetRequiredService<IOptions<NpgSqlOptions>>();
-            return new NpgSqlProvider() { ConnectionString = options.Value.ToConnectionString() };
-        });
-    };
 }

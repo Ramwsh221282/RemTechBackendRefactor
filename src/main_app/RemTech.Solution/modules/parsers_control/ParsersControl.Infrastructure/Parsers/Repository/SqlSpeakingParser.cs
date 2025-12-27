@@ -17,6 +17,23 @@ public sealed class SqlSpeakingParser(
     private CancellationToken CancellationToken { get; } = ct;
     private NpgSqlSession Session { get; } = session;
 
+    public Result<SubscribedParser> PermantlyEnable()
+    {
+        Result<SubscribedParser> result = Inner.PermantlyEnable();
+        if (result.IsFailure) return result.Error;
+        
+        const string sql = """
+                           UPDATE parsers_control_module.registered_parsers
+                           SET state = @state, started_at = @started_at
+                           WHERE id = @id
+                           """;
+        
+        object parameters = ExtractParserParameters(result.Value);
+        EnqueueChangeRequest(sql, parameters);
+        Inner = result.Value;
+        return result;
+    }
+
     public SubscribedParser PermantlyDisable()
     {
         SubscribedParser result = Inner.PermantlyDisable();

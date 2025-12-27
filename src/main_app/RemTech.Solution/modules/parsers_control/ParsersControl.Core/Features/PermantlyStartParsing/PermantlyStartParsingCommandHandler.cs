@@ -38,6 +38,7 @@ public sealed class PermantlyStartParsingCommandHandler(
     private Result<SubscribedParser> StartParser(Result<ISubscribedParser> parser)
     {
         if (parser.IsFailure) return parser.Error;
-        return parser.Value.Enable();
+        Result<SubscribedParser> result = parser.Value.PermantlyEnable();
+        return result;
     }
 }

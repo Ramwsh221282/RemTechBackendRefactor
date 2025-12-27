@@ -178,6 +178,14 @@ public sealed class SubscribedParser : ISubscribedParser
         return this;
     }
 
+    public Result<SubscribedParser> PermantlyEnable()
+    {
+        if (HasNoLinks()) return Error.Conflict($"Парсер не содержит ссылок.");
+        State = SubscribedParserState.Working;
+        Schedule = Schedule.WithStartedAt(DateTime.UtcNow);
+        return this;
+    }
+
     public SubscribedParser PermantlyDisable()
     {
         State = SubscribedParserState.Disabled;
