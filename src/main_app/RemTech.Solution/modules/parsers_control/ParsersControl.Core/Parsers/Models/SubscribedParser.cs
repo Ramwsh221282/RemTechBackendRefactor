@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using ParsersControl.Core.Common;
+﻿using ParsersControl.Core.Common;
 using ParsersControl.Core.Contracts;
 using ParsersControl.Core.ParserLinks.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -174,6 +173,18 @@ public sealed class SubscribedParser : ISubscribedParser
     public SubscribedParser Disable()
     {
         State = SubscribedParserState.Disabled;
+        Schedule = Schedule.WithFinishedAt(DateTime.UtcNow);
+        return this;
+    }
+
+    public Result<SubscribedParser> FinishWork(long totalElapsedSeconds)
+    {
+        if (!State.IsWorking())
+            return Error.Conflict($"Парсер не в состоянии {SubscribedParserState.Working.Value}, чтобы завершить работу.");
+        Result<ParsingStatistics> update = Statistics.AddWorkTime(totalElapsedSeconds);
+        if (update.IsFailure) return update.Error;
+        Statistics = update.Value;
+        State = SubscribedParserState.Sleeping;
         Schedule = Schedule.WithFinishedAt(DateTime.UtcNow);
         return this;
     }
