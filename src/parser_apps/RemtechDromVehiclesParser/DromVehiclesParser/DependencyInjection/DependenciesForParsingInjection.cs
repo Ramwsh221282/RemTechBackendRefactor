@@ -21,6 +21,7 @@ public static class DependenciesForParsingInjection
                 });
             }
             
+            services.AddContainedItemProducer();
             services.AddFinishParserProducer();
             services.RegisterTextTransformerBuilder();
             services.AddSingleton<IExporter<TextFile>, TextFileExporter>();

@@ -1,4 +1,6 @@
-﻿using AvitoSparesParser.AvitoSpareContext;
+﻿using System.Text.Encodings.Web;
+using System.Text.Json;
+using AvitoSparesParser.AvitoSpareContext;
 using AvitoSparesParser.AvitoSpareContext.Extensions;
 using AvitoSparesParser.CatalogueParsing;
 using AvitoSparesParser.CatalogueParsing.Extensions;
@@ -19,11 +21,10 @@ public static class ParsingFinalizationProcess
     {
         public static ParserStageProcess Finalization => async (deps, ct) =>
         {
-            deps.Deconstruct(
-                out NpgSqlConnectionFactory npgSql, 
-                out Serilog.ILogger logger, 
-                out _, out _, out _, out 
-                FinishParserProducer finishProducer);
+            NpgSqlConnectionFactory npgSql = deps.NpgSql;
+            Serilog.ILogger logger = deps.Logger;
+            FinishParserProducer finishProducer = deps.FinishProducer;
+            AddContainedItemProducer addProducer = deps.AddContainedItem;
             
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource source = new(session);
@@ -35,17 +36,65 @@ public static class ParsingFinalizationProcess
             AvitoSpare[] spares = await GetCompletedAvitoSpares(session, ct);
             if (CanSwitchNextStage(spares))
             {
-                await FinishParser(session, deps.FinishProducer, deps.Logger, ct);
-                await FinalizeParser(session, deps.Logger, ct);
-                await FinishTransaction(scope, deps.Logger, ct);
+                await FinishParser(session, finishProducer, logger, ct);
+                await FinalizeParser(session, logger, ct);
+                await FinishTransaction(scope, logger, ct);
                 return;
             }
             
+            await SendAddContainedItems(session, spares, addProducer, ct);
             await SendResultsToMainBackend(spares, session, logger);
             await FinishTransaction(scope, logger, ct);
         };
     }
 
+    private static async Task SendAddContainedItems(
+        NpgSqlSession session, 
+        AvitoSpare[] spares, 
+        AddContainedItemProducer producer, 
+        CancellationToken ct)
+    {
+        ProcessingParserQuery query = new(WithLock: true);
+        ProcessingParser parser = await ProcessingParser.Get(query, session, ct);
+        AddContainedItemsMessage message = CreateMessage(parser, spares);
+        await producer.Publish(message, ct);
+    }
+
+    private static AddContainedItemsMessage CreateMessage(ProcessingParser parser, AvitoSpare[] spares)
+    {
+        return new AddContainedItemsMessage()
+        {
+            CreatorDomain = parser.Domain,
+            CreatorId = parser.Id,
+            CreatorType = parser.Type,
+            Items = spares.Select(CreatePayload).ToArray(),
+        };
+    }
+    
+    private static AddContainedItemMessagePayload CreatePayload(AvitoSpare spare)
+    {
+        string id = spare.Id;
+        object payload = new
+        {
+            address = spare.CatalogueRepresentation.Address.Replace('\u00A0', ' '),
+            is_nds = spare.CatalogueRepresentation.IsNds,
+            oem = spare.CatalogueRepresentation.Oem.Replace('\u00A0', ' '),
+            photos = spare.CatalogueRepresentation.Photos.Select(p => p).ToArray(),
+            price = spare.CatalogueRepresentation.Price,
+            url = spare.CatalogueRepresentation.Url,
+            title = spare.ConcreteRepresentation.Title.Replace('\u00A0', ' '),
+            type = spare.ConcreteRepresentation.Type.Replace('\u00A0', ' '),
+        };
+
+        JsonSerializerOptions options = new()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        };
+        
+        string content = JsonSerializer.Serialize(payload, options);
+        return new AddContainedItemMessagePayload() { ItemId = id, Content = content };
+    }
+    
     private static async Task FinishParser(NpgSqlSession session, FinishParserProducer finishProducer, Serilog.ILogger logger, CancellationToken ct)
     {
         ProcessingParserQuery query = new(WithLock: true);

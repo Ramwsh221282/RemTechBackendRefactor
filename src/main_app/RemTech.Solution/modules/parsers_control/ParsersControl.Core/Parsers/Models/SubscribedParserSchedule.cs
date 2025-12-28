@@ -75,12 +75,6 @@ public readonly record struct SubscribedParserSchedule
             if (waitDays.Value < 1 || waitDays.Value > MaxWaitDaysAmount)
                 return Error.Validation($"Дни ожидания не могут быть менее 1 или более {MaxWaitDaysAmount}");
         }
-
-        if (startedAt != null && finishedAt != null)
-        {
-            if (finishedAt.Value < startedAt.Value)
-                return Error.Validation("Дата окончания не может быть раньше даты начала.");
-        }
         
         return new SubscribedParserSchedule(startedAt, finishedAt, nextRun, waitDays);        
     }

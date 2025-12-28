@@ -48,7 +48,7 @@ public static class AvitoVehicleStoringImplementation
                  """;
             
             CommandDefinition command = session.FormCommand(sql, parameters, ct);
-            return await session.QueryMultipleUsingReader(command, AsCatalogueItem);
+            return await session.QueryMultipleUsingReader(command, AsConcreteItem);
         }
         
         public static async Task<AvitoVehicle[]> GetAsCatalogueRepresentation(

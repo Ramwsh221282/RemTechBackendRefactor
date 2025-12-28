@@ -17,7 +17,7 @@ public static class PaginationParsingParserConstruction
             string type = document.RootElement.GetProperty("parser_type").GetString()!;
             string domain = document.RootElement.GetProperty("parser_domain").GetString()!;
             DateTime startDate = DateTime.UtcNow;
-            return new ProcessingParser(id, type, domain, startDate, EndDateTime: null);
+            return new ProcessingParser(id, domain, type, startDate, EndDateTime: null);
         }
     }
 }

@@ -23,7 +23,7 @@ public static class ConcreteItemParsingProcessImplementation
                 out _,
                 out Serilog.ILogger dLogger,
                 out NpgSqlConnectionFactory npgSql,
-                out _
+                out _, out _
             );
 
             Serilog.ILogger logger = dLogger.ForContext<WorkStageProcess>();

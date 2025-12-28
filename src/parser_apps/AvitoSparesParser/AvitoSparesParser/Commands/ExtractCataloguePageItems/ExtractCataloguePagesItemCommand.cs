@@ -1,6 +1,5 @@
 ﻿using AvitoSparesParser.AvitoSpareContext;
 using AvitoSparesParser.CatalogueParsing;
-using AvitoSparesParser.Commands.HoverCatalogueItemImages;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 
@@ -12,9 +11,11 @@ public sealed class ExtractCataloguePagesItemCommand(
 {
     public async Task<AvitoSpare[]> Extract(AvitoCataloguePage page)
     {
-        const string javaScript = @"() => {
-                    const photoExtractFn = (item) => {
-                                    const photoListSelector = item.querySelector('ul.photo-slider-list-R0jle');
+        const string javaScript = @"() => {                    
+                                const photoExtractFn = (item) => {
+                                    const photoListSelector = item.querySelector('div[data-marker=""item-image""]') 
+                                    ?.querySelector('div[data-marker=""item-photo""]')
+                                    ?.querySelector('ul');
                                     if (!photoListSelector) return [];
                                     return Array.from(photoListSelector.querySelectorAll('li')).map(s => {
                                         const photo = s.querySelector('img');
@@ -54,10 +55,13 @@ public sealed class ExtractCataloguePagesItemCommand(
         string url = page.Url;
         IPage pageInstance = await pageSource();
         await pageInstance.PerformQuickNavigation(url, timeout: 1500);
+        
         if (!await bypassFactory.Create(pageInstance).Bypass())
             throw new InvalidOperationException("Bypass failed.");
+        
         await pageInstance.ScrollBottom();
-        await new HoverCatalogueItemImagesCommand(() => Task.FromResult(pageInstance)).Hover();
+        await new AvitoImagesHoverer(pageInstance).Invoke();
+        
         JsonData[] data = await pageInstance.EvaluateFunctionAsync<JsonData[]>(javaScript);
         return [..data.Where(d => d.AllPropertiesSet()).Select(d => d.ToAvitoSpareCatalogueRepresentation())];
     }

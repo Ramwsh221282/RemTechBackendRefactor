@@ -1,4 +1,6 @@
-﻿using Dapper;
+﻿using System.Text.Encodings.Web;
+using System.Text.Json;
+using Dapper;
 using DromVehiclesParser.Parsers.Database;
 using DromVehiclesParser.Parsers.Models;
 using DromVehiclesParser.Parsing.ConcreteItemParsing.Extensions;
@@ -20,8 +22,11 @@ public static class FinalizationStage
     {
         public static ParsingStage Finalization => async (deps, ct) =>
         {
-            deps.Deconstruct(out _, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger dLogger, out IExporter<TextFile> exporter, out FinishParserProducer finishProducer);
-            Serilog.ILogger logger = dLogger.ForContext<ParsingStage>();
+            NpgSqlConnectionFactory npgSql = deps.NpgSql;
+            FinishParserProducer finishProducer = deps.FinishProducer;
+            AddContainedItemProducer addProducer = deps.AddContainedItemProducer;
+            Serilog.ILogger logger = deps.Logger;
+            
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource transactionSource = new(session);
             ITransactionScope transaction = await transactionSource.BeginTransaction(ct); 
@@ -38,9 +43,60 @@ public static class FinalizationStage
                 return;
             }
             
-            await FinalizeAdvertisements(advertisements, session, logger, exporter, ct);
+            await PublishAddContainedItemsMessage(session, advertisements, addProducer, ct);
+            await FinalizeAdvertisements(advertisements, session, logger, ct);
             await FinishTransaction(transaction, logger, ct);
         };
+    }
+
+    private static async Task PublishAddContainedItemsMessage(
+        NpgSqlSession session, 
+        DromAdvertisementFromPage[] advertisements, 
+        AddContainedItemProducer producer, 
+        CancellationToken ct)
+    {
+        WorkingParserQuery query = new(WithLock: true);
+        WorkingParser parser = await WorkingParser.Get(session, query, ct);
+        AddContainedItemsMessage message = CreateAddContainedItemsMessage(parser, advertisements);
+        await producer.Publish(message, ct);
+    }
+
+    private static AddContainedItemsMessage CreateAddContainedItemsMessage(WorkingParser parser, DromAdvertisementFromPage[] advertisements)
+    {
+        return new AddContainedItemsMessage()
+        {
+            CreatorId = parser.Id,
+            CreatorDomain = parser.Domain,
+            CreatorType = parser.Type,
+            Items = advertisements.Select(CreateAddContainedItemsMessagePayload).ToArray()
+        };
+    }
+    
+    private static AddContainedItemMessagePayload CreateAddContainedItemsMessagePayload(DromAdvertisementFromPage advertisement)
+    {
+        string id = advertisement.Id;
+        
+        object payload = new
+        {
+            url = advertisement.Url,
+            price = advertisement.Price,
+            is_nds = advertisement.IsNds,
+            title = advertisement.Title.Replace('\u00A0', ' '),
+            address = advertisement.Address.Replace('\u00A0', ' '),
+            photos = advertisement.Photos.Select(p => p).ToArray(),
+            characteristics = advertisement.Characteristics.Select(c => new
+            {
+                name = c.Key.Replace('\u00A0', ' '),
+                value = c.Value.Replace('\u00A0', ' ')
+            }).ToArray()
+        };
+
+        JsonSerializerOptions options = new()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+        string content = JsonSerializer.Serialize(payload, options);
+        return new AddContainedItemMessagePayload() { ItemId = id, Content = content };
     }
     
     private static async Task FinalizeParsing(NpgSqlSession session, Serilog.ILogger logger, CancellationToken ct)
@@ -83,20 +139,9 @@ public static class FinalizationStage
         DromAdvertisementFromPage[] advertisements,
         NpgSqlSession session, 
         Serilog.ILogger logger,
-        IExporter<TextFile> exporter,
         CancellationToken ct)
     {
-        exporter = exporter.UseLogging(logger);
-        string resultDirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "results");
-        Directory.CreateDirectory(resultDirPath);
-        foreach (DromAdvertisementFromPage advertisement in advertisements)
-        {
-            string resultFilePath = Path.Combine(resultDirPath, $"{advertisement.Id}.txt");
-            TextFile file = TextFile.FromDromAdvertisement(advertisement, resultFilePath);
-            await exporter.Export(file, ct);
-        }
-        
-        await advertisements.RemoveMany(session);
+        await advertisements.RemoveMany(session, ct);
         logger.Information("Advertisements finalized: {Count}", advertisements.Length);
     }
     

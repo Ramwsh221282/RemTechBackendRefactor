@@ -29,6 +29,7 @@ public static class DependencyInjectionExtensions
                     }));
                 });
                 
+                services.AddContainedItemProducer();
                 services.AddFinishParserProducer();
                 services.RegisterAvitoFirewallBypass();
                 services.RegisterParserSubscriptionProcess();
