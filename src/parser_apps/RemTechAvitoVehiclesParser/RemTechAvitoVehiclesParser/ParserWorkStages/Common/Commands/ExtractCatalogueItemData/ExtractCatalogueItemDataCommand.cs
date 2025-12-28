@@ -15,15 +15,17 @@ public sealed class ExtractCatalogueItemDataCommand(
         const string javaScript = @"
                                   () => {
                                   const photoExtractFn = (item) => {
-                                    const photoListSelector = item.querySelector('ul.photo-slider-list-R0jle');
-                                    if (!photoListSelector) return [];
-                                    return Array.from(photoListSelector.querySelectorAll('li')).map(s => {
-                                        const photo = s.querySelector('img');
-                                        if (!photo) return '';
-                                        const srcSet = photo.getAttribute('srcset');
-                                        if (!srcSet) return '';
-                                        const splittedParts = srcSet.split(',');
-                                        return splittedParts[splittedParts.length-1].split(' ')[0];
+                                    const photoListSelector = item.querySelector('div[data-marker=""item-image""]') 
+                                ?.querySelector('div[data-marker=""item-photo""]')
+                                ?.querySelector('ul');
+                                if (!photoListSelector) return [];
+                                return Array.from(photoListSelector.querySelectorAll('li')).map(s => {
+                                    const photo = s.querySelector('img');
+                                    if (!photo) return '';
+                                    const srcSet = photo.getAttribute('srcset');
+                                    if (!srcSet) return '';
+                                    const splittedParts = srcSet.split(',');
+                                    return splittedParts[splittedParts.length-1].split(' ')[0];
                                     });
                                 };
 
@@ -53,6 +55,7 @@ public sealed class ExtractCatalogueItemDataCommand(
         if (!await bypassFactory.Create(page).Bypass()) 
             throw new InvalidOperationException("Unable to bypass Avito firewall");
         
+        await new AvitoImagesHoverer(page).Invoke();
         await page.ResilientWaitForSelector("div[id=\"bx_serp-item-list\"]");
         
         return (await page.EvaluateFunctionAsync<JsonConvertedCatalogueItemData[]>(javaScript))
