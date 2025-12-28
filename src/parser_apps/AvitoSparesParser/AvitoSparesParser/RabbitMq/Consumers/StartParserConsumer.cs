@@ -55,7 +55,6 @@ public sealed class StartParserConsumer(
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource source = new(session);
             ITransactionScope scope = await source.BeginTransaction();
-
             if (await ProcessingParser.Exists(session))
             {
                 Logger.Information("There is already processing parser in process.");
@@ -71,8 +70,8 @@ public sealed class StartParserConsumer(
                 await Channel.BasicAckAsync(@event.DeliveryTag, false);
                 return;
             }
+            
             ParsingStage stage = ParsingStage.PaginationFromParser(parser);
-
             await stage.Save(session);
             await parser.Add(session);
             await links.AddMany(session);
@@ -81,6 +80,7 @@ public sealed class StartParserConsumer(
             if (commit.IsFailure)
             {
                 Logger.Error(commit.Error, "Failed to commit transaction for parser {Domain} {Type}", parser.Domain, parser.Type);
+                await Channel.BasicAckAsync(@event.DeliveryTag, false);
                 return;
             }
 

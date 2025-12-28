@@ -10,6 +10,7 @@ public sealed record ParserStageDependencies(
     AvitoBypassFactory Bypasses,
     BrowserFactory Browsers,
     TextTransformerBuilder TextTransformerBuilder,
-    FinishParserProducer FinishProducer
+    FinishParserProducer FinishProducer,
+    AddContainedItemProducer AddContainedItem
     );
 public delegate Task ParserStageProcess(ParserStageDependencies deps, CancellationToken ct);

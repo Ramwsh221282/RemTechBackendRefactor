@@ -1,7 +1,6 @@
 ﻿using AvitoSparesParser.CatalogueParsing;
 using AvitoSparesParser.CatalogueParsing.Extensions;
 using AvitoSparesParser.Commands.Common;
-using AvitoSparesParser.Commands.HoverCatalogueItemImages;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 
@@ -17,7 +16,6 @@ public sealed class ExtractPagedUrlsCommand(
         AvitoCataloguePage[] result = await pageSource()
             .Then(p => p.PerformQuickNavigation(initialUrl, timeout: 1500))
             .Then(p => p.BypassFirewallIfPresent(bypassFactory))
-            .Then(p => new HoverCatalogueItemImagesCommand(() => Task.FromResult(p)).Hover())
             .Then(WaitForPagination)
             .Reduce(ExtractPaginationUrls);
         return result;
