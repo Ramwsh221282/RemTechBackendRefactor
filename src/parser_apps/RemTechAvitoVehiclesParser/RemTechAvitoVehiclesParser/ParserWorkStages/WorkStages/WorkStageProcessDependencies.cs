@@ -12,5 +12,6 @@ public sealed record WorkStageProcessDependencies(
     TextTransformerBuilder TextTransformerBuilder,
     Serilog.ILogger Logger,
     NpgSqlConnectionFactory NpgSql,
-    FinishParserProducer FinishProducer
+    FinishParserProducer FinishProducer,
+    AddContainedItemProducer AddContainedItemsProducer
 );

@@ -1,3 +1,5 @@
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using ParsingSDK.Parsing;
 using ParsingSDK.RabbitMq;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -23,7 +25,8 @@ public static class FinalizationWorkStageProcessImplementation
                  out _, out _, out _, 
                  out Serilog.ILogger dLogger, 
                  out NpgSqlConnectionFactory npgSql,
-                 out FinishParserProducer finishProducer);
+                 out FinishParserProducer finishProducer,
+                 out AddContainedItemProducer addProducer);
 
             Serilog.ILogger logger = dLogger.ForContext<WorkStageProcess>();
             await using NpgSqlSession session = new(npgSql);
@@ -42,12 +45,68 @@ public static class FinalizationWorkStageProcessImplementation
                 return;
             }
 
+            await SendAddContainedItemsMessage(session, addProducer, items, ct);
             await items.Remove(session);
             logger.Information("Finalized {Count} items.", items.Length);
             await FinishTransaction(txn, logger, ct);
         };
     }
+    
+    private static async Task SendAddContainedItemsMessage(NpgSqlSession session, AddContainedItemProducer producer, AvitoVehicle[] items, CancellationToken ct = default)
+    {
+        Maybe<ProcessingParser> parser = await ProcessingParser.Get(session, new ProcessingParserQuery(WithLock: true), ct);
+        if (!parser.HasValue) throw new InvalidOperationException("No active parser found.");
+        AddContainedItemsMessage message = CreateMessage(parser.Value, items);
+        await producer.Publish(message, ct);
+    }
 
+    private static AddContainedItemsMessage CreateMessage(ProcessingParser parser, AvitoVehicle[] vehicles)
+    {
+        Guid creatorId = parser.Id;
+        string domain = parser.Domain;
+        string type = parser.Type;
+        IEnumerable<AddContainedItemMessagePayload> payload = vehicles.Select(CreatePayload);
+        return new AddContainedItemsMessage()
+        {
+            CreatorId = creatorId,
+            CreatorDomain = domain,
+            CreatorType = type,
+            Items = payload.ToArray()
+        };
+    }
+    
+    private static AddContainedItemMessagePayload CreatePayload(AvitoVehicle item)
+    {
+        object characteristics = item.ConcretePageRepresentation.Characteristics
+            .Select(c => new
+            {
+                name = c.Key,
+                value = (c.Value ?? string.Empty).Replace('\u00A0', ' ')
+            })
+            .ToArray();
+
+        object itemData = new
+        {
+            type = "vehicle",
+            title = (item.ConcretePageRepresentation.Title ?? string.Empty).Replace('\u00A0', ' '),
+            characteristics,
+            url = item.CatalogueRepresentation.Url,
+            price = item.CatalogueRepresentation.Price,
+            is_nds = item.CatalogueRepresentation.IsNds,
+            address = (item.CatalogueRepresentation.Address ?? string.Empty).Replace('\u00A0', ' '),
+            photos = item.CatalogueRepresentation.Photos.Select(p => p).ToArray()
+        };
+
+        var options = new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+
+        string content = JsonSerializer.Serialize(itemData, options);
+        string id = item.CatalogueRepresentation.Id;
+        return new AddContainedItemMessagePayload() { ItemId = id, Content = content };
+    }
+    
     private static bool CanFinalize(AvitoVehicle[] items)
     {
         return items.Length == 0;

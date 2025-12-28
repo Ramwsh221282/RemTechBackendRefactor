@@ -192,6 +192,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.SharedKernel.Infras
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.SharedKernel.Infrastructure.Quartz", "modules\building_blocks\RemTech.SharedKernel.Infrastructure.Quartz\RemTech.SharedKernel.Infrastructure.Quartz.csproj", "{6A96D8B5-A021-4FAB-9AE0-F0E8F553C5C4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "contained_items", "contained_items", "{52EC70D5-6ADD-4E64-93A7-B44FD1CDE94A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContainedItems.Domain", "modules\contained_items\ContainedItems.Domain\ContainedItems.Domain.csproj", "{AA770800-DB50-483A-992C-5ED1A5041261}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContainedItems.Infrastructure", "modules\contained_items\ContainedItems.Infrastructure\ContainedItems.Infrastructure.csproj", "{B730E507-66ED-4BCA-813A-C18757142459}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContainedItems.Worker", "modules\contained_items\ContainedItems.Worker\ContainedItems.Worker.csproj", "{73D121A3-352B-4712-80E3-AACAEB49F40A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -289,6 +297,10 @@ Global
 		{5BE41B74-A3E0-43D0-93F3-43BC117A87F7} = {73EE3210-C164-4060-B679-037A4AD5D63A}
 		{12F9D020-1309-4E2D-B16B-80F5DF19AE38} = {73EE3210-C164-4060-B679-037A4AD5D63A}
 		{6A96D8B5-A021-4FAB-9AE0-F0E8F553C5C4} = {73EE3210-C164-4060-B679-037A4AD5D63A}
+		{52EC70D5-6ADD-4E64-93A7-B44FD1CDE94A} = {79472554-9950-4B72-8B55-F32E46914B0B}
+		{AA770800-DB50-483A-992C-5ED1A5041261} = {52EC70D5-6ADD-4E64-93A7-B44FD1CDE94A}
+		{B730E507-66ED-4BCA-813A-C18757142459} = {52EC70D5-6ADD-4E64-93A7-B44FD1CDE94A}
+		{73D121A3-352B-4712-80E3-AACAEB49F40A} = {52EC70D5-6ADD-4E64-93A7-B44FD1CDE94A}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F1953F7-2BA8-43CB-BAD2-F9432ADA45E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -571,5 +583,17 @@ Global
 		{6A96D8B5-A021-4FAB-9AE0-F0E8F553C5C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A96D8B5-A021-4FAB-9AE0-F0E8F553C5C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A96D8B5-A021-4FAB-9AE0-F0E8F553C5C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA770800-DB50-483A-992C-5ED1A5041261}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA770800-DB50-483A-992C-5ED1A5041261}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA770800-DB50-483A-992C-5ED1A5041261}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA770800-DB50-483A-992C-5ED1A5041261}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B730E507-66ED-4BCA-813A-C18757142459}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B730E507-66ED-4BCA-813A-C18757142459}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B730E507-66ED-4BCA-813A-C18757142459}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B730E507-66ED-4BCA-813A-C18757142459}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73D121A3-352B-4712-80E3-AACAEB49F40A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73D121A3-352B-4712-80E3-AACAEB49F40A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73D121A3-352B-4712-80E3-AACAEB49F40A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73D121A3-352B-4712-80E3-AACAEB49F40A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

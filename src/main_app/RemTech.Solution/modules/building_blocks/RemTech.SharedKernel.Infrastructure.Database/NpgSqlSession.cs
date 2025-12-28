@@ -167,6 +167,12 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory)
         NpgsqlConnection connection = await GetConnection(CancellationToken.None);
         await connection.ExecuteAsync(sql, parameters);
     }
+
+    public async Task<int> ExecuteBulkWithAffectedCount(string sql, object[] parameters)
+    {
+        NpgsqlConnection connection = await GetConnection(CancellationToken.None);
+        return await connection.ExecuteAsync(sql, parameters);
+    }
     
     public void Dispose()
     {

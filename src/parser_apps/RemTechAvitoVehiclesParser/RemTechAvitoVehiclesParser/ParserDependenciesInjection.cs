@@ -18,6 +18,7 @@ public static class ParserDependenciesInjection
             services.RegisterTextTransformerBuilder();
             services.RegisterAvitoFirewallBypass();
             services.AddFinishParserProducer();
+            services.AddContainedItemProducer();
             
             if (isDevelopment)
             {

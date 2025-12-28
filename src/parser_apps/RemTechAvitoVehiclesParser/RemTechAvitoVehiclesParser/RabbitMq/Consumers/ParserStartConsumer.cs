@@ -57,10 +57,11 @@ public sealed class ParserStartConsumer(
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource transactionSource = new(session);
             ITransactionScope txn = await transactionSource.BeginTransaction(CancellationToken.None);
-            
+
             if (await ProcessingParser.HasAny(session))
             {
                 Logger.Information("There is already a parser in progress. Declining.");
+                await Channel.BasicAckAsync(@event.DeliveryTag, false);
                 return;
             }
 
@@ -71,7 +72,7 @@ public sealed class ParserStartConsumer(
             await parser.Persist(session);
             await links.PersistMany(session);
             Result commit = await txn.Commit();
-                    
+
             if (commit.IsFailure)
             {
                 Logger.Error(commit.Error, "Error at committing transaction");
@@ -94,11 +95,12 @@ public sealed class ParserStartConsumer(
                     links.Length
                 );
             }
+            await Channel.BasicAckAsync(@event.DeliveryTag, false);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
-            await Channel.BasicNackAsync(@event.DeliveryTag, false, false);
             Logger.Fatal(e, "Error processing message");
+            await Channel.BasicNackAsync(@event.DeliveryTag, false, false);
         }
     };
 }
