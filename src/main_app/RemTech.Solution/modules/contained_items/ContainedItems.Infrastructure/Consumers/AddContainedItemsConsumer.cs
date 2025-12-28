@@ -60,10 +60,12 @@ public sealed class AddContainedItemsConsumer(RabbitMqConnectionSource rabbitMq,
             AddContainedItemsCommand command = new(commandPayload);
             Result<int> inserted = await handler.Execute(command);
             if (inserted.IsSuccess) Logger.Information("Added {Count} items.", inserted.Value);
+            await Channel.BasicAckAsync(@event.DeliveryTag, false);
         }
         catch(Exception e)
         {
             Logger.Fatal(e, "Failed to process message.");
+            await Channel.BasicNackAsync(@event.DeliveryTag, false, false);
         }
     };
     
