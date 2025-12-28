@@ -1,5 +1,4 @@
-﻿using DromVehiclesParser.ResultsExporing.TextFileExporting;
-using ParsingSDK.Parsing;
+﻿using ParsingSDK.Parsing;
 using ParsingSDK.RabbitMq;
 using RemTech.SharedKernel.Infrastructure.Database;
 
@@ -9,6 +8,6 @@ public sealed record ParsingStageDependencies(
     BrowserFactory Browsers, 
     NpgSqlConnectionFactory NpgSql, 
     Serilog.ILogger Logger,
-    IExporter<TextFile> Exporter,
-    FinishParserProducer FinishProducer
+    FinishParserProducer FinishProducer,
+    AddContainedItemProducer AddContainedItemProducer
 );
