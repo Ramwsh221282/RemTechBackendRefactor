@@ -1,5 +1,4 @@
 ﻿using AvitoSparesParser.Database;
-using AvitoSparesParser.ParserStartConfiguration;
 using AvitoSparesParser.ParserSubscription;
 using AvitoSparesParser.ParsingStages;
 using Microsoft.Extensions.Options;
@@ -29,7 +28,7 @@ public static class DependencyInjectionExtensions
                     }));
                 });
                 
-                services.AddContainedItemProducer();
+                services.AddContainedItemsProducer();
                 services.AddFinishParserProducer();
                 services.RegisterAvitoFirewallBypass();
                 services.RegisterParserSubscriptionProcess();

@@ -2,7 +2,4 @@
 
 namespace Spares.Domain.Features;
 
-public sealed record AddSparesCommand(
-    AddSpareCommandSpareInfo[] Spares,
-    AddSpareCommandCreatorInfo Creator
-    ) : ICommand;
+public sealed record AddSparesCommand(AddSpareCommandPayload[] Spares) : ICommand;

@@ -13,7 +13,8 @@ public sealed class AddContainedItemsValidator : AbstractValidator<AddContainedI
             [
                 i => ServiceItemId.Create(i.ServiceItemId),
                 i => ServiceCreatorInfo.Create(i.CreatorId, i.CreatorType, i.CreatorDomain),
-                i => ContainedItemInfo.Create(i.Content)
+                i => ContainedItemInfo.Create(i.Content),
+                i => ContainedItemType.Create(i.ItemType)
             ]);
     }
 }

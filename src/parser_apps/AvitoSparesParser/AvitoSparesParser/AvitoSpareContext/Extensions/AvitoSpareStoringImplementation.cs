@@ -167,7 +167,7 @@ public static class AvitoSpareStoringImplementation
             if (query.RetryCountThreshold.HasValue)
             {
                 filters.Add($"retry_count <= @retryCountThreshold");
-                parameters.Add("retryCountThreshold", query.RetryCountThreshold.Value, DbType.Int32);
+                parameters.Add("@retryCountThreshold", query.RetryCountThreshold.Value, DbType.Int32);
             }
 
             return filters.Count == 0 ? (parameters, string.Empty) : (parameters, "WHERE " + string.Join(" AND ", filters));

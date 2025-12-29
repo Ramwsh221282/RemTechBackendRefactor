@@ -2,39 +2,28 @@
 using System.Data.Common;
 using Dapper;
 using Npgsql;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
 
 namespace RemTech.SharedKernel.Infrastructure.Database;
 
-public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory)
+public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : IDisposable, IAsyncDisposable
 {
     private NpgsqlConnection? _connection;
     public NpgsqlTransaction? Transaction { get; private set; }
 
-    public ValueTask<NpgsqlConnection> GetConnection(CancellationToken ct)
+    public async Task<NpgsqlConnection> GetConnection(CancellationToken ct)
     {
-        if (_connection is not null) return new ValueTask<NpgsqlConnection>(_connection);
-        
-        async ValueTask<NpgsqlConnection> CreateAsync()
-        {
-            _connection = await connectionFactory.Create(ct);
-            return _connection;
-        }
-        
-        return CreateAsync();
+        if (_connection is not null) return _connection;
+        _connection = await connectionFactory.Create(ct);
+        return _connection;
     }
     
-    public ValueTask<NpgsqlTransaction> GetTransaction(CancellationToken ct)
+    public async Task<NpgsqlTransaction> GetTransaction(CancellationToken ct)
     {
-        if (Transaction is not null) return new ValueTask<NpgsqlTransaction>(Transaction);
-        
-        async ValueTask<NpgsqlTransaction> BeginAsync()
-        {
-            NpgsqlConnection connection = await GetConnection(ct);
-            Transaction = await connection.BeginTransactionAsync(ct);
-            return Transaction;
-        }
-
-        return BeginAsync();
+        if (Transaction is not null) return Transaction;
+        NpgsqlConnection connection = await GetConnection(ct);
+        Transaction = await connection.BeginTransactionAsync(ct);
+        return Transaction;
     }
 
     public CommandDefinition FormCommand(string sql, object parameters, CancellationToken ct)
@@ -97,23 +86,8 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory)
 
     public async ValueTask DisposeAsync()
     {
-        if (_connection != null) await _connection.DisposeAsync();
         if (Transaction != null) await Transaction.DisposeAsync();
-    }
-
-    public async Task CommitTransaction(CancellationToken ct)
-    {
-        if (Transaction == null) return;
-        
-        try
-        {
-            await Transaction.CommitAsync(ct);
-        }
-        catch(Exception)
-        {
-            await Transaction.RollbackAsync(ct);
-            throw;
-        }
+        if (_connection != null) await _connection.DisposeAsync();
     }
 
     public async Task<T?> QuerySingleUsingReader<T>(
@@ -176,7 +150,14 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory)
     
     public void Dispose()
     {
-        _connection?.Dispose();
-        Transaction?.Dispose();
+        if (Transaction != null)
+        {
+            Transaction.Dispose();
+        }
+
+        if (_connection != null)
+        {
+            _connection.Dispose();
+        }
     }
 }

@@ -15,7 +15,7 @@ public sealed class AddSparesHandler(ISparesRepository repository) : ICommandHan
         return addedCount;
     }
 
-    public static Spare[] CreateSpares(IEnumerable<AddSpareCommandSpareInfo> spareInfo)
+    public static Spare[] CreateSpares(IEnumerable<AddSpareCommandPayload> spareInfo)
     {
         return spareInfo.Select(info =>
                 SparesFactory.Create(
@@ -28,7 +28,9 @@ public sealed class AddSparesHandler(ISparesRepository repository) : ICommandHan
                     isNds: info.IsNds,
                     type: info.Type,
                     address: info.Address,
-                    photoPaths: info.PhotoPaths).Value)
+                    photoPaths: info.PhotoPaths))
+            .Where(r => r.IsSuccess)
+            .Select(s => s.Value)
             .ToArray(); 
     }
 }

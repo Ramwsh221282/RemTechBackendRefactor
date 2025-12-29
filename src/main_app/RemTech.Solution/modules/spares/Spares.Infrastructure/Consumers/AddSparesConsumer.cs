@@ -45,12 +45,13 @@ public sealed class AddSparesConsumer(
         Logger.Information("Received message to add spares.");
         try
         {
-            AddSpareMessage message = AddSpareMessage.CreateFromDeliverEventArgs(@event);
+            AddSparesMessage message = AddSparesMessage.CreateFromDeliverEventArgs(@event);
             AddSparesCommand command = CreateCommand(message);
             await using AsyncServiceScope scope = Services.CreateAsyncScope();
             ICommandHandler<AddSparesCommand, int> handler =
                 scope.ServiceProvider.GetRequiredService<ICommandHandler<AddSparesCommand, int>>();
             await handler.Execute(command);
+            await Channel.BasicAckAsync(@event.DeliveryTag, false);
         }
         catch(Exception e)
         {
@@ -59,64 +60,53 @@ public sealed class AddSparesConsumer(
         }
     };
 
-    private sealed class AddSpareMessage
+    private sealed class AddSparesMessage
     {
-        public Guid CreatorId { get; set; } = Guid.Empty;
-        public string CreatorType { get; set; } = string.Empty;
-        public string CreatorDomain { get; set; } = string.Empty;
-        public AddSpareMessagePayload[] Items { get; set; } = [];
-
-        public static AddSpareMessage CreateFromDeliverEventArgs(BasicDeliverEventArgs @event) => 
-            JsonSerializer.Deserialize<AddSpareMessage>(@event.Body.Span)!;
+        public AddSpareMessagePayload[] Payload { get; set; } = [];
+        
+        public static AddSparesMessage CreateFromDeliverEventArgs(BasicDeliverEventArgs @event) => 
+            JsonSerializer.Deserialize<AddSparesMessage>(@event.Body.Span)!;
     }
 
     private sealed class AddSpareMessagePayload
     {
-        public string id { get; set; } = string.Empty;
-        public string content { get; set; } = string.Empty;
-        public Guid contained_item_id { get; set; } = Guid.Empty;
+        public Guid CreatorId { get; set; } = Guid.Empty;
+        public string CreatorType { get; set; } = string.Empty;
+        public string CreatorDomain { get; set; } = string.Empty;
+        public string Id { get; set; } = string.Empty;
+        public Guid ContainedItemId { get; set; } = Guid.Empty;
+        public string Address { get; set; } = string.Empty;
+        public bool IsNds { get; set; }
+        public string Oem { get; set; } = string.Empty;
+        public string[] Photos { get; set; } = [];
+        public long Price { get; set; }
+        public string Url { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
     }
 
-    private static AddSparesCommand CreateCommand(AddSpareMessage message)
+    private static AddSparesCommand CreateCommand(AddSparesMessage message)
     {
-        AddSpareCommandCreatorInfo creatorInfo = ConvertToAddSpareCommandCreatorInfo(message);
-        IEnumerable<AddSpareCommandSpareInfo> spareInfos = message.Items.Select(ConvertToAddSpareCommandInfo);
-        return new AddSparesCommand(Spares: spareInfos.ToArray(), Creator: creatorInfo);
+        AddSpareCommandPayload[] spareInfos = message.Payload.Select(ConvertToAddSpareCommandCreatorInfo).ToArray();
+        return new AddSparesCommand(Spares: spareInfos.ToArray());
     }
     
-    private static AddSpareCommandCreatorInfo ConvertToAddSpareCommandCreatorInfo(
-        AddSpareMessage message
-        )
+    private static AddSpareCommandPayload ConvertToAddSpareCommandCreatorInfo(AddSpareMessagePayload payload)
     {
-        return new AddSpareCommandCreatorInfo(
-            CreatorId: message.CreatorId,
-            CreatorDomain: message.CreatorDomain,
-            CreatorType: message.CreatorType);
-    }
-
-    private static AddSpareCommandSpareInfo ConvertToAddSpareCommandInfo(AddSpareMessagePayload payload)
-    {
-        string id = payload.id;
-        Guid containedItemId = payload.contained_item_id;
-        using JsonDocument document = JsonDocument.Parse(payload.content);
-        string address = document.RootElement.GetProperty("address").GetString()!;
-        long price = document.RootElement.GetProperty("price").GetInt64();
-        bool is_nds = document.RootElement.GetProperty("is_nds").GetBoolean();
-        string oem = document.RootElement.GetProperty("oem").GetString()!;
-        string[] photos = document.RootElement.GetProperty("photos").EnumerateArray().Select(p => p.GetString()!).ToArray();
-        string url = document.RootElement.GetProperty("url").GetString()!;
-        string title = document.RootElement.GetProperty("title").GetString()!;
-        string type = document.RootElement.GetProperty("type").GetString()!;
-        return new AddSpareCommandSpareInfo(
-            SpareId: id,
-            ContainedItemId: containedItemId,
-            Source: url,
-            Title: title,
-            Oem: oem,
-            Price: price,
-            IsNds: is_nds,
-            Address: address,
-            Type: type,
-            PhotoPaths: photos);
+        return new AddSpareCommandPayload(
+            CreatorId: payload.CreatorId,
+            CreatorDomain: payload.CreatorDomain,
+            CreatorType: payload.CreatorType,
+            SpareId: payload.Id,
+            ContainedItemId: payload.ContainedItemId,
+            Source: payload.Url,
+            Title: payload.Title,
+            Oem: payload.Oem,
+            Price: payload.Price,
+            IsNds: payload.IsNds,
+            Address: payload.Address,
+            Type: payload.Type,
+            PhotoPaths: payload.Photos
+            );
     }
 }

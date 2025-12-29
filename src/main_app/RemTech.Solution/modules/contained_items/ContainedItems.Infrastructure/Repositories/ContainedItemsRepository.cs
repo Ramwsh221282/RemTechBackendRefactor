@@ -17,6 +17,7 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
         string sql = $"""
                       SELECT
                           id as id,
+                          item_type as item_type,
                           service_item_id as service_item_id,
                           creator_id as creator_id,
                           creator_type as creator_type,
@@ -38,9 +39,9 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
     {
         const string sql = """
                            INSERT INTO contained_items_module.contained_items 
-                               (id, service_item_id, creator_id, creator_type, creator_domain, content, created_at, deleted_at, status)
+                               (id, item_type, service_item_id, creator_id, creator_type, creator_domain, content, created_at, deleted_at, status)
                            VALUES
-                               (@id, @service_item_id, @creator_id, @creator_type, @creator_domain, @content::jsonb, @created_at, @deleted_at, @status)
+                               (@id, @item_type, @service_item_id, @creator_id, @creator_type, @creator_domain, @content::jsonb, @created_at, @deleted_at, @status)
                            ON CONFLICT (service_item_id) DO NOTHING 
                            """;
         object[] parameters = items.ExtractForParameters();
@@ -70,6 +71,12 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
             parameters.Add("@status", query.Status, DbType.String);
         }
         
+        if (!string.IsNullOrWhiteSpace(query.ItemType))
+        {
+            filters.Add("item_type = @item_type");
+            parameters.Add("@item_type", query.ItemType, DbType.String);
+        }
+        
         return filters.Count == 0 
             ? (parameters, string.Empty) 
             : (parameters, $"WHERE {string.Join(" AND ", filters)}");
@@ -88,6 +95,7 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
     private static ContainedItem MapFromReader(IDataReader reader)
     {
         Guid id = reader.GetValue<Guid>("id");
+        string itemType = reader.GetValue<string>("item_type");
         string itemId = reader.GetValue<string>("service_item_id");
         Guid creatorId = reader.GetValue<Guid>("creator_id");
         string creatorType = reader.GetValue<string>("creator_type");
@@ -97,6 +105,7 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
         DateTime? deletedAt = reader.GetNullable<DateTime>("deleted_at");
         string status = reader.GetValue<string>("status");
         ContainedItemId idVo = ContainedItemId.Create(id);
+        ContainedItemType itemTypeVo = ContainedItemType.Create(itemType);
         ServiceItemId itemIdVo = ServiceItemId.Create(itemId);
         ServiceCreatorInfo creatorInfo = ServiceCreatorInfo.Create(
             creatorId: creatorId,
@@ -111,6 +120,7 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
         ContainedItemStatus statusVo = ContainedItemStatus.CreateFromString(status);
         return new ContainedItem(
             id: idVo,
+            itemType: itemTypeVo,
             serviceItemId: itemIdVo,
             creatorInfo: creatorInfo,
             info: itemInfo,

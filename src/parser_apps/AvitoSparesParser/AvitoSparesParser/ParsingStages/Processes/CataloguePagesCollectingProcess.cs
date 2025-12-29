@@ -27,7 +27,7 @@ public static class CataloguePagesCollectingProcess
             
             Serilog.ILogger logger = dLogger.ForContext<ParserStageProcess>();
             await using NpgSqlSession session = new(npgSql);
-            NpgSqlTransactionSource source = new(session);
+            NpgSqlTransactionSource source = new(session, logger);
             await using ITransactionScope scope = await source.BeginTransaction(ct);
  
             

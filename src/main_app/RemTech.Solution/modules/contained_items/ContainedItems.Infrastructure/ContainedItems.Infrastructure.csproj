@@ -7,9 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Infrastructure.Database\RemTech.SharedKernel.Infrastructure.Database.csproj" />
-      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Infrastructure.RabbitMq\RemTech.SharedKernel.Infrastructure.RabbitMq.csproj" />
       <ProjectReference Include="..\ContainedItems.Domain\ContainedItems.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.9" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.4" />
     </ItemGroup>
 
 </Project>

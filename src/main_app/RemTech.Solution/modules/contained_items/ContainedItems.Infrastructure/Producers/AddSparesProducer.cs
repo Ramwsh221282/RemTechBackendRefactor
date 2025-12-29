@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
 using ContainedItems.Domain.Models;
+using ContainedItems.Infrastructure.BackgroundServices;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace ContainedItems.Infrastructure.Producers;
 
-public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger logger)
+public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger logger) : IItemPublishingStrategy
 {
     private const string Exchange = "spares";
     private const string RoutingKey = "spares.add";
@@ -70,5 +71,10 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
         public string Url { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
+    }
+
+    public async Task Publish(ContainedItem item, CancellationToken ct = default)
+    {
+        await Publish([item], ct);
     }
 }

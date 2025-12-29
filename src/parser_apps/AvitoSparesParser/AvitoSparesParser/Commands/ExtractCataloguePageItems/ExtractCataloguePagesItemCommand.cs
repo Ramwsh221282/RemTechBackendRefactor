@@ -54,7 +54,7 @@ public sealed class ExtractCataloguePagesItemCommand(
         
         string url = page.Url;
         IPage pageInstance = await pageSource();
-        await pageInstance.PerformQuickNavigation(url, timeout: 1500);
+        await pageInstance.PerformQuickNavigation(url, timeout: 2000);
         
         if (!await bypassFactory.Create(pageInstance).Bypass())
             throw new InvalidOperationException("Bypass failed.");
@@ -90,7 +90,7 @@ public sealed class ExtractCataloguePagesItemCommand(
                    !string.IsNullOrWhiteSpace(Id) &&
                    !string.IsNullOrWhiteSpace(Address) &&
                    Photos != null &&
-                   !string.IsNullOrWhiteSpace(Oem);
+                   !string.IsNullOrWhiteSpace(Oem) && Photos != null && Photos.Length > 0;
         }
 
         private bool PriceIsNotZero()

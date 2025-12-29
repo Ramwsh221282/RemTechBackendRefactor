@@ -44,7 +44,7 @@ public static class PageActions
             await page.EvaluateExpressionAsync("window.scrollTo(0, 0)");
         }
         
-        public async Task PerformQuickNavigation(string url, int timeout = 1000)
+        public async Task PerformQuickNavigation(string url, int timeout = 3000)
         {
             NavigationOptions options = new() { Timeout = timeout, WaitUntil = [WaitUntilNavigation.DOMContentLoaded] };
             Task<IResponse> navigationTask = page.WaitForNavigationAsync(options);
@@ -92,13 +92,14 @@ public static class PageActions
         
         public async Task PerformNavigation(string url)
         {
+            int timeoutNavigation = 4000;
             try
             {
-                await page.GoToAsync(url, timeout: 0);
+                await page.GoToAsync(url, timeout: timeoutNavigation);
             }
             catch(NavigationException)
             {
-                Console.WriteLine($"Puppeteer timeout navigation exceeded.");
+                Console.WriteLine($"Puppeteer timeout navigation {timeoutNavigation} exceeded.");
             }
         }
     }

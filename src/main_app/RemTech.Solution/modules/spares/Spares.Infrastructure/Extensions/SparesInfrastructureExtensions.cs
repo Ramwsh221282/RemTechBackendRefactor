@@ -12,7 +12,7 @@ public static class SparesInfrastructureExtensions
             id = spare.Id.Value,
             contained_item_id = spare.ContainedItemId.Value,
             url = spare.Source.Url,
-            content = new
+            content = JsonSerializer.Serialize(new
             {
                 oem = spare.Details.Oem.Value,
                 title = spare.Details.Text.Value,
@@ -20,8 +20,8 @@ public static class SparesInfrastructureExtensions
                 is_nds = spare.Details.Price.IsNds,
                 type = spare.Details.Type.Value,
                 address = spare.Details.Address.Value,
-                photos = JsonSerializer.Serialize(spare.Details.Photos.Value.Select(p => p.Value).ToArray()),
-            }
+                photos = spare.Details.Photos.Value.Select(p => p.Value).ToArray(),
+            })
         };
     }
 }

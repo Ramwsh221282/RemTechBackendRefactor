@@ -3,4 +3,5 @@
 public sealed record ContainedItemsQuery(
     string? Status = null, 
     int? Limit = null, 
-    bool WithLock = false);
+    bool WithLock = false,
+    string? ItemType = null);

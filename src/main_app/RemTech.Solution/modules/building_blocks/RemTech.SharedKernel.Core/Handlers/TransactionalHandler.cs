@@ -26,16 +26,24 @@ public sealed class TransactionalHandler<TCommand, TResult>
     public async Task<Result<TResult>> Execute(TCommand command, CancellationToken ct = default)
     {
         if (!HasTransactionalAttribute()) return await Inner.Execute(command, ct);
-        await using ITransactionScope scope = await TransactionSource.BeginTransaction(ct);
+        ITransactionScope scope = await TransactionSource.BeginTransaction(ct);
         
         Result<TResult> result = await Inner.Execute(command, ct);
-        if (result.IsFailure) return result.Error;
+        if (result.IsFailure)
+        {
+            await scope.DisposeAsync();
+            return result.Error;
+        }
         
         Result commit = await scope.Commit(ct);
-        if (commit.IsFailure) return commit.Error;
+        if (commit.IsFailure)
+        {
+            await scope.DisposeAsync();
+            return commit.Error;
+        }
         
+        await scope.DisposeAsync();
         await PublishEvents(result, ct); // publishing in external services. E.G: rabbit mq or in memory message bus.
-        
         return result;
     }
 
