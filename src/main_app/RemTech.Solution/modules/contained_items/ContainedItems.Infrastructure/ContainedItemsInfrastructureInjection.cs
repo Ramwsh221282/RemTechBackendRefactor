@@ -41,6 +41,7 @@ public static class ContainedItemsInfrastructureInjection
         private void RegisterProducers()
         {
             services.AddSingleton<AddSparesProducer>();
+            services.AddSingleton<AddVehiclesProducer>();
         }
         
         private void RegisterConsumers()

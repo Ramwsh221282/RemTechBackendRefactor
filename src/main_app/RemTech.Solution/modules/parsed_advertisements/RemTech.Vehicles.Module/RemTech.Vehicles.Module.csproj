@@ -5,11 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\brands\Brands.Module\Brands.Module.csproj" />
-    <ProjectReference Include="..\..\categories\Categories.Module\Categories.Module.csproj" />
-    <ProjectReference Include="..\..\geo_locations\GeoLocations.Module\GeoLocations.Module.csproj" />
     <ProjectReference Include="..\..\models\Models.Module\Models.Module.csproj" />
-    <ProjectReference Include="..\..\scrapers\Scrapers.Module\Scrapers.Module.csproj" />
     <ProjectReference Include="..\..\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj" />
     <ProjectReference Include="..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj" />
     <ProjectReference Include="..\RemTech.ContainedItems.Module\RemTech.ContainedItems.Module.csproj" />

@@ -34,8 +34,17 @@ public static class DbDataReaderExtensions
             { } t when t == typeof(int) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetInt32<T>(reader, columnName),
             { } t when t == typeof(long) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetInt64<T>(reader, columnName),
             { } t when t == typeof(Guid) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetGuid<T>(reader, columnName),
-            { } t when t == typeof(string) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetString<T>(reader, columnName),
             { } t when t == typeof(DateTime) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetDateTime<T>(reader, columnName),
+            _ => throw new NotSupportedException($"Unsupported type {requiredType.Name}")
+        };
+    }
+    
+    public static T? GetNullableReferenceType<T>(this IDataReader reader, string columnName) where T : class
+    {
+        Type requiredType = typeof(T);
+        return requiredType switch
+        {
+            { } t when t == typeof(string) => reader.IsDBNull(reader.GetOrdinal(columnName)) ? null : GetString<T>(reader, columnName),
             _ => throw new NotSupportedException($"Unsupported type {requiredType.Name}")
         };
     }
