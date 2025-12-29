@@ -1,5 +1,6 @@
 ﻿using ParsersControl.Core.Common;
 using ParsersControl.Core.Contracts;
+using ParsersControl.Core.Features.UpdateParserLinks;
 using ParsersControl.Core.ParserLinks.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
@@ -177,6 +178,30 @@ public sealed class SubscribedParser : ISubscribedParser
         return this;
     }
 
+    public Result<IEnumerable<SubscribedParserLink>> UpdateLinks(IEnumerable<ParserLinkUpdater> updater)
+    {
+        if (State.IsWorking())
+            return Error.Conflict($"Парсер в состоянии {State.Value}. Невозможно изменить ссылки.");
+        
+        foreach (SubscribedParserLink link in Links)
+        {
+            ParserLinkUpdater? linkUpdater = updater.FirstOrDefault(u => u.UpdateBelongsTo(link));
+            if (linkUpdater is null) 
+                continue;
+            
+            Result update = linkUpdater.Update(link);
+            if (update.IsFailure) 
+                return update.Error;
+        }
+        
+        if (!AllLinksHaveUniqueName(out string[] dupNames))
+            return Error.Conflict("Парсер содержит ссылки с одинаковым именем: " + string.Join(", ", dupNames));
+        if (!AllLinksHaveUniqueUrl(out string[] dupUrls))
+            return Error.Conflict("Парсер содержит ссылки с одинаковым адресом: " + string.Join(", ", dupUrls));
+        
+        return Result.Success(Links.AsEnumerable());
+    }
+
     public Result<SubscribedParser> FinishWork(long totalElapsedSeconds)
     {
         if (!State.IsWorking())
@@ -293,6 +318,18 @@ public sealed class SubscribedParser : ISubscribedParser
     private bool ContainsLinkWithUrl(SubscribedParserLink link) =>
         Links.Any(l => l.UrlInfo.Url == link.UrlInfo.Url && l.Id != link.Id);
 
+    private bool AllLinksHaveUniqueName(out string[] duplicates)
+    {
+        duplicates = Links.GroupBy(l => l.UrlInfo.Name).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
+        return duplicates.Length == 0;
+    }
+
+    private bool AllLinksHaveUniqueUrl(out string[] duplicates)
+    {
+        duplicates = Links.GroupBy(l => l.UrlInfo.Url).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
+        return duplicates.Length == 0;
+    }
+    
     private bool HasNoLinks()
     {
         return Links.Count == 0;

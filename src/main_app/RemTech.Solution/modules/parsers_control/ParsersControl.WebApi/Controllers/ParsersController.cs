@@ -4,6 +4,7 @@ using ParsersControl.Core.Features.EnableParser;
 using ParsersControl.Core.Features.PermantlyDisableParsing;
 using ParsersControl.Core.Features.PermantlyStartParsing;
 using ParsersControl.Core.Features.StartParserWork;
+using ParsersControl.Core.Features.UpdateParserLinks;
 using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using ParsersControl.WebApi.ResponseModels;
@@ -39,6 +40,20 @@ public sealed class ParsersController : ControllerBase
         return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
     }
 
+    [HttpPut("{id:guid}/links")]
+    public async Task<Envelope> UpdateParserLinks(
+        [FromRoute(Name = "id")] Guid id,
+        [FromBody] UpdateParserLinksRequest request,
+        [FromServices] ICommandHandler<UpdateParserLinksCommand, IEnumerable<SubscribedParserLink>> handler,
+        CancellationToken ct
+    )
+    {
+        IEnumerable<UpdateParserLinksCommandInfo> updateInfos = request.Links.Select(l => new UpdateParserLinksCommandInfo(l.LinkId, l.Activity, l.Name, l.Url));
+        UpdateParserLinksCommand command = new(id, updateInfos);
+        Result<IEnumerable<SubscribedParserLink>> result = await handler.Execute(command, ct);
+        return result.AsTypedEnvelope(ParserLinkResponseModel.ConvertFrom);
+    }
+    
     [HttpPatch("{id:guid}/permantly-disable")]
     public async Task<Envelope> PermantlyDisableParser(
         [FromRoute(Name = "id")] Guid id,
@@ -74,6 +89,13 @@ public sealed class ParsersController : ControllerBase
         return result.AsTypedEnvelope(ParserLinkResponseModel.ConvertFrom);        
     }
 }
+
+public sealed record UpdateParserLinksRequest(IEnumerable<UpdateParserLinksRequestPayload> Links);
+public sealed record UpdateParserLinksRequestPayload(
+    Guid LinkId,
+    bool? Activity = null,
+    string? Name = null,
+    string? Url = null);
 
 public sealed record AddLinksToParserRequest(IEnumerable<AddLinkToParserRequestBody> Links);
 public sealed record AddLinkToParserRequestBody(string Name, string Url);
