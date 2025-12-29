@@ -1,6 +1,4 @@
-﻿using Cleaner.Adapter.JobScheduler;
-using Cleaners.Adapter.Outbox;
-using Cleaners.Adapter.Storage;
+﻿using Cleaners.Adapter.Storage;
 using Cleaners.Adapters.Cache;
 using Cleaners.Domain.Cleaners.Ports.Cache;
 using Cleaners.WebApi;

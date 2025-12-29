@@ -1,9 +1,7 @@
 ﻿using System.Data;
-using Dapper;
 using Mailing.Core.Common;
 using Mailing.Core.Inbox;
 using Mailing.Infrastructure.InboxMessageProcessing.Protocols;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Mailing.Infrastructure.NpgSql.Inbox;
 

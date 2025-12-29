@@ -1,6 +1,5 @@
 ﻿using Mailing.Core.Mailers;
 using Mailing.Core.Mailers.Protocols;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Mailing.Infrastructure.NpgSql.Mailers;
 

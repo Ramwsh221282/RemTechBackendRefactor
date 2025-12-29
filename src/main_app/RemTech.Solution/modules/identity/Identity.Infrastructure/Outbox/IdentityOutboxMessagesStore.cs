@@ -1,6 +1,4 @@
 ﻿using System.Data;
-using Dapper;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Identity.Infrastructure.Outbox;
 

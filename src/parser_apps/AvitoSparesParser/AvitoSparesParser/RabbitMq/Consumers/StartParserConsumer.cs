@@ -54,7 +54,7 @@ public sealed class StartParserConsumer(
         {
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource source = new(session);
-            ITransactionScope scope = await source.BeginTransaction();
+            await using ITransactionScope scope = await source.BeginTransaction();
             if (await ProcessingParser.Exists(session))
             {
                 Logger.Information("There is already processing parser in process.");

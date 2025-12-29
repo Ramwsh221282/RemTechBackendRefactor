@@ -7,8 +7,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\shared_module\Shared.WebApi\Shared.WebApi.csproj" />
     <ProjectReference Include="..\..\users\Identity.Contracts\Identity.Contracts.csproj" />
-    <ProjectReference Include="..\Adapters\Cleaner.Adapter.JobScheduler\Cleaner.Adapter.JobScheduler.csproj" />
-    <ProjectReference Include="..\Adapters\Cleaners.Adapter.Outbox\Cleaners.Adapter.Outbox.csproj" />
     <ProjectReference Include="..\Adapters\Cleaners.Adapter.Storage\Cleaners.Adapter.Storage.csproj" />
     <ProjectReference Include="..\Adapters\Cleaners.Adapters.Cache\Cleaners.Adapters.Cache.csproj" />
     <ProjectReference Include="..\Cleaners.Domain\Cleaners.Domain.csproj" />

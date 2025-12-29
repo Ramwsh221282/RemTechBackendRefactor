@@ -1,5 +1,4 @@
-﻿using RemTech.Shared.Configuration.Options;
-using Testcontainers.PostgreSql;
+﻿using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 using Testcontainers.Redis;
 

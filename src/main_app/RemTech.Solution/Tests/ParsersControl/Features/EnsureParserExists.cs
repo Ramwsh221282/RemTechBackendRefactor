@@ -1,6 +1,4 @@
-﻿using RemTech.SharedKernel.Configuration;
-
-namespace Tests.ParsersControl.Features;
+﻿namespace Tests.ParsersControl.Features;
 
 public sealed class EnsureParserExists(IServiceProvider sp)
 {

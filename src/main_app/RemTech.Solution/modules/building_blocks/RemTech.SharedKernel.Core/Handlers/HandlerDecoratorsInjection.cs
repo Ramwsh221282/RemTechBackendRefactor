@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
-using Scrutor;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace RemTech.SharedKernel.Core.Handlers;
 

@@ -1,6 +1,5 @@
 ﻿using Mailing.Presenters.Mailers.UpdateMailer;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 

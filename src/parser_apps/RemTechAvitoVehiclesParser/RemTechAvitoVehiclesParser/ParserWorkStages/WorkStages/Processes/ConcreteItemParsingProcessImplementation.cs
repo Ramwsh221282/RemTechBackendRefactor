@@ -29,7 +29,7 @@ public static class ConcreteItemParsingProcessImplementation
             Serilog.ILogger logger = dLogger.ForContext<WorkStageProcess>();
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource transactionSource = new(session);
-            ITransactionScope txn = await transactionSource.BeginTransaction(ct);
+            await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
 
             WorkStageQuery stageQuery = new(Name: WorkStageConstants.ConcreteItemStageName, WithLock: true);
             Maybe<ParserWorkStage> workStage = await ParserWorkStage.GetSingle(session, stageQuery, ct);

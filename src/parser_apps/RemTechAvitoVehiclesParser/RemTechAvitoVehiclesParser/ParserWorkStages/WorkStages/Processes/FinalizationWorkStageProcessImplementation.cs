@@ -31,7 +31,7 @@ public static class FinalizationWorkStageProcessImplementation
             Serilog.ILogger logger = dLogger.ForContext<WorkStageProcess>();
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource transactionSource = new(session);
-            ITransactionScope txn = await transactionSource.BeginTransaction(ct);
+            await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
             
             Maybe<ParserWorkStage> stage = await GetFinalizationStage(session, logger, ct);
             if (!stage.HasValue) return;

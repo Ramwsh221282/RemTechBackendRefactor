@@ -29,7 +29,7 @@ public static class FinalizationStage
             
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource transactionSource = new(session);
-            ITransactionScope transaction = await transactionSource.BeginTransaction(ct); 
+            await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct); 
             
             Maybe<ParserWorkStage> stage = await GetFinalizationStage(session);
             if (!stage.HasValue) return;

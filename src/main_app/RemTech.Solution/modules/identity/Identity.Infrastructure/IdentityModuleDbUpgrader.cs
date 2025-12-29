@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
-
-namespace Identity.Infrastructure;
+﻿namespace Identity.Infrastructure;
 
 public sealed class IdentityModuleDbUpgrader : AbstractDatabaseUpgrader
 {

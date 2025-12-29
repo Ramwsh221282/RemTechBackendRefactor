@@ -1,9 +1,7 @@
 ﻿using System.Data;
-using Dapper;
 using Identity.Application.AccountPermissions;
 using Identity.Contracts.AccountPermissions;
 using Identity.Contracts.AccountPermissions.Contracts;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Identity.Infrastructure.AccountPermissions;
 

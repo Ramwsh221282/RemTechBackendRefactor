@@ -1,6 +1,5 @@
 ﻿using Mailing.Core.Mailers.Protocols;
 using Mailing.Infrastructure.InboxMessageProcessing.Protocols;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Mailing.Infrastructure.InboxMessageProcessing;
 

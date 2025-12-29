@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using Dapper;
 using Identity.Application.Permissions;
 
 namespace Identity.Infrastructure.Permissions;

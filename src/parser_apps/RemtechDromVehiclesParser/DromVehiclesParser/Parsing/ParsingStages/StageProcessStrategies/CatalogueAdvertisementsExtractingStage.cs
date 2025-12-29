@@ -24,7 +24,7 @@ public static class CatalogueAdvertisementsExtractingStage
             
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource transactionSource = new(session);
-            ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
+            await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
             
             Maybe<ParserWorkStage> stage = await GetCatalogueStage(session, ct);
             if (!stage.HasValue) return;

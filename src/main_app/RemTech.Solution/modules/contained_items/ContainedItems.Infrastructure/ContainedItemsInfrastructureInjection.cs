@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
 using ContainedItems.Domain.Contracts;
+using ContainedItems.Infrastructure.BackgroundServices;
+using ContainedItems.Infrastructure.Producers;
 using ContainedItems.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -15,12 +17,14 @@ public static class ContainedItemsInfrastructureInjection
         {
             services.RegisterMigrations();
             services.RegisterRepository();
+            services.RegisterProducers();
             services.RegisterConsumers();
+            services.RegisterBackgroundServices();
         }
 
         private void RegisterMigrations()
         {
-            services.AddMigrations([typeof(ContainedItemsInfrastructureInjection).Assembly]);;
+            services.AddMigrations([typeof(ContainedItemsInfrastructureInjection).Assembly]);
         }
 
         private void RegisterRepository()
@@ -28,6 +32,17 @@ public static class ContainedItemsInfrastructureInjection
             services.AddScoped<IContainedItemsRepository, ContainedItemsRepository>();
         }
 
+        private void RegisterBackgroundServices()
+        {
+            services.AddHostedService<AddSparesBackgroundService>();
+            services.AddHostedService<AggregatedConsumersHostedService>();
+        }
+
+        private void RegisterProducers()
+        {
+            services.AddSingleton<AddSparesProducer>();
+        }
+        
         private void RegisterConsumers()
         {
             Assembly assembly = typeof(ContainedItemsInfrastructureInjection).Assembly;

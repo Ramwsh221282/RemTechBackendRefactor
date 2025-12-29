@@ -32,9 +32,6 @@ using Identity.Infrastructure.Permissions.EventListeners.OnCreate;
 using Identity.Infrastructure.Permissions.EventListeners.OnRename;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
-using RemTech.SharedKernel.Infrastructure.Quartz;
-using RemTech.SharedKernel.Infrastructure.RabbitMq.Shared;
 
 namespace Identity.CompositionRoot;
 

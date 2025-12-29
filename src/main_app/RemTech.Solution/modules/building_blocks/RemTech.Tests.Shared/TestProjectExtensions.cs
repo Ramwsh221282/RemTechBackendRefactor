@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Quartz;
-using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Infrastructure.Quartz;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;

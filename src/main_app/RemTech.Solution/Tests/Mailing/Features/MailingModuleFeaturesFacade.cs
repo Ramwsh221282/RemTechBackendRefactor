@@ -4,7 +4,6 @@ using Mailing.Presenters.Inbox.CreateInboxMessage;
 using Mailing.Presenters.Mailers.AddMailer;
 using Mailing.Presenters.Mailers.UpdateMailer;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Tests.Mailing.Features;

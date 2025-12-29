@@ -26,7 +26,7 @@ public sealed class TransactionalHandler<TCommand, TResult>
     public async Task<Result<TResult>> Execute(TCommand command, CancellationToken ct = default)
     {
         if (!HasTransactionalAttribute()) return await Inner.Execute(command, ct);
-        ITransactionScope scope = await TransactionSource.BeginTransaction(ct);
+        await using ITransactionScope scope = await TransactionSource.BeginTransaction(ct);
         
         Result<TResult> result = await Inner.Execute(command, ct);
         if (result.IsFailure) return result.Error;

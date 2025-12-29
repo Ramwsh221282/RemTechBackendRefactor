@@ -1,5 +1,4 @@
-﻿using RemTech.SharedKernel.Configuration;
-using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+﻿using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 
 namespace Tests.ParsersControl.Features;

@@ -1,6 +1,5 @@
 ﻿using Identity.Infrastructure.Outbox;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Configuration;
 
 namespace Tests.Identity.CommonFeatures.IdentityOutbox;
 

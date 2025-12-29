@@ -10,8 +10,6 @@ using Mailing.Infrastructure.NpgSql.Inbox;
 using Mailing.Infrastructure.NpgSql.Mailers;
 using Mailing.Infrastructure.NpgSql.Seeder;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
-using RemTech.SharedKernel.Infrastructure.Quartz;
 
 namespace Mailing.CompositionRoot;
 

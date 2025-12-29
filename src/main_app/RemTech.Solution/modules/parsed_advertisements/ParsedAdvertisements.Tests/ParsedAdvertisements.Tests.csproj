@@ -22,7 +22,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\RemTech.Ner.VehicleParameters\RemTech.Ner.VehicleParameters.csproj" />
-      <ProjectReference Include="..\ParsedAdvertisements.Core\ParsedAdvertisements.Core.csproj" />
     </ItemGroup>
 
 </Project>

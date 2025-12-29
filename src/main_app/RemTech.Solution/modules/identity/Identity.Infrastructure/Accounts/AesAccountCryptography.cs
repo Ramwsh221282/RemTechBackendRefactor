@@ -1,6 +1,5 @@
 ﻿using Identity.Application.Accounts;
 using Identity.Contracts.Accounts;
-using RemTech.SharedKernel.Infrastructure.AesEncryption;
 
 namespace Identity.Infrastructure.Accounts;
 

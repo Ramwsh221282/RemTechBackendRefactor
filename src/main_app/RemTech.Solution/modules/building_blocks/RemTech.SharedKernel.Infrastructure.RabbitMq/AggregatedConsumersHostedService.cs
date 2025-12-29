@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 
 namespace RemTech.SharedKernel.Infrastructure.RabbitMq;

@@ -1,7 +1,5 @@
-﻿using Dapper;
-using Mailing.Core.Common;
+﻿using Mailing.Core.Common;
 using Mailing.Core.Inbox;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Mailing.Infrastructure.NpgSql.Seeder;
 

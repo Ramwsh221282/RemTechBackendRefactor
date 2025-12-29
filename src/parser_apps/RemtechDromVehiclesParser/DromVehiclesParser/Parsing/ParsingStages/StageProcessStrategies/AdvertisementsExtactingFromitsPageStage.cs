@@ -24,7 +24,7 @@ public static class AdvertisementsExtactingFromitsPageStage
             Serilog.ILogger logger = dLogger.ForContext<ParsingStage>();
             await using NpgSqlSession session = new(npgSql);
             NpgSqlTransactionSource transactionSource = new(session);
-            ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
+            await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
             
             Maybe<ParserWorkStage> stage = await GetConcreteStage(session);
             if (!stage.HasValue) return;

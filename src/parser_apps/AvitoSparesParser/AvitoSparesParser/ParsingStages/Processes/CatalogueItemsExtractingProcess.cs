@@ -21,7 +21,7 @@ public static class CatalogueItemsExtractingProcess
             Serilog.ILogger logger = deps.Logger.ForContext<ParserStageProcess>();
             await using NpgSqlSession session = new(deps.NpgSql);
             NpgSqlTransactionSource source = new(session);
-            ITransactionScope scope = await source.BeginTransaction(ct);
+            await using ITransactionScope scope = await source.BeginTransaction(ct);
 
             Maybe<ParsingStage> stage = await GetCatalogueStage(session, ct);
             if (!stage.HasValue) return;

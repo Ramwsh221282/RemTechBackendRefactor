@@ -3,10 +3,7 @@ using System.Text.Json;
 using Mailing.Application.Inbox.CreateInboxMessage;
 using Mailing.Core.Inbox;
 using Mailing.Infrastructure.NpgSql.Inbox;
-using RabbitMQ.Client.Events;
 using RemTech.SharedKernel.Core.PrimitivesModule.Exceptions;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
-using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace Mailing.Infrastructure.EventListeners;
 
