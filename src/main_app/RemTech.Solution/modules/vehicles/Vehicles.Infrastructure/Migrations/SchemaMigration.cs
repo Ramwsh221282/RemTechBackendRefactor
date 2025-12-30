@@ -6,8 +6,8 @@ namespace Vehicles.Infrastructure.Migrations;
 public sealed class SchemaMigration : Migration
 {
     public override void Up()
-    {
-        Create.Schema("vehicles_module");
+    {    
+        Execute.Sql("CREATE SCHEMA IF NOT EXISTS vehicles_module;");
     }
 
     public override void Down()

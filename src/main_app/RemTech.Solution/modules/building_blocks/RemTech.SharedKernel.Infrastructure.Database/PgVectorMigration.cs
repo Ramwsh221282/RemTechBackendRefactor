@@ -5,6 +5,7 @@ namespace RemTech.SharedKernel.Infrastructure.Database;
 [TimestampedMigration(year: 2025, month: 12, day: 1, hour: 1, minute: 1)]
 public sealed class PgVectorMigration : Migration
 {
+    public const long Version = 20251201010100;
     public override void Up() => Execute.Sql("CREATE EXTENSION IF NOT EXISTS vector;");
     public override void Down() => Execute.Sql("DROP EXTENSION IF EXISTS vector;");
 }

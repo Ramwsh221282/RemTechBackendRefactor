@@ -7,12 +7,15 @@ public sealed class BrandTableMigration : Migration
 {
     public override void Up()
     {
-        Create.Table("brands").InSchema("vehicles_module")
-            .WithColumn("id").AsGuid().PrimaryKey()
-            .WithColumn("name").AsString(255).NotNullable()
-            .WithColumn("embedding").AsCustom("vector(1024)").Nullable();
-        Execute.Sql("CREATE INDEX IF NOT EXISTS idx_brands_embedding ON vehicles_module.brands USING hnsw (embedding vector_cosine_ops)");
-        Execute.Sql("CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_brands_name ON vehicles_module.brands(name)");
+        Execute.Sql("""
+                     CREATE TABLE IF NOT EXISTS vehicles_module.brands (
+                         id UUID PRIMARY KEY,
+                         name VARCHAR(255) NOT NULL,
+                         embedding VECTOR(1024)
+                     );
+                     CREATE INDEX IF NOT EXISTS idx_brands_embedding ON vehicles_module.brands USING hnsw (embedding vector_cosine_ops);
+                     CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_brands_name ON vehicles_module.brands(name);
+                     """);
     }
 
     public override void Down()
