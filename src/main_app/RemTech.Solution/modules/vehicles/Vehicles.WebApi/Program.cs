@@ -6,3 +6,8 @@ builder.Services.RegisterVehiclesModule(builder.Environment.IsDevelopment());
 WebApplication app = builder.Build();
 app.Services.ApplyModuleMigrations();
 app.Run();
+
+namespace Vehicles.WebApi
+{
+    public partial class Program { }
+}

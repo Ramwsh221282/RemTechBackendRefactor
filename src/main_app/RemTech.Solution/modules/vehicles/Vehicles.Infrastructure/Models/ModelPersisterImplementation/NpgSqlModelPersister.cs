@@ -21,41 +21,31 @@ public sealed class NpgSqlModelPersister(NpgSqlSession session, EmbeddingsProvid
                            embedding_match AS (
                             SELECT id, name, embedding <-> @input_embedding AS distance
                             FROM vehicles_module.models
+                            WHERE 1 - (embedding <-> @input_embedding) < @max_distance
                             ORDER BY distance
                             LIMIT 1
-                            WHERE distance < @max_distance
                            )
-                           SELECT exact_match.id as exact_id, exact_match.name as exact_name 
+                           SELECT 
+                            exact_match.id as exact_id, 
+                            exact_match.name as exact_name,
+                            embedding_match.id as embedding_id, 
+                            embedding_match.name as embedding_name 
                            FROM exact_match 
-                           UNION ALL 
-                           SELECT embedding_match.id as embedding_id, embedding_match.name as embedding_name 
-                           FROM embedding_match
+                           FULL JOIN embedding_match ON true;
                            """;
 
         Vector vector = new(embeddings.Generate(model.Name.Value));
         DynamicParameters parameters = BuildParameters(model, vector);
         CommandDefinition command = session.FormCommand(sql, parameters, ct);
-        NpgSqlSearchResult result = (await session.QuerySingleUsingReader(command, MapFromReader))!;
-        if (HasFromExactSearch(result)) return MapToModelFromExactSearch(result);
-        if (HasFromEmbeddingSearch(result)) return MapToModelFromEmbeddingSearch(result);
-        await SaveAsNewModel(model, vector, ct);
-        return model;
-    }
-    
-
-    private async Task SaveAsNewModel(Model model, Vector vector, CancellationToken ct)
-    {
-        const string sql =
-            "INSERT INTO vehicles_module.models (id, name, embedding) VALUES (@id, @name, @input_embedding)";
-        DynamicParameters parameters = new();
-        parameters.Add("@id", model.Id.Value, DbType.Guid);
-        parameters.Add("@name", model.Name.Value, DbType.String);
-        parameters.Add("@input_embedding", vector);
-        CommandDefinition command = session.FormCommand(sql, parameters, ct);
-        await session.Execute(command);
+        NpgSqlSearchResult[] result = (await session.QueryMultipleUsingReader(command, MapFromReader));
+        NpgSqlSearchResult? found = result.FirstOrDefault();
+        if (found is null) return Error.Conflict($"Unable to resolve model from text: {model.Name}");
+        if (HasFromExactSearch(found)) return MapToModelFromExactSearch(found);
+        if (HasFromEmbeddingSearch(found)) return MapToModelFromEmbeddingSearch(found);
+        return Error.Conflict($"Unable to resolve model from text: {model.Name}");
     }
 
-    private DynamicParameters BuildParameters(Model model, Vector vector)
+    private static DynamicParameters BuildParameters(Model model, Vector vector)
     {
         DynamicParameters parameters = new();
         parameters.Add("@name", model.Name.Value, DbType.String);

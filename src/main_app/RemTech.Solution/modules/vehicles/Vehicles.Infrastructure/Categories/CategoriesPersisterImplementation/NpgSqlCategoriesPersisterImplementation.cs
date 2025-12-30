@@ -21,39 +21,31 @@ public sealed class NpgSqlCategoriesPersisterImplementation(NpgSqlSession sessio
                            embedding_match AS (
                             SELECT id, name, embedding <-> @input_embedding AS distance
                             FROM vehicles_module.categories
+                            WHERE 1 - (embedding <-> @input_embedding) < @max_distance
                             ORDER BY distance
                             LIMIT 1
-                            WHERE distance < @max_distance
                            )
-                           SELECT exact_match.id as exact_id, exact_match.name as exact_name 
+                           SELECT 
+                            exact_match.id as exact_id, 
+                            exact_match.name as exact_name,
+                            embedding_match.id as embedding_id, 
+                            embedding_match.name as embedding_name 
                            FROM exact_match 
-                           UNION ALL 
-                           SELECT embedding_match.id as embedding_id, embedding_match.name as embedding_name 
-                           FROM embedding_match
+                           FULL JOIN embedding_match ON true;
                            """;
 
         Vector vector = new(embeddings.Generate(category.Name.Value));
         DynamicParameters parameters = BuildParameters(category, vector);
         CommandDefinition command = session.FormCommand(sql, parameters, ct);
-        NpgSqlSearchResult result = (await session.QuerySingleUsingReader(command, MapFromReader))!;
-        if (HasFromExactSearch(result)) return MapToCategoryFromExactSearch(result);
-        if (HasFromEmbeddingSearch(result)) return MapToCategoryFromEmbeddingSearch(result);
-        await SaveAsNewCategory(category, vector, ct);
-        return category;
+        NpgSqlSearchResult[] result = (await session.QueryMultipleUsingReader(command, MapFromReader));
+        NpgSqlSearchResult? found = result.FirstOrDefault();
+        if (found is null) return Error.Conflict("Unable to resolve category.");
+        if (HasFromExactSearch(found)) return MapToCategoryFromExactSearch(found);
+        if (HasFromEmbeddingSearch(found)) return MapToCategoryFromEmbeddingSearch(found);
+        return Error.Conflict("Unable to resolve category.");
     }
 
-    private async Task SaveAsNewCategory(Category category, Vector vector, CancellationToken ct)
-    {
-        const string sql = "INSERT INTO vehicles_module.categories (id, name, embedding) VALUES (@id, @name, @input_embedding)";
-        DynamicParameters parameters = new();
-        parameters.Add("@id", category.Id.Id, DbType.Guid);
-        parameters.Add("@name", category.Name.Value, DbType.String);
-        parameters.Add("@input_embedding", vector);
-        CommandDefinition command = session.FormCommand(sql, parameters, ct);
-        await session.Execute(command);
-    }
-
-    private DynamicParameters BuildParameters(Category category, Vector vector)
+    private static DynamicParameters BuildParameters(Category category, Vector vector)
     {
         DynamicParameters parameters = new();
         parameters.Add("@name", category.Name.Value, DbType.String);

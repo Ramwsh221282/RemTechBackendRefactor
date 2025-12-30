@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Dapper;
+using Npgsql;
 using Pgvector;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -21,36 +22,28 @@ public sealed class NpgSqlBrandPersisterImplementation(EmbeddingsProvider embedd
                            embedding_match AS (
                             SELECT id, name, embedding <-> @input_embedding AS distance
                             FROM vehicles_module.brands
+                            WHERE 1 - (embedding <-> @input_embedding) < @max_distance
                             ORDER BY distance
                             LIMIT 1
-                            WHERE distance < @max_distance
                            )
-                           SELECT exact_match.id as exact_id, exact_match.name as exact_name 
-                           FROM exact_match 
-                           UNION ALL 
-                           SELECT embedding_match.id as embedding_id, embedding_match.name as embedding_name 
-                           FROM embedding_match
+                           SELECT 
+                            exact_match.id as exact_id, 
+                            exact_match.name as exact_name,
+                            embedding_match.id as embedding_id, 
+                            embedding_match.name as embedding_name
+                           FROM embedding_match 
+                           FULL JOIN exact_match ON true;
                            """;
         
         Vector vector = new(embeddings.Generate(brand.Name.Name));
         DynamicParameters parameters = BuildParameters(brand, vector);
         CommandDefinition command = session.FormCommand(sql, parameters, ct);
-        NpgSqlSearchResult result = (await session.QuerySingleUsingReader(command, MapFromReader))!;
-        if (HasFromExactSearch(result)) return MapToBrandFromExactSearch(result);
-        if (HasFromEmbeddingSearch(result)) return MapToBrandFromEmbeddingSearch(result);
-        await SaveAsNewBrand(brand, vector, ct);
-        return brand;
-    }
-
-    private async Task SaveAsNewBrand(Brand brand, Vector vector, CancellationToken ct)
-    {
-        const string sql = "INSERT INTO vehicles_module.brands (id, name, embedding) VALUES (@id, @name, @input_embedding)";
-        DynamicParameters parameters = new();
-        parameters.Add("@id", brand.Id.Id, DbType.Guid);
-        parameters.Add("@name", brand.Name.Name, DbType.String);
-        parameters.Add("@input_embedding", vector);
-        CommandDefinition command = session.FormCommand(sql, parameters, ct);
-        await session.Execute(command);
+        NpgSqlSearchResult[] result = (await session.QueryMultipleUsingReader(command, MapFromReader));
+        NpgSqlSearchResult? found = result.FirstOrDefault();
+        if (found is null) return Error.Conflict("Unable to resolve brand.");
+        if (HasFromExactSearch(found)) return MapToBrandFromExactSearch(found);
+        if (HasFromEmbeddingSearch(found)) return MapToBrandFromEmbeddingSearch(found);
+        return Error.Conflict("Unable to resolve brand.");
     }
     
     private DynamicParameters BuildParameters(Brand brand, Vector vector)

@@ -4,6 +4,8 @@ using Vehicles.Domain.Categories;
 using Vehicles.Domain.Characteristics;
 using Vehicles.Domain.Locations;
 using Vehicles.Domain.Models;
+using Vehicles.Domain.Vehicles;
+using Vehicles.Domain.Vehicles.Contracts;
 
 namespace Vehicles.Domain.Contracts;
 
@@ -14,4 +16,5 @@ public interface IPersister
     Task<Result<Location>> Save(Location location, CancellationToken ct = default);
     Task<Result<Category>> Save(Category category, CancellationToken ct = default);
     Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default);
+    Task<Result<VehiclePersistInfo>> Save(VehiclePersistInfo info, CancellationToken ct = default);
 }

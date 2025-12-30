@@ -8,6 +8,7 @@ using Vehicles.Domain.Contracts;
 using Vehicles.Domain.Locations;
 using Vehicles.Domain.Models;
 using Vehicles.Domain.Vehicles;
+using Vehicles.Domain.Vehicles.Contracts;
 
 namespace Vehicles.Domain.Features.AddVehicle;
 
@@ -29,7 +30,9 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
         model = await model.SaveBy(persister, ct);
         location = await location.SaveBy(persister, ct);
         Vehicle vehicle = CreateVehicle(brand, category, model, location, ctxToAdd, command);
-        return Unit.Value;
+        VehiclePersistInfo persistInfo = new(vehicle, location);
+        Result<VehiclePersistInfo> persisted = await persistInfo.SaveBy(persister, ct);
+        return persisted.IsSuccess ? Unit.Value : persisted.Error;
     }
 
     private Vehicle CreateVehicle(

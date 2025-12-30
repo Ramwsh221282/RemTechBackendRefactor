@@ -14,35 +14,47 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
     public async Task<Result<Location>> Save(Location location, CancellationToken ct = default)
     {
         const string sql = """
-                           WITH exact_match AS (
-                            SELECT id, name FROM vehicles_module.locations WHERE name = @name
-                            LIMIT 1
-                           ),
-                           embedding_match AS (
+                           WITH cities_embedding_search AS (
                             SELECT id, name, embedding <-> @input_embedding AS distance
-                            FROM vehicles_module.locations
+                            FROM vehicles_module.cities
+                            WHERE 1 - (embedding <-> @input_embedding) < @max_distance
                             ORDER BY distance
                             LIMIT 1
-                            WHERE distance < @max_distance
+                           ),
+                           regions_embedding_search AS (
+                            SELECT id, name, kind, embedding <-> @input_embedding AS distance
+                            FROM vehicles_module.regions
+                            WHERE 1 - (embedding <-> @input_embedding) < @max_distance
+                            ORDER BY distance
+                            LIMIT 1
                            )
-                           SELECT exact_match.id as exact_id, exact_match.name as exact_name 
-                           FROM exact_match 
-                           UNION ALL 
-                           SELECT embedding_match.id as embedding_id, embedding_match.name as embedding_name 
-                           FROM embedding_match
+                           SELECT 
+                           cities_embedding_search.id as city_id, 
+                           cities_embedding_search.name as city_name, 
+                           regions_embedding_search.id as region_id, 
+                           regions_embedding_search.name as region_name, 
+                           regions_embedding_search.kind as region_kind 
+                           FROM cities_embedding_search 
+                           FULL JOIN regions_embedding_search ON true;
                            """;
 
         Vector vector = new(embeddings.Generate(location.Name.Value));
         DynamicParameters parameters = BuildParameters(location, vector);
         CommandDefinition command = session.FormCommand(sql, parameters, ct);
         NpgSqlSearchResult result = (await session.QuerySingleUsingReader(command, MapFromReader))!;
-        if (HasFromExactSearch(result)) return MapToLocationFromExactSearch(result);
-        if (HasFromEmbeddingSearch(result)) return MapToLocationFromEmbeddingSearch(result);
-        await SaveAsNewLocation(location, vector, ct);
-        return location;
+        List<string> locationParts = [];
+        if (HasFromRegionSearch(result)) AddRegionParts(locationParts, result);
+        if (HasFromCitySearch(result)) AddCityParts(locationParts, result);
+        if (locationParts.Count == 0) return Error.Conflict($"Unable to resolve location from text: {location.Name}");
+        if (result.RegionId == null) return Error.Conflict($"Unable to resolve region from text: {location.Name}");
+        
+        string locationName = string.Join(", ", locationParts);
+        LocationId id = LocationId.Create(result.RegionId.Value);
+        LocationName name = LocationName.Create(locationName);
+        return new Location(id, name);
     }
 
-    private DynamicParameters BuildParameters(Location location, Vector vector)
+    private static DynamicParameters BuildParameters(Location location, Vector vector)
     {
         DynamicParameters parameters = new();
         parameters.Add("@name", location.Name.Value, DbType.String);
@@ -51,63 +63,54 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
         return parameters;
     }
 
-    private async Task SaveAsNewLocation(Location location, Vector vector, CancellationToken ct)
+    private static bool HasFromCitySearch(NpgSqlSearchResult result)
     {
-        const string sql =
-            "INSERT INTO vehicles_module.locations (id, name, embedding) VALUES (@id, @name, @input_embedding)";
-        DynamicParameters parameters = new();
-        parameters.Add("@id", location.Id.Id, DbType.Guid);
-        parameters.Add("@name", location.Name.Value, DbType.String);
-        parameters.Add("@input_embedding", vector);
-        CommandDefinition command = session.FormCommand(sql, parameters, ct);
-        await session.Execute(command);
+        return result.CityId.HasValue && !string.IsNullOrWhiteSpace(result.CityName);
     }
 
-    private static bool HasFromEmbeddingSearch(NpgSqlSearchResult result)
+    private static bool HasFromRegionSearch(NpgSqlSearchResult result)
     {
-        return result.EmbeddingId.HasValue && result.EmbeddingName is not null;
+        return result.RegionId.HasValue &&
+               !string.IsNullOrWhiteSpace(result.RegionName) &&
+               !string.IsNullOrWhiteSpace(result.RegionKind);
     }
 
-    private static Location MapToLocationFromEmbeddingSearch(NpgSqlSearchResult result)
+    private static void AddRegionParts(List<string> locationParts, NpgSqlSearchResult result)
     {
-        LocationId id = LocationId.Create(result.EmbeddingId!.Value);
-        LocationName name = LocationName.Create(result.EmbeddingName!);
-        return new Location(id, name);
+        locationParts.Add(result.RegionName!);
+        locationParts.Add(result.RegionKind!);
     }
 
-    private static bool HasFromExactSearch(NpgSqlSearchResult result)
+    private static void AddCityParts(List<string> locationParts, NpgSqlSearchResult result)
     {
-        return result.ExactId.HasValue && result.ExactName is not null;
-    }
-    
-    private static Location MapToLocationFromExactSearch(NpgSqlSearchResult result)
-    {
-        LocationId id = LocationId.Create(result.ExactId!.Value);
-        LocationName name = LocationName.Create(result.ExactName!);
-        return new Location(id, name);
+        locationParts.Add(result.CityName!);
     }
     
     private static NpgSqlSearchResult MapFromReader(IDataReader reader)
     {
-        Guid? exactId = reader.GetNullable<Guid>("exact_id");
-        string? exactName = reader.GetNullableReferenceType<string>("exact_name");
-        Guid? embeddingId = reader.GetNullable<Guid>("embedding_id");
-        string? embeddingName = reader.GetNullableReferenceType<string>("embedding_name");
+        Guid? cityId = reader.GetNullable<Guid>("city_id");
+        string? cityName = reader.GetNullableReferenceType<string>("city_name");
+        Guid? regionId = reader.GetNullable<Guid>("region_id");
+        string? regionName = reader.GetNullableReferenceType<string>("region_name");
+        string? regionKind = reader.GetNullableReferenceType<string>("region_kind");
+        
         return new NpgSqlSearchResult
         {
-            ExactId = exactId,
-            ExactName = exactName,
-            EmbeddingId = embeddingId,
-            EmbeddingName = embeddingName,
+            CityId = cityId,
+            CityName = cityName,
+            RegionId = regionId,
+            RegionName = regionName,
+            RegionKind = regionKind,
         };
     }
     
     private sealed class NpgSqlSearchResult
     {
-        public required Guid? ExactId { get; init; }
-        public required string? ExactName { get; init; }
-        public required Guid? EmbeddingId { get; init; }
-        public required string? EmbeddingName { get; init; }
+        public required Guid? CityId { get; init; }
+        public required string? CityName { get; init; }
+        public required Guid? RegionId { get; init; }
+        public required string? RegionName { get; init; }
+        public required string? RegionKind { get; init; }
     }
 }
     

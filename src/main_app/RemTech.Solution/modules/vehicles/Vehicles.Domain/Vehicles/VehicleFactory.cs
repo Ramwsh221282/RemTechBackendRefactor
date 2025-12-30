@@ -25,7 +25,7 @@ public sealed class VehicleFactory(
         VehicleTextInformation text, 
         VehiclePhotosGallery photos)
     {
-        return new Vehicle(
+        Vehicle vehicle = new Vehicle(
             id,
             Brand.Id,
             Category.Id,
@@ -36,5 +36,8 @@ public sealed class VehicleFactory(
             text,
             photos
         );
+        
+        vehicle.AddCharacteristics(Characteristics);
+        return vehicle;
     }
 }

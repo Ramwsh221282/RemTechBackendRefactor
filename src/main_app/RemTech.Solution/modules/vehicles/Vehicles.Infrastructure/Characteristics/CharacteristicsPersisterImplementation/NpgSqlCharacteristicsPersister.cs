@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Dapper;
+using Npgsql;
 using Pgvector;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -21,15 +22,17 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
                            embedding_match AS (
                             SELECT id, name, embedding <-> @input_embedding AS distance
                             FROM vehicles_module.characteristics
+                            WHERE 1 - (embedding <-> @input_embedding) < @max_distance
                             ORDER BY distance
                             LIMIT 1
-                            WHERE distance < @max_distance
                            )
-                           SELECT exact_match.id as exact_id, exact_match.name as exact_name 
-                           FROM exact_match 
-                           UNION ALL 
-                           SELECT embedding_match.id as embedding_id, embedding_match.name as embedding_name 
-                           FROM embedding_match
+                           SELECT 
+                            exact_match.id as exact_id, 
+                            exact_match.name as exact_name,
+                            embedding_match.id as embedding_id, 
+                            embedding_match.name as embedding_name
+                           FROM exact_match
+                           FULL JOIN embedding_match ON true;
                            """;
         
         Vector vector = new(embeddings.Generate(characteristic.Name.Value));
@@ -108,4 +111,4 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
         public required Guid? EmbeddingId { get; init; }
         public required string? EmbeddingName { get; init; }
     }
-}   
+}
