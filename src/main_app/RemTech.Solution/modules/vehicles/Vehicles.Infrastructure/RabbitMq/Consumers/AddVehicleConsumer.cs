@@ -9,7 +9,10 @@ using Vehicles.Domain.Features.AddVehicle;
 
 namespace Vehicles.Infrastructure.RabbitMq.Consumers;
 
-public sealed class AddVehicleConsumer(IServiceProvider services, Serilog.ILogger logger, RabbitMqConnectionSource rabbitMq) : IConsumer
+public sealed class AddVehicleConsumer(
+    IServiceProvider services, 
+    Serilog.ILogger logger, 
+    RabbitMqConnectionSource rabbitMq) : IConsumer
 {
     private const string Exchange = "vehicles";
     private const string Queue = "vehicles.add";
@@ -21,17 +24,17 @@ public sealed class AddVehicleConsumer(IServiceProvider services, Serilog.ILogge
     private Serilog.ILogger Logger { get; } = logger.ForContext<AddVehicleConsumer>();
     private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
 
-    public async Task InitializeChannel(IConnection connection, CancellationToken ct = new CancellationToken())
+    public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
     {
         _channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
     }
 
-    public async Task StartConsuming(CancellationToken ct = new CancellationToken())
+    public async Task StartConsuming(CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        await Task.CompletedTask;
     }
 
-    public async Task Shutdown(CancellationToken ct = new CancellationToken())
+    public async Task Shutdown(CancellationToken ct = default)
     {
         await Channel.CloseAsync(ct);
     }

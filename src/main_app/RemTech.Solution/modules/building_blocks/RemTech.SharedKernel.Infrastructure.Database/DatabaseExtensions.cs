@@ -34,7 +34,7 @@ public static class DatabaseExtensions
                     .AddPostgres()
                     .WithGlobalConnectionString(
                         sp => sp.GetRequiredService<IOptions<NpgSqlOptions>>().Value.ToConnectionString())
-                    .ScanIn(withPgVectorAssembly).For.Migrations())
+                    .ScanIn(withPgVectorAssembly).For.All())
                 .AddLogging(lb => lb.AddFluentMigratorConsole());
         }
 
