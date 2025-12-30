@@ -11,4 +11,8 @@
       <PackageReference Include="Microsoft.ML.OnnxRuntime.Extensions" Version="0.14.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\RemTech.SharedKernel.Configurations\RemTech.SharedKernel.Configurations.csproj" />
+    </ItemGroup>
+
 </Project>

@@ -2,6 +2,7 @@
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
+using RemTech.SharedKernel.NN;
 using Vehicles.Domain;
 using Vehicles.Infrastructure;
 
@@ -18,12 +19,14 @@ public static class VehiclesModuleInjection
             {
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
+                EmbeddingsProviderExtensions.RegisterFromAppsettings(services);
             }
             
             services.AddPostgres();
             services.AddRabbitMq();
             services.RegisterVehiclesModuleInfrastructure();
             services.RegisterVehiclesDomain();
+            services.AddSingleton<EmbeddingsProvider>();
         }
     }
 }

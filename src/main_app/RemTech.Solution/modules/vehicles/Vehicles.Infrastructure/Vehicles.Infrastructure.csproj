@@ -12,7 +12,7 @@
     </ItemGroup>
     
     <ItemGroup>
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.14" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.15" />
       <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.4" />
     </ItemGroup>
 
@@ -38,6 +38,8 @@
       <EmbeddedResource Include="Models\SeedingImplementation\0005.models_seeding_4.sql" />
       <None Remove="Models\SeedingImplementation\0006.models_seeding_5.sql" />
       <EmbeddedResource Include="Models\SeedingImplementation\0006.models_seeding_5.sql" />
+      <None Remove="Characteristics\SeedingImplementation\characteristics_seeding.sql" />
+      <EmbeddedResource Include="Characteristics\SeedingImplementation\characteristics_seeding.sql" />
     </ItemGroup>
 
 </Project>
