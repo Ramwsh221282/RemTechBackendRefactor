@@ -28,6 +28,16 @@
       <EmbeddedResource Include="Locations\SeedingImplementation\cities_seeding.sql" />
       <None Remove="Locations\SeedingImplementation\regions_seeding.sql" />
       <EmbeddedResource Include="Locations\SeedingImplementation\regions_seeding.sql" />
+      <None Remove="Models\SeedingImplementation\0002.models_seeding_1.sql" />
+      <EmbeddedResource Include="Models\SeedingImplementation\0002.models_seeding_1.sql" />
+      <None Remove="Models\SeedingImplementation\0003.models_seeding_2.sql" />
+      <EmbeddedResource Include="Models\SeedingImplementation\0003.models_seeding_2.sql" />
+      <None Remove="Models\SeedingImplementation\0004.models_seeding_3.sql" />
+      <EmbeddedResource Include="Models\SeedingImplementation\0004.models_seeding_3.sql" />
+      <None Remove="Models\SeedingImplementation\0005.models_seeding_4.sql" />
+      <EmbeddedResource Include="Models\SeedingImplementation\0005.models_seeding_4.sql" />
+      <None Remove="Models\SeedingImplementation\0006.models_seeding_5.sql" />
+      <EmbeddedResource Include="Models\SeedingImplementation\0006.models_seeding_5.sql" />
     </ItemGroup>
 
 </Project>
