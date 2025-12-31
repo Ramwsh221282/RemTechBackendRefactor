@@ -38,7 +38,7 @@ public sealed class ExtractCataloguePagesItemCommand(
                                       const priceValue = priceSelector.querySelector('meta[itemprop=""price""]').getAttribute(""content"");
                                       const isNds = priceSelector.innerText.includes(""НДС"");
                                       // id
-                                      const idValue = ""avito_vehicle_"" + i.getAttribute(""data-item-id"");
+                                      const idValue = ""avito_spare_"" + i.getAttribute(""data-item-id"");
                                       // address
                                       const address = i.querySelector('div[data-marker=""item-location""]').querySelector('span[title]').innerText;
                                       // photos
