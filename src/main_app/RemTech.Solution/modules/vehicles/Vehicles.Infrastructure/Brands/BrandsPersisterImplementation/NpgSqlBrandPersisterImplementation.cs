@@ -12,6 +12,8 @@ namespace Vehicles.Infrastructure.Brands.BrandsPersisterImplementation;
 
 public sealed class NpgSqlBrandPersisterImplementation(EmbeddingsProvider embeddings, NpgSqlSession session) : IBrandPersister
 {
+    private const double MaxDistance = 0.6;
+    
     public async Task<Result<Brand>> Save(Brand brand, CancellationToken ct = default)
     {
         const string sql = """
@@ -20,19 +22,18 @@ public sealed class NpgSqlBrandPersisterImplementation(EmbeddingsProvider embedd
                             LIMIT 1
                            ),
                            embedding_match AS (
-                            SELECT id, name, embedding <-> @input_embedding AS distance
+                            SELECT id, name, embedding <=> @input_embedding AS distance
                             FROM vehicles_module.brands
-                            WHERE 1 - (embedding <-> @input_embedding) < @max_distance
+                            WHERE embedding <=> @input_embedding < @max_distance
                             ORDER BY distance
                             LIMIT 1
                            )
-                           SELECT 
-                            exact_match.id as exact_id, 
-                            exact_match.name as exact_name,
-                            embedding_match.id as embedding_id, 
-                            embedding_match.name as embedding_name
-                           FROM embedding_match 
-                           FULL JOIN exact_match ON true;
+                           SELECT
+                               e.id as exact_id, e.name as exact_name,
+                               m.id as embedding_id, m.name as embedding_name
+                           FROM (SELECT 1) dummy
+                           LEFT JOIN exact_match e ON true
+                           LEFT JOIN embedding_match m ON true;
                            """;
         
         Vector vector = new(embeddings.Generate(brand.Name.Name));
@@ -51,7 +52,7 @@ public sealed class NpgSqlBrandPersisterImplementation(EmbeddingsProvider embedd
         DynamicParameters parameters = new();
         parameters.Add("@name", brand.Name.Name, DbType.String);
         parameters.Add("@input_embedding", vector);
-        parameters.Add("@max_distance", 0.3, DbType.Double);
+        parameters.Add("@max_distance", MaxDistance, DbType.Double);
         return parameters;
     }
     

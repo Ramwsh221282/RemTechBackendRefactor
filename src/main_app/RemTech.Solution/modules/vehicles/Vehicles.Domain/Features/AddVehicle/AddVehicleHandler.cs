@@ -25,11 +25,19 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
         Dictionary<Characteristic, VehicleCharacteristicValue> savedCharacteristics = await SaveCharacteristics(characteristics, ct);
         IEnumerable<VehicleCharacteristicToAdd> ctxToAdd = savedCharacteristics.Select(kvp => new VehicleCharacteristicToAdd(kvp.Key, kvp.Value));
         
-        brand = await brand.SaveBy(persister, ct);
-        category = await category.SaveBy(persister, ct);
-        model = await model.SaveBy(persister, ct);
-        location = await location.SaveBy(persister, ct);
-        Vehicle vehicle = CreateVehicle(brand, category, model, location, ctxToAdd, command);
+        Result<Brand> savedBrand = await brand.SaveBy(persister, ct);
+        if (savedBrand.IsFailure) return savedBrand.Error;
+        
+        Result<Category> savedCategory = await category.SaveBy(persister, ct);
+        if (savedCategory.IsFailure) return savedCategory.Error;
+        
+        Result<Model> savedModel = await model.SaveBy(persister, ct);
+        if (savedModel.IsFailure) return savedModel.Error;
+        
+        Result<Location> savedLocation = await location.SaveBy(persister, ct);
+        if (savedLocation.IsFailure) return savedLocation.Error;
+        
+        Vehicle vehicle = CreateVehicle(savedBrand.Value, savedCategory.Value, savedModel.Value, savedLocation.Value, ctxToAdd, command);
         VehiclePersistInfo persistInfo = new(vehicle, location);
         Result<VehiclePersistInfo> persisted = await persistInfo.SaveBy(persister, ct);
         return persisted.IsSuccess ? Unit.Value : persisted.Error;

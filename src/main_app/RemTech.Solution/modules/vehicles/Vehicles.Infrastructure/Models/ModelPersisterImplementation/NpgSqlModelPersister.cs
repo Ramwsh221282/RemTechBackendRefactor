@@ -11,6 +11,8 @@ namespace Vehicles.Infrastructure.Models.ModelPersisterImplementation;
 
 public sealed class NpgSqlModelPersister(NpgSqlSession session, EmbeddingsProvider embeddings) : IModelsPersister
 {
+    private const double MaxDistance = 0.6;
+    
     public async Task<Result<Model>> Save(Model model, CancellationToken ct = default)
     {
         const string sql = """
@@ -19,9 +21,9 @@ public sealed class NpgSqlModelPersister(NpgSqlSession session, EmbeddingsProvid
                             LIMIT 1
                            ),
                            embedding_match AS (
-                            SELECT id, name, embedding <-> @input_embedding AS distance
+                            SELECT id, name, embedding <=> @input_embedding AS distance
                             FROM vehicles_module.models
-                            WHERE 1 - (embedding <-> @input_embedding) < @max_distance
+                            WHERE embedding <=> @input_embedding < @max_distance
                             ORDER BY distance
                             LIMIT 1
                            )
@@ -30,8 +32,9 @@ public sealed class NpgSqlModelPersister(NpgSqlSession session, EmbeddingsProvid
                             exact_match.name as exact_name,
                             embedding_match.id as embedding_id, 
                             embedding_match.name as embedding_name 
-                           FROM exact_match 
-                           FULL JOIN embedding_match ON true;
+                           FROM (SELECT 1) dummy
+                           LEFT JOIN exact_match ON true 
+                           LEFT JOIN embedding_match ON true;
                            """;
 
         Vector vector = new(embeddings.Generate(model.Name.Value));
@@ -50,7 +53,7 @@ public sealed class NpgSqlModelPersister(NpgSqlSession session, EmbeddingsProvid
         DynamicParameters parameters = new();
         parameters.Add("@name", model.Name.Value, DbType.String);
         parameters.Add("@input_embedding", vector);
-        parameters.Add("@max_distance", 0.3, DbType.Double);
+        parameters.Add("@max_distance", MaxDistance, DbType.Double);
         return parameters;
     }
 

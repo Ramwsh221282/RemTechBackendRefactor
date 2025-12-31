@@ -28,7 +28,7 @@ public static class FinalizationStage
             Serilog.ILogger logger = deps.Logger;
             
             await using NpgSqlSession session = new(npgSql);
-            NpgSqlTransactionSource transactionSource = new(session);
+            NpgSqlTransactionSource transactionSource = new(session, logger);
             await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct); 
             
             Maybe<ParserWorkStage> stage = await GetFinalizationStage(session);
@@ -68,11 +68,12 @@ public static class FinalizationStage
             CreatorId = parser.Id,
             CreatorDomain = parser.Domain,
             CreatorType = parser.Type,
-            Items = advertisements.Select(CreateAddContainedItemsMessagePayload).ToArray()
+            Items = advertisements.Select(CreateAddContainedItemsMessagePayload).ToArray(),
+            ItemType = "Техника"
         };
     }
     
-    private static AddContainedItemMessagePayload CreateAddContainedItemsMessagePayload(DromAdvertisementFromPage advertisement)
+    private static AddContainedItemsMessagePayload CreateAddContainedItemsMessagePayload(DromAdvertisementFromPage advertisement)
     {
         string id = advertisement.Id;
         
@@ -96,7 +97,7 @@ public static class FinalizationStage
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
         string content = JsonSerializer.Serialize(payload, options);
-        return new AddContainedItemMessagePayload() { ItemId = id, Content = content };
+        return new AddContainedItemsMessagePayload() { ItemId = id, Content = content };
     }
     
     private static async Task FinalizeParsing(NpgSqlSession session, Serilog.ILogger logger, CancellationToken ct)

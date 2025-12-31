@@ -31,7 +31,9 @@ public sealed class AddVehicleConsumer(
 
     public async Task StartConsuming(CancellationToken ct = default)
     {
-        await Task.CompletedTask;
+        AsyncEventingBasicConsumer consumer = new(Channel);
+        consumer.ReceivedAsync += Handler;
+        await Channel.BasicConsumeAsync(Queue, false, consumer, ct);
     }
 
     public async Task Shutdown(CancellationToken ct = default)
@@ -60,8 +62,16 @@ public sealed class AddVehicleConsumer(
             );
 
             await using AsyncServiceScope scope = Services.CreateAsyncScope();
-            ICommandHandler<AddVehicleCommand, Result<Unit>> handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<AddVehicleCommand, Result<Unit>>>();
-            await handler.Execute(command);
+            ICommandHandler<AddVehicleCommand, Unit> handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<AddVehicleCommand, Unit>>();
+            Result<Unit> result = await handler.Execute(command);
+            if (result.IsFailure)
+            {
+                logger.Error("Failed to add vehicle. {Error}", result.Error.Message);
+            }
+            else
+            {
+                logger.Information("Vehicle {Id} added.", payload.Id);
+            }
         }
         catch (Exception ex)
         {
@@ -69,7 +79,7 @@ public sealed class AddVehicleConsumer(
         }
         finally
         {
-            // await Channel.BasicAckAsync(@event.DeliveryTag, false);
+            await Channel.BasicAckAsync(@event.DeliveryTag, false);
         }
     };
     

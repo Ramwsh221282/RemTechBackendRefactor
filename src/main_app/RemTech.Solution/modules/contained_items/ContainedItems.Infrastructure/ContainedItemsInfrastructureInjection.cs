@@ -40,6 +40,7 @@ public static class ContainedItemsInfrastructureInjection
 
         private void RegisterProducers()
         {
+            services.AddSingleton<ItemPublishStrategyFactory>();
             services.AddSingleton<AddSparesProducer>();
             services.AddSingleton<AddVehiclesProducer>();
         }

@@ -55,7 +55,7 @@ public sealed class ParserStartConsumer(
         try
         {
             await using NpgSqlSession session = new(npgSql);
-            NpgSqlTransactionSource transactionSource = new(session);
+            NpgSqlTransactionSource transactionSource = new(session, Logger);
             await using ITransactionScope txn = await transactionSource.BeginTransaction(CancellationToken.None);
 
             if (await ProcessingParser.HasAny(session))

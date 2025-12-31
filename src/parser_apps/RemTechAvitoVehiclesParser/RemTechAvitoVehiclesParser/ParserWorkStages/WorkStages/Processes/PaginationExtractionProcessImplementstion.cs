@@ -22,7 +22,7 @@ public static class PaginationExtractionProcessImplementation
             {
                 Serilog.ILogger logger = deps.Logger.ForContext<WorkStageProcess>();
                 await using NpgSqlSession session = new(deps.NpgSql);
-                NpgSqlTransactionSource transactionSource = new(session);
+                NpgSqlTransactionSource transactionSource = new(session, logger);
                 await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
                 WorkStageQuery stageQuery = new(Name: WorkStageConstants.EvaluationStageName, WithLock: true);
                 Maybe<ParserWorkStage> evalStage = await ParserWorkStage.GetSingle(session, stageQuery, ct);

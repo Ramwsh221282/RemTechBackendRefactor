@@ -42,7 +42,7 @@ public sealed class AddSparesBackgroundService(
             
             foreach (ContainedItem item in items)
             {
-                IItemPublishingStrategy strategy = factory.Resolve(item.ItemType.Value);
+                IItemPublishingStrategy strategy = factory.Resolve(item.CreatorInfo.Type);
                 await strategy.Publish(item, ct);   
             }
             

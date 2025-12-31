@@ -16,13 +16,13 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
     public async Task Publish(ContainedItem item, CancellationToken ct = default)
     {
         Logger.Information("Publishing {Id}", item.Id);
-        ReadOnlyMemory<byte> payload = CreatePayload(item);
+        AddVehicleMessagePayload message = CreateMessage(item);
         RabbitMqPublishOptions options = new() { Persistent = true };
-        await Producer.PublishDirectAsync(payload, Exchange, RoutingKey, options, ct: ct);
+        await Producer.PublishDirectAsync(message, Exchange, RoutingKey, options, ct: ct);
         Logger.Information("Published {Id}", item.Id);
     }
 
-    private ReadOnlyMemory<byte> CreatePayload(ContainedItem item)
+    private AddVehicleMessagePayload CreateMessage(ContainedItem item)
     {
         using JsonDocument document = JsonDocument.Parse(item.Info.Content);
         
@@ -34,13 +34,12 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
             characteristics.Add(new AddVehicleCharacteristic { Name = name, Value = value });
         }
         
-        
         AddVehicleMessagePayload payload = new()
         {
             CreatorId = item.CreatorInfo.CreatorId,
             CreatorDomain = item.CreatorInfo.Domain,
             CreatorType = item.CreatorInfo.Type,
-            Id = item.ServiceItemId.Value,
+            Id = item.Id.Value,
             Title = document.RootElement.GetProperty("title").GetString()!,
             Characteristics = characteristics.ToArray(),
             Url = document.RootElement.GetProperty("url").GetString()!,
@@ -50,8 +49,7 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
             Photos = document.RootElement.GetProperty("photos").EnumerateArray().Select(p => p.GetString()!).ToArray(),
         };
         
-        string json = JsonSerializer.Serialize(payload);
-        return Encoding.UTF8.GetBytes(json);
+        return payload;
     }
     
     private sealed class AddVehicleMessagePayload
@@ -59,7 +57,7 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
         public required Guid CreatorId { get; set; }
         public required string CreatorDomain { get; set; }
         public required string CreatorType { get; set; }
-        public required string Id { get; set; }
+        public required Guid Id { get; set; }
         public required string Title { get; set; }
         public required string Url { get; set; }
         public required long Price { get; set; }

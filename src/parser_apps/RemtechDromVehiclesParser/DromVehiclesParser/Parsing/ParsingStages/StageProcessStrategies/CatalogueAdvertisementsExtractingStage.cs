@@ -23,7 +23,7 @@ public static class CatalogueAdvertisementsExtractingStage
             Serilog.ILogger logger = deps.Logger;
             
             await using NpgSqlSession session = new(npgSql);
-            NpgSqlTransactionSource transactionSource = new(session);
+            NpgSqlTransactionSource transactionSource = new(session, logger);
             await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
             
             Maybe<ParserWorkStage> stage = await GetCatalogueStage(session, ct);

@@ -12,6 +12,8 @@ namespace Vehicles.Infrastructure.Characteristics.CharacteristicsPersisterImplem
 
 public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, EmbeddingsProvider embeddings) : ICharacteristicsPersister
 {
+    private const double MaxDistance = 0.6;
+    
     public async Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default)
     {
         const string sql = """
@@ -20,9 +22,9 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
                             LIMIT 1
                            ),
                            embedding_match AS (
-                            SELECT id, name, embedding <-> @input_embedding AS distance
+                            SELECT id, name, embedding <=> @input_embedding AS distance
                             FROM vehicles_module.characteristics
-                            WHERE 1 - (embedding <-> @input_embedding) < @max_distance
+                            WHERE embedding <=> @input_embedding < @max_distance
                             ORDER BY distance
                             LIMIT 1
                            )
@@ -31,8 +33,9 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
                             exact_match.name as exact_name,
                             embedding_match.id as embedding_id, 
                             embedding_match.name as embedding_name
-                           FROM exact_match
-                           FULL JOIN embedding_match ON true;
+                           FROM (SELECT 1) dummy
+                           LEFT JOIN exact_match ON true 
+                           LEFT JOIN embedding_match ON true;
                            """;
         
         Vector vector = new(embeddings.Generate(characteristic.Name.Value));
@@ -50,7 +53,7 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
         DynamicParameters parameters = new();
         parameters.Add("@name", characteristic.Name.Value, DbType.String);
         parameters.Add("@input_embedding", vector);
-        parameters.Add("@max_distance", 0.3, DbType.Double);
+        parameters.Add("@max_distance", MaxDistance, DbType.Double);
         return parameters;
     }
     
