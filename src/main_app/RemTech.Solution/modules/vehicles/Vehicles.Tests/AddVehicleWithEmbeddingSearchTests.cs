@@ -10,7 +10,7 @@ public sealed class AddVehicleWithEmbeddingSearchTests(NoContainersIntegrational
     private IServiceProvider Services { get; } = fixture.Services;
 
     [Fact]
-    private async Task Ensure_Everyting_Recognized()
+    private async Task Add_Vehicles_Success()
     {
         await using AsyncServiceScope scope = Services.CreateAsyncScope();
         ICommandHandler<AddVehicleCommand, Unit> handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<AddVehicleCommand, Unit>>();
