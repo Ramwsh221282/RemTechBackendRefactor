@@ -1,7 +1,6 @@
 ﻿using Identity.Contracts.Accounts;
 using Identity.Infrastructure.Accounts;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Tests.Identity.CommonFeatures.Accounts;

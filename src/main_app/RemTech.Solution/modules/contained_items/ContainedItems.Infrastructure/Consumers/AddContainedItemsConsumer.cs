@@ -47,10 +47,12 @@ public sealed class AddContainedItemsConsumer(RabbitMqConnectionSource rabbitMq,
             IEnumerable<AddContainedItemsBody> commandPayload = message.Items.Select(i =>
             {
                 return new AddContainedItemsBody(
-                    i.ItemId, 
-                    message.CreatorId, 
-                    message.CreatorDomain,
-                    message.CreatorType, i.Content);
+                    ServiceItemId: i.ItemId,
+                    ItemType: i.ItemType,
+                    CreatorId: message.CreatorId, 
+                    CreatorDomain: message.CreatorDomain,
+                    CreatorType: message.CreatorType, 
+                    Content: i.Content);
             });
             
             await using AsyncServiceScope scope = Services.CreateAsyncScope();
@@ -71,10 +73,10 @@ public sealed class AddContainedItemsConsumer(RabbitMqConnectionSource rabbitMq,
     
     private sealed class AddContainedItemsMessage
     {
-        public Guid CreatorId { get; set; }
-        public string CreatorDomain { get; set; }
-        public string CreatorType { get; set; }
-        public AddContainedItemMessagePayload[] Items { get; set; }
+        public Guid CreatorId { get; set; } = Guid.Empty;
+        public string CreatorDomain { get; set; } = string.Empty;
+        public string CreatorType { get; set; } = string.Empty;
+        public AddContainedItemMessagePayload[] Items { get; set; } = [];
         
         public static AddContainedItemsMessage FromEventArgs(BasicDeliverEventArgs ea)
         {
@@ -84,7 +86,8 @@ public sealed class AddContainedItemsConsumer(RabbitMqConnectionSource rabbitMq,
 
     private sealed class AddContainedItemMessagePayload
     {
-        public string ItemId { get; set; }
-        public string Content { get; set; }
+        public string ItemType { get; set; } = string.Empty;
+        public string ItemId { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
     }
 }

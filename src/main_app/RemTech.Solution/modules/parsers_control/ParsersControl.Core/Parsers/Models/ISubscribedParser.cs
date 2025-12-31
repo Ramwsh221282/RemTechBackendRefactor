@@ -1,10 +1,12 @@
-﻿using ParsersControl.Core.ParserLinks.Models;
+﻿using ParsersControl.Core.Features.UpdateParserLinks;
+using ParsersControl.Core.ParserLinks.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace ParsersControl.Core.Parsers.Models;
 
 public interface ISubscribedParser
 {
+    Result<IEnumerable<SubscribedParserLink>> UpdateLinks(IEnumerable<ParserLinkUpdater> updater);
     Result<SubscribedParser> FinishWork(long totalElapsedSeconds);
     Result<SubscribedParser> PermantlyEnable();
     SubscribedParser PermantlyDisable();

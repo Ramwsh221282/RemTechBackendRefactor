@@ -34,7 +34,7 @@ public static class DatabaseExtensions
                     .AddPostgres()
                     .WithGlobalConnectionString(
                         sp => sp.GetRequiredService<IOptions<NpgSqlOptions>>().Value.ToConnectionString())
-                    .ScanIn(withPgVectorAssembly).For.Migrations())
+                    .ScanIn(withPgVectorAssembly).For.All())
                 .AddLogging(lb => lb.AddFluentMigratorConsole());
         }
 
@@ -48,7 +48,8 @@ public static class DatabaseExtensions
     private static string ConnectionString(IServiceProvider services)
     {
         return services.GetRequiredService<IOptions<NpgSqlOptions>>().Value.ToConnectionString();
-    }    
+    }
+    
     extension(IServiceProvider provider)
     {
         public void ApplyModuleMigrations()
@@ -60,15 +61,16 @@ public static class DatabaseExtensions
 
         public void RollBackModuleMigrations()
         {
-            IServiceScope scope = provider.CreateScope();
+            using IServiceScope scope = provider.CreateScope();
             IMigrationRunner runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
-            Dictionary<long, IMigrationInfo> migrations = runner
-                .MigrationLoader.LoadMigrations()
-                .OrderByDescending(m => m.Key)
-                .ToDictionary(m => m.Key, m => m.Value);
-            
-            foreach (var migration in migrations)
-                runner.Down(migration.Value.Migration);
+
+            var appliedCount = runner.MigrationLoader.LoadMigrations()
+                .Count(m => m.Key > PgVectorMigration.Version);
+
+            if (appliedCount > 0)
+            {
+                runner.Rollback(appliedCount);
+            }
         }
     }
 }

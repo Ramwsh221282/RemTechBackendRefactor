@@ -1,5 +1,4 @@
 ﻿using Identity.Notifier.Port;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Identity.Adapter.Notifier;
 

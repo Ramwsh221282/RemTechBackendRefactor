@@ -4,7 +4,6 @@ using Identity.Gateways.Permissions.AddPermission;
 using Identity.Gateways.Permissions.RenamePermission;
 using Identity.Infrastructure.Permissions;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 

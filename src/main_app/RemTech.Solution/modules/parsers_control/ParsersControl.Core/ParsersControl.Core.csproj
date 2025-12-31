@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Core\RemTech.SharedKernel.Core.csproj" />
+      <PackageReference Include="RemTech.SharedKernel.Core" Version="1.0.3" />
     </ItemGroup>
 
 </Project>

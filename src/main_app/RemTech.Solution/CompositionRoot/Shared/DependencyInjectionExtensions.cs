@@ -2,11 +2,7 @@
 using Mailing.CompositionRoot;
 using Microsoft.Extensions.DependencyInjection;
 using ParsersControl.CompositionRoot;
-using Quartz;
 using RemTech.SharedKernel.Core.Logging;
-using RemTech.SharedKernel.Infrastructure.AesEncryption;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
-using RemTech.SharedKernel.Infrastructure.Quartz;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using Serilog;
 

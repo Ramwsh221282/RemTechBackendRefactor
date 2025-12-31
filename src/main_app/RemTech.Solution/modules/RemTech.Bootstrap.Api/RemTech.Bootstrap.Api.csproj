@@ -13,14 +13,10 @@
         <PackageReference Include="StackExchange.Redis" Version="2.8.58"/>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\brands\Brands.Module\Brands.Module.csproj"/>
-        <ProjectReference Include="..\categories\Categories.Module\Categories.Module.csproj"/>
-        <ProjectReference Include="..\geo_locations\GeoLocations.Module\GeoLocations.Module.csproj"/>
         <ProjectReference Include="..\models\Models.Module\Models.Module.csproj"/>
         <ProjectReference Include="..\parsed_advertisements\RemTech.ContainedItems.Module\RemTech.ContainedItems.Module.csproj"/>
         <ProjectReference Include="..\parsed_advertisements\RemTech.Spares.Module\RemTech.Spares.Module.csproj"/>
         <ProjectReference Include="..\parsed_advertisements\RemTech.Vehicles.Module\RemTech.Vehicles.Module.csproj"/>
-        <ProjectReference Include="..\scrapers\Scrapers.Module\Scrapers.Module.csproj"/>
         <ProjectReference Include="..\users\Identity.WebApi\Identity.WebApi.csproj"/>
         <ProjectReference Include="..\users\Users.Module\Users.Module.csproj"/>
     </ItemGroup>

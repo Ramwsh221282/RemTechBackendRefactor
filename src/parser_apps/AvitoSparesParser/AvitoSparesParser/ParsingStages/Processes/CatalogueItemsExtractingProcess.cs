@@ -20,8 +20,8 @@ public static class CatalogueItemsExtractingProcess
         {
             Serilog.ILogger logger = deps.Logger.ForContext<ParserStageProcess>();
             await using NpgSqlSession session = new(deps.NpgSql);
-            NpgSqlTransactionSource source = new(session);
-            ITransactionScope scope = await source.BeginTransaction(ct);
+            NpgSqlTransactionSource source = new(session, logger);
+            await using ITransactionScope scope = await source.BeginTransaction(ct);
 
             Maybe<ParsingStage> stage = await GetCatalogueStage(session, ct);
             if (!stage.HasValue) return;
@@ -102,7 +102,7 @@ public static class CatalogueItemsExtractingProcess
 
     private static async Task<AvitoCataloguePage[]> GetPaginatedUrls(NpgSqlSession session, CancellationToken ct)
     {
-        AvitoCataloguePageQuery pagesQuery = new(UnprocessedOnly: true, RetryThreshold: 5, WithLock: true);
+        AvitoCataloguePageQuery pagesQuery = new(UnprocessedOnly: true, RetryThreshold: 10, WithLock: true);
         AvitoCataloguePage[] pages = await IEnumerable<AvitoCataloguePage>.GetMany(session, pagesQuery, ct);
         return pages;
     }

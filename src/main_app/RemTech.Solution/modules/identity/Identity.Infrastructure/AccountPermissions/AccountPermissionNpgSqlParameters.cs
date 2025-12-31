@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using Dapper;
 using Identity.Contracts.AccountPermissions.Contracts;
 
 namespace Identity.Infrastructure.AccountPermissions;

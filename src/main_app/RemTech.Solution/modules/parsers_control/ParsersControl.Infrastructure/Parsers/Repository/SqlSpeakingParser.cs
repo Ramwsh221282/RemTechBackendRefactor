@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using ParsersControl.Core.Features.UpdateParserLinks;
 using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -16,6 +17,22 @@ public sealed class SqlSpeakingParser(
     private ISubscribedParser Inner { get; set; } = inner;
     private CancellationToken CancellationToken { get; } = ct;
     private NpgSqlSession Session { get; } = session;
+
+    public Result<IEnumerable<SubscribedParserLink>> UpdateLinks(IEnumerable<ParserLinkUpdater> updater)
+    {
+        Result<IEnumerable<SubscribedParserLink>> result = Inner.UpdateLinks(updater);
+        if (result.IsFailure) return result.Error;
+        
+        const string sql = """
+                           UPDATE parsers_control_module.parser_links
+                           SET name = @name, url = @url, is_active = @is_active
+                           WHERE id = @id
+                           """;
+        
+        object[] parameters = result.Value.Select(ExtractLinkParameters).ToArray();
+        PendingTasks.Enqueue(Session.ExecuteBulk(sql, parameters));
+        return result;
+    }
 
     public Result<SubscribedParser> FinishWork(long totalElapsedSeconds)
     {

@@ -1,8 +1,6 @@
 ﻿using System.Data;
-using Dapper;
 using Identity.Application.Accounts;
 using Identity.Contracts.Accounts;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Identity.Infrastructure.Accounts;
 

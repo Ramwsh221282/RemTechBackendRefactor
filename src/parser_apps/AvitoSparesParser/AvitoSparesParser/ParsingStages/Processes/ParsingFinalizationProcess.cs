@@ -27,8 +27,8 @@ public static class ParsingFinalizationProcess
             AddContainedItemProducer addProducer = deps.AddContainedItem;
             
             await using NpgSqlSession session = new(npgSql);
-            NpgSqlTransactionSource source = new(session);
-            ITransactionScope scope = await source.BeginTransaction(ct);
+            NpgSqlTransactionSource source = new(session, logger);
+            await using ITransactionScope scope = await source.BeginTransaction(ct);
             
             Maybe<ParsingStage> finalization = await GetFinalizationStage(session, ct);
             if (!finalization.HasValue) return;
@@ -67,11 +67,12 @@ public static class ParsingFinalizationProcess
             CreatorDomain = parser.Domain,
             CreatorId = parser.Id,
             CreatorType = parser.Type,
+            ItemType = "Запчасти",
             Items = spares.Select(CreatePayload).ToArray(),
         };
     }
     
-    private static AddContainedItemMessagePayload CreatePayload(AvitoSpare spare)
+    private static AddContainedItemsMessagePayload CreatePayload(AvitoSpare spare)
     {
         string id = spare.Id;
         object payload = new
@@ -92,7 +93,7 @@ public static class ParsingFinalizationProcess
         };
         
         string content = JsonSerializer.Serialize(payload, options);
-        return new AddContainedItemMessagePayload() { ItemId = id, Content = content };
+        return new AddContainedItemsMessagePayload() { ItemId = id, Content = content };
     }
     
     private static async Task FinishParser(NpgSqlSession session, FinishParserProducer finishProducer, Serilog.ILogger logger, CancellationToken ct)

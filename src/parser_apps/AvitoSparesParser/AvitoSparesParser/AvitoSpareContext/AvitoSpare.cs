@@ -31,7 +31,9 @@ public sealed class AvitoSpare
 
     public AvitoSpare Concretized(AvitoSpareConcreteRepresentation concreteRepresentation)
     {
-        return Transform(concreteRepresentation, concreteRepresentationExtractor: r => r);
+        bool processed = true;
+        return Transform(concreteRepresentation, concreteRepresentationExtractor: r => r)
+            .Transform(processed, processedExtractor: p => p);
     }
 
     public AvitoSpare IncreaseRetryAmount()
@@ -64,8 +66,5 @@ public sealed class AvitoSpare
     public static AvitoSpare Identified(string id) => new() { Id = id };
     
     public static AvitoSpare CatalogueRepresented(string id, AvitoSpareCatalogueRepresentation catalogueRepresentation) =>
-        new() { Id = id, CatalogueRepresentation = catalogueRepresentation };
-    
-    public static AvitoSpare ConcreteRepresented(string id, AvitoSpareConcreteRepresentation concreteRepresentation) =>
-        new() { Id = id, ConcreteRepresentation = concreteRepresentation };
+        new() { Id = id, CatalogueRepresentation = catalogueRepresentation, Processed = false, RetryCount = 0 };
 }

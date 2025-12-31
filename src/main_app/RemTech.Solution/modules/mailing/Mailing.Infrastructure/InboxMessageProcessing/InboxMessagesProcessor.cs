@@ -1,7 +1,4 @@
-﻿using Quartz;
-using RemTech.SharedKernel.Infrastructure.Quartz;
-
-namespace Mailing.Infrastructure.InboxMessageProcessing;
+﻿namespace Mailing.Infrastructure.InboxMessageProcessing;
 
 [DisallowConcurrentExecution]
 [CronSchedule("*/10 * * * * ?")]

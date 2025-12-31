@@ -1,0 +1,44 @@
+﻿using ContainedItems.Domain;
+using ContainedItems.Infrastructure;
+using RemTech.SharedKernel.Configurations;
+using RemTech.SharedKernel.Core.Logging;
+using RemTech.SharedKernel.Infrastructure.Database;
+using RemTech.SharedKernel.Infrastructure.RabbitMq;
+
+namespace ContainedItems.Worker.Extensions;
+
+public static class ContainedItemsModuleInjection
+{
+    extension(IServiceCollection services)
+    {
+        public void AddContainedItemsModule(bool isDevelopment)
+        {
+            services.RegisterSharedDependencies(isDevelopment);
+            services.RegisterDomain();
+            services.RegisterInfrastructure();
+        }
+
+        private void RegisterDomain()
+        {
+            services.AddContainedItemsDomain();
+        }
+
+        private void RegisterInfrastructure()
+        {
+            services.AddContainedItemsInfrastructure();
+        }
+
+        private void RegisterSharedDependencies(bool isDevelopment)
+        {
+            if (isDevelopment)
+            {
+                services.AddNpgSqlOptionsFromAppsettings();
+                services.AddRabbitMqOptionsFromAppsettings();
+            }
+            
+            services.RegisterLogging();
+            services.AddPostgres();
+            services.AddRabbitMq();
+        }
+    }
+}

@@ -8,7 +8,7 @@ public static class ContainedItemsDependencyInjection
 {
     extension(IServiceCollection services)
     {
-        public void AddContainedItemsModule()
+        public void AddContainedItemsDomain()
         {
             services.AddHandlers();
         }

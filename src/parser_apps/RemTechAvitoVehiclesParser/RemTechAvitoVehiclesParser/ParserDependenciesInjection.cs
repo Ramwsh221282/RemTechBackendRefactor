@@ -18,7 +18,7 @@ public static class ParserDependenciesInjection
             services.RegisterTextTransformerBuilder();
             services.RegisterAvitoFirewallBypass();
             services.AddFinishParserProducer();
-            services.AddContainedItemProducer();
+            services.AddContainedItemsProducer();
             
             if (isDevelopment)
             {
@@ -27,7 +27,7 @@ public static class ParserDependenciesInjection
                     IOptions<ScrapingBrowserOptions> options = Options.Create(new ScrapingBrowserOptions()
                     {
                         DevelopmentMode = true,
-                        Headless = false,
+                        Headless = true,
                     });
                     conf.AddSingleton(options);
                 });

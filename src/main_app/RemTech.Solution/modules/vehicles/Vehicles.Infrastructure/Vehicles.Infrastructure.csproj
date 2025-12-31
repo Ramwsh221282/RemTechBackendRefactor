@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.NN\RemTech.SharedKernel.NN.csproj" />
+      <ProjectReference Include="..\Vehicles.Domain\Vehicles.Domain.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.15" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Brands\SeedingImplementation\Scripts\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Brands\SeedingImplementation\Scripts\0002.brands_seeding.sql" />
+      <None Remove="Categories\SeedingImplementation\Scripts\0002.categories_seeding.sql" />
+      <EmbeddedResource Include="Categories\SeedingImplementation\Scripts\0002.categories_seeding.sql" />
+      <None Remove="Locations\SeedingImplementation\cities_seeding.sql" />
+      <EmbeddedResource Include="Locations\SeedingImplementation\cities_seeding.sql" />
+      <None Remove="Locations\SeedingImplementation\regions_seeding.sql" />
+      <EmbeddedResource Include="Locations\SeedingImplementation\regions_seeding.sql" />
+      <None Remove="Models\SeedingImplementation\0002.models_seeding_1.sql" />
+      <EmbeddedResource Include="Models\SeedingImplementation\0002.models_seeding_1.sql" />
+      <None Remove="Models\SeedingImplementation\0003.models_seeding_2.sql" />
+      <EmbeddedResource Include="Models\SeedingImplementation\0003.models_seeding_2.sql" />
+      <None Remove="Models\SeedingImplementation\0004.models_seeding_3.sql" />
+      <EmbeddedResource Include="Models\SeedingImplementation\0004.models_seeding_3.sql" />
+      <None Remove="Models\SeedingImplementation\0005.models_seeding_4.sql" />
+      <EmbeddedResource Include="Models\SeedingImplementation\0005.models_seeding_4.sql" />
+      <None Remove="Models\SeedingImplementation\0006.models_seeding_5.sql" />
+      <EmbeddedResource Include="Models\SeedingImplementation\0006.models_seeding_5.sql" />
+      <None Remove="Characteristics\SeedingImplementation\characteristics_seeding.sql" />
+      <EmbeddedResource Include="Characteristics\SeedingImplementation\characteristics_seeding.sql" />
+    </ItemGroup>
+
+</Project>

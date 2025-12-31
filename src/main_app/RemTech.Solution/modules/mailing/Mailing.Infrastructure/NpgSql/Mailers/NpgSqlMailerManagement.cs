@@ -1,6 +1,4 @@
-﻿using Dapper;
-using Mailing.Core.Mailers;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
+﻿using Mailing.Core.Mailers;
 
 namespace Mailing.Infrastructure.NpgSql.Mailers;
 

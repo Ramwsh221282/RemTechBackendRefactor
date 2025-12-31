@@ -1,7 +1,5 @@
 ﻿using Dapper;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Configuration;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Tests.Mailing.Features;
 

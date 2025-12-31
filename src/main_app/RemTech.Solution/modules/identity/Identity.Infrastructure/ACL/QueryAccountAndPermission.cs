@@ -1,8 +1,6 @@
 ﻿using System.Data;
-using Dapper;
 using Identity.Application.AccountPermissions;
 using Identity.Contracts.AccountPermissions;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Identity.Infrastructure.ACL;
 

@@ -32,7 +32,7 @@ return { title, type };
 ";
 
         IPage page = await pageSource();
-        await page.PerformQuickNavigation(spare.CatalogueRepresentation.Url, timeout: 1500);
+        await page.PerformQuickNavigation(spare.CatalogueRepresentation.Url, timeout: 2000);
         if (!await bypassFactory.Create(page).Bypass())
             throw new InvalidOperationException("Bypass failed.");
         

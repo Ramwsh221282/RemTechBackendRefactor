@@ -7,14 +7,14 @@
     </PropertyGroup>
     
     <PropertyGroup>
-        <Version>1.0.3</Version>
+        <Version>1.0.7</Version>
     </PropertyGroup>
     
     <ItemGroup>
       <PackageReference Include="PuppeteerSharp" Version="20.2.4" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.4" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.9" />
       <PackageReference Include="RemTech.SharedKernel.Infrastructure.Quartz" Version="1.0.0" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.3" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.4" />
     </ItemGroup>
 
 </Project>

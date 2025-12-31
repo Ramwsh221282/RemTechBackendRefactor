@@ -23,8 +23,8 @@ public static class AdvertisementsExtactingFromitsPageStage
             deps.Deconstruct(out BrowserFactory factory, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger dLogger, out _, out _);
             Serilog.ILogger logger = dLogger.ForContext<ParsingStage>();
             await using NpgSqlSession session = new(npgSql);
-            NpgSqlTransactionSource transactionSource = new(session);
-            ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
+            NpgSqlTransactionSource transactionSource = new(session, logger);
+            await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
             
             Maybe<ParserWorkStage> stage = await GetConcreteStage(session);
             if (!stage.HasValue) return;

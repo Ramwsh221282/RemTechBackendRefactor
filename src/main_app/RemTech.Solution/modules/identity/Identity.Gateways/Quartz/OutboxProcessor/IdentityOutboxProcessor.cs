@@ -1,8 +1,5 @@
 ﻿using Identity.Gateways.Common;
 using Identity.Infrastructure.Outbox;
-using Quartz;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
-using RemTech.SharedKernel.Infrastructure.Quartz;
 
 namespace Identity.Gateways.Quartz.OutboxProcessor;
 

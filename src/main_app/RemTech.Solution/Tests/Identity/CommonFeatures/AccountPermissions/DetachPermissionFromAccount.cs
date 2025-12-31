@@ -1,7 +1,6 @@
 ﻿using Identity.Gateways.AccountPermissions.DetachPermissionFromAccount;
 using Identity.Gateways.AccountPermissions.Shared;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 

@@ -19,8 +19,8 @@ public static class ConcreteItemExtractingProcess
         {
             ILogger logger = deps.Logger.ForContext<ParserStageProcess>();
             await using NpgSqlSession session = new(deps.NpgSql);
-            NpgSqlTransactionSource source = new(session);
-            ITransactionScope scope = await source.BeginTransaction(ct);
+            NpgSqlTransactionSource source = new(session, logger);
+            await using ITransactionScope scope = await source.BeginTransaction(ct);
             
             Maybe<ParsingStage> stage = await GetConcreteItemsStage(session, ct);
             if (!stage.HasValue) return;
@@ -47,7 +47,7 @@ public static class ConcreteItemExtractingProcess
 
     private static async Task<AvitoSpare[]> GetAvitoCatalogueItems(NpgSqlSession session, CancellationToken ct)
     {
-        AvitoSpareQuery query = new(CatalogueOnly: true, WithLock: true, Limit: 50, RetryCountThreshold: 10);
+        AvitoSpareQuery query = new(UnprocessedOnly: true, WithLock: true, Limit: 50, RetryCountThreshold: 10);
         return await AvitoSpare.Query(session, query, ct);
     }
 

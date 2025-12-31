@@ -1,5 +1,4 @@
 ﻿using System.Security.Cryptography;
-using Microsoft.Extensions.Options;
 
 namespace RemTech.SharedKernel.Infrastructure.AesEncryption;
 

@@ -1,8 +1,5 @@
 ﻿using Identity.Gateways.AccountTickets.OnAccountTicketActivationRequired;
 using Identity.Gateways.Common;
-using RemTech.SharedKernel.Infrastructure.RabbitMq;
-using RemTech.SharedKernel.Infrastructure.RabbitMq.Publishers;
-using RemTech.SharedKernel.Infrastructure.RabbitMq.Shared;
 
 namespace Identity.Gateways.AccountTickets.RabbitMq;
 

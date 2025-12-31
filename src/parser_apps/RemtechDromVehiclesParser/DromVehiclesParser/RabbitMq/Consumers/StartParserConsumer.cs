@@ -52,7 +52,7 @@ public sealed class StartParserConsumer(
             try
             {
                 await using NpgSqlSession session = new(npgSql);
-                NpgSqlTransactionSource transactionSource = new(session);
+                NpgSqlTransactionSource transactionSource = new(session, logger);
                 ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
                 if (await WorkingParser.Exists(session))
                 {

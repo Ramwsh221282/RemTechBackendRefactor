@@ -7,12 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\shared_module\RemTech.Shared.Configuration\RemTech.Shared.Configuration.csproj" />
-      <ProjectReference Include="..\ParsersControl.Infrastructure\ParsersControl.Infrastructure.csproj" />
+      <PackageReference Include="Scrutor" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Scrutor" Version="7.0.0" />
+      <ProjectReference Include="..\ParsersControl.Infrastructure\ParsersControl.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

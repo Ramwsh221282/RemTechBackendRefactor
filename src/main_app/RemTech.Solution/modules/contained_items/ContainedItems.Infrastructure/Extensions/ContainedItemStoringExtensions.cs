@@ -16,6 +16,7 @@ public static class ContainedItemStoringExtensions
     {
         internal object ExtractForParameter() => new
         {
+            item_type = item.ItemType.Value,
             id = item.Id.Value,
             service_item_id = item.ServiceItemId.Value,
             creator_id = item.CreatorInfo.CreatorId,

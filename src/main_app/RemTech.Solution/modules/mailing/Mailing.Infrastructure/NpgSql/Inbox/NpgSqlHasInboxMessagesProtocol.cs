@@ -1,7 +1,4 @@
-﻿using Dapper;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
-
-namespace Mailing.Infrastructure.NpgSql.Inbox;
+﻿namespace Mailing.Infrastructure.NpgSql.Inbox;
 
 public sealed class NpgSqlHasInboxMessagesProtocol(NpgSqlSession session)
 {

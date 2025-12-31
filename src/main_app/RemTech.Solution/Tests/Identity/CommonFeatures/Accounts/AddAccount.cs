@@ -1,7 +1,6 @@
 ﻿using Identity.Gateways.Accounts.AddAccount;
 using Identity.Gateways.Accounts.Responses;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Configuration;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 

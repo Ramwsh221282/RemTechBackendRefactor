@@ -30,8 +30,8 @@ public static class FinalizationWorkStageProcessImplementation
 
             Serilog.ILogger logger = dLogger.ForContext<WorkStageProcess>();
             await using NpgSqlSession session = new(npgSql);
-            NpgSqlTransactionSource transactionSource = new(session);
-            ITransactionScope txn = await transactionSource.BeginTransaction(ct);
+            NpgSqlTransactionSource transactionSource = new(session, logger);
+            await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
             
             Maybe<ParserWorkStage> stage = await GetFinalizationStage(session, logger, ct);
             if (!stage.HasValue) return;
@@ -65,17 +65,18 @@ public static class FinalizationWorkStageProcessImplementation
         Guid creatorId = parser.Id;
         string domain = parser.Domain;
         string type = parser.Type;
-        IEnumerable<AddContainedItemMessagePayload> payload = vehicles.Select(CreatePayload);
+        IEnumerable<AddContainedItemsMessagePayload> payload = vehicles.Select(CreatePayload);
         return new AddContainedItemsMessage()
         {
             CreatorId = creatorId,
             CreatorDomain = domain,
             CreatorType = type,
-            Items = payload.ToArray()
+            Items = payload.ToArray(),
+            ItemType = "Техника",
         };
     }
     
-    private static AddContainedItemMessagePayload CreatePayload(AvitoVehicle item)
+    private static AddContainedItemsMessagePayload CreatePayload(AvitoVehicle item)
     {
         object characteristics = item.ConcretePageRepresentation.Characteristics
             .Select(c => new
@@ -104,7 +105,7 @@ public static class FinalizationWorkStageProcessImplementation
 
         string content = JsonSerializer.Serialize(itemData, options);
         string id = item.CatalogueRepresentation.Id;
-        return new AddContainedItemMessagePayload() { ItemId = id, Content = content };
+        return new AddContainedItemsMessagePayload() { ItemId = id, Content = content };
     }
     
     private static bool CanFinalize(AvitoVehicle[] items)

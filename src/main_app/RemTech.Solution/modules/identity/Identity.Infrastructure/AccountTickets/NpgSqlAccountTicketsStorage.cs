@@ -1,9 +1,7 @@
 ﻿using System.Data;
-using Dapper;
 using Identity.Application.AccountTickets;
 using Identity.Contracts.AccountTickets;
 using Identity.Contracts.AccountTickets.Contracts;
-using RemTech.SharedKernel.Infrastructure.NpgSql;
 
 namespace Identity.Infrastructure.AccountTickets;
 

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Configuration;
 
 namespace Tests.ParsersControl.Features;
 
