@@ -1,4 +1,6 @@
-﻿namespace Spares.Domain.Models;
+﻿using Spares.Domain.Models;
+
+namespace Spares.Domain.Contracts;
 
 public interface ISparesRepository
 {

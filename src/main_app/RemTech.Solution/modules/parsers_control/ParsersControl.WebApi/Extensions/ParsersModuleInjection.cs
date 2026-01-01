@@ -1,0 +1,74 @@
+﻿using System.Reflection;
+using ParsersControl.Core.Contracts;
+using ParsersControl.Core.Parsers.Models;
+using ParsersControl.Infrastructure.Listeners;
+using ParsersControl.Infrastructure.Migrations;
+using ParsersControl.Infrastructure.Parsers.Repository;
+using RemTech.SharedKernel.Configurations;
+using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Logging;
+using RemTech.SharedKernel.Infrastructure.Database;
+using RemTech.SharedKernel.Infrastructure.RabbitMq;
+
+namespace ParsersControl.WebApi.Extensions;
+
+public static class ParsersModuleInjection
+{
+    extension(IServiceCollection services)
+    {
+        public void AddParsersControlModule(bool isDevelopment)
+        {
+            services.AddSharedInfrastructure(isDevelopment);
+            services.AddInfrastructureLayer();
+            services.AddDomainLayer();
+        }
+  
+        private void AddSharedInfrastructure(bool isDevelopment)
+        {
+            services.RegisterLogging();
+            if (isDevelopment)
+            {
+                services.AddNpgSqlOptionsFromAppsettings();
+                services.AddRabbitMqOptionsFromAppsettings();
+            }
+            
+            services.AddPostgres();
+            services.AddRabbitMq();
+        }
+
+        private void AddDomainLayer()
+        {
+            Assembly assembly = typeof(SubscribedParser).Assembly;
+            new HandlersRegistrator(services).FromAssemblies([assembly])
+                .RequireRegistrationOf(typeof(ICommandHandler<,>))
+                .RequireRegistrationOf(typeof(IEventTransporter<,>))
+                .AlsoAddValidators()
+                .AlsoAddDecorators()
+                .AlsoUseDecorators()
+                .Invoke();
+        }
+        
+        private void AddInfrastructureLayer()
+        {
+            services.AddEventListeners();
+            services.AddRepositories();
+            services.AddMigrations([typeof(ParsersTableMigration).Assembly]);
+        }
+
+        private void AddEventListeners()
+        {
+            services.AddScoped<IOnParserSubscribedListener, OnParserSubscribedEventListener>();
+            services.AddScoped<IOnParserStartedListener, OnParserStartedEventListener>();
+            services.Scan(x => x.FromAssemblies(typeof(ParserSubscribeConsumer).Assembly)
+                .AddClasses(classes => classes.AssignableTo<IConsumer>())
+                .AsSelfWithInterfaces()
+                .WithTransientLifetime());
+        }
+
+        private void AddRepositories()
+        {
+            services.AddScoped<ISubscribedParsersRepository, SubscribedParsersRepository>();
+            services.AddScoped<ISubscribedParsersCollectionRepository, SubscribedParsersCollectionRepository>();
+        }
+    }
+}

@@ -9,7 +9,6 @@
     <ItemGroup>
       <ProjectReference Include="..\modules\identity\Identity.CompositionRoot\Identity.CompositionRoot.csproj" />
       <ProjectReference Include="..\modules\mailing\Mailing.CompositionRoot\Mailing.CompositionRoot.csproj" />
-      <ProjectReference Include="..\modules\parsers_control\ParsersControl.CompositionRoot\ParsersControl.CompositionRoot.csproj" />
     </ItemGroup>
 
 

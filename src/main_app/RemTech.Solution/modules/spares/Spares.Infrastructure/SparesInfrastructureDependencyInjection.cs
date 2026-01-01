@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
+using Spares.Domain.Contracts;
 using Spares.Domain.Models;
 using Spares.Infrastructure.Consumers;
 using Spares.Infrastructure.Migrations;

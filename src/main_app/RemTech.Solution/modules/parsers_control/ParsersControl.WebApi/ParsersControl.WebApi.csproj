@@ -7,12 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Web\RemTech.SharedKernel.Web.csproj" />
-      <ProjectReference Include="..\ParsersControl.CompositionRoot\ParsersControl.CompositionRoot.csproj" />
+      <ProjectReference Include="..\ParsersControl.Core\ParsersControl.Core.csproj" />
+      <ProjectReference Include="..\ParsersControl.Infrastructure\ParsersControl.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="oqo0.SwaggerThemes" Version="1.4.3" />
+      <PackageReference Include="RemTech.SharedKernel.Web" Version="1.0.1" />
       <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.0" />
       <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0" />
     </ItemGroup>

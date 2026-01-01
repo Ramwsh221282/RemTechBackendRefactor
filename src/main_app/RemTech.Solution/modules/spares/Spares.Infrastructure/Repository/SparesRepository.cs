@@ -1,4 +1,5 @@
 ﻿using RemTech.SharedKernel.Infrastructure.Database;
+using Spares.Domain.Contracts;
 using Spares.Domain.Models;
 using Spares.Infrastructure.Extensions;
 

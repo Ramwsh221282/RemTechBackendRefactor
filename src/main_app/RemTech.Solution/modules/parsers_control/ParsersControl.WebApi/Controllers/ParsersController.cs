@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ParsersControl.Core.Features.AddParserLink;
 using ParsersControl.Core.Features.EnableParser;
+using ParsersControl.Core.Features.PermantlyDisableManyParsing;
 using ParsersControl.Core.Features.PermantlyDisableParsing;
+using ParsersControl.Core.Features.PermantlyStartManyParsing;
 using ParsersControl.Core.Features.PermantlyStartParsing;
 using ParsersControl.Core.Features.StartParserWork;
 using ParsersControl.Core.Features.UpdateParserLinks;
@@ -52,6 +54,28 @@ public sealed class ParsersController : ControllerBase
         UpdateParserLinksCommand command = new(id, updateInfos);
         Result<IEnumerable<SubscribedParserLink>> result = await handler.Execute(command, ct);
         return result.AsTypedEnvelope(ParserLinkResponseModel.ConvertFrom);
+    }
+
+    [HttpPatch("permantly-start")]
+    public async Task<Envelope> PermantlyStartManyParsers(
+        [FromQuery(Name = "ids")] IEnumerable<Guid> ids,
+        [FromServices] ICommandHandler<PermantlyStartManyParsingCommand, IEnumerable<SubscribedParser>> handler,
+        CancellationToken ct)
+    {
+        PermantlyStartManyParsingCommand command = new(Identifiers: ids);
+        Result<IEnumerable<SubscribedParser>> result = await handler.Execute(command, ct);
+        return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
+    }
+
+    [HttpPatch("permantly-disable")]
+    public async Task<Envelope> PermantlyDisableManyParsers(
+        [FromQuery(Name = "ids")] IEnumerable<Guid> ids,
+        [FromServices] ICommandHandler<PermantlyDisableManyParsingCommand, IEnumerable<SubscribedParser>> handler,
+        CancellationToken ct)
+    {
+        PermantlyDisableManyParsingCommand command = new(Identifiers: ids);
+        Result<IEnumerable<SubscribedParser>> result = await handler.Execute(command, ct);
+        return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
     }
     
     [HttpPatch("{id:guid}/permantly-disable")]
