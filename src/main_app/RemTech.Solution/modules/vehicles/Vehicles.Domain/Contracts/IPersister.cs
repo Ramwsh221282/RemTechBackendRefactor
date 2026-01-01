@@ -4,7 +4,6 @@ using Vehicles.Domain.Categories;
 using Vehicles.Domain.Characteristics;
 using Vehicles.Domain.Locations;
 using Vehicles.Domain.Models;
-using Vehicles.Domain.Vehicles;
 using Vehicles.Domain.Vehicles.Contracts;
 
 namespace Vehicles.Domain.Contracts;

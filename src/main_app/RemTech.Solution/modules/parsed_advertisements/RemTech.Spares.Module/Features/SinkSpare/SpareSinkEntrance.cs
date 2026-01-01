@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using GeoLocations.Module.Features.Querying;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using RabbitMQ.Client;
@@ -7,7 +6,6 @@ using RabbitMQ.Client.Events;
 using RemTech.ContainedItems.Module.Features.MessageBus;
 using RemTech.Spares.Module.Features.SinkSpare.Exceptions;
 using RemTech.Spares.Module.Features.SinkSpare.Models;
-using Scrapers.Module.Features.IncreaseProcessedAmount.MessageBus;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 
 namespace RemTech.Spares.Module.Features.SinkSpare;

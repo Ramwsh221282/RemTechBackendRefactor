@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using Dapper;
-using Npgsql;
 using Pgvector;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Infrastructure.Database;

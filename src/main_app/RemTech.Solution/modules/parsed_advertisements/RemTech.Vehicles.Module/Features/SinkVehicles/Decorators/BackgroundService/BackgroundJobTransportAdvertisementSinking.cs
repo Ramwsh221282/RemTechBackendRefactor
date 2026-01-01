@@ -1,13 +1,9 @@
-﻿using Categories.Module.Public;
-using GeoLocations.Module.Features.Querying;
-using Models.Module.Public;
-using Npgsql;
+﻿using Npgsql;
 using RabbitMQ.Client;
 using RemTech.ContainedItems.Module.Features.MessageBus;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Logging;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;
-using Scrapers.Module.Features.IncreaseProcessedAmount.MessageBus;
 using Serilog;
 using Shared.Infrastructure.Module.Postgres.Embeddings;
 

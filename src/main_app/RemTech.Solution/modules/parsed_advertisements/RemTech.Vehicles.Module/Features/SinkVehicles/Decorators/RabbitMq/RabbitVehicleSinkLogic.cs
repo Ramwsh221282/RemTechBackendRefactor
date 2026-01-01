@@ -1,5 +1,4 @@
 ﻿using RemTech.ContainedItems.Module.Features.MessageBus;
-using Scrapers.Module.Features.IncreaseProcessedAmount.MessageBus;
 using Status = RemTech.Core.Shared.Result.Status;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.RabbitMq;

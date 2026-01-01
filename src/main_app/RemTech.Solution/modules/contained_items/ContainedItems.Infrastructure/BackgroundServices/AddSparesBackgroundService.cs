@@ -1,6 +1,5 @@
 ﻿using ContainedItems.Domain.Contracts;
 using ContainedItems.Domain.Models;
-using ContainedItems.Infrastructure.Producers;
 using ContainedItems.Infrastructure.Repositories;
 using Microsoft.Extensions.Hosting;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;

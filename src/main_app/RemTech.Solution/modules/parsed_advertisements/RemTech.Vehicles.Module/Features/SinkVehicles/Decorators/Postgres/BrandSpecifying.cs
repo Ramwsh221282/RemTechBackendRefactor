@@ -1,5 +1,4 @@
-﻿using Brands.Module.Public;
-using RemTech.Core.Shared.Result;
+﻿using RemTech.Core.Shared.Result;
 using RemTech.Vehicles.Module.Features.SinkVehicles.Types;
 
 namespace RemTech.Vehicles.Module.Features.SinkVehicles.Decorators.Postgres;

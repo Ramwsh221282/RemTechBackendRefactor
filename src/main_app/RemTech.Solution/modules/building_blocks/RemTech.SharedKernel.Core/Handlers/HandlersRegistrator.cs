@@ -8,19 +8,19 @@ namespace RemTech.SharedKernel.Core.Handlers;
 public sealed class HandlersRegistrator
 {
     private readonly IServiceCollection _services;
-    private Assembly _assembly = typeof(HandlersRegistrator).Assembly;
-    private Queue<Action> _registrationActions = new();
+    private Assembly[] _assemblies = [];
+    private readonly Queue<Action> _registrationActions = new();
     public HandlersRegistrator(IServiceCollection services) => _services = services;
 
-    public HandlersRegistrator FromAssembly(Assembly assembly)
+    public HandlersRegistrator FromAssemblies(Assembly[] assemblies)
     {
-        _assembly = assembly;
+        _assemblies = [..assemblies];
         return this;
     }
 
     public HandlersRegistrator RequireRegistrationOf(Type type)
     {
-        _registrationActions.Enqueue(() => _services.Scan(x => x.FromAssemblies([_assembly])
+        _registrationActions.Enqueue(() => _services.Scan(x => x.FromAssemblies(_assemblies)
             .AddClasses(classes => classes.AssignableTo(type))
             .UsingRegistrationStrategy(RegistrationStrategy.Skip)
             .AsSelfWithInterfaces()
@@ -42,7 +42,8 @@ public sealed class HandlersRegistrator
 
     public HandlersRegistrator AlsoAddValidators()
     {
-        _registrationActions.Enqueue(() => _services.AddValidatorsFromAssembly(_assembly));
+        foreach (Assembly assembly in _assemblies)
+            _registrationActions.Enqueue(() => _services.AddValidatorsFromAssembly(assembly));
         return this;
     }
 

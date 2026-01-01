@@ -2,7 +2,6 @@
 using System.Data.Common;
 using Dapper;
 using Npgsql;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 
 namespace RemTech.SharedKernel.Infrastructure.Database;
 

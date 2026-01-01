@@ -10,7 +10,6 @@ using Vehicles.Domain.Locations;
 using Vehicles.Domain.Locations.Contracts;
 using Vehicles.Domain.Models;
 using Vehicles.Domain.Models.Contracts;
-using Vehicles.Domain.Vehicles;
 using Vehicles.Domain.Vehicles.Contracts;
 
 namespace Vehicles.Infrastructure.CommonImplementations;

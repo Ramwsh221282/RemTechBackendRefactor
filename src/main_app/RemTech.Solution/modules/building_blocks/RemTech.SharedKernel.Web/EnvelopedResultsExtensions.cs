@@ -12,76 +12,101 @@ public static class EnvelopedResultsExtensions
         string? message = result.ResolveMessage();
         return new Envelope(code, body, message);
     }
-
-    private static int ResolveStatusCode(this Result result)
+    
+    public static Envelope AsEnvelope<T>(T result)
     {
-        HttpStatusCode code = result.IsSuccess switch
-        {
-            true => HttpStatusCode.OK,
-            false => result.ResolveStatusCodeByError(result.Error) 
-        };
-
-        return (int)code;
+        object? body = result;
+        int code = (int)HttpStatusCode.OK;
+        string? message = null;
+        return new Envelope(code, body, message);
+    }
+    
+    public static Envelope AsEnvelope<T, U>(T result, Func<T, U> converter)
+    {
+        U body = converter(result);
+        int code = (int)HttpStatusCode.OK;
+        string? message = null;
+        return new Envelope(code, body, message);
     }
 
-    private static string? ResolveMessage(this Result result)
+    extension(Result result)
     {
-        string? message = result.IsFailure ? result.Error.Message : null;
-        return message;
-    }
-        
-    private static HttpStatusCode ResolveStatusCodeByError(this Result result, Error error)
-    {
-        return error switch
+        private int ResolveStatusCode()
         {
-            Error.ApplicationError => HttpStatusCode.InternalServerError,
-            Error.ConflictError => HttpStatusCode.Conflict,
-            Error.NotFoundError => HttpStatusCode.NotFound,
-            Error.ValidationError => HttpStatusCode.BadRequest,
-            Error.NoneError => throw new InvalidOperationException("None error cannot be resolved to http status code."),
-            _ => throw new InvalidOperationException($"Unknown error type cannot be resolved to http status code. Error type: {error.GetType().Name}")
-        };
-    }
-        
-    public static Envelope AsEnvelope(this Result result)
-    {
-        if (result.IsFailure)
-        {
-            object? body = null;
-            string error = result.Error.Message;
-            HttpStatusCode code = result.ResolveStatusCodeByError(result.Error);
-            return new Envelope((int)code, body, error);
+            HttpStatusCode code = result.IsSuccess switch
+            {
+                true => HttpStatusCode.OK,
+                false => result.ResolveStatusCodeByError(result.Error) 
+            };
+
+            return (int)code;
         }
-        else
+
+        private string? ResolveMessage()
         {
-            object? body = null;
+            string? message = result.IsFailure ? result.Error.Message : null;
+            return message;
+        }
+
+        private HttpStatusCode ResolveStatusCodeByError(Error error)
+        {
+            return error switch
+            {
+                Error.ApplicationError => HttpStatusCode.InternalServerError,
+                Error.ConflictError => HttpStatusCode.Conflict,
+                Error.NotFoundError => HttpStatusCode.NotFound,
+                Error.ValidationError => HttpStatusCode.BadRequest,
+                Error.NoneError => throw new InvalidOperationException("None error cannot be resolved to http status code."),
+                _ => throw new InvalidOperationException($"Unknown error type cannot be resolved to http status code. Error type: {error.GetType().Name}")
+            };
+        }
+    }
+    
+    extension(Result result)
+    {
+        public Envelope AsEnvelope()
+        {
+            if (result.IsFailure)
+            {
+                object? body = null;
+                string error = result.Error.Message;
+                HttpStatusCode code = result.ResolveStatusCodeByError(result.Error);
+                return new Envelope((int)code, body, error);
+            }
+            else
+            {
+                object? body = null;
+                int code = result.ResolveStatusCode();
+                string? message = result.ResolveMessage();
+                return new Envelope(code, body, message);
+            }
+        }
+
+        public Envelope AsTypedEnvelope<U>(Func<U> onSuccess)
+        {
+            U? body = result.IsSuccess ? onSuccess() : default;
             int code = result.ResolveStatusCode();
             string? message = result.ResolveMessage();
             return new Envelope(code, body, message);
         }
     }
-     
-    public static Envelope AsTypedEnvelope<U>(this Result result, Func<U> onSuccess)
+
+    extension<T>(Result<T> result)
     {
-        U? body = result.IsSuccess ? onSuccess() : default;
-        int code = result.ResolveStatusCode();
-        string? message = result.ResolveMessage();
-        return new Envelope(code, body, message);
-    }
-    
-    public static Envelope AsTypedEnvelope<T>(this Result<T> result, Func<T> onSuccess)
-    {
-        object? body = result.IsSuccess ? onSuccess() : null;
-        int code = result.ResolveStatusCode();
-        string? message = result.ResolveMessage();
-        return new Envelope(code, body, message);
-    }
-    
-    public static Envelope AsTypedEnvelope<T,U>(this Result<T> result, Func<T,U> onSuccess)
-    {
-        object? body = result.IsSuccess ? onSuccess(result.Value) : null;
-        int code = result.ResolveStatusCode();
-        string? message = result.ResolveMessage();
-        return new Envelope(code, body, message);
+        public Envelope AsTypedEnvelope(Func<T> onSuccess)
+        {
+            object? body = result.IsSuccess ? onSuccess() : null;
+            int code = result.ResolveStatusCode();
+            string? message = result.ResolveMessage();
+            return new Envelope(code, body, message);
+        }
+
+        public Envelope AsTypedEnvelope<U>(Func<T,U> onSuccess)
+        {
+            object? body = result.IsSuccess ? onSuccess(result.Value) : null;
+            int code = result.ResolveStatusCode();
+            string? message = result.ResolveMessage();
+            return new Envelope(code, body, message);
+        }
     }
 }

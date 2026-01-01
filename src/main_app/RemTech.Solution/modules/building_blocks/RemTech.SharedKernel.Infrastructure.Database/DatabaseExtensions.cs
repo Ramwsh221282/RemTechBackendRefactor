@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using Dapper;
-using FluentMigrator.Infrastructure;
 using FluentMigrator.Runner;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
