@@ -69,6 +69,7 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
         foreach (AddVehicleCommandCharacteristics characteristic in command.Characteristics)
         {
             Characteristic ctx = new(new CharacteristicId(), CharacteristicName.Create(characteristic.Name));
+            if (result.ContainsKey(ctx)) continue;
             VehicleCharacteristicValue value = VehicleCharacteristicValue.Create(characteristic.Value);
             result.Add(ctx, value);
         }
@@ -85,6 +86,7 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
         {
             Characteristic ctx = kvp.Key;
             ctx = await ctx.SaveBy(persister, ct);
+            if (result.ContainsKey(ctx)) continue;
             result.Add(ctx, kvp.Value);
         }
         return result;
