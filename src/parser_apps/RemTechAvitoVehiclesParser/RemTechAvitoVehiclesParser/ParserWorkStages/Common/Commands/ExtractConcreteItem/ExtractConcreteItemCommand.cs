@@ -9,6 +9,18 @@ public sealed class ExtractConcreteItemCommand(
     AvitoVehicle vehicle, 
     AvitoBypassFactory bypassFactory) : IExtractConcreteItemCommand
 {
+    private static readonly Dictionary<string, bool> IgnoredCharacteristics = new()
+    {
+        ["Марка"] = true,
+        ["Модель"] = true,
+        ["Тип техники"] = true,
+        ["ПТС"] = true,
+        ["ПСМ"] = true,
+        ["Состояние"] = true,
+        ["VIN"] = true,
+        ["Доступность"] = true,
+    };
+    
     public async Task<AvitoVehicle> Handle()
     {
         const string javaScript = @"
@@ -46,6 +58,8 @@ public sealed class ExtractConcreteItemCommand(
         JsonExtractConcreteItemCommandData json = await page.EvaluateFunctionAsync<JsonExtractConcreteItemCommandData>(javaScript);
         if (!json.AllPropertiesSet()) throw new InvalidOperationException("Unable to extract concrete item data");
 
+        
+        json.Characteristics = json.Characteristics!.Where(NotBelongsToIgnoredCharacteristics).ToArray();
         AvitoVehicleConcretePageRepresentation representation = new(json.Title!, json.CharacteristicsDictionary());
         
         return vehicle.CopyWith(veh => new()
@@ -57,6 +71,13 @@ public sealed class ExtractConcreteItemCommand(
         });
     }
 
+    private static bool NotBelongsToIgnoredCharacteristics(JsonCharacteristic c)
+    {
+        string name = c.Name;
+        bool belongs = IgnoredCharacteristics.ContainsKey(name);
+        return !belongs;
+    }
+    
     private sealed class JsonExtractConcreteItemCommandData
     {
         public string? Title { get; set; }
