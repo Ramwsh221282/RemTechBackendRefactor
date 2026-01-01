@@ -23,6 +23,7 @@ public sealed class VehiclesController
         [FromQuery(Name = "page")] int page,
         [FromQuery(Name = "page-size")] int pageSize,
         [FromQuery(Name = "text-search")] string? textSearch,
+        [FromQuery(Name = "characteristics")] IEnumerable<CharacteristicQueryParameter>? characteristics,
         [FromServices] IQueryHandler<GetVehiclesQuery, GetVehiclesQueryResponse> handler,
         CancellationToken ct
         )
@@ -39,7 +40,8 @@ public sealed class VehiclesController
             .ForSortFields(sortFields)
             .ForPage(page)
             .ForPageSize(pageSize)
-            .ForTextSearch(textSearch));
+            .ForTextSearch(textSearch)
+            .ForCharacteristics(characteristics, c => (c.Id, c.Value)));
         GetVehiclesQueryResponse result = await handler.Handle(query, ct);
         return EnvelopedResultsExtensions.AsEnvelope(result);
     }

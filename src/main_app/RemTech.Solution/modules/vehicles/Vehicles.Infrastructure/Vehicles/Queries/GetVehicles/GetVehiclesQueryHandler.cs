@@ -243,6 +243,17 @@ public sealed class GetVehiclesQueryHandler(
         GetVehiclesThresholdConstants searchOptions)
     {
         List<string> filters = [];
+        ApplyVehicleFilters(queryParameters, filters, parameters);
+        ApplyCharacteristicsFilter(queryParameters, parameters, filters);
+        ApplySemanticSearchFilter(queryParameters, filters, embeddings, parameters, searchOptions);
+        return filters.Count == 0 ? (parameters, string.Empty) : (parameters, $" WHERE {string.Join(" AND ", filters)}");
+    }
+
+    private static void ApplyVehicleFilters(
+        GetVehiclesQueryParameters queryParameters, 
+        List<string> filters, 
+        DynamicParameters parameters)
+    {
         if (queryParameters.BrandId.HasValue)
         {
             filters.Add("v.brand_id=@brandId");
@@ -287,8 +298,38 @@ public sealed class GetVehiclesQueryHandler(
             filters.Add("v.price <= @maximalPrice");
             parameters.Add("@maximalPrice", queryParameters.MaximalPrice.Value, DbType.Int64);
         }
-        
-        ApplySemanticSearchFilter(queryParameters, filters, embeddings, parameters, searchOptions);
-        return filters.Count == 0 ? (parameters, string.Empty) : (parameters, $" WHERE {string.Join(" AND ", filters)}");
+    }
+    
+    private static void ApplyCharacteristicsFilter(
+        GetVehiclesQueryParameters queryParameters, 
+        DynamicParameters parameters,
+        List<string> filterSql)
+    {
+        if (queryParameters.Characteristics is null) return;
+        if (queryParameters.Characteristics.Count == 0) return;
+        string json = JsonSerializer.Serialize(queryParameters.Characteristics.Select(c => new
+        {
+            id = c.Key,
+            value = c.Value
+        }));
+        const string sql = """
+                     v.id IN (
+                         WITH filter_pairs AS (
+                         SELECT
+                             (f->>'id')::uuid AS ctx_id,
+                         f->>'value' as ctx_value
+                     FROM jsonb_array_elements(@ctxFilters::jsonb) as f
+                         )
+                     SELECT vc.vehicle_id
+                         FROM vehicles_module.vehicle_characteristics vc
+                     JOIN filter_pairs fp ON
+                     vc.characteristic_id = fp.ctx_id AND
+                     vc.value = fp.ctx_value
+                     GROUP BY vc.vehicle_id 
+                         HAVING COUNT(*) = (SELECT COUNT(*) FROM filter_pairs)
+                         )
+                     """;
+        filterSql.Add(sql);
+        parameters.Add("@ctxFilters", json);
     }
 }

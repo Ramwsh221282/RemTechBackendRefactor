@@ -13,8 +13,8 @@ public sealed class GetVehiclesQueryParameters
     public string Sort { get; private set; } = "NONE";
     public int Page { get; private set; } = 1;
     public int PageSize { get; private set; } = 50;
-    
     public string? TextSearch { get; private set; }
+    public Dictionary<Guid, string>? Characteristics { get; private set; } = null;
 
     public GetVehiclesQueryParameters ForBrand(Guid? brandId)
     {
@@ -31,7 +31,21 @@ public sealed class GetVehiclesQueryParameters
         CategoryId = categoryId;
         return this;
     }
- 
+
+    public GetVehiclesQueryParameters ForCharacteristics<T>(IEnumerable<T>? source, Func<T, (Guid, string)> converter)
+    {
+        if (Characteristics is not null) return this;
+        if (source is null) return this;
+        Dictionary<Guid, string> characteristics = [];
+        foreach (T entry in source)
+        {
+            (Guid ctxId, string ctxName) = converter(entry);
+            characteristics.TryAdd(ctxId, ctxName);
+        }
+        Characteristics = characteristics;
+        return this;
+    }
+    
     public GetVehiclesQueryParameters ForTextSearch(string? textSearch)
     {
         if (!string.IsNullOrWhiteSpace(TextSearch)) return this;
