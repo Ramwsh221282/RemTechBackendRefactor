@@ -25,7 +25,7 @@ public sealed class GetVehiclesQueryHandler(
         CommandDefinition command = new(sql, parameters, cancellationToken: ct);
         await using NpgsqlConnection connection = await session.GetConnection(ct);
         await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
-        return await FormResponseUsingReader(reader);
+        return await FormResponseUsingReader(reader, ct);
     }
 
     private static (DynamicParameters parameters, string sql) FormSqlQuery(
@@ -40,29 +40,17 @@ public sealed class GetVehiclesQueryHandler(
                       WITH vehicles AS (
                           {filterSql}
                       )
-                      SELECT v.*,
-                      brand_info.brand_name as brand_name,
-                      category_info.category_name as category_name,
-                      model_info.model_name as model_name,
-                      region_info.region_name as region_name
-                          FROM vehicles v
-                      CROSS JOIN LATERAL (
-                          SELECT name as brand_name FROM vehicles_module.brands b WHERE b.id = v.brand_id) as brand_info
-                          CROSS JOIN LATERAL (
-                          SELECT name as category_name FROM vehicles_module.categories c WHERE c.id = v.category_id) as category_info
-                          CROSS JOIN LATERAL (
-                          SELECT name as model_name FROM vehicles_module.models m WHERE m.id = v.model_id) as model_info
-                          CROSS JOIN LATERAL (
-                          SELECT name || ' ' || kind as region_name FROM vehicles_module.regions r WHERE r.id = v.region_id) as region_info
+                      SELECT v.*
+                      FROM vehicles v
                       """;
         
         return (parameters, sql);
     }
     
-    private static async Task<GetVehiclesQueryResponse> FormResponseUsingReader(DbDataReader reader)
+    private static async Task<GetVehiclesQueryResponse> FormResponseUsingReader(DbDataReader reader, CancellationToken ct)
     {
         GetVehiclesQueryResponse response = new();
-        while (await reader.ReadAsync())
+        while (await reader.ReadAsync(ct))
         {
             response.SetTotalCount(reader.GetInt32(reader.GetOrdinal("total_count")));
             response.SetAveragePrice(reader.GetDouble(reader.GetOrdinal("avg_price")));
@@ -106,9 +94,13 @@ public sealed class GetVehiclesQueryHandler(
                      SELECT
                      v.id as vehicle_id,
                      v.brand_id as brand_id,
+                     b.name as brand_name,
                      v.category_id as category_id,
+                     c.name as category_name,
                      v.model_id as model_id,
+                     m.name as model_name,
                      v.region_id as region_id,
+                     r.name || ' ' || r.kind as region_name,
                      v.source as source,
                      v.price as price,
                      v.is_nds as is_nds,
@@ -123,6 +115,10 @@ public sealed class GetVehiclesQueryHandler(
                      min(v.price) over () as min_price,
                      max(v.price) over () as max_price
                      FROM vehicles_module.vehicles v
+                     JOIN vehicles_module.brands b ON b.id = v.brand_id
+                     JOIN vehicles_module.categories c ON c.id = v.category_id
+                     JOIN vehicles_module.models m ON m.id = v.model_id
+                     JOIN vehicles_module.regions r ON r.id = v.region_id
                      {filterSql}
                      {orderBySql}
                      {paginationSql}
