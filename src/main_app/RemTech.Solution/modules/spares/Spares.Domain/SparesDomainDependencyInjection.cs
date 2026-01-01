@@ -15,7 +15,7 @@ public static class SparesDomainDependencyInjection
         private void RegisterHandlers()
         {
             new HandlersRegistrator(services)
-                .FromAssembly(typeof(SparesDomainDependencyInjection).Assembly)
+                .FromAssemblies([typeof(SparesDomainDependencyInjection).Assembly])
                 .RequireRegistrationOf(typeof(ICommandHandler<,>))
                 .AlsoAddValidators()
                 .AlsoAddDecorators()

@@ -17,7 +17,7 @@ public static class DependenciesForParsingInjection
                 services.RegisterParserDependencies(options =>
                 {
                     options.DevelopmentMode = true;
-                    options.Headless = false;
+                    options.Headless = true;
                 });
             }
             

@@ -8,13 +8,13 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace ContainedItems.Infrastructure.BackgroundServices;
 
-public sealed class AddSparesBackgroundService(
+public sealed class PublishContainedItemsToAddBackgroundService(
     Serilog.ILogger logger, 
     NpgSqlConnectionFactory connectionFactory,
     ItemPublishStrategyFactory factory) 
     : BackgroundService
 {
-    private Serilog.ILogger Logger { get; } = logger.ForContext<AddSparesBackgroundService>();
+    private Serilog.ILogger Logger { get; } = logger.ForContext<PublishContainedItemsToAddBackgroundService>();
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

@@ -14,7 +14,7 @@ public static class ContainedItemsDependencyInjection
         }
 
         private void AddHandlers() => 
-            new HandlersRegistrator(services).FromAssembly(typeof(ContainedItem).Assembly)
+            new HandlersRegistrator(services).FromAssemblies([typeof(ContainedItem).Assembly])
             .RequireRegistrationOf(typeof(ICommandHandler<,>))
             .AlsoAddValidators()
             .AlsoAddDecorators()

@@ -34,7 +34,7 @@ public static class ContainedItemsInfrastructureInjection
 
         private void RegisterBackgroundServices()
         {
-            services.AddHostedService<AddSparesBackgroundService>();
+            services.AddHostedService<PublishContainedItemsToAddBackgroundService>();
             services.AddHostedService<AggregatedConsumersHostedService>();
         }
 

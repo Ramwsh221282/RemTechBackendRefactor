@@ -1,6 +1,7 @@
 ﻿using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Handlers.Attributes;
+using Spares.Domain.Contracts;
 using Spares.Domain.Models;
 
 namespace Spares.Domain.Features;

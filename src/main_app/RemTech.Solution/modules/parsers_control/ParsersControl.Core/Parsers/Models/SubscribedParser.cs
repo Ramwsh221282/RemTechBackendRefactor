@@ -8,6 +8,10 @@ namespace ParsersControl.Core.Parsers.Models;
 
 public sealed class SubscribedParser : ISubscribedParser
 {
+    private SubscribedParser(
+        SubscribedParser parser
+        ) : this(parser.Id, parser.Identity, parser.Statistics, parser.State, parser.Schedule, [..parser.Links]) { }
+    
     public SubscribedParser(SubscribedParser parser, IEnumerable<SubscribedParserLink> links)
         : this(parser.Id, parser.Identity, parser.Statistics, parser.State, parser.Schedule, [..links]) { }
     
@@ -83,6 +87,16 @@ public sealed class SubscribedParser : ISubscribedParser
             return Error.Conflict($"Парсер уже содержит ссылку с адресом {link.UrlInfo.Url}.");
         AddLinkToCollection(link);
         return link;
+    }
+
+    public Result<Unit> AddLinkIgnoringStatePolitics(SubscribedParserLink link)
+    {
+        if (ContainsLinkWithName(link))
+            return Error.Conflict($"Парсер уже содержит ссылку с именем {link.UrlInfo.Name}.");
+        if (ContainsLinkWithUrl(link))
+            return Error.Conflict($"Парсер уже содержит ссылку с адресом {link.UrlInfo.Url}.");
+        AddLinkToCollection(link);
+        return Result.Success(Unit.Value);
     }
     
     public SubscribedParser ResetWorkTime()
@@ -217,6 +231,7 @@ public sealed class SubscribedParser : ISubscribedParser
     public Result<SubscribedParser> PermantlyEnable()
     {
         if (HasNoLinks()) return Error.Conflict($"Парсер не содержит ссылок.");
+        if (State.IsWorking()) return Error.Conflict($"Парсер уже в состоянии {State.Value}.");
         State = SubscribedParserState.Working;
         Schedule = Schedule.WithStartedAt(DateTime.UtcNow);
         return this;
@@ -305,6 +320,11 @@ public sealed class SubscribedParser : ISubscribedParser
         SubscribedParser parser = new SubscribedParser(id, identity, statistics, state, schedule);
         await repository.Add(parser, ct: ct);
         return parser;
+    }
+
+    public static SubscribedParser CreateCopy(SubscribedParser parser)
+    {
+        return new SubscribedParser(parser);
     }
 
     private bool BelongsToParser(SubscribedParserLink link) =>

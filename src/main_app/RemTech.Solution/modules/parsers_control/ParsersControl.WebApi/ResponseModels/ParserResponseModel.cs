@@ -17,6 +17,11 @@ public sealed class ParserResponseModel
     public required DateTime? NextRun { get; init; }
     public required DateTime? FinishedAt { get; init; }
 
+    public static IEnumerable<ParserResponseModel> ConvertFrom(IEnumerable<SubscribedParser> parsers)
+    {
+        return parsers.Select(ConvertFrom).ToArray();
+    }
+    
     public static ParserResponseModel ConvertFrom(SubscribedParser parser)
     {
         return new ParserResponseModel()
