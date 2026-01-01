@@ -10,6 +10,11 @@ public sealed class WithdrawException : Exception;
 public sealed class ExtractAdvertisementFromItsPageCommand(Func<Task<IPage>> pageSource)
     : IExtractAdvertisementFromItsPageCommand
 {
+    private static readonly Dictionary<string, bool> IgnoredCharacteristics = new()
+    {
+        ["Тип техники"] = true
+    };
+    
     public async Task<DromAdvertisementFromPage> Extract(DromCatalogueAdvertisement catalogueAdvertisement)
     {
         IPage page = await pageSource();
@@ -19,12 +24,12 @@ public sealed class ExtractAdvertisementFromItsPageCommand(Func<Task<IPage>> pag
         return await ExtractUsingJavaScript(page, catalogueAdvertisement);
     }
 
-    private async Task NavigateToAdvertisementPage(IPage page, DromCatalogueAdvertisement catalogueAdvertisement)
+    private static async Task NavigateToAdvertisementPage(IPage page, DromCatalogueAdvertisement catalogueAdvertisement)
     {
         await page.PerformQuickNavigation(catalogueAdvertisement.Url, timeout: 5000);
     }
 
-    private async Task<DromAdvertisementFromPage> ExtractUsingJavaScript(
+    private static async Task<DromAdvertisementFromPage> ExtractUsingJavaScript(
         IPage page, 
         DromCatalogueAdvertisement catalogueAdvertisement)
     {
@@ -52,7 +57,7 @@ public sealed class ExtractAdvertisementFromItsPageCommand(Func<Task<IPage>> pag
                         const name = r.querySelector('th')?.innerText;
                         const value = r.querySelector('td')?.innerText;
                         if (!name || !value) return null;
-                        return { name: name, value: value };
+                        return { name: name.trim(), value: value.trim() };
                     });
                     return tableRows.filter(c => c !== null);
                 };
@@ -94,13 +99,20 @@ public sealed class ExtractAdvertisementFromItsPageCommand(Func<Task<IPage>> pag
         if (data is null || !data.AllPropertiesSet())
             throw new InvalidOperationException("Invalid advertisement data");
         
+        data.Characteristics = data.Characteristics!.Where(IsNotIgnoredCharacteristic).ToArray();
         return data.ToDromAdvertisementFromPage(
             () => catalogueAdvertisement.Id,  
             () => catalogueAdvertisement.Url, 
             () => catalogueAdvertisement.Photos); 
     }
 
-    private async Task<bool> IsWithdrawFromSale(IPage page)
+    private static bool IsNotIgnoredCharacteristic(CharacteristicsJson ctx)
+    {
+        string name = ctx.Name!;
+        return !IgnoredCharacteristics.ContainsKey(name);
+    }
+    
+    private static async Task<bool> IsWithdrawFromSale(IPage page)
     {
         const string withDrawSelector = "div.css-7akhit.e1u9wqx21";
         Maybe<IElementHandle> element = await page.GetElementRetriable(withDrawSelector, retryAmount: 5);
