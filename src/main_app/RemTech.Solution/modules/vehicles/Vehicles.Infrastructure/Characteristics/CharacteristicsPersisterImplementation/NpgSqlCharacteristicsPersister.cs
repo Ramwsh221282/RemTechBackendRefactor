@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using Dapper;
-using Npgsql;
 using Pgvector;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -59,7 +58,7 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
     
     private async Task SaveAsNewCharacteristic(Characteristic characteristic, Vector vector, CancellationToken ct)
     {
-        const string sql = "INSERT INTO vehicles_module.characteristics (id, name, embedding) VALUES (@id, @name, @input_embedding)";
+        const string sql = "INSERT INTO vehicles_module.characteristics (id, name, embedding) VALUES (@id, @name, @input_embedding) ON CONFLICT (name) DO NOTHING";
         DynamicParameters parameters = new();
         parameters.Add("@id", characteristic.Id.Value, DbType.Guid);
         parameters.Add("@name", characteristic.Name.Value, DbType.String);

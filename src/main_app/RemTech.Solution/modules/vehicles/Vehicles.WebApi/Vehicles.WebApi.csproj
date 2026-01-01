@@ -10,4 +10,8 @@
       <ProjectReference Include="..\Vehicles.Infrastructure\Vehicles.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="RemTech.SharedKernel.Web" Version="1.0.1" />
+    </ItemGroup>
+
 </Project>

@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using ContainedItems.Domain.Models;
 using ContainedItems.Infrastructure.BackgroundServices;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
