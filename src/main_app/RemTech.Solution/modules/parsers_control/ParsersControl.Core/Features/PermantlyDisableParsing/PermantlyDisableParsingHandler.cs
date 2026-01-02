@@ -1,4 +1,5 @@
 ﻿using ParsersControl.Core.Contracts;
+using ParsersControl.Core.Extensions;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
@@ -7,37 +8,33 @@ using RemTech.SharedKernel.Core.Handlers.Attributes;
 namespace ParsersControl.Core.Features.PermantlyDisableParsing;
 
 [TransactionalHandler]
-public sealed class PermantlyDisableParsingHandler(
-    ISubscribedParsersRepository repository
-) 
-    : ICommandHandler<PermantlyDisableParsingCommand, SubscribedParser>
+public sealed class PermantlyDisableParsingHandler(ISubscribedParsersRepository repository) : ICommandHandler<PermantlyDisableParsingCommand, SubscribedParser>
 {
     public async Task<Result<SubscribedParser>> Execute(PermantlyDisableParsingCommand command, CancellationToken ct = default)
     {
-        Result<ISubscribedParser> parser = await GetRequiredParser(command.Id);
-        Result<SubscribedParser> result = InvokePermantlyDisable(parser);
-        Result saving = await SaveChanges(parser, result);
-        if (saving.IsFailure) return saving.Error;
-        return result;
+        Result<SubscribedParser> parser = await GetRequiredParser(command.Id, ct);
+        Result<Unit> result = InvokePermantlyDisable(parser);
+        return await SaveChanges(parser, result, ct).Map(() => parser.Value);
     }
 
-    private async Task<Result> SaveChanges(Result<ISubscribedParser> parser, Result<SubscribedParser> result)
+    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
     {
         if (parser.IsFailure) return Result.Failure(parser.Error);
         if (result.IsFailure) return Result.Failure(result.Error);
-        await repository.Save(parser.Value);
+        await parser.Value.SaveChanges(repository, ct);
         return Result.Success();
     }
     
-    private Result<SubscribedParser> InvokePermantlyDisable(Result<ISubscribedParser> parser)
+    private Result<Unit> InvokePermantlyDisable(Result<SubscribedParser> parser)
     {
         if (parser.IsFailure) return parser.Error;
-        return Result.Success(parser.Value.PermantlyDisable());
+        parser.Value.PermanentlyDisable();
+        return Unit.Value;
     }
     
-    private async Task<Result<ISubscribedParser>> GetRequiredParser(Guid id)
+    private async Task<Result<SubscribedParser>> GetRequiredParser(Guid id, CancellationToken ct)
     {
         SubscribedParserQuery query = new(Id: id, WithLock: true);
-        return await repository.Get(query);
+        return await SubscribedParser.FromRepository(repository, query, ct);
     }
 }

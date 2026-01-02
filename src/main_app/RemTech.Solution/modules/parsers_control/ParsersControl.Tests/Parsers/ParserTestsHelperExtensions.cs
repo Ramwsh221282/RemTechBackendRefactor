@@ -9,6 +9,7 @@ using ParsersControl.Core.Features.SetLinkWorkTime;
 using ParsersControl.Core.Features.StartParserWork;
 using ParsersControl.Core.Features.StopParserWork;
 using ParsersControl.Core.Features.SubscribeParser;
+using ParsersControl.Core.Features.UpdateParserLinks;
 using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using ParsersControl.Tests.Parsers.SubscribeParser;
@@ -37,16 +38,34 @@ public static class ParserTestsHelperExtensions
             return await handler.Execute(command);
         }
     
-        public async Task<Result<SubscribedParserLink>> AddLink(Guid parserId, string linkUrl, string linkName)
+        public async Task<Result<IEnumerable<SubscribedParserLink>>> AddLink(Guid parserId, string linkUrl, string linkName)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
             AddParserLinkCommand command = new(parserId, [ new AddParserLinkCommandArg(linkUrl, linkName) ]);
-            ICommandHandler<AddParserLinkCommand, SubscribedParserLink> handler =
-                scope.ServiceProvider.GetRequiredService<ICommandHandler<AddParserLinkCommand, SubscribedParserLink>>();
-            return await handler.Execute(command);
+            return await scope.ServiceProvider
+                .GetRequiredService<ICommandHandler<AddParserLinkCommand, IEnumerable<SubscribedParserLink>>>()
+                .Execute(command);
         }
 
-        public async Task<Result<ISubscribedParser>> GetParser(Guid parserId)
+        public async Task<Result> MakeLinkActive(Guid parserId, Guid linkId)
+        {
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            UpdateParserLinksCommand command = new(parserId, [new UpdateParserLinksCommandInfo(linkId, Activity: true)]);
+            return await scope.ServiceProvider
+                .GetRequiredService<ICommandHandler<UpdateParserLinksCommand, IEnumerable<SubscribedParserLink>>>()
+                .Execute(command);
+        }
+        
+        public async Task<Result> UpdateLinks(Guid parserId, IEnumerable<UpdateParserLinksCommandInfo> updates)
+        {
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            UpdateParserLinksCommand command = new(parserId, updates);
+            return await scope.ServiceProvider
+                .GetRequiredService<ICommandHandler<UpdateParserLinksCommand, IEnumerable<SubscribedParserLink>>>()
+                .Execute(command);
+        }
+
+        public async Task<Result<SubscribedParser>> GetParser(Guid parserId)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
             ISubscribedParsersRepository repository = scope.ServiceProvider.GetRequiredService<ISubscribedParsersRepository>();
@@ -58,7 +77,7 @@ public static class ParserTestsHelperExtensions
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
             ISubscribedParsersRepository repository = scope.ServiceProvider.GetRequiredService<ISubscribedParsersRepository>();
-            Result<ISubscribedParser> parser = await repository.Get(new SubscribedParserQuery(Id: id));
+            Result<SubscribedParser> parser = await repository.Get(new SubscribedParserQuery(Id: id));
             return parser.IsSuccess;
         }
         

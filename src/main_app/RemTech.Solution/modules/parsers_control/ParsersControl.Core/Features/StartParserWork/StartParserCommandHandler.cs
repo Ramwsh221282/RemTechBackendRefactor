@@ -1,4 +1,5 @@
 ﻿using  ParsersControl.Core.Contracts;
+using ParsersControl.Core.Extensions;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
@@ -7,47 +8,32 @@ using RemTech.SharedKernel.Core.Handlers.Attributes;
 namespace ParsersControl.Core.Features.StartParserWork;
 
 [TransactionalHandler]
-public sealed class StartParserCommandHandler(
-    ISubscribedParsersRepository repository,
-    IOnParserStartedListener listener
-) : ICommandHandler<StartParserCommand, SubscribedParser>
+public sealed class StartParserCommandHandler(ISubscribedParsersRepository repository) : ICommandHandler<StartParserCommand, SubscribedParser>
 {
     public async Task<Result<SubscribedParser>> Execute(StartParserCommand command, CancellationToken ct = default)
     {
-        Result<ISubscribedParser> parser = await GetRequiredParser(command, ct);
-        Result<SubscribedParser> starting = CallParserWorkInvocation(parser);
-        Result saving = await SaveChanges(parser, starting);
-        if (saving.IsFailure) return saving.Error;
-        await NotifyListener(saving, starting.Value);
-        return starting;
-    }
-
-    private async Task NotifyListener(Result saveResult, SubscribedParser parser)
-    {
-        if (saveResult.IsFailure) return;
-        await listener.Handle(parser);
+        Result<SubscribedParser> parser = await GetRequiredParser(command, ct);
+        Result<Unit> starting = CallParserWorkInvocation(parser);
+        return await SaveChanges(parser, starting, ct).Map(() => parser.Value);
     }
     
-    private async Task<Result<ISubscribedParser>> GetRequiredParser(StartParserCommand command, CancellationToken ct)
+    private async Task<Result<SubscribedParser>> GetRequiredParser(StartParserCommand command, CancellationToken ct)
     {
         SubscribedParserQuery query = new(Id: command.Id, WithLock: true);
-        Result<ISubscribedParser> parser = await repository.Get(query, ct: ct);
-        return parser;
+        return await SubscribedParser.FromRepository(repository, query, ct);
     }
 
-    private Result<SubscribedParser> CallParserWorkInvocation(Result<ISubscribedParser> parser)
+    private Result<Unit> CallParserWorkInvocation(Result<SubscribedParser> parser)
     {
         if (parser.IsFailure) return parser.Error;
         return parser.Value.StartWork();
     }
 
-    private async Task<Result> SaveChanges(
-        Result<ISubscribedParser> parser, 
-        Result<SubscribedParser> starting)
+    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> starting, CancellationToken ct)
     {
         if (starting.IsFailure) return Result.Failure(starting.Error);
         if (parser.IsFailure) return Result.Failure(parser.Error);
-        await repository.Save(parser.Value);
+        await parser.Value.SaveChanges(repository, ct);
         return Result.Success();
     }
 }

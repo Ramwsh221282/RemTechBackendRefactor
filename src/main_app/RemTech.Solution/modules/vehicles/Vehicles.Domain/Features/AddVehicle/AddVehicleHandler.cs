@@ -13,10 +13,11 @@ using Vehicles.Domain.Vehicles.Contracts;
 namespace Vehicles.Domain.Features.AddVehicle;
 
 [TransactionalHandler]
-public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<AddVehicleCommand, int>
+public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<AddVehicleCommand, (Guid, int)>
 {
-    public async Task<Result<int>> Execute(AddVehicleCommand command, CancellationToken ct = default)
+    public async Task<Result<(Guid, int)>> Execute(AddVehicleCommand command, CancellationToken ct = default)
     {
+        Guid creatorId = command.Creator.CreatorId;
         List<VehiclePersistInfo> vehiclesToSave = [];
         foreach (AddVehicleVehiclesCommandPayload payload in command.Vehicles)
         {
@@ -53,7 +54,8 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
             vehiclesToSave.Add(persistInfo);
         }
         
-        return await persister.Save(vehiclesToSave, ct);
+        int saved = await persister.Save(vehiclesToSave, ct);
+        return (command.Creator.CreatorId, saved);
     }
     
     private static Result<Model> CreateValidModel(AddVehicleVehiclesCommandPayload payload)

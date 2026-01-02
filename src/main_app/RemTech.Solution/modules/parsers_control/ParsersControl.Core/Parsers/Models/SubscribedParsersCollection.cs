@@ -16,10 +16,7 @@ public sealed class SubscribedParsersCollection(IEnumerable<SubscribedParser> pa
     {
         if (IsEmpty()) return Error.NotFound($"Список парсеров пуст.");
         foreach (SubscribedParser parser in Parsers)
-        {
-            Result<SubscribedParser> disabling = parser.Disable();
-            if (disabling.IsFailure) return disabling.Error;
-        }
+            parser.Disable(); 
         
         return Result.Success(Unit.Value);
     }
@@ -29,7 +26,7 @@ public sealed class SubscribedParsersCollection(IEnumerable<SubscribedParser> pa
         if (IsEmpty()) return Error.NotFound($"Список парсеров пуст.");
         foreach (SubscribedParser parser in Parsers)
         {
-            Result<SubscribedParser> enabling = parser.PermantlyEnable();
+            Result<Unit> enabling = parser.PermantlyEnable();
             if (enabling.IsFailure) return enabling.Error;
         }
         

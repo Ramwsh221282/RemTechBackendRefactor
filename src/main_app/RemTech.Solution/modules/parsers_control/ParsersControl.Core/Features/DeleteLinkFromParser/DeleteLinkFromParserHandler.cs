@@ -1,4 +1,5 @@
 ﻿using ParsersControl.Core.Contracts;
+using ParsersControl.Core.Extensions;
 using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -14,14 +15,12 @@ public sealed class DeleteLinkFromParserHandler(
 {
     public async Task<Result<SubscribedParserLink>> Execute(DeleteLinkFromParserCommand command, CancellationToken ct = default)
     {
-        Result<ISubscribedParser> parser = await GetRequiredParser(command.ParserId, ct);
+        Result<SubscribedParser> parser = await GetRequiredParser(command.ParserId, ct);
         Result<SubscribedParserLink> link = RemoveLink(parser, command.LinkId);
-        return await SaveChanges(parser, link).Map(() => link.Value);
+        return await SaveChanges(parser, link, ct).Map(() => link.Value);
     }
 
-    private async Task<Result> SaveChanges(
-        Result<ISubscribedParser> parser, 
-        Result<SubscribedParserLink> link)
+    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<SubscribedParserLink> link, CancellationToken ct)
     {
         if (parser.IsFailure) return Result.Failure(parser.Error);
         if (link.IsFailure) return Result.Failure(link.Error);
@@ -29,15 +28,13 @@ public sealed class DeleteLinkFromParserHandler(
         return Result.Success();
     }
     
-    private async Task<Result<ISubscribedParser>> GetRequiredParser(
-        Guid parserId,
-        CancellationToken ct)
+    private async Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
     {
-        SubscribedParserQuery args = new(Id: parserId, WithLock: true);
-        return await repository.Get(args, ct: ct);
+        SubscribedParserQuery query = new(Id: parserId, WithLock: true);
+        return await SubscribedParser.FromRepository(repository, query, ct);
     }
 
-    private Result<SubscribedParserLink> RemoveLink(Result<ISubscribedParser> parser, Guid linkId)
+    private Result<SubscribedParserLink> RemoveLink(Result<SubscribedParser> parser, Guid linkId)
     {
         if (parser.IsFailure) return Result.Failure<SubscribedParserLink>(parser.Error);
         Result<SubscribedParserLink> link = parser.Value.FindLink(linkId);

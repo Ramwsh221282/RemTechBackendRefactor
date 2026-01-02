@@ -6,11 +6,13 @@ using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using RemTech.SharedKernel.NN;
 using Spares.Domain.Contracts;
+using Spares.Domain.Features;
 using Spares.Domain.Models;
 using Spares.Infrastructure.BackgroundServices;
-using Spares.Infrastructure.Consumers;
 using Spares.Infrastructure.Migrations;
 using Spares.Infrastructure.Queries.GetSpares;
+using Spares.Infrastructure.RabbitMq.Consumers;
+using Spares.Infrastructure.RabbitMq.Producers;
 using Spares.Infrastructure.Repository;
 
 namespace Spares.WebApi.Extensions;
@@ -47,6 +49,7 @@ public static class SparesModuleInjection
             new HandlersRegistrator(services)
                 .FromAssemblies([typeof(Spare).Assembly])
                 .RequireRegistrationOf(typeof(ICommandHandler<,>))
+                .RequireRegistrationOf(typeof(IEventTransporter<,>))
                 .AlsoAddValidators()
                 .AlsoAddDecorators()
                 .AlsoUseDecorators()
@@ -60,6 +63,7 @@ public static class SparesModuleInjection
             services.RegisterConsumers();
             services.RegisterBackgroundServices();
             services.RegisterQueryHandlers();
+            services.RegisterProducers();
         }
 
         private void RegisterBackgroundServices()
@@ -84,6 +88,11 @@ public static class SparesModuleInjection
                 .FromAssemblies([typeof(GetSparesQuery).Assembly])
                 .RequireRegistrationOf(typeof(IQueryHandler<,>))
                 .Invoke();
+        }
+        
+        private void RegisterProducers()
+        {
+            services.AddSingleton<IOnSparesAddedEventPublisher, OnVehiclesAddedProducer>();
         }
         
         private void RegisterConsumers()

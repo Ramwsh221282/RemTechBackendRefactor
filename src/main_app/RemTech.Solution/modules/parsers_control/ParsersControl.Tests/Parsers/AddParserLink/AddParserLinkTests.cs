@@ -18,9 +18,13 @@ public sealed class AddParserLinkTests(IntegrationalTestsFixture fixture) : ICla
         Assert.True(result.IsSuccess);
         Result<SubscribedParser> enableResult = await Services.EnableParser(id);
         Assert.True(enableResult.IsSuccess);
+        Result<IEnumerable<SubscribedParserLink>> linkResultBeforeStartWork = await Services.AddLink(id, "Test url", "Test name");
+        Assert.True(linkResultBeforeStartWork.IsSuccess);
+        Result activatingLink = await Services.MakeLinkActive(id, linkResultBeforeStartWork.Value.First().Id.Value);
+        Assert.True(activatingLink.IsSuccess);
         Result<SubscribedParser> startResult = await Services.StartParser(id);
         Assert.True(startResult.IsSuccess);
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(id, "Some url", "Some name");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(id, "Some url", "Some name");
         Assert.True(linkResult.IsFailure);
     }
 
@@ -32,9 +36,9 @@ public sealed class AddParserLinkTests(IntegrationalTestsFixture fixture) : ICla
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(id, "Some url", "Some name");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(id, "Some url", "Some name");
         Assert.True(linkResult.IsSuccess);
-        Result<SubscribedParserLink> duplicateLinkResult = await Services.AddLink(id, "Some other url", "Some name");
+        Result<IEnumerable<SubscribedParserLink>> duplicateLinkResult = await Services.AddLink(id, "Some other url", "Some name");
         Assert.True(duplicateLinkResult.IsFailure);
     }
     
@@ -46,9 +50,9 @@ public sealed class AddParserLinkTests(IntegrationalTestsFixture fixture) : ICla
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(id, "Some url", "Some name");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(id, "Some url", "Some name");
         Assert.True(linkResult.IsSuccess);
-        Result<SubscribedParserLink> duplicateLinkResult = await Services.AddLink(id, "Some url", "Some other name");
+        Result<IEnumerable<SubscribedParserLink>> duplicateLinkResult = await Services.AddLink(id, "Some url", "Some other name");
         Assert.True(duplicateLinkResult.IsFailure);
     }
     
@@ -60,11 +64,11 @@ public sealed class AddParserLinkTests(IntegrationalTestsFixture fixture) : ICla
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(id, "Some url", "Some name");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(id, "Some url", "Some name");
         Assert.True(linkResult.IsSuccess);
-        Result<ISubscribedParser> parserResult = await Services.GetParser(id);
+        Result<SubscribedParser> parserResult = await Services.GetParser(id);
         Assert.True(parserResult.IsSuccess);
-        Result<SubscribedParserLink> link = parserResult.Value.FindLink(linkResult.Value.Id);
+        Result<SubscribedParserLink> link = parserResult.Value.FindLink(linkResult.Value.First().Id);
         Assert.True(link.IsSuccess);
     }
 }
