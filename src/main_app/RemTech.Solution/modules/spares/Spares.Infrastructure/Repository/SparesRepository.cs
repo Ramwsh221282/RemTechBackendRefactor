@@ -14,8 +14,8 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
     {
         DynamicParameters parameters = new();
         List<string> insertClauses = [];
-        
-        await FillParameters(parameters, insertClauses, spares, ct);
+        IEnumerable<Spare> filtered = await FilterFromExisting(spares);
+        await FillParameters(parameters, insertClauses, filtered, ct);
         CommandDefinition command = CreateInsertCommand(parameters, insertClauses);
         return await ExecuteCommand(command, ct);
     }
@@ -25,6 +25,24 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
         NpgsqlConnection connection = await session.GetConnection(ct);
         int affected = await connection.ExecuteAsync(command);
         return affected;
+    }
+
+    private async Task<IEnumerable<Spare>> FilterFromExisting(IEnumerable<Spare> spares)
+    {
+        const string sql = """
+                           SELECT id FROM spares_module.spares
+                           WHERE id = ANY(@ids) OR url = ANY(@urls)
+                           """;
+
+        DynamicParameters parameters = new();
+        Guid[] ids = spares.Select(s => s.Id.Value).ToArray();
+        string[] urls = spares.Select(s => s.Source.Url).ToArray();
+        parameters.Add("@ids", ids);
+        parameters.Add("@urls", urls);
+        CommandDefinition command = new(sql, parameters, transaction: session.Transaction);
+        NpgsqlConnection connection = await session.GetConnection(CancellationToken.None);
+        IEnumerable<Guid> existing = await connection.QueryAsync<Guid>(command);
+        return spares.Where(s => !existing.Contains(s.Id.Value));
     }
     
     private CommandDefinition CreateInsertCommand(DynamicParameters parameters, List<string> insertClauses)
@@ -74,18 +92,4 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
             index++;
         }
     }
-    
-    // public async Task<int> AddMany(IEnumerable<Spare> spares, CancellationToken ct = default)
-    // {
-    //     const string sql = """
-    //                        INSERT INTO spares_module.spares (id, contained_item_id, url, content)
-    //                        SELECT @id, @contained_item_id, @url, @content::jsonb
-    //                        WHERE NOT EXISTS (
-    //                            SELECT 1 FROM spares_module.spares
-    //                            WHERE id = @id OR url = @url
-    //                        );
-    //                        """;
-    //     object[] parameters = spares.Select(s => s.ExtractForParameters()).ToArray();
-    //     return await session.ExecuteBulkWithAffectedCount(sql, parameters);
-    // }
 }

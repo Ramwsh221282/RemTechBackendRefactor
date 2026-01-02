@@ -13,7 +13,7 @@
     <ItemGroup>
       <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.15" />
       <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.4" />
-      <PackageReference Include="RemTech.SharedKernel.NN" Version="1.0.0" />
+      <PackageReference Include="RemTech.SharedKernel.NN" Version="1.0.1" />
     </ItemGroup>
 
 </Project>

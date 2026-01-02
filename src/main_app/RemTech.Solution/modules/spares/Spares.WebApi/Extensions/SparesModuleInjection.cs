@@ -7,6 +7,7 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using RemTech.SharedKernel.NN;
 using Spares.Domain.Contracts;
 using Spares.Domain.Models;
+using Spares.Infrastructure.BackgroundServices;
 using Spares.Infrastructure.Consumers;
 using Spares.Infrastructure.Migrations;
 using Spares.Infrastructure.Repository;
@@ -55,8 +56,14 @@ public static class SparesModuleInjection
             services.RegisterRepositories();
             services.RegisterRegionProvider();
             services.RegisterConsumers();
+            services.RegisterBackgroundServices();
         }
 
+        private void RegisterBackgroundServices()
+        {
+            services.AddHostedService<SparesEmbeddingUpdaterService>();
+        }
+        
         private void RegisterRepositories()
         {
             services.AddMigrations([typeof(SparesSchemaMigration).Assembly]);
