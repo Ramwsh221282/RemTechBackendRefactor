@@ -58,8 +58,6 @@ public sealed class SubscribedParser
 
     public Result<Unit> AddParserAmount(int amount)
     {
-        if (!State.IsWorking()) 
-            return Error.Conflict($"Для добавления количества обработанных данных парсер должен быть в состоянии {SubscribedParserState.Working.Value}.");
         Result<ParsingStatistics> updated = Statistics.IncreaseParsedCount(amount);
         if (updated.IsFailure) return updated.Error;
         Statistics = updated.Value;

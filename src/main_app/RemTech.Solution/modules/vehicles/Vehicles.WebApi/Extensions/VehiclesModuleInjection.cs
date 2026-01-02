@@ -9,6 +9,7 @@ using Vehicles.Domain.Brands.Contracts;
 using Vehicles.Domain.Categories.Contracts;
 using Vehicles.Domain.Characteristics.Contracts;
 using Vehicles.Domain.Contracts;
+using Vehicles.Domain.Features.AddVehicle;
 using Vehicles.Domain.Locations.Contracts;
 using Vehicles.Domain.Models.Contracts;
 using Vehicles.Domain.Vehicles;
@@ -20,6 +21,7 @@ using Vehicles.Infrastructure.Characteristics.CharacteristicsPersisterImplementa
 using Vehicles.Infrastructure.CommonImplementations;
 using Vehicles.Infrastructure.Locations.LocationsPersisterImplementation;
 using Vehicles.Infrastructure.Models.ModelPersisterImplementation;
+using Vehicles.Infrastructure.RabbitMq.Producers;
 using Vehicles.Infrastructure.Vehicles.PersisterImplementation;
 using Vehicles.Infrastructure.Vehicles.Queries.GetVehicles;
 
@@ -41,6 +43,7 @@ public static class VehiclesModuleInjection
             new HandlersRegistrator(services)
                 .FromAssemblies([typeof(Vehicle).Assembly])
                 .RequireRegistrationOf(typeof(ICommandHandler<,>))
+                .RequireRegistrationOf(typeof(IEventTransporter<,>))
                 .AlsoAddValidators()
                 .AlsoAddDecorators()
                 .AlsoUseDecorators()
@@ -55,6 +58,7 @@ public static class VehiclesModuleInjection
             services.RegisterConsumers(assembly);
             services.RegisterPersisters();
             services.RegisterBackgroundServices();
+            services.RegisterProducers();
         }
 
         private void RegisterQueryHandlers(Assembly assembly)
@@ -76,6 +80,11 @@ public static class VehiclesModuleInjection
                 .AddClasses(classes => classes.AssignableTo(typeof(IConsumer)))
                 .AsSelfWithInterfaces()
                 .WithTransientLifetime());
+        }
+
+        private void RegisterProducers()
+        {
+            services.AddSingleton<IOnVehiclesAddedEventPublisher, OnVehiclesAddedProducer>();
         }
         
         private void RegisterPersisters()

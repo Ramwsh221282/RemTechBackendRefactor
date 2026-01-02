@@ -55,8 +55,8 @@ public sealed class AddVehicleConsumer(
             }
 
             AddVehicleCommand command = CreateCommandFrom(message);
-            int saved = await SaveVehicles(Services, command);
-            Logger.Information("Vehicles added. Saved {Saved}", saved);
+            (Guid creatorId, int saved) result = await SaveVehicles(Services, command);
+            Logger.Information("Vehicles added. Saved {Saved} by {Id}", result.saved, result.creatorId);
         }
         catch (Exception ex)
         {
@@ -68,11 +68,11 @@ public sealed class AddVehicleConsumer(
         }
     };
 
-    private static async Task<Result<int>> SaveVehicles(IServiceProvider services, AddVehicleCommand command)
+    private static async Task<Result<(Guid, int)>> SaveVehicles(IServiceProvider services, AddVehicleCommand command)
     {
         await using AsyncServiceScope scope = services.CreateAsyncScope();
         return await scope.ServiceProvider
-            .GetRequiredService<ICommandHandler<AddVehicleCommand, int>>()
+            .GetRequiredService<ICommandHandler<AddVehicleCommand, (Guid, int)>>()
             .Execute(command);
     }
     

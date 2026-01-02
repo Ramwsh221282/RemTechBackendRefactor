@@ -7,13 +7,14 @@ using Spares.Domain.Models;
 namespace Spares.Domain.Features;
 
 [TransactionalHandler]
-public sealed class AddSparesHandler(ISparesRepository repository) : ICommandHandler<AddSparesCommand, int>
+public sealed class AddSparesHandler(ISparesRepository repository) : ICommandHandler<AddSparesCommand, (Guid, int)>
 {
-    public async Task<Result<int>> Execute(AddSparesCommand command, CancellationToken ct = default)
+    public async Task<Result<(Guid, int)>> Execute(AddSparesCommand command, CancellationToken ct = default)
     {
+        Guid creatorId = command.Creator.CreatorId;
         Result<Spare[]> spares = CreateSpares(command.Spares);
         int addedCount = await repository.AddMany(spares.Value);
-        return addedCount;
+        return (creatorId, addedCount);
     }
 
     public static Spare[] CreateSpares(IEnumerable<AddSpareCommandPayload> spareInfo)

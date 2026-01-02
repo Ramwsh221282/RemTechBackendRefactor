@@ -6,7 +6,7 @@ using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using Spares.Domain.Features;
 
-namespace Spares.Infrastructure.Consumers;
+namespace Spares.Infrastructure.RabbitMq.Consumers;
 
 public sealed class AddSparesConsumer(
     RabbitMqConnectionSource rabbitMq,
@@ -52,16 +52,18 @@ public sealed class AddSparesConsumer(
                 await Channel.BasicAckAsync(@event.DeliveryTag, false);
                 return;
             }
-            
+
             AddSparesCommand command = CreateCommandFrom(message);
-            int added = await SaveSpares(Services, command);
-            await Channel.BasicAckAsync(@event.DeliveryTag, false);
-            Logger.Information("Added {Count} spares.", added);
+            (Guid creatorId, int added) result = await SaveSpares(Services, command);
+            Logger.Information("Added {Count} spares by {Id}", result.added, result.creatorId);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Logger.Fatal(e, "Failed to process message.");
-            await Channel.BasicNackAsync(@event.DeliveryTag, false, false);
+        }
+        finally
+        {
+            await Channel.BasicAckAsync(@event.DeliveryTag, false);
         }
     };
 
@@ -102,11 +104,11 @@ public sealed class AddSparesConsumer(
         public string Type { get; set; } = string.Empty;
     }
 
-    private static async Task<int> SaveSpares(IServiceProvider services, AddSparesCommand command)
+    private static async Task<(Guid, int)> SaveSpares(IServiceProvider services, AddSparesCommand command)
     {
         await using AsyncServiceScope scope = services.CreateAsyncScope();
         return await scope.ServiceProvider
-            .GetRequiredService<ICommandHandler<AddSparesCommand, int>>()
+            .GetRequiredService<ICommandHandler<AddSparesCommand, (Guid, int)>>()
             .Execute(command);
     }
     
