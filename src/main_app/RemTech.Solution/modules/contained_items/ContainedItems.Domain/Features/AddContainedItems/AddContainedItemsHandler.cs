@@ -26,7 +26,6 @@ public sealed class AddContainedItemsHandler(IContainedItemsRepository repositor
         ServiceItemId serviceItemId = ServiceItemId.Create(body.ServiceItemId);
         ServiceCreatorInfo creatorInfo = ServiceCreatorInfo.Create(body.CreatorId, body.CreatorType, body.CreatorDomain);
         ContainedItemInfo info = ContainedItemInfo.Create(body.Content);
-        ContainedItemType itemType = ContainedItemType.Create(body.ItemType);
-        return ContainedItem.PendingToSave(id, itemType, serviceItemId, creatorInfo, info);
+        return ContainedItem.PendingToSave(id, serviceItemId, creatorInfo, info);
     }
 }

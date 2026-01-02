@@ -1,8 +1,7 @@
 ﻿namespace Spares.Domain.Models;
 
 public sealed record Spare(
-    SpareId Id,
-    ContainedItemId ContainedItemId,
+    ContainedItemId Id,
     SpareDetails Details,
     SpareSource Source
 );

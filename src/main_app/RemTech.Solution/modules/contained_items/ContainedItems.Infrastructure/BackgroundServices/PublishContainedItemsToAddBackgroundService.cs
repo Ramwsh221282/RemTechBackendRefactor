@@ -34,31 +34,13 @@ public sealed class PublishContainedItemsToAddBackgroundService(
         
         try
         {
-            IContainedItemsRepository repository = new ContainedItemsRepository(session);
-            ContainedItemsQuery query = new(Status: ContainedItemStatus.PendingToSave.Value, WithLock: true, Limit: 50);
-            ContainedItem[] items = await repository.Query(query, ct);
-            if (items.Length == 0) return;
-            
-            foreach (ContainedItem item in items)
-            {
-                IItemPublishingStrategy strategy = factory.Resolve(item.CreatorInfo.Type);
-                await strategy.Publish(item, ct);   
-            }
-            
-            Logger.Information("Published {Count}", items.Length);
-            foreach (ContainedItem item in items)
-                item.MarkSaved();
-
-            await repository.UpdateMany(items, ct);
+            IEnumerable<ContainedItem> items = await GetPendingContainedItems(session, ct);
+            if (!items.Any()) return;
+            await PublishItems(items, factory, ct);
+            await MarkItemsSaved(session, items, ct);
             Result committing = await transaction.Commit(ct);
-            if (committing.IsFailure)
-            {
-                Logger.Fatal(committing.Error, "Error committing transaction.");
-            }
-            else
-            {
-                Logger.Information("Committed {Count}", items.Length);
-            }
+            if (committing.IsFailure) Logger.Fatal(committing.Error, "Error committing transaction.");
+            else Logger.Information("Committed transaction");
         }
         catch (Exception e)
         {
@@ -68,5 +50,36 @@ public sealed class PublishContainedItemsToAddBackgroundService(
         {
             await transaction.DisposeAsync();
         }
+    }
+
+    private static async Task PublishItems(IEnumerable<ContainedItem> items, ItemPublishStrategyFactory factory, CancellationToken ct)
+    {
+        IGrouping<string, ContainedItem>[] itemsGroupedByType = items.GroupBy(i => i.CreatorInfo.Type).ToArray();
+        foreach (IGrouping<string, ContainedItem> group in itemsGroupedByType)
+        {
+            string type = group.Key;
+            ContainedItem[] itemsOfType = group.ToArray();
+            IItemPublishingStrategy strategy = factory.Resolve(type);
+            await strategy.PublishMany(itemsOfType, ct);
+        }
+    }
+    
+    private static async Task<IEnumerable<ContainedItem>> GetPendingContainedItems(
+        NpgSqlSession session, 
+        CancellationToken ct)
+    {
+        IContainedItemsRepository repository = new ContainedItemsRepository(session);
+        ContainedItemsQuery query = new(Status: ContainedItemStatus.PendingToSave.Value, WithLock: true, Limit: 50);
+        return await repository.Query(query, ct);
+    }
+
+    private static async Task MarkItemsSaved(
+        NpgSqlSession session, 
+        IEnumerable<ContainedItem> items, 
+        CancellationToken ct)
+    {
+        IContainedItemsRepository repository = new ContainedItemsRepository(session);
+        foreach (ContainedItem item in items) item.MarkSaved();
+        await repository.UpdateMany(items, ct);
     }
 }

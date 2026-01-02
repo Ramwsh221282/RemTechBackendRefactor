@@ -15,37 +15,46 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
     private bool Disposed { get; set; }
     
      public ReadOnlyMemory<float> Generate(string text)
-    {
-        DenseTensor<string> stringTensor = new DenseTensor<string>([1]) { [0] = text };
+     {
+         DenseTensor<string> stringTensor = new DenseTensor<string>(new[] { 1 });
+         stringTensor[0] = text;
 
-        List<NamedOnnxValue> tokenizerInputs =
-        [
-            NamedOnnxValue.CreateFromTensor("inputs", stringTensor),
-        ];
+         NamedOnnxValue[] tokenizerInputs = new[]
+         {
+             NamedOnnxValue.CreateFromTensor("inputs", stringTensor),
+         };
 
-        EmbeddingData embeddingData = EmbeddingData.Create(tokenizerInputs, Tokenizer);
-        ReadOnlySpan<int> tokenPairs = embeddingData.TokenPairs();
+         EmbeddingData embeddingData = EmbeddingData.Create(tokenizerInputs, Tokenizer);
 
-        DenseTensor<long> inputIdsTensor = new DenseTensor<long>([1, tokenPairs.Length]);
-        for (int i = 0; i < tokenPairs.Length; i++)
-        {
-            inputIdsTensor[0, i] = tokenPairs[i];
-        }
+         int len = embeddingData.Length;
+         DenseTensor<long> inputIdsTensor = new DenseTensor<long>(new[] { 1, len });
+         DenseTensor<long> attentionMaskTensor = new DenseTensor<long>(new[] { 1, len });
+         Span<int> sortedTokens = len <= 256 ? stackalloc int[len] : new int[len];
+         embeddingData.CopySortedTokensTo(sortedTokens);
 
-        DenseTensor<long> attentionMaskTensor = new DenseTensor<long>([1, tokenPairs.Length]);
-        for (int i = 0; i < tokenPairs.Length; i++)
-        {
-            attentionMaskTensor[0, i] = 1;
-        }
+         for (int i = 0; i < len; i++)
+         {
+             inputIdsTensor[0, i] = sortedTokens[i];
+             attentionMaskTensor[0, i] = 1;
+         }
 
-        List<NamedOnnxValue> modelInputs =
-        [
-            NamedOnnxValue.CreateFromTensor("input_ids", inputIdsTensor),
-            NamedOnnxValue.CreateFromTensor("attention_mask", attentionMaskTensor),
-        ];
+         var modelInputs = new[]
+         {
+             NamedOnnxValue.CreateFromTensor("input_ids", inputIdsTensor),
+             NamedOnnxValue.CreateFromTensor("attention_mask", attentionMaskTensor),
+         };
 
-        return GetEmbeddings(modelInputs, Model);
-    }
+         return GetEmbeddings(modelInputs, Model);
+     }
+     
+     private static ReadOnlyMemory<float> GetEmbeddings(
+         IReadOnlyList<NamedOnnxValue> modelInputs,
+         InferenceSession modelSession)
+     {
+         using IDisposableReadOnlyCollection<DisposableNamedOnnxValue>? modelResults = modelSession.Run(modelInputs);
+         Tensor<float>? tensor = modelResults[1].AsTensor<float>();
+         return new ReadOnlyMemory<float>(tensor.ToArray());
+     }
 
     private static ReadOnlyMemory<float> GetEmbeddings(
         List<NamedOnnxValue> modelInputs,
@@ -93,6 +102,8 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
     private static InferenceSession MakeModelSession(EmbeddingsProviderOptions options)
     {
         options.Validate();
-        return new InferenceSession(options.ModelPath);
+        SessionOptions modelOptions = new();
+        modelOptions.GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL;
+        return new InferenceSession(options.ModelPath, modelOptions);
     }
 }

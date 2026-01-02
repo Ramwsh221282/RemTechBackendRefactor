@@ -23,7 +23,7 @@ public sealed class AddSparesConsumer(
     private IServiceProvider Services { get; } = services;
     private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
     
-    public async Task InitializeChannel(IConnection connection, CancellationToken ct = new CancellationToken())
+    public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
     {
         _channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
     }
@@ -45,13 +45,18 @@ public sealed class AddSparesConsumer(
         Logger.Information("Received message to add spares.");
         try
         {
-            AddSparesMessage message = AddSparesMessage.CreateFromDeliverEventArgs(@event);
-            AddSparesCommand command = CreateCommand(message);
-            await using AsyncServiceScope scope = Services.CreateAsyncScope();
-            ICommandHandler<AddSparesCommand, int> handler =
-                scope.ServiceProvider.GetRequiredService<ICommandHandler<AddSparesCommand, int>>();
-            await handler.Execute(command);
+            AddSparesMessage message = AddSparesMessage.ConvertMessageFrom(@event);
+            if (!IsMessageValid(message, out string error))
+            {
+                Logger.Error("Denied message: {Error}", error);
+                await Channel.BasicAckAsync(@event.DeliveryTag, false);
+                return;
+            }
+            
+            AddSparesCommand command = CreateCommandFrom(message);
+            int added = await SaveSpares(Services, command);
             await Channel.BasicAckAsync(@event.DeliveryTag, false);
+            Logger.Information("Added {Count} spares.", added);
         }
         catch(Exception e)
         {
@@ -60,20 +65,32 @@ public sealed class AddSparesConsumer(
         }
     };
 
-    private sealed class AddSparesMessage
+    private static bool IsMessageValid(AddSparesMessage message, out string error)
     {
-        public AddSpareMessagePayload[] Payload { get; set; } = [];
-        
-        public static AddSparesMessage CreateFromDeliverEventArgs(BasicDeliverEventArgs @event) => 
-            JsonSerializer.Deserialize<AddSparesMessage>(@event.Body.Span)!;
+        List<string> errors = [];
+        if (message.CreatorId == Guid.Empty) errors.Add("Идентификатор создателя пуст");
+        if (string.IsNullOrWhiteSpace(message.CreatorType)) errors.Add("Тип создателя пуст");
+        if (string.IsNullOrWhiteSpace(message.CreatorDomain)) errors.Add("Домен создателя пуст");
+        if (message.Payload == null || !message.Payload.Any()) errors.Add("Список запчастей пуст");
+        error = string.Join(", ", errors);
+        return errors.Count == 0;
     }
-
-    private sealed class AddSpareMessagePayload
+    
+    private sealed class AddSparesMessage
     {
         public Guid CreatorId { get; set; } = Guid.Empty;
         public string CreatorType { get; set; } = string.Empty;
         public string CreatorDomain { get; set; } = string.Empty;
-        public string Id { get; set; } = string.Empty;
+        public IEnumerable<AddSpareMessagePayload> Payload { get; set; } = [];
+
+        public static AddSparesMessage ConvertMessageFrom(BasicDeliverEventArgs @event)
+        {
+            return JsonSerializer.Deserialize<AddSparesMessage>(@event.Body.ToArray())!;
+        }
+    }
+
+    private sealed class AddSpareMessagePayload
+    {
         public Guid ContainedItemId { get; set; } = Guid.Empty;
         public string Address { get; set; } = string.Empty;
         public bool IsNds { get; set; }
@@ -85,20 +102,28 @@ public sealed class AddSparesConsumer(
         public string Type { get; set; } = string.Empty;
     }
 
-    private static AddSparesCommand CreateCommand(AddSparesMessage message)
+    private static async Task<int> SaveSpares(IServiceProvider services, AddSparesCommand command)
     {
-        AddSpareCommandPayload[] spareInfos = message.Payload.Select(ConvertToAddSpareCommandCreatorInfo).ToArray();
-        return new AddSparesCommand(Spares: spareInfos.ToArray());
+        await using AsyncServiceScope scope = services.CreateAsyncScope();
+        return await scope.ServiceProvider
+            .GetRequiredService<ICommandHandler<AddSparesCommand, int>>()
+            .Execute(command);
     }
     
-    private static AddSpareCommandPayload ConvertToAddSpareCommandCreatorInfo(AddSpareMessagePayload payload)
+    private static AddSparesCommand CreateCommandFrom(AddSparesMessage message)
     {
-        return new AddSpareCommandPayload(
-            CreatorId: payload.CreatorId,
-            CreatorDomain: payload.CreatorDomain,
-            CreatorType: payload.CreatorType,
-            SpareId: payload.Id,
-            ContainedItemId: payload.ContainedItemId,
+        AddSparesCreatorPayload creator = CreateCreatorPayload(message);
+        IEnumerable<AddSpareCommandPayload> spares = message.Payload.Select(ConvertToAddSpareCommandCreatorInfo);
+        return new AddSparesCommand(creator, spares);
+    }
+
+    private static AddSparesCreatorPayload CreateCreatorPayload(AddSparesMessage message) =>
+        new(CreatorId: message.CreatorId,
+            CreatorDomain: message.CreatorDomain,
+            CreatorType: message.CreatorType);
+    
+    private static AddSpareCommandPayload ConvertToAddSpareCommandCreatorInfo(AddSpareMessagePayload payload) =>
+        new(ContainedItemId: payload.ContainedItemId,
             Source: payload.Url,
             Title: payload.Title,
             Oem: payload.Oem,
@@ -107,6 +132,5 @@ public sealed class AddSparesConsumer(
             Address: payload.Address,
             Type: payload.Type,
             PhotoPaths: payload.Photos
-            );
-    }
+        );
 }
