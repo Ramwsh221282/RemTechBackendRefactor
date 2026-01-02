@@ -14,6 +14,7 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
     public async Task<Result<Location>> Save(Location location, CancellationToken ct = default)
     {
         Result<NpgSqlSearchResult> fullResult = await TrySearchFullInfo(location.Name.Value, ct);
+        if (fullResult.IsFailure) return fullResult.Error;
         if (fullResult.Value.Region is null) return Error.NotFound("Unable to resolve location.");
         if (fullResult.IsFailure) return Error.NotFound("Unable to resolve location.");
         return CreateLocationFromSearchResult(fullResult);
@@ -69,7 +70,7 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
 
         DynamicParameters parameters = new();
         parameters.Add("@embeddings", vectors);
-        parameters.Add("@region_max_distance", 0.2);
+        parameters.Add("@region_max_distance", 0.4);
         parameters.Add("@city_max_distance", 0.5);
 
         CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);

@@ -78,6 +78,7 @@ public static class VehiclesModuleInjection
         
         private void RegisterPersisters()
         {
+            services.AddScoped<IVehiclesListPersister, NpgSqlVehiclesListPersister>();
             services.AddScoped<IBrandPersister, NpgSqlBrandPersisterImplementation>();
             services.AddScoped<IModelsPersister, NpgSqlModelPersister>();
             services.AddScoped<ICategoryPersister, NpgSqlCategoriesPersisterImplementation>();

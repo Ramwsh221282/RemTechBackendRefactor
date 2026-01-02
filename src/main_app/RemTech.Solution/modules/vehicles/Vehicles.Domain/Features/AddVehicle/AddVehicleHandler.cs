@@ -13,60 +13,101 @@ using Vehicles.Domain.Vehicles.Contracts;
 namespace Vehicles.Domain.Features.AddVehicle;
 
 [TransactionalHandler]
-public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<AddVehicleCommand, Unit>
+public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<AddVehicleCommand, int>
 {
-    public async Task<Result<Unit>> Execute(AddVehicleCommand command, CancellationToken ct = default)
+    public async Task<Result<int>> Execute(AddVehicleCommand command, CancellationToken ct = default)
     {
-        Brand brand = new Brand(new BrandId(), BrandName.Create(command.Title));
-        Category category = new Category(new CategoryId(), CategoryName.Create(command.Title));
-        Model model = new Model(new ModelId(), ModelName.Create(command.Title));
-        Location location = new Location(new LocationId(), LocationName.Create(command.Address));
-        Dictionary<Characteristic, VehicleCharacteristicValue> characteristics = CreateCharacteristicsDictionary(command);
-        Dictionary<Characteristic, VehicleCharacteristicValue> savedCharacteristics = await SaveCharacteristics(characteristics, ct);
-        IEnumerable<VehicleCharacteristicToAdd> ctxToAdd = savedCharacteristics.Select(kvp => new VehicleCharacteristicToAdd(kvp.Key, kvp.Value));
+        List<VehiclePersistInfo> vehiclesToSave = [];
+        foreach (AddVehicleVehiclesCommandPayload payload in command.Vehicles)
+        {
+            Result<Brand> brand = CreateValidBrand(payload);
+            if (brand.IsFailure) continue;
+            
+            Result<Category> category = CreateValidCategory(payload);
+            if (category.IsFailure) continue;
+            
+            Result<Model> model = CreateValidModel(payload);
+            if (model.IsFailure) continue;
+            
+            Result<Location> location = CreateValidLocation(payload);
+            if (location.IsFailure) continue;
+            
+            Dictionary<Characteristic, VehicleCharacteristicValue> characteristics = CreateCharacteristicsDictionary(payload);
+            Dictionary<Characteristic, VehicleCharacteristicValue> savedCharacteristics = await SaveCharacteristics(characteristics, ct);
+            IEnumerable<VehicleCharacteristicToAdd> ctxToAdd = savedCharacteristics.Select(kvp => new VehicleCharacteristicToAdd(kvp.Key, kvp.Value));
         
-        Result<Brand> savedBrand = await brand.SaveBy(persister, ct);
-        if (savedBrand.IsFailure) return savedBrand.Error;
+            Result<Brand> savedBrand = await brand.Value.SaveBy(persister, ct);
+            if (savedBrand.IsFailure) continue;
         
-        Result<Category> savedCategory = await category.SaveBy(persister, ct);
-        if (savedCategory.IsFailure) return savedCategory.Error;
+            Result<Category> savedCategory = await category.Value.SaveBy(persister, ct);
+            if (savedCategory.IsFailure) continue;
         
-        Result<Model> savedModel = await model.SaveBy(persister, ct);
-        if (savedModel.IsFailure) return savedModel.Error;
+            Result<Model> savedModel = await model.Value.SaveBy(persister, ct);
+            if (savedModel.IsFailure) continue;
+
+            Result<Location> savedLocation = await location.Value.SaveBy(persister, ct);
+            if (savedLocation.IsFailure) continue;
+            
+            Vehicle vehicle = CreateVehicle(savedBrand.Value, savedCategory.Value, savedModel.Value, savedLocation.Value, ctxToAdd, payload);
+            VehiclePersistInfo persistInfo = new(vehicle, savedLocation.Value);
+            vehiclesToSave.Add(persistInfo);
+        }
         
-        Result<Location> savedLocation = await location.SaveBy(persister, ct);
-        if (savedLocation.IsFailure) return savedLocation.Error;
-        
-        Vehicle vehicle = CreateVehicle(savedBrand.Value, savedCategory.Value, savedModel.Value, savedLocation.Value, ctxToAdd, command);
-        VehiclePersistInfo persistInfo = new(vehicle, location);
-        Result<VehiclePersistInfo> persisted = await persistInfo.SaveBy(persister, ct);
-        return persisted.IsSuccess ? Unit.Value : persisted.Error;
+        return await persister.Save(vehiclesToSave, ct);
+    }
+    
+    private static Result<Model> CreateValidModel(AddVehicleVehiclesCommandPayload payload)
+    {
+        Result<ModelName> modelName = ModelName.Create(payload.Title);
+        if (modelName.IsFailure) return modelName.Error;
+        return new Model(new ModelId(), modelName);
+    }
+    
+    private static Result<Location> CreateValidLocation(AddVehicleVehiclesCommandPayload payload)
+    {
+        Result<LocationName> locationName = LocationName.Create(payload.Address);
+        if (locationName.IsFailure) return locationName.Error;
+        return new Location(new LocationId(), locationName);
+    }
+    
+    private static Result<Brand> CreateValidBrand(AddVehicleVehiclesCommandPayload payload)
+    {
+        Result<BrandName> brandName = BrandName.Create(payload.Title);
+        if (brandName.IsFailure) return brandName.Error;
+        return new Brand(new BrandId(), brandName);
     }
 
+    private static Result<Category> CreateValidCategory(AddVehicleVehiclesCommandPayload payload)
+    {
+        Result<CategoryName> categoryName = CategoryName.Create(payload.Title);
+        if (categoryName.IsFailure) return categoryName.Error;
+        return new Category(new CategoryId(), categoryName);
+    }
+    
     private Vehicle CreateVehicle(
         Brand brand, 
         Category category, 
         Model model, 
         Location location,
         IEnumerable<VehicleCharacteristicToAdd> ctxes,
-        AddVehicleCommand command)
+        AddVehicleVehiclesCommandPayload payload)
     {
         VehicleFactory factory = new(brand, category, location, model, ctxes);
-        VehicleId id = VehicleId.Create(command.Id);
-        VehicleSource source = VehicleSource.Create(command.Url);
-        VehiclePriceInformation price = VehiclePriceInformation.Create(command.Price, command.IsNds);
-        VehicleTextInformation text = VehicleTextInformation.Create(command.Title);
-        IReadOnlyList<VehiclePhoto> photos = command.Photos.Select(p => VehiclePhoto.Create(p).Value).ToList();
+        VehicleId id = VehicleId.Create(payload.Id);
+        VehicleSource source = VehicleSource.Create(payload.Url);
+        VehiclePriceInformation price = VehiclePriceInformation.Create(payload.Price, payload.IsNds);
+        VehicleTextInformation text = VehicleTextInformation.Create(payload.Title);
+        IReadOnlyList<VehiclePhoto> photos = payload.Photos.Select(p => VehiclePhoto.Create(p).Value).ToList();
         Vehicle vehicle = factory.Construct(id, source, price, text, VehiclePhotosGallery.Create(photos));
         return vehicle;
     }
     
     private Dictionary<Characteristic, VehicleCharacteristicValue> CreateCharacteristicsDictionary(
-        AddVehicleCommand command)
+        AddVehicleVehiclesCommandPayload payload)
     {
         CharacteristicByNameComparer comparer = new();
         Dictionary<Characteristic, VehicleCharacteristicValue> result = new(comparer);
-        foreach (AddVehicleCommandCharacteristics characteristic in command.Characteristics)
+        foreach (AddVehicleCommandCharacteristics characteristic in payload.Characteristics)
         {
             Characteristic ctx = new(new CharacteristicId(), CharacteristicName.Create(characteristic.Name));
             if (result.ContainsKey(ctx)) continue;

@@ -46,32 +46,17 @@ public sealed class AddVehicleConsumer(
         Logger.Information("Handling message.");
         try
         {
-            AddVehicleMessagePayload payload = AddVehicleMessagePayload.FromDeliverEventArgs(@event);
-            AddVehicleCommand command = new(
-                CreatorId: payload.CreatorId,
-                CreatorDomain: payload.CreatorDomain,
-                CreatorType: payload.CreatorType,
-                Id: payload.Id,
-                Title: payload.Title,
-                Url: payload.Url,
-                Price: payload.Price,
-                IsNds: payload.IsNds,
-                Address: payload.Address,
-                Photos: payload.Photos,
-                Characteristics: payload.Characteristics.Select(c => new AddVehicleCommandCharacteristics(c.Name, c.Value)).ToArray()
-            );
+            AddVehicleMessage message = AddVehicleMessage.CreateFrom(@event);
+            if (!IsMessageValid(message, out string error))
+            {
+                Logger.Error("Denied message: {Error}", error);
+                await Channel.BasicAckAsync(@event.DeliveryTag, false);
+                return;
+            }
 
-            await using AsyncServiceScope scope = Services.CreateAsyncScope();
-            ICommandHandler<AddVehicleCommand, Unit> handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<AddVehicleCommand, Unit>>();
-            Result<Unit> result = await handler.Execute(command);
-            if (result.IsFailure)
-            {
-                logger.Error("Failed to add vehicle. {Error}", result.Error.Message);
-            }
-            else
-            {
-                logger.Information("Vehicle {Id} added.", payload.Id);
-            }
+            AddVehicleCommand command = CreateCommandFrom(message);
+            int saved = await SaveVehicles(Services, command);
+            Logger.Information("Vehicles added. Saved {Saved}", saved);
         }
         catch (Exception ex)
         {
@@ -82,30 +67,80 @@ public sealed class AddVehicleConsumer(
             await Channel.BasicAckAsync(@event.DeliveryTag, false);
         }
     };
+
+    private static async Task<Result<int>> SaveVehicles(IServiceProvider services, AddVehicleCommand command)
+    {
+        await using AsyncServiceScope scope = services.CreateAsyncScope();
+        return await scope.ServiceProvider
+            .GetRequiredService<ICommandHandler<AddVehicleCommand, int>>()
+            .Execute(command);
+    }
+    
+    private static AddVehicleCommand CreateCommandFrom(AddVehicleMessage message)
+    {
+        AddVehicleCreatorCommandPayload creator = CreateCreatorPayload(message);
+        IEnumerable<AddVehicleVehiclesCommandPayload> vehicles = CreateVehiclesPayload(message);
+        return new AddVehicleCommand(creator, vehicles);
+    }
+
+    private static AddVehicleCreatorCommandPayload CreateCreatorPayload(AddVehicleMessage message) => 
+        new(CreatorId: message.CreatorId, 
+            CreatorDomain: message.CreatorDomain, 
+            CreatorType: message.CreatorType);
+
+    private static IEnumerable<AddVehicleVehiclesCommandPayload> CreateVehiclesPayload(AddVehicleMessage message)
+    {
+        return message.Payload.Select(p => new AddVehicleVehiclesCommandPayload(
+            Id: p.Id,
+            Title: p.Title,
+            Url: p.Url,
+            Price: p.Price,
+            IsNds: p.IsNds,
+            Address: p.Address,
+            Photos: p.Photos,
+            Characteristics: p.Characteristics.Select(c => new AddVehicleCommandCharacteristics(c.Name, c.Value)).ToArray()
+            ));
+    }
+    
+    private static bool IsMessageValid(AddVehicleMessage message, out string error)
+    {
+        List<string> errors = [];
+        if (message.CreatorId == Guid.Empty) errors.Add("Идентификатор создателя пуст");
+        if (string.IsNullOrWhiteSpace(message.CreatorType)) errors.Add("Тип создателя пуст");
+        if (string.IsNullOrWhiteSpace(message.CreatorDomain)) errors.Add("Домен создателя пуст");
+        if (message.Payload == null || !message.Payload.Any()) errors.Add("Список автомобилей пуст");
+        error = string.Join(", ", errors);
+        return errors.Count == 0;
+    }
+    
+    private sealed class AddVehicleMessage
+    {
+        public required Guid CreatorId { get; set; }
+        public required string CreatorDomain { get; set; }
+        public required string CreatorType { get; set; }
+        public required IEnumerable<AddVehicleMessagePayload> Payload { get; set; }
+
+        public static AddVehicleMessage CreateFrom(BasicDeliverEventArgs @event)
+        {
+            return JsonSerializer.Deserialize<AddVehicleMessage>(@event.Body.Span)!;
+        }
+    }
     
     private sealed class AddVehicleMessagePayload
     {
-        public required Guid CreatorId { get; set; } = Guid.Empty;
-        public required string CreatorDomain { get; set; } = string.Empty;
-        public required string CreatorType { get; set; } = string.Empty;
-        public required Guid Id { get; set; } = Guid.Empty;
-        public required string Title { get; set; } = string.Empty;
-        public required string Url { get; set; } = string.Empty;
+        public required Guid Id { get; set; }
+        public required string Title { get; set; }
+        public required string Url { get; set; }
         public required long Price { get; set; }
         public required bool IsNds { get; set; }
-        public required string Address { get; set; } = string.Empty;
-        public required string[] Photos { get; set; } = [];
-        public required AddVehicleCharacteristic[] Characteristics { get; set; } = [];
-
-        public static AddVehicleMessagePayload FromDeliverEventArgs(BasicDeliverEventArgs @event)
-        {
-            return JsonSerializer.Deserialize<AddVehicleMessagePayload>(@event.Body.Span)!;
-        }
+        public required string Address { get; set; }
+        public required string[] Photos { get; set; }
+        public required IEnumerable<AddVehicleCharacteristic> Characteristics { get; set; }
     }
     
     private sealed class AddVehicleCharacteristic
     {
-        public required string Name { get; set; } = string.Empty;
-        public required string Value { get; set; } = string.Empty;
+        public required string Name { get; set; }
+        public required string Value { get; set; }
     }
 }
