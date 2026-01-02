@@ -1,4 +1,5 @@
 ﻿using ParsersControl.Core.Contracts;
+using ParsersControl.Core.Extensions;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
@@ -7,39 +8,30 @@ using RemTech.SharedKernel.Core.Handlers.Attributes;
 namespace ParsersControl.Core.Features.SetWorkTime;
 
 [TransactionalHandler]
-public sealed class SetWorkTimeHandler(
-    ISubscribedParsersRepository repository
-) : ICommandHandler<SetWorkTimeCommand, SubscribedParser>
+public sealed class SetWorkTimeHandler(ISubscribedParsersRepository repository) : ICommandHandler<SetWorkTimeCommand, SubscribedParser>
 {
-    public async Task<Result<SubscribedParser>> Execute(
-        SetWorkTimeCommand command, 
-        CancellationToken ct = default)
+    public async Task<Result<SubscribedParser>> Execute(SetWorkTimeCommand command, CancellationToken ct = default)
     {
-        Result<ISubscribedParser> parser = await GetRequiredParser(command, ct);
-        Result<SubscribedParser> result = SetRequiredTime(command, parser);
-        return await SaveChanges(parser, result).Map(() => result.Value);
+        Result<SubscribedParser> parser = await GetRequiredParser(command, ct);
+        Result<Unit> result = SetRequiredTime(command, parser);
+        return await SaveChanges(parser, result, ct).Map(() => parser.Value);
     }
 
-    private async Task<Result> SaveChanges(
-        Result<ISubscribedParser> parser, 
-        Result<SubscribedParser> result)
+    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
     {
         if (parser.IsFailure) return Result.Failure(parser.Error);
         if (result.IsFailure) return Result.Failure(result.Error);
-        await repository.Save(parser.Value);
+        await parser.Value.SaveChanges(repository, ct);
         return Result.Success();
     }
     
-    private async Task<Result<ISubscribedParser>> GetRequiredParser(
-        SetWorkTimeCommand command,
-        CancellationToken ct = default)
+    private async Task<Result<SubscribedParser>> GetRequiredParser(SetWorkTimeCommand command, CancellationToken ct = default)
     {
         SubscribedParserQuery query = new(Id: command.Id, WithLock: true);
-        Result<ISubscribedParser> parser = await repository.Get(query, ct: ct);
-        return parser;
+        return await SubscribedParser.FromRepository(repository, query, ct);
     }
 
-    private Result<SubscribedParser> SetRequiredTime(SetWorkTimeCommand command, Result<ISubscribedParser> parser)
+    private Result<Unit> SetRequiredTime(SetWorkTimeCommand command, Result<SubscribedParser> parser)
     {
         if (parser.IsFailure) return parser.Error;
         return parser.Value.AddWorkTime(command.TotalElapsedSeconds);

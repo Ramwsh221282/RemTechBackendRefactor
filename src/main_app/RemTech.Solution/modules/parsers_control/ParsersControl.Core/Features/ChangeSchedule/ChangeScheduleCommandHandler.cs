@@ -1,4 +1,5 @@
 ﻿using ParsersControl.Core.Contracts;
+using ParsersControl.Core.Extensions;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
@@ -13,36 +14,32 @@ public sealed class ChangeScheduleCommandHandler(
 {
     public async Task<Result<SubscribedParser>> Execute(ChangeScheduleCommand command, CancellationToken ct = default)
     {
-        Result<ISubscribedParser> parser = await GetRequiredParser(command, ct);
-        Result<SubscribedParser> result = SetRequiredSchedule(command, parser);
-        return await SaveChanges(parser, result).Map(() => result.Value);
+        Result<SubscribedParser> parser = await GetRequiredParser(command, ct);
+        Result<Unit> result = SetRequiredSchedule(command, parser);
+        return await SaveChanges(parser, result, ct).Map(() => parser.Value);
     }
 
-    private async Task<Result> SaveChanges(
-        Result<ISubscribedParser> parser, 
-        Result<SubscribedParser> result)
+    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
     {
         if (parser.IsFailure) return Result.Failure(parser.Error);
         if (result.IsFailure) return Result.Failure(result.Error);
-        await repository.Save(parser.Value);
+        await parser.Value.SaveChanges(repository, ct);
         return Result.Success();
     }
     
-    private Result<SubscribedParser> SetRequiredSchedule(
+    private Result<Unit> SetRequiredSchedule(
         ChangeScheduleCommand command, 
-        Result<ISubscribedParser> parser)
+        Result<SubscribedParser> parser)
     {
         if (parser.IsFailure) return parser.Error;
-        Result<SubscribedParser> result = parser.Value.ChangeScheduleWaitDays(command.WaitDays);
-        return result;
+        return parser.Value.ChangeScheduleWaitDays(command.WaitDays);
     }
     
-    private async Task<Result<ISubscribedParser>> GetRequiredParser(
+    private async Task<Result<SubscribedParser>> GetRequiredParser(
         ChangeScheduleCommand command,
         CancellationToken ct)
     {
         SubscribedParserQuery query = new(Id: command.Id, WithLock: true);
-        Result<ISubscribedParser> parser = await repository.Get(query, ct: ct);
-        return parser;
+        return await SubscribedParser.FromRepository(repository, query, ct);
     }
 }

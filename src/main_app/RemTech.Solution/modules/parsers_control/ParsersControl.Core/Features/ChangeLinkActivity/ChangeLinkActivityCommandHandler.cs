@@ -1,4 +1,5 @@
 ﻿using ParsersControl.Core.Contracts;
+using ParsersControl.Core.Extensions;
 using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -16,23 +17,24 @@ public sealed class ChangeLinkActivityCommandHandler(
         ChangeLinkActivityCommand activityCommand, 
         CancellationToken ct = default)
     {
-        Result<ISubscribedParser> parser = await GetRequiredParser(activityCommand.ParserId, ct);
+        Result<SubscribedParser> parser = await GetRequiredParser(activityCommand.ParserId, ct);
         Result<SubscribedParserLink> link = ChangeLinkActivity(parser, activityCommand.LinkId, activityCommand.IsActive);
-        return await SaveChanges(parser, link).Map(() => link.Value);
+        return await SaveChanges(parser, link, ct).Map(() => link.Value);
     }
 
     private async Task<Result> SaveChanges(
-        Result<ISubscribedParser> parser,
-        Result<SubscribedParserLink> result)
+        Result<SubscribedParser> parser,
+        Result<SubscribedParserLink> result,
+        CancellationToken ct)
     {
         if (result.IsFailure) return Result.Failure(result.Error);
         if (parser.IsFailure) return Result.Failure(parser.Error);
-        await repository.Save(parser.Value);
+        await parser.Value.SaveChanges(repository, ct);
         return Result.Success();
     }
     
     private Result<SubscribedParserLink> ChangeLinkActivity(
-        Result<ISubscribedParser> parser, 
+        Result<SubscribedParser> parser, 
         Guid linkId, 
         bool isActive)
     {
@@ -40,9 +42,9 @@ public sealed class ChangeLinkActivityCommandHandler(
         return parser.Value.ChangeLinkActivity(parser.Value.FindLink(linkId), isActive);
     }
     
-    private async Task<Result<ISubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
+    private async Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
     {
         SubscribedParserQuery query = new(Id: parserId, WithLock: true);
-        return await repository.Get(query, ct: ct);
+        return await SubscribedParser.FromRepository(repository, query, ct);
     }
 }

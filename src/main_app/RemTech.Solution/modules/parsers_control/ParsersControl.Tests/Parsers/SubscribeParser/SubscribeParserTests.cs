@@ -17,7 +17,7 @@ public sealed class SubscribeParserTests(
         Guid id = Guid.NewGuid();
         await Services.InvokeSubscriptionFromExternalService(domain, type, id);
         await Task.Delay(TimeSpan.FromSeconds(10));
-        Result<ISubscribedParser> parser = await Services.GetParser(id);
+        Result<SubscribedParser> parser = await Services.GetParser(id);
         Assert.True(parser.IsSuccess);
     }
     

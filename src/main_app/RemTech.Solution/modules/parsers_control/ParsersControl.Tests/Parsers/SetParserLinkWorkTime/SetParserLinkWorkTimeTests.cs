@@ -18,9 +18,9 @@ public sealed class SetParserLinkWorkTimeTests(IntegrationalTestsFixture fixture
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
         Assert.True(linkResult.IsSuccess);
-        Guid linkId = linkResult.Value.Id.Value;
+        Guid linkId = linkResult.Value.First().Id.Value;
 
         Result<SubscribedParser> enableResult = await Services.EnableParser(parserId);
         Assert.True(enableResult.IsSuccess);
@@ -34,7 +34,7 @@ public sealed class SetParserLinkWorkTimeTests(IntegrationalTestsFixture fixture
         Assert.True(setWorkTimeResult.IsSuccess);
         Assert.Equal(workTimeSeconds, setWorkTimeResult.Value.Statistics.WorkTime.TotalElapsedSeconds);
         
-        Result<ISubscribedParser> parserResult = await Services.GetParser(parserId);
+        Result<SubscribedParser> parserResult = await Services.GetParser(parserId);
         Assert.True(parserResult.IsSuccess);
         Result<SubscribedParserLink> link = parserResult.Value.FindLink(linkId);
         Assert.True(link.IsSuccess);
@@ -51,9 +51,9 @@ public sealed class SetParserLinkWorkTimeTests(IntegrationalTestsFixture fixture
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
         Assert.True(linkResult.IsSuccess);
-        Guid linkId = linkResult.Value.Id.Value;
+        Guid linkId = linkResult.Value.First().Id.Value;
 
         Result<SubscribedParser> enableResult = await Services.EnableParser(parserId);
         Assert.True(enableResult.IsSuccess);
@@ -73,7 +73,7 @@ public sealed class SetParserLinkWorkTimeTests(IntegrationalTestsFixture fixture
         Assert.True(thirdSet.IsSuccess);
         Assert.Equal(900, thirdSet.Value.Statistics.WorkTime.TotalElapsedSeconds);
         
-        Result<ISubscribedParser> parserResult = await Services.GetParser(parserId);
+        Result<SubscribedParser> parserResult = await Services.GetParser(parserId);
         Assert.True(parserResult.IsSuccess);
         Result<SubscribedParserLink> link = parserResult.Value.FindLink(linkId);
         Assert.True(link.IsSuccess);
@@ -90,9 +90,9 @@ public sealed class SetParserLinkWorkTimeTests(IntegrationalTestsFixture fixture
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
         Assert.True(linkResult.IsSuccess);
-        Guid linkId = linkResult.Value.Id.Value;
+        Guid linkId = linkResult.Value.First().Id.Value;
         
         Result<SubscribedParserLink> setWorkTimeResult = await Services.SetLinkWorkTime(parserId, linkId, 3600);
         Assert.True(setWorkTimeResult.IsFailure);
@@ -141,9 +141,9 @@ public sealed class SetParserLinkWorkTimeTests(IntegrationalTestsFixture fixture
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
         Assert.True(linkResult.IsSuccess);
-        Guid linkId = linkResult.Value.Id.Value;
+        Guid linkId = linkResult.Value.First().Id.Value;
 
         Result<SubscribedParser> enableResult = await Services.EnableParser(parserId);
         Assert.True(enableResult.IsSuccess);
@@ -171,9 +171,9 @@ public sealed class SetParserLinkWorkTimeTests(IntegrationalTestsFixture fixture
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
         Assert.True(linkResult.IsSuccess);
-        Guid linkId = linkResult.Value.Id.Value;
+        Guid linkId = linkResult.Value.First().Id.Value;
 
         Result<SubscribedParser> enableResult = await Services.EnableParser(parserId);
         Assert.True(enableResult.IsSuccess);
@@ -196,9 +196,9 @@ public sealed class SetParserLinkWorkTimeTests(IntegrationalTestsFixture fixture
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
         Assert.True(linkResult.IsSuccess);
-        Guid linkId = linkResult.Value.Id.Value;
+        Guid linkId = linkResult.Value.First().Id.Value;
 
         Result<SubscribedParser> enableResult = await Services.EnableParser(parserId);
         Assert.True(enableResult.IsSuccess);
@@ -212,7 +212,7 @@ public sealed class SetParserLinkWorkTimeTests(IntegrationalTestsFixture fixture
         Assert.True(setWorkTimeResult.IsSuccess);
         Assert.Equal(largeWorkTime, setWorkTimeResult.Value.Statistics.WorkTime.TotalElapsedSeconds);
         
-        Result<ISubscribedParser> parserResult = await Services.GetParser(parserId);
+        Result<SubscribedParser> parserResult = await Services.GetParser(parserId);
         Assert.True(parserResult.IsSuccess);
         Result<SubscribedParserLink> link = parserResult.Value.FindLink(linkId);
         Assert.True(link.IsSuccess);

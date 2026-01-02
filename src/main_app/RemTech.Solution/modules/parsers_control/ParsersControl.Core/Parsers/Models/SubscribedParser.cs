@@ -6,11 +6,11 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace ParsersControl.Core.Parsers.Models;
 
-public sealed class SubscribedParser : ISubscribedParser
+public sealed class SubscribedParser
 {
     private SubscribedParser(
         SubscribedParser parser
-        ) : this(parser.Id, parser.Identity, parser.Statistics, parser.State, parser.Schedule, [..parser.Links]) { }
+        ) : this(parser.Id, parser.Identity, parser.Statistics, parser.State, parser.Schedule, [..parser.Links.Select(SubscribedParserLink.CreateCopy)]) { }
     
     public SubscribedParser(SubscribedParser parser, IEnumerable<SubscribedParserLink> links)
         : this(parser.Id, parser.Identity, parser.Statistics, parser.State, parser.Schedule, [..links]) { }
@@ -56,24 +56,24 @@ public sealed class SubscribedParser : ISubscribedParser
         return newLinks;
     }
 
-    public Result<SubscribedParser> AddParserAmount(int amount)
+    public Result<Unit> AddParserAmount(int amount)
     {
         if (!State.IsWorking()) 
             return Error.Conflict($"Для добавления количества обработанных данных парсер должен быть в состоянии {SubscribedParserState.Working.Value}.");
         Result<ParsingStatistics> updated = Statistics.IncreaseParsedCount(amount);
         if (updated.IsFailure) return updated.Error;
         Statistics = updated.Value;
-        return this;
+        return Unit.Value;
     }
     
-    public Result<SubscribedParser> AddWorkTime(long totalElapsedSeconds)
+    public Result<Unit> AddWorkTime(long totalElapsedSeconds)
     {
         if (!State.IsWorking()) 
             return Error.Conflict($"Для добавления времени работы парсер должен быть в состоянии {SubscribedParserState.Working.Value}.");
         Result<ParsingStatistics> updated = Statistics.AddWorkTime(totalElapsedSeconds);
         if (updated.IsFailure) return updated.Error;
         Statistics = updated.Value;
-        return this;
+        return Unit.Value;
     }
 
     public Result<SubscribedParserLink> AddLink(SubscribedParserLinkUrlInfo urlInfo)
@@ -99,30 +99,21 @@ public sealed class SubscribedParser : ISubscribedParser
         return Result.Success(Unit.Value);
     }
     
-    public SubscribedParser ResetWorkTime()
-    {
-        Statistics = Statistics.ResetWorkTime();
-        return this;
-    }
-    
-    public SubscribedParser ResetParsedCount()
-    {
-        Statistics = Statistics.ResetParsedCount();
-        return this;
-    }
+    public void ResetWorkTime() => Statistics = Statistics.ResetWorkTime();
+    public void ResetParsedCount() => Statistics = Statistics.ResetParsedCount();
 
-    public Result<SubscribedParser> StartWork()
+    public Result<Unit> StartWork()
     {
         (bool isWorking, bool isDisabled, bool hasNoLinks, bool allLinksInactive) =
             (State.IsWorking(), State.IsDisabled(), HasNoLinks(), AllLinksAreInactive());
 
-        Func<Result<SubscribedParser>> operation = (isWorking, isDisabled, hasNoLinks, allLinksInactive) switch
+        Func<Result<Unit>> operation = (isWorking, isDisabled, hasNoLinks, allLinksInactive) switch
         {
             (false, false, false, false) => () =>
             {
                 State = SubscribedParserState.Working;
                 Schedule = Schedule.WithStartedAt(DateTime.UtcNow);
-                return this;
+                return Unit.Value;
             },
             (_, _, true, _) => () => Error.Conflict($"Парсер не содержит ссылок."),
             (_, _, _, true) => () => Error.Conflict($"Парсер не содержит активных ссылок."),
@@ -133,24 +124,24 @@ public sealed class SubscribedParser : ISubscribedParser
         return operation();
     }
 
-    public Result<SubscribedParser> ChangeScheduleWaitDays(int waitDays)
+    public Result<Unit> ChangeScheduleWaitDays(int waitDays)
     {
         if (State.IsWorking())
             return Error.Conflict($"Парсер в состоянии {State.Value}. Невозможно изменить дни ожидания.");
         Result<SubscribedParserSchedule> updated = Schedule.WithWaitDays(waitDays);
         if (updated.IsFailure) return updated.Error;
         Schedule = updated.Value;
-        return this;
+        return Unit.Value;
     }
 
-    public Result<SubscribedParser> ChangeScheduleNextRun(DateTime nextRun)
+    public Result<Unit> ChangeScheduleNextRun(DateTime nextRun)
     {
         if (State.IsWorking())
             return Error.Conflict($"Парсер не в состоянии {State.Value}. Невозможно изменить дату следующего запуска.");
         Result<SubscribedParserSchedule> updated = Schedule.WithNextRun(nextRun);
         if (updated.IsFailure) return updated.Error;
         Schedule = updated.Value;
-        return this;
+        return Unit.Value;
     }
 
     public Result<SubscribedParserLink> FindLink(Func<SubscribedParserLinkUrlInfo, bool> predicate)
@@ -185,11 +176,10 @@ public sealed class SubscribedParser : ISubscribedParser
         return link;
     }
 
-    public SubscribedParser Disable()
+    public void Disable()
     {
         State = SubscribedParserState.Disabled;
         Schedule = Schedule.WithFinishedAt(DateTime.UtcNow);
-        return this;
     }
 
     public Result<IEnumerable<SubscribedParserLink>> UpdateLinks(IEnumerable<ParserLinkUpdater> updater)
@@ -216,7 +206,7 @@ public sealed class SubscribedParser : ISubscribedParser
         return Result.Success(Links.AsEnumerable());
     }
 
-    public Result<SubscribedParser> FinishWork(long totalElapsedSeconds)
+    public Result<Unit> FinishWork(long totalElapsedSeconds)
     {
         if (!State.IsWorking())
             return Error.Conflict($"Парсер не в состоянии {SubscribedParserState.Working.Value}, чтобы завершить работу.");
@@ -225,22 +215,22 @@ public sealed class SubscribedParser : ISubscribedParser
         Statistics = update.Value;
         State = SubscribedParserState.Sleeping;
         Schedule = Schedule.WithFinishedAt(DateTime.UtcNow);
-        return this;
+        return Unit.Value;
     }
 
-    public Result<SubscribedParser> PermantlyEnable()
+    public Result<Unit> PermantlyEnable()
     {
         if (HasNoLinks()) return Error.Conflict($"Парсер не содержит ссылок.");
         if (State.IsWorking()) return Error.Conflict($"Парсер уже в состоянии {State.Value}.");
         State = SubscribedParserState.Working;
         Schedule = Schedule.WithStartedAt(DateTime.UtcNow);
-        return this;
+        return Unit.Value;
     }
 
-    public SubscribedParser PermantlyDisable()
+    public void PermanentlyDisable()
     {
         State = SubscribedParserState.Disabled;
-        return this;
+        Schedule = Schedule.WithFinishedAt(DateTime.UtcNow);
     }
 
     public Result<SubscribedParserLink> RemoveLink(SubscribedParserLink link)
@@ -286,16 +276,16 @@ public sealed class SubscribedParser : ISubscribedParser
         return editResult;
     }
 
-    public Result<SubscribedParser> Enable()
+    public Result<Unit> Enable()
     {
         if (State.IsSleeping())
             return Error.Conflict($"Парсер уже в состоянии {State.Value}.");
         State = SubscribedParserState.Sleeping;
         Schedule = Schedule.WithStartedAt(DateTime.UtcNow);
-        return this;
+        return Unit.Value;
     }
     
-    public Result<SubscribedParser> FinishWork()
+    public Result<Unit> FinishWork()
     {
         if (!State.IsWorking())
             return Error.Conflict($"Парсер не в состоянии {SubscribedParserState.Working.Value}, чтобы завершить работу.");
@@ -303,7 +293,7 @@ public sealed class SubscribedParser : ISubscribedParser
         Result<SubscribedParserSchedule> updated = Schedule.WithFinishedAt(DateTime.UtcNow);
         if (updated.IsFailure) return updated.Error;
         Schedule = updated.Value;
-        return this;
+        return Unit.Value;
     }
 
     public static async Task<Result<SubscribedParser>> CreateNew(

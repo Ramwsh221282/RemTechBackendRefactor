@@ -1,4 +1,5 @@
 ﻿using ParsersControl.Core.Contracts;
+using ParsersControl.Core.Extensions;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
@@ -11,35 +12,30 @@ public sealed class EnableParserCommandHandler(
     ISubscribedParsersRepository repository
 ) : ICommandHandler<EnableParserCommand, SubscribedParser>
 {
-    public async Task<Result<SubscribedParser>> Execute(
-        EnableParserCommand command, 
-        CancellationToken ct = default)
+    public async Task<Result<SubscribedParser>> Execute(EnableParserCommand command, CancellationToken ct = default)
     {
-        Result<ISubscribedParser> parser = await GetRequiredParser(command, ct);
-        Result<SubscribedParser> enabled = Enable(parser);
-        return await SaveChanges(parser).Map(() => enabled.Value);
+        Result<SubscribedParser> parser = await GetRequiredParser(command, ct);
+        Result<Unit> enabled = Enable(parser);
+        return await SaveChanges(parser, enabled, ct).Map(() => parser.Value);
     }
 
-    private async Task<Result> SaveChanges(
-        Result<ISubscribedParser> parser)
+    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> enabling, CancellationToken ct)
     {
+        if (enabling.IsFailure) return Result.Failure(enabling.Error);
         if (parser.IsFailure) return Result.Failure(parser.Error);
         await repository.Save(parser.Value);
         return Result.Success();
     }
     
-    private Result<SubscribedParser> Enable(Result<ISubscribedParser> parser)
+    private Result<Unit> Enable(Result<SubscribedParser> parser)
     {
         if (parser.IsFailure) return parser.Error;
         return parser.Value.Enable();
     }
     
-    private async Task<Result<ISubscribedParser>> GetRequiredParser(
-        EnableParserCommand command,
-        CancellationToken ct)
+    private async Task<Result<SubscribedParser>> GetRequiredParser(EnableParserCommand command, CancellationToken ct)
     {
         SubscribedParserQuery query = new(Id: command.Id, WithLock: true);
-        Result<ISubscribedParser> parser = await repository.Get(query, ct: ct);
-        return parser;
+        return await SubscribedParser.FromRepository(repository, query, ct);
     }
 }

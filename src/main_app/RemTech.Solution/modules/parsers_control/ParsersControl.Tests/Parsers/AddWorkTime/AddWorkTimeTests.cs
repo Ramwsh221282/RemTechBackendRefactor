@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using ParsersControl.Core.Features.SetWorkTime;
+using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
@@ -18,6 +19,10 @@ public sealed class AddWorkTimeTests(IntegrationalTestsFixture fixture) : IClass
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
+        Result<IEnumerable<SubscribedParserLink>> linkResultBeforeStartWork = await Services.AddLink(id, "Test url", "Test name");
+        Assert.True(linkResultBeforeStartWork.IsSuccess);
+        Result activatingLink = await Services.MakeLinkActive(id, linkResultBeforeStartWork.Value.First().Id.Value);
+        Assert.True(activatingLink.IsSuccess);
         Result<SubscribedParser> enabled = await Services.EnableParser(id);
         Assert.True(enabled.IsSuccess);
         Result<SubscribedParser> started = await Services.StartParser(id);

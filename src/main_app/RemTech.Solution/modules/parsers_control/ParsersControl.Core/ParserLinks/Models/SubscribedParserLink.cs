@@ -6,6 +6,10 @@ namespace ParsersControl.Core.ParserLinks.Models;
 
 public sealed class SubscribedParserLink
 {
+    public SubscribedParserLink(SubscribedParserLink link) 
+        : this(link.ParserId, link.Id, link.UrlInfo, link.Statistics, link.Active) 
+    { }
+    
     private SubscribedParserLink(
         SubscribedParserId parserId, 
         SubscribedParserLinkId id, 
@@ -79,4 +83,7 @@ public sealed class SubscribedParserLink
         ParsingStatistics statistics,
         bool active
     ) => new(parserId, id, urlInfo, statistics, active);
+    
+    public static SubscribedParserLink CreateCopy(SubscribedParserLink link) =>
+        new(link);
 }

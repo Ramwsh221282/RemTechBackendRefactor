@@ -18,16 +18,18 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
-        Assert.True(linkResult.IsSuccess);
-        Guid linkId = linkResult.Value.Id.Value;
+        Result<IEnumerable<SubscribedParserLink>> linkResultBeforeStartWork = await Services.AddLink(parserId, "Test url", "Test name");
+        Assert.True(linkResultBeforeStartWork.IsSuccess);
+        Result activatingLink = await Services.MakeLinkActive(parserId, linkResultBeforeStartWork.Value.First().Id.Value);
+        Assert.True(activatingLink.IsSuccess);
+        Guid linkId = linkResultBeforeStartWork.Value.First().Id.Value;
 
         Result<SubscribedParserLink> removeResult = await Services.RemoveLink(parserId, linkId);
 
         Assert.True(removeResult.IsSuccess);
         Assert.Equal(linkId, removeResult.Value.Id.Value);
 
-        Result<ISubscribedParser> parserResult = await Services.GetParser(parserId);
+        Result<SubscribedParser> parserResult = await Services.GetParser(parserId);
         Assert.True(parserResult.IsSuccess);
         Result<SubscribedParserLink> findLinkResult = parserResult.Value.FindLink(linkId);
         Assert.True(findLinkResult.IsFailure);
@@ -43,9 +45,11 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
-        Assert.True(linkResult.IsSuccess);
-        Guid linkId = linkResult.Value.Id.Value;
+        Result<IEnumerable<SubscribedParserLink>> linkResultBeforeStartWork = await Services.AddLink(parserId, "Test url", "Test name");
+        Assert.True(linkResultBeforeStartWork.IsSuccess);
+        Result activatingLink = await Services.MakeLinkActive(parserId, linkResultBeforeStartWork.Value.First().Id.Value);
+        Assert.True(activatingLink.IsSuccess);
+        Guid linkId = linkResultBeforeStartWork.Value.First().Id.Value;
 
         Result<SubscribedParser> enableResult = await Services.EnableParser(parserId);
         Assert.True(enableResult.IsSuccess);
@@ -61,7 +65,7 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
         Assert.True(removeResult.IsSuccess);
         Assert.Equal(linkId, removeResult.Value.Id.Value);
 
-        Result<ISubscribedParser> parserResult = await Services.GetParser(parserId);
+        Result<SubscribedParser> parserResult = await Services.GetParser(parserId);
         Assert.True(parserResult.IsSuccess);
         Result<SubscribedParserLink> findLinkResult = parserResult.Value.FindLink(linkId);
         Assert.True(findLinkResult.IsFailure);
@@ -76,10 +80,12 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
 
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
-
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
-        Assert.True(linkResult.IsSuccess);
-        Guid linkId = linkResult.Value.Id.Value;
+    
+        Result<IEnumerable<SubscribedParserLink>> linkResultBeforeStartWork = await Services.AddLink(parserId, "Test url", "Test name");
+        Assert.True(linkResultBeforeStartWork.IsSuccess);
+        Result activatingLink = await Services.MakeLinkActive(parserId, linkResultBeforeStartWork.Value.First().Id.Value);
+        Assert.True(activatingLink.IsSuccess);
+        Guid linkId = linkResultBeforeStartWork.Value.First().Id.Value;
 
         Result<SubscribedParser> enableResult = await Services.EnableParser(parserId);
         Assert.True(enableResult.IsSuccess);
@@ -91,7 +97,7 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
 
         Assert.True(removeResult.IsFailure);
 
-        Result<ISubscribedParser> parserResult = await Services.GetParser(parserId);
+        Result<SubscribedParser> parserResult = await Services.GetParser(parserId);
         Assert.True(parserResult.IsSuccess);
         Result<SubscribedParserLink> findLinkResult = parserResult.Value.FindLink(linkId);
         Assert.True(findLinkResult.IsSuccess);
@@ -107,17 +113,19 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
-        Assert.True(linkResult.IsSuccess);
+        Result<IEnumerable<SubscribedParserLink>> linkResultBeforeStartWork = await Services.AddLink(parserId, "Test url", "Test name");
+        Assert.True(linkResultBeforeStartWork.IsSuccess);
+        Result activatingLink = await Services.MakeLinkActive(parserId, linkResultBeforeStartWork.Value.First().Id.Value);
+        Assert.True(activatingLink.IsSuccess);
 
         Guid invalidLinkId = Guid.NewGuid();
         Result<SubscribedParserLink> removeResult = await Services.RemoveLink(parserId, invalidLinkId);
 
         Assert.True(removeResult.IsFailure);
 
-        Result<ISubscribedParser> parserResult = await Services.GetParser(parserId);
+        Result<SubscribedParser> parserResult = await Services.GetParser(parserId);
         Assert.True(parserResult.IsSuccess);
-        Result<SubscribedParserLink> findLinkResult = parserResult.Value.FindLink(linkResult.Value.Id);
+        Result<SubscribedParserLink> findLinkResult = parserResult.Value.FindLink(linkResultBeforeStartWork.Value.First().Id);
         Assert.True(findLinkResult.IsSuccess);
     }
 
@@ -142,17 +150,17 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> link1Result = await Services.AddLink(parserId, "https://example1.com", "Link 1");
+        Result<IEnumerable<SubscribedParserLink>> link1Result = await Services.AddLink(parserId, "https://example1.com", "Link 1");
         Assert.True(link1Result.IsSuccess);
-        Guid link1Id = link1Result.Value.Id.Value;
+        Guid link1Id = link1Result.Value.First().Id.Value;
 
-        Result<SubscribedParserLink> link2Result = await Services.AddLink(parserId, "https://example2.com", "Link 2");
+        Result<IEnumerable<SubscribedParserLink>> link2Result = await Services.AddLink(parserId, "https://example2.com", "Link 2");
         Assert.True(link2Result.IsSuccess);
-        Guid link2Id = link2Result.Value.Id.Value;
+        Guid link2Id = link2Result.Value.First().Id.Value;
 
-        Result<SubscribedParserLink> link3Result = await Services.AddLink(parserId, "https://example3.com", "Link 3");
+        Result<IEnumerable<SubscribedParserLink>> link3Result = await Services.AddLink(parserId, "https://example3.com", "Link 3");
         Assert.True(link3Result.IsSuccess);
-        Guid link3Id = link3Result.Value.Id.Value;
+        Guid link3Id = link3Result.Value.First().Id.Value;
 
         Result<SubscribedParserLink> remove1Result = await Services.RemoveLink(parserId, link1Id);
         Assert.True(remove1Result.IsSuccess);
@@ -160,7 +168,7 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
         Result<SubscribedParserLink> remove2Result = await Services.RemoveLink(parserId, link2Id);
         Assert.True(remove2Result.IsSuccess);
 
-        Result<ISubscribedParser> parserResult = await Services.GetParser(parserId);
+        Result<SubscribedParser> parserResult = await Services.GetParser(parserId);
         Assert.True(parserResult.IsSuccess);
 
         Result<SubscribedParserLink> findLink1 = parserResult.Value.FindLink(link1Id);
@@ -183,9 +191,9 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
         Assert.True(linkResult.IsSuccess);
-        Guid linkId = linkResult.Value.Id.Value;
+        Guid linkId = linkResult.Value.First().Id.Value;
 
         Result<SubscribedParserLink> firstRemoveResult = await Services.RemoveLink(parserId, linkId);
         Assert.True(firstRemoveResult.IsSuccess);
@@ -204,20 +212,20 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
         Assert.True(linkResult.IsSuccess);
-        Guid linkId = linkResult.Value.Id.Value;
+        Guid linkId = linkResult.Value.First().Id.Value;
 
         Result<SubscribedParserLink> removeResult = await Services.RemoveLink(parserId, linkId);
         Assert.True(removeResult.IsSuccess);
 
-        Result<SubscribedParserLink> newLinkResult = await Services.AddLink(parserId, "https://newexample.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> newLinkResult = await Services.AddLink(parserId, "https://newexample.com", "Test Link");
         Assert.True(newLinkResult.IsSuccess);
-        Assert.NotEqual(linkId, newLinkResult.Value.Id.Value);
+        Assert.NotEqual(linkId, newLinkResult.Value.First().Id.Value);
 
-        Result<ISubscribedParser> parserResult = await Services.GetParser(parserId);
+        Result<SubscribedParser> parserResult = await Services.GetParser(parserId);
         Assert.True(parserResult.IsSuccess);
-        Result<SubscribedParserLink> findNewLink = parserResult.Value.FindLink(newLinkResult.Value.Id);
+        Result<SubscribedParserLink> findNewLink = parserResult.Value.FindLink(newLinkResult.Value.First().Id);
         Assert.True(findNewLink.IsSuccess);
     }
 
@@ -231,20 +239,20 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
         Assert.True(linkResult.IsSuccess);
-        Guid linkId = linkResult.Value.Id.Value;
+        Guid linkId = linkResult.Value.First().Id.Value;
 
         Result<SubscribedParserLink> removeResult = await Services.RemoveLink(parserId, linkId);
         Assert.True(removeResult.IsSuccess);
 
-        Result<SubscribedParserLink> newLinkResult = await Services.AddLink(parserId, "https://example.com", "New Link Name");
+        Result<IEnumerable<SubscribedParserLink>> newLinkResult = await Services.AddLink(parserId, "https://example.com", "New Link Name");
         Assert.True(newLinkResult.IsSuccess);
-        Assert.NotEqual(linkId, newLinkResult.Value.Id.Value);
+        Assert.NotEqual(linkId, newLinkResult.Value.First().Id.Value);
 
-        Result<ISubscribedParser> parserResult = await Services.GetParser(parserId);
+        Result<SubscribedParser> parserResult = await Services.GetParser(parserId);
         Assert.True(parserResult.IsSuccess);
-        Result<SubscribedParserLink> findNewLink = parserResult.Value.FindLink(newLinkResult.Value.Id);
+        Result<SubscribedParserLink> findNewLink = parserResult.Value.FindLink(newLinkResult.Value.First().Id);
         Assert.True(findNewLink.IsSuccess);
     }
 
@@ -258,19 +266,19 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> link1Result = await Services.AddLink(parserId, "https://example1.com", "Link 1");
+        Result<IEnumerable<SubscribedParserLink>> link1Result = await Services.AddLink(parserId, "https://example1.com", "Link 1");
         Assert.True(link1Result.IsSuccess);
 
-        Result<SubscribedParserLink> link2Result = await Services.AddLink(parserId, "https://example2.com", "Link 2");
+        Result<IEnumerable<SubscribedParserLink>> link2Result = await Services.AddLink(parserId, "https://example2.com", "Link 2");
         Assert.True(link2Result.IsSuccess);
 
-        Result<SubscribedParserLink> remove1Result = await Services.RemoveLink(parserId, link1Result.Value.Id.Value);
+        Result<SubscribedParserLink> remove1Result = await Services.RemoveLink(parserId, link1Result.Value.First().Id.Value);
         Assert.True(remove1Result.IsSuccess);
 
-        Result<SubscribedParserLink> remove2Result = await Services.RemoveLink(parserId, link2Result.Value.Id.Value);
+        Result<SubscribedParserLink> remove2Result = await Services.RemoveLink(parserId, link2Result.Value.First().Id.Value);
         Assert.True(remove2Result.IsSuccess);
 
-        Result<ISubscribedParser> parserResult = await Services.GetParser(parserId);
+        Result<SubscribedParser> parserResult = await Services.GetParser(parserId);
         Assert.True(parserResult.IsSuccess);
     }
 
@@ -284,18 +292,18 @@ public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : I
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<SubscribedParserLink> link1Result = await Services.AddLink(parserId, "https://example1.com", "Link 1");
+        Result<IEnumerable<SubscribedParserLink>> link1Result = await Services.AddLink(parserId, "https://example1.com", "Link 1");
         Assert.True(link1Result.IsSuccess);
-        Guid link1Id = link1Result.Value.Id.Value;
+        Guid link1Id = link1Result.Value.First().Id.Value;
 
-        Result<SubscribedParserLink> link2Result = await Services.AddLink(parserId, "https://example2.com", "Link 2");
+        Result<IEnumerable<SubscribedParserLink>> link2Result = await Services.AddLink(parserId, "https://example2.com", "Link 2");
         Assert.True(link2Result.IsSuccess);
-        Guid link2Id = link2Result.Value.Id.Value;
+        Guid link2Id = link2Result.Value.First().Id.Value;
 
         Result<SubscribedParserLink> removeResult = await Services.RemoveLink(parserId, link1Id);
         Assert.True(removeResult.IsSuccess);
-
-        Result<ISubscribedParser> parserResult = await Services.GetParser(parserId);
+    
+        Result<SubscribedParser> parserResult = await Services.GetParser(parserId);
         Assert.True(parserResult.IsSuccess);
 
         Result<SubscribedParserLink> remainingLink = parserResult.Value.FindLink(link2Id);

@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Dapper;
+using Npgsql;
 using ParsersControl.Core.Common;
 using ParsersControl.Core.Contracts;
 using ParsersControl.Core.ParserLinks.Models;
@@ -11,6 +12,8 @@ namespace ParsersControl.Infrastructure.Parsers.Repository;
 
 public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscribedParsersRepository
 {
+    private readonly ChangeTracker _tracker = new(session);
+    
     public Task<bool> Exists(SubscribedParserIdentity identity, CancellationToken ct = default)
     {
         const string sql = """
@@ -48,17 +51,14 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
         return session.Execute(command);
     }
 
-    public async Task Save(ISubscribedParser parser)
-    {
-        if (parser is SqlSpeakingParser speaking)
-        {
-            await speaking.Save();
-            return;
-        }
-        throw new NotSupportedException($"Unsupported parser type for saving: {parser.GetType().Name}");
-    }
+    public async Task Save(IEnumerable<SubscribedParser> parsers, CancellationToken ct = default) =>
+        await _tracker.SaveChanges(parsers, ct);
 
-    public async Task<Result<ISubscribedParser>> Get(SubscribedParserQuery query, CancellationToken ct = default)
+    public async Task Save(SubscribedParser parser, CancellationToken ct = default) => 
+        await _tracker.SaveChanges([parser], ct);
+    
+
+    public async Task<Result<SubscribedParser>> Get(SubscribedParserQuery query, CancellationToken ct = default)
     {
         (DynamicParameters parameters, string filterSql) = WhereClause(query);
          if (query.WithLock) await Block(query, ct);
@@ -87,13 +87,13 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
                        """;
 
         CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
-        
         (SubscribedParser? parser, List<SubscribedParserLink> links) = 
-            await session.QuerySingleUsingReader(command, MapFromReader, MapLinkFromReader, new ParserIdComparer());
+                await session.QuerySingleUsingReader(command, MapFromReader, MapLinkFromReader, new ParserIdComparer());
 
-        return parser == null
-            ? Error.NotFound("Парсер не найден.")
-            : new SqlSpeakingParser(session, new SubscribedParser(parser, links), ct);
+        if (parser is null) return Error.NotFound("Парсер не найден.");
+        SubscribedParser result = new(parser, links);
+        _tracker.StartTracking(result);
+        return result;
     }
 
     private sealed class ParserIdComparer : IEqualityComparer<SubscribedParser>
@@ -198,5 +198,311 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
                            """;
         CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
         await session.Execute(command);
+    }
+
+    private sealed class ChangeTracker(NpgSqlSession session)
+    {
+        private NpgSqlSession Session { get; } = session;
+        private readonly Dictionary<Guid, SubscribedParser> _trackingParsers = [];
+
+        public void StartTracking(SubscribedParser parser)
+        {
+            SubscribedParser copy = SubscribedParser.CreateCopy(parser);
+            _trackingParsers.TryAdd(copy.Id.Value, copy);
+        }
+
+        public async Task SaveChanges(IEnumerable<SubscribedParser> parsers, CancellationToken ct = default)
+        {
+            await SaveParserChanges(parsers, ct);
+            await SaveLinkChanges(parsers, ct);
+        }
+
+        private async Task SaveParserChanges(IEnumerable<SubscribedParser> parsers, CancellationToken ct = default)
+        {
+            DynamicParameters parameters = new();
+            string updateClause = FormUpdateClauses(parsers, parameters);
+            if (string.IsNullOrWhiteSpace(updateClause)) return;
+            CommandDefinition command = new(updateClause, parameters, cancellationToken: ct, transaction: Session.Transaction);
+            NpgsqlConnection connection = await Session.GetConnection(ct);
+            await connection.ExecuteAsync(command);
+        }
+
+        private async Task SaveLinkChanges(IEnumerable<SubscribedParser> parsers, CancellationToken ct = default)
+        {
+            foreach (SubscribedParser parser in GetTrackingParsers(parsers))
+            {
+                SubscribedParser original = _trackingParsers[parser.Id.Value];
+                await RemoveLinks(GetLinksToRemove(original, parser), ct);
+                await AddLinks(GetLinksToAdd(original, parser), ct);
+                await UpdateLinks(GetLinksToUpdate(original, parser), GetOriginalLinksToCompare(original, parser), ct);
+            }
+        }
+
+        private async Task UpdateLinks(IEnumerable<SubscribedParserLink> linksToUpdate, Dictionary<Guid, SubscribedParserLink> linksToCompare, CancellationToken ct)
+        {
+            if (!linksToUpdate.Any()) return;
+            if (!linksToCompare.Any()) return;
+            
+            Guid[] ids = linksToUpdate.Select(l => l.Id.Value).ToArray();
+            List<string> setClauses = [];
+            DynamicParameters parameters = new();
+
+            if (linksToUpdate.Any(l => l.Active != linksToCompare[l.Id.Value].Active))
+            {
+                string caseWhen = string.Join(" ", linksToUpdate.Select((l, i) =>
+                {
+                    string paramName = $"@active_{i}";
+                    parameters.Add(paramName, l.Active, DbType.Boolean);
+                    return $"{CreateLinkWhenClause(l, i)} THEN {paramName}";
+                }));
+                setClauses.Add($"is_active = CASE {caseWhen} ELSE is_active END");
+            }
+
+            if (linksToUpdate.Any(l => l.Statistics.ParsedCount.Value != linksToCompare[l.Id.Value].Statistics.ParsedCount.Value))
+            {
+                string caseWhen = string.Join(" ", linksToUpdate.Select((l, i) =>
+                {
+                    string paramName = $"@processed_{i}";
+                    parameters.Add(paramName, l.Statistics.ParsedCount.Value, DbType.Int32);
+                    return $"{CreateLinkWhenClause(l, i)} THEN {paramName}";
+                }));
+                setClauses.Add($"processed = CASE {caseWhen} ELSE processed END");
+            }
+
+            if (linksToUpdate.Any(l => l.Statistics.WorkTime.TotalElapsedSeconds != linksToCompare[l.Id.Value].Statistics.WorkTime.TotalElapsedSeconds))
+            {
+                string caseWhen = string.Join(" ", linksToUpdate.Select((l, i) =>
+                {
+                    string paramName = $"@elapsed_seconds_{i}";
+                    parameters.Add(paramName, l.Statistics.WorkTime.TotalElapsedSeconds, DbType.Int64);
+                    return $"{CreateLinkWhenClause(l, i)} THEN {paramName}";
+                }));
+                setClauses.Add($"elapsed_seconds = CASE {caseWhen} ELSE elapsed_seconds END");
+            }
+
+            if (linksToUpdate.Any(l => l.UrlInfo.Name != linksToCompare[l.Id.Value].UrlInfo.Name))
+            {
+                string caseWhen = string.Join(" ", linksToUpdate.Select((l, i) =>
+                {
+                    string paramName = $"@name_{i}";
+                    parameters.Add(paramName, l.UrlInfo.Name, DbType.String);
+                    return $"{CreateLinkWhenClause(l, i)} THEN {paramName}";
+                }));
+                setClauses.Add($"name = CASE {caseWhen} ELSE name END");
+            }
+
+            if (linksToUpdate.Any(l => l.UrlInfo.Url != linksToCompare[l.Id.Value].UrlInfo.Url))
+            {
+                string caseWhen = string.Join(" ", linksToUpdate.Select((l, i) =>
+                {
+                    string paramName = $"@url_{i}";
+                    parameters.Add(paramName, l.UrlInfo.Url, DbType.String);
+                    return $"{CreateLinkWhenClause(l, i)} THEN {paramName}";
+                }));
+                setClauses.Add($"url = CASE {caseWhen} ELSE url END");
+            }
+
+            if (setClauses.Count == 0) return;
+            
+            for (int i = 0; i < ids.Length; i++)
+            {
+                Guid value = ids[i];
+                string paramName = $"@id_{i}";
+                parameters.Add(paramName, value, DbType.Guid);
+            }
+            
+            parameters.Add("@ids", ids);
+            
+            string sql = $"""
+                          UPDATE parsers_control_module.parser_links pl
+                          SET {string.Join(", ", setClauses)}
+                          WHERE pl.id = ANY (@ids)
+                          """;
+            
+            CommandDefinition command = Session.FormCommand(sql, parameters, ct);
+            await Session.Execute(command);
+        }
+        
+        private Dictionary<Guid, SubscribedParserLink> GetOriginalLinksToCompare(SubscribedParser original, SubscribedParser updated) =>
+            original.Links.IntersectBy(updated.Links.Select(l => l.Id.Value), l => l.Id.Value).ToDictionary(l => l.Id.Value, l => l);
+        
+        private IEnumerable<SubscribedParserLink> GetLinksToUpdate(SubscribedParser original, SubscribedParser updated) =>
+            updated.Links.IntersectBy(original.Links.Select(l => l.Id.Value), l => l.Id.Value);
+        
+       private IEnumerable<SubscribedParserLink> GetLinksToRemove(SubscribedParser original, SubscribedParser updated) =>
+            original.Links.ExceptBy(updated.Links.Select(l => l.Id.Value), l => l.Id.Value);
+        
+        private IEnumerable<SubscribedParserLink> GetLinksToAdd(SubscribedParser original, SubscribedParser updated) =>
+            updated.Links.ExceptBy(original.Links.Select(l => l.Id.Value), l => l.Id.Value);
+
+        private async Task RemoveLinks(IEnumerable<SubscribedParserLink> links, CancellationToken ct)
+        {
+            if (!links.Any()) return;
+            string sql = "DELETE FROM parsers_control_module.parser_links pl WHERE pl.id = ANY (@ids)";
+            Guid[] ids = links.Select(l => l.Id.Value).ToArray();
+            DynamicParameters parameters = new();
+            parameters.Add("@ids", ids);
+            CommandDefinition command = Session.FormCommand(sql, parameters, ct);
+            await Session.Execute(command);
+        }
+
+        private async Task AddLinks(IEnumerable<SubscribedParserLink> links, CancellationToken ct)
+        {
+            if (!links.Any()) return;
+            string sql = """
+                         INSERT INTO parsers_control_module.parser_links (id, parser_id, name, url, processed, elapsed_seconds, is_active) 
+                         VALUES (@id, @parser_id, @name, @url, @processed, @elapsed_seconds, @is_active)
+                         """;
+            var parameters = links.Select(l => new
+            {
+                id = l.Id.Value,
+                parser_id = l.ParserId.Value,
+                name = l.UrlInfo.Name,
+                url = l.UrlInfo.Url,
+                processed = l.Statistics.ParsedCount.Value,
+                elapsed_seconds = l.Statistics.WorkTime.TotalElapsedSeconds,
+                is_active = l.Active
+            });
+
+            NpgsqlConnection connection = await Session.GetConnection(ct);
+            await connection.ExecuteAsync(sql, parameters, transaction: Session.Transaction);
+        }
+        
+        private string FormUpdateClauses(IEnumerable<SubscribedParser> parsers, DynamicParameters parameters)
+        {
+            IEnumerable<SubscribedParser> tracking = GetTrackingParsers(parsers);
+            Guid[] ids = tracking.Select(p => p.Id.Value).ToArray();
+            List<string> setClauses = [];
+
+            if (tracking.Any(u => u.State.Value != _trackingParsers[u.Id.Value].State.Value))
+            {
+                string caseWhen = string.Join(" ",
+                    tracking.Select((p, i) =>
+                    {
+                        string paramName = $"@state_{i}";
+                        parameters.Add(paramName, p.State.Value, DbType.String);
+                        return $"{CreateParserWhenClause(p, i)} THEN {paramName}";
+                    }));
+                setClauses.Add($"state = CASE {caseWhen} ELSE state END");
+            }
+
+            if (tracking.Any(u => u.Schedule.FinishedAt != _trackingParsers[u.Id.Value].Schedule.FinishedAt))
+            {
+                string caseWhen = string.Join(" ",
+                    tracking.Select((p, i) =>
+                    {
+                        string paramName = $"@finished_at_{i}";
+                        parameters.Add(paramName,
+                            p.Schedule.FinishedAt.HasValue ? p.Schedule.FinishedAt.Value : DBNull.Value,
+                            DbType.DateTime);
+                        return $"{CreateParserWhenClause(p, i)} THEN {paramName}";
+                    }));
+                setClauses.Add($"finished_at = CASE {caseWhen} ELSE finished_at END");
+            }
+            
+            if (tracking.Any(u => u.Schedule.NextRun != _trackingParsers[u.Id.Value].Schedule.NextRun))
+            {
+                var caseWhen = string.Join(" ",
+                    tracking.Select((p, i) =>
+                    {
+                        string paramName = $"@next_run_{i}";
+                        parameters.Add(paramName,
+                            p.Schedule.NextRun.HasValue ? p.Schedule.NextRun.Value : DBNull.Value,
+                            DbType.DateTime);
+                        return $"{CreateParserWhenClause(p, i)} THEN {paramName}";
+                    }));
+                setClauses.Add($"next_run = CASE {caseWhen} ELSE next_run END");
+            }
+            
+            if (tracking.Any(u => u.Schedule.WaitDays != _trackingParsers[u.Id.Value].Schedule.WaitDays))
+            {
+                var caseWhen = string.Join(" ",
+                    tracking.Select((p, i) =>
+                    {
+                        string paramName = $"@wait_days_{i}";
+                        parameters.Add(paramName,
+                            p.Schedule.WaitDays.HasValue ? p.Schedule.WaitDays.Value : DBNull.Value,
+                            DbType.Int32);
+                        return $"{CreateParserWhenClause(p, i)} THEN {paramName}";
+                    }));
+                setClauses.Add($"wait_days = CASE {caseWhen} ELSE wait_days END");
+            }
+            
+            if (tracking.Any(u => u.Schedule.StartedAt != _trackingParsers[u.Id.Value].Schedule.StartedAt))
+            {
+                var caseWhen = string.Join(" ",
+                    tracking.Select((p, i) =>
+                    {
+                        string paramName = $"@started_at_{i}";
+                        parameters.Add(paramName,
+                            p.Schedule.StartedAt.HasValue ? p.Schedule.StartedAt.Value : DBNull.Value,
+                            DbType.DateTime);
+                        return $"{CreateParserWhenClause(p, i)} THEN {paramName}";
+                    }));
+                setClauses.Add($"started_at = CASE {caseWhen} ELSE started_at END");
+            }
+
+            if (tracking.Any(u => u.Statistics.ParsedCount.Value != _trackingParsers[u.Id.Value].Statistics.ParsedCount.Value))
+            {
+                string caseWhen = string.Join(" ",
+                    tracking.Select((p, i) =>
+                    {
+                        string paramName = $"@processed_{i}";
+                        parameters.Add(paramName, p.Statistics.ParsedCount.Value, DbType.Int32);
+                        return $"{CreateParserWhenClause(p, i)} THEN {paramName}";
+                    }));
+                setClauses.Add($"processed = CASE {caseWhen} ELSE processed END");                
+            }
+            
+            if (tracking.Any(u => u.Statistics.WorkTime.TotalElapsedSeconds != _trackingParsers[u.Id.Value].Statistics.WorkTime.TotalElapsedSeconds))
+            {
+                string caseWhen = string.Join(" ",
+                    tracking.Select((p, i) =>
+                    {
+                        string paramName = $"@elapsed_seconds_{i}";
+                        parameters.Add(paramName, p.Statistics.WorkTime.TotalElapsedSeconds, DbType.Int64);
+                        return $"{CreateParserWhenClause(p, i)} THEN {paramName}";
+                    }));
+                setClauses.Add($"elapsed_seconds = CASE {caseWhen} ELSE elapsed_seconds END");
+            }
+
+            if (setClauses.Count == 0) return string.Empty;
+            
+            for (int i = 0; i < ids.Length; i++)
+            {
+                Guid value = ids[i];
+                string paramName = $"@id_{i}";
+                parameters.Add(paramName, value, DbType.Guid);
+            }
+            
+            parameters.Add("@ids", ids);
+            return $"""
+                    UPDATE parsers_control_module.registered_parsers p
+                    SET {string.Join(", ", setClauses)}
+                    WHERE p.id = ANY (@ids)
+                    """;
+        }
+        
+        private IEnumerable<SubscribedParser> GetTrackingParsers(IEnumerable<SubscribedParser> parsers)
+        {
+            List<SubscribedParser> updated = [];
+            foreach (var parser in parsers)
+            {
+                if (!_trackingParsers.TryGetValue(parser.Id.Value, out SubscribedParser? existing))
+                    continue;
+                updated.Add(parser);
+            }
+            return updated;
+        }
+    
+        private static string CreateLinkWhenClause(SubscribedParserLink link, int index)
+        {
+            return $"WHEN pl.id = @id_{index}";
+        }
+        
+        private static string CreateParserWhenClause(SubscribedParser parser, int index)
+        {
+            return $"WHEN p.id = @id_{index}";
+        }
     }
 }
