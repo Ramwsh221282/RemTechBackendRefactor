@@ -1,25 +1,23 @@
 ﻿namespace ContainedItems.Domain.Models;
 
-public sealed class ContainedItem(ContainedItemId id, 
-    ContainedItemType itemType, 
+public sealed class ContainedItem(
+    ContainedItemId id,
     ServiceItemId serviceItemId, 
     ServiceCreatorInfo creatorInfo, 
     ContainedItemInfo info, 
     ContainedItemStatus status)
 {
     public ContainedItemId Id { get; } = id;
-    public ContainedItemType ItemType { get; } = itemType;
     public ServiceItemId ServiceItemId { get; } = serviceItemId;
     public ServiceCreatorInfo CreatorInfo { get; } = creatorInfo;
     public ContainedItemInfo Info { get; } = info;
     public ContainedItemStatus Status { get; private set; } = status;
     public static ContainedItem PendingToSave(
         ContainedItemId id, 
-        ContainedItemType itemType, 
         ServiceItemId serviceItemId, 
         ServiceCreatorInfo creatorInfo, 
         ContainedItemInfo info) =>
-        new(id, itemType, serviceItemId, creatorInfo, info, ContainedItemStatus.PendingToSave);
+        new(id, serviceItemId, creatorInfo, info, ContainedItemStatus.PendingToSave);
 
     public void MarkSaved()
     {

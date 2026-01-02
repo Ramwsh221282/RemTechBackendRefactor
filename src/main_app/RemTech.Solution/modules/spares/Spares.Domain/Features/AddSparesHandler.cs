@@ -20,7 +20,6 @@ public sealed class AddSparesHandler(ISparesRepository repository) : ICommandHan
     {
         return spareInfo.Select(info =>
                 SparesFactory.Create(
-                    spareId: info.SpareId,
                     containedItemId: info.ContainedItemId,
                     source: info.Source,
                     oem: info.Oem,

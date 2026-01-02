@@ -15,13 +15,46 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
     public async Task Publish(ContainedItem item, CancellationToken ct = default)
     {
         Logger.Information("Publishing {Id}", item.Id);
-        AddVehicleMessagePayload message = CreateMessage(item);
+        AddVehicleMessagePayload message = CreatePayload(item);
         RabbitMqPublishOptions options = new() { Persistent = true };
         await Producer.PublishDirectAsync(message, Exchange, RoutingKey, options, ct: ct);
         Logger.Information("Published {Id}", item.Id);
     }
 
-    private AddVehicleMessagePayload CreateMessage(ContainedItem item)
+    public async Task PublishMany(IEnumerable<ContainedItem> items, CancellationToken ct = default)
+    {
+        if (!items.Any())
+        {
+            Logger.Information("No items to publish");
+            return;
+        }
+
+        RabbitMqPublishOptions options = new() { Persistent = true };
+        IEnumerable<IGrouping<Guid, ContainedItem>> grouped = items.GroupBy(i => i.CreatorInfo.CreatorId);
+        foreach (IGrouping<Guid, ContainedItem> group in grouped)
+        {
+            ContainedItem first = group.First();
+            AddVehicleMessage message = CreateMessage(first, group);
+            await Producer.PublishDirectAsync(message, Exchange, RoutingKey, options, ct: ct);
+            Logger.Information("Published {CreatorType} {CreatorDomain}", first.CreatorInfo.Type, first.CreatorInfo.Domain);
+        }
+    }
+    
+    private AddVehicleMessage CreateMessage(ContainedItem first, IEnumerable<ContainedItem> items)
+    {
+        Guid creatorId = first.CreatorInfo.CreatorId;
+        string creatorType = first.CreatorInfo.Type;
+        string creatorDomain = first.CreatorInfo.Domain;
+        return new()
+        {
+            CreatorId = creatorId,
+            CreatorDomain = creatorDomain,
+            CreatorType = creatorType,
+            Payload = items.Select(CreatePayload),
+        };
+    }
+    
+    private AddVehicleMessagePayload CreatePayload(ContainedItem item)
     {
         using JsonDocument document = JsonDocument.Parse(item.Info.Content);
         
@@ -35,12 +68,9 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
         
         AddVehicleMessagePayload payload = new()
         {
-            CreatorId = item.CreatorInfo.CreatorId,
-            CreatorDomain = item.CreatorInfo.Domain,
-            CreatorType = item.CreatorInfo.Type,
             Id = item.Id.Value,
             Title = document.RootElement.GetProperty("title").GetString()!,
-            Characteristics = characteristics.ToArray(),
+            Characteristics = characteristics,
             Url = document.RootElement.GetProperty("url").GetString()!,
             Price = document.RootElement.GetProperty("price").GetInt64(),
             IsNds = document.RootElement.GetProperty("is_nds").GetBoolean(),
@@ -50,12 +80,17 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
         
         return payload;
     }
-    
-    private sealed class AddVehicleMessagePayload
+
+    private sealed class AddVehicleMessage
     {
         public required Guid CreatorId { get; set; }
         public required string CreatorDomain { get; set; }
         public required string CreatorType { get; set; }
+        public required IEnumerable<AddVehicleMessagePayload> Payload { get; set; }
+    }
+    
+    private sealed class AddVehicleMessagePayload
+    {
         public required Guid Id { get; set; }
         public required string Title { get; set; }
         public required string Url { get; set; }
@@ -63,7 +98,7 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
         public required bool IsNds { get; set; }
         public required string Address { get; set; }
         public required string[] Photos { get; set; }
-        public required AddVehicleCharacteristic[] Characteristics { get; set; }
+        public required IEnumerable<AddVehicleCharacteristic> Characteristics { get; set; }
     }
     
     private sealed class AddVehicleCharacteristic

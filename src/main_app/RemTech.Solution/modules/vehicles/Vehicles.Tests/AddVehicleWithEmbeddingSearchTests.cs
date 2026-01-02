@@ -14,10 +14,9 @@ public sealed class AddVehicleWithEmbeddingSearchTests(NoContainersIntegrational
     {
         await using AsyncServiceScope scope = Services.CreateAsyncScope();
         ICommandHandler<AddVehicleCommand, Unit> handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<AddVehicleCommand, Unit>>();
-        AddVehicleCommand command = new(
-            CreatorId: Guid.NewGuid(),
-            CreatorDomain: "Test",
-            CreatorType: "Test",
+        
+        AddVehicleCreatorCommandPayload creator = new(Guid.NewGuid(), "Test", "Test");
+        AddVehicleVehiclesCommandPayload vehicle = new(
             Id: Guid.NewGuid(),
             Title: "Харверстерная головка John Deere H480C",
             Url: "https://example.com",
@@ -31,6 +30,8 @@ public sealed class AddVehicleWithEmbeddingSearchTests(NoContainersIntegrational
                 new AddVehicleCommandCharacteristics("Грузоподъемность", "1000 кг"),
                 new AddVehicleCommandCharacteristics("Год выпуска", "2013"),
             ]);
+        
+        AddVehicleCommand command = new(creator, [vehicle]);
         Result<Unit> unit = await handler.Execute(command);
         Assert.True(unit.IsSuccess);
     }

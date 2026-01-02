@@ -7,13 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.NN\RemTech.SharedKernel.NN.csproj" />
       <ProjectReference Include="..\Vehicles.Domain\Vehicles.Domain.csproj" />
     </ItemGroup>
     
     <ItemGroup>
       <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.15" />
       <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.4" />
+      <PackageReference Include="RemTech.SharedKernel.NN" Version="1.0.1" />
     </ItemGroup>
 
     <ItemGroup>

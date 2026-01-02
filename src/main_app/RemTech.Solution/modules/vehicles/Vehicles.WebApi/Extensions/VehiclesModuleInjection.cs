@@ -13,6 +13,7 @@ using Vehicles.Domain.Locations.Contracts;
 using Vehicles.Domain.Models.Contracts;
 using Vehicles.Domain.Vehicles;
 using Vehicles.Domain.Vehicles.Contracts;
+using Vehicles.Infrastructure.BackgroundServices;
 using Vehicles.Infrastructure.Brands.BrandsPersisterImplementation;
 using Vehicles.Infrastructure.Categories.CategoriesPersisterImplementation;
 using Vehicles.Infrastructure.Characteristics.CharacteristicsPersisterImplementation;
@@ -53,6 +54,7 @@ public static class VehiclesModuleInjection
             services.RegisterMigrations(assembly);
             services.RegisterConsumers(assembly);
             services.RegisterPersisters();
+            services.RegisterBackgroundServices();
         }
 
         private void RegisterQueryHandlers(Assembly assembly)
@@ -78,6 +80,7 @@ public static class VehiclesModuleInjection
         
         private void RegisterPersisters()
         {
+            services.AddScoped<IVehiclesListPersister, NpgSqlVehiclesListPersister>();
             services.AddScoped<IBrandPersister, NpgSqlBrandPersisterImplementation>();
             services.AddScoped<IModelsPersister, NpgSqlModelPersister>();
             services.AddScoped<ICategoryPersister, NpgSqlCategoriesPersisterImplementation>();
@@ -85,6 +88,11 @@ public static class VehiclesModuleInjection
             services.AddScoped<ILocationsPersister, NpgSqlLocationsPersister>();
             services.AddScoped<IVehiclesPersister, NpgSqlVehiclesPersister>();
             services.AddScoped<IPersister, NpgSqlPersister>();
+        }
+
+        private void RegisterBackgroundServices()
+        {
+            services.AddHostedService<VehicleEmbeddingsUpdaterService>();
         }
         
         private void RegisterSharedInfrastructure(bool isDevelopment)

@@ -5,7 +5,6 @@ namespace Spares.Domain.Models;
 public static class SparesFactory
 {
     public static Result<Spare> Create(
-        string spareId,
         Guid containedItemId,
         string source,
         string oem,
@@ -16,9 +15,6 @@ public static class SparesFactory
         string address,
         IEnumerable<string> photoPaths)
     {
-        Result<SpareId> idResult = SpareId.Create(spareId);
-        if (idResult.IsFailure) return idResult.Error;
-        
         Result<ContainedItemId> itemId = ContainedItemId.Create(containedItemId);
         if (itemId.IsFailure) return itemId.Error;
         
@@ -45,8 +41,7 @@ public static class SparesFactory
         
         return new Spare(
             Source: sourceResult.Value,
-            Id: idResult.Value,
-            ContainedItemId: itemId.Value,
+            Id: itemId.Value,
             Details: new SpareDetails(
                 Oem: oemResult.Value, 
                 Text: textResult.Value, 

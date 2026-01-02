@@ -10,7 +10,7 @@ public static class SparesInfrastructureExtensions
         public object ExtractForParameters() => new
         {
             id = spare.Id.Value,
-            contained_item_id = spare.ContainedItemId.Value,
+            contained_item_id = spare.Id.Value,
             url = spare.Source.Url,
             content = JsonSerializer.Serialize(new
             {

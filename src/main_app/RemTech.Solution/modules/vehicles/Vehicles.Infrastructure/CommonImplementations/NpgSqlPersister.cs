@@ -20,7 +20,8 @@ public sealed class NpgSqlPersister(
     ICategoryPersister categoryPersister,
     ICharacteristicsPersister characteristicPersister,
     ILocationsPersister locationsPersister,
-    IVehiclesPersister vehiclesPersister
+    IVehiclesPersister vehiclesPersister,
+    IVehiclesListPersister vehiclesListPersister
     ) : IPersister
 {
     public Task<Result<Brand>> Save(Brand brand, CancellationToken ct = default) => brandPersister.Save(brand, ct);
@@ -33,4 +34,7 @@ public sealed class NpgSqlPersister(
         Result<Unit> result = await vehiclesPersister.Persist(info, ct);
         return result.IsSuccess ? info : result.Error;
     }
+
+    public Task<int> Save(IEnumerable<VehiclePersistInfo> infos, CancellationToken ct = default) =>
+        vehiclesListPersister.Persist(infos, ct);
 }

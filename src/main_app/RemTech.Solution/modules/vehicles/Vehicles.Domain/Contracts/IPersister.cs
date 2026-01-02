@@ -16,4 +16,5 @@ public interface IPersister
     Task<Result<Category>> Save(Category category, CancellationToken ct = default);
     Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default);
     Task<Result<VehiclePersistInfo>> Save(VehiclePersistInfo info, CancellationToken ct = default);
+    Task<int> Save(IEnumerable<VehiclePersistInfo> infos, CancellationToken ct = default);
 }

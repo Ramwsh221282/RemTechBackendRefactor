@@ -1,10 +1,6 @@
 ﻿namespace Spares.Domain.Features;
 
 public sealed record AddSpareCommandPayload(
-    Guid CreatorId,
-    string CreatorDomain,
-    string CreatorType,
-    string SpareId,
     Guid ContainedItemId,
     string Source,
     string Oem,
