@@ -10,6 +10,7 @@ using Spares.Domain.Models;
 using Spares.Infrastructure.BackgroundServices;
 using Spares.Infrastructure.Consumers;
 using Spares.Infrastructure.Migrations;
+using Spares.Infrastructure.Queries.GetSpares;
 using Spares.Infrastructure.Repository;
 
 namespace Spares.WebApi.Extensions;
@@ -33,6 +34,7 @@ public static class SparesModuleInjection
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
                 services.AddOptions<EmbeddingsProviderOptions>().BindConfiguration(nameof(EmbeddingsProviderOptions));
+                services.AddOptions<GetSparesThresholdConstants>().BindConfiguration(nameof(GetSparesThresholdConstants));
             }
             
             services.TryAddSingleton<EmbeddingsProvider>();
@@ -57,6 +59,7 @@ public static class SparesModuleInjection
             services.RegisterRegionProvider();
             services.RegisterConsumers();
             services.RegisterBackgroundServices();
+            services.RegisterQueryHandlers();
         }
 
         private void RegisterBackgroundServices()
@@ -73,6 +76,14 @@ public static class SparesModuleInjection
         private void RegisterRegionProvider()
         {
             services.AddScoped<ISpareAddressProvider, EmbeddingSearchAddressProvider>();
+        }
+
+        private void RegisterQueryHandlers()
+        {
+            new HandlersRegistrator(services)
+                .FromAssemblies([typeof(GetSparesQuery).Assembly])
+                .RequireRegistrationOf(typeof(IQueryHandler<,>))
+                .Invoke();
         }
         
         private void RegisterConsumers()
