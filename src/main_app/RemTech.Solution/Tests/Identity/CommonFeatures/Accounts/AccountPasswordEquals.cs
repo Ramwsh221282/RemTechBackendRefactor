@@ -1,4 +1,5 @@
 ﻿using Identity.Contracts.Accounts;
+using Identity.Domain.Contracts;
 using Identity.Infrastructure.Accounts;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -12,7 +13,7 @@ public sealed class AccountPasswordEquals(IServiceProvider sp)
         CancellationToken ct = CancellationToken.None;
         await using AsyncServiceScope scope = sp.CreateAsyncScope();
         IAccountsStorage persister = scope.Resolve<IAccountsStorage>();
-        IAccountCryptography decrypted = scope.Resolve<IAccountCryptography>();
+        IPasswordCryptography decrypted = scope.Resolve<IPasswordCryptography>();
         Result<IAccount> account = await PersistingAccount.Get(
             persister,
             new AccountQueryArgs(Id: accountId),
