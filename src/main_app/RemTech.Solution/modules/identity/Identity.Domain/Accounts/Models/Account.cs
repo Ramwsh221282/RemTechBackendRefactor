@@ -63,4 +63,6 @@ public sealed class Account(
         AccountPermissionsCollection permissions = AccountPermissionsCollection.Empty(id);
         return new Account(id, email, password, login, activationStatus, permissions);
     }
+
+    public Account Copy() => new(this);
 }
