@@ -23,17 +23,19 @@ public sealed class RegisterAccountHandler(
         
         AccountPassword encrypted = await password.Value.Encrypt(cryptography, ct);
         Account account = CreateAccount(encrypted, command);
-        AccountTicket ticket = account.CreateTicket("email-activation");
-        AccountRegisteredOutboxMessage outboxMessage = CreateOutboxMessage(account, ticket);
+        AccountTicket ticket = account.CreateTicket(OutboxMessageTypes.EmailConfirmation);
+        OutboxMessage<RegisteredOutboxMessagePayload> outboxMessagePayload = CreateOutboxMessage(account, ticket);
         
         await accounts.Add(account, ct);
         await tickets.Add(ticket, ct);
-        await outbox.Add(outboxMessage, ct);
+        await outbox.Add(outboxMessagePayload, ct);
+        
         return Unit.Value;
     }
 
     private Result<AccountPassword> ApprovePassword(Result<Unit> registrationApproval, RegisterAccountCommand command)
     {
+        if (registrationApproval.IsFailure) return registrationApproval.Error;
         AccountPassword password = AccountPassword.Create(command.Password);
         Result<Unit> satisfies = password.Satisfies(new PasswordRequirement().Use(passwordRequirements));
         if (satisfies.IsFailure) return satisfies.Error;
@@ -56,9 +58,12 @@ public sealed class RegisterAccountHandler(
         Account account = Account.New(email, login, password);
         return account;
     }
-    
-    private AccountRegisteredOutboxMessage CreateOutboxMessage(Account account, AccountTicket ticket) =>
-        new(account.Id.Value, ticket.TicketId, account.Email.Value, account.Login.Value);
+
+    private OutboxMessage<RegisteredOutboxMessagePayload> CreateOutboxMessage(Account account, AccountTicket ticket)
+    {
+        RegisteredOutboxMessagePayload payload = new(account.Id.Value, ticket.TicketId, account.Email.Value, account.Login.Value);
+        return OutboxMessage<RegisteredOutboxMessagePayload>.CreateNew(OutboxMessageTypes.EmailConfirmation, 0, payload);
+    }
     
     private async Task<Result<Unit>> CheckAccountEmailDuplicate(string email, CancellationToken ct)
     {

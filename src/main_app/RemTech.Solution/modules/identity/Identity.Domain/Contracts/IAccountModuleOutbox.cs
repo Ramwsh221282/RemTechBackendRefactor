@@ -2,5 +2,5 @@
 
 public interface IAccountModuleOutbox
 {
-    Task Add<TOutboxMessage>(TOutboxMessage message, CancellationToken ct = default) where TOutboxMessage : IAccountOutboxMessage;
+    Task Add<TMessage>(OutboxMessage<TMessage> message, CancellationToken ct = default) where TMessage : IOutboxMessagePayload;
 }
