@@ -127,11 +127,18 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
         }
 
         if (caseSet.Count == 0) return;
-        Guid[] ids = tracking.Select(a => a.Id.Value).ToArray();
-        for (int i = 0; i < ids.Length; i++)
-            parameters.Add($"@id_{i}", ids[i], DbType.Guid);
         
-        parameters.Add("@ids", ids);
+        List<Guid> ids = [];
+        int index = 0;
+        foreach (Account account in tracking)
+        {
+            string paramName = $"@id_{index}";
+            parameters.Add(paramName, account.Id.Value, DbType.Guid);
+            ids.Add(account.Id.Value);
+            index++;
+        }
+        
+        parameters.Add("@ids", ids.ToArray());
         string updateSql = $"UPDATE identity_module.accounts a SET {string.Join(", ", caseSet)} WHERE a.id = ANY(@ids)";
         CommandDefinition command = Session.FormCommand(updateSql, parameters, ct);
         await Session.Execute(command);
