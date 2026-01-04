@@ -19,7 +19,7 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session) : IAccountModule
                            identity_module.outbox
                            (id, type, retry_count, created, sent, payload)
                            VALUES
-                           (@id, @type, @retry_count, @created, @sent, @payload)
+                           (@id, @type, @retry_count, @created, @sent, @payload::jsonb)
                            """;
 
         var parameters = new

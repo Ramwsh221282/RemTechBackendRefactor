@@ -2,7 +2,7 @@
 
 namespace Identity.Infrastructure.Accounts.Migrations;
 
-[Migration(1767457637)]
+[Migration(1767457500)]
 public sealed class AccountPermissionsMigration : Migration
 {
     public override void Up()

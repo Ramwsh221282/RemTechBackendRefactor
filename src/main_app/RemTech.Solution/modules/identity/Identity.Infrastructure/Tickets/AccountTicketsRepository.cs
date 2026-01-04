@@ -10,7 +10,7 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Tickets;
 
-public sealed class TicketsRepository(NpgSqlSession session, IAccountsModuleUnitOfWork unitOfWork) : IAccountTicketsRepository
+public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsModuleUnitOfWork unitOfWork) : IAccountTicketsRepository
 {
     private NpgSqlSession Session { get; } = session;
     private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
@@ -21,7 +21,7 @@ public sealed class TicketsRepository(NpgSqlSession session, IAccountsModuleUnit
                            INSERT INTO identity_module.tickets
                            (id, creator_id, finished, purpose)
                            VALUES
-                           (@id, @creatorId, @finished, @purpose)
+                           (@id, @creator_id, @finished, @purpose)
                            """;
         object parameters = GetParameters(ticket);
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);

@@ -1,4 +1,8 @@
-﻿namespace RemTech.SharedKernel.Infrastructure.AesEncryption;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using RemTech.SharedKernel.Configurations;
+
+namespace RemTech.SharedKernel.Infrastructure.AesEncryption;
 
 public static class AesCryptographyExtensions
 {

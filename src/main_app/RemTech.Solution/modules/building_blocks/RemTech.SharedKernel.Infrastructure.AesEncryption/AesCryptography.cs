@@ -1,4 +1,6 @@
 ﻿using System.Security.Cryptography;
+using Microsoft.Extensions.Options;
+using RemTech.SharedKernel.Configurations;
 
 namespace RemTech.SharedKernel.Infrastructure.AesEncryption;
 

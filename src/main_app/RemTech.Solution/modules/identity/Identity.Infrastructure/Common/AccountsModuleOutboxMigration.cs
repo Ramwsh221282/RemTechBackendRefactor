@@ -2,6 +2,7 @@
 
 namespace Identity.Infrastructure.Common;
 
+[Migration(1767457600)]
 public sealed class AccountsModuleOutboxMigration : Migration
 {
     public override void Up() =>

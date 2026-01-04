@@ -2,7 +2,7 @@
 
 namespace Identity.Infrastructure.Common.Migrations;
 
-[Migration(1767457616)]
+[Migration(1767457100)]
 public sealed class IdentityModuleSchemaMigration : Migration
 {
     public override void Up()

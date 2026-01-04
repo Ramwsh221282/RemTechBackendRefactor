@@ -31,7 +31,7 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
     public async Task<bool> Exists(AccountSpecification specification, CancellationToken ct = default)
     {
         (DynamicParameters parameters, string filterSql) = WhereClause(specification);
-        string sql = $"SELECT EXISTS (SELECT 1 FROM identity_module.accounts {filterSql}";
+        string sql = $"SELECT EXISTS (SELECT 1 FROM identity_module.accounts a {filterSql})";
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
         return await session.QuerySingleRow<bool>(command);
     }
@@ -161,7 +161,7 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
             email = account.Email.Value,
             password = account.Password.Value,
             login = account.Login.Value,
-            activationStatus = account.ActivationStatus.Value
+            activation_status = account.ActivationStatus.Value
         };
     }
 }

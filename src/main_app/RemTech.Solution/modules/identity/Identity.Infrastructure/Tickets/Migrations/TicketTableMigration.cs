@@ -2,7 +2,7 @@
 
 namespace Identity.Infrastructure.Tickets.Migrations;
 
-[Migration(1767457589)]
+[Migration(1767457300)]
 public sealed class TicketTableMigration : Migration
 {
     public override void Up()
