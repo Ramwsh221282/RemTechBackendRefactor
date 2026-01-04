@@ -40,34 +40,42 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
     {
         (DynamicParameters parameters, string filterSql) = WhereClause(specification);
         string sql = $"""
+                     WITH accounts AS (
                      SELECT
                      a.id as account_id,
                      a.email as account_email,
                      a.password as account_password,
                      a.login as account_login,
                      a.activation_status as account_activation_status,
-                     ap.id as account_permission_id,
-                     ap.name as account_permission_name,
-                     ap.description as account_permission_description
+                     ap.permission_id as account_permission_id
                      FROM identity_module.accounts a
                      LEFT JOIN identity_module.account_permissions ap ON ap.account_id=a.id
                      {filterSql}
+                     )
+                     SELECT accounts.*, p.name as permission_name, p.description as permission_description
+                     FROM accounts
+                     LEFT JOIN identity_module.permissions p ON p.id = accounts.account_permission_id
                      """;
         
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-        NpgsqlConnection connection = await session.GetConnection(ct);
-        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
-        Account? account = await MapFromReader(reader, ct);
-        if (account is null) return Error.NotFound("Учетная запись не найдена.");
-        if (specification.LockRequired) await BlockAccount(account, ct);
+        Account? account = await GetSingle(command, ct);
+        
+        if (account is null) 
+            return Error.NotFound("Учетная запись не найдена.");
+        if (specification.LockRequired) 
+            await BlockEntity(account, ct);
+        
         UnitOfWork.Track([account]);
         return account;
     }
 
-    private async Task<Account?> MapFromReader(DbDataReader reader, CancellationToken ct = default)
+    private async Task<Account?> GetSingle(CommandDefinition command, CancellationToken ct)
     {
+        NpgsqlConnection connection = await Session.GetConnection(ct);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
         Dictionary<Guid, Account> mappings = [];
-        while (await reader.ReadAsync())
+        
+        while (await reader.ReadAsync(ct))
         {
             Guid id = reader.GetValue<Guid>("account_id");
             if (!mappings.TryGetValue(id, out Account? account))
@@ -88,11 +96,11 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
                 mappings.Add(id, account);
             }
             
-            if (await reader.IsDBNullAsync("account_permission_id")) continue;
+            if (reader.IsDBNull(reader.GetOrdinal("account_permission_id"))) continue;
             
             Guid permissionId = reader.GetValue<Guid>("account_permission_id");
-            string permissionName = reader.GetValue<string>("account_permission_name");
-            string permissionDescription = reader.GetValue<string>("account_permission_description");
+            string permissionName = reader.GetValue<string>("permission_name");
+            string permissionDescription = reader.GetValue<string>("permission_description");
             
             Permission permission = new(
                 PermissionId.Create(permissionId), 
@@ -131,21 +139,31 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
         return (parameters, filters.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filters)}");
     }
 
-    private async Task BlockAccount(Account account, CancellationToken ct = default)
+    private async Task BlockEntity(Account account, CancellationToken ct)
+    {
+        await BlockAccount(account, ct);
+        await BlockAccountPermissions(account, ct);
+    }
+    
+    private async Task BlockAccount(Account account, CancellationToken ct)
     {
         const string sql = """
-                           WITH account_permissions AS (
-                               SELECT ap.id, ap.account_id
-                               FROM identity_module.account_permissions ap
-                               WHERE ap.account_id = @accountId
-                               FOR UPDATE
-                           )
-                           SELECT a.id, ap.id AS permission_id
-                           FROM identity_module.accounts a
-                           LEFT JOIN account_permissions ap
-                               ON ap.account_id = a.id
+                           SELECT a.id FROM identity_module.accounts a
                            WHERE a.id = @accountId
                            FOR UPDATE OF a
+                           """;
+        DynamicParameters parameters = new();
+        parameters.Add("@accountId", account.Id.Value, DbType.Guid);
+        CommandDefinition command = new(sql, parameters, transaction: Session.Transaction, cancellationToken: ct);
+        await Session.Execute(command);
+    }
+
+    private async Task BlockAccountPermissions(Account account, CancellationToken ct)
+    {
+        const string sql = """
+                           SELECT ap.permission_id FROM identity_module.account_permissions ap
+                           WHERE ap.account_id = @accountId
+                           FOR UPDATE OF ap
                            """;
         DynamicParameters parameters = new();
         parameters.Add("@accountId", account.Id.Value, DbType.Guid);

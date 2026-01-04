@@ -18,7 +18,8 @@ public sealed class RegisterAccountHandler(
     public async Task<Result<Unit>> Execute(RegisterAccountCommand command, CancellationToken ct = default)
     {
         Result<Unit> approval = await ApproveRegistration(command, ct);
-        Result<AccountPassword> password = ApprovePassword(approval, command);
+        if (approval.IsFailure) return approval.Error;
+        Result<AccountPassword> password = ApprovePassword(command);
         if (password.IsFailure) return password.Error;
         
         AccountPassword encrypted = await password.Value.Encrypt(cryptography, ct);
@@ -33,9 +34,8 @@ public sealed class RegisterAccountHandler(
         return Unit.Value;
     }
 
-    private Result<AccountPassword> ApprovePassword(Result<Unit> registrationApproval, RegisterAccountCommand command)
+    private Result<AccountPassword> ApprovePassword(RegisterAccountCommand command)
     {
-        if (registrationApproval.IsFailure) return registrationApproval.Error;
         AccountPassword password = AccountPassword.Create(command.Password);
         Result<Unit> satisfies = password.Satisfies(new PasswordRequirement().Use(passwordRequirements));
         if (satisfies.IsFailure) return satisfies.Error;

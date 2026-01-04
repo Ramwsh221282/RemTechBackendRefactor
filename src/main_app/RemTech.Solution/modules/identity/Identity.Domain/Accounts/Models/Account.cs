@@ -1,5 +1,6 @@
 ﻿using Identity.Domain.Contracts;
 using Identity.Domain.PasswordRequirements;
+using Identity.Domain.Permissions;
 using Identity.Domain.Tickets;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
@@ -23,6 +24,8 @@ public sealed class Account(
     public AccountLogin Login { get; private set; } = login;
     public AccountActivationStatus ActivationStatus { get; private set; } = activationStatus;
     public AccountPermissionsCollection Permissions { get; private set; } = permissions;
+    public int PermissionsCount => Permissions.Count;
+    public IReadOnlyList<Permission> PermissionsList => Permissions.Permissions;
 
     public Result<Unit> Activate()
     {
@@ -37,6 +40,24 @@ public sealed class Account(
         return AccountTicket.New(this, purpose);
     }
 
+    public Result<Unit> AddPermissions(IEnumerable<Permission> permissions)
+    {
+        List<string> errors = [];
+        foreach (Permission permission in permissions)
+        {
+            Result<Unit> add = Permissions.Add(permission);
+            if (add.IsFailure) errors.Add(add.Error.Message);
+        }
+        if (errors.Any()) return Error.Conflict(string.Join(", ", errors));
+        return Result.Success(Unit.Value);
+    }
+    
+    public Result<Unit> AddPermission(Permission permission)
+    {
+        Result<Unit> add = Permissions.Add(permission);
+        return add.IsFailure ? add.Error : Unit.Value;
+    }
+    
     public Result<Unit> CloseTicket(AccountTicket ticket)
     {
         return ticket.AccountId != Id ? Error.NotFound("Заявка не найдена.") : ticket.Finish();

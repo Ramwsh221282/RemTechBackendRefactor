@@ -11,7 +11,8 @@ public sealed class AccountPermissionsCollection(AccountId id, IEnumerable<Permi
     private readonly List<Permission> _permissions = [..permissions];
     public AccountId AccountId { get; } = id;
     public IReadOnlyList<Permission> Permissions => _permissions;
-
+    public int Count => _permissions.Count;
+    
     public Result<Unit> Add(Permission permission)
     {
         if (HasPermission(permission)) 

@@ -42,9 +42,7 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
                            """;
         
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-        NpgsqlConnection connection = await Session.GetConnection(ct);
-        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
-        AccountTicket? ticket = await MapFromReader(reader, ct);
+        AccountTicket? ticket = await GetSingle(command, ct);
         
         if (ticket is null) 
             return Error.NotFound("Заявка не найдена.");
@@ -54,9 +52,12 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
         return Result.Success(ticket);
     }
 
-    private async Task<AccountTicket?> MapFromReader(DbDataReader reader, CancellationToken ct = default)
+    private async Task<AccountTicket?> GetSingle(CommandDefinition command, CancellationToken ct)
     {
         Dictionary<Guid, AccountTicket> mappings = [];
+        NpgsqlConnection connection = await Session.GetConnection(ct);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+        
         while (await reader.ReadAsync(ct))
         {
             Guid id = reader.GetValue<Guid>("ticket_id");

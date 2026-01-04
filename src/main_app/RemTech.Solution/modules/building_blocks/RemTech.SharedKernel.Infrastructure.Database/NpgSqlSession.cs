@@ -134,6 +134,24 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
             result.Add(mapper(reader));
         return result.ToArray();
     }
+    
+    public async Task<T[]> QueryMultipleUsingReader<T>(
+        CommandDefinition command, 
+        Func<IDataReader, T> mapper, 
+        IEqualityComparer<T> comparer,
+        CancellationToken ct = default)
+    {
+        HashSet<T> results = new HashSet<T>(comparer);
+        NpgsqlConnection connection = await GetConnection(ct);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+        while (await reader.ReadAsync(ct))
+        {
+            T item = mapper(reader);
+            results.Add(item);
+        }
+        
+        return results.ToArray();
+    }
 
     public async Task ExecuteBulk(string sql, object[] parameters)
     {

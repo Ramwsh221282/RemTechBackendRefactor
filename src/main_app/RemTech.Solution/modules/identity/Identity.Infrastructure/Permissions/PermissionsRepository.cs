@@ -85,13 +85,13 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
                       """;
         
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-        NpgsqlConnection connection = await Session.GetConnection(ct);
-        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
-        Dictionary<Guid, Permission> permissions = await MapFromReader(reader, ct);
-        if (permissions.Count == 0) return Error.NotFound("Разрешение не найдено.");
+        Permission? permission = await GetSingle(command, ct);
         
-        Permission permission = permissions.First().Value;
-        if (specification.LockRequired) await BlockPermission(permission, ct);
+        if (permission is null) 
+            return Error.NotFound("Разрешение не найдено.");
+        if (specification.LockRequired) 
+            await BlockPermission(permission, ct);
+        
         UnitOfWork.Track([permission]);
         return Result.Success(permission);
     }
@@ -134,14 +134,12 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
                       FROM identity_module.permissions
                       {filterSql}
                       """;
+        
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-        NpgsqlConnection connection = await Session.GetConnection(ct);
-        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
-        Dictionary<Guid, Permission> permissions = await MapFromReader(reader, ct);
-        if (permissions.Count == 0) return [];
-        IEnumerable<Permission> result = permissions.Values;
-        UnitOfWork.Track(result);
-        return result;
+        IEnumerable<Permission> permissions = await GetMultiple(command, ct);
+        if (!permissions.Any()) return [];
+        UnitOfWork.Track(permissions);
+        return permissions;
     }
 
     private async Task BlockPermission(Permission permission, CancellationToken ct = default)
@@ -152,10 +150,12 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
         CommandDefinition command = new(sql, parameters, transaction: Session.Transaction, cancellationToken: ct);
         await Session.Execute(command);
     }
-
-    private async Task<Dictionary<Guid, Permission>> MapFromReader(DbDataReader reader, CancellationToken ct = default)
+    
+    private async Task<IEnumerable<Permission>> GetMultiple(CommandDefinition command, CancellationToken ct)
     {
-        Dictionary<Guid, Permission> mappings = new();
+        Dictionary<Guid, Permission> mappings = [];
+        NpgsqlConnection connection = await Session.GetConnection(ct);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
         while (await reader.ReadAsync(ct))
         {
             Guid id = reader.GetValue<Guid>("id");
@@ -172,8 +172,32 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
                 mappings.Add(id, permission);
             }
         }
-
-        return mappings;
+        
+        return mappings.Values;
+    }
+    
+    private async Task<Permission?> GetSingle(CommandDefinition command, CancellationToken ct)
+    {
+        Dictionary<Guid, Permission> mappings = [];
+        NpgsqlConnection connection = await Session.GetConnection(ct);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+        while (await reader.ReadAsync(ct))
+        {
+            Guid id = reader.GetValue<Guid>("id");
+            if (!mappings.TryGetValue(id, out Permission? permission))
+            {
+                string name = reader.GetValue<string>("name");
+                string description = reader.GetValue<string>("description");
+                
+                permission = new Permission(
+                    PermissionId.Create(id), 
+                    PermissionName.Create(name), 
+                    PermissionDescription.Create(description));
+                
+                mappings.Add(id, permission);
+            }
+        }
+        return mappings.Count == 0 ? null : mappings.First().Value;
     }
     
     private (DynamicParameters parameters, string filterSql) WhereClause(PermissionSpecification specification)

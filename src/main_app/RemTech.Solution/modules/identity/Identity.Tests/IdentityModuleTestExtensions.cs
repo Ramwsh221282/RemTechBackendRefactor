@@ -1,4 +1,5 @@
-﻿using Identity.Domain.Accounts.Features.RegisterAccount;
+﻿using Identity.Domain.Accounts.Features.GivePermissions;
+using Identity.Domain.Accounts.Features.RegisterAccount;
 using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts;
 using Identity.Domain.Permissions;
@@ -49,6 +50,26 @@ public static class IdentityModuleTestExtensions
             return await services.GetAccount(specification);
         }
 
+        public async Task<Result<Account>> GivePermissions(Guid accountId, IEnumerable<Guid> permissionIds)
+        {
+            GivePermissionsCommand command = new(accountId, permissionIds.Select(id => new GivePermissionsPermissionsPayload(id)));
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            return await scope.ServiceProvider.GetRequiredService<ICommandHandler<GivePermissionsCommand, Account>>()
+                .Execute(command);
+        }
+
+        public async Task<IEnumerable<Permission>> GetPermissions(IEnumerable<PermissionSpecification>? specs = null)
+        {
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            IPermissionsRepository permissions = scope.ServiceProvider.GetRequiredService<IPermissionsRepository>();
+            return specs is null ? await permissions.GetMany([], CancellationToken.None) : await permissions.GetMany(specs, CancellationToken.None);
+        }
+        
+        public async Task<Result<Account>> GivePermission(Guid accountId, Guid permissionId)
+        {
+            return await services.GivePermissions(accountId, [permissionId]);
+        }
+        
         private async Task<Result<Account>> GetAccount(AccountSpecification specification)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
