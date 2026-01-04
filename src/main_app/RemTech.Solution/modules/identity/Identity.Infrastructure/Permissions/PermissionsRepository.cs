@@ -9,8 +9,7 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Permissions;
 
-public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModuleUnitOfWork unitOfWork)
-    : IPermissionsRepository
+public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModuleUnitOfWork unitOfWork) : IPermissionsRepository
 {
     private NpgSqlSession Session { get; } = session;
     private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
@@ -48,6 +47,26 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
         await Session.Execute(command);
+    }
+
+    public async Task Add(IEnumerable<Permission> permissions, CancellationToken ct = default)
+    {
+        const string sql = """
+                           INSERT INTO identity_module.permissions
+                           (id, name, description)
+                           VALUES
+                           (@id, @name, @description)
+                           """;
+
+        var parameters = permissions.Select(p => new
+        {
+            id = p.Id.Value,
+            name = p.Name.Value,
+            description = p.Description.Value
+        });
+
+        NpgsqlConnection connection = await Session.GetConnection(ct);
+        await connection.ExecuteAsync(sql, parameters, transaction: Session.Transaction);
     }
 
     public async Task<Result<Permission>> GetSingle(

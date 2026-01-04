@@ -11,4 +11,10 @@ public sealed class Permission(PermissionId id, PermissionName name, PermissionD
     public void Rename(PermissionName newName) => Name = newName;
     public void ChangeDescription(PermissionDescription newDescription) => Description = newDescription;
     public Permission Clone() => new(this);
+
+    public static Permission CreateNew(PermissionName name, PermissionDescription description)
+    {
+        PermissionId id = PermissionId.New();
+        return new Permission(id, name, description);
+    }
 }
