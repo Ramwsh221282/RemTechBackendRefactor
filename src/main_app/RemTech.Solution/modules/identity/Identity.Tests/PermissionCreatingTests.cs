@@ -48,4 +48,20 @@ public sealed class PermissionCreatingTests(IntegrationalTestsFactory factory) :
         Result<IEnumerable<Permission>> result2 = await Services.AddPermissions(payload2);
         Assert.True(result2.IsFailure);
     }
+
+    [Fact]
+    private async Task Invoke_Registration_Of_PreDefined_Permissions_Duplicated_Failure()
+    {
+        IEnumerable<AddPermissionCommandPayload> payload =
+        [
+            new(PredefinedPermissions.NotificationsManagementName.Value, PredefinedPermissions.NotificationsManagementDescription.Value),
+            new(PredefinedPermissions.IdentityManagementName.Value, PredefinedPermissions.IdentityManagementDescription.Value),
+            new(PredefinedPermissions.ParserManagementName.Value, PredefinedPermissions.ParserManagementDescription.Value),
+            new(PredefinedPermissions.WatchItemSourcesName.Value, PredefinedPermissions.WatchItemSourcesDescription.Value),
+            new(PredefinedPermissions.AddItemsToFavoritesName.Value, PredefinedPermissions.AddItemsToFavoritesDescription.Value),
+            new(PredefinedPermissions.AccessTelemetryName.Value, PredefinedPermissions.AccessTelemetryDescription.Value),
+        ];
+        Result<IEnumerable<Permission>> result = await Services.AddPermissions(payload);
+        Assert.True(result.IsFailure);
+    }
 }

@@ -7,7 +7,8 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <EmbeddedResource Include="Migrations\*.sql" />
+        <None Remove="Permissions\Seeding\predefined-permissions-seeding.sql" />
+        <EmbeddedResource Include="Permissions\Seeding\predefined-permissions-seeding.sql" />
     </ItemGroup>
     
     <ItemGroup>
