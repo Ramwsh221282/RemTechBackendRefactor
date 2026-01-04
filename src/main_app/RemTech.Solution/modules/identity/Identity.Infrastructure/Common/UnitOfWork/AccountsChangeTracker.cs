@@ -7,7 +7,7 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Common.UnitOfWork;
 
-public sealed class AccountsUnitOfWork(NpgSqlSession session)
+public sealed class AccountsChangeTracker(NpgSqlSession session)
 {
     private NpgSqlSession Session { get; } = session;
     private Dictionary<Guid, Account> Accounts { get; } = [];
@@ -147,9 +147,8 @@ public sealed class AccountsUnitOfWork(NpgSqlSession session)
         List<Account> tracking = [];
         foreach (Account account in accounts)
         {
-            if (!Accounts.TryGetValue(account.Id.Value, out Account? trackedAccount))
-                continue;
-            tracking.Add(trackedAccount);
+            if (Accounts.ContainsKey(account.Id.Value))
+                tracking.Add(account);
         }
 
         return tracking;
