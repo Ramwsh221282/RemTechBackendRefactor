@@ -1,8 +1,10 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Notifications.Core.PendingEmails.Features.AddPendingEmail;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
@@ -12,7 +14,8 @@ namespace Notifications.Infrastructure.RabbitMq.Consumers;
 public sealed class OnNewAccountCreatedConsumer(
     RabbitMqConnectionSource rabbitMq, 
     IServiceProvider services,
-    Serilog.ILogger logger) : IConsumer
+    Serilog.ILogger logger,
+    IOptions<FrontendOptions> frontendOptions) : IConsumer
 {
     private const string Exchange = "identity";
     private const string RoutingKey = "account.new";
@@ -23,9 +26,13 @@ public sealed class OnNewAccountCreatedConsumer(
     private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
     private IServiceProvider Services { get; } = services;
     private Serilog.ILogger Logger { get; } = logger.ForContext<OnNewAccountCreatedConsumer>();
-    
-    public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+    private FrontendOptions FrontendOptions { get; } = frontendOptions.Value;
+
+    public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
+    {
+        FrontendOptions.Validate();
         _channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+    }
 
     public async Task StartConsuming(CancellationToken ct = default)
     {
@@ -74,11 +81,19 @@ public sealed class OnNewAccountCreatedConsumer(
 
     private async Task<Result<Unit>> HandleMessage(NewAccountRegisteredOutboxMessagePayload payload)
     {
-        AddPendingEmailCommand command = new(payload.Email, "Подтверждение почты", "Для подтверждения почты перейдите по ссылке ...");
+        string confirmationLink = BuildConfirmationLinkUrl(payload);
+        AddPendingEmailCommand command = new(payload.Email, "Подтверждение почты", $"Для подтверждения почты перейдите по ссылке {confirmationLink}");
         await using AsyncServiceScope scope = Services.CreateAsyncScope();
         return await scope.ServiceProvider
             .GetRequiredService<ICommandHandler<AddPendingEmailCommand, Unit>>()
             .Execute(command);
+    }
+
+    private string BuildConfirmationLinkUrl(NewAccountRegisteredOutboxMessagePayload payload)
+    {
+        string frontendUrl = FrontendOptions.Url;
+        string ticketId = payload.TicketId.ToString();
+        return $"{frontendUrl}/api/account/confirmation?ticketId={ticketId}";
     }
     
     private sealed record NewAccountRegisteredOutboxMessagePayload(

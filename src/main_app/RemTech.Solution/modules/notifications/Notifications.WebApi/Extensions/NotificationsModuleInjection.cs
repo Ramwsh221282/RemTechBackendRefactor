@@ -37,6 +37,7 @@ public static class NotificationsModuleInjection
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
                 services.AddAesEncryptionOptionsFromAppsettings();
+                FrontendOptionsExtensions.AddFromAppsettings(services);
             }
             
             services.AddPostgres();
