@@ -2,9 +2,11 @@
 using Notifications.Core.Mailers.Contracts;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Attributes;
 
 namespace Notifications.Core.Mailers.Features.ChangeCredentials;
 
+[TransactionalHandler]
 public sealed class ChangeCredentialsHandler(
     IMailersRepository repository, 
     IMailerCredentialsCryptography cryptography,

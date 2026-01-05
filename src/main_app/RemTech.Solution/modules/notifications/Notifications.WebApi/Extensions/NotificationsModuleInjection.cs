@@ -1,9 +1,14 @@
 ﻿using Notifications.Core.Common.Contracts;
 using Notifications.Core.Mailers;
 using Notifications.Core.Mailers.Contracts;
+using Notifications.Core.PendingEmails.Contracts;
 using Notifications.Infrastructure.Common;
 using Notifications.Infrastructure.Common.Migrations;
+using Notifications.Infrastructure.EmailSending;
 using Notifications.Infrastructure.Mailers;
+using Notifications.Infrastructure.PendingEmails;
+using Notifications.Infrastructure.PendingEmails.BackgroundServices;
+using Notifications.Infrastructure.RabbitMq.Consumers;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Logging;
@@ -32,6 +37,7 @@ public static class NotificationsModuleInjection
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
                 services.AddAesEncryptionOptionsFromAppsettings();
+                FrontendOptionsExtensions.AddFromAppsettings(services);
             }
             
             services.AddPostgres();
@@ -39,8 +45,7 @@ public static class NotificationsModuleInjection
             services.AddAesCryptography();
         }
         
-        private void AddDomainLayer()
-        {
+        private void AddDomainLayer() =>
             new HandlersRegistrator(services)
                 .FromAssemblies([typeof(Mailer).Assembly])
                 .RequireRegistrationOf(typeof(ICommandHandler<,>))
@@ -49,25 +54,41 @@ public static class NotificationsModuleInjection
                 .AlsoAddDecorators()
                 .AlsoUseDecorators()
                 .Invoke();
-        }
 
         private void AddInfrastructureLayer()
         {
             services.AddPersistence();
             services.AddCryptography();
+            services.AddEmailSender();
+            services.AddBackgroundServices();
+            services.AddConsumers();
         }
 
+        private void AddBackgroundServices()
+        {
+            services.AddHostedService<PendingEmailsProcessor>();
+        }
+        
         private void AddPersistence()
         {
             services.AddMigrations([typeof(NotificationsModuleSchemaMigration).Assembly]);
             services.AddScoped<IMailersRepository, MailersRepository>();
+            services.AddScoped<IPendingEmailNotificationsRepository, PendingEmailNotificationsRepository>();
             services.AddScoped<MailersChangeTracker>();
+            services.AddScoped<PendingEmailsChangeTracker>();
             services.AddScoped<INotificationsModuleUnitOfWork, NotificationsModuleUnitOfWork>();
         }
 
-        private void AddCryptography()
+        private void AddConsumers()
         {
-            services.AddSingleton<IMailerCredentialsCryptography, MailerCredentialsCryptography>();
+            services.AddConsumersFromAssemblies([typeof(OnNewAccountCreatedConsumer).Assembly]);
+            services.AddAggregatedConsumersBackgroundService();
         }
+        
+        private void AddEmailSender() =>
+            services.AddSingleton<EmailSender>();
+
+        private void AddCryptography() =>
+            services.AddSingleton<IMailerCredentialsCryptography, MailerCredentialsCryptography>();
     }
 }

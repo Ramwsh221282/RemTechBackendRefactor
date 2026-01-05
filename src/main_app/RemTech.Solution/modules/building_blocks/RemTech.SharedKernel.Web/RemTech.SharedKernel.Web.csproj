@@ -4,12 +4,8 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>1.0.1</Version>
+        <Version>1.0.2</Version>
     </PropertyGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\RemTech.SharedKernel.Core\RemTech.SharedKernel.Core.csproj" />
-    </ItemGroup>
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -17,6 +13,7 @@
 
     <ItemGroup>
       <PackageReference Include="oqo0.SwaggerThemes" Version="1.4.3" />
+      <PackageReference Include="RemTech.SharedKernel.Core" Version="1.0.6" />
       <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.1.0" />
       <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.0" />
       <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0" />
