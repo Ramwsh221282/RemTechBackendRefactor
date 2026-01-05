@@ -1,0 +1,74 @@
+﻿using Identity.Domain.Accounts.Models;
+using Identity.Domain.Contracts;
+using Identity.WebApi.Options;
+using Microsoft.Extensions.Options;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+
+namespace Identity.WebApi.BackgroundServices;
+
+public sealed class SuperUserAccountRegistrationOnStartupBackgroundService(
+    IServiceProvider services,
+    Serilog.ILogger logger) : BackgroundService
+{
+    private IServiceProvider Services { get; } = services;
+    private Serilog.ILogger Logger { get; } = logger.ForContext<SuperUserAccountRegistrationOnStartupBackgroundService>();
+    
+    protected async override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!await Executed(stoppingToken)) { }
+    }
+
+    private async Task<bool> Executed(CancellationToken ct)
+    {
+        try
+        {
+            await using AsyncServiceScope scope = Services.CreateAsyncScope();
+            (SuperUserCredentialsOptions options, IAccountsRepository repository, IPasswordCryptography cryptography) =
+                GetDependencies(scope);
+
+            options.Validate();
+            if (await AccountExists(options, repository, ct))
+            {
+                Logger.Warning("Account already exists {Name} {Email}", options.Login, options.Email);
+                return true;
+            }
+
+            await AddAccount(options, repository, cryptography, ct);
+            return true;
+        }
+        catch (Exception e)
+        { 
+            Logger.Fatal(e, "Error creating super user account");
+            return false;
+        }
+    }
+
+    private (
+        SuperUserCredentialsOptions options,
+        IAccountsRepository repository,
+        IPasswordCryptography cryptography)
+        GetDependencies(AsyncServiceScope scope) => (
+        scope.ServiceProvider.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value,
+        scope.ServiceProvider.GetRequiredService<IAccountsRepository>(),
+        scope.ServiceProvider.GetRequiredService<IPasswordCryptography>());
+    
+    private async Task AddAccount(
+        SuperUserCredentialsOptions options, 
+        IAccountsRepository repository,
+        IPasswordCryptography cryptography,
+        CancellationToken ct)
+    {
+        Account account = Account.Create(
+            email: AccountEmail.Create(options.Email),
+            login: AccountLogin.Create(options.Login),
+            password: await AccountPassword.Create(options.Password).Value.Encrypt(cryptography),
+            status: AccountActivationStatus.Activated());
+        await repository.Add(account, ct);
+    }
+    
+    private async Task<bool> AccountExists(SuperUserCredentialsOptions options, IAccountsRepository repository, CancellationToken ct)
+    {
+        AccountSpecification specification = new AccountSpecification().WithEmail(options.Email);
+        return await repository.Exists(specification, ct: ct);
+    }
+}

@@ -76,7 +76,18 @@ public sealed class Account(
     }
 
     public void ChangeEmail(AccountEmail email) => Email = email;
-
+    
+    public static Account Create(
+        AccountEmail email, 
+        AccountLogin login, 
+        AccountPassword password,
+        AccountActivationStatus status)
+    {
+        Account account = New(email, login, password);
+        account.ActivationStatus = status;
+        return account;
+    }
+    
     public static Account New(AccountEmail email, AccountLogin login, AccountPassword password)
     {
         AccountId id = AccountId.New();

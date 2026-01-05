@@ -1,5 +1,10 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Identity.WebApi.BackgroundServices;
+using Identity.WebApi.Options;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
@@ -32,8 +37,19 @@ public sealed class IntegrationalTestsFactory : WebApplicationFactory<Identity.W
         base.ConfigureWebHost(builder);
         builder.ConfigureServices(s =>
         {
+            ReRegisterSuperUserOptionsSettings(s);
+            s.ReRegisterBackgroundService<SuperUserAccountPermissionsUpdateBackgroundServices>();
+            s.ReRegisterBackgroundService<SuperUserAccountRegistrationOnStartupBackgroundService>();
             s.ReRegisterNpgSqlOptions(_dbContainer);
             s.ReRegisterRabbitMqOptions(_rabbitMqContainer);
         });
+    }
+
+    private void ReRegisterSuperUserOptionsSettings(IServiceCollection services)
+    {
+        services.ReRegisterAppsettingsJsonConfiguration();
+        services.RemoveAll<IConfigureOptions<SuperUserCredentialsOptions>>();
+        services.RemoveAll<IOptions<SuperUserCredentialsOptions>>();
+        services.AddOptions<SuperUserCredentialsOptions>().BindConfiguration(nameof(SuperUserCredentialsOptions));
     }
 }

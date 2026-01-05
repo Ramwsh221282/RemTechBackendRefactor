@@ -7,6 +7,8 @@ using Identity.Infrastructure.Common.Migrations;
 using Identity.Infrastructure.Common.UnitOfWork;
 using Identity.Infrastructure.Permissions;
 using Identity.Infrastructure.Tickets;
+using Identity.WebApi.BackgroundServices;
+using Identity.WebApi.Options;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Logging;
@@ -34,6 +36,7 @@ public static class IdentityModuleInjection
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
                 services.AddAesEncryptionOptionsFromAppsettings();
+                SuperUserCredentialsOptions.AddFromAppsettings(services);
             }
             
             services.AddPostgres();
@@ -67,6 +70,12 @@ public static class IdentityModuleInjection
                 .Invoke();
         }
         
+        private void AddBackgroundServices()
+        {
+            services.AddHostedService<SuperUserAccountRegistrationOnStartupBackgroundService>();
+            services.AddHostedService<SuperUserAccountPermissionsUpdateBackgroundServices>();
+        }
+        
         private void AddInfrastructure()
         {
             services.AddScoped<IAccountsRepository, AccountsRepository>();
@@ -79,6 +88,7 @@ public static class IdentityModuleInjection
             services.AddScoped<IAccountModuleOutbox, AccountsModuleOutbox>();
             services.AddMigrations([typeof(IdentityModuleSchemaMigration).Assembly]);
             services.AddSingleton<IPasswordCryptography, PasswordCryptography>();
+            services.AddBackgroundServices();
         }
     }
 }
