@@ -14,11 +14,6 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\models\Models.Module\Models.Module.csproj"/>
-        <ProjectReference Include="..\parsed_advertisements\RemTech.ContainedItems.Module\RemTech.ContainedItems.Module.csproj"/>
-        <ProjectReference Include="..\parsed_advertisements\RemTech.Spares.Module\RemTech.Spares.Module.csproj"/>
-        <ProjectReference Include="..\parsed_advertisements\RemTech.Vehicles.Module\RemTech.Vehicles.Module.csproj"/>
-        <ProjectReference Include="..\users\Identity.WebApi\Identity.WebApi.csproj"/>
-        <ProjectReference Include="..\users\Users.Module\Users.Module.csproj"/>
     </ItemGroup>
     <ItemGroup>
         <None Update="model.onnx">

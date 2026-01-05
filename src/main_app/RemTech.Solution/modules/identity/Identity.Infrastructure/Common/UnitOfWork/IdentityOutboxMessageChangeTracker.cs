@@ -18,7 +18,8 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 
     public async Task Save(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct = default)
     {
-        await SaveOutboxMessageChanges(messages, ct);
+        IEnumerable<IdentityOutboxMessage> tracking = GetTrackingMessages(messages);
+        await SaveOutboxMessageChanges(tracking, ct);
     }
 
     private async Task SaveOutboxMessageChanges(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct)
@@ -66,6 +67,18 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
         string updateSql = $"UPDATE identity_module.outbox m SET {string.Join(", ", setClauses)} WHERE m.id = ANY(@ids)";
         CommandDefinition command = Session.FormCommand(updateSql, parameters, ct);
         await Session.Execute(command);
+    }
+    
+    private IEnumerable<IdentityOutboxMessage> GetTrackingMessages(IEnumerable<IdentityOutboxMessage> messages)
+    {
+        List<IdentityOutboxMessage> tracking = [];
+        foreach (IdentityOutboxMessage message in messages)
+        {
+            if (!Tracking.TryGetValue(message.Id, out IdentityOutboxMessage? tracked))
+                continue;
+            tracking.Add(tracked);
+        }
+        return tracking;
     }
     
     private string WhenClause(int index)
