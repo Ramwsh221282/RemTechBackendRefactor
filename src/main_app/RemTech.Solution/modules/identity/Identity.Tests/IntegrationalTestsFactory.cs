@@ -1,4 +1,5 @@
-﻿using Identity.WebApi.BackgroundServices;
+﻿using Identity.Tests.Fakes;
+using Identity.WebApi.BackgroundServices;
 using Identity.WebApi.Options;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Infrastructure.Database;
+using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
@@ -38,10 +40,13 @@ public sealed class IntegrationalTestsFactory : WebApplicationFactory<Identity.W
         builder.ConfigureServices(s =>
         {
             ReRegisterSuperUserOptionsSettings(s);
-            s.ReRegisterBackgroundService<SuperUserAccountPermissionsUpdateBackgroundServices>();
-            s.ReRegisterBackgroundService<SuperUserAccountRegistrationOnStartupBackgroundService>();
             s.ReRegisterNpgSqlOptions(_dbContainer);
             s.ReRegisterRabbitMqOptions(_rabbitMqContainer);
+            s.ReRegisterBackgroundService<SuperUserAccountPermissionsUpdateBackgroundServices>();
+            s.ReRegisterBackgroundService<SuperUserAccountRegistrationOnStartupBackgroundService>();
+            s.ReRegisterBackgroundService<AccountsModuleOutboxProcessor>();
+            s.AddSingleton<IConsumer, FakeOnUserAccountRegisteredConsumer>();
+            s.AddHostedService<AggregatedConsumersHostedService>();
         });
     }
 

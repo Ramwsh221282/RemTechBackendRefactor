@@ -30,7 +30,7 @@ public sealed class AccountsModuleOutboxProcessor(
 
     private async Task Execute(CancellationToken ct)
     {
-        NpgSqlSession session = new(ConnectionFactory);
+        await using NpgSqlSession session = new(ConnectionFactory);
         NpgSqlTransactionSource transactionSource = new(session, logger);
         IAccountsModuleUnitOfWork unitOfWork = CreateUnitOfWork(session);
         await using ITransactionScope transactionScope = await transactionSource.BeginTransaction(ct);

@@ -2,6 +2,7 @@
 using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts.Outbox;
 using Identity.Domain.Tickets;
+using Identity.Tests.Fakes;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Tests;
@@ -32,6 +33,19 @@ public sealed class AccountRegistrationTests(IntegrationalTestsFactory factory) 
         Assert.True(result.IsSuccess);
         Result<AccountTicket> ticketResult = await Services.GetTicketOfPurpose(AccountTicketPurposes.EmailConfirmationRequired);
         Assert.True(ticketResult.IsSuccess);
+    }
+
+    [Fact]
+    private async Task Invoke_Account_Registration_Success_Ensure_Consumer_Received_Message()
+    {
+        string login = "TestAccount";
+        string email = "testAccount@mail.com";
+        string password = "SomeSimplePassword@123";
+        RegisterAccountCommand command = new(email, login, password);
+        Result<Unit> result = await Services.InvokeAccountRegistration(command);
+        Assert.True(result.IsSuccess);
+        await Task.Delay(TimeSpan.FromSeconds(5));
+        Assert.Equal(1, FakeOnUserAccountRegisteredConsumer.Received);
     }
     
     [Fact]

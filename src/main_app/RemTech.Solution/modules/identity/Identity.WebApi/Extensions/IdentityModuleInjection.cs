@@ -1,4 +1,5 @@
-﻿using Identity.Domain.Accounts.Models;
+﻿using System.Reflection;
+using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts;
 using Identity.Domain.Contracts.Cryptography;
 using Identity.Domain.Contracts.Outbox;
@@ -9,6 +10,7 @@ using Identity.Infrastructure.Common;
 using Identity.Infrastructure.Common.Migrations;
 using Identity.Infrastructure.Common.UnitOfWork;
 using Identity.Infrastructure.Permissions;
+using Identity.Infrastructure.RabbitMq.Producers;
 using Identity.Infrastructure.Tickets;
 using Identity.WebApi.BackgroundServices;
 using Identity.WebApi.Options;
@@ -78,6 +80,7 @@ public static class IdentityModuleInjection
         {
             services.AddHostedService<SuperUserAccountRegistrationOnStartupBackgroundService>();
             services.AddHostedService<SuperUserAccountPermissionsUpdateBackgroundServices>();
+            services.AddHostedService<AccountsModuleOutboxProcessor>();
         }
         
         private void AddInfrastructure()
@@ -88,11 +91,22 @@ public static class IdentityModuleInjection
             services.AddScoped<AccountsChangeTracker>();
             services.AddScoped<AccountTicketsChangeTracker>();
             services.AddScoped<PermissionsChangeTracker>();
+            services.AddScoped<IdentityOutboxMessageChangeTracker>();
             services.AddScoped<IAccountsModuleUnitOfWork, AccountsModuleUnitOfWork>();
             services.AddScoped<IAccountModuleOutbox, AccountsModuleOutbox>();
             services.AddMigrations([typeof(IdentityModuleSchemaMigration).Assembly]);
             services.AddSingleton<IPasswordCryptography, PasswordCryptography>();
+            services.AddOutboxMessagePublishers();
             services.AddBackgroundServices();
+        }
+
+        private void AddOutboxMessagePublishers()
+        {
+            Assembly assembly = typeof(NewAccountRegisteredProducer).Assembly;
+            services.Scan(s => s.FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo(typeof(IAccountOutboxMessagePublisher)))
+                .AsImplementedInterfaces()
+                .WithSingletonLifetime());
         }
     }
 }
