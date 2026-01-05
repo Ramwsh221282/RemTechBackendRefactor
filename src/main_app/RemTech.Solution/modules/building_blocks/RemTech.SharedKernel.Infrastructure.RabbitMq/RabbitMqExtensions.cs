@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Configurations;
+using Scrutor;
 
 namespace RemTech.SharedKernel.Infrastructure.RabbitMq;
 
@@ -17,10 +20,18 @@ public static class RabbitMqExtensions
             services.AddHostedService<AggregatedConsumersHostedService>();
         }
 
-        private bool EnsureOptionsExists()
-        {
-            return services.Any(s => s.ServiceType == typeof(IOptions<RabbitMqOptions>) ||
-                                     s.ServiceType == typeof(IConfigureOptions<RabbitMqOptions>));
-        }
+        private bool EnsureOptionsExists() =>
+            services.Any(s => s.ServiceType == typeof(IOptions<RabbitMqOptions>) ||
+                              s.ServiceType == typeof(IConfigureOptions<RabbitMqOptions>));
+
+        public void AddAggregatedConsumersBackgroundService() =>
+            services.TryAddSingleton<AggregatedConsumersHostedService>();
+
+        public void AddConsumersFromAssemblies(IEnumerable<Assembly> assemblies) =>
+            services.Scan(x => x.FromAssemblies(assemblies)
+                .AddClasses(classes => classes.AssignableTo(typeof(IConsumer)))
+                .UsingRegistrationStrategy(RegistrationStrategy.Skip)
+                .AsSelfWithInterfaces()
+                .WithSingletonLifetime());
     }
 }
