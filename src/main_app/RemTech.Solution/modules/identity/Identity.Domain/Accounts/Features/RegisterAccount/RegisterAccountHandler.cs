@@ -1,5 +1,7 @@
 ﻿using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts;
+using Identity.Domain.Contracts.Cryptography;
+using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.PasswordRequirements;
 using Identity.Domain.Tickets;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -9,10 +11,9 @@ namespace Identity.Domain.Accounts.Features.RegisterAccount;
 
 public sealed class RegisterAccountHandler(
     IAccountsRepository accounts,
-    IAccountTicketsRepository tickets,
     IEnumerable<IAccountPasswordRequirement> passwordRequirements,
     IPasswordCryptography cryptography,
-    IAccountModuleOutbox outbox) 
+    DomainEventsDispatcher eventsDispatcher) 
     : ICommandHandler<RegisterAccountCommand, Unit>
 {
     public async Task<Result<Unit>> Execute(RegisterAccountCommand command, CancellationToken ct = default)
@@ -24,12 +25,9 @@ public sealed class RegisterAccountHandler(
         
         AccountPassword encrypted = await password.Value.Encrypt(cryptography, ct);
         Account account = CreateAccount(encrypted, command);
-        AccountTicket ticket = account.CreateTicket(OutboxMessageTypes.EmailConfirmation);
-        OutboxMessage<RegisteredOutboxMessagePayload> outboxMessagePayload = CreateOutboxMessage(account, ticket);
         
         await accounts.Add(account, ct);
-        await tickets.Add(ticket, ct);
-        await outbox.Add(outboxMessagePayload, ct);
+        await eventsDispatcher.Dispatch(account.Events, ct);
         
         return Unit.Value;
     }
@@ -57,12 +55,6 @@ public sealed class RegisterAccountHandler(
         AccountLogin login = AccountLogin.Create(command.Login);
         Account account = Account.New(email, login, password);
         return account;
-    }
-
-    private OutboxMessage<RegisteredOutboxMessagePayload> CreateOutboxMessage(Account account, AccountTicket ticket)
-    {
-        RegisteredOutboxMessagePayload payload = new(account.Id.Value, ticket.TicketId, account.Email.Value, account.Login.Value);
-        return OutboxMessage<RegisteredOutboxMessagePayload>.CreateNew(OutboxMessageTypes.EmailConfirmation, 0, payload);
     }
     
     private async Task<Result<Unit>> CheckAccountEmailDuplicate(string email, CancellationToken ct)

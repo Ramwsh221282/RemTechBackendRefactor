@@ -1,7 +1,7 @@
 ﻿using Identity.Domain.Permissions;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
-namespace Identity.Domain.Contracts;
+namespace Identity.Domain.Contracts.Persistence;
 
 public interface IPermissionsRepository
 {

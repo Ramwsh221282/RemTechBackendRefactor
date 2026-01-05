@@ -1,4 +1,5 @@
 ﻿using Identity.Domain.Contracts;
+using Identity.Domain.Contracts.Persistence;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 

@@ -1,5 +1,7 @@
 ﻿using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts;
+using Identity.Domain.Contracts.Cryptography;
+using Identity.Domain.Contracts.Persistence;
 using Identity.WebApi.Options;
 using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;

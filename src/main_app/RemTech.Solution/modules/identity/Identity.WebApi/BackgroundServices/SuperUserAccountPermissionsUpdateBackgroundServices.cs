@@ -1,6 +1,7 @@
 ﻿using Identity.Domain.Accounts.Features.GivePermissions;
 using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts;
+using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.Permissions;
 using Identity.WebApi.Options;
 using Microsoft.Extensions.Options;

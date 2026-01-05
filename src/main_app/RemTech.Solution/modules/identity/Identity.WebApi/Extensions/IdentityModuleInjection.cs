@@ -1,5 +1,8 @@
 ﻿using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts;
+using Identity.Domain.Contracts.Cryptography;
+using Identity.Domain.Contracts.Outbox;
+using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.PasswordRequirements;
 using Identity.Infrastructure.Accounts;
 using Identity.Infrastructure.Common;
@@ -64,6 +67,7 @@ public static class IdentityModuleInjection
             new HandlersRegistrator(services)
                 .FromAssemblies([typeof(Account).Assembly])
                 .RequireRegistrationOf(typeof(ICommandHandler<,>))
+                .AlsoAddDomainEventHandlers()
                 .AlsoAddValidators()
                 .AlsoAddDecorators()
                 .AlsoUseDecorators()

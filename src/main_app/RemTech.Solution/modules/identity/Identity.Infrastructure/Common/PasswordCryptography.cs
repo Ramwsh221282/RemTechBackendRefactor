@@ -1,5 +1,6 @@
 ﻿using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts;
+using Identity.Domain.Contracts.Cryptography;
 using RemTech.SharedKernel.Infrastructure.AesEncryption;
 
 namespace Identity.Infrastructure.Common;

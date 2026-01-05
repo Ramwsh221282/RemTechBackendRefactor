@@ -1,5 +1,6 @@
 ﻿using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts;
+using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.Permissions;
 using Identity.Domain.Tickets;
 

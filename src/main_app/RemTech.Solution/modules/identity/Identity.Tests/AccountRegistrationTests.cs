@@ -1,4 +1,7 @@
 ﻿using Identity.Domain.Accounts.Features.RegisterAccount;
+using Identity.Domain.Accounts.Models;
+using Identity.Domain.Contracts.Outbox;
+using Identity.Domain.Tickets;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Tests;
@@ -16,6 +19,34 @@ public sealed class AccountRegistrationTests(IntegrationalTestsFactory factory) 
         RegisterAccountCommand command = new(email, login, password);
         Result<Unit> result = await Services.InvokeAccountRegistration(command);
         Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    private async Task Invoke_Account_Registration_Success_Ensure_Email_Confirmation_Ticket_Created()
+    {
+        string login = "TestAccount";
+        string email = "testAccount@mail.com";
+        string password = "SomeSimplePassword@123";
+        RegisterAccountCommand command = new(email, login, password);
+        Result<Unit> result = await Services.InvokeAccountRegistration(command);
+        Assert.True(result.IsSuccess);
+        Result<AccountTicket> ticketResult = await Services.GetTicketOfPurpose(AccountTicketPurposes.EmailConfirmationRequired);
+        Assert.True(ticketResult.IsSuccess);
+    }
+    
+    [Fact]
+    private async Task Invoke_Account_Registration_Success_Ensure_Outbox_Message_Created()
+    {
+        string login = "TestAccount";
+        string email = "testAccount@mail.com";
+        string password = "SomeSimplePassword@123";
+        RegisterAccountCommand command = new(email, login, password);
+        Result<Unit> result = await Services.InvokeAccountRegistration(command);
+        Assert.True(result.IsSuccess);
+        OutboxMessage[] messages = await Services.GetOutboxMessagesOfType(AccountOutboxMessageTypes.NewAccountCreated);
+        Assert.NotEmpty(messages);
+        OutboxMessage? message = messages.FirstOrDefault(m => m.Type == AccountOutboxMessageTypes.NewAccountCreated);
+        Assert.NotNull(message);
     }
 
     [Fact]

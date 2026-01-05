@@ -1,6 +1,6 @@
 ﻿using Identity.Domain.Accounts.Models;
 
-namespace Identity.Domain.Contracts;
+namespace Identity.Domain.Contracts.Cryptography;
 
 public interface IPasswordCryptography
 {

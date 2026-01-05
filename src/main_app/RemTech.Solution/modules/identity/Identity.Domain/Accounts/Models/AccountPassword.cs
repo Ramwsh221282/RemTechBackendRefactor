@@ -1,4 +1,5 @@
 ﻿using Identity.Domain.Contracts;
+using Identity.Domain.Contracts.Cryptography;
 using Identity.Domain.PasswordRequirements;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 

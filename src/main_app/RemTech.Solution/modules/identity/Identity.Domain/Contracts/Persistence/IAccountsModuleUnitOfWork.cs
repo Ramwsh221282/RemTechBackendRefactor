@@ -2,7 +2,7 @@
 using Identity.Domain.Permissions;
 using Identity.Domain.Tickets;
 
-namespace Identity.Domain.Contracts;
+namespace Identity.Domain.Contracts.Persistence;
 
 public interface IAccountsModuleUnitOfWork
 {

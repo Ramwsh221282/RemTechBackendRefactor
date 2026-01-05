@@ -1,8 +1,11 @@
-﻿using Identity.Domain.Contracts;
+﻿using Identity.Domain.Accounts.Models.Events;
+using Identity.Domain.Contracts;
+using Identity.Domain.Contracts.Cryptography;
 using Identity.Domain.PasswordRequirements;
 using Identity.Domain.Permissions;
 using Identity.Domain.Tickets;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.Handlers;
 
 namespace Identity.Domain.Accounts.Models;
 
@@ -12,12 +15,13 @@ public sealed class Account(
     AccountPassword password, 
     AccountLogin login, 
     AccountActivationStatus activationStatus,
-    AccountPermissionsCollection permissions)
+    AccountPermissionsCollection permissions) : IDomainEventBearer
 {
     private Account(Account account) 
         : this(account.Id, account.Email, account.Password, account.Login, account.ActivationStatus, account.Permissions.Clone())
     { }
 
+    private List<IDomainEvent> _events = [];
     public AccountId Id { get; private set; } = id;
     public AccountEmail Email { get; private set; } = email;
     public AccountPassword Password { get; private set; } = password;
@@ -32,6 +36,7 @@ public sealed class Account(
         if (ActivationStatus.IsActivated())
             return Error.Conflict("Учетная запись уже активирована.");
         ActivationStatus = AccountActivationStatus.Activated();
+        _events.Add(new AccountActivatedEvent(this));
         return Result.Success(Unit.Value);
     }
 
@@ -60,7 +65,10 @@ public sealed class Account(
     
     public Result<Unit> CloseTicket(AccountTicket ticket)
     {
-        return ticket.AccountId != Id ? Error.NotFound("Заявка не найдена.") : ticket.Finish();
+        Result<Unit> finishing = ticket.FinishBy(Id.Value);
+        if (finishing.IsFailure) return finishing.Error;
+        _events.Add(new AccountClosedTicketEvent(this, ticket));
+        return Unit.Value;
     }
     
     public async Task<Result<Unit>> ChangePassword(
@@ -93,8 +101,17 @@ public sealed class Account(
         AccountId id = AccountId.New();
         AccountActivationStatus activationStatus = AccountActivationStatus.NotActivated();
         AccountPermissionsCollection permissions = AccountPermissionsCollection.Empty(id);
-        return new Account(id, email, password, login, activationStatus, permissions);
+        Account account = new Account(id, email, password, login, activationStatus, permissions);
+        account._events.Add(new NewAccountCreatedEvent(account));
+        return account;
     }
 
-    public Account Copy() => new(this);
+    public Account Copy()
+    {
+        Account account = new(this);   
+        account._events = [.._events];
+        return account;
+    }
+
+    public IReadOnlyList<IDomainEvent> Events => _events;
 }

@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.Contracts;
+﻿namespace Identity.Domain.Contracts.Persistence;
 
 public sealed class AccountSpecification
 {

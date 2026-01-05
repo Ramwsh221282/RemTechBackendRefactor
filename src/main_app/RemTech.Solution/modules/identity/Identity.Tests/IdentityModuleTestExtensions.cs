@@ -2,8 +2,11 @@
 using Identity.Domain.Accounts.Features.RegisterAccount;
 using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts;
+using Identity.Domain.Contracts.Outbox;
+using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.Permissions;
 using Identity.Domain.Permissions.Features.AddPermissions;
+using Identity.Domain.Tickets;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
@@ -75,6 +78,22 @@ public static class IdentityModuleTestExtensions
             await using AsyncServiceScope scope = services.CreateAsyncScope();
             IAccountsRepository accounts = scope.ServiceProvider.GetRequiredService<IAccountsRepository>();
             return await accounts.Get(specification, CancellationToken.None);
+        }
+
+        public async Task<OutboxMessage[]> GetOutboxMessagesOfType(string type)
+        {
+            OutboxMessageSpecification spec = new OutboxMessageSpecification().OfType(type);
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            IAccountModuleOutbox outbox = scope.ServiceProvider.GetRequiredService<IAccountModuleOutbox>();
+            return await outbox.GetMany(spec, CancellationToken.None);
+        }
+
+        public async Task<Result<AccountTicket>> GetTicketOfPurpose(string purpose)
+        {
+            AccountTicketSpecification spec = new AccountTicketSpecification().WithPurpose(purpose);
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            IAccountTicketsRepository tickets = scope.ServiceProvider.GetRequiredService<IAccountTicketsRepository>();
+            return await tickets.Get(spec, CancellationToken.None);
         }
     }
 }
