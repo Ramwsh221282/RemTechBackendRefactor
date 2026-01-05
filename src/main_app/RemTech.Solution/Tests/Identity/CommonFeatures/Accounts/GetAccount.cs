@@ -1,4 +1,5 @@
 ﻿using Identity.Contracts.Accounts;
+using Identity.Domain;
 using Identity.Infrastructure.Accounts;
 using Microsoft.Extensions.DependencyInjection;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;

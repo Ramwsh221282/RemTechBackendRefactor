@@ -5,18 +5,20 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-
+    
     <ItemGroup>
-      <ProjectReference Include="..\Identity.Application\Identity.Application.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Serilog" Version="4.3.0" />
+        <None Remove="Permissions\Seeding\predefined-permissions-seeding.sql" />
+        <EmbeddedResource Include="Permissions\Seeding\predefined-permissions-seeding.sql" />
     </ItemGroup>
     
     <ItemGroup>
-        <EmbeddedResource Include="Migrations\*.sql" />
-        <EmbeddedResource Include="Accounts\Migrations\*.sql" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.AesEncryption" Version="1.0.2" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.15" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.4" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj" />
     </ItemGroup>
     
 </Project>

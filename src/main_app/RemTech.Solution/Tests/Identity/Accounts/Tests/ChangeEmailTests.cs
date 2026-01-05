@@ -1,4 +1,5 @@
 ﻿using Identity.Contracts.Accounts;
+using Identity.Domain;
 using Identity.Gateways.Accounts.Responses;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using Tests.Identity.Accounts.Fixtures;

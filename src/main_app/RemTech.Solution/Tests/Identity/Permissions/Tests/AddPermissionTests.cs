@@ -1,4 +1,6 @@
 ﻿using Identity.Application.Permissions;
+using Identity.Domain;
+using Identity.Domain.Permissions;
 using Identity.Gateways.Permissions.AddPermission;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using Tests.Identity.Permissions.Fixtures;

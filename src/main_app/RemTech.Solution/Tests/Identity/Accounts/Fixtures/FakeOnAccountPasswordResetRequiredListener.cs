@@ -1,4 +1,5 @@
 ﻿using Identity.Contracts.Accounts;
+using Identity.Domain;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Tests.Identity.Accounts.Fixtures;

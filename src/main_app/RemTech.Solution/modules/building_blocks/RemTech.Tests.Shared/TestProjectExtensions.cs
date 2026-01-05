@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Quartz;
+using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Infrastructure.Quartz;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
@@ -58,10 +59,10 @@ public static class TestProjectExtensions
     public static void ReRegisterBackgroundService<T>(this IServiceCollection services) 
         where T : class, IHostedService
     {
-        ServiceDescriptor? registeredService = services.FirstOrDefault(s => s.ServiceType == typeof(IHostedService) && s.ImplementationType == typeof(T));
-        if (registeredService == null) 
+        ServiceDescriptor? requiredToRemove = services.FirstOrDefault(s => s.ImplementationType == typeof(T));
+        if (requiredToRemove is null)
             throw new InvalidOperationException($"Cannot find registered service for {typeof(T)} when re registering background service.");
-        services.RemoveAll(registeredService.ServiceType);
+        services.Remove(requiredToRemove);
         services.AddHostedService<T>();
     }
     

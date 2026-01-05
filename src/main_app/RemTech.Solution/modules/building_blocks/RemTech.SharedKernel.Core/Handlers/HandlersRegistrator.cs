@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Scrutor;
 
 namespace RemTech.SharedKernel.Core.Handlers;
@@ -47,6 +48,25 @@ public sealed class HandlersRegistrator
         return this;
     }
 
+    public HandlersRegistrator AlsoAddDomainEventHandlers()
+    {
+        _registrationActions.Enqueue(() => _services.Scan(x => x.FromAssemblies(_assemblies)
+            .AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler<>)))
+            .UsingRegistrationStrategy(RegistrationStrategy.Skip)
+            .AsSelfWithInterfaces()
+            .WithScopedLifetime()));
+        
+        _registrationActions.Enqueue(() => _services.Scan(x => x.FromAssemblies(_assemblies)
+            .AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler)))
+            .UsingRegistrationStrategy(RegistrationStrategy.Skip)
+            .AsSelfWithInterfaces()
+            .WithScopedLifetime()));
+        
+        _registrationActions.Enqueue(() => _services.TryAddScoped<DomainEventsDispatcher>());
+        
+        return this;
+    }
+    
     public HandlersRegistrator AlsoUseDecorators()
     {
         _registrationActions.Enqueue(() =>

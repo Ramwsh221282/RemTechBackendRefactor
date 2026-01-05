@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\modules\identity\Identity.CompositionRoot\Identity.CompositionRoot.csproj" />
       <ProjectReference Include="..\modules\mailing\Mailing.CompositionRoot\Mailing.CompositionRoot.csproj" />
     </ItemGroup>
 
