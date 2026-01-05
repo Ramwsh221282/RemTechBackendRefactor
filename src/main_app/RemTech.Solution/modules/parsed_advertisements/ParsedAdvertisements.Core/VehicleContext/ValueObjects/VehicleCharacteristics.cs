@@ -1,3 +1,0 @@
-﻿namespace ParsedAdvertisements.Core.VehicleContext.ValueObjects;
-
-public sealed record VehicleCharacteristics(IEnumerable<VehicleCharacteristic> Characteristics);

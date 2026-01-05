@@ -5,7 +5,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\shared_module\Shared.Infrastructure.Module\Shared.Infrastructure.Module.csproj" />
     <ProjectReference Include="..\..\..\Telemetry.Domain\Telemetry.Domain.csproj" />
   </ItemGroup>
 </Project>

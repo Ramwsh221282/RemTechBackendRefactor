@@ -4,7 +4,4 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\shared_module\RemTech.Core.Shared\RemTech.Core.Shared.csproj" />
-  </ItemGroup>
 </Project>

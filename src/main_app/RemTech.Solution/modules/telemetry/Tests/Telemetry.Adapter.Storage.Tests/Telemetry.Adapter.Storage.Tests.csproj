@@ -15,7 +15,6 @@
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\shared_module\RemTech.Shared.Tests\RemTech.Shared.Tests.csproj" />
     <ProjectReference Include="..\..\Adapters\In\Telemetry.Adapter.Storage\Telemetry.Adapter.Storage.csproj" />
   </ItemGroup>
 </Project>
