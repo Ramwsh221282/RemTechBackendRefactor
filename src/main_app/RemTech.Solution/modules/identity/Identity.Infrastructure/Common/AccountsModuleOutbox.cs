@@ -1,17 +1,18 @@
 ﻿using System.Data;
-using System.Text.Json;
 using Dapper;
-using Identity.Domain.Contracts;
 using Identity.Domain.Contracts.Outbox;
+using Identity.Domain.Contracts.Persistence;
 using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Common;
 
-public sealed class AccountsModuleOutbox(NpgSqlSession session) : IAccountModuleOutbox
+public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleUnitOfWork unitOfWork) : IAccountModuleOutbox
 {
     private NpgSqlSession Session { get; } = session;
     
-    public async Task Add(OutboxMessage message, CancellationToken ct = default)
+    private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
+    
+    public async Task Add(IdentityOutboxMessage message, CancellationToken ct = default)
     {
         const string sql = """
                            INSERT INTO
@@ -28,14 +29,14 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session) : IAccountModule
             retry_count = message.RetryCount,
             created = message.Created,
             sent = message.Sent.HasValue ? message.Sent.Value : (object?)null,
-            payload = JsonSerializer.Serialize(message.Payload)
+            payload = message.Payload
         };
 
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
         await Session.Execute(command);
     }
 
-    public async Task<OutboxMessage[]> GetMany(OutboxMessageSpecification spec, CancellationToken ct = default)
+    public async Task<IdentityOutboxMessage[]> GetMany(OutboxMessageSpecification spec, CancellationToken ct = default)
     {
         (DynamicParameters parameters, string filterSql) = WhereClause(spec);
         string lockClause = LockClause(spec);
@@ -54,11 +55,12 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session) : IAccountModule
                       """;
         
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-        OutboxMessage[] messages = await Session.QueryMultipleUsingReader(command, Map);
+        IdentityOutboxMessage[] messages = await Session.QueryMultipleUsingReader(command, Map);
+        UnitOfWork.Track(messages);
         return messages;
     }
 
-    private OutboxMessage Map(IDataReader reader)
+    private IdentityOutboxMessage Map(IDataReader reader)
     {
         Guid id = reader.GetValue<Guid>("id");
         string type = reader.GetValue<string>("type");
@@ -66,8 +68,7 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session) : IAccountModule
         DateTime created = reader.GetValue<DateTime>("created");
         DateTime? sent = reader.GetNullable<DateTime>("sent");
         string payloadJson = reader.GetValue<string>("payload");
-        object payload = JsonSerializer.Deserialize<object>(payloadJson)!;
-        return new OutboxMessage(id, type, retryCount, created, sent, payload);
+        return new IdentityOutboxMessage(id, type, retryCount, created, sent, payloadJson);
     }
 
     private string LockClause(OutboxMessageSpecification spec)

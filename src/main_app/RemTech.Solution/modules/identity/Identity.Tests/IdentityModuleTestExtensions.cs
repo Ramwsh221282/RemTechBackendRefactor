@@ -80,7 +80,7 @@ public static class IdentityModuleTestExtensions
             return await accounts.Get(specification, CancellationToken.None);
         }
 
-        public async Task<OutboxMessage[]> GetOutboxMessagesOfType(string type)
+        public async Task<IdentityOutboxMessage[]> GetOutboxMessagesOfType(string type)
         {
             OutboxMessageSpecification spec = new OutboxMessageSpecification().OfType(type);
             await using AsyncServiceScope scope = services.CreateAsyncScope();

@@ -23,13 +23,13 @@ public sealed class OnNewAccountCreatedEventHandler(Serilog.ILogger logger, IAcc
     public async Task Handle(NewAccountCreatedEvent @event, CancellationToken ct = new CancellationToken())
     {
         AccountTicket ticket = CreateConfirmEmailTicket(@event);
-        OutboxMessage message = CreateOutboxMessage(ticket, @event);
+        IdentityOutboxMessage message = CreateOutboxMessage(ticket, @event);
         await Tickets.Add(ticket, ct);
         await Outbox.Add(message, ct);
         Logger.Information("Handled event of type {Type}", @event.GetType().Name);
     }
 
-    private OutboxMessage CreateOutboxMessage(AccountTicket ticket, NewAccountCreatedEvent @event)
+    private IdentityOutboxMessage CreateOutboxMessage(AccountTicket ticket, NewAccountCreatedEvent @event)
     {
         NewAccountRegisteredOutboxMessagePayload payload = new(
             @event.AccountId,
@@ -37,7 +37,7 @@ public sealed class OnNewAccountCreatedEventHandler(Serilog.ILogger logger, IAcc
             @event.AccountEmail,
             @event.AccountLogin);
         
-        OutboxMessage message = OutboxMessage.CreateNew(AccountOutboxMessageTypes.NewAccountCreated, payload);
+        IdentityOutboxMessage message = IdentityOutboxMessage.CreateNew(AccountOutboxMessageTypes.NewAccountCreated, payload);
         
         Logger.Information("Created outbox message of type: {Type}.", message.Type);
         Logger.Debug("Outbox message payload: {AccountId} {TicketId} {AccountEmail} {AccountLogin}", 

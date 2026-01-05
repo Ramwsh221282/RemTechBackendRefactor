@@ -47,24 +47,24 @@ public sealed class OutboxMessageSpecification
         return this;
     }
     
-    public OutboxMessageSpecification OfSentOnly(bool sentOnly)
+    public OutboxMessageSpecification OfSentOnly()
     {
         if (SentOnly.HasValue) return this;
-        SentOnly = sentOnly;
+        SentOnly = true;
         return this;
     }
     
-    public OutboxMessageSpecification OfNotSentOnly(bool notSentOnly)
+    public OutboxMessageSpecification OfNotSentOnly()
     {
         if (NotSentOnly.HasValue) return this;
-        NotSentOnly = notSentOnly;
+        NotSentOnly = true;
         return this;
     }
     
-    public OutboxMessageSpecification OfWithLock(bool withLock)
+    public OutboxMessageSpecification OfWithLock()
     {
         if (WithLock.HasValue) return this;
-        WithLock = withLock;
+        WithLock = true;
         return this;
     }
 }

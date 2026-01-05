@@ -43,9 +43,9 @@ public sealed class AccountRegistrationTests(IntegrationalTestsFactory factory) 
         RegisterAccountCommand command = new(email, login, password);
         Result<Unit> result = await Services.InvokeAccountRegistration(command);
         Assert.True(result.IsSuccess);
-        OutboxMessage[] messages = await Services.GetOutboxMessagesOfType(AccountOutboxMessageTypes.NewAccountCreated);
+        IdentityOutboxMessage[] messages = await Services.GetOutboxMessagesOfType(AccountOutboxMessageTypes.NewAccountCreated);
         Assert.NotEmpty(messages);
-        OutboxMessage? message = messages.FirstOrDefault(m => m.Type == AccountOutboxMessageTypes.NewAccountCreated);
+        IdentityOutboxMessage? message = messages.FirstOrDefault(m => m.Type == AccountOutboxMessageTypes.NewAccountCreated);
         Assert.NotNull(message);
     }
 
