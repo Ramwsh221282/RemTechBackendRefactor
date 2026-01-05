@@ -1,6 +1,4 @@
-using System.Data.Common;
 using Dapper;
-using Npgsql;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -42,35 +40,42 @@ public sealed class SubscriptionStorage(NpgSqlConnectionFactory connectionFactor
     {
         Logger?.Information("Initializing parsers subscription storage.");
         await using NpgSqlSession session = new(connectionFactory);
-        NpgSqlTransactionSource transactionSource = new(session);
-        ITransactionScope transaction = await transactionSource.BeginTransaction();
-        
-        Logger?.Information("Schema name: {Schema}", SchemaName);
-        string schemaSql =
-            $"""
-             CREATE SCHEMA IF NOT EXISTS {SchemaName}
-             """;
-        string tableSql =
-            $"""
-             CREATE TABLE IF NOT EXISTS {SchemaName}.subscriptions
-             (
-                 id uuid primary key,
-                 domain varchar(128) not null,
-                 type varchar(128) not null,
-                 created timestamptz not null
-             )
-             """;
-        
-        await session.Execute(new CommandDefinition(schemaSql, transaction: session.Transaction));
-        await session.Execute(new CommandDefinition(tableSql, transaction: session.Transaction));
-        Result result = await transaction.Commit();
-        if (!result.IsSuccess)
+        NpgSqlTransactionSource transactionSource = new(session, logger);
+        await using ITransactionScope transaction = await transactionSource.BeginTransaction();
+
+        try
         {
-            Logger?.Error(result.Error, "Failed to initialize parsers subscription storage.");
-            throw new Exception(result.Error);
-        }
+            Logger?.Information("Schema name: {Schema}", SchemaName);
+            string schemaSql =
+                $"""
+                 CREATE SCHEMA IF NOT EXISTS {SchemaName}
+                 """;
+            string tableSql =
+                $"""
+                 CREATE TABLE IF NOT EXISTS {SchemaName}.subscriptions
+                 (
+                     id uuid primary key,
+                     domain varchar(128) not null,
+                     type varchar(128) not null,
+                     created timestamptz not null
+                 )
+                 """;
         
-        Logger?.Information("Initialized parsers subscription storage.");
+            await session.Execute(new CommandDefinition(schemaSql, transaction: session.Transaction));
+            await session.Execute(new CommandDefinition(tableSql, transaction: session.Transaction));
+            Result result = await transaction.Commit();
+            if (!result.IsSuccess)
+            {
+                Logger?.Error(result.Error, "Failed to initialize parsers subscription storage.");
+                throw new Exception(result.Error);
+            }
+        
+            Logger?.Information("Initialized parsers subscription storage.");
+        }
+        catch(Exception e)
+        {
+            Logger?.Fatal(e, "Failed to initialize parsers subscription storage.");
+        }
     }
 
     public async Task SaveSubscription(ParserSubscribtion subscribtion)
@@ -86,29 +91,36 @@ public sealed class SubscriptionStorage(NpgSqlConnectionFactory connectionFactor
             created = subscribtion.Subscribed
         };
         await using NpgSqlSession session = new(connectionFactory);
-        NpgSqlTransactionSource transactionSource = new(session);
-        ITransactionScope transaction = await transactionSource.BeginTransaction();
-        
-        var sql =
-            $"""
-             INSERT INTO {SchemaName}.subscriptions (id, domain, type, created)
-             VALUES (@id, @domain, @type, @created) ON CONFLICT (id) DO NOTHING
-             """;
-        await session.Execute(new CommandDefinition(sql, parameters, transaction: session.Transaction));
-        
-        Result commit = await transaction.Commit();
-        if (!commit.IsSuccess)
+        NpgSqlTransactionSource transactionSource = new(session, Logger);
+        await using ITransactionScope transaction = await transactionSource.BeginTransaction();
+
+        try
         {
-            Logger?.Error(commit.Error, "Failed to save parser subscription.");
-            throw new Exception(commit.Error);
+            var sql =
+                $"""
+                 INSERT INTO {SchemaName}.subscriptions (id, domain, type, created)
+                 VALUES (@id, @domain, @type, @created) ON CONFLICT (id) DO NOTHING
+                 """;
+            await session.Execute(new CommandDefinition(sql, parameters, transaction: session.Transaction));
+        
+            Result commit = await transaction.Commit();
+            if (!commit.IsSuccess)
+            {
+                Logger?.Error(commit.Error, "Failed to save parser subscription.");
+                throw new Exception(commit.Error);
+            }
+            Logger?.Information(
+                """ 
+                Saved parser subscription.
+                Id: {Id}
+                Domain: {Domain}
+                Type: {Type}
+                """, subscribtion.Id, subscribtion.Domain, subscribtion.Type);
         }
-        Logger?.Information(
-            """ 
-            Saved parser subscription.
-            Id: {Id}
-            Domain: {Domain}
-            Type: {Type}
-            """, subscribtion.Id, subscribtion.Domain, subscribtion.Type);
+        catch(Exception e)
+        {
+            Logger?.Fatal(e, "Failed to save parser subscription.");
+        }
     }
 
     internal void SetSchema(string schema)

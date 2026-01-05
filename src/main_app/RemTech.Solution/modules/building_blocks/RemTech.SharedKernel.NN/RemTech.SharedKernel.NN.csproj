@@ -4,16 +4,13 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>1.0.1</Version>
+        <Version>1.0.2</Version>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
       <PackageReference Include="Microsoft.ML.OnnxRuntime.Extensions" Version="0.14.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\RemTech.SharedKernel.Configurations\RemTech.SharedKernel.Configurations.csproj" />
+      <PackageReference Include="RemTech.SharedKernel.Configurations" Version="1.0.2" />
     </ItemGroup>
 
 </Project>

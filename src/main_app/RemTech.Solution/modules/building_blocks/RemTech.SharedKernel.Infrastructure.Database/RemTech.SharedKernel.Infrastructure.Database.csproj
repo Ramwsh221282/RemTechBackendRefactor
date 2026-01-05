@@ -4,7 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>1.0.15</Version>
+        <Version>1.0.16</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,12 +17,9 @@
       <PackageReference Include="Npgsql" Version="10.0.1" />
       <PackageReference Include="Pgvector" Version="0.3.2" />
       <PackageReference Include="Pgvector.Dapper" Version="0.3.1" />
+      <PackageReference Include="RemTech.SharedKernel.Configurations" Version="1.0.2" />
+      <PackageReference Include="RemTech.SharedKernel.Core" Version="1.0.6" />
       <PackageReference Include="Serilog" Version="4.3.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\RemTech.SharedKernel.Configurations\RemTech.SharedKernel.Configurations.csproj" />
-      <ProjectReference Include="..\RemTech.SharedKernel.Core\RemTech.SharedKernel.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

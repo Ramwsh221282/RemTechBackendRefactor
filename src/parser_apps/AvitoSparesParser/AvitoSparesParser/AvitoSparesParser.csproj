@@ -18,12 +18,9 @@
     </ItemGroup>
     
     <ItemGroup>
-      <PackageReference Include="AvitoFirewallBypass" Version="1.0.3" />
-      <PackageReference Include="ParserSubscriber" Version="1.0.2" />
-      <PackageReference Include="ParsingSDK" Version="1.0.7" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.9" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Quartz" Version="1.0.0" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.4" />
+      <PackageReference Include="AvitoFirewallBypass" Version="1.0.4" />
+      <PackageReference Include="ParserSubscriber" Version="1.0.3" />
+      <PackageReference Include="ParsingSDK" Version="1.0.8" />
     </ItemGroup>
 
 </Project>

@@ -7,12 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="ParserSubscriber" Version="1.0.2" />
-      <PackageReference Include="ParsingSDK" Version="1.0.7" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.15" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Quartz" Version="1.0.0" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.4" />
-      <PackageReference Include="Scrutor" Version="7.0.0" />
+      <PackageReference Include="ParserSubscriber" Version="1.0.3" />
+      <PackageReference Include="ParsingSDK" Version="1.0.8" />
     </ItemGroup>
     
     <ItemGroup>
