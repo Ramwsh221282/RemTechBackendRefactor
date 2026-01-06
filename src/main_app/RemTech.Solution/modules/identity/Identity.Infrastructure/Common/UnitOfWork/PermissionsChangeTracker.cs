@@ -20,7 +20,7 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
     public void StartTracking(IEnumerable<Permission> permissions)
     {
         foreach (Permission permission in permissions)
-            _tracking.TryAdd(permission.Id.Value, permission);
+            _tracking.TryAdd(permission.Id.Value, permission.Clone());
     }
     
     private async Task SavePermissionChanges(IEnumerable<Permission> permissions, CancellationToken ct)

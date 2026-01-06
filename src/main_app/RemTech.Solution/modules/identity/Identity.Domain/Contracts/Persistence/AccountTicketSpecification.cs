@@ -29,17 +29,24 @@ public sealed class AccountTicketSpecification
         return this;
     }
     
-    public AccountTicketSpecification WithLockRequired(bool lockRequired)
+    public AccountTicketSpecification WithLockRequired()
     {
         if (LockRequired.HasValue) return this;
-        LockRequired = lockRequired;
+        LockRequired = true;
+        return this;
+    }
+
+    public AccountTicketSpecification NotFinished()
+    {
+        if (Finished.HasValue) return this;
+        Finished = false;
         return this;
     }
     
-    public AccountTicketSpecification WithFinished(bool finished)
+    public AccountTicketSpecification WithFinished()
     {
         if (Finished.HasValue) return this;
-        Finished = finished;
+        Finished = true;
         return this;
     }
 }

@@ -1,4 +1,5 @@
-﻿using Identity.Domain.Accounts.Features.GivePermissions;
+﻿using Identity.Domain.Accounts.Features.ConfirmTicket;
+using Identity.Domain.Accounts.Features.GivePermissions;
 using Identity.Domain.Accounts.Features.RegisterAccount;
 using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts;
@@ -88,6 +89,14 @@ public static class IdentityModuleTestExtensions
             return await outbox.GetMany(spec, CancellationToken.None);
         }
 
+        public async Task<Result<Unit>> ConfirmAccountTicket(Guid accountId, Guid ticketId)
+        {
+            ConfirmTicketCommand command = new(accountId, ticketId);
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            return await scope.ServiceProvider.GetRequiredService<ICommandHandler<ConfirmTicketCommand, Unit>>()
+                .Execute(command);
+        }
+        
         public async Task<Result<AccountTicket>> GetTicketOfPurpose(string purpose)
         {
             AccountTicketSpecification spec = new AccountTicketSpecification().WithPurpose(purpose);

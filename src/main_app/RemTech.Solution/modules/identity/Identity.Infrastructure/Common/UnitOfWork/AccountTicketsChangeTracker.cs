@@ -12,7 +12,7 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 
     public void StartTracking(IEnumerable<AccountTicket> tickets)
     {
-        foreach (AccountTicket ticket in tickets) _tracking.TryAdd(ticket.TicketId, ticket);
+        foreach (AccountTicket ticket in tickets) _tracking.TryAdd(ticket.TicketId, ticket.Clone());
     }
 
     public async Task SaveChanges(IEnumerable<AccountTicket> tickets, CancellationToken ct)
@@ -54,9 +54,9 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
         parameters.Add("@ids", ids.ToArray());
         
         string updateSql = $"""
-                           UPDATE identity_module.account_tickets ac
+                           UPDATE identity_module.tickets ac
                            SET {string.Join(", ", updateSet)}
-                           WHERE ac.ticket_id = ANY (@ids)
+                           WHERE ac.id = ANY (@ids)
                            """;
         
         CommandDefinition command = Session.FormCommand(updateSql, parameters, ct);
@@ -76,6 +76,6 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 
     private string WhenClause(int index)
     {
-        return $"WHEN ac.ticket_id = @ticket_id_{index}";
+        return $"WHEN ac.id = @ticket_id_{index}";
     }
 }
