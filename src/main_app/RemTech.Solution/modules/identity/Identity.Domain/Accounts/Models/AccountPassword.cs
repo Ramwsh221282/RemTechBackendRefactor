@@ -17,14 +17,14 @@ public sealed record AccountPassword
         return new AccountPassword(value);
     }
 
-    public async Task<AccountPassword> Encrypt(IPasswordCryptography cryptography, CancellationToken ct = default)
+    public AccountPassword HashBy(IPasswordHasher hasher, CancellationToken ct = default)
     {
-        return await cryptography.Encrypt(this, ct);
+        return hasher.Hash(this, ct);
     }
 
-    public async Task<AccountPassword> Decrypt(IPasswordCryptography cryptography, CancellationToken ct = default)
+    public bool Verify(string input, IPasswordHasher hasher, CancellationToken ct = default)
     {
-        return await cryptography.Decrypt(this, ct);
+        return hasher.Verify(input, this, ct);
     }
     
     public Result<Unit> Satisfies(IAccountPasswordRequirement requirement)

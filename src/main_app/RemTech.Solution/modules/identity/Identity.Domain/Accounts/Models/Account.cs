@@ -71,16 +71,22 @@ public sealed class Account(
         return Unit.Value;
     }
     
-    public async Task<Result<Unit>> ChangePassword(
+    public Result<Unit> ChangePassword(
         AccountPassword password, 
-        IPasswordCryptography encrypter,
+        IPasswordHasher hasher,
         IAccountPasswordRequirement requirement,
         CancellationToken ct = default)
     {
         Result<Unit> validation = requirement.Satisfies(password);
         if (validation.IsFailure) return validation.Error;
-        Password = await encrypter.Encrypt(password, ct);
+        Password = Password.HashBy(hasher, ct);
         return Unit.Value;
+    }
+
+    public Result<Unit> VerifyPassword(string input, IPasswordHasher hasher)
+    {
+        bool verified = Password.Verify(input, hasher);
+        return verified ? Result.Success(Unit.Value) : Error.Validation("Неверный пароль.");
     }
 
     public void ChangeEmail(AccountEmail email) => Email = email;

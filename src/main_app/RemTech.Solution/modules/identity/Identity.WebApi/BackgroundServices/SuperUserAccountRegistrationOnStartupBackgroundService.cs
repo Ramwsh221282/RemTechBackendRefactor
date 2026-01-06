@@ -1,10 +1,8 @@
 ﻿using Identity.Domain.Accounts.Models;
-using Identity.Domain.Contracts;
 using Identity.Domain.Contracts.Cryptography;
 using Identity.Domain.Contracts.Persistence;
 using Identity.WebApi.Options;
 using Microsoft.Extensions.Options;
-using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.WebApi.BackgroundServices;
 
@@ -25,7 +23,7 @@ public sealed class SuperUserAccountRegistrationOnStartupBackgroundService(
         try
         {
             await using AsyncServiceScope scope = Services.CreateAsyncScope();
-            (SuperUserCredentialsOptions options, IAccountsRepository repository, IPasswordCryptography cryptography) =
+            (SuperUserCredentialsOptions options, IAccountsRepository repository, IPasswordHasher cryptography) =
                 GetDependencies(scope);
 
             options.Validate();
@@ -48,22 +46,22 @@ public sealed class SuperUserAccountRegistrationOnStartupBackgroundService(
     private (
         SuperUserCredentialsOptions options,
         IAccountsRepository repository,
-        IPasswordCryptography cryptography)
+        IPasswordHasher cryptography)
         GetDependencies(AsyncServiceScope scope) => (
         scope.ServiceProvider.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value,
         scope.ServiceProvider.GetRequiredService<IAccountsRepository>(),
-        scope.ServiceProvider.GetRequiredService<IPasswordCryptography>());
+        scope.ServiceProvider.GetRequiredService<IPasswordHasher>());
     
     private async Task AddAccount(
         SuperUserCredentialsOptions options, 
         IAccountsRepository repository,
-        IPasswordCryptography cryptography,
+        IPasswordHasher hasher,
         CancellationToken ct)
     {
         Account account = Account.Create(
             email: AccountEmail.Create(options.Email),
             login: AccountLogin.Create(options.Login),
-            password: await AccountPassword.Create(options.Password).Value.Encrypt(cryptography),
+            password: AccountPassword.Create(options.Password).Value.HashBy(hasher),
             status: AccountActivationStatus.Activated());
         await repository.Add(account, ct);
     }

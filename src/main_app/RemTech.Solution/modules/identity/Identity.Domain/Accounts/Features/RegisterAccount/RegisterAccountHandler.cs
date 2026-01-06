@@ -12,7 +12,7 @@ namespace Identity.Domain.Accounts.Features.RegisterAccount;
 public sealed class RegisterAccountHandler(
     IAccountsRepository accounts,
     IEnumerable<IAccountPasswordRequirement> passwordRequirements,
-    IPasswordCryptography cryptography,
+    IPasswordHasher hasher,
     DomainEventsDispatcher eventsDispatcher) 
     : ICommandHandler<RegisterAccountCommand, Unit>
 {
@@ -23,7 +23,7 @@ public sealed class RegisterAccountHandler(
         Result<AccountPassword> password = ApprovePassword(command);
         if (password.IsFailure) return password.Error;
         
-        AccountPassword encrypted = await password.Value.Encrypt(cryptography, ct);
+        AccountPassword encrypted = password.Value.HashBy(hasher, ct);
         Account account = CreateAccount(encrypted, command);
         
         await accounts.Add(account, ct);

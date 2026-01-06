@@ -95,7 +95,7 @@ public static class IdentityModuleInjection
             services.AddScoped<IAccountsModuleUnitOfWork, AccountsModuleUnitOfWork>();
             services.AddScoped<IAccountModuleOutbox, AccountsModuleOutbox>();
             services.AddMigrations([typeof(IdentityModuleSchemaMigration).Assembly]);
-            services.AddSingleton<IPasswordCryptography, PasswordCryptography>();
+            services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddOutboxMessagePublishers();
             services.AddBackgroundServices();
         }

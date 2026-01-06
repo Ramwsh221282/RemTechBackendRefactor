@@ -1,4 +1,5 @@
-﻿using Identity.Tests.Fakes;
+﻿using Identity.Infrastructure.Common;
+using Identity.Tests.Fakes;
 using Identity.WebApi.BackgroundServices;
 using Identity.WebApi.Options;
 using Microsoft.AspNetCore.Hosting;
@@ -39,7 +40,9 @@ public sealed class IntegrationalTestsFactory : WebApplicationFactory<Identity.W
         base.ConfigureWebHost(builder);
         builder.ConfigureServices(s =>
         {
+            s.ReRegisterAppsettingsJsonConfiguration();
             ReRegisterSuperUserOptionsSettings(s);
+            ReRegisterWorkFactorOptionsSettings(s);
             s.ReRegisterNpgSqlOptions(_dbContainer);
             s.ReRegisterRabbitMqOptions(_rabbitMqContainer);
             s.ReRegisterBackgroundService<SuperUserAccountPermissionsUpdateBackgroundServices>();
@@ -49,12 +52,18 @@ public sealed class IntegrationalTestsFactory : WebApplicationFactory<Identity.W
             s.AddHostedService<AggregatedConsumersHostedService>();
         });
     }
-
+    
     private void ReRegisterSuperUserOptionsSettings(IServiceCollection services)
     {
-        services.ReRegisterAppsettingsJsonConfiguration();
         services.RemoveAll<IConfigureOptions<SuperUserCredentialsOptions>>();
         services.RemoveAll<IOptions<SuperUserCredentialsOptions>>();
         services.AddOptions<SuperUserCredentialsOptions>().BindConfiguration(nameof(SuperUserCredentialsOptions));
+    }
+
+    private void ReRegisterWorkFactorOptionsSettings(IServiceCollection services)
+    {
+        services.RemoveAll<IConfigureOptions<BcryptWorkFactorOptions>>();
+        services.RemoveAll<IOptions<BcryptWorkFactorOptions>>();
+        services.AddOptions<BcryptWorkFactorOptions>().BindConfiguration(nameof(BcryptWorkFactorOptions));
     }
 }
