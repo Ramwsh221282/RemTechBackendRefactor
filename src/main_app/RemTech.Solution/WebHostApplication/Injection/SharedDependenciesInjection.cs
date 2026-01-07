@@ -11,12 +11,12 @@ public static class SharedDependenciesInjection
 {
     extension(IServiceCollection services)
     {
-        public void RegisterSharedDependencies()
+        public void RegisterSharedDependencies(IConfigurationManager configuration)
         {
             services.RegisterLogging();
             services.AddPostgres();
             services.AddRabbitMq();
-            services.RegisterHybridCache();
+            services.RegisterHybridCache(configuration);
             RemTech.SharedKernel.Infrastructure.AesEncryption.AesCryptographyExtensions.AddAesCryptography(services);
             services.TryAddSingleton<EmbeddingsProvider>();
         }

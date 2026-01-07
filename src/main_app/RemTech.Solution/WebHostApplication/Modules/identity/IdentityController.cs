@@ -19,21 +19,19 @@ namespace WebHostApplication.Modules.identity;
 
 [ApiController]
 [Route("api/identity")]
-public sealed class IdentityController
+public sealed class IdentityController : Controller
 {
     [HttpPost("auth")]
     public async Task<Envelope> Authenticate(
-        HttpContext context,
         [FromBody] AuthenticateRequest request,
         [FromServices] ICommandHandler<AuthenticateCommand, AuthenticationResult> handler,
-        CancellationToken ct
-        )
+        CancellationToken ct)
     {
         AuthenticateCommand command = new(request.Login, request.Email, request.Password);
         Result<AuthenticationResult> result = await handler.Execute(command, ct);
         if (result.IsFailure) return EnvelopedResultsExtensions.AsEnvelope(result);
-        SetAuthCookies(context, result.Value);
-        SetAuthHeaders(context, result.Value);
+        SetAuthCookies(HttpContext, result.Value);
+        SetAuthHeaders(HttpContext, result.Value);
         return Ok();
     }
 
@@ -67,17 +65,16 @@ public sealed class IdentityController
 
     [HttpPut("refresh")]
     public async Task<Envelope> RefreshToken(
-        HttpContext context,
         ICommandHandler<RefreshTokenCommand, AuthenticationResult> handler,
         CancellationToken ct)
     {
-        string refreshToken = context.GetRefreshTokenOrEmpty();
-        string accessToken = context.GetAccessTokenOrEmpty();
+        string refreshToken = HttpContext.GetRefreshTokenOrEmpty();
+        string accessToken = HttpContext.GetAccessTokenOrEmpty();
         RefreshTokenCommand command = new(accessToken, refreshToken);
         Result<AuthenticationResult> result = await handler.Execute(command, ct);
         if (result.IsFailure) return EnvelopedResultsExtensions.AsEnvelope(result);
-        SetAuthCookies(context, result.Value);
-        SetAuthHeaders(context, result.Value);
+        SetAuthCookies(HttpContext, result.Value);
+        SetAuthHeaders(HttpContext, result.Value);
         return Ok();
     }
 
