@@ -1,14 +1,20 @@
-﻿using Identity.Domain.Accounts.Features.ConfirmTicket;
+﻿using Identity.Domain.Accounts.Features.Authenticate;
+using Identity.Domain.Accounts.Features.ConfirmTicket;
 using Identity.Domain.Accounts.Features.GivePermissions;
 using Identity.Domain.Accounts.Features.RegisterAccount;
+using Identity.Domain.Accounts.Features.VerifyToken;
 using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts;
+using Identity.Domain.Contracts.Jwt;
 using Identity.Domain.Contracts.Outbox;
 using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.Permissions;
 using Identity.Domain.Permissions.Features.AddPermissions;
 using Identity.Domain.Tickets;
+using Identity.Infrastructure.Common;
+using Identity.WebApi.Options;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 
@@ -89,12 +95,56 @@ public static class IdentityModuleTestExtensions
             return await outbox.GetMany(spec, CancellationToken.None);
         }
 
+        public IJwtTokenManager GetJwtTokenManager()
+        {
+            return services.GetRequiredService<IJwtTokenManager>();
+        }
+
+        public async Task<Account> GetSuperUserAccount()
+        {
+            SuperUserCredentialsOptions options = services.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value;
+            Result<Account> account = await services.GetAccountByEmail(options.Email);
+            if (account.IsFailure)
+                throw new Exception($"Super user account not found: {options.Email}");
+            return account.Value;
+        }
+        
         public async Task<Result<Unit>> ConfirmAccountTicket(Guid accountId, Guid ticketId)
         {
             ConfirmTicketCommand command = new(accountId, ticketId);
             await using AsyncServiceScope scope = services.CreateAsyncScope();
             return await scope.ServiceProvider.GetRequiredService<ICommandHandler<ConfirmTicketCommand, Unit>>()
                 .Execute(command);
+        }
+
+        public async Task<Result<AuthenticationResult>> AuthenticateByEmail(string email, string password)
+        {
+            AuthenticateCommand command = new(Login: null, Email: email, Password: password);
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            return await scope.ServiceProvider.GetRequiredService<ICommandHandler<AuthenticateCommand, AuthenticationResult>>()
+                .Execute(command);
+        }
+
+        public async Task<Result<Unit>> VerifyToken(string token)
+        {
+            VerifyTokenCommand command = new(token);
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            return await scope.ServiceProvider
+                .GetRequiredService<ICommandHandler<VerifyTokenCommand, Unit>>()
+                .Execute(command);
+        }
+        
+        public async Task<Result<AuthenticationResult>> AuthenticateByName(string name, string password)
+        {
+            AuthenticateCommand command = new(Login: name, Email: null, Password: password);
+            await using AsyncServiceScope scope = services.CreateAsyncScope();
+            return await scope.ServiceProvider.GetRequiredService<ICommandHandler<AuthenticateCommand, AuthenticationResult>>()
+                .Execute(command);
+        }
+        
+        public SuperUserCredentialsOptions GetSuperUserCredentials()
+        {
+            return services.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value;
         }
         
         public async Task<Result<AccountTicket>> GetTicketOfPurpose(string purpose)
