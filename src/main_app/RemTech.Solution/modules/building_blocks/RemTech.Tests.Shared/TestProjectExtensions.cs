@@ -8,6 +8,7 @@ using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Infrastructure.Quartz;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
+using Testcontainers.Redis;
 
 namespace RemTech.Tests.Shared;
 
@@ -77,12 +78,12 @@ public static class TestProjectExtensions
     public static RabbitMqContainer BuildRabbitMqContainer(this RabbitMqBuilder builder) =>
         builder.WithImage("rabbitmq:3.11").Build();
     
-    // public static RedisContainer BuildRedisContainer(this RedisBuilder builder) =>
-    //     builder.WithImage("redis:latest").Build();
-    //
-    // public static CacheOptions CreateCacheOptions(this RedisContainer container) =>
-    //     new() { Host = container.GetConnectionString() };
-    //
+    public static RedisContainer BuildRedisContainer(this RedisBuilder builder) =>
+        builder.WithImage("redis:alpine").Build();
+    
+    public static string GetConnectionString(this RedisContainer container) =>
+        container.GetConnectionString();
+    
 
     public static NpgSqlOptions CreateDatabaseConfiguration(this PostgreSqlContainer container)
     {

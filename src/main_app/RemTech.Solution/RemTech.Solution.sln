@@ -104,6 +104,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.WebApi", "mod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.Tests", "modules\notifications\Notifications.Tests\Notifications.Tests.csproj", "{99A4CFFF-9ACA-4141-8798-06B94B402BC9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemTech.SharedKernel.Infrastructure.Redis", "modules\building_blocks\RemTech.SharedKernel.Infrastructure.Redis\RemTech.SharedKernel.Infrastructure.Redis.csproj", "{0E5F320B-2482-4621-A8F5-242AD4492975}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -159,6 +161,7 @@ Global
 		{49D17C12-D7AE-4B3A-837D-D08EBB9521C2} = {CCACE9FB-EEBA-479A-B81B-C1DD7B295A2F}
 		{1E379CDB-2CC5-4B72-A554-21BC221134DB} = {CCACE9FB-EEBA-479A-B81B-C1DD7B295A2F}
 		{99A4CFFF-9ACA-4141-8798-06B94B402BC9} = {CCACE9FB-EEBA-479A-B81B-C1DD7B295A2F}
+		{0E5F320B-2482-4621-A8F5-242AD4492975} = {73EE3210-C164-4060-B679-037A4AD5D63A}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{93FC8BD4-B3CC-423C-BB02-3D985E9DFF51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -313,5 +316,9 @@ Global
 		{99A4CFFF-9ACA-4141-8798-06B94B402BC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99A4CFFF-9ACA-4141-8798-06B94B402BC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99A4CFFF-9ACA-4141-8798-06B94B402BC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E5F320B-2482-4621-A8F5-242AD4492975}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E5F320B-2482-4621-A8F5-242AD4492975}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E5F320B-2482-4621-A8F5-242AD4492975}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E5F320B-2482-4621-A8F5-242AD4492975}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
