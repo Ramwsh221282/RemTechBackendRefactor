@@ -3,7 +3,7 @@ using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using Spares.Infrastructure.Queries.GetSpares;
 
-namespace Spares.WebApi.Controllers;
+namespace WebHostApplication.Modules.spares;
 
 [ApiController]
 [Route("api/spares")]

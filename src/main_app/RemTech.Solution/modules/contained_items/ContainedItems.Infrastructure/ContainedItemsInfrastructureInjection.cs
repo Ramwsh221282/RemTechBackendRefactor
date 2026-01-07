@@ -15,16 +15,10 @@ public static class ContainedItemsInfrastructureInjection
     {
         public void AddContainedItemsInfrastructure()
         {
-            services.RegisterMigrations();
             services.RegisterRepository();
             services.RegisterProducers();
             services.RegisterConsumers();
             services.RegisterBackgroundServices();
-        }
-
-        private void RegisterMigrations()
-        {
-            services.AddMigrations([typeof(ContainedItemsInfrastructureInjection).Assembly]);
         }
 
         private void RegisterRepository()

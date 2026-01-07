@@ -7,10 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="oqo0.SwaggerThemes" Version="1.4.3" />
-      <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="10.0.0" />
-      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.0.0" />
-      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.0" />
+      <ProjectReference Include="..\modules\contained_items\ContainedItems.Worker\ContainedItems.Worker.csproj" />
+      <ProjectReference Include="..\modules\identity\Identity.WebApi\Identity.WebApi.csproj" />
+      <ProjectReference Include="..\modules\notifications\Notifications.WebApi\Notifications.WebApi.csproj" />
+      <ProjectReference Include="..\modules\parsers_control\ParsersControl.WebApi\ParsersControl.WebApi.csproj" />
+      <ProjectReference Include="..\modules\spares\Spares.WebApi\Spares.WebApi.csproj" />
+      <ProjectReference Include="..\modules\vehicles\Vehicles.WebApi\Vehicles.WebApi.csproj" />
     </ItemGroup>
 
 </Project>

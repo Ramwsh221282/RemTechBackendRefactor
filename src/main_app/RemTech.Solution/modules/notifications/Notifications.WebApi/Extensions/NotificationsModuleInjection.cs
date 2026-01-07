@@ -22,6 +22,12 @@ public static class NotificationsModuleInjection
 {
     extension(IServiceCollection services)
     {
+        public void InjectNotificationsModule()
+        {
+            services.AddDomainLayer();
+            services.AddInfrastructureLayer();
+        }
+        
         public void AddNotificationsModule(bool isDevelopment)
         {
             services.AddSharedDependencies(isDevelopment);
@@ -34,6 +40,7 @@ public static class NotificationsModuleInjection
             services.RegisterLogging();
             if (isDevelopment)
             {
+                services.AddMigrations([typeof(NotificationsModuleSchemaMigration).Assembly]);
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
                 services.AddAesEncryptionOptionsFromAppsettings();
@@ -71,7 +78,6 @@ public static class NotificationsModuleInjection
         
         private void AddPersistence()
         {
-            services.AddMigrations([typeof(NotificationsModuleSchemaMigration).Assembly]);
             services.AddScoped<IMailersRepository, MailersRepository>();
             services.AddScoped<IPendingEmailNotificationsRepository, PendingEmailNotificationsRepository>();
             services.AddScoped<MailersChangeTracker>();

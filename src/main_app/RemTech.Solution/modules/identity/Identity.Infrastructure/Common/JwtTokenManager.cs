@@ -20,6 +20,9 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
         string token = CreateToken(CreateTokenDescriptor(account));
         return CreateStructuredAccessToken(token);
     }
+
+    public AccessToken ReadToken(string tokenString) =>
+        CreateStructuredAccessToken(tokenString);
     
     public async Task<Result<TokenValidationResult>> GetValidToken(string jwtToken)
     {

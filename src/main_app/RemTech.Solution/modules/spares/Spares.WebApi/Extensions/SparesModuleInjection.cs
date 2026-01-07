@@ -21,6 +21,12 @@ public static class SparesModuleInjection
 {
     extension(IServiceCollection services)
     {
+        public void InjectSparesModule()
+        {
+            services.RegisterSparesDomain();
+            services.RegisterSparesInfrastructure();
+        }
+        
         public void RegisterSparesModule(bool isDevelopment)
         {
             services.RegisterSharedInfrastructure(isDevelopment);
@@ -33,6 +39,7 @@ public static class SparesModuleInjection
             services.RegisterLogging();
             if (isDevelopment)
             {
+                services.AddMigrations([typeof(SparesSchemaMigration).Assembly]);
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
                 services.AddOptions<EmbeddingsProviderOptions>().BindConfiguration(nameof(EmbeddingsProviderOptions));
@@ -73,7 +80,6 @@ public static class SparesModuleInjection
         
         private void RegisterRepositories()
         {
-            services.AddMigrations([typeof(SparesSchemaMigration).Assembly]);
             services.AddScoped<ISparesRepository, SparesRepository>();
         }
 

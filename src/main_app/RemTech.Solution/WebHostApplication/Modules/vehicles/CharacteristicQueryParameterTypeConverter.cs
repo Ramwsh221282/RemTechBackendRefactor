@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Text.Json;
 
-namespace Vehicles.WebApi.Controllers;
+namespace WebHostApplication.Modules.vehicles;
 
 public sealed class CharacteristicQueryParameterTypeConverter : TypeConverter
 {
