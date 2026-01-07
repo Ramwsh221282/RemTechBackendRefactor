@@ -29,6 +29,12 @@ public static class IdentityModuleInjection
 {
     extension(IServiceCollection services)
     {
+        public void InjectIdentityModule()
+        {
+            services.AddDomain();
+            services.AddInfrastructure();
+        }
+        
         public void RegisterIdentityModule(bool isDevelopment)
         {
             services.AddSharedDependencies(isDevelopment);
@@ -41,6 +47,7 @@ public static class IdentityModuleInjection
             services.RegisterLogging();
             if (isDevelopment)
             {
+                services.AddMigrations([typeof(IdentityModuleSchemaMigration).Assembly]);
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
                 services.AddAesEncryptionOptionsFromAppsettings();
@@ -104,7 +111,6 @@ public static class IdentityModuleInjection
             services.AddScoped<IRefreshTokensRepository, RefreshTokensRepository>();
             services.AddScoped<IAccessTokensRepository, AccessTokensRepository>();
             services.Decorate<IAccessTokensRepository, CachedAccessTokenRepository>();
-            services.AddMigrations([typeof(IdentityModuleSchemaMigration).Assembly]);
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddOutboxMessagePublishers();
             services.AddBackgroundServices();

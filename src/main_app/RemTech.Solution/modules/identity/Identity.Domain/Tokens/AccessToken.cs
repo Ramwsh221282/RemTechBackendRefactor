@@ -15,4 +15,6 @@ public sealed class AccessToken
     {
         
     }
+    
+    public bool ContainsPermission(string permission) => RawPermissionsString.Contains(permission);
 }

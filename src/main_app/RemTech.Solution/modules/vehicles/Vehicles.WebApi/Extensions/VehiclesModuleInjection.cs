@@ -31,6 +31,12 @@ public static class VehiclesModuleInjection
 {
     extension(IServiceCollection services)
     {
+        public void InjectVehiclesModule()
+        {
+            services.RegisterDomainLayerDependencies();
+            services.RegisterInfrastructureLayerDependencies();
+        }
+        
         public void RegisterVehiclesModule(bool isDevelopment)
         {
             services.RegisterSharedInfrastructure(isDevelopment);
@@ -54,7 +60,6 @@ public static class VehiclesModuleInjection
         {
             Assembly assembly = typeof(NpgSqlVehiclesPersister).Assembly;
             services.RegisterQueryHandlers(assembly);
-            services.RegisterMigrations(assembly);
             services.RegisterConsumers(assembly);
             services.RegisterPersisters();
             services.RegisterBackgroundServices();
@@ -109,6 +114,8 @@ public static class VehiclesModuleInjection
             services.RegisterLogging();
             if (isDevelopment)
             {
+                Assembly assembly = typeof(NpgSqlVehiclesPersister).Assembly;
+                services.RegisterMigrations(assembly);
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
                 services.RegisterFromAppsettings();

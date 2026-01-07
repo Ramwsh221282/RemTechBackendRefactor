@@ -3,7 +3,7 @@ using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using Vehicles.Infrastructure.Vehicles.Queries.GetVehicles;
 
-namespace Vehicles.WebApi.Controllers;
+namespace WebHostApplication.Modules.vehicles;
 
 [ApiController]
 [Route("api/vehicles")]
@@ -26,7 +26,7 @@ public sealed class VehiclesController
         [FromQuery(Name = "characteristics")] IEnumerable<CharacteristicQueryParameter>? characteristics,
         [FromServices] IQueryHandler<GetVehiclesQuery, GetVehiclesQueryResponse> handler,
         CancellationToken ct
-        )
+    )
     {
         GetVehiclesQuery query = new(new GetVehiclesQueryParameters()
             .ForBrand(brandId)
@@ -42,6 +42,7 @@ public sealed class VehiclesController
             .ForPageSize(pageSize)
             .ForTextSearch(textSearch)
             .ForCharacteristics(characteristics, c => (c.Id, c.Value)));
+        
         GetVehiclesQueryResponse result = await handler.Handle(query, ct);
         return EnvelopedResultsExtensions.AsEnvelope(result);
     }

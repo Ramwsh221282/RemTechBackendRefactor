@@ -3,7 +3,7 @@ using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using Vehicles.Infrastructure.Vehicles.Queries.GetVehicleCharacteristics;
 
-namespace Vehicles.WebApi.Controllers;
+namespace WebHostApplication.Modules.vehicles;
 
 [ApiController]
 [Route("api/characteristics")]

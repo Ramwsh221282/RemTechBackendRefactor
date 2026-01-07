@@ -16,8 +16,6 @@ public static class DatabaseExtensions
     {
         public void AddPostgres()
         {
-            if (!services.ContainsOptions())
-                throw new InvalidOperationException($"IOptions of {nameof(NpgSqlOptions)} not configured. Please configure it before calling AddPostgres.");
             services.TryAddSingleton<NpgSqlConnectionFactory>();
             services.TryAddScoped<NpgSqlSession>();
             services.TryAddScoped<ITransactionSource, NpgSqlTransactionSource>();
@@ -36,17 +34,12 @@ public static class DatabaseExtensions
                     .ScanIn(withPgVectorAssembly).For.All())
                 .AddLogging(lb => lb.AddFluentMigratorConsole());
         }
-
-        private bool ContainsOptions()
-        {
-            return services.Any(s => s.ServiceType == typeof(IOptions<NpgSqlOptions>) ||
-                                     s.ServiceType == typeof(IConfigureOptions<NpgSqlOptions>));
-        }
     }
 
     private static string ConnectionString(IServiceProvider services)
     {
-        return services.GetRequiredService<IOptions<NpgSqlOptions>>().Value.ToConnectionString();
+        NpgSqlOptions options = services.GetRequiredService<IOptions<NpgSqlOptions>>().Value;
+        return options.ToConnectionString();
     }
     
     extension(IServiceProvider provider)

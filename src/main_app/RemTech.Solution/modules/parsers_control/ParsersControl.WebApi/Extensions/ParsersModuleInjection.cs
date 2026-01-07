@@ -16,6 +16,12 @@ public static class ParsersModuleInjection
 {
     extension(IServiceCollection services)
     {
+        public void InjectParsersControlModule()
+        {
+            services.AddDomainLayer();
+            services.AddInfrastructureLayer();
+        }
+        
         public void AddParsersControlModule(bool isDevelopment)
         {
             services.AddSharedInfrastructure(isDevelopment);
@@ -28,6 +34,7 @@ public static class ParsersModuleInjection
             services.RegisterLogging();
             if (isDevelopment)
             {
+                services.AddMigrations([typeof(ParsersTableMigration).Assembly]);
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
             }
@@ -52,7 +59,6 @@ public static class ParsersModuleInjection
         {
             services.AddEventListeners();
             services.AddRepositories();
-            services.AddMigrations([typeof(ParsersTableMigration).Assembly]);
         }
 
         private void AddEventListeners()

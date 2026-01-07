@@ -11,6 +11,12 @@ public static class ContainedItemsModuleInjection
 {
     extension(IServiceCollection services)
     {
+        public void InjectContainedItemsModule()
+        {
+            services.RegisterDomain();
+            services.RegisterInfrastructure();
+        }
+        
         public void AddContainedItemsModule(bool isDevelopment)
         {
             services.RegisterSharedDependencies(isDevelopment);
@@ -32,6 +38,7 @@ public static class ContainedItemsModuleInjection
         {
             if (isDevelopment)
             {
+                services.AddMigrations([typeof(ContainedItemsInfrastructureInjection).Assembly]);
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
             }

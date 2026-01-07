@@ -13,16 +13,10 @@ public static class RabbitMqExtensions
     {
         public void AddRabbitMq()
         {
-            if (!services.EnsureOptionsExists())
-                throw new InvalidOperationException("RabbitMqOptions was not registered. Please register it using services.Configure<RabbitMqOptions>(...) or services.AddOptions<RabbitMqOptions>().BindConfiguration(...) before calling AddRabbitMq().");
-            services.AddSingleton<RabbitMqConnectionSource>();
-            services.AddSingleton<RabbitMqProducer>();
+            services.TryAddSingleton<RabbitMqConnectionSource>();
+            services.TryAddSingleton<RabbitMqProducer>();
             services.AddHostedService<AggregatedConsumersHostedService>();
         }
-
-        private bool EnsureOptionsExists() =>
-            services.Any(s => s.ServiceType == typeof(IOptions<RabbitMqOptions>) ||
-                              s.ServiceType == typeof(IConfigureOptions<RabbitMqOptions>));
 
         public void AddAggregatedConsumersBackgroundService() =>
             services.TryAddSingleton<AggregatedConsumersHostedService>();
