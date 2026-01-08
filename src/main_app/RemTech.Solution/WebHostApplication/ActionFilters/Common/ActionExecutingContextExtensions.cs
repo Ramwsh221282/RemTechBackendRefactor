@@ -6,7 +6,7 @@ public static class ActionExecutingContextExtensions
 {
     extension(ActionExecutingContext context)
     {
-        public string AccessToken => context.HttpContext.GetAccessTokenOrEmpty();
-        public string RefreshToken => context.HttpContext.GetRefreshTokenOrEmpty();
+        public string AccessToken => context.HttpContext.GetAccessTokenFromHeaderOrEmpty();
+        public string RefreshToken => context.HttpContext.GetRefreshTokenFromHeaderOrEmpty();
     }
 }

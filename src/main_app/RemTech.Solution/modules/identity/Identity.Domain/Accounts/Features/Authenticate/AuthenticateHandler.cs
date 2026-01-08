@@ -29,16 +29,13 @@ public sealed class AuthenticateHandler(
         AccessToken tokenData = tokenManager.GenerateToken(account.Value);
         await accessTokens.Add(tokenData, ct);
         
-        RefreshToken refreshToken = CreateRefreshTokenForAccount(account.Value);
+        RefreshToken refreshToken = tokenManager.GenerateRefreshToken(account.Value.Id.Value);
         await refreshTokens.Add(refreshToken, ct);
         return CreateAuthenticationResult(tokenData.RawToken, refreshToken);
     }
 
     private AuthenticationResult CreateAuthenticationResult(string token, RefreshToken refreshToken) =>
         new(AccessToken: token, RefreshToken: refreshToken.TokenValue);
-    
-    private RefreshToken CreateRefreshTokenForAccount(Account account) =>
-        RefreshToken.CreateNew(account.Id.Value, DateTime.UtcNow.AddMinutes(30));
     
     private async Task<Result<Account>> GetRequiredAccount(AuthenticateCommand command, CancellationToken ct)
     {

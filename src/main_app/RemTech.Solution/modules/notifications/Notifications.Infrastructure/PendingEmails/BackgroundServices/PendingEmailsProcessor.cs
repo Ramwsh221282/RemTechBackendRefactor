@@ -41,7 +41,7 @@ public sealed class PendingEmailsProcessor(
         INotificationsModuleUnitOfWork unitOfWork = CreateUnitOfWork(session);
         IPendingEmailNotificationsRepository pendingEmailsRepostiory = new PendingEmailNotificationsRepository(session, unitOfWork);
         IMailersRepository mailersRepository = new MailersRepository(session, unitOfWork);
-        NpgSqlTransactionSource transactionSource = new(session, Logger);
+        NpgSqlTransactionSource transactionSource = new(session);
         ITransactionScope scope = await transactionSource.BeginTransaction(ct);
 
         try

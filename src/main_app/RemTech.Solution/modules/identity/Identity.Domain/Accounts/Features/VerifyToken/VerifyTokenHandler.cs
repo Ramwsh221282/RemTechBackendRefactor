@@ -16,10 +16,18 @@ public sealed class VerifyTokenHandler(
     public async Task<Result<Unit>> Execute(VerifyTokenCommand command, CancellationToken ct = default)
     {
         Result<TokenValidationResult> validToken = await tokensManager.GetValidToken(command.Token);
-        if (validToken.IsFailure) return Error.Unauthorized("Invalid token.");
+        if (validToken.IsFailure)
+        {
+            await accessTokens.Remove(command.Token, ct);
+            return Error.Unauthorized("Invalid token.");
+        }
 
         Result<AccessToken> token = await accessTokens.Get(validToken.Value.TokenId, ct);
-        if (token.IsFailure) return Error.Unauthorized("Token not found.");
+        if (token.IsFailure)
+        {
+            await accessTokens.Remove(command.Token, ct);
+            return Error.Unauthorized("Token not found.");
+        }
 
         return Unit.Value;
     }

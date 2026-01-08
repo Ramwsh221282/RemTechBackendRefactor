@@ -21,6 +21,13 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
         return CreateStructuredAccessToken(token);
     }
 
+    public RefreshToken GenerateRefreshToken(Guid accountId)
+    {
+        string token = CreateRefreshToken();
+        (long expiresAt, long createdAt) = ReadTokenLifeTime(token);
+        return RefreshToken.CreateNew(accountId, expiresAt, createdAt);
+    }
+    
     public AccessToken ReadToken(string tokenString) =>
         CreateStructuredAccessToken(tokenString);
     
@@ -29,17 +36,35 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
         try
         {
             JwtSecurityTokenHandler handler = new();
-            if (!handler.CanValidateToken) return Error.Validation("Invalid token");
+            if (!handler.CanValidateToken) 
+                return Error.Unauthorized("Invalid token");
+            if (!handler.CanReadToken(jwtToken))
+                return Error.Unauthorized("Invalid token");
+            
             TokenValidationParameters parameters = CreateValidationParameters();
             TokenValidationResult validationResult = await handler.ValidateTokenAsync(jwtToken, parameters);
+            if (!validationResult.IsValid)
+                return Error.Unauthorized("Invalid token");
+            
             return validationResult;
         }
         catch
         {
-            return Error.Validation("Invalid token");
+            return Error.Unauthorized("Invalid token");
         }
     }
 
+    private (long expiresAt, long createdAt) ReadTokenLifeTime(string tokenString)
+    {
+        JwtSecurityTokenHandler handler = new();
+        JwtSecurityToken token = handler.ReadJwtToken(tokenString);
+        JwtPayload payload = token.Payload;
+        return (
+            long.Parse(payload["exp"].ToString()!),
+            long.Parse(payload["nbf"].ToString()!) // nbf is used to determine the start time of the token.
+        );
+    }
+    
     private AccessToken CreateStructuredAccessToken(string tokenString)
     {
         JwtSecurityTokenHandler handler = new();
@@ -55,6 +80,7 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
             Email = payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].ToString()!,
             Login = payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"].ToString()!,
             UserId = Guid.Parse(payload["id"].ToString()!),
+            CreatedAt = long.Parse(payload["nbf"].ToString()!) // nbf is used to determine the start time of the token.
         };
     }
     
@@ -84,6 +110,15 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
             expires: descriptor.Expires,
             signingCredentials: descriptor.SigningCredentials
         );
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private string CreateRefreshToken(int days = 7)
+    {
+        JwtSecurityToken token = new JwtSecurityToken(
+            notBefore: DateTime.UtcNow,
+            expires: DateTime.UtcNow.AddDays(days)
+            );
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
     

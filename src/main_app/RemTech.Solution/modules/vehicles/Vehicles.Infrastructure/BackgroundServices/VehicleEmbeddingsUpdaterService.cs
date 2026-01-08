@@ -42,7 +42,7 @@ public sealed class VehicleEmbeddingsUpdaterService(
     private async Task Execute(CancellationToken ct)
     {
         await using NpgSqlSession session = new(NpgSql);
-        NpgSqlTransactionSource transactionSource = new(session, logger);
+        NpgSqlTransactionSource transactionSource = new(session);
         await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
         VehicleWithoutEmbedding[] vehicles = await GetVehiclesWithoutEmbeddings(session, ct);
         if (vehicles.Length == 0) return;

@@ -7,6 +7,8 @@ using Identity.Domain.Contracts.Outbox;
 using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.PasswordRequirements;
 using Identity.Infrastructure.Accounts;
+using Identity.Infrastructure.Accounts.Commands.ConfirmTicket;
+using Identity.Infrastructure.Accounts.Queries.GetUser;
 using Identity.Infrastructure.Common;
 using Identity.Infrastructure.Common.Migrations;
 using Identity.Infrastructure.Common.UnitOfWork;
@@ -99,24 +101,67 @@ public static class IdentityModuleInjection
         
         private void AddInfrastructure()
         {
-            services.AddScoped<IAccountsRepository, AccountsRepository>();
-            services.AddScoped<IAccountTicketsRepository, AccountTicketsRepository>();
-            services.AddScoped<IPermissionsRepository, PermissionsRepository>();
+            services.AddRepositories();
+            services.AddChangeTracker();
+            services.AddQueryHandlers();
+            services.AddCacheInvalidators();
+            services.AddSingleton<IPasswordHasher, PasswordHasher>();
+            services.AddOutboxMessagePublishers();
+            services.AddBackgroundServices();
+            services.AddJwt();
+            
+            services.UseCacheInvalidatingHandlers();
+            services.UseCacheOnRepositories();
+            services.UseCacheOnQueryHandlers();
+        }
+
+        private void UseCacheOnRepositories()
+        {
+            services.Decorate<IAccessTokensRepository, CachedAccessTokenRepository>();
+        }
+        
+        private void AddChangeTracker()
+        {
             services.AddScoped<AccountsChangeTracker>();
             services.AddScoped<AccountTicketsChangeTracker>();
             services.AddScoped<PermissionsChangeTracker>();
             services.AddScoped<IdentityOutboxMessageChangeTracker>();
             services.AddScoped<IAccountsModuleUnitOfWork, AccountsModuleUnitOfWork>();
-            services.AddScoped<IAccountModuleOutbox, AccountsModuleOutbox>();
+        }
+        
+        private void AddRepositories()
+        {
+            services.AddScoped<IAccountsRepository, AccountsRepository>();
+            services.AddScoped<IAccountTicketsRepository, AccountTicketsRepository>();
+            services.AddScoped<IPermissionsRepository, PermissionsRepository>();
             services.AddScoped<IRefreshTokensRepository, RefreshTokensRepository>();
             services.AddScoped<IAccessTokensRepository, AccessTokensRepository>();
-            services.Decorate<IAccessTokensRepository, CachedAccessTokenRepository>();
-            services.AddSingleton<IPasswordHasher, PasswordHasher>();
-            services.AddOutboxMessagePublishers();
-            services.AddBackgroundServices();
-            services.AddJwt();
+            services.AddScoped<IAccountModuleOutbox, AccountsModuleOutbox>();
+        }
+        
+        private void UseCacheOnQueryHandlers()
+        {
+            services.TryDecorate(typeof(IQueryHandler<GetUserQuery, UserAccountResponse?>), typeof(GetUserCachedQueryHandler));
+        }
+        
+        private void AddQueryHandlers()
+        {
+            Assembly assembly = typeof(GetUserQuery).Assembly;
+            services.Scan(s => s.FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
         }
 
+        private void AddCacheInvalidators()
+        {
+            Assembly assembly = typeof(ConfirmTicketCacheInvalidator).Assembly;
+            services.Scan(s => s.FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo(typeof(ICacheInvalidator<,>)))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
+        }
+        
         private void AddJwt()
         {
             services.AddSingleton<IJwtTokenManager, JwtTokenManager>();

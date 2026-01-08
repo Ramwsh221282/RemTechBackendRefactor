@@ -13,9 +13,9 @@ public sealed class ConfirmTicketHandler(
     IAccountTicketsRepository accountTickets,
     IAccountsModuleUnitOfWork unitOfWork
 )
-    : ICommandHandler<ConfirmTicketCommand, Unit>
+    : ICommandHandler<ConfirmTicketCommand, Account>
 {
-    public async Task<Result<Unit>> Execute(ConfirmTicketCommand command, CancellationToken ct = new CancellationToken())
+    public async Task<Result<Account>> Execute(ConfirmTicketCommand command, CancellationToken ct = default)
     {
         Result<Account> account = await GetRequiredAccount(command, ct);
         if (account.IsFailure) return account.Error;
@@ -27,7 +27,7 @@ public sealed class ConfirmTicketHandler(
         if (confirmation.IsFailure) return confirmation.Error;
 
         await SaveChanges(account.Value, ticket.Value, ct);
-        return Unit.Value;
+        return account.Value;
     }
 
     private async Task SaveChanges(Account account, AccountTicket ticket, CancellationToken ct)

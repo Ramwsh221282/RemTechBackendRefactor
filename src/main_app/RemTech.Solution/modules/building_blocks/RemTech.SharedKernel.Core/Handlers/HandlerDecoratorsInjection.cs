@@ -10,6 +10,11 @@ public static class HandlerDecoratorsInjection
         {
             services.AddScoped(typeof(ILoggingCommandHandler<,>), typeof(LoggingHandler<,>));
         }
+        
+        public void RegisterCacheInvalidatingHandlers()
+        {
+            services.AddScoped(typeof(ICacheInvalidatingHandler<,>), typeof(CacheInvalidatingHandler<,>));
+        }
 
         public void RegisterValidatingHandlers()
         {
@@ -19,6 +24,11 @@ public static class HandlerDecoratorsInjection
         public void RegisterTransactionalHandlers()
         {
             services.AddScoped(typeof(ITransactionalCommandHandler<,>), typeof(TransactionalHandler<,>));
+        }
+
+        public void UseCacheInvalidatingHandlers()
+        {
+            services.TryDecorate(typeof(ICommandHandler<,>), typeof(CacheInvalidatingHandler<,>));
         }
         
         public void UseTransactionalHandlers()

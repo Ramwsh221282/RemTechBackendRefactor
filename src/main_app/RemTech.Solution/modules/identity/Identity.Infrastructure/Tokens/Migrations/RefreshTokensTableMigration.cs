@@ -12,7 +12,8 @@ public sealed class RefreshTokensTableMigration : Migration
                     (
                         account_id UUID NOT NULL primary key,
                         token_value TEXT NOT NULL,
-                        expires_at BIGINT NOT NULL
+                        expires_at BIGINT NOT NULL,
+                        created_at BIGINT NOT NULL
                     );
                     """);
     }

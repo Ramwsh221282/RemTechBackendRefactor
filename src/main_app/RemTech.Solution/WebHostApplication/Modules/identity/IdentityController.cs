@@ -6,12 +6,17 @@ using Identity.Domain.Accounts.Features.Refresh;
 using Identity.Domain.Accounts.Features.RegisterAccount;
 using Identity.Domain.Accounts.Features.VerifyToken;
 using Identity.Domain.Accounts.Models;
+using Identity.Domain.Contracts.Jwt;
+using Identity.Domain.Tokens;
+using Identity.Infrastructure.Accounts.Queries.GetUser;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using WebHostApplication.ActionFilters.Attributes;
 using WebHostApplication.ActionFilters.Common;
+using WebHostApplication.Common.Envelope;
 using WebHostApplication.Modules.identity.Requests;
 using WebHostApplication.Modules.identity.Responses;
 
@@ -19,37 +24,64 @@ namespace WebHostApplication.Modules.identity;
 
 [ApiController]
 [Route("api/identity")]
-public sealed class IdentityController
+public sealed class IdentityController : Controller
 {
+    private static readonly Func<HttpContext, string>[] GetAccessTokenMethods =
+    [
+        context => context.GetAccessTokenFromHeaderOrEmpty(),
+        context => context.GetAccessTokenFromCookieOrEmpty()
+    ];
+    
+    private static readonly Func<HttpContext, string>[] GetRefreshTokenMethods =
+    [
+        context => context.GetRefreshTokenFromHeaderOrEmpty(),
+        context => context.GetRefreshTokenFromCookieOrEmpty()
+    ];
+    
     [HttpPost("auth")]
     public async Task<Envelope> Authenticate(
-        HttpContext context,
         [FromBody] AuthenticateRequest request,
         [FromServices] ICommandHandler<AuthenticateCommand, AuthenticationResult> handler,
-        CancellationToken ct
-        )
+        CancellationToken ct)
     {
         AuthenticateCommand command = new(request.Login, request.Email, request.Password);
         Result<AuthenticationResult> result = await handler.Execute(command, ct);
-        if (result.IsFailure) return EnvelopedResultsExtensions.AsEnvelope(result);
-        SetAuthCookies(context, result.Value);
-        SetAuthHeaders(context, result.Value);
+        if (result.IsFailure) 
+            return result.AsEnvelope();
+        SetAuthCookies(HttpContext, result.Value);
+        SetAuthHeaders(HttpContext, result.Value);
         return Ok();
     }
 
+    [VerifyToken]
+    [HttpGet("account")]
+    public async Task<Envelope> GetUserAccount(
+        [FromServices] IJwtTokenManager jwtManager,
+        [FromServices] IQueryHandler<GetUserQuery, UserAccountResponse?> handler,
+        CancellationToken ct)
+    {
+        string accessToken = HttpContext.GetAccessToken(GetAccessTokenMethods);
+        AccessToken token = jwtManager.ReadToken(accessToken);
+        GetUserQuery query = new(token.UserId);
+        UserAccountResponse? user = await handler.Handle(query, ct);
+        return EnvelopeExtensions.NotFoundOrOk(user, "Пользователь не найден.");
+    }
+    
+    
     [HttpGet("confirmation")]
     public async Task<Envelope> ConfirmTicket(
         [FromRoute(Name = "account-id")] Guid accountId,
         [FromRoute(Name = "ticket-id")] Guid ticketId,
-        [FromServices] ICommandHandler<ConfirmTicketCommand, Unit> handler,
+        [FromServices] ICommandHandler<ConfirmTicketCommand, Account> handler,
         CancellationToken ct
         )
     {
         ConfirmTicketCommand command = new(accountId, ticketId);
-        Result<Unit> result = await handler.Execute(command, ct);
-        return result.IsFailure ? EnvelopedResultsExtensions.AsEnvelope(result) : Ok();
+        Result<Account> result = await handler.Execute(command, ct);
+        return result.IsFailure ? result.AsEnvelope() : Ok();
     }
     
+    [VerifyToken]
     [IdentityManagementPermission]
     [HttpPatch("account/{id:guid}/permissions")]
     public async Task<Envelope> GivePermissions(
@@ -67,17 +99,18 @@ public sealed class IdentityController
 
     [HttpPut("refresh")]
     public async Task<Envelope> RefreshToken(
-        HttpContext context,
         ICommandHandler<RefreshTokenCommand, AuthenticationResult> handler,
         CancellationToken ct)
     {
-        string refreshToken = context.GetRefreshTokenOrEmpty();
-        string accessToken = context.GetAccessTokenOrEmpty();
+        (string accessToken, string refreshToken) = HttpContext.GetIdentityTokens(GetAccessTokenMethods, GetRefreshTokenMethods);
         RefreshTokenCommand command = new(accessToken, refreshToken);
         Result<AuthenticationResult> result = await handler.Execute(command, ct);
-        if (result.IsFailure) return EnvelopedResultsExtensions.AsEnvelope(result);
-        SetAuthCookies(context, result.Value);
-        SetAuthHeaders(context, result.Value);
+        
+        if (result.IsFailure) 
+            return result.AsEnvelope();
+        
+        SetAuthCookies(HttpContext, result.Value);
+        SetAuthHeaders(HttpContext, result.Value);
         return Ok();
     }
 
@@ -89,23 +122,22 @@ public sealed class IdentityController
     {
         RegisterAccountCommand command = new(request.Email, request.Login, request.Password);
         Result<Unit> result = await handler.Execute(command, ct);
-        return result.IsFailure ? EnvelopedResultsExtensions.AsEnvelope(result) : Ok();
+        return result.IsFailure ? result.AsEnvelope() : Ok();
     }
 
     [HttpPost("verify")]
     public async Task<Envelope> Verify(
-        HttpContext context,
         [FromServices] ICommandHandler<VerifyTokenCommand, Unit> handler,
         CancellationToken ct
         )
     {
-        string token = context.GetAccessTokenOrEmpty();
-        VerifyTokenCommand command = new(token);
+        string accessToken = HttpContext.GetAccessToken(GetAccessTokenMethods);
+        VerifyTokenCommand command = new(accessToken);
         Result<Unit> result = await handler.Execute(command, ct);
-        return result.IsFailure ? EnvelopedResultsExtensions.AsEnvelope(result) : Ok();
+        return result.IsFailure ? result.AsEnvelope() : Ok();
     }
     
-    private static Envelope Ok() => new((int)HttpStatusCode.OK, null, null);
+    private static new Envelope Ok() => new((int)HttpStatusCode.OK, null, null);
 
     private static void SetAuthHeaders(HttpContext context, AuthenticationResult result)
     {

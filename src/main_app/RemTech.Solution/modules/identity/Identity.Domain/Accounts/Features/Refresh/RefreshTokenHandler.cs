@@ -20,26 +20,24 @@ public sealed class RefreshTokenHandler(
         RefreshTokenCommand command, 
         CancellationToken ct = default)
     {
-        DateTime now = DateTime.UtcNow;
-        
         Result<RefreshToken> refreshToken = await refreshTokens.Get(command.RefreshToken, ct);
-        if (refreshToken.IsFailure) return Error.Unauthorized("Token not found.");
-        if (!refreshToken.Value.IsValid(now)) return Error.Unauthorized("Invalid token.");
+        if (refreshToken.IsFailure) 
+            return Error.Unauthorized("Token not found.");
+        if (!refreshToken.Value.IsExpired()) 
+            return Error.Unauthorized("Invalid token.");
         
         Result<Account> account = await GetRequiredAccount(refreshToken.Value, ct);
-        if (account.IsFailure) return Error.Unauthorized("Account not found.");
+        if (account.IsFailure) 
+            return Error.Unauthorized("Account not found.");
 
         AccessToken newAccessToken = tokenManager.GenerateToken(account.Value);
-        RefreshToken newRefreshToken = CreateNewRefreshToken(account.Value);
+        RefreshToken newRefreshToken = tokenManager.GenerateRefreshToken(account.Value.Id.Value);
         
         await accessTokens.Add(newAccessToken, ct);
         await refreshTokens.Add(newRefreshToken, ct);
 
         return new AuthenticationResult(newAccessToken.RawToken, newRefreshToken.TokenValue);
     }
-
-    private RefreshToken CreateNewRefreshToken(Account account) =>
-        RefreshToken.CreateNew(account.Id.Value, DateTime.UtcNow.AddMinutes(30));
     
     private async Task<Result<Account>> GetRequiredAccount(RefreshToken refreshToken, CancellationToken ct)
     {

@@ -8,4 +8,5 @@ public interface IAccessTokensRepository
     Task Add(AccessToken token, CancellationToken ct = default);
     Task<Result<AccessToken>> Get(Guid tokenId, CancellationToken ct = default);
     Task<Result<AccessToken>> Get(string accessToken, CancellationToken ct = default);
+    Task<Guid?> Remove(string accessToken, CancellationToken ct = default);
 }

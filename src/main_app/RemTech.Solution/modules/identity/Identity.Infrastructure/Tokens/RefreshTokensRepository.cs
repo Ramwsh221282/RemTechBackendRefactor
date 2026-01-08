@@ -23,17 +23,18 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
     {
         const string sql = """
                            INSERT INTO identity_module.refresh_tokens
-                           (account_id, token_value, expires_at)
+                           (account_id, token_value, expires_at, created_at)
                            VALUES
-                           (@account_id, @token_value, @expires_at)
-                           ON CONFLICT (account_id) DO UPDATE SET token_value = @token_value, expires_at = @expires_at;
+                           (@account_id, @token_value, @expires_at, @created_at)
+                           ON CONFLICT (account_id) DO UPDATE SET token_value = @token_value, expires_at = @expires_at, created_at = @created_at;
                            """;
 
         object parameters = new
         {
             account_id = token.AccountId,
             token_value = token.TokenValue,
-            expires_at = token.ExpiresAt
+            expires_at = token.ExpiresAt,
+            created_at = token.CreatedAt
         };
 
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
@@ -44,7 +45,7 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
     {
         const string sql = """
                            UPDATE identity_module.refresh_tokens 
-                           SET token_value = @value, expires_at = @expires_at
+                           SET token_value = @value, expires_at = @expires_at, created_at = @created_at
                            WHERE account_id = @account_id
                            """;
         
@@ -65,7 +66,8 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
                            SELECT 
                                account_id as account_id, 
                                token_value as token_value, 
-                               expires_at as expires_at
+                               expires_at as expires_at,
+                               created_at as created_at
                            FROM identity_module.refresh_tokens
                            WHERE account_id = @account_id
                            """;
@@ -82,7 +84,8 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
                            SELECT 
                                account_id as account_id, 
                                token_value as token_value, 
-                               expires_at as expires_at
+                               expires_at as expires_at,
+                               created_at as created_at
                            FROM identity_module.refresh_tokens
                            WHERE token_value = @token_value
                            """;
@@ -98,6 +101,7 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
         Guid accountId = reader.GetGuid(reader.GetOrdinal("account_id"));
         string tokenValue = reader.GetString(reader.GetOrdinal("token_value"));
         long expiresAt = reader.GetInt64(reader.GetOrdinal("expires_at"));
-        return new RefreshToken(accountId, tokenValue, expiresAt);
+        long createdAt = reader.GetInt64(reader.GetOrdinal("created_at"));
+        return new RefreshToken(accountId, tokenValue, expiresAt, createdAt);
     }
 }

@@ -4,15 +4,16 @@ import { inject } from '@angular/core';
 import { map } from 'rxjs';
 
 export const RootExistsGuard: CanActivateFn = (route, state) => {
-  const usersService: UsersService = inject(UsersService);
-  const router: Router = inject(Router);
-  return usersService.checkRoot().pipe(
-    map((resp: boolean) => {
-      if (!resp) {
-        router.navigate(['/create-root']);
-        return false;
-      }
-      return true;
-    }),
-  );
+  return true;
+  // const usersService: UsersService = inject(UsersService);
+  // const router: Router = inject(Router);
+  // return usersService.checkRoot().pipe(
+  //   map((resp: boolean) => {
+  //     if (!resp) {
+  //       router.navigate(['/create-root']);
+  //       return false;
+  //     }
+  //     return true;
+  //   }),
+  // );
 };

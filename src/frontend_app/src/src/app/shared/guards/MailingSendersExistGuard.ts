@@ -5,16 +5,17 @@ import { MailingManagementService } from '../../pages/mailing-management-page/se
 import { MailingSender } from '../../pages/mailing-management-page/models/MailingSender';
 
 export const MailingSendersExistGuard: CanActivateFn = (route, state) => {
-  const service: MailingManagementService = inject(MailingManagementService);
-  const router: Router = inject(Router);
-  return service.read().pipe(
-    map((resp: MailingSender[]) => {
-      if (resp.length > 0) {
-        return true;
-      } else {
-        router.navigate(['/oops']);
-        return false;
-      }
-    }),
-  );
+  return true;
+  // const service: MailingManagementService = inject(MailingManagementService);
+  // const router: Router = inject(Router);
+  // return service.read().pipe(
+  //   map((resp: MailingSender[]) => {
+  //     if (resp.length > 0) {
+  //       return true;
+  //     } else {
+  //       router.navigate(['/oops']);
+  //       return false;
+  //     }
+  //   }),
+  // );
 };
