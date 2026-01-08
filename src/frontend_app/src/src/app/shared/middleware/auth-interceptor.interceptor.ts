@@ -26,7 +26,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                 authStatusService.setIsAuthenticated(true)
               }
             })
-          )
+          ).subscribe()
         }
       },
       complete: (): void => {

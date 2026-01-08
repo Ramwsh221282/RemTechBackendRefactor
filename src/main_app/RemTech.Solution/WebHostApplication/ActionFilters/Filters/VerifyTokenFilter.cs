@@ -41,10 +41,6 @@ public sealed class VerifyTokenFilter(ICommandHandler<VerifyTokenCommand, Unit> 
     {
         context.HttpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
         context.HttpContext.Response.ContentType = "application/json";
-        context.HttpContext.Response.Headers.Remove("access_token");
-        context.HttpContext.Response.Headers.Remove("refresh_token");
-        context.HttpContext.Response.Cookies.Delete("access_token");
-        context.HttpContext.Response.Cookies.Delete("refresh_token");
         await context.HttpContext.Response.WriteAsJsonAsync(envelope, ct);
     }
     

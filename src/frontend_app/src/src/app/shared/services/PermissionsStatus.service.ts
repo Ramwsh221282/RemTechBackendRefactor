@@ -21,7 +21,6 @@ export class PermissionsStatusService implements OnInit {
 
   initializePermissions(permissions: UserAccountPermissions[]): void {
     this._permissions.set(permissions);
-    console.log(this._permissions())
   }
 
   clean(): void {
@@ -33,6 +32,10 @@ export class PermissionsStatusService implements OnInit {
   }
 
   ngOnInit(): void {
+    this.fetchUserAccountDataForPermissions();
+  }
+
+  private fetchUserAccountDataForPermissions(): void {
     this._identityService.fetchAccount()
       .pipe(takeUntilDestroyed(this._destroyRef),
         tap({

@@ -54,7 +54,10 @@
               <li>
                 <a
                   pRipple
-                  *ngIf="tokensService.isAdminSignal()"
+                  *ngIf="permissionsService.contains('notifications.management') ||
+                   permissionsService.contains('parser.management') ||
+                   permissionsService.contains('identity.management') ||
+                   permissionsService.contains('access.telemetry')"
                   pStyleClass="@next"
                   enterFromClass="hidden"
                   enterActiveClass="animate-slidedown"
@@ -67,7 +70,7 @@
               </li>
               <li>
                 <a pRipple
-                   *ngIf="tokensService.isAdminSignal()"
+                   *ngIf="permissionsService.contains('parser.management')"
                    [routerLink]="'scrapers'"
                    class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
                   <i class="pi pi-warehouse mr-2"></i>
@@ -76,7 +79,7 @@
               </li>
               <li>
                 <a pRipple
-                   *ngIf="tokensService.isAdminSignal()"
+                   *ngIf="permissionsService.contains('notifications.management')"
                    [routerLink]="'mailing-management/greeting'"
                    class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
                   <i class="pi pi-at mr-2"></i>
@@ -85,16 +88,7 @@
               </li>
               <li>
                 <a pRipple
-                   *ngIf="tokensService.isAdminSignal()"
-                   [routerLink]="'contained-items'"
-                   class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
-                  <i class="pi pi-database mr-2"></i>
-                  <span class="font-medium">Управление хранением данных</span>
-                </a>
-              </li>
-              <li>
-                <a pRipple
-                   *ngIf="tokensService.isAdminSignal()"
+                   *ngIf="permissionsService.contains('identity.management')"
                    [routerLink]="'users-management'"
                    class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
                   <i class="pi pi-users mr-2"></i>
