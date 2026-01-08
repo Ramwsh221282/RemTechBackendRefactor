@@ -6,12 +6,17 @@ using Identity.Domain.Accounts.Features.Refresh;
 using Identity.Domain.Accounts.Features.RegisterAccount;
 using Identity.Domain.Accounts.Features.VerifyToken;
 using Identity.Domain.Accounts.Models;
+using Identity.Domain.Contracts.Jwt;
+using Identity.Domain.Tokens;
+using Identity.Infrastructure.Accounts.Queries.GetUser;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using WebHostApplication.ActionFilters.Attributes;
 using WebHostApplication.ActionFilters.Common;
+using WebHostApplication.Common.Envelope;
 using WebHostApplication.Modules.identity.Requests;
 using WebHostApplication.Modules.identity.Responses;
 
@@ -21,6 +26,18 @@ namespace WebHostApplication.Modules.identity;
 [Route("api/identity")]
 public sealed class IdentityController : Controller
 {
+    private static readonly Func<HttpContext, string>[] GetAccessTokenMethods =
+    [
+        context => context.GetAccessTokenFromHeaderOrEmpty(),
+        context => context.GetAccessTokenFromCookieOrEmpty()
+    ];
+    
+    private static readonly Func<HttpContext, string>[] GetRefreshTokenMethods =
+    [
+        context => context.GetRefreshTokenFromHeaderOrEmpty(),
+        context => context.GetRefreshTokenFromCookieOrEmpty()
+    ];
+    
     [HttpPost("auth")]
     public async Task<Envelope> Authenticate(
         [FromBody] AuthenticateRequest request,
@@ -36,16 +53,31 @@ public sealed class IdentityController : Controller
         return Ok();
     }
 
+    [VerifyToken]
+    [HttpGet("account")]
+    public async Task<Envelope> GetUserAccount(
+        [FromServices] IJwtTokenManager jwtManager,
+        [FromServices] IQueryHandler<GetUserQuery, UserAccountResponse?> handler,
+        CancellationToken ct)
+    {
+        string accessToken = HttpContext.GetAccessToken(GetAccessTokenMethods);
+        AccessToken token = jwtManager.ReadToken(accessToken);
+        GetUserQuery query = new(token.UserId);
+        UserAccountResponse? user = await handler.Handle(query, ct);
+        return EnvelopeExtensions.NotFoundOrOk(user, "Пользователь не найден.");
+    }
+    
+    
     [HttpGet("confirmation")]
     public async Task<Envelope> ConfirmTicket(
         [FromRoute(Name = "account-id")] Guid accountId,
         [FromRoute(Name = "ticket-id")] Guid ticketId,
-        [FromServices] ICommandHandler<ConfirmTicketCommand, Unit> handler,
+        [FromServices] ICommandHandler<ConfirmTicketCommand, Account> handler,
         CancellationToken ct
         )
     {
         ConfirmTicketCommand command = new(accountId, ticketId);
-        Result<Unit> result = await handler.Execute(command, ct);
+        Result<Account> result = await handler.Execute(command, ct);
         return result.IsFailure ? result.AsEnvelope() : Ok();
     }
     
@@ -70,19 +102,10 @@ public sealed class IdentityController : Controller
         ICommandHandler<RefreshTokenCommand, AuthenticationResult> handler,
         CancellationToken ct)
     {
-        (string accessToken, string refreshToken) = HttpContext.GetIdentityTokens(
-            accessTokenSearchMethods: [
-                context => context.GetAccessTokenFromHeaderOrEmpty(),
-                context => context.GetAccessTokenFromCookieOrEmpty()
-            ],
-            refreshTokenSearchMethods: [
-                context => context.GetRefreshTokenFromHeaderOrEmpty(),
-                context => context.GetRefreshTokenFromCookieOrEmpty()
-            ]
-        );
-        
+        (string accessToken, string refreshToken) = HttpContext.GetIdentityTokens(GetAccessTokenMethods, GetRefreshTokenMethods);
         RefreshTokenCommand command = new(accessToken, refreshToken);
         Result<AuthenticationResult> result = await handler.Execute(command, ct);
+        
         if (result.IsFailure) 
             return result.AsEnvelope();
         
@@ -108,13 +131,7 @@ public sealed class IdentityController : Controller
         CancellationToken ct
         )
     {
-        string accessToken = HttpContext.GetAccessToken(
-            [
-                context => context.GetAccessTokenFromHeaderOrEmpty(),
-                context => context.GetAccessTokenFromCookieOrEmpty(),
-            ]
-        );
-        
+        string accessToken = HttpContext.GetAccessToken(GetAccessTokenMethods);
         VerifyTokenCommand command = new(accessToken);
         Result<Unit> result = await handler.Execute(command, ct);
         return result.IsFailure ? result.AsEnvelope() : Ok();

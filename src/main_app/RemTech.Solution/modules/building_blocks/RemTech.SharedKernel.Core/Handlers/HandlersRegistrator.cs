@@ -29,11 +29,19 @@ public sealed class HandlersRegistrator
         ));
         return this;
     }
-
+    
+    public HandlersRegistrator RequireRegistrationOfCommandHandlers() =>
+        RequireRegistrationOf(typeof(ICommandHandler<,>));
+    public HandlersRegistrator RequireRegistrationOfQueryHandlers() =>
+        RequireRegistrationOf(typeof(IQueryHandler<,>));
+    public HandlersRegistrator RequireRegistrationOfCacheInvalidatingHandlers() =>
+        RequireRegistrationOf(typeof(ICacheInvalidatingHandler<,>));
+    
     public HandlersRegistrator AlsoAddDecorators()
     {
         _registrationActions.Enqueue(() =>
         {
+            _services.RegisterCacheInvalidatingHandlers();
             _services.RegisterLoggingHandlers();
             _services.RegisterValidatingHandlers();
             _services.RegisterTransactionalHandlers();
@@ -47,7 +55,7 @@ public sealed class HandlersRegistrator
             _registrationActions.Enqueue(() => _services.AddValidatorsFromAssembly(assembly));
         return this;
     }
-
+    
     public HandlersRegistrator AlsoAddDomainEventHandlers()
     {
         _registrationActions.Enqueue(() => _services.Scan(x => x.FromAssemblies(_assemblies)
@@ -71,6 +79,7 @@ public sealed class HandlersRegistrator
     {
         _registrationActions.Enqueue(() =>
         {
+            _services.UseCacheInvalidatingHandlers();
             _services.UseTransactionalHandlers();
             _services.UseValidatingHandlers();
             _services.UseLoggingHandlers();

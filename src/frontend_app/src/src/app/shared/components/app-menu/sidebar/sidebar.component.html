@@ -104,51 +104,6 @@
             </ul>
           </li>
         </ul>
-        <ul class="list-none p-4 m-0">
-          <li>
-            <div
-              pRipple
-              pStyleClass="@next"
-              enterFromClass="hidden"
-              enterActiveClass="animate-slidedown"
-              leaveToClass="hidden"
-              leaveActiveClass="animate-slideup"
-              class="p-4 flex items-center justify-between text-surface-600 dark:text-surface-200 p-ripple"
-            >
-              <span class="font-medium">Учетная запись</span>
-            </div>
-            <ul class="list-none p-0 m-0 overflow-hidden">
-              <li>
-                <a pRipple
-                   *ngIf="!userInfoService.hasUserInfo"
-                   [routerLink]="'sign-in'"
-                   class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
-                  <i class="pi pi-sign-in mr-2"></i>
-                  <span class="font-medium">Авторизация</span>
-                </a>
-              </li>
-              <li>
-                <a pRipple
-                   *ngIf="userInfoService.hasUserInfo"
-                   [routerLink]="'user'"
-                   class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
-                  <i class="pi pi-user mr-2"></i>
-                  <span class="font-medium">Профиль</span>
-                </a>
-              </li>
-              <li>
-                <a pRipple
-                   *ngIf="userInfoService.hasUserInfo"
-                   (click)="confirmSignOut($event)"
-                   class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
-                  <i class="pi pi-sign-out mr-2"></i>
-                  <span class="font-medium">Покинуть сессию</span>
-                </a>
-                <p-confirm-dialog/>
-              </li>
-            </ul>
-          </li>
-        </ul>
       </div>
     </div>
   </ng-template>

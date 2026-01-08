@@ -5,6 +5,7 @@ public sealed class AccessToken
     public required string RawToken { get; set; }
     public required Guid TokenId { get; set; }
     public required long ExpiresAt { get; set; }
+    public required long CreatedAt { get; set; }
     public required string Email { get; set; }
     public required string Login { get; set; }
     public required Guid UserId { get; set; }

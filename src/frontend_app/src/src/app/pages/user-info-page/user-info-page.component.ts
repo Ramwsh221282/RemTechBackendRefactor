@@ -1,10 +1,15 @@
-import { Component, signal, WritableSignal } from '@angular/core';
+import {Component, DestroyRef, effect, inject, OnInit, signal, WritableSignal} from '@angular/core';
 import { UserInfo } from '../sign-in-page/types/UserInfo';
 import { UserInfoService } from '../../shared/services/UserInfoService';
 import { NgIf } from '@angular/common';
 import { EmailConfirmationDialogComponent } from './components/email-confirmation-dialog/email-confirmation-dialog.component';
 import { EmailChangeDialogComponent } from './components/email-change-dialog/email-change-dialog.component';
 import { PasswordChangeDialogComponent } from './components/password-change-dialog/password-change-dialog.component';
+import {AccountResponse} from '../../shared/api/identity-module/identity-responses';
+import {IdentityApiService} from '../../shared/api/identity-module/identity-api-service';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {tap} from 'rxjs';
+import {TypedEnvelope} from '../../shared/api/envelope';
 
 @Component({
   selector: 'app-user-info-page',
@@ -17,44 +22,24 @@ import { PasswordChangeDialogComponent } from './components/password-change-dial
   templateUrl: './user-info-page.component.html',
   styleUrl: './user-info-page.component.scss',
 })
-export class UserInfoPageComponent {
-  private readonly _userInfo: WritableSignal<UserInfo>;
-  public readonly _isEmailConfirmationDialogVisible: WritableSignal<boolean>;
-  private readonly _isChangingEmail: WritableSignal<boolean>;
-  private readonly _isChangingPassword: WritableSignal<boolean>;
+export class UserInfoPageComponent implements OnInit {
+  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
+  readonly account: WritableSignal<AccountResponse>;
 
-  constructor(userInfoService: UserInfoService) {
-    this._userInfo = signal(userInfoService.userInfo);
-    this._isEmailConfirmationDialogVisible = signal(false);
-    this._isChangingEmail = signal(false);
-    this._isChangingPassword = signal(false);
+  constructor(private readonly _service: IdentityApiService) {
+    this.account = signal({ Id: '', Email: '', Login: '', IsActivated: false, Permissions: [] })
   }
 
-  public get userInfo(): UserInfo {
-    return this._userInfo();
-  }
-
-  public changePasswordState($event: boolean): void {
-    this._isChangingPassword.set($event);
-  }
-
-  public get isChangingPassword(): boolean {
-    return this._isChangingPassword();
-  }
-
-  public get isChangingEmail(): boolean {
-    return this._isChangingEmail();
-  }
-
-  public get isConfirmingEmail(): boolean {
-    return this._isEmailConfirmationDialogVisible();
-  }
-
-  public changeEmailChangeState($event: boolean): void {
-    this._isChangingEmail.set($event);
-  }
-
-  public changeEmailConfirmationState($event: boolean) {
-    this._isEmailConfirmationDialogVisible.set($event);
-  }
+  ngOnInit(): void {
+    this._service.fetchAccount()
+      .pipe(takeUntilDestroyed(this._destroyRef),
+        tap({
+          next: (envelope: TypedEnvelope<AccountResponse>): void => {
+            if (envelope.body) {
+              this.account.set(envelope.body)
+            }
+          }
+        }))
+      .subscribe()
+    }
 }

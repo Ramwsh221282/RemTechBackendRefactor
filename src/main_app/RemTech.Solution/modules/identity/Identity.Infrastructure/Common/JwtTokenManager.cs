@@ -80,6 +80,7 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
             Email = payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"].ToString()!,
             Login = payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"].ToString()!,
             UserId = Guid.Parse(payload["id"].ToString()!),
+            CreatedAt = long.Parse(payload["nbf"].ToString()!) // nbf is used to determine the start time of the token.
         };
     }
     

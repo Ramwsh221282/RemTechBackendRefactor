@@ -31,6 +31,10 @@ export class IdentityApiService {
     return this._httpClient.patch<TypedEnvelope<AccountResponse>>(url, payload);
   }
 
+  fetchAccount(): Observable<TypedEnvelope<AccountResponse>> {
+    return this._httpClient.get<TypedEnvelope<AccountResponse>>(`${this._url}/account`, { withCredentials: true });
+  }
+
   // refreshToken(accessToken: string, refreshToken: string): Observable<Envelope> {
   //   const headers: HttpHeaders = new HttpHeaders()
   //     .set('access_token', accessToken)

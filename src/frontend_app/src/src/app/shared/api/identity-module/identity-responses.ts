@@ -1,13 +1,13 @@
 export type AccountPermissionsResponse = {
-  id: string;
-  name: string;
-  description: string;
+  Id: string;
+  Name: string;
+  Description: string;
 }
 
 export type AccountResponse = {
-  id: string;
-  login: string;
-  email: string;
-  isActivated: boolean;
-  permissions: AccountPermissionsResponse[];
+  Id: string;
+  Login: string;
+  Email: string;
+  IsActivated: boolean;
+  Permissions: AccountPermissionsResponse[];
 }

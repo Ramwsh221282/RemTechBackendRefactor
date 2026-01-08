@@ -39,6 +39,16 @@ public sealed class CachedAccessTokenRepository(HybridCache cache, IAccessTokens
         return await Inner.Get(accessToken, ct);
     }
 
+    public async Task<Guid?> Remove(string accessToken, CancellationToken ct = default)
+    {
+        Guid? tokenId = await Inner.Remove(accessToken, ct);
+        if (tokenId is null) return tokenId;
+        
+        string key = tokenId.Value.ToString();
+        await Cache.RemoveAsync(key, cancellationToken: ct);
+        return tokenId;
+    }
+
     private async Task<Result<AccessToken>> GetFromInner(Guid tokenId, CancellationToken ct)
     {
         return await Inner.Get(tokenId, ct);

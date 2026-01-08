@@ -57,7 +57,6 @@ export class OnApplicationStartupAuthVerificationService implements OnInit {
 
   private markAsChecked(): void {
     if (this._authenticationChecked()) {
-      console.log('authorization check process already completed.')
       return;
     }
 

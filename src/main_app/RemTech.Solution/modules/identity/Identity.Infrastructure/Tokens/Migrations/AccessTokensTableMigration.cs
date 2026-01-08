@@ -13,6 +13,7 @@ public sealed class AccessTokensTableMigration : Migration
                         token_id UUID NOT NULL primary key,
                         raw_token TEXT NOT NULL,
                         expires_at BIGINT NOT NULL,
+                        created_at BIGINT NOT NULL,
                         email VARCHAR(256) NOT NULL,
                         login VARCHAR(256) NOT NULL,
                         user_id UUID NOT NULL,

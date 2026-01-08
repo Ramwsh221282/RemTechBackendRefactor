@@ -74,7 +74,12 @@ public static class HttpContextExtensions
         
         public bool HasPermission(string permission, IJwtTokenManager manager)
         {
-            string token = context.GetAccessTokenFromHeaderOrEmpty();
+            string token = context.GetAccessToken(
+            [
+                httpContext => httpContext.GetAccessTokenFromHeaderOrEmpty(),
+                httpContext => httpContext.GetAccessTokenFromCookieOrEmpty()
+            ]);
+            
             return manager.ReadToken(token).ContainsPermission(permission);
         }
         

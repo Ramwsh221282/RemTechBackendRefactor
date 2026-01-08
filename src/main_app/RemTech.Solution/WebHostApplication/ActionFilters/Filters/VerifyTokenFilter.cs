@@ -27,7 +27,12 @@ public sealed class VerifyTokenFilter(ICommandHandler<VerifyTokenCommand, Unit> 
 
     private async Task<Result<Unit>> VerifyToken(ActionExecutingContext context, CancellationToken ct)
     {
-        string token = context.AccessToken;
+        string token = context.HttpContext.GetAccessToken(
+            [
+                httpContext => httpContext.GetAccessTokenFromHeaderOrEmpty(),
+                httpContext => httpContext.GetAccessTokenFromCookieOrEmpty()
+            ]);
+        
         VerifyTokenCommand command = new(token);
         return await handler.Execute(command, ct);
     }

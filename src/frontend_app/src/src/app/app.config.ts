@@ -30,6 +30,8 @@ import {authInterceptor} from './shared/middleware/auth-interceptor.interceptor'
 import {
   OnApplicationStartupAuthVerificationService
 } from './shared/services/OnApplicationStartupAuthVerification.service';
+import {ForbiddenInterceptor} from './shared/middleware/forbidden.interceptor';
+import {PermissionsStatusService} from './shared/services/PermissionsStatus.service';
 
 const myPreset = definePreset(Aura, {
   semantic: {
@@ -59,9 +61,13 @@ export const appConfig: ApplicationConfig = {
     }),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withViewTransitions(), withComponentInputBinding()),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([
+      ForbiddenInterceptor,
+      authInterceptor
+    ])),
     provideEnvironmentInitializer(() => {
       inject(OnApplicationStartupAuthVerificationService).ngOnInit();
+      inject(PermissionsStatusService).ngOnInit();
     }),
     UserInfoService,
     TokensService,
