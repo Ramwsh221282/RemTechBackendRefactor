@@ -29,7 +29,7 @@ public sealed class PublishContainedItemsToAddBackgroundService(
     {
         Logger.Information("Invoking publishing");
         await using NpgSqlSession session = new(connectionFactory);
-        ITransactionSource source = new NpgSqlTransactionSource(session, logger);
+        ITransactionSource source = new NpgSqlTransactionSource(session);
         ITransactionScope transaction = await source.BeginTransaction(ct);
         
         try

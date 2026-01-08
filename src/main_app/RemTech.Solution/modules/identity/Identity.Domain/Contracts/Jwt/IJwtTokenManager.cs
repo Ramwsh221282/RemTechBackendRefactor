@@ -10,4 +10,5 @@ public interface IJwtTokenManager
     AccessToken GenerateToken(Account account);
     AccessToken ReadToken(string tokenString);
     Task<Result<TokenValidationResult>> GetValidToken(string jwtToken);
+    RefreshToken GenerateRefreshToken(Guid accountId);
 }

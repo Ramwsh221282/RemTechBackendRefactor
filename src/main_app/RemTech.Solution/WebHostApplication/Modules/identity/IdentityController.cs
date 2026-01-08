@@ -29,7 +29,8 @@ public sealed class IdentityController : Controller
     {
         AuthenticateCommand command = new(request.Login, request.Email, request.Password);
         Result<AuthenticationResult> result = await handler.Execute(command, ct);
-        if (result.IsFailure) return EnvelopedResultsExtensions.AsEnvelope(result);
+        if (result.IsFailure) 
+            return result.AsEnvelope();
         SetAuthCookies(HttpContext, result.Value);
         SetAuthHeaders(HttpContext, result.Value);
         return Ok();
@@ -45,9 +46,10 @@ public sealed class IdentityController : Controller
     {
         ConfirmTicketCommand command = new(accountId, ticketId);
         Result<Unit> result = await handler.Execute(command, ct);
-        return result.IsFailure ? EnvelopedResultsExtensions.AsEnvelope(result) : Ok();
+        return result.IsFailure ? result.AsEnvelope() : Ok();
     }
     
+    [VerifyToken]
     [IdentityManagementPermission]
     [HttpPatch("account/{id:guid}/permissions")]
     public async Task<Envelope> GivePermissions(
@@ -68,11 +70,22 @@ public sealed class IdentityController : Controller
         ICommandHandler<RefreshTokenCommand, AuthenticationResult> handler,
         CancellationToken ct)
     {
-        string refreshToken = HttpContext.GetRefreshTokenOrEmpty();
-        string accessToken = HttpContext.GetAccessTokenOrEmpty();
+        (string accessToken, string refreshToken) = HttpContext.GetIdentityTokens(
+            accessTokenSearchMethods: [
+                context => context.GetAccessTokenFromHeaderOrEmpty(),
+                context => context.GetAccessTokenFromCookieOrEmpty()
+            ],
+            refreshTokenSearchMethods: [
+                context => context.GetRefreshTokenFromHeaderOrEmpty(),
+                context => context.GetRefreshTokenFromCookieOrEmpty()
+            ]
+        );
+        
         RefreshTokenCommand command = new(accessToken, refreshToken);
         Result<AuthenticationResult> result = await handler.Execute(command, ct);
-        if (result.IsFailure) return EnvelopedResultsExtensions.AsEnvelope(result);
+        if (result.IsFailure) 
+            return result.AsEnvelope();
+        
         SetAuthCookies(HttpContext, result.Value);
         SetAuthHeaders(HttpContext, result.Value);
         return Ok();
@@ -86,23 +99,28 @@ public sealed class IdentityController : Controller
     {
         RegisterAccountCommand command = new(request.Email, request.Login, request.Password);
         Result<Unit> result = await handler.Execute(command, ct);
-        return result.IsFailure ? EnvelopedResultsExtensions.AsEnvelope(result) : Ok();
+        return result.IsFailure ? result.AsEnvelope() : Ok();
     }
 
     [HttpPost("verify")]
     public async Task<Envelope> Verify(
-        HttpContext context,
         [FromServices] ICommandHandler<VerifyTokenCommand, Unit> handler,
         CancellationToken ct
         )
     {
-        string token = context.GetAccessTokenOrEmpty();
-        VerifyTokenCommand command = new(token);
+        string accessToken = HttpContext.GetAccessToken(
+            [
+                context => context.GetAccessTokenFromHeaderOrEmpty(),
+                context => context.GetAccessTokenFromCookieOrEmpty(),
+            ]
+        );
+        
+        VerifyTokenCommand command = new(accessToken);
         Result<Unit> result = await handler.Execute(command, ct);
-        return result.IsFailure ? EnvelopedResultsExtensions.AsEnvelope(result) : Ok();
+        return result.IsFailure ? result.AsEnvelope() : Ok();
     }
     
-    private static Envelope Ok() => new((int)HttpStatusCode.OK, null, null);
+    private static new Envelope Ok() => new((int)HttpStatusCode.OK, null, null);
 
     private static void SetAuthHeaders(HttpContext context, AuthenticationResult result)
     {

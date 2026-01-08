@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Npgsql;
 using RemTech.SharedKernel.Configurations;
 
@@ -9,17 +8,10 @@ public sealed class NpgSqlConnectionFactory
 {
     private readonly NpgsqlDataSource _dataSource;
 
-    public NpgSqlConnectionFactory(IOptions<NpgSqlOptions> options, ILoggerFactory? loggerFactory)
+    public NpgSqlConnectionFactory(IOptions<NpgSqlOptions> options)
     {
         NpgsqlDataSourceBuilder builder = new NpgsqlDataSourceBuilder(options.Value.ToConnectionString());
         builder.UseVector();
-        builder.EnableParameterLogging();
-        
-        if (loggerFactory is not null)
-        {
-            builder.UseLoggerFactory(loggerFactory);
-        }
-        
         _dataSource = builder.Build();
     }
 

@@ -13,6 +13,7 @@ namespace WebHostApplication.Modules.notifications;
 [Route("api/notifications")]
 public class NotificationsController
 {
+    [VerifyToken]
     [NotificationsManagementPermission]
     [HttpPost("mailer")]
     public async Task<Envelope> AddMailer(
@@ -26,6 +27,7 @@ public class NotificationsController
         return EnvelopedResultsExtensions.AsEnvelope(result, r => MailerResponse.ConvertFrom(r.Value));
     }
 
+    [VerifyToken]
     [NotificationsManagementPermission]
     [HttpPut("mailer/{id:guid}")]
     public async Task<Envelope> UpdateMailer(

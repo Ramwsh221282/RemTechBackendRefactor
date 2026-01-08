@@ -42,7 +42,7 @@ public sealed class SparesEmbeddingUpdaterService(
     private async Task Execute(CancellationToken ct)
     {
         await using NpgSqlSession session = new(NpgSql);
-        NpgSqlTransactionSource transactionSource = new(session, logger);
+        NpgSqlTransactionSource transactionSource = new(session);
         await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
         SpareWithoutEmbedding[] spares = await GetSparesWithoutEmbeddings(session, ct);
         if (spares.Length == 0) return;

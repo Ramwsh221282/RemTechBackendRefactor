@@ -2,23 +2,22 @@
 
 namespace Identity.Domain.Tokens;
 
-public sealed class RefreshToken(Guid accountId, string tokenValue, long expiresAt)
+public sealed class RefreshToken(Guid accountId, string tokenValue, long expiresAt, long createdAt)
 {
     public Guid AccountId { get; } = accountId;
     public string TokenValue { get; } = tokenValue;
     public long ExpiresAt { get; private set; } = expiresAt;
+    public long CreatedAt { get; private set; } = createdAt;
 
-    public static RefreshToken CreateNew(Guid accountId, DateTime expiresAt)
+    public static RefreshToken CreateNew(Guid accountId, long expiresAt, long createdAt)
     {
         string tokenValue = GenerateRandomString();
-        long expires = ((DateTimeOffset)(expiresAt)).ToUnixTimeSeconds();
-        return new RefreshToken(accountId, tokenValue, expires);
+        return new RefreshToken(accountId, tokenValue, expiresAt, createdAt);
     }
 
-    public bool IsValid(DateTime date)
+    public bool IsExpired()
     {
-        long now = ((DateTimeOffset)(date)).ToUnixTimeSeconds();
-        return now <= ExpiresAt;
+        return ExpiresAt > CreatedAt;
     }
     
     private static string GenerateRandomString()

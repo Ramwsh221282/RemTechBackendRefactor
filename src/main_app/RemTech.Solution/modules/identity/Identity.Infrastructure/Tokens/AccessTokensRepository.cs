@@ -25,7 +25,7 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
         object parameters = new
         {
             token_id = token.TokenId,
-            raw_token = token.RawPermissionsString,
+            raw_token = token.RawToken,
             expires_at = token.ExpiresAt,
             email = token.Email,
             login = token.Login,

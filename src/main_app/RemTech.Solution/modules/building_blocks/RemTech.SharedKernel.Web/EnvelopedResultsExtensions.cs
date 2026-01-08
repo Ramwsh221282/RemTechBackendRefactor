@@ -52,6 +52,8 @@ public static class EnvelopedResultsExtensions
         {
             return error switch
             {
+                Error.ForbiddenError => HttpStatusCode.Forbidden,
+                Error.UnauthorizedError => HttpStatusCode.Unauthorized,
                 Error.ApplicationError => HttpStatusCode.InternalServerError,
                 Error.ConflictError => HttpStatusCode.Conflict,
                 Error.NotFoundError => HttpStatusCode.NotFound,

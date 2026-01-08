@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import {ApplicationConfig, inject, provideEnvironmentInitializer, provideZoneChangeDetection} from '@angular/core';
 import {
   provideRouter,
   withComponentInputBinding,
@@ -26,6 +26,10 @@ import { CatalogueVehiclesService } from './pages/vehicles-page/services/Catalog
 import { UsersService } from './pages/sign-in-page/services/UsersService';
 import { TokensService } from './shared/services/TokensService';
 import { UserInfoService } from './shared/services/UserInfoService';
+import {authInterceptor} from './shared/middleware/auth-interceptor.interceptor';
+import {
+  OnApplicationStartupAuthVerificationService
+} from './shared/services/OnApplicationStartupAuthVerification.service';
 
 const myPreset = definePreset(Aura, {
   semantic: {
@@ -55,7 +59,10 @@ export const appConfig: ApplicationConfig = {
     }),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withViewTransitions(), withComponentInputBinding()),
-    provideHttpClient(withInterceptors([JwtTokenManagingInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor])),
+    provideEnvironmentInitializer(() => {
+      inject(OnApplicationStartupAuthVerificationService).ngOnInit();
+    }),
     UserInfoService,
     TokensService,
     UsersService,

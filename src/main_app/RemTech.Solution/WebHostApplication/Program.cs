@@ -2,6 +2,7 @@ using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Web;
 using SwaggerThemes;
 using WebHostApplication.Injection;
+using WebHostApplication.Middlewares;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.RegisterApplicationModules();
@@ -22,6 +23,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("frontend", policy =>
     {
         policy.WithOrigins(url)
+            .AllowCredentials()
             .AllowAnyMethod()
             .AllowAnyHeader();
     });
@@ -35,6 +37,8 @@ app.UseCors("frontend");
 app.MapControllers();
 app.UseSwagger();
 app.UseSwaggerUI(Theme.UniversalDark);
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.Run();
 

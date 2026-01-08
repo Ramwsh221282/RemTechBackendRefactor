@@ -21,6 +21,7 @@ namespace WebHostApplication.Modules.parsers_control;
 [Route("api/parsers")]
 public sealed class ParsersController : ControllerBase
 {
+    [VerifyToken]
     [ParserManagementPermission]
     [HttpPost("{id:guid}/start")]
     public async Task<Envelope> StartParser(
@@ -33,6 +34,7 @@ public sealed class ParsersController : ControllerBase
         return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
     }
     
+    [VerifyToken]
     [ParserManagementPermission]
     [HttpPatch("{id:guid}/permantly-start")]
     public async Task<Envelope> PermantlyStartParser(
@@ -45,6 +47,7 @@ public sealed class ParsersController : ControllerBase
         return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
     }
 
+    [VerifyToken]
     [ParserManagementPermission]
     [HttpPut("{id:guid}/links")]
     public async Task<Envelope> UpdateParserLinks(
@@ -60,6 +63,7 @@ public sealed class ParsersController : ControllerBase
         return result.AsTypedEnvelope(ParserLinkResponseModel.ConvertFrom);
     }
 
+    [VerifyToken]
     [ParserManagementPermission]
     [HttpPatch("permantly-start")]
     public async Task<Envelope> PermantlyStartManyParsers(
@@ -72,6 +76,7 @@ public sealed class ParsersController : ControllerBase
         return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
     }
     
+    [VerifyToken]
     [ParserManagementPermission]
     [HttpPatch("permantly-disable")]
     public async Task<Envelope> PermantlyDisableManyParsers(
@@ -84,6 +89,7 @@ public sealed class ParsersController : ControllerBase
         return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
     }
     
+    [VerifyToken]
     [ParserManagementPermission]
     [HttpPatch("{id:guid}/permantly-disable")]
     public async Task<Envelope> PermantlyDisableParser(
@@ -96,6 +102,7 @@ public sealed class ParsersController : ControllerBase
         return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
     }
     
+    [VerifyToken]
     [ParserManagementPermission]
     [HttpPatch("{id:guid}/enable")]
     public async Task<Envelope> ChangeParserActivity(
@@ -108,6 +115,7 @@ public sealed class ParsersController : ControllerBase
         return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
     }
     
+    [VerifyToken]
     [ParserManagementPermission]
     [HttpPost("{id:guid}/links")]
     public async Task<Envelope> AddLinksToParser(

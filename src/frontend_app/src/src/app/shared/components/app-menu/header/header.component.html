@@ -1,5 +1,5 @@
-<nav class="header-layout bg-primary-400 shadowed p-0.5">
-  <div class="header-logo-part">
+<nav class="header-layout bg-primary-400 shadowed p-0.5 flex justify-between">
+  <div class="header-logo-part self-start">
     <p-button
       [icon]="'pi pi-bars'"
       [fluid]="true"
@@ -7,6 +7,16 @@
       label="Меню"
       (onClick)="onMenuButtonClick($event)">
       <img [ngSrc]="'logos/logo1.png'" [width]="50" [height]="50" alt="logo"/>
+    </p-button>
+  </div>
+  <div class="header-logo-part self-end">
+    <p-button
+      *ngIf="!isAuthorized"
+      [icon]="'pi pi-sign-in'"
+      [fluid]="true"
+      [size]="'large'"
+      [routerLink]="'sign-in'"
+      label="Авторизация">
     </p-button>
   </div>
 </nav>

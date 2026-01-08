@@ -7,13 +7,13 @@ public sealed class Envelope : IResult
 {
     private int StatusCode { get; }
     private object? Body { get; }
-    private string? Error { get; }
+    private string? Message { get; }
 
-    public Envelope(int statusCode, object? body, string? error)
+    public Envelope(int statusCode, object? body, string? message)
     {
         StatusCode = statusCode;
         Body = body;
-        Error = error;
+        Message = message;
     }
 
     public async Task ExecuteAsync(HttpContext httpContext)
@@ -29,7 +29,7 @@ public sealed class Envelope : IResult
         Dictionary<string, object?> data = [];
         data.Add("statusCode", StatusCode);
         data.Add("body", Body);
-        data.Add("error", Error);
+        data.Add("message", Message);
         return JsonSerializer.Serialize(data);
     }
 }
