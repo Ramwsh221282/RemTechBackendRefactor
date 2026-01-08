@@ -78,9 +78,10 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
         return token is null ? Error.NotFound("Токен обновления не найден.") : token;
     }
 
-    public async Task<Result<RefreshToken>> Get(string refreshToken, CancellationToken ct = default)
+    public async Task<Result<RefreshToken>> Get(string refreshToken, bool withLock = false, CancellationToken ct = default)
     {
-        const string sql = """
+        string lockClause = withLock ? "FOR UPDATE" : "";
+        string sql = $"""
                            SELECT 
                                account_id as account_id, 
                                token_value as token_value, 
@@ -88,6 +89,7 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
                                created_at as created_at
                            FROM identity_module.refresh_tokens
                            WHERE token_value = @token_value
+                           {lockClause}
                            """;
         
         object parameters = new { token_value = refreshToken };

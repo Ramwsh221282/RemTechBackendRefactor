@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net;
+using Microsoft.AspNetCore.Mvc;
 using ParsersControl.Core.Features.AddParserLink;
 using ParsersControl.Core.Features.EnableParser;
 using ParsersControl.Core.Features.PermantlyDisableManyParsing;
@@ -9,6 +10,7 @@ using ParsersControl.Core.Features.StartParserWork;
 using ParsersControl.Core.Features.UpdateParserLinks;
 using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
+using ParsersControl.Infrastructure.Parsers.Queries.GetParsers;
 using ParsersControl.WebApi.ResponseModels;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
@@ -31,7 +33,19 @@ public sealed class ParsersController : ControllerBase
     {
         StartParserCommand command = new(Id: id);
         Result<SubscribedParser> result = await handler.Execute(command, ct);
-        return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
+        return result.AsTypedEnvelope(ParserResponse.Create);
+    }
+
+    [VerifyToken]
+    [ParserManagementPermission]
+    [HttpGet]
+    public async Task<Envelope> GetParsers(
+        [FromServices] IQueryHandler<GetParsersQuery, IEnumerable<ParserResponse>> handler,
+        CancellationToken ct)
+    {
+        GetParsersQuery query = new();
+        IEnumerable<ParserResponse> parsers = await handler.Handle(query, ct);
+        return new Envelope((int)HttpStatusCode.OK, parsers, null);
     }
     
     [VerifyToken]
@@ -44,7 +58,7 @@ public sealed class ParsersController : ControllerBase
     {
         PermantlyStartParsingCommand command = new(Id: id);
         Result<SubscribedParser> result = await handler.Execute(command, ct);
-        return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
+        return result.AsTypedEnvelope(ParserResponse.Create);
     }
 
     [VerifyToken]
@@ -60,7 +74,7 @@ public sealed class ParsersController : ControllerBase
         IEnumerable<UpdateParserLinksCommandInfo> updateInfos = request.Links.Select(l => new UpdateParserLinksCommandInfo(l.LinkId, l.Activity, l.Name, l.Url));
         UpdateParserLinksCommand command = new(id, updateInfos);
         Result<IEnumerable<SubscribedParserLink>> result = await handler.Execute(command, ct);
-        return result.AsTypedEnvelope(ParserLinkResponseModel.ConvertFrom);
+        return result.AsTypedEnvelope(r => r.Select(ParserLinkResponse.Create));
     }
 
     [VerifyToken]
@@ -73,7 +87,7 @@ public sealed class ParsersController : ControllerBase
     {
         PermantlyStartManyParsingCommand command = new(Identifiers: ids);
         Result<IEnumerable<SubscribedParser>> result = await handler.Execute(command, ct);
-        return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
+        return result.AsTypedEnvelope(r => r.Select(ParserResponse.Create));
     }
     
     [VerifyToken]
@@ -86,7 +100,7 @@ public sealed class ParsersController : ControllerBase
     {
         PermantlyDisableManyParsingCommand command = new(Identifiers: ids);
         Result<IEnumerable<SubscribedParser>> result = await handler.Execute(command, ct);
-        return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
+        return result.AsTypedEnvelope(r => r.Select(ParserResponse.Create));
     }
     
     [VerifyToken]
@@ -99,7 +113,7 @@ public sealed class ParsersController : ControllerBase
     {
         PermantlyDisableParsingCommand command = new(Id: id);
         Result<SubscribedParser> result = await handler.Execute(command, ct);
-        return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
+        return result.AsTypedEnvelope(ParserResponse.Create);
     }
     
     [VerifyToken]
@@ -112,7 +126,7 @@ public sealed class ParsersController : ControllerBase
     {
         EnableParserCommand command = new(Id: id);
         Result<SubscribedParser> result = await handler.Execute(command, ct);
-        return result.AsTypedEnvelope(ParserResponseModel.ConvertFrom);
+        return result.AsTypedEnvelope(ParserResponse.Create);
     }
     
     [VerifyToken]
@@ -127,6 +141,6 @@ public sealed class ParsersController : ControllerBase
     {
         AddParserLinkCommand command = new(id, request.Links.Select(l => new AddParserLinkCommandArg(l.Url, l.Name)));
         Result<IEnumerable<SubscribedParserLink>> result = await handler.Execute(command, ct);
-        return result.AsTypedEnvelope(ParserLinkResponseModel.ConvertFrom);        
+        return result.AsTypedEnvelope(r => r.Select(ParserLinkResponse.Create));
     }
 }

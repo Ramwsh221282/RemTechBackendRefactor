@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {apiUrl} from '../api-endpoint';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {finalize, Observable, shareReplay} from 'rxjs';
 import {AuthenticateRequest, GivePermissionsRequest, RegisterAccountRequest} from './identity-requests';
 import {AccountResponse} from './identity-responses';
 import {Envelope, TypedEnvelope} from '../envelope';
@@ -11,6 +11,8 @@ import {Envelope, TypedEnvelope} from '../envelope';
 })
 export class IdentityApiService {
   private readonly _url: string = `${apiUrl}/identity`
+  private _refreshInProgress: boolean = false;
+  private _refresh$?: Observable<Envelope>;
 
   constructor(private readonly _httpClient: HttpClient) {
   }
@@ -43,7 +45,17 @@ export class IdentityApiService {
   // }
 
   refreshToken(): Observable<Envelope> {
-    return this._httpClient.put<Envelope>(`${this._url}/refresh`, null, { withCredentials: true });
+    if (this._refreshInProgress && this._refresh$) {
+      return this._refresh$;
+    }
+
+    this._refreshInProgress = true;
+    this._refresh$ = this._httpClient.put<Envelope>(`${this._url}/refresh`, null, { withCredentials: true })
+      .pipe(shareReplay(1), finalize(() => {
+        this._refreshInProgress = false;
+        this._refresh$ = undefined;
+      }));
+    return this._refresh$;
   }
 
   signUp(password: string, email: string, login: string): Observable<Envelope> {

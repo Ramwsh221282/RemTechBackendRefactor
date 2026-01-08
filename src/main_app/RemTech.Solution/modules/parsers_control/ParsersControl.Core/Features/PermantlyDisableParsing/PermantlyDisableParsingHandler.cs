@@ -8,7 +8,8 @@ using RemTech.SharedKernel.Core.Handlers.Attributes;
 namespace ParsersControl.Core.Features.PermantlyDisableParsing;
 
 [TransactionalHandler]
-public sealed class PermantlyDisableParsingHandler(ISubscribedParsersRepository repository) : ICommandHandler<PermantlyDisableParsingCommand, SubscribedParser>
+public sealed class PermantlyDisableParsingHandler(ISubscribedParsersRepository repository)
+    : ICommandHandler<PermantlyDisableParsingCommand, SubscribedParser>
 {
     public async Task<Result<SubscribedParser>> Execute(PermantlyDisableParsingCommand command, CancellationToken ct = default)
     {
