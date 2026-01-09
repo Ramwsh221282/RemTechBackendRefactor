@@ -5,7 +5,6 @@ import {catchError, switchMap, tap, throwError} from 'rxjs';
 import {IdentityApiService} from '../api/identity-module/identity-api-service';
 import {PermissionsStatusService, UserAccountPermissions} from '../services/PermissionsStatus.service';
 import {AccountResponse} from '../api/identity-module/identity-responses';
-import {TypedEnvelope} from '../api/envelope';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authStatusService: AuthenticationStatusService = inject(AuthenticationStatusService);
@@ -14,6 +13,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const isVerifyRequest: boolean = req.url.includes('verify');
   const isRefreshRequest: boolean = req.url.includes('refresh');
+
 
   return next(req).pipe(
     tap({
@@ -30,18 +30,21 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
         if ([401].includes(error.status)) {
           identityService.refreshToken().pipe(
-            tap({
-              complete: (): void => {
-                authStatusService.setIsAuthenticated(true)
-                identityService.fetchAccount()
-                  .pipe(tap({
-                    next: (account: TypedEnvelope<AccountResponse>): void => {
-                      if (account.body) {
-                        permissionsService.initializePermissions(mapPermissions(account.body));
-                      }
-                    }
-                  })).subscribe()
-              }
+            switchMap(() => {
+              authStatusService.setIsAuthenticated(true);
+              return identityService.fetchAccount().pipe(
+                tap(account => {
+                  if (account.body) {
+                    permissionsService.initializePermissions(mapPermissions(account.body));
+                  }
+                }),
+                switchMap(() => next(req)) // Повторяем оригинальный запрос
+              );
+            }),
+            catchError(() => {
+              authStatusService.setIsNotAuthenticated();
+              permissionsService.clean();
+              return throwError(() => error);
             })
           ).subscribe()
         }
