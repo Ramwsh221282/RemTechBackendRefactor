@@ -1,22 +1,9 @@
-import {
-  Component,
-  DestroyRef,
-  effect,
-  EventEmitter,
-  inject,
-  Output,
-  signal,
-  WritableSignal,
-} from '@angular/core';
+import { Component, DestroyRef, effect, EventEmitter, inject, Output, signal, WritableSignal } from '@angular/core';
 import {ActivatedRoute, Params} from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { VehicleScrapersService } from '../scrapers-management-settings-page/services/vehicle-scrapers.service';
-import { Scraper } from '../scrapers-management-settings-page/types/Scraper';
 import { HttpErrorResponse } from '@angular/common/http';
-import { DatePipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { Button } from 'primeng/button';
+import { NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ScraperDomainInfoComponent } from './components/scraper-domain-info/scraper-domain-info.component';
 import { ScraperLastRunInfoComponent } from './components/scraper-last-run-info/scraper-last-run-info.component';
 import { ScraperNextRunInfoComponent } from './components/scraper-next-run-info/scraper-next-run-info.component';
 import { ScraperWaitDaysSelectComponent } from './components/scraper-wait-days-select/scraper-wait-days-select.component';
@@ -28,9 +15,7 @@ import { ScraperActivateButtonComponent } from './components/scraper-activate-bu
 import { ScraperDeactivateButtonComponent } from './components/scraper-deactivate-button/scraper-deactivate-button.component';
 import { ScraperAddLinkDialogComponent } from './components/scraper-add-link-dialog/scraper-add-link-dialog.component';
 import { MessageService } from 'primeng/api';
-import { ScraperLink } from '../scrapers-management-settings-page/types/ScraperLink';
 import { ScraperEditLinkDialogComponent } from './components/scraper-edit-link-dialog/scraper-edit-link-dialog.component';
-import { InstantlyEnabledParserResponse } from '../scrapers-management-settings-page/types/InstantlyEnabledParserResponse';
 import { MessageServiceUtils } from '../../../../shared/utils/message-service-utils';
 import { Toast } from 'primeng/toast';
 import {ParsersControlApiService} from '../../../../shared/api/parsers-module/parsers-control-api.service';
@@ -44,7 +29,6 @@ import {ScraperLastRunStartedComponent} from './components/scraper-last-run-star
   selector: 'app-scrapers-management-concrete-scraper-page',
   imports: [
     FormsModule,
-    ScraperDomainInfoComponent,
     ScraperLastRunInfoComponent,
     ScraperNextRunInfoComponent,
     ScraperWaitDaysSelectComponent,
@@ -68,43 +52,59 @@ import {ScraperLastRunStartedComponent} from './components/scraper-last-run-star
 export class ScrapersManagementConcreteScraperPageComponent {
   @Output() parserLinkRemoved: EventEmitter<ParserLinkResponse>;
   private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  readonly _isCreatingLink: WritableSignal<boolean>;
-  readonly _isEditingLink: WritableSignal<boolean>;
-  readonly _scraper: WritableSignal<ParserResponse | null>;
-  readonly _linkToEdit: WritableSignal<ParserLinkResponse | null>;
+  readonly isCreatingLink: WritableSignal<boolean>;
+  readonly scraper: WritableSignal<ParserResponse | null>;
+  readonly linkToEdit: WritableSignal<ParserLinkResponse | null>;
 
   constructor(
     private readonly _service: ParsersControlApiService,
     private readonly _activatedRoute: ActivatedRoute,
     private readonly _messageService: MessageService,
   ) {
-    this._linkToEdit = signal(null);
-    this._isEditingLink = signal(false);
-    this._scraper = signal(null);
-    this._isCreatingLink = signal(false);
+    this.linkToEdit = signal(null);
+    this.scraper = signal(null);
+    this.isCreatingLink = signal(false);
     this.parserLinkRemoved = new EventEmitter<ParserLinkResponse>();
     effect((): void => {
       this.fetchParserInfo();
     });
   }
 
+  public onLinkEditClicked(link: ParserLinkResponse): void {
+    this.linkToEdit.set(link);
+  }
+
+  public acceptCreatingLink(flag: boolean): void {
+    this.isCreatingLink.set(flag);
+  }
+
+  public onEditLinkConfirmed(payload: { linkId: string, name: string | null, url: string | null }): void {
+    this.linkToEdit.set(null);
+    const current: ParserResponse | null = this.scraper();
+    if (current) this.updateParserLink(current, payload.linkId, payload.name, payload.url);
+  }
+
+  public onEditClose(): void {
+    this.linkToEdit.set(null);
+  }
+
   public onLinkRemoveConfirmed(link: ParserLinkResponse): void {
-    const current: ParserResponse | null = this._scraper();
+    const current: ParserResponse | null = this.scraper();
     if (current) this.removeParserLink(current, link);
   }
 
   public onWaitDaysChange(days: number): void {
-    const current: ParserResponse | null = this._scraper();
+    const current: ParserResponse | null = this.scraper();
     if (current) this.updateParserWaitDays(current, days);
   }
 
   public onLinksAddConfirmed(links: ParserLinkResponse[]): void {
-    const current: ParserResponse | null = this._scraper();
+    const current: ParserResponse | null = this.scraper();
     if (current) this.addLinksToParser(current, links);
   }
 
   public onLinkActivitySwitch(switch$: { link: ParserLinkResponse, activity: boolean }): void {
-    const current: ParserResponse | null = this._scraper();
+    const current: ParserResponse | null = this.scraper();
     if (current) this.updateLinkActivity(current, switch$.link, switch$.activity)
   }
 
@@ -114,7 +114,7 @@ export class ScrapersManagementConcreteScraperPageComponent {
         takeUntilDestroyed(this._destroyRef),
         map((parameters: Params) => parameters['id'] as string),
         switchMap((id: string): Observable<TypedEnvelope<ParserResponse>> => this._service.fetchParser(id)),
-        tap((response: TypedEnvelope<ParserResponse>): void => this._scraper.set(response.body ?? null)),
+        tap((response: TypedEnvelope<ParserResponse>): void => this.scraper.set(response.body ?? null)),
         catchError((error: HttpErrorResponse): Observable<never> => throwError((): HttpErrorResponse => error))
       ).subscribe();
   }
@@ -133,7 +133,7 @@ export class ScrapersManagementConcreteScraperPageComponent {
         tap((values): void => {
           const message: string = `Добавлено ${values.added} новых ссылок.`
           MessageServiceUtils.showSuccess(this._messageService, message);
-          this._scraper.update((scraper: ParserResponse | null): ParserResponse | null => scraper ? { ...scraper, Links: values.addedItems } : null);
+          this.scraper.update((scraper: ParserResponse | null): ParserResponse | null => scraper ? { ...scraper, Links: values.addedItems } : null);
         }),
         catchError((error: HttpErrorResponse): Observable<never> => {
           const message: string = error.error.message as string;
@@ -158,7 +158,7 @@ export class ScrapersManagementConcreteScraperPageComponent {
         }),
         tap((updated: ParserLinkResponse[]): void => {
           MessageServiceUtils.showSuccess(this._messageService, `Активность ссылки ${link.UrlName} изменена на ${activity ? 'Активна' : 'Неактивна'}`);
-          this._scraper.update((scraper: ParserResponse | null): ParserResponse | null => scraper ? { ...scraper, Links: updated } : null);
+          this.scraper.update((scraper: ParserResponse | null): ParserResponse | null => scraper ? { ...scraper, Links: updated } : null);
         }),
         catchError((error: HttpErrorResponse): Observable<never> => {
           const message: string = error.error.message as string;
@@ -177,7 +177,7 @@ export class ScrapersManagementConcreteScraperPageComponent {
           if (updated) {
             const message = `Изменено число дней ожидания на ${updated.WaitDays}`;
             MessageServiceUtils.showSuccess(this._messageService, message);
-            this._scraper.set(updated);
+            this.scraper.set(updated);
           }
         }),
         catchError((error: HttpErrorResponse): Observable<never> => {
@@ -202,7 +202,34 @@ export class ScrapersManagementConcreteScraperPageComponent {
         }),
         tap((updated: ParserLinkResponse[]): void => {
           MessageServiceUtils.showSuccess(this._messageService, `Ссылка ${link.UrlName} удалена`);
-          this._scraper.update((scraper: ParserResponse | null): ParserResponse | null => scraper ? { ...scraper, Links: updated } : null);
+          this.scraper.update((scraper: ParserResponse | null): ParserResponse | null => scraper ? { ...scraper, Links: updated } : null);
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message as string;
+          MessageServiceUtils.showError(this._messageService, message);
+          return EMPTY;
+        })
+      ).subscribe();
+  }
+
+  private updateParserLink(parser: ParserResponse, linkId: string, name: string | null, url: string | null): void {
+    const parserId: string = parser.Id;
+    this._service.updateLink(parserId, linkId, name, url)
+      .pipe(
+        takeUntilDestroyed(this._destroyRef),
+        map((response: TypedEnvelope<ParserLinkResponse>): ParserLinkResponse | null | undefined => response.body),
+        tap((updated: ParserLinkResponse | null | undefined): void => {
+          if (updated) {
+            const message: string = `Ссылка ${updated.UrlName} изменена`;
+            MessageServiceUtils.showSuccess(this._messageService, message);
+            const current: ParserResponse | null = this.scraper();
+            if (current) {
+              const links: ParserLinkResponse[] = [...current.Links];
+              const index: number = links.findIndex((l: ParserLinkResponse): boolean => l.Id === linkId);
+              if (index >= 0) links[index] = updated;
+              this.scraper.update((scraper: ParserResponse | null): ParserResponse | null => scraper ? { ...scraper, Links: links } : null);
+            }
+          }
         }),
         catchError((error: HttpErrorResponse): Observable<never> => {
           const message: string = error.error.message as string;
@@ -233,43 +260,5 @@ export class ScrapersManagementConcreteScraperPageComponent {
     //       MessageServiceUtils.showError(this._messageService, message);
     //     },
     //   });
-  }
-
-  public get scraperLinkToEdit(): ParserLinkResponse | null {
-    return this._linkToEdit();
-  }
-
-  public acceptCreatingLink(flag: boolean): void {
-    this._isCreatingLink.set(flag);
-  }
-
-  public acceptLinkEditClick(flag: boolean): void {
-    console.log(flag);
-    this._isEditingLink.set(flag);
-  }
-
-  public get isCreatingLink(): boolean {
-    return this._isCreatingLink();
-  }
-
-  public acceptLinkToEdit(link: ParserLinkResponse): void {
-    this._linkToEdit.set(link);
-  }
-
-  public acceptScraperChangedState($event: Scraper): void {
-    // this._scraper.set($event);
-  }
-
-  public onEditClose(): void {
-    this._isEditingLink.set(false);
-    this._linkToEdit.set(null);
-  }
-
-  public get isEditingLink(): boolean {
-    return this._isEditingLink();
-  }
-
-  public get scraper(): ParserResponse | null {
-    return this._scraper();
   }
 }

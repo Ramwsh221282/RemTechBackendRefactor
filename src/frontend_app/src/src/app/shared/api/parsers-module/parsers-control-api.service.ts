@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {apiUrl} from '../api-endpoint';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import {finalize, Observable, shareReplay} from 'rxjs';
 import {TypedEnvelope} from '../envelope';
 import {ParserLinkResponse, ParserResponse} from './parsers-responses';
@@ -15,6 +15,7 @@ export class ParsersControlApiService {
   private _addLinks$?: Observable<TypedEnvelope<ParserLinkResponse[]>>;
   private _changeLinkActivity$?: Observable<TypedEnvelope<ParserLinkResponse>>;
   private _removeLink$?: Observable<TypedEnvelope<ParserLinkResponse>>;
+  private _updateLink$?: Observable<TypedEnvelope<ParserLinkResponse>>;
 
   constructor(private readonly _httpClient: HttpClient) {
   }
@@ -29,6 +30,10 @@ export class ParsersControlApiService {
 
   public addLinksToParser(parserId: string, links: { name: string, url: string }[]): Observable<TypedEnvelope<ParserLinkResponse[]>> {
     return this.startAddingLinks(parserId, links);
+  }
+
+  public updateLink(parserId: string, linkId: string, name?: string | null, url?: string | null): Observable<TypedEnvelope<ParserLinkResponse>> {
+    return this.startUpdatingLink(parserId, linkId, name, url);
   }
 
   public fetchParser(id: string): Observable<TypedEnvelope<ParserResponse>> {
@@ -83,6 +88,20 @@ export class ParsersControlApiService {
         finalize((): void => this._addLinks$ = undefined),
         shareReplay({ bufferSize: 1, refCount: true }));
     return this._addLinks$;
+  }
+
+  private startUpdatingLink(parserId: string, linkId: string, name?: string | null, url?: string | null): Observable<TypedEnvelope<ParserLinkResponse>> {
+    if (this._updateLink$) return this._updateLink$;
+    const requestUrl: string = `${this._apiUrl}/${parserId}/links/${linkId}`;
+    let params: HttpParams = new HttpParams();
+    if (name) params = params.set('name', name);
+    if (url) params = params.set('url', url);
+    this._updateLink$ = this._httpClient.put<TypedEnvelope<ParserLinkResponse>>(requestUrl, null, { params, withCredentials: true })
+      .pipe(
+        finalize((): void => this._updateLink$ = undefined),
+        shareReplay({ bufferSize: 1, refCount: true }),
+      );
+    return this._updateLink$;
   }
 
   private startChangingLinkActivity(parserId: string, linkId: string, activity: boolean): Observable<TypedEnvelope<ParserLinkResponse>> {

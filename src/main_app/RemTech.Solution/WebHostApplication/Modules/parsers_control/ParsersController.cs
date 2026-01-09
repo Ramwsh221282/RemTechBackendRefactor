@@ -4,18 +4,17 @@ using ParsersControl.Core.Features.AddParserLink;
 using ParsersControl.Core.Features.ChangeLinkActivity;
 using ParsersControl.Core.Features.ChangeWaitDays;
 using ParsersControl.Core.Features.DeleteLinkFromParser;
-using ParsersControl.Core.Features.EnableParser;
 using ParsersControl.Core.Features.PermantlyDisableManyParsing;
 using ParsersControl.Core.Features.PermantlyDisableParsing;
 using ParsersControl.Core.Features.PermantlyStartManyParsing;
 using ParsersControl.Core.Features.PermantlyStartParsing;
 using ParsersControl.Core.Features.StartParserWork;
+using ParsersControl.Core.Features.UpdateParserLink;
 using ParsersControl.Core.Features.UpdateParserLinks;
 using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using ParsersControl.Infrastructure.Parsers.Queries.GetParser;
 using ParsersControl.Infrastructure.Parsers.Queries.GetParsers;
-using ParsersControl.WebApi.ResponseModels;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
@@ -67,6 +66,22 @@ public sealed class ParsersController : ControllerBase
         ChangeWaitDaysCommand command = new(id, value);
         Result<SubscribedParser> result = await handler.Execute(command, ct);
         return result.AsTypedEnvelope(ParserResponse.Create);
+    }
+
+    [VerifyToken]
+    [ParserManagementPermission]
+    [HttpPut("{id:guid}/links/{linkId:guid}")]
+    public async Task<Envelope> UpdateParserLink(
+        [FromRoute(Name = "id")] Guid id,
+        [FromRoute(Name = "linkId")] Guid linkId,
+        [FromQuery(Name = "name")] string? name,
+        [FromQuery(Name = "url")] string? url,
+        [FromServices] ICommandHandler<UpdateParserLinkCommand, SubscribedParserLink> handler,
+        CancellationToken ct)
+    {
+        UpdateParserLinkCommand command = new(id, linkId, name, url);
+        Result<SubscribedParserLink> result = await handler.Execute(command, ct);
+        return result.AsTypedEnvelope(ParserLinkResponse.Create);
     }
     
     [VerifyToken]
