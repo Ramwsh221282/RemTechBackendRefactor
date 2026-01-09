@@ -15,64 +15,37 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const isVerifyRequest: boolean = req.url.includes('verify');
   const isRefreshRequest: boolean = req.url.includes('refresh');
 
-  // return next(req).pipe(
-  //   catchError((error: HttpErrorResponse) => {
-  //     if (error.status !== 401) {
-  //       return throwError(() => error);
-  //     }
-  //
-  //     if (isVerifyRequest || isRefreshRequest) {
-  //       authStatusService.setIsNotAuthenticated();
-  //       permissionsService.clean();
-  //       return throwError(() => error);
-  //     }
-  //
-  //     return identityService.refreshToken().pipe(
-  //       tap({
-  //         next: () => {
-  //           authStatusService.setIsAuthenticated(true)
-  //         },
-  //         error: () => {
-  //           authStatusService.setIsNotAuthenticated();
-  //           permissionsService.clean();
-  //         }
-  //       }),
-  //
-  //       switchMap(() => next(req)),
-  //       catchError(refreshError => {
-  //         authStatusService.setIsNotAuthenticated();
-  //         permissionsService.clean();
-  //         return throwError(() => refreshError);
-  //       })
-  //     ).subscribe()
-  //   }),
-  //   tap({
-  //     complete: () => {
-  //       authStatusService.setIsNotAuthenticated();
-  //     }
-  //   })
-  // );
-
   return next(req).pipe(
     tap({
       error: (error: HttpErrorResponse): void => {
-        if ([401].includes(error.status) && req.url.includes('verify')) {
+        if ([401].includes(error.status) && isVerifyRequest) {
           authStatusService.setIsNotAuthenticated();
           permissionsService.clean();
         }
-        if ([401].includes(error.status) && req.url.includes('refresh')) {
+
+        if ([401].includes(error.status) && isRefreshRequest) {
           authStatusService.setIsNotAuthenticated();
           permissionsService.clean();
         }
+
         if ([401].includes(error.status)) {
           identityService.refreshToken().pipe(
             tap({
               complete: (): void => {
                 authStatusService.setIsAuthenticated(true)
+                identityService.fetchAccount()
+                  .pipe(tap({
+                    next: (account: TypedEnvelope<AccountResponse>): void => {
+                      if (account.body) {
+                        permissionsService.initializePermissions(mapPermissions(account.body));
+                      }
+                    }
+                  })).subscribe()
               }
             })
           ).subscribe()
         }
+
       },
       complete: (): void => {
         authStatusService.setIsAuthenticated(true)
@@ -80,3 +53,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     })
   )
 };
+
+const mapPermissions = (response: AccountResponse): UserAccountPermissions[] => {
+  return response.Permissions.map(p => {
+    return { Id: p.Id, Name: p.Name, Description: p.Description };
+  })
+}

@@ -13,6 +13,8 @@ export class IdentityApiService {
   private readonly _url: string = `${apiUrl}/identity`
   private _refreshInProgress: boolean = false;
   private _refresh$?: Observable<Envelope>;
+  private _fetchAccountInProgress: boolean = false;
+  private _fetch$?: Observable<TypedEnvelope<AccountResponse>>;
 
   constructor(private readonly _httpClient: HttpClient) {
   }
@@ -34,7 +36,16 @@ export class IdentityApiService {
   }
 
   fetchAccount(): Observable<TypedEnvelope<AccountResponse>> {
-    return this._httpClient.get<TypedEnvelope<AccountResponse>>(`${this._url}/account`, { withCredentials: true });
+    if (this._fetchAccountInProgress && this._fetch$) {
+      return this._fetch$;
+    }
+    this._fetchAccountInProgress = true;
+    this._fetch$ = this._httpClient.get<TypedEnvelope<AccountResponse>>(`${this._url}/account`, { withCredentials: true })
+      .pipe(shareReplay(1), finalize(() => {
+        this._refreshInProgress = false;
+        this._fetch$ = undefined;
+      }));
+    return this._fetch$;
   }
 
   // refreshToken(accessToken: string, refreshToken: string): Observable<Envelope> {

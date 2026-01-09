@@ -1,6 +1,10 @@
 import {
   Dialog
-} from "./chunk-LCRVTVGH.js";
+} from "./chunk-UPHFHARW.js";
+import {
+  Button
+} from "./chunk-CHFHAXZQ.js";
+import "./chunk-TKL6NXYD.js";
 import {
   animate,
   animation,
@@ -9,13 +13,9 @@ import {
   trigger,
   useAnimation
 } from "./chunk-G3C7A2V7.js";
-import "./chunk-GSAG6XWH.js";
-import {
-  Button
-} from "./chunk-CHFHAXZQ.js";
-import "./chunk-TKL6NXYD.js";
 import "./chunk-EWUG4HDB.js";
 import "./chunk-5G7WYC4N.js";
+import "./chunk-GSAG6XWH.js";
 import "./chunk-YPDRQV4U.js";
 import {
   BaseComponent
