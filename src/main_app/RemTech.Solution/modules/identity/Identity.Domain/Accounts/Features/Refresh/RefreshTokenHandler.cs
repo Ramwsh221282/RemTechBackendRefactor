@@ -20,7 +20,7 @@ public sealed class RefreshTokenHandler(
         RefreshTokenCommand command, 
         CancellationToken ct = default)
     {
-        Result<RefreshToken> refreshToken = await refreshTokens.Get(command.RefreshToken, ct);
+        Result<RefreshToken> refreshToken = await refreshTokens.Get(command.RefreshToken, true, ct);
         if (refreshToken.IsFailure) 
             return Error.Unauthorized("Token not found.");
         if (!refreshToken.Value.IsExpired()) 

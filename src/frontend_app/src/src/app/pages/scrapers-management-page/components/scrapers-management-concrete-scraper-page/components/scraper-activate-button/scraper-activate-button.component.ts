@@ -17,6 +17,9 @@ import { ParserStateChangeResult } from '../../../scrapers-management-settings-p
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessageServiceUtils } from '../../../../../../shared/utils/message-service-utils';
 import { Toast } from 'primeng/toast';
+import {ParserResponse} from '../../../../../../shared/api/parsers-module/parsers-responses';
+import {ParsersControlApiService} from '../../../../../../shared/api/parsers-module/parsers-control-api.service';
+import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module/parsers-factory';
 
 @Component({
   selector: 'app-scraper-activate-button',
@@ -26,43 +29,17 @@ import { Toast } from 'primeng/toast';
   providers: [MessageService],
 })
 export class ScraperActivateButtonComponent {
-  @Input({ required: true }) set scraper_setter(value: Scraper) {
+  constructor() {
+    this._scraper = signal(DefaultParserResponse());
+    this.parserStartClicked = new EventEmitter<ParserResponse>();
+  }
+
+  private readonly _scraper: WritableSignal<ParserResponse>;
+  @Input({ required: true }) set scraper_setter(value: ParserResponse) {
     this._scraper.set(value);
   }
-  @Output() onParserStateChange: EventEmitter<Scraper> =
-    new EventEmitter<Scraper>();
-  private readonly _scraper: WritableSignal<Scraper>;
-  private readonly _messageService: MessageService;
-  private readonly _service: VehicleScrapersService;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  constructor(messageService: MessageService, service: VehicleScrapersService) {
-    this._scraper = signal(VehicleScrapersService.defaultScraper());
-    this._messageService = messageService;
-    this._service = service;
-  }
-
+  @Output() parserStartClicked: EventEmitter<ParserResponse>;
   public click(): void {
-    const current: Scraper = this._scraper();
-    this._service
-      .changeState(current, { stateSwitch: true })
-      .pipe(takeUntilDestroyed(this._destroyRef))
-      .subscribe({
-        next: (data: ParserStateChangeResult): void => {
-          current.state = data.newState;
-          this.onParserStateChange.emit(current);
-          MessageServiceUtils.showSuccess(
-            this._messageService,
-            `Состояние парсера ${current.name} ${current.type} изменено на: ${data.newState}`,
-          );
-        },
-        error: (err: HttpErrorResponse): void => {
-          const message = err.error.message as string;
-          MessageServiceUtils.showError(this._messageService, message);
-        },
-      });
-  }
-
-  public get domain(): string {
-    return this._scraper().domain;
+    this.parserStartClicked.emit(this._scraper());
   }
 }

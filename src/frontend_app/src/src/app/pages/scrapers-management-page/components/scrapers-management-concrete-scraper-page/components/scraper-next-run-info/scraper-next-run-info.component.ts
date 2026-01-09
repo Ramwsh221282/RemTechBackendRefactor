@@ -2,6 +2,8 @@ import { Component, Input, signal, WritableSignal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Scraper } from '../../../scrapers-management-settings-page/types/Scraper';
 import { VehicleScrapersService } from '../../../scrapers-management-settings-page/services/vehicle-scrapers.service';
+import {ParserResponse} from '../../../../../../shared/api/parsers-module/parsers-responses';
+import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module/parsers-factory';
 
 @Component({
   selector: 'app-scraper-next-run-info',
@@ -10,17 +12,17 @@ import { VehicleScrapersService } from '../../../scrapers-management-settings-pa
   styleUrl: './scraper-next-run-info.component.scss',
 })
 export class ScraperNextRunInfoComponent {
-  @Input({ required: true }) set scraper_setter(value: Scraper) {
+  constructor() {
+    this._scraper = signal(DefaultParserResponse());
+  }
+
+  private readonly _scraper: WritableSignal<ParserResponse>;
+
+  @Input({ required: true }) set scraper_setter(value: ParserResponse) {
     this._scraper.set(value);
   }
 
-  private readonly _scraper: WritableSignal<Scraper>;
-
-  constructor() {
-    this._scraper = signal(VehicleScrapersService.defaultScraper());
-  }
-
-  public get nextRunDate(): Date {
-    return this._scraper().nextRun;
+  public get nextRunDate(): Date | null | undefined {
+    return this._scraper().NextRun;
   }
 }

@@ -3,6 +3,10 @@ using ParsersControl.Core.Contracts;
 using ParsersControl.Core.Parsers.Models;
 using ParsersControl.Infrastructure.Listeners;
 using ParsersControl.Infrastructure.Migrations;
+using ParsersControl.Infrastructure.Parsers.CacheInvalidators;
+using ParsersControl.Infrastructure.Parsers.Commands.SubscribeParser;
+using ParsersControl.Infrastructure.Parsers.Queries.GetParser;
+using ParsersControl.Infrastructure.Parsers.Queries.GetParsers;
 using ParsersControl.Infrastructure.Parsers.Repository;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Handlers;
@@ -59,8 +63,37 @@ public static class ParsersModuleInjection
         {
             services.AddEventListeners();
             services.AddRepositories();
+            services.AddCacheInvalidators();
+            services.AddQueryHandlers();
+            services.UseCachedQueryHandlers();
         }
 
+        private void AddCacheInvalidators()
+        {
+            Assembly assembly = typeof(SubscribeParserCacheInvalidator).Assembly;
+            services.Scan(s => s.FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo(typeof(ICacheInvalidator<,>)))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
+            services.AddScoped<CachedParserArrayInvalidator>();
+            services.AddScoped<ParserCacheRecordInvalidator>();
+        }
+
+        private void AddQueryHandlers()
+        {
+            Assembly assembly = typeof(GetParsersQuery).Assembly;
+            services.Scan(s => s.FromAssemblies(assembly)
+                .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
+        }
+
+        private void UseCachedQueryHandlers()
+        {
+            services.Decorate(typeof(IQueryHandler<GetParsersQuery, IEnumerable<ParserResponse>>), typeof(GetParsersCachedQueryHandler));
+            services.Decorate(typeof(IQueryHandler<GetParserQuery, ParserResponse?>), typeof(GetParserCachedQueryHandler));
+        }
+        
         private void AddEventListeners()
         {
             services.AddScoped<IOnParserSubscribedListener, OnParserSubscribedEventListener>();

@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {apiUrl} from '../api-endpoint';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {finalize, Observable, shareReplay} from 'rxjs';
 import {AuthenticateRequest, GivePermissionsRequest, RegisterAccountRequest} from './identity-requests';
 import {AccountResponse} from './identity-responses';
 import {Envelope, TypedEnvelope} from '../envelope';
@@ -11,6 +11,10 @@ import {Envelope, TypedEnvelope} from '../envelope';
 })
 export class IdentityApiService {
   private readonly _url: string = `${apiUrl}/identity`
+  private _refreshInProgress: boolean = false;
+  private _refresh$?: Observable<Envelope>;
+  private _fetchAccountInProgress: boolean = false;
+  private _fetch$?: Observable<TypedEnvelope<AccountResponse>>;
 
   constructor(private readonly _httpClient: HttpClient) {
   }
@@ -32,18 +36,15 @@ export class IdentityApiService {
   }
 
   fetchAccount(): Observable<TypedEnvelope<AccountResponse>> {
-    return this._httpClient.get<TypedEnvelope<AccountResponse>>(`${this._url}/account`, { withCredentials: true });
+    if (this.fetchAccountInProgress())
+      return this._fetch$!;
+    return this.startFetchingAccount();
   }
 
-  // refreshToken(accessToken: string, refreshToken: string): Observable<Envelope> {
-  //   const headers: HttpHeaders = new HttpHeaders()
-  //     .set('access_token', accessToken)
-  //     .set('refresh_token', refreshToken);
-  //   return this._httpClient.put<Envelope>(`${this._url}/refresh`, null, { headers, withCredentials: true });
-  // }
-
   refreshToken(): Observable<Envelope> {
-    return this._httpClient.put<Envelope>(`${this._url}/refresh`, null, { withCredentials: true });
+    if (this.refreshTokenInProgress())
+      return this._refresh$!;
+    return this.startRefreshingToken();
   }
 
   signUp(password: string, email: string, login: string): Observable<Envelope> {
@@ -51,12 +52,35 @@ export class IdentityApiService {
     return this._httpClient.post<Envelope>(`${this._url}/sign-up`, payload);
   }
 
-  // verifyToken(accessToken: string): Observable<Envelope> {
-  //   const headers: HttpHeaders = new HttpHeaders().set('access_token', accessToken);
-  //   return this._httpClient.post<Envelope>(`${this._url}/verify`, null, { headers, withCredentials: true });
-  // }
-
   verifyToken(): Observable<Envelope> {
     return this._httpClient.post<Envelope>(`${this._url}/verify`, null, { withCredentials: true });
+  }
+
+  private startFetchingAccount(): Observable<TypedEnvelope<AccountResponse>> {
+    this._fetchAccountInProgress = true;
+    this._fetch$ = this._httpClient.get<TypedEnvelope<AccountResponse>>(`${this._url}/account`, { withCredentials: true })
+      .pipe(shareReplay(1), finalize(() => {
+        this._refreshInProgress = false;
+        this._fetch$ = undefined;
+      }));
+    return this._fetch$;
+  }
+
+  private startRefreshingToken(): Observable<Envelope> {
+    this._refreshInProgress = true;
+    this._refresh$ = this._httpClient.put<Envelope>(`${this._url}/refresh`, null, { withCredentials: true })
+      .pipe(shareReplay(1), finalize(() => {
+        this._refreshInProgress = false;
+        this._refresh$ = undefined;
+      }));
+    return this._refresh$;
+  }
+
+  private fetchAccountInProgress(): boolean {
+    return this._fetchAccountInProgress && !!this._fetch$;
+  }
+
+  private refreshTokenInProgress(): boolean {
+    return this._refreshInProgress && !!this._refresh$;
   }
 }

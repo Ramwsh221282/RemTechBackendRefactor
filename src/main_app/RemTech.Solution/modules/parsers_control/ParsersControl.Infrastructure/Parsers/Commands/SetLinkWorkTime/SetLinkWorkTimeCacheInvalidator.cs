@@ -1,0 +1,26 @@
+﻿using ParsersControl.Core.Features.SetLinkWorkTime;
+using ParsersControl.Core.ParserLinks.Models;
+using ParsersControl.Infrastructure.Parsers.CacheInvalidators;
+using RemTech.SharedKernel.Core.Handlers;
+
+namespace ParsersControl.Infrastructure.Parsers.Commands.SetLinkWorkTime;
+
+public sealed class SetLinkWorkTimeCacheInvalidator(
+    CachedParserArrayInvalidator arrayInvalidator,
+    ParserCacheRecordInvalidator recordInvalidator)
+    : ICacheInvalidator<SetLinkWorkingTimeCommand, SubscribedParserLink>
+{
+    public async Task InvalidateCache(
+        SetLinkWorkingTimeCommand command,
+        SubscribedParserLink result,
+        CancellationToken ct = default)
+    {
+        Task[] tasks = 
+            [
+                arrayInvalidator.Invalidate(ct),
+                recordInvalidator.Invalidate(command.ParserId, ct)                
+            ];
+        
+        await Task.WhenAll(tasks);
+    }
+}
