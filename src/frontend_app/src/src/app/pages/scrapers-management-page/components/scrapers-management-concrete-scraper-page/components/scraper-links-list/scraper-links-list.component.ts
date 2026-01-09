@@ -39,6 +39,11 @@ export class ScraperLinksListComponent {
   ) {
     this.scraper = signal(DefaultParserResponse());
     this.scraperLinks = signal([]);
+    this.linkActivityChanged = new EventEmitter();
+    this.onLinkRemoved = new EventEmitter();
+    this.linkToEditSelect = new EventEmitter();
+    this.onLinkCreateChange = new EventEmitter();
+    this.onLinkEditChange = new EventEmitter();
   }
 
   @Input({ required: true }) set scraper_setter(value: ParserResponse) {
@@ -49,11 +54,11 @@ export class ScraperLinksListComponent {
     this.scraperLinks.set(value);
   }
 
-  @Output() linkActivityChanged: EventEmitter<ParserResponse> = new EventEmitter();
-  @Output() onLinkRemoved: EventEmitter<ParserResponse> = new EventEmitter();
-  @Output() linkToEditSelect: EventEmitter<ParserLinkResponse> = new EventEmitter();
-  @Output() onLinkCreateChange: EventEmitter<boolean> = new EventEmitter();
-  @Output() onLinkEditChange: EventEmitter<boolean> = new EventEmitter();
+  @Output() linkActivityChanged: EventEmitter<{ link: ParserLinkResponse, activity: boolean }>;
+  @Output() onLinkRemoved: EventEmitter<ParserResponse>;
+  @Output() linkToEditSelect: EventEmitter<ParserLinkResponse>;
+  @Output() onLinkCreateChange: EventEmitter<boolean>;
+  @Output() onLinkEditChange: EventEmitter<boolean>;
 
   readonly scraperLinks: WritableSignal<ParserLinkResponse[]>;
   readonly scraper: WritableSignal<ParserResponse>;
@@ -66,6 +71,11 @@ export class ScraperLinksListComponent {
   public editClick(link: ParserLinkResponse): void {
     this.onLinkEditChange.emit(true);
     this.linkToEditSelect.emit(link);
+  }
+
+  public linkActivitySwitch(link: ParserLinkResponse): void {
+    const otherValue: boolean = !link.IsActive;
+    this.linkActivityChanged.emit({ link: link, activity: otherValue })
   }
 
   public changeLinkActivity(link: ScraperLink): void {

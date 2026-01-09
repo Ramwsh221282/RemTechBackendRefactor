@@ -2,7 +2,7 @@ import {
   equals,
   removeAccents,
   resolveFieldData
-} from "./chunk-E6QADRMR.js";
+} from "./chunk-YAPJLE7E.js";
 import {
   CommonModule
 } from "./chunk-255KZSHQ.js";
@@ -86,6 +86,21 @@ function unblockBodyScroll(className = "p-overflow-hidden") {
   (variableData == null ? void 0 : variableData.name) && document.body.style.removeProperty(variableData.name);
   removeClass(document.body, className);
 }
+function getHiddenElementDimensions(element) {
+  let dimensions = {
+    width: 0,
+    height: 0
+  };
+  if (element) {
+    element.style.visibility = "hidden";
+    element.style.display = "block";
+    dimensions.width = element.offsetWidth;
+    dimensions.height = element.offsetHeight;
+    element.style.display = "none";
+    element.style.visibility = "visible";
+  }
+  return dimensions;
+}
 function getViewport() {
   let win = window, d = document, e = d.documentElement, g = d.getElementsByTagName("body")[0], w = win.innerWidth || e.clientWidth || g.clientWidth, h = win.innerHeight || e.clientHeight || g.clientHeight;
   return {
@@ -101,6 +116,48 @@ function getWindowScrollTop() {
   let doc = document.documentElement;
   return (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
 }
+function absolutePosition(element, target, gutter = true) {
+  var _a, _b, _c, _d;
+  if (element) {
+    const elementDimensions = element.offsetParent ? {
+      width: element.offsetWidth,
+      height: element.offsetHeight
+    } : getHiddenElementDimensions(element);
+    const elementOuterHeight = elementDimensions.height;
+    const elementOuterWidth = elementDimensions.width;
+    const targetOuterHeight = target.offsetHeight;
+    const targetOuterWidth = target.offsetWidth;
+    const targetOffset = target.getBoundingClientRect();
+    const windowScrollTop = getWindowScrollTop();
+    const windowScrollLeft = getWindowScrollLeft();
+    const viewport = getViewport();
+    let top, left, origin = "top";
+    if (targetOffset.top + targetOuterHeight + elementOuterHeight > viewport.height) {
+      top = targetOffset.top + windowScrollTop - elementOuterHeight;
+      origin = "bottom";
+      if (top < 0) {
+        top = windowScrollTop;
+      }
+    } else {
+      top = targetOuterHeight + targetOffset.top + windowScrollTop;
+    }
+    if (targetOffset.left + elementOuterWidth > viewport.width) left = Math.max(0, targetOffset.left + windowScrollLeft + targetOuterWidth - elementOuterWidth);
+    else left = targetOffset.left + windowScrollLeft;
+    element.style.top = top + "px";
+    element.style.left = left + "px";
+    element.style.transformOrigin = origin;
+    gutter && (element.style.marginTop = origin === "bottom" ? `calc(${(_b = (_a = getCSSVariableByRegex(/-anchor-gutter$/)) == null ? void 0 : _a.value) != null ? _b : "2px"} * -1)` : (_d = (_c = getCSSVariableByRegex(/-anchor-gutter$/)) == null ? void 0 : _c.value) != null ? _d : "");
+  }
+}
+function addStyle(element, style) {
+  if (element) {
+    if (typeof style === "string") {
+      element.style.cssText = style;
+    } else {
+      Object.entries(style || {}).forEach(([key, value]) => element.style[key] = value);
+    }
+  }
+}
 function getOuterWidth(element, margin) {
   if (element instanceof HTMLElement) {
     let width = element.offsetWidth;
@@ -111,6 +168,39 @@ function getOuterWidth(element, margin) {
     return width;
   }
   return 0;
+}
+function relativePosition(element, target, gutter = true) {
+  var _a, _b, _c, _d;
+  if (element) {
+    const elementDimensions = element.offsetParent ? {
+      width: element.offsetWidth,
+      height: element.offsetHeight
+    } : getHiddenElementDimensions(element);
+    const targetHeight = target.offsetHeight;
+    const targetOffset = target.getBoundingClientRect();
+    const viewport = getViewport();
+    let top, left, origin = "top";
+    if (targetOffset.top + targetHeight + elementDimensions.height > viewport.height) {
+      top = -1 * elementDimensions.height;
+      origin = "bottom";
+      if (targetOffset.top + top < 0) {
+        top = -1 * targetOffset.top;
+      }
+    } else {
+      top = targetHeight;
+    }
+    if (elementDimensions.width > viewport.width) {
+      left = targetOffset.left * -1;
+    } else if (targetOffset.left + elementDimensions.width > viewport.width) {
+      left = (targetOffset.left + elementDimensions.width - viewport.width) * -1;
+    } else {
+      left = 0;
+    }
+    element.style.top = top + "px";
+    element.style.left = left + "px";
+    element.style.transformOrigin = origin;
+    gutter && (element.style.marginTop = origin === "bottom" ? `calc(${(_b = (_a = getCSSVariableByRegex(/-anchor-gutter$/)) == null ? void 0 : _a.value) != null ? _b : "2px"} * -1)` : (_d = (_c = getCSSVariableByRegex(/-anchor-gutter$/)) == null ? void 0 : _c.value) != null ? _d : "");
+  }
 }
 function isElement(element) {
   return typeof HTMLElement === "object" ? element instanceof HTMLElement : element && typeof element === "object" && element !== null && element.nodeType === 1 && typeof element.nodeName === "string";
@@ -252,6 +342,20 @@ function getParentNode(element) {
     return parent;
   }
   return null;
+}
+function getIndex(element) {
+  var _a;
+  if (element) {
+    let children = (_a = getParentNode(element)) == null ? void 0 : _a.childNodes;
+    let num = 0;
+    if (children) {
+      for (let i = 0; i < children.length; i++) {
+        if (children[i] === element) return num;
+        if (children[i].nodeType === 1) num++;
+      }
+    }
+  }
+  return -1;
 }
 function getLastFocusableElement(element, selector) {
   const focusableElements = getFocusableElements(element, selector);
@@ -1332,17 +1436,22 @@ export {
   getViewport,
   getWindowScrollLeft,
   getWindowScrollTop,
+  absolutePosition,
+  addStyle,
   getOuterWidth,
+  relativePosition,
   appendChild,
   setAttributes,
   createElement,
   fadeIn,
+  find,
   findSingle,
   focus,
   getAttribute,
   getFocusableElements,
   getFirstFocusableElement,
   getHeight,
+  getIndex,
   getLastFocusableElement,
   getOffset,
   getOuterHeight,
@@ -1373,4 +1482,4 @@ export {
   TranslationKeys,
   TreeDragDropService
 };
-//# sourceMappingURL=chunk-RIZQVJJP.js.map
+//# sourceMappingURL=chunk-2AAXY5LZ.js.map

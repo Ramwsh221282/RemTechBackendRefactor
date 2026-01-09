@@ -3,12 +3,18 @@ import {IdentityApiService} from '../api/identity-module/identity-api-service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {tap} from 'rxjs';
 import {TypedEnvelope} from '../api/envelope';
-import {AccountResponse} from '../api/identity-module/identity-responses';
+import {AccountPermissionsResponse, AccountResponse} from '../api/identity-module/identity-responses';
 
 export type UserAccountPermissions = {
   Name: string;
   Description: string;
   Id: string;
+}
+
+export const UserAccountPermissionsFromAccountResponse = (account: AccountResponse): UserAccountPermissions[] => {
+  return account.Permissions.map((p: AccountPermissionsResponse): UserAccountPermissions => {
+    return { Id: p.Id, Name: p.Name, Description: p.Description }
+  })
 }
 
 @Injectable({

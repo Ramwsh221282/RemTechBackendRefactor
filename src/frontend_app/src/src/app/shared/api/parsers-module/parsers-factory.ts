@@ -20,3 +20,7 @@ export const DefaultParserResponse = (): ParserResponse => {
 export const DefaultParserLinkResponse = (): ParserLinkResponse => {
   return { Id: '', IsActive: false, UrlName: '', UrlValue: '' }
 }
+
+export const NewParserLink = (name: string, url: string): ParserLinkResponse => {
+  return { Id: '', IsActive: true, UrlName: name, UrlValue: url }
+}

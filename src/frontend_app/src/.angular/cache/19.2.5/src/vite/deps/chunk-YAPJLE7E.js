@@ -89,6 +89,14 @@ function equals(obj1, obj2, field) {
   if (field) return resolveFieldData(obj1, field) === resolveFieldData(obj2, field);
   else return deepEquals(obj1, obj2);
 }
+function contains(value, list) {
+  if (value != null && list && list.length) {
+    for (let val of list) {
+      if (equals(value, val)) return true;
+    }
+  }
+  return false;
+}
 function findLastIndex(arr, callback) {
   let index = -1;
   if (isNotEmpty(arr)) {
@@ -119,6 +127,9 @@ function getKeyValue(obj, key = "", params = {}) {
 }
 function isArray(value, empty = true) {
   return Array.isArray(value) && (empty || value.length !== 0);
+}
+function isDate(value) {
+  return value instanceof Date && value.constructor === Date;
 }
 function isNumber(value) {
   return isNotEmpty(value) && !isNaN(value);
@@ -246,17 +257,20 @@ function EventBus() {
 }
 
 export {
+  EventBus,
   isEmpty,
   deepEquals,
   isNotEmpty,
   resolveFieldData,
   equals,
+  contains,
   findLastIndex,
   isObject,
   resolve,
   isString,
   getKeyValue,
   isArray,
+  isDate,
   isNumber,
   isPrintableCharacter,
   matchRegex,
@@ -264,7 +278,6 @@ export {
   minifyCSS,
   removeAccents,
   toKebabCase,
-  toTokenKey,
-  EventBus
+  toTokenKey
 };
-//# sourceMappingURL=chunk-E6QADRMR.js.map
+//# sourceMappingURL=chunk-YAPJLE7E.js.map

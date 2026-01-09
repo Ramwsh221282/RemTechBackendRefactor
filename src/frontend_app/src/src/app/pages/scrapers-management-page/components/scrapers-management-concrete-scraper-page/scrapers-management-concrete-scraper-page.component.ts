@@ -34,9 +34,11 @@ import { InstantlyEnabledParserResponse } from '../scrapers-management-settings-
 import { MessageServiceUtils } from '../../../../shared/utils/message-service-utils';
 import { Toast } from 'primeng/toast';
 import {ParsersControlApiService} from '../../../../shared/api/parsers-module/parsers-control-api.service';
-import {map, Observable, switchMap, tap} from 'rxjs';
+import {catchError, EMPTY, map, Observable, switchMap, tap, throwError} from 'rxjs';
 import {TypedEnvelope} from '../../../../shared/api/envelope';
 import {ParserLinkResponse, ParserResponse} from '../../../../shared/api/parsers-module/parsers-responses';
+import {ScraperHeaderComponent} from './components/scraper-header/scraper-header.component';
+import {ScraperLastRunStartedComponent} from './components/scraper-last-run-started/scraper-last-run-started.component';
 
 @Component({
   selector: 'app-scrapers-management-concrete-scraper-page',
@@ -56,6 +58,8 @@ import {ParserLinkResponse, ParserResponse} from '../../../../shared/api/parsers
     ScraperEditLinkDialogComponent,
     NgIf,
     Toast,
+    ScraperHeaderComponent,
+    ScraperLastRunStartedComponent,
   ],
   templateUrl: './scrapers-management-concrete-scraper-page.component.html',
   styleUrl: './scrapers-management-concrete-scraper-page.component.scss',
@@ -84,21 +88,101 @@ export class ScrapersManagementConcreteScraperPageComponent {
     });
   }
 
+  public onWaitDaysChange(days: number): void {
+    const current: ParserResponse | null = this._scraper();
+    if (current) this.updateParserWaitDays(current, days);
+  }
+
+  public onLinksAddConfirmed(links: ParserLinkResponse[]): void {
+    const current: ParserResponse | null = this._scraper();
+    if (current) this.addLinksToParser(current, links);
+  }
+
+  public onLinkActivitySwitch(switch$: { link: ParserLinkResponse, activity: boolean }): void {
+    const current: ParserResponse | null = this._scraper();
+    if (current) this.updateLinkActivity(current, switch$.link, switch$.activity)
+  }
+
   private fetchParserInfo(): void {
     this._activatedRoute.params
       .pipe(
         takeUntilDestroyed(this._destroyRef),
-        map((parameters: Params) => {
-          const id: string = parameters['id'] as string;
-          return id;
+        map((parameters: Params) => parameters['id'] as string),
+        switchMap((id: string): Observable<TypedEnvelope<ParserResponse>> => this._service.fetchParser(id)),
+        tap((response: TypedEnvelope<ParserResponse>): void => this._scraper.set(response.body ?? null)),
+        catchError((error: HttpErrorResponse): Observable<never> => throwError((): HttpErrorResponse => error))
+      ).subscribe();
+  }
+
+  private addLinksToParser(parser: ParserResponse, links: ParserLinkResponse[]): void {
+    const parserId: string = parser.Id;
+    const linksPayload: { name: string, url: string }[] = links.map((l): { name: string, url: string } => ({ name: l.UrlName, url: l.UrlValue }));
+    this._service.addLinksToParser(parserId, linksPayload)
+      .pipe(
+        takeUntilDestroyed(this._destroyRef),
+        map((response: TypedEnvelope<ParserLinkResponse[]>) => {
+          const current: ParserLinkResponse[] = [...parser.Links];
+          if (response.body) return { addedItems: [...response.body, ...current], added: response.body.length };
+          return { addedItems: current, added: 0 };
         }),
-        switchMap((id: string): Observable<TypedEnvelope<ParserResponse>> => this._service.fetchParser(id))
-      )
-      .subscribe({
-        next: (response: TypedEnvelope<ParserResponse>): void => {
-          if (response.body) this._scraper.set(response.body);
-        }
-      });
+        tap((values): void => {
+          const message: string = `Добавлено ${values.added} новых ссылок.`
+          MessageServiceUtils.showSuccess(this._messageService, message);
+          this._scraper.update((scraper: ParserResponse | null): ParserResponse | null => scraper ? { ...scraper, Links: values.addedItems } : null);
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message as string;
+          MessageServiceUtils.showError(this._messageService, message);
+          return EMPTY;
+        })
+      ).subscribe()
+  }
+
+  private updateLinkActivity(parser: ParserResponse, link: ParserLinkResponse, activity: boolean): void {
+    const parserId: string = parser.Id;
+    const linkId: string = link.Id;
+    const linkIndex: number = parser.Links.findIndex((l: ParserLinkResponse): boolean => l.Id === linkId);
+    if (linkIndex < 0) return;
+    this._service.changeLinkActivity(parserId, linkId, activity)
+      .pipe(
+        takeUntilDestroyed(this._destroyRef),
+        map((response: TypedEnvelope<ParserLinkResponse>): ParserLinkResponse[] => {
+          const current: ParserLinkResponse[] = [...parser.Links];
+          if (response.body) {
+            current[linkIndex] = response.body;
+          }
+          return current;
+        }),
+        tap((updated: ParserLinkResponse[]): void => {
+          MessageServiceUtils.showSuccess(this._messageService, `Активность ссылки ${link.UrlName} изменена на ${activity ? 'Активна' : 'Неактивна'}`);
+          this._scraper.update((scraper: ParserResponse | null): ParserResponse | null => scraper ? { ...scraper, Links: updated } : null);
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message as string;
+          MessageServiceUtils.showError(this._messageService, message);
+          return EMPTY;
+        })
+      ).subscribe();
+  }
+
+  private updateParserWaitDays(parser: ParserResponse, days: number): void {
+    this._service.changeWaitDays(parser.Id, days)
+      .pipe(
+        takeUntilDestroyed(this._destroyRef),
+        map((response: TypedEnvelope<ParserResponse>): ParserResponse | null | undefined => response.body),
+        tap((updated: ParserResponse | null | undefined): void => {
+          if (updated) {
+            const message = `Изменено число дней ожидания на ${updated.WaitDays}`;
+            MessageServiceUtils.showSuccess(this._messageService, message);
+            this._scraper.set(updated);
+          }
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message as string;
+          MessageServiceUtils.showError(this._messageService, message);
+          return EMPTY;
+        })
+      ).subscribe();
   }
 
   public instantlyEnableClick(): void {

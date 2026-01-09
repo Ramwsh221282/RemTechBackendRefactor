@@ -30,44 +30,23 @@ import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module
   providers: [MessageService],
 })
 export class ScraperWaitDaysSelectComponent implements OnInit {
-  constructor(
-    private readonly _messageService: MessageService,
-    private readonly _service: VehicleScrapersService,
-  ) {
+  constructor() {
     this._scraper = signal(DefaultParserResponse());
     this._scraperWaitDays = signal([]);
+    this.waitDaysSelected = new EventEmitter<number>();
   }
 
-  @Output() parserChanged: EventEmitter<ParserResponse> = new EventEmitter<ParserResponse>();
+  @Output() waitDaysSelected: EventEmitter<number>;
   @Input({ required: true }) set scraper_setter(value: ParserResponse) {
     this._scraper.set(value);
   }
 
   private readonly _scraper: WritableSignal<ParserResponse>;
   private readonly _scraperWaitDays: WritableSignal<number[]>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
 
   public onSelect($event: SelectChangeEvent): void {
-    // const waitDays: number = $event.value as number;
-    // const current: ParserResponse = this._scraper();
-    // this._service
-    //   .changeWaitDays(current, { newWaitDays: waitDays })
-    //   .pipe(takeUntilDestroyed(this._destroyRef))
-    //   .subscribe({
-    //     next: (data: ParserWaitDaysUpdateResult): void => {
-    //       current.waitDays = data.newWaitDays;
-    //       current.nextRun = data.nextRun;
-    //       this.parserChanged.emit(current);
-    //       MessageServiceUtils.showSuccess(
-    //         this._messageService,
-    //         `Изменено время ожидания парсера ${current.name} ${current.type} на ${data.newWaitDays}`,
-    //       );
-    //     },
-    //     error: (err: HttpErrorResponse): void => {
-    //       const message = err.error.message as string;
-    //       MessageServiceUtils.showError(this._messageService, message);
-    //     },
-    //   });
+    const waitDays: number = $event.value as number;
+    this.waitDaysSelected.emit(waitDays);
   }
 
   public ngOnInit(): void {

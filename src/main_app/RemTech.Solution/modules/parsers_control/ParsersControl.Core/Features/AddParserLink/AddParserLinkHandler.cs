@@ -16,6 +16,7 @@ public sealed class AddParserLinkHandler(ISubscribedParsersRepository repository
         AddParserLinkCommand command, 
         CancellationToken ct = default)
     {
+        if (!command.Links.Any()) return Error.Validation("Ссылки не указаны.");
         Result<SubscribedParser> parser = await GetRequiredParser(command.ParserId, ct);
         Result<IEnumerable<SubscribedParserLink>> links = AddLinks(parser, command.Links);
         return await SaveChanges(links, parser, ct).Map(() => links.Value);

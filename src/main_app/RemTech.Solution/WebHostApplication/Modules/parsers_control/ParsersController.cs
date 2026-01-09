@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using ParsersControl.Core.Features.AddParserLink;
+using ParsersControl.Core.Features.ChangeLinkActivity;
+using ParsersControl.Core.Features.ChangeWaitDays;
 using ParsersControl.Core.Features.EnableParser;
 using ParsersControl.Core.Features.PermantlyDisableManyParsing;
 using ParsersControl.Core.Features.PermantlyDisableParsing;
@@ -38,6 +40,20 @@ public sealed class ParsersController : ControllerBase
         return result.AsTypedEnvelope(ParserResponse.Create);
     }
 
+    [VerifyToken]
+    [ParserManagementPermission]
+    [HttpPatch("{id:guid}/wait-days")]
+    public async Task<Envelope> ChangeWaitDays(
+        [FromRoute(Name = "id")] Guid id,
+        [FromQuery(Name = "value")] int value,
+        [FromServices] ICommandHandler<ChangeWaitDaysCommand, SubscribedParser> handler,
+        CancellationToken ct)
+    {
+        ChangeWaitDaysCommand command = new(id, value);
+        Result<SubscribedParser> result = await handler.Execute(command, ct);
+        return result.AsTypedEnvelope(ParserResponse.Create);
+    }
+    
     [VerifyToken]
     [ParserManagementPermission]
     [HttpGet]
@@ -133,15 +149,17 @@ public sealed class ParsersController : ControllerBase
     
     [VerifyToken]
     [ParserManagementPermission]
-    [HttpPatch("{id:guid}/enable")]
+    [HttpPatch("{id:guid}/links/{linkId:guid}/activity")]
     public async Task<Envelope> ChangeParserActivity(
         [FromRoute(Name = "id")] Guid id,
-        [FromServices] ICommandHandler<EnableParserCommand, SubscribedParser> handler,
+        [FromRoute(Name = "linkId")] Guid linkId,
+        [FromQuery(Name = "value")] bool value,
+        [FromServices] ICommandHandler<ChangeLinkActivityCommand, SubscribedParserLink> handler,
         CancellationToken ct)
     {
-        EnableParserCommand command = new(Id: id);
-        Result<SubscribedParser> result = await handler.Execute(command, ct);
-        return result.AsTypedEnvelope(ParserResponse.Create);
+        ChangeLinkActivityCommand command = new(id, linkId, value);
+        Result<SubscribedParserLink> result = await handler.Execute(command, ct);
+        return result.AsTypedEnvelope(ParserLinkResponse.Create);
     }
     
     [VerifyToken]

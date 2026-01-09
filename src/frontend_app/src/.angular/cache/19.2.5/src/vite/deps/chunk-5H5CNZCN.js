@@ -228,6 +228,11 @@ var ObjectUtils = class _ObjectUtils {
     return typeof value === "string" && (empty || value !== "");
   }
 };
+var lastId = 0;
+function UniqueComponentId(prefix = "pn_id_") {
+  lastId++;
+  return `${prefix}${lastId}`;
+}
 function ZIndexUtils() {
   let zIndexes = [];
   const generateZIndex = (key, baseZIndex) => {
@@ -276,7 +281,8 @@ var transformToBoolean = (value) => {
 
 export {
   ObjectUtils,
+  UniqueComponentId,
   zindexutils,
   transformToBoolean
 };
-//# sourceMappingURL=chunk-GSAG6XWH.js.map
+//# sourceMappingURL=chunk-5H5CNZCN.js.map
