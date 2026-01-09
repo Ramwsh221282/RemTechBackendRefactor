@@ -1,28 +1,30 @@
 import { Component, Input, signal, WritableSignal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import {DatePipe, NgIf} from '@angular/common';
 import { Scraper } from '../../../scrapers-management-settings-page/types/Scraper';
 import { VehicleScrapersService } from '../../../scrapers-management-settings-page/services/vehicle-scrapers.service';
 import { Toast } from 'primeng/toast';
+import {ParserResponse} from '../../../../../../shared/api/parsers-module/parsers-responses';
+import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module/parsers-factory';
 
 @Component({
   selector: 'app-scraper-last-run-info',
-  imports: [DatePipe],
+  imports: [DatePipe, NgIf],
   templateUrl: './scraper-last-run-info.component.html',
   styleUrl: './scraper-last-run-info.component.scss',
 })
 export class ScraperLastRunInfoComponent {
-  @Input({ required: true }) set scraper_setter(value: Scraper) {
+  @Input({ required: true }) set scraper_setter(value: ParserResponse) {
     this._scraper.set(value);
   }
 
-  private readonly _scraper: WritableSignal<Scraper>;
+  private readonly _scraper: WritableSignal<ParserResponse>;
 
   constructor() {
-    this._scraper = signal(VehicleScrapersService.defaultScraper());
+    this._scraper = signal(DefaultParserResponse());
   }
 
-  public get lastRunDate(): Date {
-    return this._scraper().lastRun;
+  public get lastRunDate(): Date | null | undefined {
+    return this._scraper().FinishedAt;
   }
 
   public click(): void {}

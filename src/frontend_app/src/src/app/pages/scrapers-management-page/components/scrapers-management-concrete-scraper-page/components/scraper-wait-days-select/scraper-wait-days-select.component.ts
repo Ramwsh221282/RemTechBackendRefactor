@@ -19,6 +19,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ParserWaitDaysUpdateResult } from '../../../scrapers-management-settings-page/types/ParserWaitDaysUpdateResult';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessageServiceUtils } from '../../../../../../shared/utils/message-service-utils';
+import {ParserResponse} from '../../../../../../shared/api/parsers-module/parsers-responses';
+import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module/parsers-factory';
 
 @Component({
   selector: 'app-scraper-wait-days-select',
@@ -28,45 +30,44 @@ import { MessageServiceUtils } from '../../../../../../shared/utils/message-serv
   providers: [MessageService],
 })
 export class ScraperWaitDaysSelectComponent implements OnInit {
-  @Output() parserChanged: EventEmitter<Scraper> = new EventEmitter<Scraper>();
-  @Input({ required: true }) set scraper_setter(value: Scraper) {
-    this._scraper.set(value);
-  }
-
-  private readonly _scraper: WritableSignal<Scraper>;
-  private readonly _scraperWaitDays: WritableSignal<number[]>;
-  private readonly _messageService: MessageService;
-  private readonly _service: VehicleScrapersService;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-
-  constructor(messageService: MessageService, service: VehicleScrapersService) {
-    this._messageService = messageService;
-    this._service = service;
-    this._scraper = signal(VehicleScrapersService.defaultScraper());
+  constructor(
+    private readonly _messageService: MessageService,
+    private readonly _service: VehicleScrapersService,
+  ) {
+    this._scraper = signal(DefaultParserResponse());
     this._scraperWaitDays = signal([]);
   }
 
+  @Output() parserChanged: EventEmitter<ParserResponse> = new EventEmitter<ParserResponse>();
+  @Input({ required: true }) set scraper_setter(value: ParserResponse) {
+    this._scraper.set(value);
+  }
+
+  private readonly _scraper: WritableSignal<ParserResponse>;
+  private readonly _scraperWaitDays: WritableSignal<number[]>;
+  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
+
   public onSelect($event: SelectChangeEvent): void {
-    const waitDays: number = $event.value as number;
-    const current: Scraper = this._scraper();
-    this._service
-      .changeWaitDays(current, { newWaitDays: waitDays })
-      .pipe(takeUntilDestroyed(this._destroyRef))
-      .subscribe({
-        next: (data: ParserWaitDaysUpdateResult): void => {
-          current.waitDays = data.newWaitDays;
-          current.nextRun = data.nextRun;
-          this.parserChanged.emit(current);
-          MessageServiceUtils.showSuccess(
-            this._messageService,
-            `Изменено время ожидания парсера ${current.name} ${current.type} на ${data.newWaitDays}`,
-          );
-        },
-        error: (err: HttpErrorResponse): void => {
-          const message = err.error.message as string;
-          MessageServiceUtils.showError(this._messageService, message);
-        },
-      });
+    // const waitDays: number = $event.value as number;
+    // const current: ParserResponse = this._scraper();
+    // this._service
+    //   .changeWaitDays(current, { newWaitDays: waitDays })
+    //   .pipe(takeUntilDestroyed(this._destroyRef))
+    //   .subscribe({
+    //     next: (data: ParserWaitDaysUpdateResult): void => {
+    //       current.waitDays = data.newWaitDays;
+    //       current.nextRun = data.nextRun;
+    //       this.parserChanged.emit(current);
+    //       MessageServiceUtils.showSuccess(
+    //         this._messageService,
+    //         `Изменено время ожидания парсера ${current.name} ${current.type} на ${data.newWaitDays}`,
+    //       );
+    //     },
+    //     error: (err: HttpErrorResponse): void => {
+    //       const message = err.error.message as string;
+    //       MessageServiceUtils.showError(this._messageService, message);
+    //     },
+    //   });
   }
 
   public ngOnInit(): void {
@@ -77,7 +78,7 @@ export class ScraperWaitDaysSelectComponent implements OnInit {
     return this._scraperWaitDays();
   }
 
-  public get currentWaitDays(): number {
-    return this._scraper().waitDays;
+  public get currentWaitDays(): number | null | undefined {
+    return this._scraper().WaitDays;
   }
 }

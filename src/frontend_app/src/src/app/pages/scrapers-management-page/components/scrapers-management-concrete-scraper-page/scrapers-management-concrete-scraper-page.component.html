@@ -1,35 +1,35 @@
-<div class="p-6 space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+<div *ngIf="!!_scraper()" class="p-6 space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
   <div class="flex items-center justify-between flex-wrap gap-4">
+
     <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-      {{ scraper.name }}
-      <span class="text-xl font-medium text-gray-500 dark:text-gray-400 ml-2">{{ scraper.type }}</span>
+      {{ _scraper()!.Domain + ' ' + _scraper()!.ServiceType }}
+      <span class="text-xl font-medium text-gray-500 dark:text-gray-400 ml-2">{{ _scraper()!.ServiceType }}</span>
     </h1>
 
     <div class="flex items-center gap-2 flex-wrap">
-      <app-scraper-state-select [scraper_setter]="scraper"/>
-      <app-scraper-activate-button (onParserStateChange)="acceptScraperChangedState($event)"
-                                   [scraper_setter]="scraper"/>
-      <app-scraper-deactivate-button (scraperDeactivated)="acceptScraperChangedState($event)"
-                                     [scraper_setter]="scraper"/>
+      <app-scraper-state-select [scraper_setter]="_scraper()!"/>
+      <app-scraper-activate-button [scraper_setter]="_scraper()!"/>
+      <app-scraper-deactivate-button [scraper_setter]="_scraper()!"/>
     </div>
+
   </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
     <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
-      <app-scraper-domain-info [scraper_setter]="scraper"/>
+      <app-scraper-domain-info [scraper_setter]="_scraper()!"/>
     </div>
     <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
-      <app-scraper-last-run-info [scraper_setter]="scraper"/>
+      <app-scraper-last-run-info [scraper_setter]="_scraper()!"/>
     </div>
     <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
-      <app-scraper-next-run-info [scraper_setter]="scraper"/>
+      <app-scraper-next-run-info [scraper_setter]="_scraper()!"/>
       <div class="mt-2">
         <label for="waitDaysSelect" class="text-xs text-gray-500 dark:text-gray-400">Дней ожидания:</label>
-        <app-scraper-wait-days-select (parserChanged)="acceptScraperChangedState($event)" [scraper_setter]="scraper"/>
+        <app-scraper-wait-days-select [scraper_setter]="_scraper()!"/>
       </div>
     </div>
     <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
-      <app-scraper-processed-amount [scraper_setter]="scraper"/>
+      <app-scraper-processed-amount [scraper_setter]="_scraper()!"/>
     </div>
   </div>
   <label (click)="instantlyEnableClick()" class="hover: underline cursor-pointer text-lg">Включить немедленно</label>
@@ -42,29 +42,28 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        <app-scraper-elapsed-time [scraper_setter]="scraper"/>
+        <app-scraper-elapsed-time [scraper_setter]="_scraper()!"/>
       </div>
     </div>
   </div>
 
   <div class="space-y-4">
-    <app-scraper-links-list [scraper_setter]="scraper" (onLinkRemoved)="acceptScraperChangedState($event)"
+    <app-scraper-links-list [scraper_setter]="_scraper()!"
                             (onLinkEditChange)="acceptLinkEditClick($event)"
-                            (linkToEditSelect)="acceptLinkToEdit($event)"
-                            (linkActivityChanged)="acceptScraperChangedState($event)"
-                            (onLinkCreateChange)="acceptCreatingLink($event)" [scraper_links_setter]="scraper.links"/>
+                            (onLinkCreateChange)="acceptCreatingLink($event)" [scraper_links_setter]="_scraper()!.Links"/>
   </div>
 </div>
 
 <app-scraper-add-link-dialog [visbility_setter]="isCreatingLink"
-
-                             (onLinkAdd)="acceptScraperChangedState($event)"
-                             [scraper_setter]="scraper"
+                             [scraper_setter]="_scraper()!"
                              (visibilityChange)="acceptCreatingLink($event)"/>
-<app-scraper-edit-link-dialog *ngIf="scraperLinkToEdit" (onSave)="acceptScraperChangedState($event)"
+
+<app-scraper-edit-link-dialog *ngIf="scraperLinkToEdit"
+                              (onSave)="acceptScraperChangedState($event)"
                               (onDialogClose)="onEditClose()"
-                              [visibility_setter]="isEditingLink" [scraper_setter]="scraper"
-                              [scraper_link_setter]="scraperLinkToEdit"/>
+                              [visibility_setter]="isEditingLink" [scraper_setter]="_scraper()!"
+                              [scraper_link_setter]="scraperLinkToEdit!"/>
+
 <p-toast [position]="'bottom-right'"/>
 
 
