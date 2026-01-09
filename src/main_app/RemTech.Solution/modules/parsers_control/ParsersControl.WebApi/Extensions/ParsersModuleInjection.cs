@@ -5,6 +5,7 @@ using ParsersControl.Infrastructure.Listeners;
 using ParsersControl.Infrastructure.Migrations;
 using ParsersControl.Infrastructure.Parsers.CacheInvalidators;
 using ParsersControl.Infrastructure.Parsers.Commands.SubscribeParser;
+using ParsersControl.Infrastructure.Parsers.Queries.GetParser;
 using ParsersControl.Infrastructure.Parsers.Queries.GetParsers;
 using ParsersControl.Infrastructure.Parsers.Repository;
 using RemTech.SharedKernel.Configurations;
@@ -75,6 +76,7 @@ public static class ParsersModuleInjection
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
             services.AddScoped<CachedParserArrayInvalidator>();
+            services.AddScoped<ParserCacheRecordInvalidator>();
         }
 
         private void AddQueryHandlers()
@@ -89,6 +91,7 @@ public static class ParsersModuleInjection
         private void UseCachedQueryHandlers()
         {
             services.Decorate(typeof(IQueryHandler<GetParsersQuery, IEnumerable<ParserResponse>>), typeof(GetParsersCachedQueryHandler));
+            services.Decorate(typeof(IQueryHandler<GetParserQuery, ParserResponse?>), typeof(GetParserCachedQueryHandler));
         }
         
         private void AddEventListeners()

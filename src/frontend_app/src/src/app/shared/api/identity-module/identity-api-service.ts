@@ -36,9 +36,27 @@ export class IdentityApiService {
   }
 
   fetchAccount(): Observable<TypedEnvelope<AccountResponse>> {
-    if (this._fetchAccountInProgress && this._fetch$) {
-      return this._fetch$;
-    }
+    if (this.fetchAccountInProgress())
+      return this._fetch$!;
+    return this.startFetchingAccount();
+  }
+
+  refreshToken(): Observable<Envelope> {
+    if (this.refreshTokenInProgress())
+      return this._refresh$!;
+    return this.startRefreshingToken();
+  }
+
+  signUp(password: string, email: string, login: string): Observable<Envelope> {
+    const payload: RegisterAccountRequest = { password: password, email: email, login: login };
+    return this._httpClient.post<Envelope>(`${this._url}/sign-up`, payload);
+  }
+
+  verifyToken(): Observable<Envelope> {
+    return this._httpClient.post<Envelope>(`${this._url}/verify`, null, { withCredentials: true });
+  }
+
+  private startFetchingAccount(): Observable<TypedEnvelope<AccountResponse>> {
     this._fetchAccountInProgress = true;
     this._fetch$ = this._httpClient.get<TypedEnvelope<AccountResponse>>(`${this._url}/account`, { withCredentials: true })
       .pipe(shareReplay(1), finalize(() => {
@@ -48,18 +66,7 @@ export class IdentityApiService {
     return this._fetch$;
   }
 
-  // refreshToken(accessToken: string, refreshToken: string): Observable<Envelope> {
-  //   const headers: HttpHeaders = new HttpHeaders()
-  //     .set('access_token', accessToken)
-  //     .set('refresh_token', refreshToken);
-  //   return this._httpClient.put<Envelope>(`${this._url}/refresh`, null, { headers, withCredentials: true });
-  // }
-
-  refreshToken(): Observable<Envelope> {
-    if (this._refreshInProgress && this._refresh$) {
-      return this._refresh$;
-    }
-
+  private startRefreshingToken(): Observable<Envelope> {
     this._refreshInProgress = true;
     this._refresh$ = this._httpClient.put<Envelope>(`${this._url}/refresh`, null, { withCredentials: true })
       .pipe(shareReplay(1), finalize(() => {
@@ -69,17 +76,11 @@ export class IdentityApiService {
     return this._refresh$;
   }
 
-  signUp(password: string, email: string, login: string): Observable<Envelope> {
-    const payload: RegisterAccountRequest = { password: password, email: email, login: login };
-    return this._httpClient.post<Envelope>(`${this._url}/sign-up`, payload);
+  private fetchAccountInProgress(): boolean {
+    return this._fetchAccountInProgress && !!this._fetch$;
   }
 
-  // verifyToken(accessToken: string): Observable<Envelope> {
-  //   const headers: HttpHeaders = new HttpHeaders().set('access_token', accessToken);
-  //   return this._httpClient.post<Envelope>(`${this._url}/verify`, null, { headers, withCredentials: true });
-  // }
-
-  verifyToken(): Observable<Envelope> {
-    return this._httpClient.post<Envelope>(`${this._url}/verify`, null, { withCredentials: true });
+  private refreshTokenInProgress(): boolean {
+    return this._refreshInProgress && !!this._refresh$;
   }
 }

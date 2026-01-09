@@ -5,10 +5,20 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace ParsersControl.Infrastructure.Parsers.Commands.AddParserLink;
 
-public sealed class AddParserLinkCacheInvalidator(CachedParserArrayInvalidator invalidator) : ICacheInvalidator<AddParserLinkCommand, IEnumerable<SubscribedParserLink>>
+public sealed class AddParserLinkCacheInvalidator(
+    CachedParserArrayInvalidator invalidator,
+    ParserCacheRecordInvalidator cacheRecordInvalidator) : ICacheInvalidator<AddParserLinkCommand, IEnumerable<SubscribedParserLink>>
 {
     public async Task InvalidateCache(
-        AddParserLinkCommand command, 
-        IEnumerable<SubscribedParserLink> result, CancellationToken ct = default) =>
-        await invalidator.Invalidate(ct);
+        AddParserLinkCommand command,
+        IEnumerable<SubscribedParserLink> result, CancellationToken ct = default)
+    {
+        Task[] tasks = 
+        [
+            invalidator.Invalidate(ct), 
+            cacheRecordInvalidator.Invalidate(command.ParserId, ct)
+        ];
+        
+        await Task.WhenAll(tasks);
+    }
 }

@@ -5,11 +5,22 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace ParsersControl.Infrastructure.Parsers.Commands.EditLinkUrlInfo;
 
-public sealed class EditLinkUrlInfoCacheInvalidator(CachedParserArrayInvalidator invalidator) : ICacheInvalidator<EditLinkUrlInfoCommand, SubscribedParserLink>
+public sealed class EditLinkUrlInfoCacheInvalidator(
+    CachedParserArrayInvalidator arrayInvalidator,
+    ParserCacheRecordInvalidator recordInvalidator)
+    : ICacheInvalidator<EditLinkUrlInfoCommand, SubscribedParserLink>
 {
     public async Task InvalidateCache(
-        EditLinkUrlInfoCommand command, 
+        EditLinkUrlInfoCommand command,
         SubscribedParserLink result,
-        CancellationToken ct = default) =>
-        await invalidator.Invalidate(ct);
+        CancellationToken ct = default)
+    {
+        Task[] tasks = 
+            [
+                arrayInvalidator.Invalidate(ct),
+                recordInvalidator.Invalidate(command.ParserId, ct)
+            ];
+        
+        await Task.WhenAll(tasks);
+    }
 }

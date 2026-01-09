@@ -5,12 +5,23 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace ParsersControl.Infrastructure.Parsers.Commands.SetWorkTime;
 
-public sealed class SetWorkTimeCacheInvalidator(CachedParserArrayInvalidator invalidator)
+public sealed class SetWorkTimeCacheInvalidator(
+    CachedParserArrayInvalidator arrayInvalidator,
+    ParserCacheRecordInvalidator recordInvalidator)
     : ICacheInvalidator<SetWorkTimeCommand, SubscribedParser>
 {
     public async Task InvalidateCache(
-        SetWorkTimeCommand command, 
+        SetWorkTimeCommand command,
         SubscribedParser result,
-        CancellationToken ct = default) =>
-        await invalidator.Invalidate(ct);    
+        CancellationToken ct = default)
+    {
+        Task[] tasks = 
+            [
+                arrayInvalidator.Invalidate(ct),
+                recordInvalidator.Invalidate(result, ct)
+            ];
+        
+        await Task.WhenAll(tasks);
+ 
+    }
 }

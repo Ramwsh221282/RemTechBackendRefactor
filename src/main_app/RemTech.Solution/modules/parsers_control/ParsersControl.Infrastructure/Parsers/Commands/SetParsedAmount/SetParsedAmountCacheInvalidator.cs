@@ -5,12 +5,22 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace ParsersControl.Infrastructure.Parsers.Commands.SetParsedAmount;
 
-public sealed class SetParsedAmountCacheInvalidator(CachedParserArrayInvalidator invalidator)
+public sealed class SetParsedAmountCacheInvalidator(
+    CachedParserArrayInvalidator arrayInvalidator,
+    ParserCacheRecordInvalidator recordInvalidator)
     : ICacheInvalidator<SetParsedAmountCommand, SubscribedParser>
 {
     public async Task InvalidateCache(
-        SetParsedAmountCommand command, 
+        SetParsedAmountCommand command,
         SubscribedParser result,
-        CancellationToken ct = default) =>
-        await invalidator.Invalidate(ct);
+        CancellationToken ct = default)
+    {
+        Task[] tasks = 
+            [
+                arrayInvalidator.Invalidate(ct),
+                recordInvalidator.Invalidate(result, ct)
+            ];
+        
+        await Task.WhenAll(tasks);
+    }
 }

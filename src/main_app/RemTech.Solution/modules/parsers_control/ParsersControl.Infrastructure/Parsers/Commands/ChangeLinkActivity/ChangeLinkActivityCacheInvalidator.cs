@@ -5,10 +5,21 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace ParsersControl.Infrastructure.Parsers.Commands.ChangeLinkActivity;
 
-public sealed class ChangeLinkActivityCacheInvalidator(CachedParserArrayInvalidator invalidator) : ICacheInvalidator<ChangeLinkActivityCommand, SubscribedParserLink>
+public sealed class ChangeLinkActivityCacheInvalidator(
+    CachedParserArrayInvalidator arrayInvalidator,
+    ParserCacheRecordInvalidator recordInvalidator) : ICacheInvalidator<ChangeLinkActivityCommand, SubscribedParserLink>
 {
     public async Task InvalidateCache(
-        ChangeLinkActivityCommand command, 
+        ChangeLinkActivityCommand command,
         SubscribedParserLink result,
-        CancellationToken ct = default) => await invalidator.Invalidate(ct);
+        CancellationToken ct = default)
+    {
+        Task[] tasks =
+        [
+            arrayInvalidator.Invalidate(ct),
+            recordInvalidator.Invalidate(command.ParserId, ct)
+        ];
+        
+        await Task.WhenAll(tasks);
+    }
 }

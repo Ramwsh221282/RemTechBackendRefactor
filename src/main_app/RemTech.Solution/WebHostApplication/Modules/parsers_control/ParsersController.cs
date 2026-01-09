@@ -10,12 +10,14 @@ using ParsersControl.Core.Features.StartParserWork;
 using ParsersControl.Core.Features.UpdateParserLinks;
 using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
+using ParsersControl.Infrastructure.Parsers.Queries.GetParser;
 using ParsersControl.Infrastructure.Parsers.Queries.GetParsers;
 using ParsersControl.WebApi.ResponseModels;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using WebHostApplication.ActionFilters.Attributes;
+using WebHostApplication.Common.Envelope;
 
 namespace WebHostApplication.Modules.parsers_control;
 
@@ -46,6 +48,19 @@ public sealed class ParsersController : ControllerBase
         GetParsersQuery query = new();
         IEnumerable<ParserResponse> parsers = await handler.Handle(query, ct);
         return new Envelope((int)HttpStatusCode.OK, parsers, null);
+    }
+
+    [VerifyToken]
+    [ParserManagementPermission]
+    [HttpGet("{id:guid}")]
+    public async Task<Envelope> GetParser(
+        [FromRoute(Name = "id")] Guid id,
+        [FromServices] IQueryHandler<GetParserQuery, ParserResponse?> handler,
+        CancellationToken ct)
+    {
+        GetParserQuery query = new(Id: id);
+        ParserResponse? parser = await handler.Handle(query, ct);
+        return parser.NotFoundOrOk($"Парсер с id: {id} не найден.");
     }
     
     [VerifyToken]
