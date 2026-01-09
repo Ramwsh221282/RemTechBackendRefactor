@@ -1,4 +1,4 @@
-import {HttpErrorResponse, HttpInterceptorFn} from '@angular/common/http';
+import {HttpErrorResponse, HttpInterceptorFn, HttpRequest} from '@angular/common/http';
 import {AuthenticationStatusService} from '../services/AuthenticationStatusService';
 import {inject} from '@angular/core';
 import {catchError, switchMap, tap, throwError} from 'rxjs';
@@ -13,7 +13,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const isVerifyRequest: boolean = req.url.includes('verify');
   const isRefreshRequest: boolean = req.url.includes('refresh');
-
+  const clonedRequest: HttpRequest<unknown> = req.clone({  withCredentials: true })
 
   return next(req).pipe(
     tap({
@@ -38,7 +38,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                     permissionsService.initializePermissions(mapPermissions(account.body));
                   }
                 }),
-                switchMap(() => next(req)) // Повторяем оригинальный запрос
+                switchMap(() => next(clonedRequest))
               );
             }),
             catchError(() => {
