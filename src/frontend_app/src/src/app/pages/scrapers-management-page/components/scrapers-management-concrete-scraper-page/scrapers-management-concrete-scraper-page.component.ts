@@ -88,6 +88,11 @@ export class ScrapersManagementConcreteScraperPageComponent {
     });
   }
 
+  public onLinkRemoveConfirmed(link: ParserLinkResponse): void {
+    const current: ParserResponse | null = this._scraper();
+    if (current) this.removeParserLink(current, link);
+  }
+
   public onWaitDaysChange(days: number): void {
     const current: ParserResponse | null = this._scraper();
     if (current) this.updateParserWaitDays(current, days);
@@ -148,9 +153,7 @@ export class ScrapersManagementConcreteScraperPageComponent {
         takeUntilDestroyed(this._destroyRef),
         map((response: TypedEnvelope<ParserLinkResponse>): ParserLinkResponse[] => {
           const current: ParserLinkResponse[] = [...parser.Links];
-          if (response.body) {
-            current[linkIndex] = response.body;
-          }
+          if (response.body) current[linkIndex] = response.body;
           return current;
         }),
         tap((updated: ParserLinkResponse[]): void => {
@@ -185,7 +188,31 @@ export class ScrapersManagementConcreteScraperPageComponent {
       ).subscribe();
   }
 
-  public instantlyEnableClick(): void {
+  private removeParserLink(parser: ParserResponse, link: ParserLinkResponse): void {
+    const parserId: string = parser.Id;
+    const linkId: string = link.Id;
+    this._service.removeLinkFromParser(parserId, linkId)
+      .pipe(
+        takeUntilDestroyed(this._destroyRef),
+        map((_: TypedEnvelope<ParserLinkResponse>): ParserLinkResponse[] => {
+          const current: ParserLinkResponse[] = [...parser.Links];
+          const index: number = current.findIndex((l: ParserLinkResponse): boolean => l.Id === linkId);
+          if (index >= 0) current.splice(index, 1);
+          return current;
+        }),
+        tap((updated: ParserLinkResponse[]): void => {
+          MessageServiceUtils.showSuccess(this._messageService, `Ссылка ${link.UrlName} удалена`);
+          this._scraper.update((scraper: ParserResponse | null): ParserResponse | null => scraper ? { ...scraper, Links: updated } : null);
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message as string;
+          MessageServiceUtils.showError(this._messageService, message);
+          return EMPTY;
+        })
+      ).subscribe();
+  }
+
+ public instantlyEnableClick(): void {
     // const current: Scraper = this._scraper();
     // this._service
     //   .enableInstantly(current)

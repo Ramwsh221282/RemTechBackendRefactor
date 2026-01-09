@@ -44,6 +44,7 @@
 
   <div class="space-y-4">
     <app-scraper-links-list [scraper_setter]="_scraper()!"
+                            (onLinkRemoveConfirmed)="onLinkRemoveConfirmed($event)"
                             (linkActivityChanged)="onLinkActivitySwitch($event)"
                             (onLinkEditChange)="acceptLinkEditClick($event)"
                             (onLinkCreateChange)="acceptCreatingLink($event)" [scraper_links_setter]="_scraper()!.Links"/>

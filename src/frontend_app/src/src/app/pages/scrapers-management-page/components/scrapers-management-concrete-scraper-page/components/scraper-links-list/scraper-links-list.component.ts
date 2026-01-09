@@ -40,7 +40,7 @@ export class ScraperLinksListComponent {
     this.scraper = signal(DefaultParserResponse());
     this.scraperLinks = signal([]);
     this.linkActivityChanged = new EventEmitter();
-    this.onLinkRemoved = new EventEmitter();
+    this.onLinkRemoveConfirmed = new EventEmitter();
     this.linkToEditSelect = new EventEmitter();
     this.onLinkCreateChange = new EventEmitter();
     this.onLinkEditChange = new EventEmitter();
@@ -55,14 +55,13 @@ export class ScraperLinksListComponent {
   }
 
   @Output() linkActivityChanged: EventEmitter<{ link: ParserLinkResponse, activity: boolean }>;
-  @Output() onLinkRemoved: EventEmitter<ParserResponse>;
+  @Output() onLinkRemoveConfirmed: EventEmitter<ParserLinkResponse>;
   @Output() linkToEditSelect: EventEmitter<ParserLinkResponse>;
   @Output() onLinkCreateChange: EventEmitter<boolean>;
   @Output() onLinkEditChange: EventEmitter<boolean>;
 
   readonly scraperLinks: WritableSignal<ParserLinkResponse[]>;
   readonly scraper: WritableSignal<ParserResponse>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
 
   public click(): void {
     this.onLinkCreateChange.emit(true);
@@ -78,75 +77,26 @@ export class ScraperLinksListComponent {
     this.linkActivityChanged.emit({ link: link, activity: otherValue })
   }
 
-  public changeLinkActivity(link: ScraperLink): void {
-    // const scraper: Scraper = this._scraper();
-    // const indexOfLink: number = scraper.links.findIndex(
-    //   (l: ScraperLink): boolean => l.name === link.name && l.url === link.url,
-    // );
-    // const oppositeActivity: boolean = !link.activity;
-    // this._service
-    //   .changeLinkActivity(link, { activity: oppositeActivity })
-    //   .pipe(takeUntilDestroyed(this._destroyRef))
-    //   .subscribe({
-    //     next: (response: LinkWithChangedActivityResponse): void => {
-    //       scraper.links[indexOfLink].activity = response.newActivity;
-    //       this.linkActivityChanged.emit(scraper);
-    //       MessageServiceUtils.showSuccess(
-    //         this._messageService,
-    //         `Активность ссылки ${link.name} изменена на ${response.newActivity ? 'Активна' : 'Неактивна'}`,
-    //       );
-    //     },
-    //     error: (err: HttpErrorResponse): void => {
-    //       const message: string = err.error.message as string;
-    //       MessageServiceUtils.showError(this._messageService, message);
-    //     },
-    //   });
-  }
-
-  public confirmRemove($event: Event, link: ScraperLink): void {
-    // this._confirmationService.confirm({
-    //   target: $event.target as EventTarget,
-    //   message: `Удалить ссылку ${link.name} ${link.parserName} ${link.parserType} ?`,
-    //   header: 'Подтверждение',
-    //   closable: true,
-    //   closeOnEscape: true,
-    //   icon: 'pi pi-exclamation-triangle',
-    //   rejectButtonProps: {
-    //     label: 'Отменить',
-    //     severity: 'secondary',
-    //     outlined: true,
-    //   },
-    //   acceptButtonProps: {
-    //     label: 'Подтвердить',
-    //   },
-    //   accept: () => {
-    //     this.removeLink(link);
-    //   },
-    //   reject: () => {},
-    // });
-  }
-
-  private removeLink(link: ParserResponse): void {
-    // const current: Scraper = this._scraper();
-    // this._service
-    //   .removeParserLink(current, { linkName: link.name })
-    //   .pipe(takeUntilDestroyed(this._destroyRef))
-    //   .subscribe({
-    //     next: (removed: RemoveParserLinkResponse): void => {
-    //       current.links = current.links.filter(
-    //         (link: ScraperLink) =>
-    //           link.name !== removed.linkName && link.url !== removed.linkUrl,
-    //       );
-    //       this.onLinkRemoved.emit(current);
-    //       MessageServiceUtils.showSuccess(
-    //         this._messageService,
-    //         `Удалена ссылка ${removed.linkName} ${removed.parserName} ${removed.parserType}`,
-    //       );
-    //     },
-    //     error: (err: HttpErrorResponse): void => {
-    //       const message = err.error.message as string;
-    //       MessageServiceUtils.showError(this._messageService, message);
-    //     },
-    //   });
+  public confirmRemove($event: Event, link: ParserLinkResponse): void {
+    this._confirmationService.confirm({
+      target: $event.target as EventTarget,
+      message: `Удалить ссылку ${link.UrlName} ?`,
+      header: 'Подтверждение',
+      closable: true,
+      closeOnEscape: true,
+      icon: 'pi pi-exclamation-triangle',
+      rejectButtonProps: {
+        label: 'Отменить',
+        severity: 'secondary',
+        outlined: true,
+      },
+      acceptButtonProps: {
+        label: 'Подтвердить',
+      },
+      accept: () => {
+        this.onLinkRemoveConfirmed.emit(link);
+      },
+      reject: () => {},
+    });
   }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ParsersControl.Core.Features.AddParserLink;
 using ParsersControl.Core.Features.ChangeLinkActivity;
 using ParsersControl.Core.Features.ChangeWaitDays;
+using ParsersControl.Core.Features.DeleteLinkFromParser;
 using ParsersControl.Core.Features.EnableParser;
 using ParsersControl.Core.Features.PermantlyDisableManyParsing;
 using ParsersControl.Core.Features.PermantlyDisableParsing;
@@ -40,6 +41,20 @@ public sealed class ParsersController : ControllerBase
         return result.AsTypedEnvelope(ParserResponse.Create);
     }
 
+    [VerifyToken]
+    [ParserManagementPermission]
+    [HttpDelete("{id:guid}/links/{linkId:guid}")]
+    public async Task<Envelope> RemoveLinkFromParser(
+        [FromRoute(Name = "id")] Guid parserId,
+        [FromRoute(Name = "linkId")] Guid linkId,
+        [FromServices] ICommandHandler<DeleteLinkFromParserCommand, SubscribedParserLink> handler,
+        CancellationToken ct)
+    {
+        DeleteLinkFromParserCommand command = new(parserId, linkId);
+        Result<SubscribedParserLink> result = await handler.Execute(command, ct);
+        return result.AsTypedEnvelope(ParserLinkResponse.Create);
+    }
+    
     [VerifyToken]
     [ParserManagementPermission]
     [HttpPatch("{id:guid}/wait-days")]
