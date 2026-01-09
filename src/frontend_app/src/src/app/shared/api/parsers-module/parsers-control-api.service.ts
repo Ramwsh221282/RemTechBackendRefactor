@@ -16,12 +16,32 @@ export class ParsersControlApiService {
   private _changeLinkActivity$?: Observable<TypedEnvelope<ParserLinkResponse>>;
   private _removeLink$?: Observable<TypedEnvelope<ParserLinkResponse>>;
   private _updateLink$?: Observable<TypedEnvelope<ParserLinkResponse>>;
+  private _isPermantlyStartingParser$?: Observable<TypedEnvelope<ParserResponse>>;
+  private _isEnablingParser$?: Observable<TypedEnvelope<ParserResponse>>;
+  private _isDisablingParser$?: Observable<TypedEnvelope<ParserResponse>>;
+  private _isPermanentlyDisablingParser$?: Observable<TypedEnvelope<ParserResponse>>;
 
   constructor(private readonly _httpClient: HttpClient) {
   }
 
   public fetchParsers(): Observable<TypedEnvelope<ParserResponse[]>> {
     return this.startFetchingParsers();
+  }
+
+  public permantlyStartParser(parserId: string): Observable<TypedEnvelope<ParserResponse>> {
+    return this.startPermantlyStartParser(parserId);
+  }
+
+  public enableParser(parserId: string): Observable<TypedEnvelope<ParserResponse>> {
+    return this.startEnablingParser(parserId);
+  }
+
+  public disableParser(parserId: string): Observable<TypedEnvelope<ParserResponse>> {
+    return this.startDisablingParser(parserId);
+  }
+
+  public permantlyDisableParser(parserId: string): Observable<TypedEnvelope<ParserResponse>> {
+    return this.startPermantlyDisablingParser(parserId);
   }
 
   public removeLinkFromParser(parserId: string, linkId: string): Observable<TypedEnvelope<ParserLinkResponse>> {
@@ -46,6 +66,39 @@ export class ParsersControlApiService {
 
   public changeLinkActivity(parserId: string, linkId: string, activity: boolean): Observable<TypedEnvelope<ParserLinkResponse>> {
     return this.startChangingLinkActivity(parserId, linkId, activity);
+  }
+
+  private startPermantlyDisablingParser(id: string): Observable<TypedEnvelope<ParserResponse>> {
+    if (this._isPermanentlyDisablingParser$) return this._isPermanentlyDisablingParser$;
+    const requestUrl: string = `${this._apiUrl}/${id}/permantly-disable`;
+    this._isPermanentlyDisablingParser$ = this._httpClient.patch<TypedEnvelope<ParserResponse>>(requestUrl, null, { withCredentials: true })
+      .pipe(
+        finalize((): void => this._isPermanentlyDisablingParser$ = undefined),
+        shareReplay({ bufferSize: 1, refCount: true }),
+      );
+    return this._isPermanentlyDisablingParser$;
+  }
+
+  private startDisablingParser(id: string): Observable<TypedEnvelope<ParserResponse>> {
+    if (this._isDisablingParser$) return this._isDisablingParser$;
+    const requestUrl: string = `${this._apiUrl}/${id}/disabled`;
+    this._isDisablingParser$ = this._httpClient.patch<TypedEnvelope<ParserResponse>>(requestUrl, null, { withCredentials: true })
+      .pipe(
+        finalize((): void => this._isDisablingParser$ = undefined),
+        shareReplay({ bufferSize: 1, refCount: true }),
+      );
+    return this._isDisablingParser$;
+  }
+
+  private startEnablingParser(id: string): Observable<TypedEnvelope<ParserResponse>> {
+    if (this._isEnablingParser$) return this._isEnablingParser$;
+    const requestUrl: string = `${this._apiUrl}/${id}/start`;
+    this._isEnablingParser$ = this._httpClient.patch<TypedEnvelope<ParserResponse>>(requestUrl, null, { withCredentials: true })
+      .pipe(
+        finalize((): void => this._isEnablingParser$ = undefined),
+        shareReplay({ bufferSize: 1, refCount: true }),
+      );
+    return this._isEnablingParser$;
   }
 
   private startFetchingParser(id: string): Observable<TypedEnvelope<ParserResponse>> {
@@ -76,6 +129,17 @@ export class ParsersControlApiService {
         shareReplay(1),
         finalize((): void => this._parsersFetch$ = undefined));
     return this._parsersFetch$;
+  }
+
+  private startPermantlyStartParser(id: string): Observable<TypedEnvelope<ParserResponse>> {
+    if (this._isPermantlyStartingParser$) return this._isPermantlyStartingParser$;
+    const requestUrl: string = `${this._apiUrl}/${id}/permantly-start`;
+    this._isPermantlyStartingParser$ = this._httpClient.patch<TypedEnvelope<ParserResponse>>(requestUrl, null, { withCredentials: true })
+      .pipe(
+        finalize((): void => this._isPermantlyStartingParser$ = undefined),
+        shareReplay({ bufferSize: 1, refCount: true }),
+      );
+    return this._isPermantlyStartingParser$;
   }
 
   private startAddingLinks(parserId: string, links: { name: string, url: string }[]): Observable<TypedEnvelope<ParserLinkResponse[]>> {

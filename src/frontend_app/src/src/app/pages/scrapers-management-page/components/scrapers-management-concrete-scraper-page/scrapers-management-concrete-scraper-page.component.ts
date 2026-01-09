@@ -14,7 +14,7 @@ import { ScraperLinksListComponent } from './components/scraper-links-list/scrap
 import { ScraperActivateButtonComponent } from './components/scraper-activate-button/scraper-activate-button.component';
 import { ScraperDeactivateButtonComponent } from './components/scraper-deactivate-button/scraper-deactivate-button.component';
 import { ScraperAddLinkDialogComponent } from './components/scraper-add-link-dialog/scraper-add-link-dialog.component';
-import { MessageService } from 'primeng/api';
+import {ConfirmationService, MessageService} from 'primeng/api';
 import { ScraperEditLinkDialogComponent } from './components/scraper-edit-link-dialog/scraper-edit-link-dialog.component';
 import { MessageServiceUtils } from '../../../../shared/utils/message-service-utils';
 import { Toast } from 'primeng/toast';
@@ -47,7 +47,7 @@ import {ScraperLastRunStartedComponent} from './components/scraper-last-run-star
   ],
   templateUrl: './scrapers-management-concrete-scraper-page.component.html',
   styleUrl: './scrapers-management-concrete-scraper-page.component.scss',
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
 })
 export class ScrapersManagementConcreteScraperPageComponent {
   @Output() parserLinkRemoved: EventEmitter<ParserLinkResponse>;
@@ -60,6 +60,7 @@ export class ScrapersManagementConcreteScraperPageComponent {
     private readonly _service: ParsersControlApiService,
     private readonly _activatedRoute: ActivatedRoute,
     private readonly _messageService: MessageService,
+    private readonly _confirmationService: ConfirmationService,
   ) {
     this.linkToEdit = signal(null);
     this.scraper = signal(null);
@@ -106,6 +107,32 @@ export class ScrapersManagementConcreteScraperPageComponent {
   public onLinkActivitySwitch(switch$: { link: ParserLinkResponse, activity: boolean }): void {
     const current: ParserResponse | null = this.scraper();
     if (current) this.updateLinkActivity(current, switch$.link, switch$.activity)
+  }
+
+  public instantlyEnableClick(): void {
+    const current: ParserResponse | null = this.scraper();
+    if (current) this.handleInstantlyEnable(current);
+  }
+
+  private handleInstantlyEnable(parser: ParserResponse): void {
+    const parserId: string = parser.Id;
+    this._service.permantlyStartParser(parserId)
+      .pipe(
+        takeUntilDestroyed(this._destroyRef),
+        map((response: TypedEnvelope<ParserResponse>): ParserResponse | null | undefined => response.body),
+        tap((updated: ParserResponse | null | undefined): void => {
+          if (updated) {
+            const message: string = `Парсер ${updated.Domain} ${updated.ServiceType} немедленно включен.`;
+            MessageServiceUtils.showSuccess(this._messageService, message);
+            this.scraper.set(updated);
+          }
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message as string;
+          MessageServiceUtils.showError(this._messageService, message);
+          return EMPTY;
+        })
+      ).subscribe();
   }
 
   private fetchParserInfo(): void {
@@ -237,28 +264,5 @@ export class ScrapersManagementConcreteScraperPageComponent {
           return EMPTY;
         })
       ).subscribe();
-  }
-
- public instantlyEnableClick(): void {
-    // const current: Scraper = this._scraper();
-    // this._service
-    //   .enableInstantly(current)
-    //   .pipe(takeUntilDestroyed(this._destroyRef))
-    //   .subscribe({
-    //     next: (response: InstantlyEnabledParserResponse): void => {
-    //       current.nextRun = response.nextRun;
-    //       current.lastRun = response.lastRun;
-    //       current.state = response.state;
-    //       this._scraper.set(current);
-    //       MessageServiceUtils.showSuccess(
-    //         this._messageService,
-    //         `Парсер ${current.name} ${current.type} немедленно включен.`,
-    //       );
-    //     },
-    //     error: (err: HttpErrorResponse): void => {
-    //       const message: string = err.error.message as string;
-    //       MessageServiceUtils.showError(this._messageService, message);
-    //     },
-    //   });
   }
 }

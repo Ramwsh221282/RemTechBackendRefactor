@@ -4,6 +4,7 @@ using ParsersControl.Core.Features.AddParserLink;
 using ParsersControl.Core.Features.ChangeLinkActivity;
 using ParsersControl.Core.Features.ChangeWaitDays;
 using ParsersControl.Core.Features.DeleteLinkFromParser;
+using ParsersControl.Core.Features.DisableParser;
 using ParsersControl.Core.Features.PermantlyDisableManyParsing;
 using ParsersControl.Core.Features.PermantlyDisableParsing;
 using ParsersControl.Core.Features.PermantlyStartManyParsing;
@@ -173,6 +174,19 @@ public sealed class ParsersController : ControllerBase
         CancellationToken ct)
     {
         PermantlyDisableParsingCommand command = new(Id: id);
+        Result<SubscribedParser> result = await handler.Execute(command, ct);
+        return result.AsTypedEnvelope(ParserResponse.Create);
+    }
+
+    [VerifyToken]
+    [ParserManagementPermission]
+    [HttpPost("{id:guid}/disabled")]
+    public async Task<Envelope> DisableParser(
+        [FromRoute(Name = "id")] Guid id,
+        [FromServices] ICommandHandler<DisableParserCommand, SubscribedParser> handler,
+        CancellationToken ct)
+    {
+        DisableParserCommand command = new(Id: id);
         Result<SubscribedParser> result = await handler.Execute(command, ct);
         return result.AsTypedEnvelope(ParserResponse.Create);
     }
