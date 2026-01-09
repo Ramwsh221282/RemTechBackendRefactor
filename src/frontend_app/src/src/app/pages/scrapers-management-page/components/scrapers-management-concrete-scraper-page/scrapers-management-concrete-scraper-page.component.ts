@@ -24,6 +24,7 @@ import {TypedEnvelope} from '../../../../shared/api/envelope';
 import {ParserLinkResponse, ParserResponse} from '../../../../shared/api/parsers-module/parsers-responses';
 import {ScraperHeaderComponent} from './components/scraper-header/scraper-header.component';
 import {ScraperLastRunStartedComponent} from './components/scraper-last-run-started/scraper-last-run-started.component';
+import {ConfirmDialog} from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-scrapers-management-concrete-scraper-page',
@@ -44,6 +45,7 @@ import {ScraperLastRunStartedComponent} from './components/scraper-last-run-star
     Toast,
     ScraperHeaderComponent,
     ScraperLastRunStartedComponent,
+    ConfirmDialog,
   ],
   templateUrl: './scrapers-management-concrete-scraper-page.component.html',
   styleUrl: './scrapers-management-concrete-scraper-page.component.scss',
@@ -85,6 +87,11 @@ export class ScrapersManagementConcreteScraperPageComponent {
     if (current) this.updateParserLink(current, payload.linkId, payload.name, payload.url);
   }
 
+  public onParserStartClicked(parser: ParserResponse): void {
+    const current: ParserResponse | null = this.scraper();
+    if (current) this.handleParserStarting(current);
+  }
+
   public onEditClose(): void {
     this.linkToEdit.set(null);
   }
@@ -114,6 +121,95 @@ export class ScrapersManagementConcreteScraperPageComponent {
     if (current) this.handleInstantlyEnable(current);
   }
 
+  public onParserDisableClicked(parser: ParserResponse): void {
+    const current: ParserResponse | null = this.scraper();
+    if (current) this.handleDisablingParser(current);
+  }
+
+  private handleDisablingParser(parser: ParserResponse): void {
+    const isWorking: boolean = parser.State === 'В работе';
+    const id: string = parser.Id;
+    if (isWorking) this.handleDisablingParserOnWorking(id);
+    else this.handleDisablingOnSleeping(id);
+  }
+
+  private handleParserStarting(parser: ParserResponse): void {
+    const parserId: string = parser.Id;
+    this._service.enableParser(parserId)
+      .pipe(
+        map((response: TypedEnvelope<ParserResponse>): ParserResponse | null | undefined => response.body),
+        tap((updated: ParserResponse | null | undefined): void => {
+          if (updated) {
+            const message = `Парсер ${updated.Domain} ${updated.ServiceType} был включен.`;
+            MessageServiceUtils.showSuccess(this._messageService, message);
+            this.scraper.set(updated);
+          }
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message as string;
+          MessageServiceUtils.showError(this._messageService, message);
+          return EMPTY;
+        })
+      ).subscribe();
+  }
+
+  private handleDisablingOnSleeping(parserId: string): void {
+    this._service.disableParser(parserId)
+      .pipe(
+        map((response: TypedEnvelope<ParserResponse>): ParserResponse | null | undefined => response.body),
+        tap((updated: ParserResponse | null | undefined): void => {
+          if (updated) {
+            const message = `Парсер ${updated.Domain} ${updated.ServiceType} был выключен.`;
+            MessageServiceUtils.showSuccess(this._messageService, message);
+            this.scraper.set(updated);
+          }
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message as string;
+          MessageServiceUtils.showError(this._messageService, message);
+          return EMPTY;
+        })
+      ).subscribe();
+  }
+
+  private handleDisablingParserOnWorking(parserId: string): void {
+    this._confirmationService.confirm({
+      message: 'Парсер сейчас в рабочем состоянии. Выключение парсера остановит процесс парсинга. Вы хотите продолжить ?',
+      header: 'Подтверждение',
+      closable: true,
+      closeOnEscape: true,
+      icon: 'pi pi-exclamation-triangle',
+      rejectButtonProps: {
+        label: 'Отменить',
+        severity: 'secondary',
+        outlined: true,
+      },
+      acceptButtonProps: {
+        label: 'Подтвердить',
+      },
+      accept: () => {
+        this._service.permantlyDisableParser(parserId)
+          .pipe(
+            takeUntilDestroyed(this._destroyRef),
+            map((response: TypedEnvelope<ParserResponse>): ParserResponse | null | undefined => response.body),
+            tap((updated: ParserResponse | null | undefined): void => {
+              if (updated) {
+                const message = `Парсер ${updated.Domain} ${updated.ServiceType} был немедленно выключен.`;
+                MessageServiceUtils.showSuccess(this._messageService, message);
+                this.scraper.set(updated);
+              }
+            }),
+            catchError((error: HttpErrorResponse): Observable<never> => {
+              const message: string = error.error.message as string;
+              MessageServiceUtils.showError(this._messageService, message);
+              return EMPTY;
+            })
+          ).subscribe();
+      },
+      reject: () => {},
+    });
+  }
+
   private handleInstantlyEnable(parser: ParserResponse): void {
     const parserId: string = parser.Id;
     this._service.permantlyStartParser(parserId)
@@ -141,7 +237,9 @@ export class ScrapersManagementConcreteScraperPageComponent {
         takeUntilDestroyed(this._destroyRef),
         map((parameters: Params) => parameters['id'] as string),
         switchMap((id: string): Observable<TypedEnvelope<ParserResponse>> => this._service.fetchParser(id)),
-        tap((response: TypedEnvelope<ParserResponse>): void => this.scraper.set(response.body ?? null)),
+        tap((response: TypedEnvelope<ParserResponse>): void => {
+          this.scraper.set(response.body ?? null);
+        }),
         catchError((error: HttpErrorResponse): Observable<never> => throwError((): HttpErrorResponse => error))
       ).subscribe();
   }

@@ -93,7 +93,7 @@ export class ParsersControlApiService {
   private startEnablingParser(id: string): Observable<TypedEnvelope<ParserResponse>> {
     if (this._isEnablingParser$) return this._isEnablingParser$;
     const requestUrl: string = `${this._apiUrl}/${id}/start`;
-    this._isEnablingParser$ = this._httpClient.patch<TypedEnvelope<ParserResponse>>(requestUrl, null, { withCredentials: true })
+    this._isEnablingParser$ = this._httpClient.post<TypedEnvelope<ParserResponse>>(requestUrl, null, { withCredentials: true })
       .pipe(
         finalize((): void => this._isEnablingParser$ = undefined),
         shareReplay({ bufferSize: 1, refCount: true }),

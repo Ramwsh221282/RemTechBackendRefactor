@@ -26,35 +26,22 @@ import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module
   imports: [Toast, ConfirmDialog],
   templateUrl: './scraper-deactivate-button.component.html',
   styleUrl: './scraper-deactivate-button.component.scss',
-  providers: [MessageService, ConfirmationService],
+  providers: [],
 })
 export class ScraperDeactivateButtonComponent {
-  constructor(
-    private readonly _messageService: MessageService,
-    private readonly _service: ParsersControlApiService,
-    private readonly _confirmationService: ConfirmationService,
-  ) {
+  constructor() {
     this.scraperDeactivated = new EventEmitter();
     this._scraper = signal(DefaultParserResponse());
   }
 
   private readonly _scraper: WritableSignal<ParserResponse>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-
   @Output() scraperDeactivated: EventEmitter<ParserResponse>;
   @Input({ required: true }) set scraper_setter(value: ParserResponse) {
     this._scraper.set(value);
   }
 
   public click($event: Event): void {
-
-  }
-
-  private invokeChangeState(current: Scraper): void {
-
-  }
-
-  public get domain(): string {
-    return this._scraper().Domain;
+    $event.stopPropagation();
+    this.scraperDeactivated.emit(this._scraper());
   }
 }

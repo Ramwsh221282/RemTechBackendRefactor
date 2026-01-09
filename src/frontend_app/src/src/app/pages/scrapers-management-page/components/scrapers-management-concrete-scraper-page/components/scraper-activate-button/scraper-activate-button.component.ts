@@ -29,27 +29,17 @@ import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module
   providers: [MessageService],
 })
 export class ScraperActivateButtonComponent {
-  constructor(
-    private readonly _service: ParsersControlApiService,
-    private readonly _messageService: MessageService
-  ) {
+  constructor() {
     this._scraper = signal(DefaultParserResponse());
-    this.onParserStateChange = new EventEmitter<ParserResponse>();
+    this.parserStartClicked = new EventEmitter<ParserResponse>();
   }
 
   private readonly _scraper: WritableSignal<ParserResponse>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-
   @Input({ required: true }) set scraper_setter(value: ParserResponse) {
     this._scraper.set(value);
   }
-
-  @Output() onParserStateChange: EventEmitter<ParserResponse>;
-
+  @Output() parserStartClicked: EventEmitter<ParserResponse>;
   public click(): void {
-  }
-
-  public get domain(): string {
-    return this._scraper().Domain;
+    this.parserStartClicked.emit(this._scraper());
   }
 }

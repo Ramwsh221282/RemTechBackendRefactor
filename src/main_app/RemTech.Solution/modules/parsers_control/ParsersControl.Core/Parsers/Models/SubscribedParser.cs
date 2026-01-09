@@ -100,6 +100,21 @@ public sealed class SubscribedParser
     public void ResetWorkTime() => Statistics = Statistics.ResetWorkTime();
     public void ResetParsedCount() => Statistics = Statistics.ResetParsedCount();
 
+    public Result<Unit> StartWaiting()
+    {
+        if (State.IsWorking())
+            return Error.Conflict($"Парсер в состоянии {State.Value}. Невозможно начать ожидание.");
+        if (HasNoLinks())
+            return Error.Conflict($"Парсер не содержит ссылок.");
+        if (AllLinksAreInactive())
+            return Error.Conflict($"Парсер не содержит активных ссылок.");
+        Result<int> waitDays = GetSpecifiedWaitDays();
+        if (waitDays.IsFailure) return waitDays.Error;
+        State = SubscribedParserState.Sleeping;
+        Schedule = Schedule.WithNextRun(DateTime.UtcNow.AddDays(waitDays.Value));
+        return Unit.Value;
+    }
+    
     public Result<Unit> StartWork()
     {
         (bool isWorking, bool isDisabled, bool hasNoLinks, bool allLinksInactive) =
@@ -336,6 +351,17 @@ public sealed class SubscribedParser
     {
         duplicates = Links.GroupBy(l => l.UrlInfo.Url).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
         return duplicates.Length == 0;
+    }
+
+    private Result<int> GetSpecifiedWaitDays()
+    {
+        if (!Schedule.WaitDays.HasValue) return Error.Conflict($"Дни ожидания не указаны.");
+        return Result.Success(Schedule.WaitDays.Value);
+    }
+    
+    private bool WaitDaysNotSpecified()
+    {
+        return !Schedule.WaitDays.HasValue;
     }
     
     private bool HasNoLinks()

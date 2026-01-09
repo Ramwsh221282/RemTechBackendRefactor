@@ -26,7 +26,7 @@ public sealed class StartParserCommandHandler(ISubscribedParsersRepository repos
     private Result<Unit> CallParserWorkInvocation(Result<SubscribedParser> parser)
     {
         if (parser.IsFailure) return parser.Error;
-        return parser.Value.StartWork();
+        return parser.Value.StartWaiting();
     }
 
     private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> starting, CancellationToken ct)

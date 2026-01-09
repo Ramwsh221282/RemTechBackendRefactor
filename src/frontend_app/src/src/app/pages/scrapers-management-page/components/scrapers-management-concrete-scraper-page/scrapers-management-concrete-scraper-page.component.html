@@ -3,8 +3,8 @@
     <app-scraper-header [scraper_setter]="scraper()!" />
     <div class="flex items-center gap-2 flex-wrap">
       <app-scraper-state-select [scraper_setter]="scraper()!"/>
-      <app-scraper-activate-button [scraper_setter]="scraper()!"/>
-      <app-scraper-deactivate-button [scraper_setter]="scraper()!"/>
+      <app-scraper-activate-button (parserStartClicked)="onParserStartClicked($event)" [scraper_setter]="scraper()!"/>
+      <app-scraper-deactivate-button (scraperDeactivated)="onParserDisableClicked($event)" [scraper_setter]="scraper()!"/>
     </div>
   </div>
 
@@ -64,6 +64,7 @@
                               [scraper_link_setter]="linkToEdit()!"/>
 
 <p-toast [position]="'bottom-right'"/>
+<p-confirm-dialog/>
 
 
 
