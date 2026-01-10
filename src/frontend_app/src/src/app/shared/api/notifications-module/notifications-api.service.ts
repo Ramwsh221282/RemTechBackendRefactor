@@ -27,6 +27,10 @@ export class NotificationsApiService {
     return this.startChangingMailer(id, email, password);
   }
 
+  public sendTestMessage(id: string, recipient: string): Observable<Envelope> {
+    return this.startSendingTestMessage(id, recipient);
+  }
+
   private startFetchingMailers(): Observable<TypedEnvelope<MailerResponse[]>> {
     if (this._gettingMailers$) return this._gettingMailers$;
     this._gettingMailers$ = this._httpClient.get<TypedEnvelope<MailerResponse[]>>(`${this._apiUrl}/mailers`, { withCredentials: true })

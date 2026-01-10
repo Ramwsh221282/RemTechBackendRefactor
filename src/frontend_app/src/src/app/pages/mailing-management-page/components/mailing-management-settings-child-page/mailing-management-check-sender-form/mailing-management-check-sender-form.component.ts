@@ -35,12 +35,15 @@ import {
 export class MailingManagementCheckSenderFormComponent {
   constructor(private readonly _messageService: MessageService) {
     this.sender = signal(DefaultMailerResponse());
+    this.onTestMessageSendSubmitted = new EventEmitter<{ mailerId: string, recipientEmail: string }>();
   }
 
   @Input({ required: true }) set sender_setter(sender: MailerResponse) {
     this.sender.set(sender);
     this.visible = !!sender;
   }
+
+  @Output() onTestMessageSendSubmitted: EventEmitter<{ mailerId: string, recipientEmail: string }>;
   @Output() onClose: EventEmitter<void> = new EventEmitter<void>();
 
   readonly sender: WritableSignal<MailerResponse>;
@@ -50,10 +53,26 @@ export class MailingManagementCheckSenderFormComponent {
   visible: boolean = false;
 
   public onSubmit(): void {
-
+    const mailer: MailerResponse = this.sender();
+    const recipient: string = this.readRecipientEmail();
+    if (this.isRecipientEmailEmpty(recipient)) return;
+    this.onTestMessageSendSubmitted.emit({ mailerId: mailer.Id, recipientEmail: recipient });
   }
 
   public closeClick(): void {
     this.onClose.emit();
+  }
+
+  private isRecipientEmailEmpty(recipient: string): boolean {
+    if (StringUtils.isEmptyOrWhiteSpace(recipient)) {
+      MessageServiceUtils.showError(this._messageService, 'Почта не указана');
+      return true;
+    }
+    return false;
+  }
+
+  private readRecipientEmail(): string {
+    const formValues = this.checkSenderForm.value;
+    return formValues.sendTo as string;
   }
 }

@@ -5,7 +5,7 @@ import {MessageService} from 'primeng/api';
 import {NotificationsApiService} from '../../../../shared/api/notifications-module/notifications-api.service';
 import {MailerResponse} from '../../../../shared/api/notifications-module/notifications-responses';
 import {catchError, EMPTY, map, Observable, tap} from 'rxjs';
-import {TypedEnvelope} from '../../../../shared/api/envelope';
+import {Envelope, TypedEnvelope} from '../../../../shared/api/envelope';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {HttpErrorResponse} from '@angular/common/http';
 import {MessageServiceUtils} from '../../../../shared/utils/message-service-utils';
@@ -48,6 +48,11 @@ export class MailingManagementSettingsChildPageComponent {
     this.mailerToPing.set(null);
   }
 
+  public onTestMessageSendSubmit(payload: { mailerId: string, recipientEmail: string }): void {
+    this.handleTestMessageSend(payload.mailerId, payload.recipientEmail);
+    this.closePingDialog();
+  }
+
   private handleSenderCreate(email: string, password: string): void {
     this._service.addMailer(email, password)
       .pipe(
@@ -66,6 +71,22 @@ export class MailingManagementSettingsChildPageComponent {
           return EMPTY;
         })
       ).subscribe()
+  }
+
+  private handleTestMessageSend(mailerId: string, recipient: string): void {
+    this._service.sendTestMessage(mailerId, recipient)
+      .pipe(
+        takeUntilDestroyed(this._destroyRef),
+        tap((_: Envelope): void => {
+          const message: string = `Сообщение отправлено на ${recipient}`;
+          MessageServiceUtils.showSuccess(this._messageService, message);
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message as string;
+          MessageServiceUtils.showError(this._messageService, message);
+          return EMPTY;
+        })
+      ).subscribe();
   }
 
   private fetchMailers(): void {
