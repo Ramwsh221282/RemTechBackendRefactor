@@ -1,7 +1,5 @@
 import { Component } from '@angular/core';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
-import { Accordion } from 'primeng/accordion';
-import { MailingManagementDocAccordionEntryComponent } from '../mailing-management-page/components/mailing-management-doc-child-page/mailing-management-doc-accordion-entry/mailing-management-doc-accordion-entry.component';
 import { SignInFormComponent } from './components/sign-in-form/sign-in-form.component';
 import { SignUpFormComponent } from './components/sign-up-form/sign-up-form.component';
 
