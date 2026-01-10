@@ -1,6 +1,4 @@
-import {Component, DestroyRef, effect, inject, OnInit, signal, WritableSignal} from '@angular/core';
-import { UserInfo } from '../sign-in-page/types/UserInfo';
-import { UserInfoService } from '../../shared/services/UserInfoService';
+import {Component, DestroyRef, inject, OnInit, signal, WritableSignal} from '@angular/core';
 import { NgIf } from '@angular/common';
 import { EmailConfirmationDialogComponent } from './components/email-confirmation-dialog/email-confirmation-dialog.component';
 import { EmailChangeDialogComponent } from './components/email-change-dialog/email-change-dialog.component';
@@ -8,7 +6,7 @@ import { PasswordChangeDialogComponent } from './components/password-change-dial
 import {AccountResponse} from '../../shared/api/identity-module/identity-responses';
 import {IdentityApiService} from '../../shared/api/identity-module/identity-api-service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {catchError, EMPTY, map, Observable, tap} from 'rxjs';
+import { tap} from 'rxjs';
 import {TypedEnvelope} from '../../shared/api/envelope';
 import {ConfirmationService, MessageService} from 'primeng/api';
 import {Toast} from 'primeng/toast';
@@ -18,7 +16,7 @@ import {AuthenticationStatusService} from '../../shared/services/AuthenticationS
 import {Router} from '@angular/router';
 import {HttpErrorResponse} from '@angular/common/http';
 import {MessageServiceUtils} from '../../shared/utils/message-service-utils';
-import {ParserResponse} from '../../shared/api/parsers-module/parsers-responses';
+import {DefaultAccountResponse} from '../../shared/api/identity-module/identity-factories';
 
 @Component({
   selector: 'app-user-info-page',
@@ -34,9 +32,6 @@ import {ParserResponse} from '../../shared/api/parsers-module/parsers-responses'
   styleUrl: './user-info-page.component.scss',
 })
 export class UserInfoPageComponent implements OnInit {
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  readonly account: WritableSignal<AccountResponse>;
-
   constructor(
     private readonly _service: IdentityApiService,
     private readonly _messageService: MessageService,
@@ -44,7 +39,25 @@ export class UserInfoPageComponent implements OnInit {
     private readonly _permissionsService: PermissionsStatusService,
     private readonly _authService: AuthenticationStatusService,
     private readonly _router: Router) {
-    this.account = signal({ Id: '', Email: '', Login: '', IsActivated: false, Permissions: [] })
+    this.account = signal(DefaultAccountResponse())
+    this.isChangingPassword = signal(false)
+  }
+
+  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
+  readonly account: WritableSignal<AccountResponse>;
+  readonly isChangingPassword: WritableSignal<boolean>;
+
+  public onPasswordChangeSubmit(password: string): void {
+    const account: AccountResponse = this.account();
+    this.handlePasswordChange(account, password);
+  }
+
+  public wantToChangePasswordClicked(): void {
+    this.isChangingPassword.set(true);
+  }
+
+  public onPasswordChangeCanceled($event: boolean): void {
+    this.isChangingPassword.set(false);
   }
 
   public logoutClicked(): void {
@@ -67,6 +80,24 @@ export class UserInfoPageComponent implements OnInit {
       },
       reject: () => {},
     });
+  }
+
+  private handlePasswordChange(account: AccountResponse, password: string): void {
+    this._service.changePassword(account.Id, password)
+      .pipe(takeUntilDestroyed(this._destroyRef))
+      .subscribe({
+        next: (): void => {
+          MessageServiceUtils.showSuccess(this._messageService, 'Пароль успешно изменен');
+          this.isChangingPassword.set(false);
+          this._authService.setIsNotAuthenticated();
+          this._permissionsService.clean();
+          this._router.navigate(['']);
+        },
+        error: (err: HttpErrorResponse): void => {
+          const message: string = err.error.message;
+          MessageServiceUtils.showError(this._messageService, message);
+        },
+      });
   }
 
   private handleLogout(): void {

@@ -13,3 +13,7 @@ export type RegisterAccountRequest = {
   login: string;
   password: string;
 }
+
+export type ChangePasswordRequest = {
+  NewPassword: string;
+}

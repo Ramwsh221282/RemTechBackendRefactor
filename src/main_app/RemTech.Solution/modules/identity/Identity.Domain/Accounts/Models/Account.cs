@@ -78,7 +78,7 @@ public sealed class Account(
     {
         Result<Unit> validation = new PasswordRequirement().Use(requirements).Satisfies(password);
         if (validation.IsFailure) return validation.Error;
-        Password = Password.HashBy(hasher);
+        Password = password.HashBy(hasher);
         return Unit.Value;
     }
 

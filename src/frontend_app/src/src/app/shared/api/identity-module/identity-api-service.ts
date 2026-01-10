@@ -2,9 +2,15 @@ import {Injectable} from '@angular/core';
 import {apiUrl} from '../api-endpoint';
 import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {finalize, Observable, shareReplay} from 'rxjs';
-import {AuthenticateRequest, GivePermissionsRequest, RegisterAccountRequest} from './identity-requests';
+import {
+  AuthenticateRequest,
+  ChangePasswordRequest,
+  GivePermissionsRequest,
+  RegisterAccountRequest
+} from './identity-requests';
 import {AccountResponse} from './identity-responses';
 import {Envelope, TypedEnvelope} from '../envelope';
+import {CreateChangePasswordRequest} from './identity-factories';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +22,7 @@ export class IdentityApiService {
   private _fetchAccountInProgress: boolean = false;
   private _fetch$?: Observable<TypedEnvelope<AccountResponse>>;
   private _logout$?: Observable<Envelope>;
+  private _changePassword$?: Observable<Envelope>;
 
   constructor(private readonly _httpClient: HttpClient) {
   }
@@ -40,6 +47,10 @@ export class IdentityApiService {
     if (this.fetchAccountInProgress())
       return this._fetch$!;
     return this.startFetchingAccount();
+  }
+
+  changePassword(id: string, password: string): Observable<Envelope> {
+    return this.startChangingPassword(id, password);
   }
 
   logout(): Observable<Envelope> {
@@ -69,6 +80,17 @@ export class IdentityApiService {
         this._logout$ = undefined;
       }), shareReplay({ bufferSize: 1, refCount: true }));
     return this._logout$;
+  }
+
+  private startChangingPassword(id: string, password: string): Observable<Envelope> {
+    if (this._changePassword$) return this._changePassword$;
+    const requestUrl: string = `${this._url}/${id}/password`;
+    const payload: ChangePasswordRequest = CreateChangePasswordRequest(password);
+    this._changePassword$ = this._httpClient.patch<Envelope>(requestUrl, payload, { withCredentials: true })
+      .pipe(finalize(() => {
+        this._changePassword$ = undefined;
+      }), shareReplay({ bufferSize: 1, refCount: true }));
+    return this._changePassword$;
   }
 
   private startFetchingAccount(): Observable<TypedEnvelope<AccountResponse>> {
