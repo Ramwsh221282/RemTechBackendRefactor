@@ -23,7 +23,7 @@ public sealed class RegisterAccountHandler(
         Result<AccountPassword> password = ApprovePassword(command);
         if (password.IsFailure) return password.Error;
         
-        AccountPassword encrypted = password.Value.HashBy(hasher, ct);
+        AccountPassword encrypted = password.Value.HashBy(hasher);
         Account account = CreateAccount(encrypted, command);
         
         await accounts.Add(account, ct);

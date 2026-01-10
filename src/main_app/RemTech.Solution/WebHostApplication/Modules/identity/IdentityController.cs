@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Identity.Domain.Accounts.Features.Authenticate;
+using Identity.Domain.Accounts.Features.ChangePassword;
 using Identity.Domain.Accounts.Features.ConfirmTicket;
 using Identity.Domain.Accounts.Features.GivePermissions;
 using Identity.Domain.Accounts.Features.Logout;
@@ -54,6 +55,23 @@ public sealed class IdentityController : Controller
         return Ok();
     }
 
+    [VerifyToken]
+    [HttpPatch("{id:guid}/password")]
+    public async Task<Envelope> ChangePassword(
+        [FromRoute(Name = "id")] Guid id,
+        [FromBody] ChangePasswordRequest request,
+        [FromServices] ICommandHandler<ChangePasswordCommand, Unit> handler,
+        CancellationToken ct)
+    {
+        (string accessToken, string refreshToken) = HttpContext.GetIdentityTokens(GetAccessTokenMethods, GetRefreshTokenMethods);
+        ChangePasswordCommand command = new(accessToken, refreshToken, id, request.NewPassword);
+        Result<Unit> result = await handler.Execute(command, ct);
+        if (result.IsFailure) 
+            return result.AsEnvelope();
+        ClearAuthHeaders(HttpContext);
+        return Ok();
+    }
+    
     [HttpPost("logout")]
     public async Task<Envelope> Logout(
         [FromServices] ICommandHandler<LogoutCommand, Unit> handler,

@@ -74,12 +74,11 @@ public sealed class Account(
     public Result<Unit> ChangePassword(
         AccountPassword password, 
         IPasswordHasher hasher,
-        IAccountPasswordRequirement requirement,
-        CancellationToken ct = default)
+        IEnumerable<IAccountPasswordRequirement> requirements)
     {
-        Result<Unit> validation = requirement.Satisfies(password);
+        Result<Unit> validation = new PasswordRequirement().Use(requirements).Satisfies(password);
         if (validation.IsFailure) return validation.Error;
-        Password = Password.HashBy(hasher, ct);
+        Password = Password.HashBy(hasher);
         return Unit.Value;
     }
 

@@ -17,14 +17,14 @@ public sealed record AccountPassword
         return new AccountPassword(value);
     }
 
-    public AccountPassword HashBy(IPasswordHasher hasher, CancellationToken ct = default)
+    public AccountPassword HashBy(IPasswordHasher hasher)
     {
-        return hasher.Hash(this, ct);
+        return hasher.Hash(this);
     }
 
-    public bool Verify(string input, IPasswordHasher hasher, CancellationToken ct = default)
+    public bool Verify(string input, IPasswordHasher hasher)
     {
-        return hasher.Verify(input, this, ct);
+        return hasher.Verify(input, this);
     }
     
     public Result<Unit> Satisfies(IAccountPasswordRequirement requirement)
