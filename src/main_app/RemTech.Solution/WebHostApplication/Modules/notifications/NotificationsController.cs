@@ -55,7 +55,7 @@ public class NotificationsController
     {
         AddMailerCommand command = new(request.SmtpPassword, request.Email);
         Result<Mailer> result = await handler.Execute(command, ct);
-        return EnvelopedResultsExtensions.AsEnvelope(result, r => MailerResponse.ConvertFrom(r.Value));
+        return result.AsTypedEnvelope(MailerResponse.Create);
     }
 
     [VerifyToken]
@@ -70,6 +70,6 @@ public class NotificationsController
     {
         ChangeCredentialsCommand command = new(id, request.SmtpPassword, request.Email);
         Result<Mailer> result = await handler.Execute(command, ct);
-        return result.AsTypedEnvelope(MailerResponse.ConvertFrom);
+        return result.AsTypedEnvelope(MailerResponse.Create);
     }
 }
