@@ -49,8 +49,8 @@ export class IdentityApiService {
     return this.startFetchingAccount();
   }
 
-  changePassword(id: string, password: string): Observable<Envelope> {
-    return this.startChangingPassword(id, password);
+  changePassword(id: string, newPassword: string, currentPassword: string): Observable<Envelope> {
+    return this.startChangingPassword(id, newPassword, currentPassword);
   }
 
   logout(): Observable<Envelope> {
@@ -82,10 +82,10 @@ export class IdentityApiService {
     return this._logout$;
   }
 
-  private startChangingPassword(id: string, password: string): Observable<Envelope> {
+  private startChangingPassword(id: string, newPassword: string, currentPassword: string): Observable<Envelope> {
     if (this._changePassword$) return this._changePassword$;
     const requestUrl: string = `${this._url}/${id}/password`;
-    const payload: ChangePasswordRequest = CreateChangePasswordRequest(password);
+    const payload: ChangePasswordRequest = CreateChangePasswordRequest(newPassword, currentPassword);
     this._changePassword$ = this._httpClient.patch<Envelope>(requestUrl, payload, { withCredentials: true })
       .pipe(finalize(() => {
         this._changePassword$ = undefined;

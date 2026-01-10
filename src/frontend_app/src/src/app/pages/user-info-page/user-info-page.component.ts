@@ -47,9 +47,9 @@ export class UserInfoPageComponent implements OnInit {
   readonly account: WritableSignal<AccountResponse>;
   readonly isChangingPassword: WritableSignal<boolean>;
 
-  public onPasswordChangeSubmit(password: string): void {
+  public onPasswordChangeSubmit(password: { newPassword: string, currentPassword: string }): void {
     const account: AccountResponse = this.account();
-    this.handlePasswordChange(account, password);
+    this.handlePasswordChange(account, password.newPassword, password.currentPassword);
   }
 
   public wantToChangePasswordClicked(): void {
@@ -82,8 +82,8 @@ export class UserInfoPageComponent implements OnInit {
     });
   }
 
-  private handlePasswordChange(account: AccountResponse, password: string): void {
-    this._service.changePassword(account.Id, password)
+  private handlePasswordChange(account: AccountResponse, newPassword: string, currentPassword: string): void {
+    this._service.changePassword(account.Id, newPassword, currentPassword)
       .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
         next: (): void => {

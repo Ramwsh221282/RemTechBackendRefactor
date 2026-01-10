@@ -64,7 +64,7 @@ public sealed class IdentityController : Controller
         CancellationToken ct)
     {
         (string accessToken, string refreshToken) = HttpContext.GetIdentityTokens(GetAccessTokenMethods, GetRefreshTokenMethods);
-        ChangePasswordCommand command = new(accessToken, refreshToken, id, request.NewPassword);
+        ChangePasswordCommand command = new(accessToken, refreshToken, id, request.NewPassword, request.CurrentPassword);
         Result<Unit> result = await handler.Execute(command, ct);
         if (result.IsFailure) 
             return result.AsEnvelope();

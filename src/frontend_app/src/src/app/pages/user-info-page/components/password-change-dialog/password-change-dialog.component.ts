@@ -47,24 +47,27 @@ export class PasswordChangeDialogComponent {
     private readonly _messageService: MessageService,
   ) {
     this.visible = signal(false);
-    this.passwordChangeSubmitted = new EventEmitter<string>();
+    this.passwordChangeSubmitted = new EventEmitter<{ newPassword: string, currentPassword: string }>();
     this.onCancel = new EventEmitter<boolean>();
   }
 
-  @Output() passwordChangeSubmitted: EventEmitter<string>;
+  @Output() passwordChangeSubmitted: EventEmitter<{ newPassword: string, currentPassword: string }>;
   @Output() onCancel: EventEmitter<boolean>;
   @Input({ required: true }) set visible_setter(value: boolean) {
     this.visible.set(value);
   }
   readonly form: FormGroup = new FormGroup({
+    currentPassword: new FormControl(''),
     newPassword: new FormControl(''),
   });
   readonly visible: WritableSignal<boolean>;
 
   public submitForm(): void {
-    const password: string = this.readNewPassword();
-    if (this.isPasswordEmpty(password)) return;
-    this.passwordChangeSubmitted.emit(password);
+    const newPassword: string = this.readNewPassword();
+    const currentPassword: string = this.readCurrentPassword();
+    if (this.isPasswordEmpty(newPassword)) return;
+    if (this.isPasswordEmpty(currentPassword)) return;
+    this.passwordChangeSubmitted.emit({ newPassword, currentPassword });
     this.resetForm();
   }
 
@@ -76,6 +79,11 @@ export class PasswordChangeDialogComponent {
   private readNewPassword(): string {
     const formValues = this.form.value;
     return formValues.newPassword as string;
+  }
+
+  private readCurrentPassword(): string {
+    const formValues = this.form.value;
+    return formValues.currentPassword as string;
   }
 
   private resetForm(): void {

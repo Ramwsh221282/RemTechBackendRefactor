@@ -9,5 +9,6 @@ public sealed class ChangePasswordValidator : AbstractValidator<ChangePasswordCo
     public ChangePasswordValidator()
     {
         RuleFor(x => x.NewPassword).MustBeValid(AccountPassword.Create);
+        RuleFor(x => x.CurrentPassword).MustBeValid(AccountPassword.Create);
     }
 }

@@ -22,11 +22,20 @@ public sealed class ChangePasswordHandler(
     public async Task<Result<Unit>> Execute(ChangePasswordCommand command, CancellationToken ct = default)
     {
         Result<Account> account = await GetRequiredAccount(command, ct);
+        Result<Unit> verification = VerifyCurrentPassword(account, command.CurrentPassword);
+        if (verification.IsFailure) return verification.Error;
+        
         Result<Unit> change = ChangePassword(command, account);
         Result<Unit> logout = await Logout(account, change, command, ct);
         return await SaveChanges(account, change, logout, ct);
     }
 
+    private Result<Unit> VerifyCurrentPassword(Result<Account> account, string currentPassword)
+    {
+        if (account.IsFailure) return account.Error;
+        return account.Value.VerifyPassword(currentPassword, hasher);
+    }
+    
     private async Task<Result<Unit>> SaveChanges(
         Result<Account> account,
         Result<Unit> change,

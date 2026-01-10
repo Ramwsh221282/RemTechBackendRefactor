@@ -5,6 +5,6 @@ export const DefaultAccountResponse = (): AccountResponse => {
   return { Id: '', Email: '', Login: '', IsActivated: false, Permissions: [] };
 }
 
-export const CreateChangePasswordRequest = (newPassword: string): ChangePasswordRequest => {
-  return { NewPassword: newPassword };
+export const CreateChangePasswordRequest = (newPassword: string, currentPassword: string): ChangePasswordRequest => {
+  return { NewPassword: newPassword, CurrentPassword: currentPassword };
 }

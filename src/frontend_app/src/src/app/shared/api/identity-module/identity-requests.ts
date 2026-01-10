@@ -16,4 +16,5 @@ export type RegisterAccountRequest = {
 
 export type ChangePasswordRequest = {
   NewPassword: string;
+  CurrentPassword: string;
 }
