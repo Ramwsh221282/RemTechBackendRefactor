@@ -48,9 +48,35 @@ export class MailingManagementSettingsChildPageComponent {
     this.mailerToPing.set(null);
   }
 
+  public onSenderRemoveSubmit(mailer: MailerResponse): void {
+    this.handleSenderRemove(mailer);
+  }
+
   public onTestMessageSendSubmit(payload: { mailerId: string, recipientEmail: string }): void {
     this.handleTestMessageSend(payload.mailerId, payload.recipientEmail);
     this.closePingDialog();
+  }
+
+  private handleSenderRemove(mailer: MailerResponse): void {
+    const id: string = mailer.Id;
+    this._service.deleteMailer(id)
+      .pipe(
+        takeUntilDestroyed(this._destroyRef),
+        map((envelope: TypedEnvelope<string>): string | null => envelope.body ?? null),
+        tap((id: string | null): void => {
+          if (id) {
+            const message: string = `Настройки почтового сервиса ${mailer.Email} ${mailer.SmtpHost} были удалены.`;
+            MessageServiceUtils.showSuccess(this._messageService, message);
+            const current: MailerResponse[] = this.mailers();
+            this.mailers.set(current.filter((s: MailerResponse): boolean => s.Id !== id));
+          }
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message as string;
+          MessageServiceUtils.showError(this._messageService, message);
+          return EMPTY;
+        })
+      ).subscribe();
   }
 
   private handleSenderCreate(email: string, password: string): void {

@@ -11,7 +11,11 @@
     </div>
 
     <div class="lg:col-span-1 space-y-4">
-      <app-mailing-management-senders-status-list (onSenderPingClicked)="acceptSenderToPing($event)" [mailers]="mailers()" />
+      <app-mailing-management-senders-status-list
+        (onSenderRemoveClicked)="onSenderRemoveSubmit($event)"
+        (onSenderPingClicked)="acceptSenderToPing($event)"
+        [mailers]="mailers()"
+      />
     </div>
   </div>
 </div>

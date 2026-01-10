@@ -66,14 +66,14 @@ public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
         await Session.Execute(command);
     }
     
-    private string WhenClause(int i) => $"WHEN id = @id_{i}";
+    private string WhenClause(int i) => $"WHEN p.id = @id_{i}";
     
     private IEnumerable<PendingEmailNotification> GetTrackingNotifications(IEnumerable<PendingEmailNotification> notifications)
     {
         List<PendingEmailNotification> result = [];
         foreach (PendingEmailNotification notification in notifications)
             if (Tracking.TryGetValue(notification.Id, out PendingEmailNotification? tracked))
-                result.Add(tracked);
+                result.Add(notification);
         return result;
     }
 }

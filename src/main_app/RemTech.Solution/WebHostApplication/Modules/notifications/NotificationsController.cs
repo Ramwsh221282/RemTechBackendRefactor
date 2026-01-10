@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Notifications.Core.Mailers;
 using Notifications.Core.Mailers.Features.AddMailer;
 using Notifications.Core.Mailers.Features.ChangeCredentials;
+using Notifications.Core.Mailers.Features.DeleteMailer;
 using Notifications.Core.PendingEmails.Features.AddPendingEmail;
 using Notifications.Infrastructure.Mailers.Queries.GetMailer;
 using Notifications.Infrastructure.Mailers.Queries.GetMailers;
@@ -31,6 +32,20 @@ public class NotificationsController : Controller
         return new Envelope((int)HttpStatusCode.OK, result, null);
     }
 
+    [VerifyToken]
+    [NotificationsManagementPermission]
+    [HttpDelete("mailers/{id:guid}")]
+    public async Task<Envelope> DeleteMailer(
+        [FromServices] ICommandHandler<DeleteMailerCommand, Guid> handler,
+        [FromRoute(Name = "id")] Guid id,
+        CancellationToken ct
+        )
+    {
+        DeleteMailerCommand command = new(id);
+        Result<Guid> result = await handler.Execute(command, ct);
+        return result.AsEnvelope();
+    }
+    
     [VerifyToken]
     [NotificationsManagementPermission]
     [HttpPost("mailers/{id:guid}/test-message")]

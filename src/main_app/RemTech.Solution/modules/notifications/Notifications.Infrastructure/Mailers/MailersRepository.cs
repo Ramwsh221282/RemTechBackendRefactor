@@ -76,6 +76,14 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
         return await Session.QuerySingleRow<bool>(command);
     }
 
+    public async Task Delete(Mailer mailer, CancellationToken ct = default)
+    {
+        const string sql = "DELETE FROM notifications_module.mailers WHERE id = @id";
+        object parameters = new { id = mailer.Id.Value };
+        CommandDefinition command = Session.FormCommand(sql, parameters, ct);
+        await Session.Execute(command);
+    }
+
     private static Mailer Map(IDataReader reader)
     {
         Guid id = reader.GetValue<Guid>("id");

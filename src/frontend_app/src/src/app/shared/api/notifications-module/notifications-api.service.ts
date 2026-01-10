@@ -27,6 +27,10 @@ export class NotificationsApiService {
     return this.startChangingMailer(id, email, password);
   }
 
+  public deleteMailer(id: string): Observable<TypedEnvelope<string>> {
+    return this.startRemovingMailer(id);
+  }
+
   public sendTestMessage(id: string, recipient: string): Observable<Envelope> {
     return this.startSendingTestMessage(id, recipient);
   }
@@ -85,6 +89,17 @@ export class NotificationsApiService {
     return this._sendingTestMessage$;
   }
 
+  private startRemovingMailer(id: string): Observable<TypedEnvelope<string>> {
+    if (this._removingMailer$) return this._removingMailer$;
+    const requestUrl: string = `${this._apiUrl}/mailers/${id}`;
+    this._removingMailer$ = this._httpClient.delete<TypedEnvelope<string>>(requestUrl, { withCredentials: true })
+      .pipe(
+        finalize((): void => this._removingMailer$ = undefined),
+        shareReplay({ bufferSize: 1, refCount: true }),
+      );
+    return this._removingMailer$;
+  }
+
   private readonly _httpClient: HttpClient = inject(HttpClient);
   private readonly _apiUrl: string = `${apiUrl}/notifications`;
   private _gettingMailers$: Observable<TypedEnvelope<MailerResponse[]>> | undefined;
@@ -92,4 +107,5 @@ export class NotificationsApiService {
   private _addingMailer$: Observable<TypedEnvelope<MailerResponse>> | undefined;
   private _changingMailer$: Observable<TypedEnvelope<MailerResponse>> | undefined;
   private _sendingTestMessage$: Observable<Envelope> | undefined;
+  private _removingMailer$: Observable<TypedEnvelope<string>> | undefined;
 }

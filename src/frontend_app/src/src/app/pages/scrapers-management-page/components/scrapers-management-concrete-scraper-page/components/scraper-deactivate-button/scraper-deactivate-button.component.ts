@@ -1,24 +1,14 @@
 import {
   Component,
-  DestroyRef,
   EventEmitter,
-  inject,
   Input,
   Output,
   signal,
   WritableSignal,
 } from '@angular/core';
-import { Scraper } from '../../../scrapers-management-settings-page/types/Scraper';
-import { VehicleScrapersService } from '../../../scrapers-management-settings-page/services/vehicle-scrapers.service';
 import { Toast } from 'primeng/toast';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ParserStateChangeResult } from '../../../scrapers-management-settings-page/types/ParserStateChangedResult';
-import { HttpErrorResponse } from '@angular/common/http';
-import { MessageServiceUtils } from '../../../../../../shared/utils/message-service-utils';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import {ParserResponse} from '../../../../../../shared/api/parsers-module/parsers-responses';
-import {ParsersControlApiService} from '../../../../../../shared/api/parsers-module/parsers-control-api.service';
 import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module/parsers-factory';
 
 @Component({
