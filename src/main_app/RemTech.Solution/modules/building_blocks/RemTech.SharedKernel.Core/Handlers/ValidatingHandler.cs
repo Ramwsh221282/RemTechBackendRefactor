@@ -9,16 +9,19 @@ public sealed class ValidatingHandler<TCommand, TResult>(
     ICommandHandler<TCommand, TResult> handler)
     : IValidatingCommandHandler<TCommand, TResult> where TCommand : ICommand
 {
+    private IEnumerable<IValidator<TCommand>> Validators { get; } = validators;
+    private ICommandHandler<TCommand, TResult> Handler { get; } = handler;
+    
     public async Task<Result<TResult>> Execute(TCommand command, CancellationToken ct = default)
     {
-        foreach (IValidator<TCommand> validator in validators)
+        foreach (IValidator<TCommand> validator in Validators)
         {
             ValidationResult result = await validator.ValidateAsync(command, cancellation: ct);
             if (HasErrors(result, out List<string> errors))
                 return Error.Validation(string.Join(", ", errors));
         }
         
-        return await handler.Execute(command, ct: ct);
+        return await Handler.Execute(command, ct: ct);
     }
     
     private bool HasErrors(ValidationResult result, out List<string> errors)

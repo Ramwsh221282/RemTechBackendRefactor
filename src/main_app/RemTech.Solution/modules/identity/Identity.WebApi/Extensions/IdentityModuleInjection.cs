@@ -100,7 +100,7 @@ public static class IdentityModuleInjection
             services.AddHostedService<AccountsModuleOutboxProcessor>();
         }
         
-        private void AddInfrastructure()
+        public void AddInfrastructure()
         {
             services.AddRepositories();
             services.AddChangeTracker();

@@ -66,7 +66,7 @@ public static class NotificationsModuleInjection
                 .AlsoUseDecorators()
                 .Invoke();
 
-        private void AddInfrastructureLayer()
+        public void AddInfrastructureLayer()
         {
             services.AddPersistence();
             services.AddCryptography();

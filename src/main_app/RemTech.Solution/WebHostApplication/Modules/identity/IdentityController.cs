@@ -99,7 +99,7 @@ public sealed class IdentityController : Controller
 
     [HttpPut("refresh")]
     public async Task<Envelope> RefreshToken(
-        ICommandHandler<RefreshTokenCommand, AuthenticationResult> handler,
+        [FromServices] ICommandHandler<RefreshTokenCommand, AuthenticationResult> handler,
         CancellationToken ct)
     {
         (string accessToken, string refreshToken) = HttpContext.GetIdentityTokens(GetAccessTokenMethods, GetRefreshTokenMethods);
@@ -117,7 +117,7 @@ public sealed class IdentityController : Controller
     [HttpPost("sign-up")]
     public async Task<Envelope> SignUp(
         [FromBody] RegisterAccountRequest request,
-        ICommandHandler<RegisterAccountCommand, Unit> handler,
+        [FromServices] ICommandHandler<RegisterAccountCommand, Unit> handler,
         CancellationToken ct)
     {
         RegisterAccountCommand command = new(request.Email, request.Login, request.Password);

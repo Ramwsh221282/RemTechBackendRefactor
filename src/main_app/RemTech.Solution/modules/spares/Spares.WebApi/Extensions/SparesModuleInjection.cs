@@ -63,7 +63,7 @@ public static class SparesModuleInjection
                 .Invoke();
         }
         
-        private void RegisterSparesInfrastructure()
+        public void RegisterSparesInfrastructure()
         {
             services.RegisterRepositories();
             services.RegisterRegionProvider();

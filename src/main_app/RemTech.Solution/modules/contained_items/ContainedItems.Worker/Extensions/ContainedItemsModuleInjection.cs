@@ -29,7 +29,7 @@ public static class ContainedItemsModuleInjection
             services.AddContainedItemsDomain();
         }
 
-        private void RegisterInfrastructure()
+        public void RegisterInfrastructure()
         {
             services.AddContainedItemsInfrastructure();
         }

@@ -79,10 +79,10 @@ public sealed class HandlersRegistrator
     {
         _registrationActions.Enqueue(() =>
         {
-            _services.UseCacheInvalidatingHandlers();
             _services.UseTransactionalHandlers();
             _services.UseValidatingHandlers();
             _services.UseLoggingHandlers();
+            _services.UseCacheInvalidatingHandlers();
         });
         return this;
     }

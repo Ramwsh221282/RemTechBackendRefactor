@@ -90,20 +90,6 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
         return token;
     }
 
-    public async Task<Guid?> Remove(string accessToken, CancellationToken ct = default)
-    {
-        const string sql = """
-                           DELETE FROM identity_module.access_tokens
-                           WHERE raw_token = @raw_token
-                           RETURNING token_id
-                           """;
-        
-        object parameters = new { raw_token = accessToken };
-        CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-        NpgsqlConnection connection = await Session.GetConnection(ct);
-        return await connection.QueryFirstOrDefaultAsync<Guid?>(command);
-    }
-
     public async Task UpdateTokenExpired(string rawToken, CancellationToken ct = default)
     {
         const string sql = "UPDATE identity_module.access_tokens SET is_expired = TRUE WHERE raw_token = @raw_token";
