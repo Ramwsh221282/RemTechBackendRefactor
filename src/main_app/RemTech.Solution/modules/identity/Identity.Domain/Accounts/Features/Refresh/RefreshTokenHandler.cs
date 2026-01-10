@@ -23,8 +23,12 @@ public sealed class RefreshTokenHandler(
         Result<RefreshToken> refreshToken = await refreshTokens.Get(command.RefreshToken, withLock: true, ct);
         if (refreshToken.IsFailure) 
             return Error.Unauthorized("Token not found.");
-        // if (refreshToken.Value.IsExpired()) 
-        //     return Error.Unauthorized("Invalid token."); // TODO decide how to handle expired token.
+        
+        if (refreshToken.Value.IsExpired(tokenManager))
+        {
+            await refreshTokens.Delete(refreshToken.Value, ct);
+            return Error.Unauthorized("Token is expired.");
+        }
         
         Result<Account> account = await GetRequiredAccount(refreshToken.Value, ct);
         if (account.IsFailure) 

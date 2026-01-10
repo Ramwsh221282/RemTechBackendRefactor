@@ -99,6 +99,14 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
         return token is null ? Error.NotFound("Токен обновления не найден.") : token;
     }
 
+    public async Task Delete(RefreshToken token, CancellationToken ct = default)
+    {
+        const string sql = "DELETE FROM identity_module.refresh_tokens WHERE account_id = @account_id AND token_value = @token_value";
+        object parameters = new { account_id = token.AccountId, token_value = token.TokenValue };
+        CommandDefinition command = Session.FormCommand(sql, parameters, ct);
+        await Session.Execute(command);
+    }
+
     private static RefreshToken Map(IDataReader reader)
     {
         Guid accountId = reader.GetGuid(reader.GetOrdinal("account_id"));
