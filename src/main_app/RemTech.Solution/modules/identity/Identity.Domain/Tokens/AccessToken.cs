@@ -11,6 +11,7 @@ public sealed class AccessToken
     public required Guid UserId { get; set; }
     public required IEnumerable<string> Permissions { get; set; }
     public required string RawPermissionsString { get; set; }
+    public required bool IsExpired { get; set; }
 
     public AccessToken()
     {

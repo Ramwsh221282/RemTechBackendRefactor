@@ -3,6 +3,7 @@ using Dapper;
 using Notifications.Core.Common.Contracts;
 using Notifications.Core.PendingEmails;
 using Notifications.Core.PendingEmails.Contracts;
+using Npgsql;
 using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Notifications.Infrastructure.PendingEmails;
@@ -58,6 +59,17 @@ public sealed class PendingEmailNotificationsRepository(
         PendingEmailNotification[] notifications = await Session.QueryMultipleUsingReader(command, Map);
         ChangeTracker.Track(notifications);
         return notifications;
+    }
+
+    public async Task<int> Remove(IEnumerable<PendingEmailNotification> notifications, CancellationToken ct = default)
+    {
+        if (!notifications.Any()) return 0;
+        const string sql = "DELETE FROM notifications_module.pending_emails WHERE id = ANY (@ids)";
+        DynamicParameters parameters = new();
+        parameters.Add("@ids", notifications.Select(n => n.Id).ToArray());
+        CommandDefinition command = Session.FormCommand(sql, parameters, ct);
+        NpgsqlConnection connection = await Session.GetConnection(ct);
+        return await connection.ExecuteAsync(command);
     }
 
     private static PendingEmailNotification Map(IDataReader reader)

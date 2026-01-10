@@ -6,6 +6,9 @@ using Notifications.Infrastructure.Common;
 using Notifications.Infrastructure.Common.Migrations;
 using Notifications.Infrastructure.EmailSending;
 using Notifications.Infrastructure.Mailers;
+using Notifications.Infrastructure.Mailers.CacheInvalidators;
+using Notifications.Infrastructure.Mailers.Queries.GetMailer;
+using Notifications.Infrastructure.Mailers.Queries.GetMailers;
 using Notifications.Infrastructure.PendingEmails;
 using Notifications.Infrastructure.PendingEmails.BackgroundServices;
 using Notifications.Infrastructure.RabbitMq.Consumers;
@@ -15,6 +18,7 @@ using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.AesEncryption;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
+using Scrutor;
 
 namespace Notifications.WebApi.Extensions;
 
@@ -62,15 +66,41 @@ public static class NotificationsModuleInjection
                 .AlsoUseDecorators()
                 .Invoke();
 
-        private void AddInfrastructureLayer()
+        public void AddInfrastructureLayer()
         {
             services.AddPersistence();
             services.AddCryptography();
             services.AddEmailSender();
             services.AddBackgroundServices();
             services.AddConsumers();
+            services.AddQueryHandlers();
+            services.AddCacheInvalidators();
+            services.UseCachedQueryHandlers();
         }
 
+        private void UseCachedQueryHandlers()
+        {
+            services.Decorate(typeof(IQueryHandler<GetMailerQuery, MailerResponse?>), typeof(GetMailerCachedHandler));
+            services.Decorate(typeof(IQueryHandler<GetMailersQuery, IEnumerable<MailerResponse>>), typeof(GetMailersCachedHandler));
+        }
+
+        private void AddQueryHandlers()
+        {
+            services.AddScoped<IQueryHandler<GetMailersQuery, IEnumerable<MailerResponse>>, GetMailersHandler>();
+            services.AddScoped<IQueryHandler<GetMailerQuery, MailerResponse?>, GetMailerHandler>();
+        }
+
+        private void AddCacheInvalidators()
+        {
+            services.Scan(x => x.FromAssemblies([typeof(MailerArrayCacheInvalidator).Assembly])
+                .AddClasses(classes => classes.AssignableTo(typeof(ICacheInvalidator<,>)))
+                .UsingRegistrationStrategy(RegistrationStrategy.Skip)
+                .AsSelfWithInterfaces()
+                .WithScopedLifetime());
+            services.AddScoped<MailerArrayCacheInvalidator>();
+            services.AddScoped<MailerRecordCacheInvalidator>();
+        }
+        
         private void AddBackgroundServices()
         {
             services.AddHostedService<PendingEmailsProcessor>();

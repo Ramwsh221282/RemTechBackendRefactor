@@ -56,7 +56,7 @@ public static class VehiclesModuleInjection
                 .Invoke();
         }
 
-        private void RegisterInfrastructureLayerDependencies()
+        public void RegisterInfrastructureLayerDependencies()
         {
             Assembly assembly = typeof(NpgSqlVehiclesPersister).Assembly;
             services.RegisterQueryHandlers(assembly);

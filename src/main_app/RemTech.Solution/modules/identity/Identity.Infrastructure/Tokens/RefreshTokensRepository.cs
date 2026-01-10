@@ -45,15 +45,16 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
     {
         const string sql = """
                            UPDATE identity_module.refresh_tokens 
-                           SET token_value = @value, expires_at = @expires_at, created_at = @created_at
+                           SET token_value = @token_value, expires_at = @expires_at, created_at = @created_at
                            WHERE account_id = @account_id
                            """;
         
         object parameters = new
         {
             account_id = token.AccountId,
-            value = token.TokenValue,
-            expires_at = token.ExpiresAt
+            token_value = token.TokenValue,
+            expires_at = token.ExpiresAt,
+            created_at = token.CreatedAt
         };
         
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
@@ -96,6 +97,14 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
         RefreshToken? token = await Session.QuerySingleUsingReader(command, Map);
         return token is null ? Error.NotFound("Токен обновления не найден.") : token;
+    }
+
+    public async Task Delete(RefreshToken token, CancellationToken ct = default)
+    {
+        const string sql = "DELETE FROM identity_module.refresh_tokens WHERE account_id = @account_id AND token_value = @token_value";
+        object parameters = new { account_id = token.AccountId, token_value = token.TokenValue };
+        CommandDefinition command = Session.FormCommand(sql, parameters, ct);
+        await Session.Execute(command);
     }
 
     private static RefreshToken Map(IDataReader reader)

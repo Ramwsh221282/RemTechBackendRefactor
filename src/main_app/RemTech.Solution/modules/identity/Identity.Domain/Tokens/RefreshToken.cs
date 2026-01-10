@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using Identity.Domain.Contracts.Jwt;
 
 namespace Identity.Domain.Tokens;
 
@@ -15,9 +16,15 @@ public sealed class RefreshToken(Guid accountId, string tokenValue, long expires
         return new RefreshToken(accountId, tokenValue, expiresAt, createdAt);
     }
 
-    public bool IsExpired()
+    public bool IsExpired(IJwtTokenManager tokenManager)
     {
-        return ExpiresAt > CreatedAt;
+        long createdAt = tokenManager.GenerateRefreshToken(AccountId).CreatedAt;
+        return IsExpired(createdAt);
+    }
+    
+    public bool IsExpired(long currentUnixTime)
+    {
+        return currentUnixTime > ExpiresAt;
     }
     
     private static string GenerateRandomString()

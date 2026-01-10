@@ -1,6 +1,5 @@
 ﻿using Identity.Domain.Contracts.Jwt;
 using Identity.Domain.Contracts.Persistence;
-using Identity.Domain.Extensions;
 using Identity.Domain.Tokens;
 using Microsoft.IdentityModel.Tokens;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -15,20 +14,17 @@ public sealed class VerifyTokenHandler(
 {
     public async Task<Result<Unit>> Execute(VerifyTokenCommand command, CancellationToken ct = default)
     {
-        Result<TokenValidationResult> validToken = await tokensManager.GetValidToken(command.Token);
+        Result<AccessToken> token = await accessTokens.Get(command.Token, withLock: true, ct);
+        if (token.IsFailure)
+            return Error.Unauthorized("Token not found.");
+        
+        Result<TokenValidationResult> validToken = await tokensManager.GetValidToken(token.Value.RawToken);
         if (validToken.IsFailure)
         {
-            await accessTokens.Remove(command.Token, ct);
+            await accessTokens.UpdateTokenExpired(command.Token, ct);
             return Error.Unauthorized("Invalid token.");
         }
-
-        Result<AccessToken> token = await accessTokens.Get(validToken.Value.TokenId, ct);
-        if (token.IsFailure)
-        {
-            await accessTokens.Remove(command.Token, ct);
-            return Error.Unauthorized("Token not found.");
-        }
-
+        
         return Unit.Value;
     }
 }

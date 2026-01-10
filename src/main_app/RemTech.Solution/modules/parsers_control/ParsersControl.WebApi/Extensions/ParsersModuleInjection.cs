@@ -59,7 +59,7 @@ public static class ParsersModuleInjection
                 .Invoke();
         }
         
-        private void AddInfrastructureLayer()
+        public void AddInfrastructureLayer()
         {
             services.AddEventListeners();
             services.AddRepositories();

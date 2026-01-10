@@ -17,7 +17,8 @@ public sealed class AccessTokensTableMigration : Migration
                         email VARCHAR(256) NOT NULL,
                         login VARCHAR(256) NOT NULL,
                         user_id UUID NOT NULL,
-                        raw_permissions TEXT NOT NULL
+                        raw_permissions TEXT NOT NULL,
+                        is_expired BOOLEAN NOT NULL
                     );
                     """);
     }

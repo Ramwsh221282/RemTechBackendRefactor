@@ -16,6 +16,7 @@ using Identity.Infrastructure.Permissions;
 using Identity.Infrastructure.RabbitMq.Producers;
 using Identity.Infrastructure.Tickets;
 using Identity.Infrastructure.Tokens;
+using Identity.Infrastructure.Tokens.BackgroundServices;
 using Identity.WebApi.BackgroundServices;
 using Identity.WebApi.Options;
 using RemTech.SharedKernel.Configurations;
@@ -99,7 +100,7 @@ public static class IdentityModuleInjection
             services.AddHostedService<AccountsModuleOutboxProcessor>();
         }
         
-        private void AddInfrastructure()
+        public void AddInfrastructure()
         {
             services.AddRepositories();
             services.AddChangeTracker();
@@ -109,6 +110,7 @@ public static class IdentityModuleInjection
             services.AddOutboxMessagePublishers();
             services.AddBackgroundServices();
             services.AddJwt();
+            services.AddHostedService<ExpiredTokensCleanerService>();
             
             services.UseCacheInvalidatingHandlers();
             services.UseCacheOnRepositories();

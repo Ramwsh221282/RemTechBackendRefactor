@@ -8,4 +8,5 @@ public interface IMailersRepository
     Task<Result<Mailer>> Get(MailersSpecification specification, CancellationToken ct = default);
     Task<Mailer[]> GetMany(MailersSpecification specification, CancellationToken ct = default);
     Task<bool> Exists(MailersSpecification specification, CancellationToken ct = default);
+    Task Delete(Mailer mailer, CancellationToken ct = default);
 }

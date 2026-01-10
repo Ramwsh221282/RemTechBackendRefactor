@@ -99,7 +99,7 @@ public sealed class IdentityController : Controller
 
     [HttpPut("refresh")]
     public async Task<Envelope> RefreshToken(
-        ICommandHandler<RefreshTokenCommand, AuthenticationResult> handler,
+        [FromServices] ICommandHandler<RefreshTokenCommand, AuthenticationResult> handler,
         CancellationToken ct)
     {
         (string accessToken, string refreshToken) = HttpContext.GetIdentityTokens(GetAccessTokenMethods, GetRefreshTokenMethods);
@@ -117,7 +117,7 @@ public sealed class IdentityController : Controller
     [HttpPost("sign-up")]
     public async Task<Envelope> SignUp(
         [FromBody] RegisterAccountRequest request,
-        ICommandHandler<RegisterAccountCommand, Unit> handler,
+        [FromServices] ICommandHandler<RegisterAccountCommand, Unit> handler,
         CancellationToken ct)
     {
         RegisterAccountCommand command = new(request.Email, request.Login, request.Password);
@@ -141,12 +141,18 @@ public sealed class IdentityController : Controller
 
     private static void SetAuthHeaders(HttpContext context, AuthenticationResult result)
     {
+        context.Response.Headers.Remove("access_token");
+        context.Response.Headers.Remove("refresh_token");
+        
         context.Response.Headers.Append("access_token", result.AccessToken);
         context.Response.Headers.Append("refresh_token", result.RefreshToken);
     }
     
     private static void SetAuthCookies(HttpContext context, AuthenticationResult result)
     {
+        context.Response.Cookies.Delete("access_token");
+        context.Response.Cookies.Delete("refresh_token");
+        
         context.Response.Cookies.Append("access_token", result.AccessToken);
         context.Response.Cookies.Append("refresh_token", result.RefreshToken);
     }

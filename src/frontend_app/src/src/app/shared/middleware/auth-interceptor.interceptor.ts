@@ -1,100 +1,83 @@
 import {HttpErrorResponse, HttpInterceptorFn, HttpRequest} from '@angular/common/http';
 import {AuthenticationStatusService} from '../services/AuthenticationStatusService';
 import {inject} from '@angular/core';
-import {catchError, switchMap, tap, throwError} from 'rxjs';
+import {catchError, finalize, map, Observable, of, Subject, switchMap, take, tap, throwError} from 'rxjs';
 import {IdentityApiService} from '../api/identity-module/identity-api-service';
 import {
   PermissionsStatusService,
-  UserAccountPermissions,
   UserAccountPermissionsFromAccountResponse
 } from '../services/PermissionsStatus.service';
+import {TypedEnvelope} from '../api/envelope';
 import {AccountResponse} from '../api/identity-module/identity-responses';
 
+let refreshInProgress: boolean = false;
+let refreshSubject: Subject<boolean> | null = null;
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authStatusService: AuthenticationStatusService = inject(AuthenticationStatusService);
-  const identityService: IdentityApiService = inject(IdentityApiService);
-  const permissionsService: PermissionsStatusService = inject(PermissionsStatusService);
+  const authStatus = inject(AuthenticationStatusService);
+  const identityService = inject(IdentityApiService);
+  const permissionsStatus = inject(PermissionsStatusService);
+  const cloned = req.clone({ withCredentials: true });
 
-  const isVerifyRequest: boolean = req.url.includes('verify');
-  const isRefreshRequest: boolean = req.url.includes('refresh');
-  const clonedRequest: HttpRequest<unknown> = req.clone({  withCredentials: true })
+  const startRefresh = (): Observable<boolean> => {
+    if (!refreshInProgress) {
+      refreshInProgress = true;
+      refreshSubject = new Subject<boolean>();
 
-  return next(clonedRequest).pipe(
-    tap({
-      complete: () => {
-        authStatusService.setIsAuthenticated(true);
-      }
-    }),
-    catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 && (isVerifyRequest || isRefreshRequest)) {
-        authStatusService.setIsNotAuthenticated();
-        permissionsService.clean();
-        return throwError(() => error);
-      }
-
-      if (error.status === 401) {
-        return identityService.refreshToken().pipe(
-          switchMap(() => {
-            authStatusService.setIsAuthenticated(true);
-
-            return identityService.fetchAccount().pipe(
-              tap(account => {
-                if (account.body) {
-                  permissionsService.initializePermissions(UserAccountPermissionsFromAccountResponse(account.body));
-                }
-              }),
-              switchMap(() => next(clonedRequest))
-            );
-          }),
-          catchError(refreshError => {
-            authStatusService.setIsNotAuthenticated();
-            permissionsService.clean();
-            return throwError(() => refreshError);
+      identityService.refreshToken().pipe(
+        tap(() => {
+          authStatus.setIsAuthenticated(true);
+          identityService.fetchAccount().subscribe((resp: TypedEnvelope<AccountResponse>): void => {
+            if (resp.body) {
+              permissionsStatus.initializePermissions(UserAccountPermissionsFromAccountResponse(resp.body));
+            }
           })
-        );
-      }
-      return throwError(() => error);
-    })
-  );
+        }),
+        catchError((err: HttpErrorResponse) => {
+          authStatus.setIsNotAuthenticated();
+          permissionsStatus.clean();
+          return throwError(() => err);
+        }),
+        finalize(() => {
+          refreshInProgress = false;
+        })
+      ).subscribe({
+        next: () => {
+          refreshSubject?.next(true);
+          refreshSubject?.complete();
+        },
+        error: () => {
+          refreshSubject?.next(false);
+          refreshSubject?.complete();
+        }
+      });
+    }
 
-  // return next(req).pipe(
-  //   tap({
-  //     error: (error: HttpErrorResponse): void => {
-  //       if ([401].includes(error.status) && isVerifyRequest) {
-  //         authStatusService.setIsNotAuthenticated();
-  //         permissionsService.clean();
-  //       }
-  //
-  //       if ([401].includes(error.status) && isRefreshRequest) {
-  //         authStatusService.setIsNotAuthenticated();
-  //         permissionsService.clean();
-  //       }
-  //
-  //       if ([401].includes(error.status)) {
-  //         identityService.refreshToken().pipe(
-  //           switchMap(() => {
-  //             authStatusService.setIsAuthenticated(true);
-  //             return identityService.fetchAccount().pipe(
-  //               tap(account => {
-  //                 if (account.body) {
-  //                   permissionsService.initializePermissions(mapPermissions(account.body));
-  //                 }
-  //               }),
-  //               switchMap(() => next(clonedRequest))
-  //             );
-  //           }),
-  //           catchError(() => {
-  //             authStatusService.setIsNotAuthenticated();
-  //             permissionsService.clean();
-  //             return throwError(() => error);
-  //           })
-  //         ).subscribe()
-  //       }
-  //
-  //     },
-  //     complete: (): void => {
-  //       authStatusService.setIsAuthenticated(true)
-  //     },
-  //   })
-  // )
-};
+    if (!refreshSubject) {
+      return throwError(() => new Error('No refreshSubject'));
+    }
+
+    return refreshSubject.asObservable().pipe(take(1));
+  };
+
+  const handle401 = (error: HttpErrorResponse): Observable<any> => {
+    const isRefreshRequest = cloned.url.includes('/identity/refresh-token');
+
+    if (error.status !== 401 || isRefreshRequest) {
+      return throwError(() => error);
+    }
+
+    return startRefresh().pipe(
+      switchMap((success) => {
+        if (!success) {
+          return throwError(() => error);
+        }
+        return next(cloned);
+      })
+    );
+  };
+
+  return next(cloned).pipe(
+    catchError((error: HttpErrorResponse) => handle401(error))
+  );
+}

@@ -7,14 +7,16 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
     <div class="md:col-span-2 bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow-inner">
-      <app-mailing-management-create-sender-form (mailingSenderAdded)="senderAdded($event)" />
+      <app-mailing-management-create-sender-form (createMailerSubmit)="onSenderCreateSubmit($event)" />
     </div>
 
     <div class="lg:col-span-1 space-y-4">
-      <app-mailing-management-senders-status-list (onFetched)="fetched($event)"
-                                                  [should_fetch_setter]="shouldFetch"
-                                                  (onSenderPingClicked)="acceptSenderToPing($event)" />
+      <app-mailing-management-senders-status-list
+        (onSenderRemoveClicked)="onSenderRemoveSubmit($event)"
+        (onSenderPingClicked)="acceptSenderToPing($event)"
+        [mailers]="mailers()"
+      />
     </div>
   </div>
 </div>
-<app-mailing-management-check-sender-form [sender_setter]="mailingSenderToPing" (onClose)="closePingDialog()" />
+<app-mailing-management-check-sender-form *ngIf="mailerToPing()" [sender_setter]="mailerToPing()!" (onTestMessageSendSubmitted)="onTestMessageSendSubmit($event)" (onClose)="closePingDialog()" />

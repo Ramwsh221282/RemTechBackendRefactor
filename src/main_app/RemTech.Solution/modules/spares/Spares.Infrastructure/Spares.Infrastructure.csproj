@@ -11,7 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.18" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.19" />
       <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.8" />
       <PackageReference Include="RemTech.SharedKernel.NN" Version="1.0.2" />
     </ItemGroup>

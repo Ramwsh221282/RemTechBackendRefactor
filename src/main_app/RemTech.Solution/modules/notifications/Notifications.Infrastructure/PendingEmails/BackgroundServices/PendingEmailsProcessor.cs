@@ -63,7 +63,8 @@ public sealed class PendingEmailsProcessor(
             await DecryptMailers(mailers, ct);
             await PublishPendingEmails(GetRandomMailer(mailers), pendingEmails, ct);
             
-            await unitOfWork.Save(pendingEmails, ct);
+            IEnumerable<PendingEmailNotification> sent = pendingEmails.Where(e => e.WasSent);
+            int removed = await pendingEmailsRepostiory.Remove(sent, ct);
             Result commit = await scope.Commit(ct);
             if (commit.IsFailure)
             {
@@ -71,7 +72,7 @@ public sealed class PendingEmailsProcessor(
             }
             else
             {
-                Logger.Information("Committed transaction for {Count} messages.", pendingEmails.Length);
+                Logger.Information("Committed transaction for {Count} messages.", removed);
             }
         }
         catch (Exception e)

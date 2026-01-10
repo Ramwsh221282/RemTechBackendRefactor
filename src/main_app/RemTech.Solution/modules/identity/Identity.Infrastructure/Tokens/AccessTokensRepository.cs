@@ -17,14 +17,15 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
     {
         const string sql = """
                            INSERT INTO identity_module.access_tokens
-                           (token_id, raw_token, expires_at, created_at, email, login, user_id, raw_permissions)
+                           (token_id, raw_token, expires_at, created_at, email, login, user_id, raw_permissions, is_expired)
                            VALUES
-                           (@token_id, @raw_token, @expires_at, @created_at, @email, @login, @user_id, @raw_permissions)
+                           (@token_id, @raw_token, @expires_at, @created_at, @email, @login, @user_id, @raw_permissions, @is_expired)
                            ON CONFLICT (token_id) DO NOTHING;
                            """;
         
         object parameters = new
         {
+            is_expired = token.IsExpired,
             token_id = token.TokenId,
             raw_token = token.RawToken,
             expires_at = token.ExpiresAt,
@@ -39,9 +40,9 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
         await Session.Execute(command);
     }
 
-    public async Task<Result<AccessToken>> Get(Guid tokenId, CancellationToken ct = default)
+    public async Task<Result<AccessToken>> Get(Guid tokenId, bool withLock = false, CancellationToken ct = default)
     {
-        const string sql = """
+        string sql = $"""
                            SELECT
                            token_id as token_id,
                            raw_token as raw_token,
@@ -50,21 +51,23 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
                            email as email,
                            login as login,
                            user_id as user_id,
-                           raw_permissions as raw_permissions
+                           raw_permissions as raw_permissions,
+                           is_expired as is_expired
                            FROM identity_module.access_tokens
-                           WHERE id = @id
+                           WHERE token_id = @token_id
+                           {LockClause(withLock)}
                            """;
         
-        object parameters = new { id = tokenId };
+        object parameters = new { token_id = tokenId };
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
         AccessToken? token = await Session.QuerySingleUsingReader(command, Map);
         if (token is null) return Error.NotFound("Токен доступа не найден.");
         return token;
     }
 
-    public async Task<Result<AccessToken>> Get(string accessToken, CancellationToken ct = default)
+    public async Task<Result<AccessToken>> Get(string accessToken, bool withLock = false, CancellationToken ct = default)
     {
-        const string sql = """
+        string sql = $"""
                            SELECT
                            token_id as token_id,
                            raw_token as raw_token,
@@ -73,9 +76,11 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
                            email as email,
                            login as login,
                            user_id as user_id,
-                           raw_permissions as raw_permissions
+                           raw_permissions as raw_permissions,
+                           is_expired as is_expired
                            FROM identity_module.access_tokens
                            WHERE raw_token = @raw_token
+                           {LockClause(withLock)}
                            """;
         
         object parameters = new { raw_token = accessToken };
@@ -85,18 +90,50 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
         return token;
     }
 
-    public async Task<Guid?> Remove(string accessToken, CancellationToken ct = default)
+    public async Task UpdateTokenExpired(string rawToken, CancellationToken ct = default)
     {
+        const string sql = "UPDATE identity_module.access_tokens SET is_expired = TRUE WHERE raw_token = @raw_token";
+        object parameters = new { raw_token = rawToken };
+        CommandDefinition command = Session.FormCommand(sql, parameters, ct);
+        await Session.Execute(command);
+    }
+
+    public async Task<IEnumerable<AccessToken>> GetExpired(int maxCount = 50, bool withLock = false, CancellationToken ct = default)
+    {
+        string sql = $"""
+                           SELECT
+                           token_id as token_id,
+                           raw_token as raw_token,
+                           expires_at as expires_at,
+                           created_at as created_at,
+                           email as email,
+                           login as login,
+                           user_id as user_id,
+                           raw_permissions as raw_permissions,
+                           is_expired as is_expired
+                           FROM identity_module.access_tokens
+                           WHERE is_expired is TRUE
+                           LIMIT @max_count
+                           FOR UPDATE
+                           {LockClause(withLock)}
+                           """;
+        
+        object parameters = new { max_count = maxCount };
+        CommandDefinition command = Session.FormCommand(sql, parameters, ct);
+        return await Session.QueryMultipleUsingReader(command, Map);
+    }
+
+    public async Task Remove(IEnumerable<AccessToken> tokens, CancellationToken ct = default)
+    {
+        if (!tokens.Any()) return;
+        Guid[] ids = tokens.Select(t => t.TokenId).ToArray();
         const string sql = """
                            DELETE FROM identity_module.access_tokens
-                           WHERE raw_token = @raw_token
-                           RETURNING token_id
+                           WHERE token_id = ANY(@token_ids)
                            """;
-        
-        object parameters = new { raw_token = accessToken };
+        object parameters = new { token_ids = ids };
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-        NpgsqlConnection connection = await Session.GetConnection(ct);
-        return await connection.QueryFirstOrDefaultAsync<Guid?>(command);
+        await Session.Execute(command);
     }
 
     private static AccessToken Map(IDataReader reader)
@@ -108,11 +145,13 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
         string email = reader.GetString(reader.GetOrdinal("email"));
         string login = reader.GetString(reader.GetOrdinal("login"));
         Guid userId = reader.GetGuid(reader.GetOrdinal("user_id"));
+        bool isExpired = reader.GetBoolean(reader.GetOrdinal("is_expired"));
         string rawPermissions = reader.GetString(reader.GetOrdinal("raw_permissions"));
         string[] permissions = rawPermissions.Split(',');
         
         return new AccessToken()
         {
+            IsExpired = isExpired,
             RawToken = rawToken,
             TokenId = tokenId,
             ExpiresAt = expiresAt,
@@ -123,5 +162,10 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
             RawPermissionsString = rawPermissions,
             CreatedAt = createdAt
         };
+    }
+
+    private static string LockClause(bool withLock)
+    {
+        return withLock ? "FOR UPDATE" : string.Empty;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Identity.Domain.Accounts.Models;
+using Identity.Domain.Tokens;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Domain.Contracts.Persistence;

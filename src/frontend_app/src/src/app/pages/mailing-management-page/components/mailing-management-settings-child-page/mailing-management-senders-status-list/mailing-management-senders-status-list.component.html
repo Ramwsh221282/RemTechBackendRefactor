@@ -11,7 +11,7 @@
       <div class="flex items-center gap-2">
         @if (boolHasSenderWith('gmail.com')) {
           <span class="cursor-pointer" (click)="pingSenderByPostfix('gmail.com')">Проверить</span>
-          <i class="pi pi-trash"></i>
+          <i class="pi pi-trash cursor-pointer" (click)="deleteClick('gmail.com')"></i>
         }
       </div>
     </li>
@@ -24,7 +24,7 @@
       <div class="flex items-center gap-2">
         @if (boolHasSenderWith('yandex.ru')) {
           <span class="cursor-pointer" (click)="pingSenderByPostfix('yandex.ru')">Проверить</span>
-          <i class="pi pi-trash"></i>
+          <i class="pi pi-trash cursor-pointer" (click)="deleteClick('yandex.ru')"></i>
         }
       </div>
     </li>
@@ -37,9 +37,10 @@
       <div class="flex items-center gap-2">
         @if (boolHasSenderWith('mail.ru')) {
           <span class="cursor-pointer" (click)="pingSenderByPostfix('mail.ru')">Проверить</span>
-          <i class="pi pi-trash"></i>
+          <i class="pi pi-trash cursor-pointer" (click)="deleteClick('mail.ru')"></i>
         }
       </div>
     </li>
   </ul>
 </div>
+<p-confirm-dialog/>

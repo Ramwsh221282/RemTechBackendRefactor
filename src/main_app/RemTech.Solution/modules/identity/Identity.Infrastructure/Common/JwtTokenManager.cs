@@ -72,6 +72,7 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
         JwtPayload payload = token.Payload;
         return new AccessToken()
         {
+            IsExpired = false,
             RawToken = tokenString,
             TokenId = Guid.Parse(payload["tid"].ToString()!),
             ExpiresAt = long.Parse(payload["exp"].ToString()!),
