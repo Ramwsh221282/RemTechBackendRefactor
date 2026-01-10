@@ -1,48 +1,69 @@
-import { Component, signal, WritableSignal } from '@angular/core';
+import {Component, DestroyRef, effect, inject, signal, WritableSignal} from '@angular/core';
 import { MailingManagementCreateSenderFormComponent } from './mailing-management-create-sender-form/mailing-management-create-sender-form.component';
-import { MailingManagementSendersStatusListComponent } from './mailing-management-senders-status-list/mailing-management-senders-status-list.component';
 import { MailingSender } from '../../models/MailingSender';
 import { MailingManagementCheckSenderFormComponent } from './mailing-management-check-sender-form/mailing-management-check-sender-form.component';
+import {MessageService} from 'primeng/api';
+import {NotificationsApiService} from '../../../../shared/api/notifications-module/notifications-api.service';
+import {MailerResponse} from '../../../../shared/api/notifications-module/notifications-responses';
+import {catchError, EMPTY, map, Observable, tap} from 'rxjs';
+import {TypedEnvelope} from '../../../../shared/api/envelope';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {HttpErrorResponse} from '@angular/common/http';
+import {MessageServiceUtils} from '../../../../shared/utils/message-service-utils';
 
 @Component({
   selector: 'app-mailing-management-settings-child-page',
-  imports: [
-    MailingManagementCreateSenderFormComponent,
-    MailingManagementSendersStatusListComponent,    
-    MailingManagementCheckSenderFormComponent,
-  ],
+  imports: [MailingManagementCreateSenderFormComponent, MailingManagementCheckSenderFormComponent],
   templateUrl: './mailing-management-settings-child-page.component.html',
   styleUrl: './mailing-management-settings-child-page.component.scss',
 })
 export class MailingManagementSettingsChildPageComponent {
-  private readonly _shouldFetch: WritableSignal<boolean>;
-  private readonly _mailingSenderToPing: WritableSignal<MailingSender | null>;
-  constructor() {
-    this._mailingSenderToPing = signal(null);
-    this._shouldFetch = signal(false);
+  constructor(
+    private readonly _messageService: MessageService,
+    private readonly _service: NotificationsApiService,
+  ) {
+    this.mailerToPing = signal(null);
+    this.mailers = signal([]);
+    effect((): void => {
+      this.fetchMailers();
+    });
   }
 
+  readonly mailers: WritableSignal<MailerResponse[]>;
+  readonly mailerToPing: WritableSignal<MailerResponse | null>
+  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
+
   public senderAdded(_: MailingSender): void {
-    this._shouldFetch.set(true);
+
   }
 
   public fetched(value: boolean): void {
-    this._shouldFetch.set(value);
-  }
 
-  public get shouldFetch(): boolean {
-    return this._shouldFetch();
   }
 
   public get mailingSenderToPing(): MailingSender | null {
-    return this._mailingSenderToPing();
+    return null;
   }
 
   public acceptSenderToPing(sender: MailingSender): void {
-    this._mailingSenderToPing.set(sender);
+
   }
 
   public closePingDialog(): void {
-    this._mailingSenderToPing.set(null);
+
+  }
+
+  private fetchMailers(): void {
+    this._service.fetchMailers()
+      .pipe(
+        takeUntilDestroyed(this._destroyRef),
+        map((envelope: TypedEnvelope<MailerResponse[]>): MailerResponse[] => envelope.body ?? []),
+        tap((mailers: MailerResponse[]): void => this.mailers.set(mailers)),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message as string;
+          MessageServiceUtils.showError(this._messageService, message);
+          return EMPTY;
+        })
+      )
   }
 }
