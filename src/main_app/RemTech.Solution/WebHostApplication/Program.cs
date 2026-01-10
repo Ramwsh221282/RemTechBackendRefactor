@@ -6,11 +6,10 @@ using WebHostApplication.Middlewares;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.RegisterApplicationModules();
-if (builder.Environment.IsDevelopment()) 
+if (builder.Environment.IsDevelopment())
     builder.Services.RegisterConfigurationFromAppsettings();
 builder.Services.RegisterSharedDependencies(builder.Configuration);
 builder.Services.RegisterModuleMigrations();
-
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

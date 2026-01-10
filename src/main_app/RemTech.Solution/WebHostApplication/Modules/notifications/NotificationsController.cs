@@ -1,11 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net;
+using Microsoft.AspNetCore.Mvc;
 using Notifications.Core.Mailers;
 using Notifications.Core.Mailers.Features.AddMailer;
 using Notifications.Core.Mailers.Features.ChangeCredentials;
+using Notifications.Infrastructure.Mailers.Queries.GetMailer;
+using Notifications.Infrastructure.Mailers.Queries.GetMailers;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using WebHostApplication.ActionFilters.Attributes;
+using WebHostApplication.Common.Envelope;
 
 namespace WebHostApplication.Modules.notifications;
 
@@ -15,7 +19,34 @@ public class NotificationsController
 {
     [VerifyToken]
     [NotificationsManagementPermission]
-    [HttpPost("mailer")]
+    [HttpGet("mailers")]
+    public async Task<Envelope> GetMailers(
+        [FromServices] IQueryHandler<GetMailersQuery, IEnumerable<MailerResponse>> handler,
+        CancellationToken ct
+        )
+    {
+        GetMailersQuery query = new();
+        IEnumerable<MailerResponse> result = await handler.Handle(query, ct);
+        return new Envelope((int)HttpStatusCode.OK, result, null);
+    }
+
+    [VerifyToken]
+    [NotificationsManagementPermission]
+    [HttpGet("mailers/{id:guid}")]
+    public async Task<Envelope> GetMailer(
+        [FromRoute(Name = "id")] Guid id,
+        [FromServices] IQueryHandler<GetMailerQuery, MailerResponse?> handler,
+        CancellationToken ct
+        )
+    {
+        GetMailerQuery query = new(id);
+        MailerResponse? mailer = await handler.Handle(query, ct);
+        return mailer.NotFoundOrOk("Не найдена конфигурация почтового сервиса.");
+    }
+    
+    [VerifyToken]
+    [NotificationsManagementPermission]
+    [HttpPost("mailers")]
     public async Task<Envelope> AddMailer(
         [FromBody] AddMailerRequest request,
         [FromServices] ICommandHandler<AddMailerCommand, Mailer> handler,
@@ -29,7 +60,7 @@ public class NotificationsController
 
     [VerifyToken]
     [NotificationsManagementPermission]
-    [HttpPut("mailer/{id:guid}")]
+    [HttpPut("mailers/{id:guid}")]
     public async Task<Envelope> UpdateMailer(
         [FromRoute(Name = "id")] Guid id,
         [FromBody] ChangeMailerRequest request,

@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Infrastructure.Redis\RemTech.SharedKernel.Infrastructure.Redis.csproj" />
       <ProjectReference Include="..\Notifications.Core\Notifications.Core.csproj" />
     </ItemGroup>
 
