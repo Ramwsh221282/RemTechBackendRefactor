@@ -15,6 +15,7 @@ export class IdentityApiService {
   private _refresh$?: Observable<Envelope>;
   private _fetchAccountInProgress: boolean = false;
   private _fetch$?: Observable<TypedEnvelope<AccountResponse>>;
+  private _logout$?: Observable<Envelope>;
 
   constructor(private readonly _httpClient: HttpClient) {
   }
@@ -41,6 +42,10 @@ export class IdentityApiService {
     return this.startFetchingAccount();
   }
 
+  logout(): Observable<Envelope> {
+    return this.startLogout();
+  }
+
   refreshToken(): Observable<Envelope> {
     if (this.refreshTokenInProgress())
       return this._refresh$!;
@@ -54,6 +59,16 @@ export class IdentityApiService {
 
   verifyToken(): Observable<Envelope> {
     return this._httpClient.post<Envelope>(`${this._url}/verify`, null, { withCredentials: true });
+  }
+
+  private startLogout(): Observable<Envelope> {
+    if (this._logout$) return this._logout$;
+    const requestUrl: string = `${this._url}/logout`;
+    this._logout$ = this._httpClient.post<Envelope>(requestUrl, null, { withCredentials: true })
+      .pipe(finalize(() => {
+        this._logout$ = undefined;
+      }), shareReplay({ bufferSize: 1, refCount: true }));
+    return this._logout$;
   }
 
   private startFetchingAccount(): Observable<TypedEnvelope<AccountResponse>> {

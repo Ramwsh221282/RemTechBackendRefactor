@@ -136,6 +136,14 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
         await Session.Execute(command);
     }
 
+    public async Task Remove(AccessToken token, CancellationToken ct = default)
+    {
+        const string sql = "DELETE FROM identity_module.access_tokens WHERE token_id = @token_id";
+        object parameters = new { token_id = token.TokenId };
+        CommandDefinition command = Session.FormCommand(sql, parameters, ct);
+        await Session.Execute(command);
+    }
+
     private static AccessToken Map(IDataReader reader)
     {
         Guid tokenId = reader.GetGuid(reader.GetOrdinal("token_id"));

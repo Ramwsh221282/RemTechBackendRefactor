@@ -2,6 +2,7 @@
 using Identity.Domain.Accounts.Features.Authenticate;
 using Identity.Domain.Accounts.Features.ConfirmTicket;
 using Identity.Domain.Accounts.Features.GivePermissions;
+using Identity.Domain.Accounts.Features.Logout;
 using Identity.Domain.Accounts.Features.Refresh;
 using Identity.Domain.Accounts.Features.RegisterAccount;
 using Identity.Domain.Accounts.Features.VerifyToken;
@@ -53,6 +54,19 @@ public sealed class IdentityController : Controller
         return Ok();
     }
 
+    [HttpPost("logout")]
+    public async Task<Envelope> Logout(
+        [FromServices] ICommandHandler<LogoutCommand, Unit> handler,
+        CancellationToken ct)
+    {
+        (string accessToken, string refreshToken) = HttpContext.GetIdentityTokens(GetAccessTokenMethods, GetRefreshTokenMethods);
+        LogoutCommand command = new(accessToken, refreshToken);
+        Result<Unit> result = await handler.Execute(command, ct);
+        if (result.IsFailure) return result.AsEnvelope();
+        ClearAuthHeaders(HttpContext);
+        return Ok();
+    }
+    
     [VerifyToken]
     [HttpGet("account")]
     public async Task<Envelope> GetUserAccount(
@@ -146,6 +160,14 @@ public sealed class IdentityController : Controller
         
         context.Response.Headers.Append("access_token", result.AccessToken);
         context.Response.Headers.Append("refresh_token", result.RefreshToken);
+    }
+    
+    private static void ClearAuthHeaders(HttpContext context)
+    {
+        context.Response.Headers.Remove("access_token");
+        context.Response.Headers.Remove("refresh_token");
+        context.Response.Cookies.Delete("access_token");
+        context.Response.Cookies.Delete("refresh_token");
     }
     
     private static void SetAuthCookies(HttpContext context, AuthenticationResult result)

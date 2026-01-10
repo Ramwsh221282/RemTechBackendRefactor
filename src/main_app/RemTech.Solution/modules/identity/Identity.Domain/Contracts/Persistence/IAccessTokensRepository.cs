@@ -11,4 +11,5 @@ public interface IAccessTokensRepository
     Task UpdateTokenExpired(string rawToken, CancellationToken ct = default);
     Task<IEnumerable<AccessToken>> GetExpired(int maxCount = 50, bool withLock = false, CancellationToken ct = default);
     Task Remove(IEnumerable<AccessToken> tokens, CancellationToken ct = default);
+    Task Remove(AccessToken token, CancellationToken ct = default);
 }
