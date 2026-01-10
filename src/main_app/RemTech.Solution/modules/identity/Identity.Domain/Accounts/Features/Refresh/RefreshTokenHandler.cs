@@ -20,7 +20,7 @@ public sealed class RefreshTokenHandler(
         RefreshTokenCommand command, 
         CancellationToken ct = default)
     {
-        Result<RefreshToken> refreshToken = await refreshTokens.Get(command.RefreshToken, true, ct);
+        Result<RefreshToken> refreshToken = await refreshTokens.Get(command.RefreshToken, withLock: true, ct);
         if (refreshToken.IsFailure) 
             return Error.Unauthorized("Token not found.");
         if (!refreshToken.Value.IsExpired()) 
@@ -29,13 +29,13 @@ public sealed class RefreshTokenHandler(
         Result<Account> account = await GetRequiredAccount(refreshToken.Value, ct);
         if (account.IsFailure) 
             return Error.Unauthorized("Account not found.");
-
+        
         AccessToken newAccessToken = tokenManager.GenerateToken(account.Value);
         RefreshToken newRefreshToken = tokenManager.GenerateRefreshToken(account.Value.Id.Value);
         
         await accessTokens.Add(newAccessToken, ct);
-        await refreshTokens.Add(newRefreshToken, ct);
-
+        await refreshTokens.Update(newRefreshToken, ct);
+        
         return new AuthenticationResult(newAccessToken.RawToken, newRefreshToken.TokenValue);
     }
     

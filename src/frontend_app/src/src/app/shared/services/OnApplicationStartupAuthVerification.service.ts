@@ -18,6 +18,7 @@ export class OnApplicationStartupAuthVerificationService implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this._authStatusService.isAuthorized) return;
     this._identityService.verifyToken()
       .pipe(
         takeUntilDestroyed(this._destroyRef),
@@ -40,6 +41,7 @@ export class OnApplicationStartupAuthVerificationService implements OnInit {
   }
 
   private tryRefreshToken(): void {
+    if (this._authStatusService.isAuthorized) return;
     this._identityService.refreshToken()
       .pipe(takeUntilDestroyed(this._destroyRef),
         tap({

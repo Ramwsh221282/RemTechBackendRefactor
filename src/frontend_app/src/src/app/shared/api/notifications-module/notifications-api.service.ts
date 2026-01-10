@@ -1,10 +1,10 @@
 import {inject, Injectable} from '@angular/core';
 import {finalize, Observable, shareReplay} from 'rxjs';
-import {TypedEnvelope} from '../envelope';
+import {Envelope, TypedEnvelope} from '../envelope';
 import {MailerResponse} from './notifications-responses';
 import {apiUrl} from '../api-endpoint';
 import {HttpClient} from '@angular/common/http';
-import {AddMailerRequest, ChangeMailerRequest} from './notifications-requests';
+import {AddMailerRequest, ChangeMailerRequest, SendTestMessageRequest} from './notifications-requests';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +29,7 @@ export class NotificationsApiService {
 
   private startFetchingMailers(): Observable<TypedEnvelope<MailerResponse[]>> {
     if (this._gettingMailers$) return this._gettingMailers$;
-    this._gettingMailers$ = this._httpClient.get<TypedEnvelope<MailerResponse[]>>(this._apiUrl, { withCredentials: true })
+    this._gettingMailers$ = this._httpClient.get<TypedEnvelope<MailerResponse[]>>(`${this._apiUrl}/mailers`, { withCredentials: true })
       .pipe(
       finalize((): void => this._gettingMailers$ = undefined),
         shareReplay({ bufferSize: 1, refCount: true }),
@@ -39,7 +39,7 @@ export class NotificationsApiService {
 
   private startFetchingMailer(id: string): Observable<TypedEnvelope<MailerResponse>> {
     if (this._gettingMailer$) return this._gettingMailer$;
-    this._gettingMailer$ = this._httpClient.get<TypedEnvelope<MailerResponse>>(`${this._apiUrl}/${id}`, { withCredentials: true })
+    this._gettingMailer$ = this._httpClient.get<TypedEnvelope<MailerResponse>>(`${this._apiUrl}/mailers/${id}`, { withCredentials: true })
       .pipe(
         finalize((): void => this._gettingMailer$ = undefined),
         shareReplay({ bufferSize: 1, refCount: true }),
@@ -50,7 +50,7 @@ export class NotificationsApiService {
   private startAddingMailer(email: string, password: string): Observable<TypedEnvelope<MailerResponse>> {
     if (this._addingMailer$) return this._addingMailer$;
     const request: AddMailerRequest = { Email: email, SmtpPassword: password };
-    this._addingMailer$ = this._httpClient.post<TypedEnvelope<MailerResponse>>(this._apiUrl, request, { withCredentials: true })
+    this._addingMailer$ = this._httpClient.post<TypedEnvelope<MailerResponse>>(`${this._apiUrl}/mailers`, request, { withCredentials: true })
       .pipe(
         finalize((): void => this._addingMailer$ = undefined),
         shareReplay({ bufferSize: 1, refCount: true }),
@@ -61,7 +61,7 @@ export class NotificationsApiService {
   private startChangingMailer(id: string, email: string, password: string): Observable<TypedEnvelope<MailerResponse>> {
     if (this._changingMailer$) return this._changingMailer$;
     const request: ChangeMailerRequest = { Email: email, SmtpPassword: password };
-    this._changingMailer$ = this._httpClient.put<TypedEnvelope<MailerResponse>>(`${this._apiUrl}/${id}`, request, { withCredentials: true })
+    this._changingMailer$ = this._httpClient.put<TypedEnvelope<MailerResponse>>(`${this._apiUrl}/mailers/${id}`, request, { withCredentials: true })
       .pipe(
         finalize((): void => this._changingMailer$ = undefined),
         shareReplay({ bufferSize: 1, refCount: true }),
@@ -69,10 +69,23 @@ export class NotificationsApiService {
     return this._changingMailer$;
   }
 
+  private startSendingTestMessage(id: string, recipient: string): Observable<Envelope> {
+    if (this._sendingTestMessage$) return this._sendingTestMessage$;
+    const request: SendTestMessageRequest = { Recipient: recipient };
+    const requestUrl: string = `${this._apiUrl}/mailers/${id}/test-message`;
+    this._sendingTestMessage$ = this._httpClient.post<Envelope>(requestUrl, request, { withCredentials: true })
+      .pipe(
+        finalize((): void => this._sendingTestMessage$ = undefined),
+        shareReplay({ bufferSize: 1, refCount: true }),
+      )
+    return this._sendingTestMessage$;
+  }
+
   private readonly _httpClient: HttpClient = inject(HttpClient);
-  private readonly _apiUrl: string = `${apiUrl}/mailers`;
+  private readonly _apiUrl: string = `${apiUrl}/notifications`;
   private _gettingMailers$: Observable<TypedEnvelope<MailerResponse[]>> | undefined;
   private _gettingMailer$: Observable<TypedEnvelope<MailerResponse>> | undefined;
   private _addingMailer$: Observable<TypedEnvelope<MailerResponse>> | undefined;
   private _changingMailer$: Observable<TypedEnvelope<MailerResponse>> | undefined;
+  private _sendingTestMessage$: Observable<Envelope> | undefined;
 }

@@ -83,13 +83,12 @@ public static class NotificationsModuleInjection
             services.Decorate(typeof(IQueryHandler<GetMailerQuery, MailerResponse?>), typeof(GetMailerCachedHandler));
             services.Decorate(typeof(IQueryHandler<GetMailersQuery, IEnumerable<MailerResponse>>), typeof(GetMailersCachedHandler));
         }
-        
-        private void AddQueryHandlers() =>
-            services.Scan(x => x.FromAssemblies([typeof(MailerArrayCacheInvalidator).Assembly])
-                .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
-                .UsingRegistrationStrategy(RegistrationStrategy.Skip)
-                .AsSelfWithInterfaces()
-                .WithScopedLifetime());
+
+        private void AddQueryHandlers()
+        {
+            services.AddScoped<IQueryHandler<GetMailersQuery, IEnumerable<MailerResponse>>, GetMailersHandler>();
+            services.AddScoped<IQueryHandler<GetMailerQuery, MailerResponse?>, GetMailerHandler>();
+        }
 
         private void AddCacheInvalidators()
         {

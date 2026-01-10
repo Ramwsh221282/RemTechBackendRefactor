@@ -16,6 +16,7 @@ import {
 import {TypedEnvelope} from '../../../../shared/api/envelope';
 import {AccountPermissionsResponse, AccountResponse} from '../../../../shared/api/identity-module/identity-responses';
 import {catchError, EMPTY, switchMap, tap} from 'rxjs';
+import {AuthenticationStatusService} from '../../../../shared/services/AuthenticationStatusService';
 
 @Component({
   selector: 'app-sign-in-form',
@@ -36,6 +37,7 @@ export class SignInFormComponent {
   constructor(
     private readonly _messageService: MessageService,
     private readonly _identityService: IdentityApiService,
+    private readonly _authStatusService: AuthenticationStatusService,
     private readonly _router: Router,
     private readonly _permissionsService: PermissionsStatusService,
   ) {
@@ -78,6 +80,9 @@ export class SignInFormComponent {
         takeUntilDestroyed(this._destroyRef),
         tap(() => {
           MessageServiceUtils.showSuccess(this._messageService, 'Авторизация успешна');
+          this._authStatusService.setIsAuthenticated(true);
+          this._authStatusService.unlockRefresh();
+          this._authStatusService.setTokenRefreshed();
         }),
         switchMap(() => this._identityService.fetchAccount()),
         tap((envelope: TypedEnvelope<AccountResponse>) => {

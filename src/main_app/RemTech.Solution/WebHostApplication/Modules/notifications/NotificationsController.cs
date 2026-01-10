@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Notifications.Core.Mailers;
 using Notifications.Core.Mailers.Features.AddMailer;
 using Notifications.Core.Mailers.Features.ChangeCredentials;
+using Notifications.Core.PendingEmails.Features.AddPendingEmail;
 using Notifications.Infrastructure.Mailers.Queries.GetMailer;
 using Notifications.Infrastructure.Mailers.Queries.GetMailers;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -15,7 +16,7 @@ namespace WebHostApplication.Modules.notifications;
 
 [ApiController]
 [Route("api/notifications")]
-public class NotificationsController
+public class NotificationsController : Controller
 {
     [VerifyToken]
     [NotificationsManagementPermission]
@@ -30,6 +31,20 @@ public class NotificationsController
         return new Envelope((int)HttpStatusCode.OK, result, null);
     }
 
+    [VerifyToken]
+    [NotificationsManagementPermission]
+    [HttpPost("mailers/{id:guid}/test-message")]
+    public async Task<Envelope> SendTestMessage(
+        [FromServices] ICommandHandler<AddPendingEmailCommand, Unit> handler,
+        [FromBody] SendTestMessageRequest request,
+        CancellationToken ct
+        )
+    {
+        AddPendingEmailCommand command = new(request.Recipient, "Тестовое сообщение", "Тестовая отправка сообщения.");
+        Result<Unit> result = await handler.Execute(command, ct);
+        return EnvelopedResultsExtensions.AsEnvelope(result);
+    }
+    
     [VerifyToken]
     [NotificationsManagementPermission]
     [HttpGet("mailers/{id:guid}")]

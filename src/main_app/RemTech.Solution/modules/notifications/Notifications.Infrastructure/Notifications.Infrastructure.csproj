@@ -10,7 +10,7 @@
       <PackageReference Include="MailKit" Version="4.14.1" />
       <PackageReference Include="MimeKit" Version="4.14.0" />
       <PackageReference Include="RemTech.SharedKernel.Infrastructure.AesEncryption" Version="1.0.4" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.18" />
+      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.19" />
       <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.8" />
     </ItemGroup>
 

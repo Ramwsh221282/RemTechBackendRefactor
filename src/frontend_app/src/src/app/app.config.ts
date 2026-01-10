@@ -14,7 +14,6 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { definePreset } from '@primeng/themes';
 import { CookieService } from 'ngx-cookie-service';
 import { MailingManagementService } from './pages/mailing-management-page/services/MailingManagementService';
-import { JwtTokenManagingInterceptor } from './shared/middleware/JwtTokenManagingInterceptor';
 import { VehicleScrapersService } from './pages/scrapers-management-page/components/scrapers-management-settings-page/services/vehicle-scrapers.service';
 import { SparesService } from './pages/spares-page/services/SparesService';
 import { ContainedItemsService } from './pages/main-page/services/contained-items-service';
@@ -62,8 +61,8 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withViewTransitions(), withComponentInputBinding()),
     provideHttpClient(withInterceptors([
+      authInterceptor,
       ForbiddenInterceptor,
-      authInterceptor
     ])),
     provideEnvironmentInitializer(() => {
       inject(OnApplicationStartupAuthVerificationService).ngOnInit();

@@ -17,7 +17,7 @@ public sealed class CachedAccessTokenRepository(HybridCache cache, IAccessTokens
         await Cache.SetAsync(key, token, cancellationToken: ct);
     }
 
-    public async Task<Result<AccessToken>> Get(Guid tokenId, CancellationToken ct = default)
+    public async Task<Result<AccessToken>> Get(Guid tokenId, bool withLock = false, CancellationToken ct = default)
     {
         string key = tokenId.ToString();
 
@@ -25,7 +25,7 @@ public sealed class CachedAccessTokenRepository(HybridCache cache, IAccessTokens
             key,
             async cancellationToken =>
             {
-                Result<AccessToken> result = await GetFromInner(tokenId, cancellationToken);
+                Result<AccessToken> result = await GetFromInner(tokenId, withLock, cancellationToken);
                 if (result.IsFailure) return null;
                 return result.Value;
             },
@@ -34,9 +34,9 @@ public sealed class CachedAccessTokenRepository(HybridCache cache, IAccessTokens
         return token is null ? Error.NotFound("Token not found.") : token;
     }
 
-    public async Task<Result<AccessToken>> Get(string accessToken, CancellationToken ct = default)
+    public async Task<Result<AccessToken>> Get(string accessToken, bool withLock = false, CancellationToken ct = default)
     {
-        return await Inner.Get(accessToken, ct);
+        return await Inner.Get(accessToken, withLock, ct);
     }
 
     public async Task<Guid?> Remove(string accessToken, CancellationToken ct = default)
@@ -49,8 +49,29 @@ public sealed class CachedAccessTokenRepository(HybridCache cache, IAccessTokens
         return tokenId;
     }
 
-    private async Task<Result<AccessToken>> GetFromInner(Guid tokenId, CancellationToken ct)
+    public async Task UpdateTokenExpired(string rawToken, CancellationToken ct = default)
     {
-        return await Inner.Get(tokenId, ct);
+        await Inner.UpdateTokenExpired(rawToken, ct);
+    }
+
+    public async Task<IEnumerable<AccessToken>> GetExpired(int maxCount = 50, bool withLock = false, CancellationToken ct = default)
+    {
+        return await Inner.GetExpired(maxCount, withLock, ct);
+    }
+
+    public async Task Remove(IEnumerable<AccessToken> tokens, CancellationToken ct = default)
+    {
+        if (!tokens.Any()) return;
+        await Inner.Remove(tokens, ct);
+        foreach (AccessToken token in tokens)
+        {
+            string key = token.TokenId.ToString();
+            await Cache.RemoveAsync(key, cancellationToken: ct);
+        }
+    }
+
+    private async Task<Result<AccessToken>> GetFromInner(Guid tokenId, bool withLock, CancellationToken ct)
+    {
+        return await Inner.Get(tokenId, withLock, ct);
     }
 }

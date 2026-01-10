@@ -7,3 +7,7 @@ export type AddMailerRequest = {
   SmtpPassword: string;
   Email: string;
 }
+
+export type SendTestMessageRequest = {
+  Recipient: string;
+}

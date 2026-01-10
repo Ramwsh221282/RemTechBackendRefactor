@@ -2,7 +2,8 @@
 
 namespace RemTech.SharedKernel.Infrastructure.Database;
 
-[TimestampedMigration(year: 2025, month: 12, day: 1, hour: 1, minute: 1)]
+// should be run first.
+[Migration(100)]
 public sealed class PgVectorMigration : Migration
 {
     public const long Version = 20251201010100;
