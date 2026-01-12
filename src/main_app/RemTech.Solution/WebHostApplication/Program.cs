@@ -1,3 +1,4 @@
+using Identity.WebApi.Extensions;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Web;
 using SwaggerThemes;

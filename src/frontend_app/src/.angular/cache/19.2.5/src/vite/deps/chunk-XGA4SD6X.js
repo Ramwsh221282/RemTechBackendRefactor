@@ -1,9 +1,9 @@
 import {
   BaseComponent
-} from "./chunk-YPWFMFR3.js";
+} from "./chunk-5WHNDYHL.js";
 import {
   BaseStyle
-} from "./chunk-QB46YNQN.js";
+} from "./chunk-3ICCHBYY.js";
 import {
   addClass,
   getHeight,
@@ -13,10 +13,10 @@ import {
   getWidth,
   remove,
   removeClass
-} from "./chunk-UV6YIR6J.js";
+} from "./chunk-EH7YYNC6.js";
 import {
   isPlatformBrowser
-} from "./chunk-255KZSHQ.js";
+} from "./chunk-YQJIZIIC.js";
 import {
   Directive,
   Injectable,
@@ -32,7 +32,7 @@ import {
   ɵɵdefineInjector,
   ɵɵdefineNgModule,
   ɵɵgetInheritedFactory
-} from "./chunk-PPR3T7ML.js";
+} from "./chunk-F5CKBEOJ.js";
 
 // node_modules/primeng/fesm2022/primeng-ripple.mjs
 var theme = ({
@@ -237,4 +237,4 @@ export {
   Ripple,
   RippleModule
 };
-//# sourceMappingURL=chunk-2SKIYKTX.js.map
+//# sourceMappingURL=chunk-XGA4SD6X.js.map
