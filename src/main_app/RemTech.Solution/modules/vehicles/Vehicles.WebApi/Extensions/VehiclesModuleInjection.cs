@@ -36,14 +36,14 @@ public static class VehiclesModuleInjection
             services.RegisterDomainLayerDependencies();
             services.RegisterInfrastructureLayerDependencies();
         }
-        
+
         public void RegisterVehiclesModule(bool isDevelopment)
         {
             services.RegisterSharedInfrastructure(isDevelopment);
             services.RegisterDomainLayerDependencies();
             services.RegisterInfrastructureLayerDependencies();
         }
-    
+
         private void RegisterDomainLayerDependencies()
         {
             new HandlersRegistrator(services)
@@ -58,40 +58,21 @@ public static class VehiclesModuleInjection
 
         public void RegisterInfrastructureLayerDependencies()
         {
-            Assembly assembly = typeof(NpgSqlVehiclesPersister).Assembly;
-            services.RegisterQueryHandlers(assembly);
-            services.RegisterConsumers(assembly);
             services.RegisterPersisters();
             services.RegisterBackgroundServices();
             services.RegisterProducers();
         }
 
-        private void RegisterQueryHandlers(Assembly assembly)
-        {
-            new HandlersRegistrator(services)
-                .FromAssemblies([assembly])
-                .RequireRegistrationOf(typeof(IQueryHandler<,>))
-                .Invoke();
-        }
-        
         private void RegisterMigrations(Assembly assembly)
         {
             services.AddMigrations([assembly]);
-        }
-        
-        private void RegisterConsumers(Assembly assembly)
-        {
-            services.Scan(x => x.FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo(typeof(IConsumer)))
-                .AsSelfWithInterfaces()
-                .WithTransientLifetime());
         }
 
         private void RegisterProducers()
         {
             services.AddSingleton<IOnVehiclesAddedEventPublisher, OnVehiclesAddedProducer>();
         }
-        
+
         private void RegisterPersisters()
         {
             services.AddScoped<IVehiclesListPersister, NpgSqlVehiclesListPersister>();
@@ -108,7 +89,7 @@ public static class VehiclesModuleInjection
         {
             services.AddHostedService<VehicleEmbeddingsUpdaterService>();
         }
-        
+
         private void RegisterSharedInfrastructure(bool isDevelopment)
         {
             services.RegisterLogging();
@@ -119,9 +100,11 @@ public static class VehiclesModuleInjection
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
                 services.RegisterFromAppsettings();
-                services.AddOptions<GetVehiclesThresholdConstants>().BindConfiguration(nameof(GetVehiclesThresholdConstants));
+                services
+                    .AddOptions<GetVehiclesThresholdConstants>()
+                    .BindConfiguration(nameof(GetVehiclesThresholdConstants));
             }
-            
+
             services.AddSingleton<EmbeddingsProvider>();
             services.AddPostgres();
             services.AddRabbitMq();

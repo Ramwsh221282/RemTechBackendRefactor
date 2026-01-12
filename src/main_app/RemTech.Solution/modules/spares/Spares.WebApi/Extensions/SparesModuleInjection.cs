@@ -26,7 +26,7 @@ public static class SparesModuleInjection
             services.RegisterSparesDomain();
             services.RegisterSparesInfrastructure();
         }
-        
+
         public void RegisterSparesModule(bool isDevelopment)
         {
             services.RegisterSharedInfrastructure(isDevelopment);
@@ -42,10 +42,14 @@ public static class SparesModuleInjection
                 services.AddMigrations([typeof(SparesSchemaMigration).Assembly]);
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
-                services.AddOptions<EmbeddingsProviderOptions>().BindConfiguration(nameof(EmbeddingsProviderOptions));
-                services.AddOptions<GetSparesThresholdConstants>().BindConfiguration(nameof(GetSparesThresholdConstants));
+                services
+                    .AddOptions<EmbeddingsProviderOptions>()
+                    .BindConfiguration(nameof(EmbeddingsProviderOptions));
+                services
+                    .AddOptions<GetSparesThresholdConstants>()
+                    .BindConfiguration(nameof(GetSparesThresholdConstants));
             }
-            
+
             services.TryAddSingleton<EmbeddingsProvider>();
             services.AddRabbitMq();
             services.AddPostgres();
@@ -62,14 +66,12 @@ public static class SparesModuleInjection
                 .AlsoUseDecorators()
                 .Invoke();
         }
-        
+
         public void RegisterSparesInfrastructure()
         {
             services.RegisterRepositories();
             services.RegisterRegionProvider();
-            services.RegisterConsumers();
             services.RegisterBackgroundServices();
-            services.RegisterQueryHandlers();
             services.RegisterProducers();
         }
 
@@ -77,7 +79,7 @@ public static class SparesModuleInjection
         {
             services.AddHostedService<SparesEmbeddingUpdaterService>();
         }
-        
+
         private void RegisterRepositories()
         {
             services.AddScoped<ISparesRepository, SparesRepository>();
@@ -88,23 +90,9 @@ public static class SparesModuleInjection
             services.AddScoped<ISpareAddressProvider, EmbeddingSearchAddressProvider>();
         }
 
-        private void RegisterQueryHandlers()
-        {
-            new HandlersRegistrator(services)
-                .FromAssemblies([typeof(GetSparesQuery).Assembly])
-                .RequireRegistrationOf(typeof(IQueryHandler<,>))
-                .Invoke();
-        }
-        
         private void RegisterProducers()
         {
             services.AddSingleton<IOnSparesAddedEventPublisher, OnVehiclesAddedProducer>();
-        }
-        
-        private void RegisterConsumers()
-        {
-            services.AddSingleton<IConsumer, AddSparesConsumer>();
-            services.AddHostedService<AggregatedConsumersHostedService>();
         }
     }
 }
