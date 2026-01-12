@@ -41,7 +41,7 @@ public sealed class IdentityController : Controller
         context => context.GetRefreshTokenFromCookieOrEmpty(),
     ];
 
-    [HttpPost("{id:guid}/tickets/{ticketId:guid}/commit-password-reset")]
+    [HttpPost("accounts/{id:guid}/tickets/{ticketId:guid}/commit-password-reset")]
     public async Task<Envelope> CommitPasswordReset(
         [FromRoute(Name = "id")] Guid accountId,
         [FromRoute(Name = "ticketId")] Guid ticketId,

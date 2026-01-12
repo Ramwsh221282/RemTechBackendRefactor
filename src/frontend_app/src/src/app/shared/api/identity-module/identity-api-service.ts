@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { apiUrl } from '../api-endpoint';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { finalize, Observable, shareReplay } from 'rxjs';
+import { finalize, Observable, share, shareReplay } from 'rxjs';
 import {
   AuthenticateRequest,
   ChangePasswordRequest,
+  CommitPasswordResetRequest,
   GivePermissionsRequest,
   RegisterAccountRequest,
   ResetPasswordRequest,
@@ -13,6 +14,7 @@ import { AccountResponse } from './identity-responses';
 import { Envelope, TypedEnvelope } from '../envelope';
 import {
   CreateChangePasswordRequest,
+  CreateCommitPasswordResetRequest,
   CreateResetPasswordRequest,
 } from './identity-factories';
 
@@ -26,6 +28,7 @@ export class IdentityApiService {
   private _logout$?: Observable<Envelope> | undefined;
   private _changePassword$?: Observable<Envelope> | undefined;
   private _resetPassword$?: Observable<Envelope> | undefined;
+  private _confirmResetPassword$?: Observable<Envelope> | undefined;
 
   constructor(private readonly _httpClient: HttpClient) {}
 
@@ -104,6 +107,14 @@ export class IdentityApiService {
     });
   }
 
+  confirmPasswordReset(
+    accountId: string,
+    ticketId: string,
+    newPassword: string
+  ): Observable<Envelope> {
+    return this.confirmPasswordReset(accountId, ticketId, newPassword);
+  }
+
   private startLogout(): Observable<Envelope> {
     if (this._logout$) return this._logout$;
     const requestUrl: string = `${this._url}/logout`;
@@ -153,13 +164,31 @@ export class IdentityApiService {
     return this._fetch$;
   }
 
+  private startConfirmingPasswordReset(
+    accountId: string,
+    ticketId: string,
+    newPassword: string
+  ): Observable<Envelope> {
+    if (this._confirmResetPassword$) return this._confirmResetPassword$;
+    const requestUrl: string = `${this._url}/accounts/${accountId}/tickets/${ticketId}/commit-password-reset`;
+    const payload: CommitPasswordResetRequest =
+      CreateCommitPasswordResetRequest(newPassword);
+    this._confirmResetPassword$ = this._httpClient
+      .post<Envelope>(requestUrl, payload)
+      .pipe(
+        shareReplay(1),
+        finalize((): void => (this._confirmResetPassword$ = undefined))
+      );
+    return this._confirmResetPassword$;
+  }
+
   private startRefreshingToken(): Observable<Envelope> {
     if (this._refresh$) return this._refresh$;
     this._refresh$ = this._httpClient
       .put<Envelope>(`${this._url}/refresh`, null, { withCredentials: true })
       .pipe(
-        shareReplay(1),
-        finalize((): void => (this._refresh$ = undefined))
+        finalize((): void => (this._refresh$ = undefined)),
+        shareReplay(1)
       );
     return this._refresh$;
   }
@@ -174,7 +203,12 @@ export class IdentityApiService {
       login,
       email
     );
-    this._resetPassword$ = this._httpClient.post<Envelope>(requestUrl, payload);
+    this._resetPassword$ = this._httpClient
+      .post<Envelope>(requestUrl, payload)
+      .pipe(
+        finalize((): void => (this._resetPassword$ = undefined)),
+        shareReplay({ bufferSize: 1, refCount: true })
+      );
     return this._resetPassword$;
   }
 }

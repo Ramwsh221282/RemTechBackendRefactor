@@ -23,3 +23,7 @@ export type ResetPasswordRequest = {
   Login?: string | null | undefined;
   Email?: string | null | undefined;
 };
+
+export type CommitPasswordResetRequest = {
+  NewPassword: string;
+};
