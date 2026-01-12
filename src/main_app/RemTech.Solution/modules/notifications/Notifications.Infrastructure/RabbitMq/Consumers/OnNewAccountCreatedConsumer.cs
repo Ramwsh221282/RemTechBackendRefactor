@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Notifications.Core.PendingEmails.Features.AddPendingEmail;
+using Notifications.Infrastructure.Extensions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RemTech.SharedKernel.Configurations;
@@ -101,14 +102,12 @@ public sealed class OnNewAccountCreatedConsumer(
             "Подтверждение почты",
             $"Для подтверждения почты перейдите по ссылке {confirmationLink}"
         );
-        await using AsyncServiceScope scope = Services.CreateAsyncScope();
-        return await scope
-            .ServiceProvider.GetRequiredService<ICommandHandler<AddPendingEmailCommand, Unit>>()
-            .Execute(command);
+        return await Services.CreatePendingMessage(command);
     }
 
     private string BuildConfirmationLinkUrl(NewAccountRegisteredOutboxMessagePayload payload)
     {
+        FrontendOptions.Validate();
         string frontendUrl = FrontendOptions.Url;
         string ticketId = payload.TicketId.ToString();
         return $"{frontendUrl}/api/account/confirmation?ticketId={ticketId}";
