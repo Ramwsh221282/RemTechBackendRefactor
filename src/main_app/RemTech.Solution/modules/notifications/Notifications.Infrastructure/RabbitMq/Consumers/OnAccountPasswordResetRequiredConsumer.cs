@@ -47,7 +47,12 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
         await Channel.CloseAsync(cancellationToken: ct);
     }
 
-    public async Task StartConsuming(CancellationToken ct = default) { }
+    public async Task StartConsuming(CancellationToken ct = default)
+    {
+        AsyncEventingBasicConsumer consumer = new(Channel);
+        consumer.ReceivedAsync += Handler;
+        await Channel.BasicConsumeAsync(Queue, autoAck: false, consumer, ct);
+    }
 
     private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
         async (_, ea) =>
