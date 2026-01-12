@@ -3,6 +3,7 @@ using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.Tickets;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Attributes;
 
 namespace Identity.Domain.Accounts.Features.ResetPassword;
 
@@ -19,6 +20,7 @@ public sealed record ResetPasswordResult(
         new(account.Id.Value, account.Email.Value, ticket.TicketId, ticket.Purpose);
 }
 
+[TransactionalHandler]
 public sealed class ResetPasswordCommandHandler(
     IAccountsRepository accounts,
     IAccountTicketsRepository tickets

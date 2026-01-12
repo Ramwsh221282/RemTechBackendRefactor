@@ -54,18 +54,21 @@ export class ResetPasswordPageComponent {
   }
 
   private requestResetPassword(login: string, email: string): void {
-    this._identityService.resetPassword(login, email).pipe(
-      takeUntilDestroyed(this._destroyRef),
-      tap((_: Envelope): void => {
-        const message: string = `Инструкция по сбросу пароля отправлена на адрес электронной почты учетной записи.`;
-        MessageServiceUtils.showSuccess(this._messageService, message);
-      }),
-      catchError((error: HttpErrorResponse): Observable<never> => {
-        const message: string = error.error.message;
-        MessageServiceUtils.showError(this._messageService, message);
-        return EMPTY;
-      })
-    );
+    this._identityService
+      .resetPassword(login, email)
+      .pipe(
+        takeUntilDestroyed(this._destroyRef),
+        tap((_: Envelope): void => {
+          const message: string = `Инструкция по сбросу пароля отправлена на адрес электронной почты учетной записи.`;
+          MessageServiceUtils.showSuccess(this._messageService, message);
+        }),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message;
+          MessageServiceUtils.showError(this._messageService, message);
+          return EMPTY;
+        })
+      )
+      .subscribe();
   }
 
   private areAllInputsEmpty(login: string, email: string): boolean {
