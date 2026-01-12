@@ -1,3 +1,4 @@
+using FluentValidation;
 using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts.Cryptography;
 using Identity.Domain.Contracts.Persistence;
@@ -11,6 +12,16 @@ namespace Identity.Domain.Accounts.Features.ConfirmPasswordReset;
 
 public sealed record ConfirmResetPasswordCommand(Guid AccountId, Guid TicketId, string NewPassword)
     : ICommand;
+
+public sealed class ConfirmResetPasswordValidator : AbstractValidator<ConfirmResetPasswordCommand>
+{
+    public ConfirmResetPasswordValidator()
+    {
+        RuleFor(x => x.AccountId).MustBeValid(AccountId.Create);
+        RuleFor(x => x.TicketId).MustBeValid(AccountId.Create);
+        RuleFor(x => x.NewPassword).MustBeValid(AccountPassword.Create);
+    }
+}
 
 [TransactionalHandler]
 public sealed class ConfirmResetPasswordHandler(
