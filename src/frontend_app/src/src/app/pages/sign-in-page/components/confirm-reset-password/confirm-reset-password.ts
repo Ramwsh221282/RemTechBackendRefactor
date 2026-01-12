@@ -24,6 +24,11 @@ import { HttpErrorResponse } from '@angular/common/http';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmResetPassword {
+  // todo handle activated route.
+  // todo add route for this component.
+  // todo add html and styles for this component.
+  // todo navigate to sign-in page on success.
+
   constructor(
     private readonly _activatedRoute: ActivatedRoute,
     private readonly _title: Title,
@@ -34,7 +39,6 @@ export class ConfirmResetPassword {
     this._title.setTitle('Подтверждение сброса пароля');
     this._accountId = signal(undefined);
     this._ticketId = signal(undefined);
-    // todo handle activated route.
   }
 
   private readonly _destroyRef: DestroyRef = inject(DestroyRef);
