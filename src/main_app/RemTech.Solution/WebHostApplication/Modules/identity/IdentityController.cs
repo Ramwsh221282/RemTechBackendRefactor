@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Identity.Domain.Accounts.Features.Authenticate;
 using Identity.Domain.Accounts.Features.ChangePassword;
+using Identity.Domain.Accounts.Features.ConfirmPasswordReset;
 using Identity.Domain.Accounts.Features.ConfirmTicket;
 using Identity.Domain.Accounts.Features.GivePermissions;
 using Identity.Domain.Accounts.Features.Logout;
@@ -39,6 +40,20 @@ public sealed class IdentityController : Controller
         context => context.GetRefreshTokenFromHeaderOrEmpty(),
         context => context.GetRefreshTokenFromCookieOrEmpty(),
     ];
+
+    [HttpPost("{id:guid}/tickets/{ticketId:guid}/commit-password-reset")]
+    public async Task<Envelope> CommitPasswordReset(
+        [FromRoute(Name = "id")] Guid accountId,
+        [FromRoute(Name = "ticketId")] Guid ticketId,
+        [FromBody] CommitPasswordResetRequest request,
+        [FromServices] ICommandHandler<ConfirmResetPasswordCommand, Unit> handler,
+        CancellationToken ct
+    )
+    {
+        ConfirmResetPasswordCommand command = new(accountId, ticketId, request.NewPassword);
+        Result<Unit> result = await handler.Execute(command, ct);
+        return result.IsFailure ? result.AsEnvelope() : Ok();
+    }
 
     [HttpPost("reset-password")]
     public async Task<Envelope> ResetPassword(
