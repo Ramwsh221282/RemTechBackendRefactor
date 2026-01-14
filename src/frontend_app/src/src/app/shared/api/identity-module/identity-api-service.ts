@@ -112,7 +112,7 @@ export class IdentityApiService {
     ticketId: string,
     newPassword: string
   ): Observable<Envelope> {
-    return this.confirmPasswordReset(accountId, ticketId, newPassword);
+    return this.startConfirmingPasswordReset(accountId, ticketId, newPassword);
   }
 
   private startLogout(): Observable<Envelope> {

@@ -19,4 +19,12 @@ export const SignInPageRoutes: Routes = [
     canActivate: [RootExistsGuard],
     providers: [MessageService],
   },
+  {
+    path: 'api/account/reset-password',
+    loadComponent: () =>
+      import('./components/confirm-reset-password/confirm-reset-password').then(
+        (m) => m.ConfirmResetPassword
+      ),
+    providers: [MessageService],
+  },
 ];

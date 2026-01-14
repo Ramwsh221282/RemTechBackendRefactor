@@ -34,7 +34,6 @@ import { authInterceptor } from './shared/middleware/auth-interceptor.intercepto
 import { OnApplicationStartupAuthVerificationService } from './shared/services/OnApplicationStartupAuthVerification.service';
 import { ForbiddenInterceptor } from './shared/middleware/forbidden.interceptor';
 import { PermissionsStatusService } from './shared/services/PermissionsStatus.service';
-import { DefaultMailerResponse } from './shared/api/notifications-module/notifications-responses';
 
 const myPreset = definePreset(Aura, {
   semantic: {

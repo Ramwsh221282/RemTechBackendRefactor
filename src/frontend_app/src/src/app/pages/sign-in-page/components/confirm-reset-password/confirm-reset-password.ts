@@ -1,34 +1,30 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DestroyRef,
-  inject,
+  effect,
   signal,
   WritableSignal,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { IdentityApiService } from '../../../../shared/api/identity-module/identity-api-service';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { StringUtils } from '../../../../shared/utils/string-utils';
 import { MessageServiceUtils } from '../../../../shared/utils/message-service-utils';
+import { PasswordRulesComponent } from '../../../../shared/components/password-rules/password-rules.component';
+import { Toast } from 'primeng/toast';
 import { catchError, EMPTY, Observable, tap } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-confirm-reset-password',
-  imports: [],
-  template: `./confirm-reset-password.html`,
+  imports: [ReactiveFormsModule, PasswordRulesComponent, Toast],
+  templateUrl: './confirm-reset-password.html',
   styleUrl: './confirm-reset-password.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmResetPassword {
-  // todo handle activated route.
-  // todo add route for this component.
-  // todo add html and styles for this component.
-  // todo navigate to sign-in page on success.
-
   constructor(
     private readonly _activatedRoute: ActivatedRoute,
     private readonly _title: Title,
@@ -39,19 +35,30 @@ export class ConfirmResetPassword {
     this._title.setTitle('Подтверждение сброса пароля');
     this._accountId = signal(undefined);
     this._ticketId = signal(undefined);
+
+    effect(() => {
+      this._activatedRoute.queryParams.subscribe((params) => {
+        const accountId: any | undefined = params['accountId'];
+        const ticketId: any | undefined = params['ticketId'];
+        if (accountId) this._accountId.set(accountId as string);
+        if (ticketId) this._ticketId.set(ticketId as string);
+      });
+    });
   }
 
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
   private readonly _accountId: WritableSignal<string | null | undefined>;
   private readonly _ticketId: WritableSignal<string | null | undefined>;
 
   readonly form: FormGroup = new FormGroup({
     newPassword: new FormControl(''),
+    newPasswordAgain: new FormControl(''),
   });
 
-  public submitForm(): void {
+  public submit(): void {
     const password: string = this.readPassword();
     if (this.isPasswordEmpty(password)) return;
+    if (this.isNewPasswordEmpty(password)) return;
+    if (!this.arePasswordEqual(password, this.readNewPasswordAgain())) return;
     this.handlePasswordReset(password);
     this.resetForm();
   }
@@ -87,8 +94,43 @@ export class ConfirmResetPassword {
       .subscribe();
   }
 
+  private readTokenId(): string | null | undefined {
+    return this._activatedRoute.snapshot.params['ticketId'];
+  }
+
+  private readAccountId(): string | null | undefined {
+    return this._activatedRoute.snapshot.params['accountId'];
+  }
+
   private resetForm(): void {
     this.form.reset();
+  }
+
+  private arePasswordEqual(password: string, newPassword: string): boolean {
+    const areEqual: boolean = password === newPassword;
+    if (!areEqual) {
+      MessageServiceUtils.showError(
+        this._messageService,
+        'Пароли не совпадают.'
+      );
+    }
+    return areEqual;
+  }
+
+  private isNewPasswordEmpty(newPassword: string): boolean {
+    const isEmpty: boolean = StringUtils.isEmptyOrWhiteSpace(newPassword);
+    if (isEmpty) {
+      MessageServiceUtils.showError(
+        this._messageService,
+        'Новый пароль не может быть пустым.'
+      );
+    }
+    return isEmpty;
+  }
+
+  private readNewPasswordAgain(): string {
+    const formValues: any = this.form.value;
+    return formValues.newPasswordAgain as string;
   }
 
   private readPassword(): string {

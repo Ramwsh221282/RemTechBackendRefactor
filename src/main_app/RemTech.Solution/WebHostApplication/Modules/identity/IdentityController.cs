@@ -243,7 +243,18 @@ public sealed class IdentityController : Controller
         context.Response.Cookies.Delete("access_token");
         context.Response.Cookies.Delete("refresh_token");
 
-        context.Response.Cookies.Append("access_token", result.AccessToken);
-        context.Response.Cookies.Append("refresh_token", result.RefreshToken);
+        CookieOptions options = CreateCookieOptions();
+        context.Response.Cookies.Append("access_token", result.AccessToken, options);
+        context.Response.Cookies.Append("refresh_token", result.RefreshToken, options);
+    }
+
+    private static CookieOptions CreateCookieOptions()
+    {
+        return new CookieOptions()
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.AddDays(30),
+        };
     }
 }
