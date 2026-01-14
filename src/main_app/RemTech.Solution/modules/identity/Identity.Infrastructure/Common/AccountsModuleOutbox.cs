@@ -6,21 +6,24 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Common;
 
-public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleUnitOfWork unitOfWork) : IAccountModuleOutbox
+public sealed class AccountsModuleOutbox(
+    NpgSqlSession session,
+    IAccountsModuleUnitOfWork unitOfWork
+) : IAccountModuleOutbox
 {
     private NpgSqlSession Session { get; } = session;
-    
+
     private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
-    
+
     public async Task Add(IdentityOutboxMessage message, CancellationToken ct = default)
     {
         const string sql = """
-                           INSERT INTO
-                           identity_module.outbox
-                           (id, type, retry_count, created, sent, payload)
-                           VALUES
-                           (@id, @type, @retry_count, @created, @sent, @payload::jsonb)
-                           """;
+            INSERT INTO
+            identity_module.outbox
+            (id, type, retry_count, created, sent, payload)
+            VALUES
+            (@id, @type, @retry_count, @created, @sent, @payload::jsonb)
+            """;
 
         var parameters = new
         {
@@ -29,31 +32,34 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleU
             retry_count = message.RetryCount,
             created = message.Created,
             sent = message.Sent.HasValue ? message.Sent.Value : (object?)null,
-            payload = message.Payload
+            payload = message.Payload,
         };
 
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
         await Session.Execute(command);
     }
 
-    public async Task<IdentityOutboxMessage[]> GetMany(OutboxMessageSpecification spec, CancellationToken ct = default)
+    public async Task<IdentityOutboxMessage[]> GetMany(
+        OutboxMessageSpecification spec,
+        CancellationToken ct = default
+    )
     {
         (DynamicParameters parameters, string filterSql) = WhereClause(spec);
         string lockClause = LockClause(spec);
         string limitClause = LimitClause(spec);
         string sql = $"""
-                      SELECT m.id as id,
-                             m.type as type,
-                             m.retry_count as retry_count,
-                             m.created as created,
-                             m.sent as sent,
-                             m.payload as payload
-                      FROM identity_module.outbox m
-                      {filterSql}
-                      {limitClause}
-                      {lockClause}
-                      """;
-        
+            SELECT m.id as id,
+                   m.type as type,
+                   m.retry_count as retry_count,
+                   m.created as created,
+                   m.sent as sent,
+                   m.payload as payload
+            FROM identity_module.outbox m
+            {filterSql}
+            {limitClause}
+            {lockClause}
+            """;
+
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
         IdentityOutboxMessage[] messages = await Session.QueryMultipleUsingReader(command, Map);
         UnitOfWork.Track(messages);
@@ -80,8 +86,10 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleU
     {
         return spec.Limit.HasValue ? $"LIMIT {spec.Limit.Value}" : string.Empty;
     }
-    
-    private (DynamicParameters parameters, string filterSql) WhereClause(OutboxMessageSpecification spec)
+
+    private (DynamicParameters parameters, string filterSql) WhereClause(
+        OutboxMessageSpecification spec
+    )
     {
         List<string> filters = [];
         DynamicParameters parameters = new();
@@ -113,13 +121,16 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleU
             filters.Add("m.sent is not null AND m.sent <= @sent");
             parameters.Add("@sent", spec.SentDateTime.Value, DbType.DateTime);
         }
-        
+
         if (spec.RetryCountLessThan.HasValue)
         {
             filters.Add("m.retry_count < @retry_count");
             parameters.Add("@retry_count", spec.RetryCountLessThan.Value, DbType.Int32);
         }
-        
-        return (parameters, filters.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filters)}");
+
+        return (
+            parameters,
+            filters.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filters)}"
+        );
     }
 }

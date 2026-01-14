@@ -20,10 +20,18 @@ export const SignInPageRoutes: Routes = [
     providers: [MessageService],
   },
   {
-    path: 'api/account/reset-password',
+    path: 'reset-password',
     loadComponent: () =>
       import('./components/confirm-reset-password/confirm-reset-password').then(
         (m) => m.ConfirmResetPassword
+      ),
+    providers: [MessageService],
+  },
+  {
+    path: 'sign-up/confirmation',
+    loadComponent: () =>
+      import('./components/confirm-ticket-page/confirm-ticket-page').then(
+        (m) => m.ConfirmTicketPage
       ),
     providers: [MessageService],
   },

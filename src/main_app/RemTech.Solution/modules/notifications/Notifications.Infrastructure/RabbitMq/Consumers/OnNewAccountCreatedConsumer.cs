@@ -110,7 +110,7 @@ public sealed class OnNewAccountCreatedConsumer(
         FrontendOptions.Validate();
         string frontendUrl = FrontendOptions.Url;
         string ticketId = payload.TicketId.ToString();
-        return $"{frontendUrl}/api/account/confirmation?ticketId={ticketId}";
+        return $"{frontendUrl}/sign-up/confirmation?ticketId={ticketId}&accountId={payload.AccountId}";
     }
 
     private sealed record NewAccountRegisteredOutboxMessagePayload(

@@ -145,8 +145,8 @@ public sealed class IdentityController : Controller
 
     [HttpGet("confirmation")]
     public async Task<Envelope> ConfirmTicket(
-        [FromRoute(Name = "account-id")] Guid accountId,
-        [FromRoute(Name = "ticket-id")] Guid ticketId,
+        [FromQuery(Name = "accountId")] Guid accountId,
+        [FromQuery(Name = "ticketId")] Guid ticketId,
         [FromServices] ICommandHandler<ConfirmTicketCommand, Account> handler,
         CancellationToken ct
     )
@@ -255,6 +255,7 @@ public sealed class IdentityController : Controller
             HttpOnly = true,
             SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddDays(30),
+            Secure = true,
         };
     }
 }

@@ -16,42 +16,64 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
             Tracking.TryAdd(message.Id, message.Clone());
     }
 
-    public async Task Save(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct = default)
+    public async Task Save(
+        IEnumerable<IdentityOutboxMessage> messages,
+        CancellationToken ct = default
+    )
     {
         IEnumerable<IdentityOutboxMessage> tracking = GetTrackingMessages(messages);
         await SaveOutboxMessageChanges(tracking, ct);
     }
 
-    private async Task SaveOutboxMessageChanges(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct)
+    private async Task SaveOutboxMessageChanges(
+        IEnumerable<IdentityOutboxMessage> messages,
+        CancellationToken ct
+    )
     {
-        if (!messages.Any()) return;
-        
+        if (!messages.Any())
+            return;
+
         List<string> setClauses = [];
         DynamicParameters parameters = new();
 
         if (messages.Any(m => m.RetryCount != Tracking[m.Id].RetryCount))
         {
-            string setClause = string.Join(" ", messages.Select((m, i) =>
-            {
-                string paramName = $"@retry_count_{i}";
-                parameters.Add(paramName, m.RetryCount, DbType.Int32);
-                return $"{WhenClause(i)} THEN {paramName}";
-            }));
+            string setClause = string.Join(
+                " ",
+                messages.Select(
+                    (m, i) =>
+                    {
+                        string paramName = $"@retry_count_{i}";
+                        parameters.Add(paramName, m.RetryCount, DbType.Int32);
+                        return $"{WhenClause(i)} THEN {paramName}";
+                    }
+                )
+            );
             setClauses.Add($"retry_count = CASE {setClause} ELSE retry_count END");
         }
 
-        if (messages.Any(m => m.Sent.HasValue && m.Sent != Tracking[m.Id].Sent))
+        if (messages.Any(m => m.Sent.HasValue && !Tracking[m.Id].Sent.HasValue))
         {
-            string setClause = string.Join(" ", messages.Select((m, i) =>
-            {
-                string paramName = $"@sent_{i}";
-                parameters.Add(paramName, m.Sent.HasValue ? m.Sent.Value : DBNull.Value, DbType.DateTime);
-                return $"{WhenClause(i)} THEN {paramName}";
-            }));
+            string setClause = string.Join(
+                " ",
+                messages.Select(
+                    (m, i) =>
+                    {
+                        string paramName = $"@sent_{i}";
+                        parameters.Add(
+                            paramName,
+                            m.Sent.HasValue ? m.Sent.Value : DBNull.Value,
+                            DbType.DateTime
+                        );
+                        return $"{WhenClause(i)} THEN {paramName}";
+                    }
+                )
+            );
             setClauses.Add($"sent = CASE {setClause} ELSE sent END");
         }
 
-        if (setClauses.Count == 0) return;
+        if (setClauses.Count == 0)
+            return;
 
         int index = 0;
         List<Guid> ids = [];
@@ -62,26 +84,29 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
             ids.Add(message.Id);
             index++;
         }
-        
+
         parameters.Add("@ids", ids.ToArray());
-        string updateSql = $"UPDATE identity_module.outbox m SET {string.Join(", ", setClauses)} WHERE m.id = ANY(@ids)";
+        string updateSql =
+            $"UPDATE identity_module.outbox m SET {string.Join(", ", setClauses)} WHERE m.id = ANY(@ids)";
         CommandDefinition command = Session.FormCommand(updateSql, parameters, ct);
         await Session.Execute(command);
     }
-    
-    private IEnumerable<IdentityOutboxMessage> GetTrackingMessages(IEnumerable<IdentityOutboxMessage> messages)
+
+    private IEnumerable<IdentityOutboxMessage> GetTrackingMessages(
+        IEnumerable<IdentityOutboxMessage> messages
+    )
     {
         List<IdentityOutboxMessage> tracking = [];
         foreach (IdentityOutboxMessage message in messages)
         {
             if (!Tracking.TryGetValue(message.Id, out IdentityOutboxMessage? tracked))
                 continue;
-            tracking.Add(tracked);
+            tracking.Add(message);
         }
         return tracking;
     }
-    
-    private string WhenClause(int index)
+
+    private static string WhenClause(int index)
     {
         return $"WHEN m.id = @id_{index}";
     }

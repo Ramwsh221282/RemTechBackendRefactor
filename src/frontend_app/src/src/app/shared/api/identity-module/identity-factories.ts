@@ -2,6 +2,7 @@ import { AccountResponse } from './identity-responses';
 import {
   ChangePasswordRequest,
   CommitPasswordResetRequest,
+  RegisterAccountRequest,
   ResetPasswordRequest,
 } from './identity-requests';
 import { StringUtils } from '../../utils/string-utils';
@@ -40,4 +41,12 @@ export const CreateCommitPasswordResetRequest = (
   newPassword: string
 ): CommitPasswordResetRequest => {
   return { NewPassword: newPassword };
+};
+
+export const CreateRegisterAccountRequest = (
+  email: string,
+  login: string,
+  password: string
+): RegisterAccountRequest => {
+  return { email: email, login: login, password: password };
 };

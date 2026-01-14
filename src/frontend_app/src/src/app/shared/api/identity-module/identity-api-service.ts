@@ -15,6 +15,7 @@ import { Envelope, TypedEnvelope } from '../envelope';
 import {
   CreateChangePasswordRequest,
   CreateCommitPasswordResetRequest,
+  CreateRegisterAccountRequest,
   CreateResetPasswordRequest,
 } from './identity-factories';
 
@@ -29,6 +30,7 @@ export class IdentityApiService {
   private _changePassword$?: Observable<Envelope> | undefined;
   private _resetPassword$?: Observable<Envelope> | undefined;
   private _confirmResetPassword$?: Observable<Envelope> | undefined;
+  private _registerAccount$?: Observable<any> | undefined;
 
   constructor(private readonly _httpClient: HttpClient) {}
 
@@ -47,6 +49,10 @@ export class IdentityApiService {
     });
   }
 
+  signUp(email: string, login: string, password: string): Observable<any> {
+    return this.startRegisteringAccount(email, login, password);
+  }
+
   resetPassword(
     login?: string | null | undefined,
     email?: string | null | undefined
@@ -56,8 +62,8 @@ export class IdentityApiService {
 
   confirmTicket(accountId: string, ticketId: string): Observable<Envelope> {
     const params: HttpParams = new HttpParams()
-      .set('account-id', accountId)
-      .set('ticket-id', ticketId);
+      .set('accountId', accountId)
+      .set('ticketId', ticketId);
     return this._httpClient.get<Envelope>(`${this._url}/confirmation`, {
       params,
     });
@@ -92,15 +98,6 @@ export class IdentityApiService {
     return this.startRefreshingToken();
   }
 
-  signUp(password: string, email: string, login: string): Observable<Envelope> {
-    const payload: RegisterAccountRequest = {
-      password: password,
-      email: email,
-      login: login,
-    };
-    return this._httpClient.post<Envelope>(`${this._url}/sign-up`, payload);
-  }
-
   verifyToken(): Observable<Envelope> {
     return this._httpClient.post<Envelope>(`${this._url}/verify`, null, {
       withCredentials: true,
@@ -127,6 +124,29 @@ export class IdentityApiService {
         shareReplay({ bufferSize: 1, refCount: true })
       );
     return this._logout$;
+  }
+
+  private startRegisteringAccount(
+    email: string,
+    login: string,
+    password: string
+  ): Observable<TypedEnvelope<any>> {
+    if (this._registerAccount$) return this._registerAccount$;
+    const requestUrl: string = `${this._url}/sign-up`;
+    const payload: RegisterAccountRequest = CreateRegisterAccountRequest(
+      email,
+      login,
+      password
+    );
+    this._registerAccount$ = this._httpClient
+      .post<any>(requestUrl, payload)
+      .pipe(
+        finalize((): void => {
+          this._registerAccount$ = undefined;
+        }),
+        shareReplay({ bufferSize: 1, refCount: true })
+      );
+    return this._registerAccount$;
   }
 
   private startChangingPassword(

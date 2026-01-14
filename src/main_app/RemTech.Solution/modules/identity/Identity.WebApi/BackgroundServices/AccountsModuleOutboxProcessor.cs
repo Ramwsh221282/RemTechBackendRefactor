@@ -12,13 +12,12 @@ public sealed class AccountsModuleOutboxProcessor(
     IEnumerable<IAccountOutboxMessagePublisher> publishers,
     NpgSqlConnectionFactory connectionFactory,
     Serilog.ILogger logger
-    )
-    : BackgroundService
+) : BackgroundService
 {
     private IEnumerable<IAccountOutboxMessagePublisher> Publishers { get; } = publishers;
     private Serilog.ILogger Logger { get; } = logger.ForContext<AccountsModuleOutboxProcessor>();
     private NpgSqlConnectionFactory ConnectionFactory { get; } = connectionFactory;
-    
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -33,16 +32,24 @@ public sealed class AccountsModuleOutboxProcessor(
         await using NpgSqlSession session = new(ConnectionFactory);
         NpgSqlTransactionSource transactionSource = new(session);
         IAccountsModuleUnitOfWork unitOfWork = CreateUnitOfWork(session);
-        await using ITransactionScope transactionScope = await transactionSource.BeginTransaction(ct);
+        await using ITransactionScope transactionScope = await transactionSource.BeginTransaction(
+            ct
+        );
 
         try
         {
             IAccountModuleOutbox outbox = new AccountsModuleOutbox(session, unitOfWork);
             IdentityOutboxMessage[] messages = await GetMessages(outbox, ct);
+            if (messages.Length == 0)
+            {
+                Logger.Information("No outbox messages to process.");
+                return;
+            }
+
             await PublishMessages(messages, ct);
             await unitOfWork.Save(messages, ct);
             Result commit = await transactionScope.Commit(ct);
-        
+
             if (commit.IsFailure)
             {
                 Logger.Fatal(commit.Error, "Error committing transaction.");
@@ -67,15 +74,20 @@ public sealed class AccountsModuleOutboxProcessor(
             new IdentityOutboxMessageChangeTracker(session)
         );
     }
-    
-    private async Task<IdentityOutboxMessage[]> GetMessages(IAccountModuleOutbox outbox, CancellationToken ct = default) =>
-        await outbox.GetMany(
-            new OutboxMessageSpecification()
-            .OfLimit(50)
-            .OfNotSentOnly()
-            .OfWithLock(), ct);
 
-    private async Task PublishMessages(IdentityOutboxMessage[] messages, CancellationToken ct = default)
+    private async Task<IdentityOutboxMessage[]> GetMessages(
+        IAccountModuleOutbox outbox,
+        CancellationToken ct = default
+    ) =>
+        await outbox.GetMany(
+            new OutboxMessageSpecification().OfLimit(50).OfNotSentOnly().OfWithLock(),
+            ct
+        );
+
+    private async Task PublishMessages(
+        IdentityOutboxMessage[] messages,
+        CancellationToken ct = default
+    )
     {
         foreach (IAccountOutboxMessagePublisher publisher in Publishers)
         {
