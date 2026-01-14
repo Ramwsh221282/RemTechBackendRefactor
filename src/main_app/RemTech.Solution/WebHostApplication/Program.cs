@@ -1,3 +1,4 @@
+using Identity.WebApi.Extensions;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Web;
 using SwaggerThemes;
@@ -17,15 +18,15 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddCors(options =>
 {
     IConfigurationSection section = builder.Configuration.GetSection(nameof(FrontendOptions));
-    string? url = section["Url"];
-    if (url is null) throw new InvalidOperationException("Frontend URL option is empty.");
-    options.AddPolicy("frontend", policy =>
-    {
-        policy.WithOrigins(url)
-            .AllowCredentials()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-    });
+    string? url =
+        section["Url"] ?? throw new InvalidOperationException("Frontend URL option is empty.");
+    options.AddPolicy(
+        "frontend",
+        policy =>
+        {
+            policy.WithOrigins(url).AllowCredentials().AllowAnyMethod().AllowAnyHeader();
+        }
+    );
 });
 
 WebApplication app = builder.Build();

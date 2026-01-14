@@ -41,70 +41,58 @@ import { PasswordRulesComponent } from '../../../../shared/components/password-r
   ],
   templateUrl: './password-change-dialog.component.html',
   styleUrl: './password-change-dialog.component.scss',
-  providers: [MessageService],
 })
 export class PasswordChangeDialogComponent {
-  @Output() onSubmitOrCancel: EventEmitter<boolean>;
+  constructor(
+    private readonly _messageService: MessageService,
+  ) {
+    this.visible = signal(false);
+    this.passwordChangeSubmitted = new EventEmitter<{ newPassword: string, currentPassword: string }>();
+    this.onCancel = new EventEmitter<boolean>();
+  }
+
+  @Output() passwordChangeSubmitted: EventEmitter<{ newPassword: string, currentPassword: string }>;
+  @Output() onCancel: EventEmitter<boolean>;
   @Input({ required: true }) set visible_setter(value: boolean) {
     this.visible.set(value);
   }
-
-  public readonly form: FormGroup = new FormGroup({
-    password: new FormControl(''),
+  readonly form: FormGroup = new FormGroup({
+    currentPassword: new FormControl(''),
     newPassword: new FormControl(''),
   });
-
-  public readonly visible: WritableSignal<boolean>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  constructor(
-    private readonly messageService: MessageService,
-    private readonly usersService: UsersService,
-    private readonly tokensService: TokensService,
-  ) {
-    this.visible = signal(false);
-    this.onSubmitOrCancel = new EventEmitter<boolean>();
-  }
+  readonly visible: WritableSignal<boolean>;
 
   public submitForm(): void {
-    const formValues = this.form.value;
-    const password = formValues.password as string;
-    const newPassword = formValues.newPassword as string;
-    if (StringUtils.isEmptyOrWhiteSpace(password)) {
-      MessageServiceUtils.showError(
-        this.messageService,
-        'Необходимо ввести пароль',
-      );
-      return;
-    }
-    if (StringUtils.isEmptyOrWhiteSpace(newPassword)) {
-      MessageServiceUtils.showError(
-        this.messageService,
-        'Необходимо ввести почту',
-      );
-      return;
-    }
-    this.processPasswordChange(password, newPassword);
+    const newPassword: string = this.readNewPassword();
+    const currentPassword: string = this.readCurrentPassword();
+    if (this.isPasswordEmpty(newPassword)) return;
+    if (this.isPasswordEmpty(currentPassword)) return;
+    this.passwordChangeSubmitted.emit({ newPassword, currentPassword });
+    this.resetForm();
   }
 
   public cancel(): void {
     this.form.reset();
-    this.onSubmitOrCancel.emit(false);
+    this.onCancel.emit(true);
   }
 
-  public processPasswordChange(password: string, newPassword: string): void {
-    const token: string = this.tokensService.tokenId();
-    this.usersService
-      .changeUserPassword(token, password, newPassword)
-      .pipe(takeUntilDestroyed(this._destroyRef))
-      .subscribe({
-        next: (_: any): void => {
-          const message = 'Пароль был успешно изменен.';
-          MessageServiceUtils.showSuccess(this.messageService, message);
-        },
-        error: (err: HttpErrorResponse): void => {
-          const message = err.error.message;
-          MessageServiceUtils.showError(this.messageService, message);
-        },
-      });
+  private readNewPassword(): string {
+    const formValues = this.form.value;
+    return formValues.newPassword as string;
+  }
+
+  private readCurrentPassword(): string {
+    const formValues = this.form.value;
+    return formValues.currentPassword as string;
+  }
+
+  private resetForm(): void {
+    this.form.reset();
+  }
+
+  private isPasswordEmpty(password: string): boolean {
+    const isEmpty: boolean = StringUtils.isEmptyOrWhiteSpace(password);
+    if (isEmpty) MessageServiceUtils.showError(this._messageService, 'Пароль не указан');
+    return isEmpty;
   }
 }

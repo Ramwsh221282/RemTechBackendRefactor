@@ -25,14 +25,14 @@ public static class ParsersModuleInjection
             services.AddDomainLayer();
             services.AddInfrastructureLayer();
         }
-        
+
         public void AddParsersControlModule(bool isDevelopment)
         {
             services.AddSharedInfrastructure(isDevelopment);
             services.AddInfrastructureLayer();
             services.AddDomainLayer();
         }
-  
+
         private void AddSharedInfrastructure(bool isDevelopment)
         {
             services.RegisterLogging();
@@ -42,7 +42,7 @@ public static class ParsersModuleInjection
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
             }
-            
+
             services.AddPostgres();
             services.AddRabbitMq();
         }
@@ -50,7 +50,8 @@ public static class ParsersModuleInjection
         private void AddDomainLayer()
         {
             Assembly assembly = typeof(SubscribedParser).Assembly;
-            new HandlersRegistrator(services).FromAssemblies([assembly])
+            new HandlersRegistrator(services)
+                .FromAssemblies([assembly])
                 .RequireRegistrationOf(typeof(ICommandHandler<,>))
                 .RequireRegistrationOf(typeof(IEventTransporter<,>))
                 .AlsoAddValidators()
@@ -58,56 +59,47 @@ public static class ParsersModuleInjection
                 .AlsoUseDecorators()
                 .Invoke();
         }
-        
+
         public void AddInfrastructureLayer()
         {
             services.AddEventListeners();
             services.AddRepositories();
             services.AddCacheInvalidators();
-            services.AddQueryHandlers();
             services.UseCachedQueryHandlers();
         }
 
         private void AddCacheInvalidators()
         {
-            Assembly assembly = typeof(SubscribeParserCacheInvalidator).Assembly;
-            services.Scan(s => s.FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo(typeof(ICacheInvalidator<,>)))
-                .AsImplementedInterfaces()
-                .WithScopedLifetime());
             services.AddScoped<CachedParserArrayInvalidator>();
             services.AddScoped<ParserCacheRecordInvalidator>();
         }
 
-        private void AddQueryHandlers()
-        {
-            Assembly assembly = typeof(GetParsersQuery).Assembly;
-            services.Scan(s => s.FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
-                .AsImplementedInterfaces()
-                .WithScopedLifetime());
-        }
-
         private void UseCachedQueryHandlers()
         {
-            services.Decorate(typeof(IQueryHandler<GetParsersQuery, IEnumerable<ParserResponse>>), typeof(GetParsersCachedQueryHandler));
-            services.Decorate(typeof(IQueryHandler<GetParserQuery, ParserResponse?>), typeof(GetParserCachedQueryHandler));
+            services.Decorate<
+                IQueryHandler<GetParsersQuery, IEnumerable<ParserResponse>>,
+                GetParsersCachedQueryHandler
+            >();
+
+            services.Decorate<
+                IQueryHandler<GetParserQuery, ParserResponse?>,
+                GetParserCachedQueryHandler
+            >();
         }
-        
+
         private void AddEventListeners()
         {
             services.AddScoped<IOnParserSubscribedListener, OnParserSubscribedEventListener>();
             services.AddScoped<IOnParserStartedListener, OnParserStartedEventListener>();
-            services.Scan(x => x.FromAssemblies(typeof(ParserSubscribeConsumer).Assembly)
-                .AddClasses(classes => classes.AssignableTo<IConsumer>())
-                .AsSelfWithInterfaces()
-                .WithTransientLifetime());
         }
 
         private void AddRepositories()
         {
             services.AddScoped<ISubscribedParsersRepository, SubscribedParsersRepository>();
-            services.AddScoped<ISubscribedParsersCollectionRepository, SubscribedParsersCollectionRepository>();
+            services.AddScoped<
+                ISubscribedParsersCollectionRepository,
+                SubscribedParsersCollectionRepository
+            >();
         }
     }
 }

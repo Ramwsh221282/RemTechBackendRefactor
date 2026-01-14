@@ -11,61 +11,69 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Accounts;
 
-public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUnitOfWork unitOfWork) : IAccountsRepository 
+public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUnitOfWork unitOfWork)
+    : IAccountsRepository
 {
     private NpgSqlSession Session { get; } = session;
+
     private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
 
     public async Task Add(Account account, CancellationToken ct = default)
     {
         const string sql = """
-                           INSERT INTO identity_module.accounts
-                           (id, email, password, login, activation_status)
-                           VALUES
-                           (@id, @email, @password, @login, @activation_status)
-                           """;
+            INSERT INTO identity_module.accounts
+            (id, email, password, login, activation_status)
+            VALUES
+            (@id, @email, @password, @login, @activation_status)
+            """;
 
         CommandDefinition command = Session.FormCommand(sql, GetParameters(account), ct);
         await Session.Execute(command);
     }
 
-    public async Task<bool> Exists(AccountSpecification specification, CancellationToken ct = default)
+    public async Task<bool> Exists(
+        AccountSpecification specification,
+        CancellationToken ct = default
+    )
     {
         (DynamicParameters parameters, string filterSql) = WhereClause(specification);
         string sql = $"SELECT EXISTS (SELECT 1 FROM identity_module.accounts a {filterSql})";
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-        return await session.QuerySingleRow<bool>(command);
+        return await Session.QuerySingleRow<bool>(command);
     }
 
-    public async Task<Result<Account>> Get(AccountSpecification specification, CancellationToken ct = default)
+    public async Task<Result<Account>> Get(
+        AccountSpecification specification,
+        CancellationToken ct = default
+    )
     {
         (DynamicParameters parameters, string filterSql) = WhereClause(specification);
         string sql = $"""
-                     WITH accounts AS (
-                     SELECT
-                     a.id as account_id,
-                     a.email as account_email,
-                     a.password as account_password,
-                     a.login as account_login,
-                     a.activation_status as account_activation_status,
-                     ap.permission_id as account_permission_id
-                     FROM identity_module.accounts a
-                     LEFT JOIN identity_module.account_permissions ap ON ap.account_id=a.id
-                     {filterSql}
-                     )
-                     SELECT accounts.*, p.name as permission_name, p.description as permission_description
-                     FROM accounts
-                     LEFT JOIN identity_module.permissions p ON p.id = accounts.account_permission_id
-                     """;
-        
+            WITH accounts AS (
+            SELECT
+            a.id as account_id,
+            a.email as account_email,
+            a.password as account_password,
+            a.login as account_login,
+            a.activation_status as account_activation_status,
+            ap.permission_id as account_permission_id
+            FROM identity_module.accounts a
+            LEFT JOIN identity_module.account_permissions ap ON ap.account_id=a.id
+            {filterSql}
+            )
+            SELECT accounts.*, p.name as permission_name, p.description as permission_description
+            FROM accounts
+            LEFT JOIN identity_module.permissions p ON p.id = accounts.account_permission_id
+            """;
+
         CommandDefinition command = Session.FormCommand(sql, parameters, ct);
         Account? account = await GetSingle(command, ct);
-        
-        if (account is null) 
+
+        if (account is null)
             return Error.NotFound("Учетная запись не найдена.");
-        if (specification.LockRequired) 
+        if (specification.LockRequired)
             await BlockEntity(account, ct);
-        
+
         UnitOfWork.Track([account]);
         return account;
     }
@@ -75,7 +83,7 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
         NpgsqlConnection connection = await Session.GetConnection(ct);
         await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
         Dictionary<Guid, Account> mappings = [];
-        
+
         while (await reader.ReadAsync(ct))
         {
             Guid id = reader.GetValue<Guid>("account_id");
@@ -96,25 +104,29 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
                 );
                 mappings.Add(id, account);
             }
-            
-            if (reader.IsDBNull(reader.GetOrdinal("account_permission_id"))) continue;
-            
+
+            if (reader.IsDBNull(reader.GetOrdinal("account_permission_id")))
+                continue;
+
             Guid permissionId = reader.GetValue<Guid>("account_permission_id");
             string permissionName = reader.GetValue<string>("permission_name");
             string permissionDescription = reader.GetValue<string>("permission_description");
-            
+
             Permission permission = new(
-                PermissionId.Create(permissionId), 
+                PermissionId.Create(permissionId),
                 PermissionName.Create(permissionName),
-                PermissionDescription.Create(permissionDescription));
-            
+                PermissionDescription.Create(permissionDescription)
+            );
+
             account.Permissions.Add(permission);
         }
-        
+
         return mappings.Count == 0 ? null : mappings.First().Value;
     }
-    
-    private (DynamicParameters parameters, string filterSql) WhereClause(AccountSpecification specification)
+
+    private static (DynamicParameters parameters, string filterSql) WhereClause(
+        AccountSpecification specification
+    )
     {
         DynamicParameters parameters = new();
         List<string> filters = [];
@@ -136,8 +148,11 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
             parameters.Add("@email", specification.Email, DbType.String);
             filters.Add("a.email=@email");
         }
-        
-        return (parameters, filters.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filters)}");
+
+        return (
+            parameters,
+            filters.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filters)}"
+        );
     }
 
     private async Task BlockEntity(Account account, CancellationToken ct)
@@ -145,34 +160,44 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
         await BlockAccount(account, ct);
         await BlockAccountPermissions(account, ct);
     }
-    
+
     private async Task BlockAccount(Account account, CancellationToken ct)
     {
         const string sql = """
-                           SELECT a.id FROM identity_module.accounts a
-                           WHERE a.id = @accountId
-                           FOR UPDATE OF a
-                           """;
+            SELECT a.id FROM identity_module.accounts a
+            WHERE a.id = @accountId
+            FOR UPDATE OF a
+            """;
         DynamicParameters parameters = new();
         parameters.Add("@accountId", account.Id.Value, DbType.Guid);
-        CommandDefinition command = new(sql, parameters, transaction: Session.Transaction, cancellationToken: ct);
+        CommandDefinition command = new(
+            sql,
+            parameters,
+            transaction: Session.Transaction,
+            cancellationToken: ct
+        );
         await Session.Execute(command);
     }
 
     private async Task BlockAccountPermissions(Account account, CancellationToken ct)
     {
         const string sql = """
-                           SELECT ap.permission_id FROM identity_module.account_permissions ap
-                           WHERE ap.account_id = @accountId
-                           FOR UPDATE OF ap
-                           """;
+            SELECT ap.permission_id FROM identity_module.account_permissions ap
+            WHERE ap.account_id = @accountId
+            FOR UPDATE OF ap
+            """;
         DynamicParameters parameters = new();
         parameters.Add("@accountId", account.Id.Value, DbType.Guid);
-        CommandDefinition command = new(sql, parameters, transaction: Session.Transaction, cancellationToken: ct);
+        CommandDefinition command = new(
+            sql,
+            parameters,
+            transaction: Session.Transaction,
+            cancellationToken: ct
+        );
         await Session.Execute(command);
     }
-    
-    private object GetParameters(Account account)
+
+    private static object GetParameters(Account account)
     {
         return new
         {
@@ -180,7 +205,7 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
             email = account.Email.Value,
             password = account.Password.Value,
             login = account.Login.Value,
-            activation_status = account.ActivationStatus.Value
+            activation_status = account.ActivationStatus.Value,
         };
     }
 }

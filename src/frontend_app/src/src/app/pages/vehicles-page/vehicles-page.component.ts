@@ -73,7 +73,7 @@ export class VehiclesPageComponent {
   private readonly _destroyRef: DestroyRef = inject(DestroyRef);
   constructor(
     service: CatalogueVehiclesService,
-    activatedRoute: ActivatedRoute,
+    activatedRoute: ActivatedRoute
   ) {
     this._priceFilterPart = signal(new PriceFilterPart(null, null));
     this._vehicles = signal([]);
@@ -103,7 +103,7 @@ export class VehiclesPageComponent {
             this._categoryIdPart.set(new CategoryIdPart(categoryId));
             this._textSearchPart.set(new TextSearchPart(textSearch));
             this._paginationPart.set(
-              new PaginationPart(page === undefined ? 1 : page),
+              new PaginationPart(page === undefined ? 1 : page)
             );
           },
         });
@@ -206,7 +206,7 @@ export class VehiclesPageComponent {
   public acceptPrice($event: PriceSubmitEvent): void {
     const part: PriceFilterPart = new PriceFilterPart(
       $event.priceFrom,
-      $event.priceTo,
+      $event.priceTo
     );
     this._priceFilterPart.set(part);
     this.resetPage();

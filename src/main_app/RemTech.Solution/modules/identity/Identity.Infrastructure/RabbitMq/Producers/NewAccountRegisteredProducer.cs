@@ -6,14 +6,15 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace Identity.Infrastructure.RabbitMq.Producers;
 
-public sealed class NewAccountRegisteredProducer(RabbitMqProducer producer, Serilog.ILogger logger) : IAccountOutboxMessagePublisher
+public sealed class NewAccountRegisteredProducer(RabbitMqProducer producer, Serilog.ILogger logger)
+    : IAccountOutboxMessagePublisher
 {
     private const string Exchange = "identity";
     private const string RoutingKey = "account.new";
-    
+
     private RabbitMqProducer Producer { get; } = producer;
     private Serilog.ILogger Logger { get; } = logger.ForContext<NewAccountRegisteredProducer>();
-    
+
     public bool CanPublish(IdentityOutboxMessage message)
     {
         return message.Type == AccountOutboxMessageTypes.NewAccountCreated;

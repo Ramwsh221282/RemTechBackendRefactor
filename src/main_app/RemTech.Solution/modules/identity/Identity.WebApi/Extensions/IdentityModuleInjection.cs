@@ -37,7 +37,7 @@ public static class IdentityModuleInjection
             services.AddDomain();
             services.AddInfrastructure();
         }
-        
+
         public void RegisterIdentityModule(bool isDevelopment)
         {
             services.AddSharedDependencies(isDevelopment);
@@ -59,11 +59,13 @@ public static class IdentityModuleInjection
                 services.AddJwtOptionsFromAppsettings();
                 services.AddCachingOptionsFromAppsettings();
             }
-            
+
             services.RegisterHybridCache();
             services.AddPostgres();
             services.AddRabbitMq();
-            RemTech.SharedKernel.Infrastructure.AesEncryption.AesCryptographyExtensions.AddAesCryptography(services);
+            RemTech.SharedKernel.Infrastructure.AesEncryption.AesCryptographyExtensions.AddAesCryptography(
+                services
+            );
         }
 
         private void AddDomain()
@@ -77,10 +79,13 @@ public static class IdentityModuleInjection
             services.AddSingleton<IAccountPasswordRequirement, DigitPasswordRequirement>();
             services.AddSingleton<IAccountPasswordRequirement, LowercasePasswordRequirement>();
             services.AddSingleton<IAccountPasswordRequirement, MinLengthPasswordRequirement>();
-            services.AddSingleton<IAccountPasswordRequirement, SpecialCharacterPasswordRequirement>();
+            services.AddSingleton<
+                IAccountPasswordRequirement,
+                SpecialCharacterPasswordRequirement
+            >();
             services.AddSingleton<IAccountPasswordRequirement, UppercasePasswordRequirement>();
         }
-        
+
         private void AddDomainHandlers()
         {
             new HandlersRegistrator(services)
@@ -92,36 +97,38 @@ public static class IdentityModuleInjection
                 .AlsoUseDecorators()
                 .Invoke();
         }
-        
+
         private void AddBackgroundServices()
         {
             services.AddHostedService<SuperUserAccountRegistrationOnStartupBackgroundService>();
             services.AddHostedService<SuperUserAccountPermissionsUpdateBackgroundServices>();
             services.AddHostedService<AccountsModuleOutboxProcessor>();
+            services.AddHostedService<ExpiredTokensCleanerService>();
         }
-        
+
         public void AddInfrastructure()
         {
+            services.AddPasswordHasher();
             services.AddRepositories();
             services.AddChangeTracker();
-            services.AddQueryHandlers();
-            services.AddCacheInvalidators();
-            services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddOutboxMessagePublishers();
             services.AddBackgroundServices();
             services.AddJwt();
-            services.AddHostedService<ExpiredTokensCleanerService>();
-            
             services.UseCacheInvalidatingHandlers();
             services.UseCacheOnRepositories();
             services.UseCacheOnQueryHandlers();
+        }
+
+        private void AddPasswordHasher()
+        {
+            services.AddSingleton<IPasswordHasher, PasswordHasher>();
         }
 
         private void UseCacheOnRepositories()
         {
             services.Decorate<IAccessTokensRepository, CachedAccessTokenRepository>();
         }
-        
+
         private void AddChangeTracker()
         {
             services.AddScoped<AccountsChangeTracker>();
@@ -130,7 +137,7 @@ public static class IdentityModuleInjection
             services.AddScoped<IdentityOutboxMessageChangeTracker>();
             services.AddScoped<IAccountsModuleUnitOfWork, AccountsModuleUnitOfWork>();
         }
-        
+
         private void AddRepositories()
         {
             services.AddScoped<IAccountsRepository, AccountsRepository>();
@@ -140,42 +147,29 @@ public static class IdentityModuleInjection
             services.AddScoped<IAccessTokensRepository, AccessTokensRepository>();
             services.AddScoped<IAccountModuleOutbox, AccountsModuleOutbox>();
         }
-        
+
         private void UseCacheOnQueryHandlers()
         {
-            services.TryDecorate(typeof(IQueryHandler<GetUserQuery, UserAccountResponse?>), typeof(GetUserCachedQueryHandler));
-        }
-        
-        private void AddQueryHandlers()
-        {
-            Assembly assembly = typeof(GetUserQuery).Assembly;
-            services.Scan(s => s.FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
-                .AsImplementedInterfaces()
-                .WithScopedLifetime());
+            services.TryDecorate<
+                IQueryHandler<GetUserQuery, UserAccountResponse?>,
+                GetUserCachedQueryHandler
+            >();
         }
 
-        private void AddCacheInvalidators()
-        {
-            Assembly assembly = typeof(ConfirmTicketCacheInvalidator).Assembly;
-            services.Scan(s => s.FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo(typeof(ICacheInvalidator<,>)))
-                .AsImplementedInterfaces()
-                .WithScopedLifetime());
-        }
-        
         private void AddJwt()
         {
             services.AddSingleton<IJwtTokenManager, JwtTokenManager>();
         }
-        
+
         private void AddOutboxMessagePublishers()
         {
             Assembly assembly = typeof(NewAccountRegisteredProducer).Assembly;
-            services.Scan(s => s.FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo(typeof(IAccountOutboxMessagePublisher)))
-                .AsImplementedInterfaces()
-                .WithSingletonLifetime());
+            _ = services.Scan(s =>
+                s.FromAssemblies(assembly)
+                    .AddClasses(classes => classes.AssignableTo<IAccountOutboxMessagePublisher>())
+                    .AsImplementedInterfaces()
+                    .WithSingletonLifetime()
+            );
         }
     }
 }

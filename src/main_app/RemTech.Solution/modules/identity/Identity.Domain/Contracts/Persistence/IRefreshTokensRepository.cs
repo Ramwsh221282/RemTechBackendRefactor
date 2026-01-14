@@ -9,6 +9,11 @@ public interface IRefreshTokensRepository
     Task Add(RefreshToken token, CancellationToken ct = default);
     Task Update(RefreshToken token, CancellationToken ct = default);
     Task<Result<RefreshToken>> Get(Guid accountId, CancellationToken ct = default);
-    Task<Result<RefreshToken>> Get(string refreshToken, bool withLock = false, CancellationToken ct = default);
+    Task<Result<RefreshToken>> Get(
+        string refreshToken,
+        bool withLock = false,
+        CancellationToken ct = default
+    );
     Task Delete(RefreshToken token, CancellationToken ct = default);
+    Task Delete(Guid AccountId, CancellationToken ct = default);
 }

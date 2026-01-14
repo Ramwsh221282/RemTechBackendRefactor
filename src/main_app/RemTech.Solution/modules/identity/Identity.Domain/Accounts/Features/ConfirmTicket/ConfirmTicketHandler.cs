@@ -12,19 +12,24 @@ public sealed class ConfirmTicketHandler(
     IAccountsRepository accounts,
     IAccountTicketsRepository accountTickets,
     IAccountsModuleUnitOfWork unitOfWork
-)
-    : ICommandHandler<ConfirmTicketCommand, Account>
+) : ICommandHandler<ConfirmTicketCommand, Account>
 {
-    public async Task<Result<Account>> Execute(ConfirmTicketCommand command, CancellationToken ct = default)
+    public async Task<Result<Account>> Execute(
+        ConfirmTicketCommand command,
+        CancellationToken ct = default
+    )
     {
         Result<Account> account = await GetRequiredAccount(command, ct);
-        if (account.IsFailure) return account.Error;
-        
+        if (account.IsFailure)
+            return account.Error;
+
         Result<AccountTicket> ticket = await GetRequiredAccountTicket(command, ct);
-        if (ticket.IsFailure) return ticket.Error;
-        
+        if (ticket.IsFailure)
+            return ticket.Error;
+
         Result<Unit> confirmation = ConfirmAccountTicket(ticket.Value, account.Value);
-        if (confirmation.IsFailure) return confirmation.Error;
+        if (confirmation.IsFailure)
+            return confirmation.Error;
 
         await SaveChanges(account.Value, ticket.Value, ct);
         return account.Value;
@@ -35,22 +40,27 @@ public sealed class ConfirmTicketHandler(
         await unitOfWork.Save(account, ct);
         await unitOfWork.Save(ticket, ct);
     }
-    
-    private Result<Unit> ConfirmAccountTicket(AccountTicket ticket, Account account)
+
+    private static Result<Unit> ConfirmAccountTicket(AccountTicket ticket, Account account)
     {
         Result<Unit> confirmation = ticket.FinishBy(account.Id.Value);
-        if (confirmation.IsFailure) return confirmation.Error;
+        if (confirmation.IsFailure)
+            return confirmation.Error;
 
         if (ticket.Purpose == AccountTicketPurposes.EmailConfirmationRequired)
         {
             Result<Unit> activation = account.Activate();
-            if (activation.IsFailure) return activation.Error;
+            if (activation.IsFailure)
+                return activation.Error;
         }
-        
+
         return Unit.Value;
     }
-    
-    private async Task<Result<Account>> GetRequiredAccount(ConfirmTicketCommand command, CancellationToken ct)
+
+    private async Task<Result<Account>> GetRequiredAccount(
+        ConfirmTicketCommand command,
+        CancellationToken ct
+    )
     {
         AccountSpecification specification = new AccountSpecification()
             .WithId(command.AccountId)
@@ -60,7 +70,8 @@ public sealed class ConfirmTicketHandler(
 
     private async Task<Result<AccountTicket>> GetRequiredAccountTicket(
         ConfirmTicketCommand command,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         AccountTicketSpecification specification = new AccountTicketSpecification()
             .WithAccountId(command.AccountId)

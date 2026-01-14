@@ -81,8 +81,7 @@ export class SignInFormComponent {
         tap(() => {
           MessageServiceUtils.showSuccess(this._messageService, 'Авторизация успешна');
           this._authStatusService.setIsAuthenticated(true);
-          this._authStatusService.unlockRefresh();
-          this._authStatusService.setTokenRefreshed();
+          this._router.navigate(['']);
         }),
         switchMap(() => this._identityService.fetchAccount()),
         tap((envelope: TypedEnvelope<AccountResponse>) => {

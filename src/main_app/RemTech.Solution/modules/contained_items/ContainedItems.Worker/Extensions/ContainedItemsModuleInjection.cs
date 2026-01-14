@@ -16,7 +16,7 @@ public static class ContainedItemsModuleInjection
             services.RegisterDomain();
             services.RegisterInfrastructure();
         }
-        
+
         public void AddContainedItemsModule(bool isDevelopment)
         {
             services.RegisterSharedDependencies(isDevelopment);
@@ -42,7 +42,7 @@ public static class ContainedItemsModuleInjection
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
             }
-            
+
             services.RegisterLogging();
             services.AddPostgres();
             services.AddRabbitMq();

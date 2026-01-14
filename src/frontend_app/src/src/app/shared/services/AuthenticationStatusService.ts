@@ -6,14 +6,6 @@ import { Injectable, signal, WritableSignal} from '@angular/core';
 export class AuthenticationStatusService {
   readonly isAuthenticated: WritableSignal<boolean> = signal(false);
 
-  unlockRefresh(): void {
-
-  }
-
-  lockRefresh(): void {
-
-  }
-
   get isAuthorized(): boolean {
     return this.isAuthenticated();
   }
@@ -24,13 +16,5 @@ export class AuthenticationStatusService {
 
   setIsNotAuthenticated(): void {
     this.isAuthenticated.set(false);
-  }
-
-  setTokenRefreshed(): void {
-
-  }
-
-  setTokenIsExpired(): void {
-
   }
 }

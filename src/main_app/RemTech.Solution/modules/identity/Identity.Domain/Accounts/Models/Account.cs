@@ -10,16 +10,23 @@ using RemTech.SharedKernel.Core.Handlers;
 namespace Identity.Domain.Accounts.Models;
 
 public sealed class Account(
-    AccountId id, 
-    AccountEmail email, 
-    AccountPassword password, 
-    AccountLogin login, 
+    AccountId id,
+    AccountEmail email,
+    AccountPassword password,
+    AccountLogin login,
     AccountActivationStatus activationStatus,
-    AccountPermissionsCollection permissions) : IDomainEventBearer
+    AccountPermissionsCollection permissions
+) : IDomainEventBearer
 {
-    private Account(Account account) 
-        : this(account.Id, account.Email, account.Password, account.Login, account.ActivationStatus, account.Permissions.Clone())
-    { }
+    private Account(Account account)
+        : this(
+            account.Id,
+            account.Email,
+            account.Password,
+            account.Login,
+            account.ActivationStatus,
+            account.Permissions.Clone()
+        ) { }
 
     private List<IDomainEvent> _events = [];
     public AccountId Id { get; private set; } = id;
@@ -51,35 +58,40 @@ public sealed class Account(
         foreach (Permission permission in permissions)
         {
             Result<Unit> add = Permissions.Add(permission);
-            if (add.IsFailure) errors.Add(add.Error.Message);
+            if (add.IsFailure)
+                errors.Add(add.Error.Message);
         }
-        if (errors.Any()) return Error.Conflict(string.Join(", ", errors));
-        return Result.Success(Unit.Value);
+
+        return errors.Count != 0
+            ? (Result<Unit>)Error.Conflict(string.Join(", ", errors))
+            : Result.Success(Unit.Value);
     }
-    
+
     public Result<Unit> AddPermission(Permission permission)
     {
         Result<Unit> add = Permissions.Add(permission);
         return add.IsFailure ? add.Error : Unit.Value;
     }
-    
+
     public Result<Unit> CloseTicket(AccountTicket ticket)
     {
         Result<Unit> finishing = ticket.FinishBy(Id.Value);
-        if (finishing.IsFailure) return finishing.Error;
+        if (finishing.IsFailure)
+            return finishing.Error;
         _events.Add(new AccountClosedTicketEvent(this, ticket));
         return Unit.Value;
     }
-    
+
     public Result<Unit> ChangePassword(
-        AccountPassword password, 
+        AccountPassword password,
         IPasswordHasher hasher,
-        IAccountPasswordRequirement requirement,
-        CancellationToken ct = default)
+        IEnumerable<IAccountPasswordRequirement> requirements
+    )
     {
-        Result<Unit> validation = requirement.Satisfies(password);
-        if (validation.IsFailure) return validation.Error;
-        Password = Password.HashBy(hasher, ct);
+        Result<Unit> validation = new PasswordRequirement().Use(requirements).Satisfies(password);
+        if (validation.IsFailure)
+            return validation.Error;
+        Password = password.HashBy(hasher);
         return Unit.Value;
     }
 
@@ -90,32 +102,37 @@ public sealed class Account(
     }
 
     public void ChangeEmail(AccountEmail email) => Email = email;
-    
+
     public static Account Create(
-        AccountEmail email, 
-        AccountLogin login, 
+        AccountEmail email,
+        AccountLogin login,
         AccountPassword password,
-        AccountActivationStatus status)
+        AccountActivationStatus status
+    )
     {
         Account account = New(email, login, password);
         account.ActivationStatus = status;
         return account;
     }
-    
+
     public static Account New(AccountEmail email, AccountLogin login, AccountPassword password)
     {
         AccountId id = AccountId.New();
         AccountActivationStatus activationStatus = AccountActivationStatus.NotActivated();
         AccountPermissionsCollection permissions = AccountPermissionsCollection.Empty(id);
-        Account account = new Account(id, email, password, login, activationStatus, permissions);
+        Account account = new(id, email, password, login, activationStatus, permissions);
         account._events.Add(new NewAccountCreatedEvent(account));
         return account;
     }
 
+    public Result<Unit> CanResetPassword() =>
+        ActivationStatus.IsActivated()
+            ? Result.Success(Unit.Value)
+            : Error.Validation("Сброс пароля невозможен для неактивированной учетной записи.");
+
     public Account Copy()
     {
-        Account account = new(this);   
-        account._events = [.._events];
+        Account account = new(this) { _events = [.. _events] };
         return account;
     }
 

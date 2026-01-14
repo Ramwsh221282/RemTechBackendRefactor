@@ -4,78 +4,106 @@ import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { StringUtils } from '../../../../shared/utils/string-utils';
 import { MessageServiceUtils } from '../../../../shared/utils/message-service-utils';
-import { UsersService } from '../../services/UsersService';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { PasswordRulesComponent } from '../../../../shared/components/password-rules/password-rules.component';
+import { IdentityApiService } from '../../../../shared/api/identity-module/identity-api-service';
+import { catchError, EMPTY, Observable, tap } from 'rxjs';
 
 @Component({
   selector: 'app-sign-up-form',
   imports: [ReactiveFormsModule, Toast, PasswordRulesComponent],
   templateUrl: './sign-up-form.component.html',
   styleUrl: './sign-up-form.component.scss',
-  providers: [MessageService],
 })
 export class SignUpFormComponent {
+  constructor(
+    private readonly _messageService: MessageService,
+    private readonly _identityService: IdentityApiService
+  ) {}
+
+  private readonly _destoryRef: DestroyRef = inject(DestroyRef);
+
   signUpForm: FormGroup = new FormGroup({
     email: new FormControl(''),
     name: new FormControl(''),
     password: new FormControl(''),
   });
 
-  private readonly _messageService: MessageService;
-  private readonly _usersService: UsersService;
-  private readonly _destoryRef: DestroyRef = inject(DestroyRef);
-  constructor(messageService: MessageService, usersService: UsersService) {
-    this._messageService = messageService;
-    this._usersService = usersService;
-  }
-
   public submit(): void {
-    const formValues = this.signUpForm.value;
-    const email: string = formValues.email;
-    const name: string = formValues.name;
-    const password: string = formValues.password;
-    if (StringUtils.isEmptyOrWhiteSpace(password)) {
-      MessageServiceUtils.showError(
-        this._messageService,
-        'Необходимо ввести пароль.',
-      );
-      return;
-    }
-    if (StringUtils.isEmptyOrWhiteSpace(email && name)) {
-      MessageServiceUtils.showError(
-        this._messageService,
-        'Необходимо ввести почту.',
-      );
-      return;
-    }
-    if (StringUtils.isEmptyOrWhiteSpace(name)) {
-      MessageServiceUtils.showError(
-        this._messageService,
-        'Необходимо ввести псевдоним.',
-      );
-      return;
-    }
-    this.register(email, password, name);
+    const email: string = this.readEmail();
+    const login: string = this.readLogin();
+    const password: string = this.readPassword();
+    if (this.isEmailEmpty(email)) return;
+    if (this.isLoginEmpty(login)) return;
+    if (this.isPasswordEmpty(password)) return;
+    this.register(email, password, login);
   }
 
-  private register(email: string, password: string, name: string): void {
-    this._usersService
-      .register(email, password, name)
-      .pipe(takeUntilDestroyed(this._destoryRef))
-      .subscribe({
-        next: (_: any): void => {
-          MessageServiceUtils.showSuccess(
-            this._messageService,
-            'Регистрация успешна.',
-          );
-          this.signUpForm.reset();
-        },
-        error: (err: HttpErrorResponse): void => {
-          const message = err.error.message as string;
+  private isEmailEmpty(email: string): boolean {
+    const isEmpty: boolean = StringUtils.isEmptyOrWhiteSpace(email);
+    if (isEmpty) {
+      MessageServiceUtils.showError(
+        this._messageService,
+        'Необходимо ввести почту.'
+      );
+    }
+    return isEmpty;
+  }
+
+  private isLoginEmpty(login: string): boolean {
+    const isEmpty: boolean = StringUtils.isEmptyOrWhiteSpace(login);
+    if (isEmpty) {
+      MessageServiceUtils.showError(
+        this._messageService,
+        'Необходимо ввести псевдоним.'
+      );
+    }
+    return isEmpty;
+  }
+
+  private isPasswordEmpty(password: string): boolean {
+    const isEmpty: boolean = StringUtils.isEmptyOrWhiteSpace(password);
+    if (isEmpty) {
+      MessageServiceUtils.showError(
+        this._messageService,
+        'Необходимо ввести пароль.'
+      );
+    }
+    return isEmpty;
+  }
+
+  private readEmail(): string {
+    const formValues = this.signUpForm.value;
+    return formValues.email;
+  }
+
+  private readLogin(): string {
+    const formValues = this.signUpForm.value;
+    return formValues.name;
+  }
+
+  private readPassword(): string {
+    const formValues = this.signUpForm.value;
+    return formValues.password;
+  }
+
+  private register(email: string, login: string, password: string): void {
+    this._identityService
+      .signUp(email, login, password)
+      .pipe(
+        takeUntilDestroyed(this._destoryRef),
+        catchError((error: HttpErrorResponse): Observable<never> => {
+          const message: string = error.error.message;
+          console.log(message);
           MessageServiceUtils.showError(this._messageService, message);
-        },
+          return EMPTY;
+        })
+      )
+      .subscribe(() => {
+        const message: string =
+          'Подтверждение регистрации отправлено на Вашу почту.';
+        MessageServiceUtils.showSuccess(this._messageService, message);
       });
   }
 }

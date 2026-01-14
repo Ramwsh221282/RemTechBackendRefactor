@@ -17,7 +17,6 @@ public static class ContainedItemsInfrastructureInjection
         {
             services.RegisterRepository();
             services.RegisterProducers();
-            services.RegisterConsumers();
             services.RegisterBackgroundServices();
         }
 
@@ -29,7 +28,6 @@ public static class ContainedItemsInfrastructureInjection
         private void RegisterBackgroundServices()
         {
             services.AddHostedService<PublishContainedItemsToAddBackgroundService>();
-            services.AddHostedService<AggregatedConsumersHostedService>();
         }
 
         private void RegisterProducers()
@@ -37,15 +35,6 @@ public static class ContainedItemsInfrastructureInjection
             services.AddSingleton<ItemPublishStrategyFactory>();
             services.AddSingleton<AddSparesProducer>();
             services.AddSingleton<AddVehiclesProducer>();
-        }
-        
-        private void RegisterConsumers()
-        {
-            Assembly assembly = typeof(ContainedItemsInfrastructureInjection).Assembly;
-            services.Scan(x => x.FromAssemblies(assembly)
-                .AddClasses(classes => classes.AssignableTo(typeof(IConsumer)))
-                .AsSelfWithInterfaces()
-                .WithTransientLifetime());
         }
     }
 }

@@ -22,9 +22,9 @@ public static class MigrationsInjection
                 typeof(MailersRepository).Assembly,
                 typeof(SubscribedParsersRepository).Assembly,
                 typeof(SparesRepository).Assembly,
-                typeof(VehicleEmbeddingsUpdaterService).Assembly
+                typeof(VehicleEmbeddingsUpdaterService).Assembly,
             ];
-            
+
             services.AddMigrations(assemblies);
         }
     }
