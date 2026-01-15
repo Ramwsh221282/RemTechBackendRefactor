@@ -10,6 +10,7 @@ using Identity.Infrastructure.Accounts;
 using Identity.Infrastructure.Accounts.Commands.ConfirmTicket;
 using Identity.Infrastructure.Accounts.Queries.GetUser;
 using Identity.Infrastructure.Common;
+using Identity.Infrastructure.Common.BackgroundServices;
 using Identity.Infrastructure.Common.Migrations;
 using Identity.Infrastructure.Common.UnitOfWork;
 using Identity.Infrastructure.Permissions;
@@ -104,6 +105,7 @@ public static class IdentityModuleInjection
             services.AddHostedService<SuperUserAccountPermissionsUpdateBackgroundServices>();
             services.AddHostedService<AccountsModuleOutboxProcessor>();
             services.AddHostedService<ExpiredTokensCleanerService>();
+            services.AddHostedService<AccountsModuleOutboxCleaner>();
         }
 
         public void AddInfrastructure()
