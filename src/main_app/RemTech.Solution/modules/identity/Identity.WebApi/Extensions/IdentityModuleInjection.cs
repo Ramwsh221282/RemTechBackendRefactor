@@ -71,7 +71,6 @@ public static class IdentityModuleInjection
 
         private void AddDomain()
         {
-            services.AddDomainHandlers();
             services.AddPasswordRequirements();
         }
 
@@ -85,18 +84,6 @@ public static class IdentityModuleInjection
                 SpecialCharacterPasswordRequirement
             >();
             services.AddSingleton<IAccountPasswordRequirement, UppercasePasswordRequirement>();
-        }
-
-        private void AddDomainHandlers()
-        {
-            new HandlersRegistrator(services)
-                .FromAssemblies([typeof(Account).Assembly])
-                .RequireRegistrationOf(typeof(ICommandHandler<,>))
-                .AlsoAddDomainEventHandlers()
-                .AlsoAddValidators()
-                .AlsoAddDecorators()
-                .AlsoUseDecorators()
-                .Invoke();
         }
 
         private void AddBackgroundServices()

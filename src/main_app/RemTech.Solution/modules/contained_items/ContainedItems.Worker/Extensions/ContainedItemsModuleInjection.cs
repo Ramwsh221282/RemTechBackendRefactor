@@ -1,5 +1,4 @@
-﻿using ContainedItems.Domain;
-using ContainedItems.Infrastructure;
+﻿using ContainedItems.Infrastructure;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -13,20 +12,13 @@ public static class ContainedItemsModuleInjection
     {
         public void InjectContainedItemsModule()
         {
-            services.RegisterDomain();
             services.RegisterInfrastructure();
         }
 
         public void AddContainedItemsModule(bool isDevelopment)
         {
             services.RegisterSharedDependencies(isDevelopment);
-            services.RegisterDomain();
             services.RegisterInfrastructure();
-        }
-
-        private void RegisterDomain()
-        {
-            services.AddContainedItemsDomain();
         }
 
         public void RegisterInfrastructure()

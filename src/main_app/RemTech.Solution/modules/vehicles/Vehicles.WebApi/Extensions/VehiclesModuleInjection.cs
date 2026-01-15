@@ -33,27 +33,13 @@ public static class VehiclesModuleInjection
     {
         public void InjectVehiclesModule()
         {
-            services.RegisterDomainLayerDependencies();
             services.RegisterInfrastructureLayerDependencies();
         }
 
         public void RegisterVehiclesModule(bool isDevelopment)
         {
             services.RegisterSharedInfrastructure(isDevelopment);
-            services.RegisterDomainLayerDependencies();
             services.RegisterInfrastructureLayerDependencies();
-        }
-
-        private void RegisterDomainLayerDependencies()
-        {
-            new HandlersRegistrator(services)
-                .FromAssemblies([typeof(Vehicle).Assembly])
-                .RequireRegistrationOf(typeof(ICommandHandler<,>))
-                .RequireRegistrationOf(typeof(IEventTransporter<,>))
-                .AlsoAddValidators()
-                .AlsoAddDecorators()
-                .AlsoUseDecorators()
-                .Invoke();
         }
 
         public void RegisterInfrastructureLayerDependencies()

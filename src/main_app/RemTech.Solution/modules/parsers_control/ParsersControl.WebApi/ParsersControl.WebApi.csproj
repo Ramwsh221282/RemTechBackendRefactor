@@ -1,21 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-    </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ParsersControl.Core\ParsersControl.Core.csproj" />
+    <ProjectReference Include="..\ParsersControl.Infrastructure\ParsersControl.Infrastructure.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\ParsersControl.Core\ParsersControl.Core.csproj" />
-      <ProjectReference Include="..\ParsersControl.Infrastructure\ParsersControl.Infrastructure.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="oqo0.SwaggerThemes" Version="1.4.3" />
-      <PackageReference Include="RemTech.SharedKernel.Web" Version="1.0.5" />
-      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.0" />
-      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0" />
-    </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="oqo0.SwaggerThemes" Version="1.4.3" />
+    <PackageReference Include="RemTech.SharedKernel.Web" Version="2.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0" />
+  </ItemGroup>
 </Project>

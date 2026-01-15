@@ -22,16 +22,18 @@ public static partial class EmailStringModule
     {
         public static EmailString Create(string? input)
         {
-            if (IsNullOrEmpty(input)) return new EmailString(string.Empty, false);
-            if (!HasValidFormat(input)) return new EmailString(input!, false);
+            if (IsNullOrEmpty(input))
+                return new EmailString(string.Empty, false);
+            if (!HasValidFormat(input))
+                return new EmailString(input!, false);
             return new EmailString(input!, true);
         }
-        
+
         private static bool MatchesEmailRegex(string input)
         {
             return EmailRegex().IsMatch(input);
         }
-        
+
         private static bool IsNullOrEmpty(string? input)
         {
             return string.IsNullOrWhiteSpace(input);
@@ -39,11 +41,12 @@ public static partial class EmailStringModule
 
         private static bool HasValidFormat(string? input)
         {
-            if (string.IsNullOrWhiteSpace(input)) return false;
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
             return input.Length <= 256 && MatchesEmailRegex(input);
         }
     }
-    
+
     [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
     private static partial Regex EmailRegex();
 }

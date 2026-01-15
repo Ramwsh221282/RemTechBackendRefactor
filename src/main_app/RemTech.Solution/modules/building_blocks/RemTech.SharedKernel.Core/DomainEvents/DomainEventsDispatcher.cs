@@ -1,12 +1,17 @@
-﻿namespace RemTech.SharedKernel.Core.Handlers;
+﻿using RemTech.SharedKernel.Core.Handlers.Decorators.DomainEvents;
+
+namespace RemTech.SharedKernel.Core.DomainEvents;
 
 public sealed class DomainEventsDispatcher(IEnumerable<IDomainEventHandler> handlers)
 {
-    private IDomainEventHandler[] Handlers { get; } = handlers.ToArray();
+    public async Task Dispatch(IDomainEventBearer bearer, CancellationToken ct = default)
+    {
+        await Dispatch(bearer.Events, ct);
+    }
 
     public async Task Dispatch(IDomainEvent @event, CancellationToken ct = default)
     {
-        foreach (IDomainEventHandler handler in Handlers)
+        foreach (IDomainEventHandler handler in handlers)
         {
             await handler.Handle(@event, ct);
         }

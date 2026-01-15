@@ -1,5 +1,4 @@
 ﻿using Notifications.Core.Common.Contracts;
-using Notifications.Core.Mailers;
 using Notifications.Core.Mailers.Contracts;
 using Notifications.Core.PendingEmails.Contracts;
 using Notifications.Infrastructure.Common;
@@ -10,7 +9,6 @@ using Notifications.Infrastructure.Mailers.CacheInvalidators;
 using Notifications.Infrastructure.PendingEmails;
 using Notifications.Infrastructure.PendingEmails.BackgroundServices;
 using RemTech.SharedKernel.Configurations;
-using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.AesEncryption;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -24,14 +22,12 @@ public static class NotificationsModuleInjection
     {
         public void InjectNotificationsModule()
         {
-            services.AddDomainLayer();
             services.AddInfrastructureLayer();
         }
 
         public void AddNotificationsModule(bool isDevelopment)
         {
             services.AddSharedDependencies(isDevelopment);
-            services.AddDomainLayer();
             services.AddInfrastructureLayer();
         }
 
@@ -51,16 +47,6 @@ public static class NotificationsModuleInjection
             services.AddRabbitMq();
             services.AddAesCryptography();
         }
-
-        private void AddDomainLayer() =>
-            new HandlersRegistrator(services)
-                .FromAssemblies([typeof(Mailer).Assembly])
-                .RequireRegistrationOf(typeof(ICommandHandler<,>))
-                .AlsoAddDomainEventHandlers()
-                .AlsoAddValidators()
-                .AlsoAddDecorators()
-                .AlsoUseDecorators()
-                .Invoke();
 
         public void AddInfrastructureLayer()
         {

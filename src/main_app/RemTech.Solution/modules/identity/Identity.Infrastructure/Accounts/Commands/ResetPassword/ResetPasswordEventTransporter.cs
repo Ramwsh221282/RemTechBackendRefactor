@@ -1,5 +1,5 @@
 using Identity.Domain.Accounts.Features.ResetPassword;
-using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.DomainEvents;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace Identity.Infrastructure.Accounts.Commands.ResetPassword;

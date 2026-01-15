@@ -1,15 +1,19 @@
 ﻿using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.Handlers.Attributes;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 using Spares.Domain.Contracts;
 using Spares.Domain.Models;
 
 namespace Spares.Domain.Features;
 
 [TransactionalHandler]
-public sealed class AddSparesHandler(ISparesRepository repository) : ICommandHandler<AddSparesCommand, (Guid, int)>
+public sealed class AddSparesHandler(ISparesRepository repository)
+    : ICommandHandler<AddSparesCommand, (Guid, int)>
 {
-    public async Task<Result<(Guid, int)>> Execute(AddSparesCommand command, CancellationToken ct = default)
+    public async Task<Result<(Guid, int)>> Execute(
+        AddSparesCommand command,
+        CancellationToken ct = default
+    )
     {
         Guid creatorId = command.Creator.CreatorId;
         Result<Spare[]> spares = CreateSpares(command.Spares);
@@ -19,19 +23,24 @@ public sealed class AddSparesHandler(ISparesRepository repository) : ICommandHan
 
     public static Spare[] CreateSpares(IEnumerable<AddSpareCommandPayload> spareInfo)
     {
-        return spareInfo.Select(info =>
-                SparesFactory.Create(
-                    containedItemId: info.ContainedItemId,
-                    source: info.Source,
-                    oem: info.Oem,
-                    title: info.Title,
-                    price: info.Price,
-                    isNds: info.IsNds,
-                    type: info.Type,
-                    address: info.Address,
-                    photoPaths: info.PhotoPaths))
-            .Where(r => r.IsSuccess)
-            .Select(s => s.Value)
-            .ToArray(); 
+        return
+        [
+            .. spareInfo
+                .Select(info =>
+                    SparesFactory.Create(
+                        containedItemId: info.ContainedItemId,
+                        source: info.Source,
+                        oem: info.Oem,
+                        title: info.Title,
+                        price: info.Price,
+                        isNds: info.IsNds,
+                        type: info.Type,
+                        address: info.Address,
+                        photoPaths: info.PhotoPaths
+                    )
+                )
+                .Where(r => r.IsSuccess)
+                .Select(s => s.Value),
+        ];
     }
 }

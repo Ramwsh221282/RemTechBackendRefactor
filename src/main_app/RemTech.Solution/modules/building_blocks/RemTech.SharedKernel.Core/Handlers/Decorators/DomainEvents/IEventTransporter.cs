@@ -1,4 +1,4 @@
-﻿namespace RemTech.SharedKernel.Core.Handlers;
+﻿namespace RemTech.SharedKernel.Core.Handlers.Decorators.DomainEvents;
 
 public interface IEventTransporter<TCommand, TResult>
     where TCommand : ICommand

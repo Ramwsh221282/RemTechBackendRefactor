@@ -1,6 +1,6 @@
 ﻿using ContainedItems.Domain.Models;
 using FluentValidation;
-using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace ContainedItems.Domain.Features.AddContainedItems;
 
@@ -9,8 +9,7 @@ public sealed class AddContainedItemsValidator : AbstractValidator<AddContainedI
     public AddContainedItemsValidator()
     {
         RuleFor(x => x.Items)
-            .EachMustFollow(
-            [
+            .EachMustFollow([
                 i => ServiceItemId.Create(i.ServiceItemId),
                 i => ServiceCreatorInfo.Create(i.CreatorId, i.CreatorType, i.CreatorDomain),
                 i => ContainedItemInfo.Create(i.Content),

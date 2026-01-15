@@ -2,32 +2,38 @@
 using FluentValidation.Results;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
-namespace RemTech.SharedKernel.Core.Handlers;
+namespace RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 public static class CommandValidationExtensions
 {
     public static IRuleBuilderOptionsConditions<T, TProperty> MustBeValid<T, TProperty>(
         this IRuleBuilderInitial<T, TProperty> builder,
         Func<TProperty, Result> validation
-        )
+    )
     {
-        return builder.Custom((validate, context) =>
-        {
-            Result result = validation(validate);
-            if (result.IsFailure)
+        return builder.Custom(
+            (validate, context) =>
             {
-                string error = result.Error.Message;
-                context.AddFailure(new ValidationFailure() { ErrorMessage = error });
+                Result result = validation(validate);
+                if (result.IsFailure)
+                {
+                    string error = result.Error.Message;
+                    context.AddFailure(new ValidationFailure() { ErrorMessage = error });
+                }
             }
-        });
+        );
     }
 
-    public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> EachMustFollow<T, TProperty>(
+    public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> EachMustFollow<
+        T,
+        TProperty
+    >(
         this IRuleBuilderInitial<T, IEnumerable<TProperty>> builder,
         Func<TProperty, Result>[] validations
-        )
+    )
     {
-        return builder.Custom((validate, context) =>
+        return builder.Custom(
+            (validate, context) =>
             {
                 var failures = new List<ValidationFailure>();
                 foreach (TProperty item in validate)
@@ -50,11 +56,14 @@ public static class CommandValidationExtensions
             }
         );
     }
-    
-    public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> AllMustBeValid<T, TProperty>(
+
+    public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> AllMustBeValid<
+        T,
+        TProperty
+    >(
         this IRuleBuilderInitial<T, IEnumerable<TProperty>> builder,
         Func<TProperty, Result> validation
-        )
+    )
     {
         return builder.Custom(
             (validate, context) =>
@@ -75,6 +84,6 @@ public static class CommandValidationExtensions
                         context.AddFailure(failure);
                 }
             }
-        );        
+        );
     }
 }

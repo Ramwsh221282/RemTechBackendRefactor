@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using ParsersControl.Core.Parsers.Models;
-using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace ParsersControl.Core.Features.ChangeSchedule;
 

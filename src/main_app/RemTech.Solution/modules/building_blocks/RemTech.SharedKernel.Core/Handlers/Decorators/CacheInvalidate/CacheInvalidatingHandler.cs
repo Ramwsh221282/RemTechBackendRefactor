@@ -1,6 +1,6 @@
 ﻿using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
-namespace RemTech.SharedKernel.Core.Handlers;
+namespace RemTech.SharedKernel.Core.Handlers.Decorators.CacheInvalidate;
 
 public sealed class CacheInvalidatingHandler<TCommand, TResult>
     : ICacheInvalidatingHandler<TCommand, TResult>

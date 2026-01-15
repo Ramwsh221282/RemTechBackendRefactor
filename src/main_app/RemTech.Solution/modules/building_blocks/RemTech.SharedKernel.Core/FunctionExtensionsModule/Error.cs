@@ -29,7 +29,7 @@ public abstract class Error(string message)
     {
         return new ValidationError($"{valueName} некорректный формат.");
     }
-    
+
     public static Error Validation(Result result)
     {
         return new ValidationError(result.Error.Message);
@@ -54,7 +54,7 @@ public abstract class Error(string message)
     {
         return new ForbiddenError(message);
     }
-    
+
     public static Error Conflict(string message)
     {
         return new ConflictError(message);
@@ -67,53 +67,44 @@ public abstract class Error(string message)
 
     public sealed class ForbiddenError : Error
     {
-        internal ForbiddenError(string message) : base(message)
-        {
-            
-        } 
+        internal ForbiddenError(string message)
+            : base(message) { }
     }
-    
+
     public sealed class UnauthorizedError : Error
     {
-        internal UnauthorizedError(string message) : base(message)
-        {
-            
-        }
+        internal UnauthorizedError(string message)
+            : base(message) { }
     }
-    
+
     public sealed class ValidationError : Error
     {
-        internal ValidationError(string message) : base(message)
-        {
-        }
+        internal ValidationError(string message)
+            : base(message) { }
     }
 
     public sealed class ApplicationError : Error
     {
-        internal ApplicationError(string message) : base(message)
-        {
-        }
+        internal ApplicationError(string message)
+            : base(message) { }
     }
 
     public sealed class NotFoundError : Error
     {
-        internal NotFoundError(string message) : base(message)
-        {
-        }
+        internal NotFoundError(string message)
+            : base(message) { }
     }
 
     public sealed class ConflictError : Error
     {
-        internal ConflictError(string message) : base(message)
-        {
-        }
+        internal ConflictError(string message)
+            : base(message) { }
     }
 
     public sealed class NoneError : Error
     {
-        internal NoneError() : base(string.Empty)
-        {
-        }
+        internal NoneError()
+            : base(string.Empty) { }
     }
 
     public static implicit operator Result(Error error)

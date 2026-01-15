@@ -6,7 +6,8 @@ using Identity.Domain.PasswordRequirements;
 using Identity.Domain.Tickets;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.Handlers.Attributes;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace Identity.Domain.Accounts.Features.ConfirmPasswordReset;
 

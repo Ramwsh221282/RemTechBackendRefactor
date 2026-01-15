@@ -11,6 +11,8 @@ using ParsersControl.Core.Parsers.Models;
 using ParsersControl.Infrastructure.Parsers.Repository;
 using ParsersControl.WebApi.Extensions;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
+using RemTech.SharedKernel.Core.Handlers.Decorators.DomainEvents;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using Scrutor;
 using Spares.Domain.Models;
@@ -35,30 +37,13 @@ public static class ModulesInjection
             services.RegisterQueryHandlers(assemblies);
 
             // there go dependencies for decorator handlers.
-            services.RegisterEventTransporters(assemblies);
-            services.RegisterCacheInvalidators(assemblies);
+            // services.RegisterEventTransporters(assemblies);
+            // services.RegisterCacheInvalidators(assemblies);
 
             // there go command handlers
-            services.RegisterCommandHandlers(assemblies);
+            // services.RegisterCommandHandlers(assemblies);
             services.RegisterConsumers(assemblies);
-
-            services.UseCachingQueryHandlers();
         }
-
-        private void UseCachingQueryHandlers()
-        {
-            services.TryDecorate(typeof(IQueryHandler<,>), typeof(CachedQueryExecutor<,>));
-        }
-
-        private void RegisterCommandHandlers(Assembly[] assemblies) =>
-            new HandlersRegistrator(services)
-                .FromAssemblies(assemblies)
-                .RequireRegistrationOf(typeof(ICommandHandler<,>))
-                .AlsoAddDomainEventHandlers()
-                .AlsoAddDecorators()
-                .AlsoAddValidators()
-                .AlsoUseDecorators()
-                .Invoke();
 
         private void RegisterQueryHandlers(Assembly[] assemblies)
         {
@@ -79,17 +64,17 @@ public static class ModulesInjection
             );
         }
 
-        private void RegisterEventTransporters(Assembly[] assemblies) =>
-            new HandlersRegistrator(services)
-                .FromAssemblies(assemblies)
-                .RequireRegistrationOf(typeof(IEventTransporter<,>))
-                .Invoke();
+        // private void RegisterEventTransporters(Assembly[] assemblies) =>
+        //     new HandlersRegistrator(services)
+        //         .FromAssemblies(assemblies)
+        //         .RequireRegistrationOf(typeof(IEventTransporter<,>))
+        //         .Invoke();
 
-        private void RegisterCacheInvalidators(Assembly[] assemblies) =>
-            new HandlersRegistrator(services)
-                .FromAssemblies(assemblies)
-                .RequireRegistrationOf(typeof(ICacheInvalidator<,>))
-                .Invoke();
+        // private void RegisterCacheInvalidators(Assembly[] assemblies) =>
+        //     new HandlersRegistrator(services)
+        //         .FromAssemblies(assemblies)
+        //         .RequireRegistrationOf(typeof(ICacheInvalidator<,>))
+        //         .Invoke();
 
         private void RegisterConsumers(Assembly[] assemblies)
         {

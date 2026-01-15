@@ -4,44 +4,71 @@ using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.Handlers.Attributes;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.EditLinkUrlInfo;
 
 [TransactionalHandler]
-public sealed class EditLinkUrlInfoHandler(
-    ISubscribedParsersRepository repository)
+public sealed class EditLinkUrlInfoHandler(ISubscribedParsersRepository repository)
     : ICommandHandler<EditLinkUrlInfoCommand, SubscribedParserLink>
 {
     public async Task<Result<SubscribedParserLink>> Execute(
-        EditLinkUrlInfoCommand command, 
-        CancellationToken ct = default)
+        EditLinkUrlInfoCommand command,
+        CancellationToken ct = default
+    )
     {
         Result<SubscribedParser> parser = await GetRequiredParser(command.ParserId, ct);
-        Result<SubscribedParserLink> link = EditLink(parser, command.LinkId, command.NewName, command.NewUrl);
-        return await SaveChanges(parser, link, ct).Map(() => link.Value);
+        Result<SubscribedParserLink> link = EditLink(
+            parser,
+            command.LinkId,
+            command.NewName,
+            command.NewUrl
+        );
+        Result saving = await SaveChanges(parser, link, ct);
+        return saving.IsFailure ? saving.Error : link.Value;
     }
-    
-    private async Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
+
+    private async Task<Result<SubscribedParser>> GetRequiredParser(
+        Guid parserId,
+        CancellationToken ct
+    )
     {
         SubscribedParserQuery query = new(Id: parserId, WithLock: true);
         return await SubscribedParser.FromRepository(repository, query, ct);
     }
 
-    private Result<SubscribedParserLink> EditLink(Result<SubscribedParser> parser, Guid linkId, string? newName, string? newUrl)
+    private Result<SubscribedParserLink> EditLink(
+        Result<SubscribedParser> parser,
+        Guid linkId,
+        string? newName,
+        string? newUrl
+    )
     {
-        if (parser.IsFailure) return Result.Failure<SubscribedParserLink>(parser.Error);
+        if (parser.IsFailure)
+            return Result.Failure<SubscribedParserLink>(parser.Error);
         Result<SubscribedParserLink> link = parser.Value.FindLink(linkId);
-        if (link.IsFailure) return Result.Failure<SubscribedParserLink>(link.Error);
-        Result<SubscribedParserLink> editResult = parser.Value.EditLink(link.Value, newName, newUrl);
-        if (editResult.IsFailure) return Result.Failure<SubscribedParserLink>(editResult.Error);
+        if (link.IsFailure)
+            return Result.Failure<SubscribedParserLink>(link.Error);
+        Result<SubscribedParserLink> editResult = parser.Value.EditLink(
+            link.Value,
+            newName,
+            newUrl
+        );
+        if (editResult.IsFailure)
+            return Result.Failure<SubscribedParserLink>(editResult.Error);
         return editResult;
     }
 
-    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<SubscribedParserLink> editResult, CancellationToken ct)
+    private async Task<Result> SaveChanges(
+        Result<SubscribedParser> parser,
+        Result<SubscribedParserLink> editResult,
+        CancellationToken ct
+    )
     {
-        if (parser.IsFailure) return Result.Failure(parser.Error);
-        if (editResult.IsFailure) return Result.Failure(editResult.Error);
+        if (parser.IsFailure)
+            return Result.Failure(parser.Error);
+        if (editResult.IsFailure)
+            return Result.Failure(editResult.Error);
         await parser.Value.SaveChanges(repository, ct);
         return Result.Success();
     }

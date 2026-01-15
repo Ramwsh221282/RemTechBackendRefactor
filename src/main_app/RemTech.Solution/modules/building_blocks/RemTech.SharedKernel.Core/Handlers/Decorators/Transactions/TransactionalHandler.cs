@@ -1,10 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.Handlers.Attributes;
+using RemTech.SharedKernel.Core.Handlers.Decorators.DomainEvents;
 using RemTech.SharedKernel.Core.InfrastructureContracts;
 
-namespace RemTech.SharedKernel.Core.Handlers;
+namespace RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 public sealed class TransactionalHandler<TCommand, TResult>
     : ITransactionalCommandHandler<TCommand, TResult>
@@ -13,7 +13,6 @@ public sealed class TransactionalHandler<TCommand, TResult>
     private IEnumerable<IEventTransporter<TCommand, TResult>> Transporters { get; }
     private ICommandHandler<TCommand, TResult> Inner { get; }
     private ITransactionSource TransactionSource { get; }
-
     private Serilog.ILogger Logger { get; }
 
     private static readonly ConcurrentDictionary<Type, bool> TransactionalAttributeCache = new();

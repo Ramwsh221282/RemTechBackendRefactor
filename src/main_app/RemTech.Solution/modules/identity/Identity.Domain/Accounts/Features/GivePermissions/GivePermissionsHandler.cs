@@ -1,10 +1,9 @@
 ﻿using Identity.Domain.Accounts.Models;
-using Identity.Domain.Contracts;
 using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.Permissions;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.Handlers.Attributes;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace Identity.Domain.Accounts.Features.GivePermissions;
 
@@ -16,50 +15,72 @@ public sealed class GivePermissionsHandler : ICommandHandler<GivePermissionsComm
     private IAccountsModuleUnitOfWork UnitOfWork { get; }
 
     public GivePermissionsHandler(
-        IAccountsRepository accounts, 
+        IAccountsRepository accounts,
         IPermissionsRepository permissions,
-        IAccountsModuleUnitOfWork unitOfWork)
+        IAccountsModuleUnitOfWork unitOfWork
+    )
     {
         Accounts = accounts;
         Permissions = permissions;
         UnitOfWork = unitOfWork;
     }
-    
-    public async Task<Result<Account>> Execute(GivePermissionsCommand command, CancellationToken ct = new CancellationToken())
+
+    public async Task<Result<Account>> Execute(
+        GivePermissionsCommand command,
+        CancellationToken ct = new CancellationToken()
+    )
     {
         Result<Account> account = await GetRequiredAccount(command, ct);
-        if (account.IsFailure) return account.Error;
-        
+        if (account.IsFailure)
+            return account.Error;
+
         IEnumerable<Permission> permissions = await GetRequiredPermissions(command, ct);
-        if (!PermissionsFound(permissions, command, out Error error)) return error;
-        
+        if (!PermissionsFound(permissions, command, out Error error))
+            return error;
+
         Result<Unit> add = account.Value.AddPermissions(permissions);
-        if (add.IsFailure) return add.Error;
-        
+        if (add.IsFailure)
+            return add.Error;
+
         await UnitOfWork.Save(account.Value, ct);
         return account.Value;
     }
 
-    private bool PermissionsFound(IEnumerable<Permission> permissions, GivePermissionsCommand command, out Error error)
+    private bool PermissionsFound(
+        IEnumerable<Permission> permissions,
+        GivePermissionsCommand command,
+        out Error error
+    )
     {
         error = Error.NoError();
-        IEnumerable<Guid> notFoundPermissions = command.Permissions.Select(p => p.Id).ExceptBy(permissions.Select(fp => fp.Id.Value), fp => fp);
+        IEnumerable<Guid> notFoundPermissions = command
+            .Permissions.Select(p => p.Id)
+            .ExceptBy(permissions.Select(fp => fp.Id.Value), fp => fp);
         if (notFoundPermissions.Any())
         {
-            string message = $"Разрешения не найдены: {string.Join(", ", notFoundPermissions.ToString())}";
+            string message =
+                $"Разрешения не найдены: {string.Join(", ", notFoundPermissions.ToString())}";
             error = Error.NotFound(message);
             return false;
         }
         return true;
     }
-    
-    private async Task<IEnumerable<Permission>> GetRequiredPermissions(GivePermissionsCommand command, CancellationToken ct)
+
+    private async Task<IEnumerable<Permission>> GetRequiredPermissions(
+        GivePermissionsCommand command,
+        CancellationToken ct
+    )
     {
-        IEnumerable<PermissionSpecification> specs = command.Permissions.Select(p => new PermissionSpecification().WithId(p.Id).WithLock());
+        IEnumerable<PermissionSpecification> specs = command.Permissions.Select(p =>
+            new PermissionSpecification().WithId(p.Id).WithLock()
+        );
         return await Permissions.GetMany(specs, ct);
     }
 
-    private async Task<Result<Account>> GetRequiredAccount(GivePermissionsCommand command, CancellationToken ct)
+    private async Task<Result<Account>> GetRequiredAccount(
+        GivePermissionsCommand command,
+        CancellationToken ct
+    )
     {
         AccountSpecification spec = new AccountSpecification().WithId(command.AccountId).WithLock();
         return await Accounts.Get(spec, ct);

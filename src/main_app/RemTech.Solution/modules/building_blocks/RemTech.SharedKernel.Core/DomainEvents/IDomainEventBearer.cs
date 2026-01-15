@@ -1,4 +1,4 @@
-﻿namespace RemTech.SharedKernel.Core.Handlers;
+﻿namespace RemTech.SharedKernel.Core.DomainEvents;
 
 public interface IDomainEventBearer
 {
