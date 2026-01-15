@@ -116,9 +116,7 @@ public static class IdentityModuleInjection
             services.AddOutboxMessagePublishers();
             services.AddBackgroundServices();
             services.AddJwt();
-            services.UseCacheInvalidatingHandlers();
             services.UseCacheOnRepositories();
-            services.UseCacheOnQueryHandlers();
         }
 
         private void AddPasswordHasher()
@@ -148,14 +146,6 @@ public static class IdentityModuleInjection
             services.AddScoped<IRefreshTokensRepository, RefreshTokensRepository>();
             services.AddScoped<IAccessTokensRepository, AccessTokensRepository>();
             services.AddScoped<IAccountModuleOutbox, AccountsModuleOutbox>();
-        }
-
-        private void UseCacheOnQueryHandlers()
-        {
-            services.TryDecorate<
-                IQueryHandler<GetUserQuery, UserAccountResponse?>,
-                GetUserCachedQueryHandler
-            >();
         }
 
         private void AddJwt()

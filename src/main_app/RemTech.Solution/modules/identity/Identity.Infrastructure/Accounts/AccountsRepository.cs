@@ -42,7 +42,54 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
         return await Session.QuerySingleRow<bool>(command);
     }
 
-    public async Task<Result<Account>> Get(
+    private async Task<Result<Account>> SearchWithRefreshTokenFilter(
+        AccountSpecification specification,
+        CancellationToken ct
+    )
+    {
+        (DynamicParameters parameters, string filterSql) = WhereClause(specification);
+        string sql = $"""
+            WITH refresh_tokens AS (
+            SELECT rt.account_id as rt_account_id
+            FROM identity_module.refresh_tokens rt
+            WHERE rt.token_value = @token_value
+            LIMIT 1
+            ),
+            accounts AS (
+                    SELECT
+                    a.id as account_id,
+                    a.email as account_email,
+                    a.password as account_password,
+                    a.login as account_login,
+                    a.activation_status as account_activation_status,
+                    ap.permission_id as account_permission_id
+                    FROM identity_module.accounts a
+                    LEFT JOIN identity_module.account_permissions ap ON ap.account_id=a.id
+                    {filterSql}
+                    )
+                    SELECT 
+                    accounts.*, 
+                    p.name as permission_name, 
+                    p.description as permission_description,
+                    rt.rt_account_id as refresh_token_account_id
+                    FROM accounts
+                    LEFT JOIN identity_module.permissions p ON p.id = accounts.account_permission_id
+                    INNER JOIN refresh_tokens rt ON rt.rt_account_id = accounts.account_id
+            """;
+
+        CommandDefinition command = Session.FormCommand(sql, parameters, ct);
+        Account? account = await GetSingle(command, ct);
+
+        if (account is null)
+            return Error.NotFound("Учетная запись не найдена.");
+        if (specification.LockRequired)
+            await BlockEntity(account, ct);
+
+        UnitOfWork.Track([account]);
+        return account;
+    }
+
+    private async Task<Result<Account>> Get(
         AccountSpecification specification,
         CancellationToken ct = default
     )
@@ -131,6 +178,12 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
         DynamicParameters parameters = new();
         List<string> filters = [];
 
+        if (!string.IsNullOrWhiteSpace(specification.RefreshToken))
+        {
+            parameters.Add("@token_value", specification.RefreshToken, DbType.String);
+            // filter is already included in sql string of method SearchWithRefreshToken()
+        }
+
         if (specification.Id.HasValue)
         {
             parameters.Add("@accountId", specification.Id.Value, DbType.Guid);
@@ -208,4 +261,12 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
             activation_status = account.ActivationStatus.Value,
         };
     }
+
+    async Task<Result<Account>> IAccountsRepository.Get(
+        AccountSpecification specification,
+        CancellationToken ct
+    ) =>
+        string.IsNullOrWhiteSpace(specification.RefreshToken)
+            ? await Get(specification, ct)
+            : await SearchWithRefreshTokenFilter(specification, ct);
 }

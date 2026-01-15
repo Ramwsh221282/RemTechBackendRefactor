@@ -14,12 +14,27 @@ public sealed class GetUserQueryHandler(IAccountsRepository accounts)
     public async Task<UserAccountResponse?> Handle(
         GetUserQuery query,
         CancellationToken ct = default
-    )
-    {
-        AccountSpecification spec = new AccountSpecification().WithId(query.AccountId);
-        Result<Account> account = await Accounts.Get(spec, ct: ct);
-        if (account.IsFailure)
-            return null;
-        return UserAccountResponse.Create(account.Value);
-    }
+    ) =>
+        query switch
+        {
+            GetUserByIdQuery byId => await SearchById(byId, ct),
+            GetUserByRefreshTokenQuery byToken => await SearchById(byToken, ct),
+            _ => null,
+        };
+
+    private async Task<UserAccountResponse?> SearchById(
+        GetUserByRefreshTokenQuery query,
+        CancellationToken ct
+    ) =>
+        CreateResponse(
+            await Accounts.Get(new AccountSpecification().WithRefreshToken(query.RefreshToken), ct)
+        );
+
+    private async Task<UserAccountResponse?> SearchById(
+        GetUserByIdQuery query,
+        CancellationToken ct
+    ) => CreateResponse(await Accounts.Get(new AccountSpecification().WithId(query.AccountId), ct));
+
+    private static UserAccountResponse? CreateResponse(Result<Account> result) =>
+        result.IsFailure ? null : UserAccountResponse.Create(result.Value);
 }

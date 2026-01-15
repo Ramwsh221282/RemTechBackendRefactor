@@ -7,18 +7,14 @@ using Notifications.Infrastructure.Common.Migrations;
 using Notifications.Infrastructure.EmailSending;
 using Notifications.Infrastructure.Mailers;
 using Notifications.Infrastructure.Mailers.CacheInvalidators;
-using Notifications.Infrastructure.Mailers.Queries.GetMailer;
-using Notifications.Infrastructure.Mailers.Queries.GetMailers;
 using Notifications.Infrastructure.PendingEmails;
 using Notifications.Infrastructure.PendingEmails.BackgroundServices;
-using Notifications.Infrastructure.RabbitMq.Consumers;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.AesEncryption;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
-using Scrutor;
 
 namespace Notifications.WebApi.Extensions;
 
@@ -73,20 +69,6 @@ public static class NotificationsModuleInjection
             services.AddEmailSender();
             services.AddBackgroundServices();
             services.AddCacheInvalidators();
-            services.UseCachedQueryHandlers();
-        }
-
-        private void UseCachedQueryHandlers()
-        {
-            services.Decorate<
-                IQueryHandler<GetMailerQuery, MailerResponse?>,
-                GetMailerCachedHandler
-            >();
-
-            services.Decorate<
-                IQueryHandler<GetMailersQuery, IEnumerable<MailerResponse>>,
-                GetMailersCachedHandler
-            >();
         }
 
         private void AddCacheInvalidators()

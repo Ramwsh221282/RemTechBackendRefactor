@@ -4,9 +4,6 @@ using ParsersControl.Core.Parsers.Models;
 using ParsersControl.Infrastructure.Listeners;
 using ParsersControl.Infrastructure.Migrations;
 using ParsersControl.Infrastructure.Parsers.CacheInvalidators;
-using ParsersControl.Infrastructure.Parsers.Commands.SubscribeParser;
-using ParsersControl.Infrastructure.Parsers.Queries.GetParser;
-using ParsersControl.Infrastructure.Parsers.Queries.GetParsers;
 using ParsersControl.Infrastructure.Parsers.Repository;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Handlers;
@@ -65,26 +62,12 @@ public static class ParsersModuleInjection
             services.AddEventListeners();
             services.AddRepositories();
             services.AddCacheInvalidators();
-            services.UseCachedQueryHandlers();
         }
 
         private void AddCacheInvalidators()
         {
             services.AddScoped<CachedParserArrayInvalidator>();
             services.AddScoped<ParserCacheRecordInvalidator>();
-        }
-
-        private void UseCachedQueryHandlers()
-        {
-            services.Decorate<
-                IQueryHandler<GetParsersQuery, IEnumerable<ParserResponse>>,
-                GetParsersCachedQueryHandler
-            >();
-
-            services.Decorate<
-                IQueryHandler<GetParserQuery, ParserResponse?>,
-                GetParserCachedQueryHandler
-            >();
         }
 
         private void AddEventListeners()

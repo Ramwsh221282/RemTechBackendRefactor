@@ -12,6 +12,7 @@ using ParsersControl.Infrastructure.Parsers.Repository;
 using ParsersControl.WebApi.Extensions;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
+using Scrutor;
 using Spares.Domain.Models;
 using Spares.Infrastructure.Repository;
 using Spares.WebApi.Extensions;
@@ -28,6 +29,7 @@ public static class ModulesInjection
         public void RegisterApplicationModules()
         {
             Assembly[] assemblies = GetModulesAssemblies();
+            services.RegisterInfrastructureDependencies();
 
             // first register query handlers:
             services.RegisterQueryHandlers(assemblies);
@@ -38,11 +40,14 @@ public static class ModulesInjection
 
             // there go command handlers
             services.RegisterCommandHandlers(assemblies);
-
-            // infrastructure dependencies may require decorators too. So, register them after command handlers.
-            services.RegisterInfrastructureDependencies();
-
             services.RegisterConsumers(assemblies);
+
+            services.UseCachingQueryHandlers();
+        }
+
+        private void UseCachingQueryHandlers()
+        {
+            services.TryDecorate(typeof(IQueryHandler<,>), typeof(CachedQueryExecutor<,>));
         }
 
         private void RegisterCommandHandlers(Assembly[] assemblies) =>
@@ -55,11 +60,24 @@ public static class ModulesInjection
                 .AlsoUseDecorators()
                 .Invoke();
 
-        private void RegisterQueryHandlers(Assembly[] assemblies) =>
-            new HandlersRegistrator(services)
-                .FromAssemblies(assemblies)
-                .RequireRegistrationOf(typeof(IQueryHandler<,>))
-                .Invoke();
+        private void RegisterQueryHandlers(Assembly[] assemblies)
+        {
+            services.Scan(x =>
+                x.FromAssemblies(assemblies)
+                    .AddClasses(classes => classes.AssignableTo(typeof(ICachingQueryHandler<,>)))
+                    .UsingRegistrationStrategy(RegistrationStrategy.Skip)
+                    .AsSelfWithInterfaces()
+                    .WithScopedLifetime()
+            );
+
+            services.Scan(x =>
+                x.FromAssemblies(assemblies)
+                    .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
+                    .UsingRegistrationStrategy(RegistrationStrategy.Skip)
+                    .AsSelfWithInterfaces()
+                    .WithScopedLifetime()
+            );
+        }
 
         private void RegisterEventTransporters(Assembly[] assemblies) =>
             new HandlersRegistrator(services)

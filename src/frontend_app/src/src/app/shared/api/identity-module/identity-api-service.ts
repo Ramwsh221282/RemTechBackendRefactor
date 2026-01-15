@@ -178,8 +178,8 @@ export class IdentityApiService {
         withCredentials: true,
       })
       .pipe(
-        shareReplay(1),
-        finalize((): void => (this._fetch$ = undefined))
+        finalize((): void => (this._fetch$ = undefined)),
+        shareReplay({ refCount: true, bufferSize: 1 })
       );
     return this._fetch$;
   }

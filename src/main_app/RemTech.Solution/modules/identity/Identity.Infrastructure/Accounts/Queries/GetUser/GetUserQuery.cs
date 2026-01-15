@@ -2,4 +2,8 @@
 
 namespace Identity.Infrastructure.Accounts.Queries.GetUser;
 
-public sealed record GetUserQuery(Guid AccountId) : IQuery;
+public record GetUserQuery : IQuery;
+
+public sealed record GetUserByIdQuery(Guid AccountId) : GetUserQuery;
+
+public sealed record GetUserByRefreshTokenQuery(string RefreshToken) : GetUserQuery;
