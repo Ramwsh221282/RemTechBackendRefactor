@@ -1,26 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-    
-    <ItemGroup>
-        <None Remove="Permissions\Seeding\predefined-permissions-seeding.sql" />
-        <EmbeddedResource Include="Permissions\Seeding\predefined-permissions-seeding.sql" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.AesEncryption" Version="1.0.4" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="1.0.19" />
-      <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="1.0.8" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Infrastructure.Redis\RemTech.SharedKernel.Infrastructure.Redis.csproj" />
-      <ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj" />
-    </ItemGroup>
-    
+  <ItemGroup>
+    <None Remove="Permissions\Seeding\predefined-permissions-seeding.sql" />
+    <EmbeddedResource Include="Permissions\Seeding\predefined-permissions-seeding.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="RemTech.SharedKernel.Infrastructure.AesEncryption" Version="2.0.0" />
+    <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="2.0.0" />
+    <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="2.0.0" />
+    <PackageReference Include="RemTech.SharedKernel.Infrastructure.Redis" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj" />
+  </ItemGroup>
 </Project>

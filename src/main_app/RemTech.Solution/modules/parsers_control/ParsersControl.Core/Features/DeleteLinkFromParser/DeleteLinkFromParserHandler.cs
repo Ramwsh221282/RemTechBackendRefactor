@@ -4,31 +4,43 @@ using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.Handlers.Attributes;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.DeleteLinkFromParser;
 
 [TransactionalHandler]
-public sealed class DeleteLinkFromParserHandler(
-    ISubscribedParsersRepository repository
-) : ICommandHandler<DeleteLinkFromParserCommand, SubscribedParserLink>
+public sealed class DeleteLinkFromParserHandler(ISubscribedParsersRepository repository)
+    : ICommandHandler<DeleteLinkFromParserCommand, SubscribedParserLink>
 {
-    public async Task<Result<SubscribedParserLink>> Execute(DeleteLinkFromParserCommand command, CancellationToken ct = default)
+    public async Task<Result<SubscribedParserLink>> Execute(
+        DeleteLinkFromParserCommand command,
+        CancellationToken ct = default
+    )
     {
         Result<SubscribedParser> parser = await GetRequiredParser(command.ParserId, ct);
         Result<SubscribedParserLink> link = RemoveLink(parser, command.LinkId);
-        return await SaveChanges(parser, link, ct).Map(() => link.Value);
+        Result saving = await SaveChanges(parser, link, ct);
+        return saving.IsFailure ? saving.Error : link.Value;
     }
 
-    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<SubscribedParserLink> link, CancellationToken ct)
+    private async Task<Result> SaveChanges(
+        Result<SubscribedParser> parser,
+        Result<SubscribedParserLink> link,
+        CancellationToken ct
+    )
     {
-        if (parser.IsFailure) return Result.Failure(parser.Error);
-        if (link.IsFailure) return Result.Failure(link.Error);
+        if (parser.IsFailure)
+            return Result.Failure(parser.Error);
+        if (link.IsFailure)
+            return Result.Failure(link.Error);
         await repository.Save(parser.Value);
         return Result.Success();
     }
-    
-    private async Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
+
+    private async Task<Result<SubscribedParser>> GetRequiredParser(
+        Guid parserId,
+        CancellationToken ct
+    )
     {
         SubscribedParserQuery query = new(Id: parserId, WithLock: true);
         return await SubscribedParser.FromRepository(repository, query, ct);
@@ -36,9 +48,11 @@ public sealed class DeleteLinkFromParserHandler(
 
     private Result<SubscribedParserLink> RemoveLink(Result<SubscribedParser> parser, Guid linkId)
     {
-        if (parser.IsFailure) return Result.Failure<SubscribedParserLink>(parser.Error);
+        if (parser.IsFailure)
+            return Result.Failure<SubscribedParserLink>(parser.Error);
         Result<SubscribedParserLink> link = parser.Value.FindLink(linkId);
-        if (link.IsFailure) return Result.Failure<SubscribedParserLink>(link.Error);
+        if (link.IsFailure)
+            return Result.Failure<SubscribedParserLink>(link.Error);
         return parser.Value.RemoveLink(link.Value);
     }
 }

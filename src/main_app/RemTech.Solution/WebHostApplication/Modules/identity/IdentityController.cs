@@ -131,14 +131,12 @@ public sealed class IdentityController : Controller
     [VerifyToken]
     [HttpGet("account")]
     public async Task<Envelope> GetUserAccount(
-        [FromServices] IJwtTokenManager jwtManager,
         [FromServices] IQueryHandler<GetUserQuery, UserAccountResponse?> handler,
         CancellationToken ct
     )
     {
-        string accessToken = HttpContext.GetAccessToken(GetAccessTokenMethods);
-        AccessToken token = jwtManager.ReadToken(accessToken);
-        GetUserQuery query = new(token.UserId);
+        (_, string refreshToken) = HttpContext.GetIdentityTokens([], GetRefreshTokenMethods);
+        GetUserByRefreshTokenQuery query = new(refreshToken);
         UserAccountResponse? user = await handler.Handle(query, ct);
         return EnvelopeExtensions.NotFoundOrOk(user, "Пользователь не найден.");
     }

@@ -1,7 +1,7 @@
 ﻿using Identity.Domain.Accounts.Features.ConfirmTicket;
 using Identity.Domain.Accounts.Models;
 using Microsoft.Extensions.Caching.Hybrid;
-using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.CacheInvalidate;
 
 namespace Identity.Infrastructure.Accounts.Commands.ConfirmTicket;
 

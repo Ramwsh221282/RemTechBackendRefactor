@@ -7,7 +7,8 @@ public sealed record UserAccountResponse(
     string Login,
     string Email,
     bool IsActivated,
-    IEnumerable<UserAccountPermissionResponse> Permissions)
+    IEnumerable<UserAccountPermissionResponse> Permissions
+)
 {
     public static UserAccountResponse Create(Account account)
     {
@@ -16,6 +17,7 @@ public sealed record UserAccountResponse(
             account.Login.Value,
             account.Email.Value,
             account.ActivationStatus.Value,
-            account.PermissionsList.Select(p => UserAccountPermissionResponse.Create(p)));
+            account.PermissionsList.Select(p => UserAccountPermissionResponse.Create(p))
+        );
     }
 }

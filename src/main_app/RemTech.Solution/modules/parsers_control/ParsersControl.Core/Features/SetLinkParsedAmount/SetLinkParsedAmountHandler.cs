@@ -4,37 +4,60 @@ using ParsersControl.Core.ParserLinks.Models;
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.Handlers.Attributes;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.SetLinkParsedAmount;
 
 [TransactionalHandler]
-public sealed class SetLinkParsedAmountHandler(ISubscribedParsersRepository repository) : ICommandHandler<SetLinkParsedAmountCommand, SubscribedParserLink>
+public sealed class SetLinkParsedAmountHandler(ISubscribedParsersRepository repository)
+    : ICommandHandler<SetLinkParsedAmountCommand, SubscribedParserLink>
 {
-    public async Task<Result<SubscribedParserLink>> Execute(SetLinkParsedAmountCommand command, CancellationToken ct = default)
+    public async Task<Result<SubscribedParserLink>> Execute(
+        SetLinkParsedAmountCommand command,
+        CancellationToken ct = default
+    )
     {
         Result<SubscribedParser> parser = await GetRequiredParser(command.ParserId, ct);
-        Result<SubscribedParserLink> link = SetLinkParsedAmount(parser, command.LinkId, command.Amount);
-        return await SaveChanges(parser, link, ct).Map(() => link.Value);
+        Result<SubscribedParserLink> link = SetLinkParsedAmount(
+            parser,
+            command.LinkId,
+            command.Amount
+        );
+        Result result = await SaveChanges(parser, link, ct);
+        return result.IsFailure ? result.Error : link.Value;
     }
 
-    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<SubscribedParserLink> link, CancellationToken ct)
+    private async Task<Result> SaveChanges(
+        Result<SubscribedParser> parser,
+        Result<SubscribedParserLink> link,
+        CancellationToken ct
+    )
     {
-        if (parser.IsFailure) return Result.Failure(parser.Error);
-        if (link.IsFailure) return Result.Failure(link.Error);
+        if (parser.IsFailure)
+            return Result.Failure(parser.Error);
+        if (link.IsFailure)
+            return Result.Failure(link.Error);
         await parser.Value.SaveChanges(repository, ct);
         return Result.Success();
     }
-    
-    private Result<SubscribedParserLink> SetLinkParsedAmount(Result<SubscribedParser> parser, Guid linkId, int amount)
+
+    private Result<SubscribedParserLink> SetLinkParsedAmount(
+        Result<SubscribedParser> parser,
+        Guid linkId,
+        int amount
+    )
     {
-        if (parser.IsFailure) return parser.Error;
+        if (parser.IsFailure)
+            return parser.Error;
+
         Result<SubscribedParserLink> link = parser.Value.FindLink(linkId);
-        if (link.IsFailure) return link.Error;
-        return parser.Value.AddLinkParsedAmount(link.Value, amount);
+        return link.IsFailure ? link.Error : parser.Value.AddLinkParsedAmount(link.Value, amount);
     }
-    
-    private async Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
+
+    private async Task<Result<SubscribedParser>> GetRequiredParser(
+        Guid parserId,
+        CancellationToken ct
+    )
     {
         SubscribedParserQuery query = new(Id: parserId, WithLock: true);
         return await SubscribedParser.FromRepository(repository, query, ct);

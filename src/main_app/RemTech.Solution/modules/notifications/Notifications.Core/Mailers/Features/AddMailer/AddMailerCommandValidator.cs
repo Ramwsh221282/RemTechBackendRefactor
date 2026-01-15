@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace Notifications.Core.Mailers.Features.AddMailer;
 

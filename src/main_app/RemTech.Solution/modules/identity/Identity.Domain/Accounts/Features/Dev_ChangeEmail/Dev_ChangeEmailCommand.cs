@@ -3,7 +3,8 @@ using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts.Persistence;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.Handlers.Attributes;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace Identity.Domain.Accounts.Features.Dev_ChangeEmail;
 

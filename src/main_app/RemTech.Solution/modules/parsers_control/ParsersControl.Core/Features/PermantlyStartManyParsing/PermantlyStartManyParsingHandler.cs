@@ -2,43 +2,52 @@
 using ParsersControl.Core.Parsers.Models;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.Handlers.Attributes;
+using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.PermantlyStartManyParsing;
 
 [TransactionalHandler]
-public sealed class PermantlyStartManyParsingHandler(ISubscribedParsersCollectionRepository repository) 
-    : ICommandHandler<PermantlyStartManyParsingCommand, IEnumerable<SubscribedParser>>
+public sealed class PermantlyStartManyParsingHandler(
+    ISubscribedParsersCollectionRepository repository
+) : ICommandHandler<PermantlyStartManyParsingCommand, IEnumerable<SubscribedParser>>
 {
     public async Task<Result<IEnumerable<SubscribedParser>>> Execute(
-        PermantlyStartManyParsingCommand command, 
-        CancellationToken ct = default)
+        PermantlyStartManyParsingCommand command,
+        CancellationToken ct = default
+    )
     {
         Result<SubscribedParsersCollection> parsers = await GetParsers(command.Identifiers, ct);
         Result<Unit> result = PermanentlyStartParsers(parsers);
         Result<Unit> saving = await SaveChanges(result, parsers, ct);
-        return saving.Map(() => Result.Success(parsers.Value.Read()));
+        return saving.IsFailure ? saving.Error : Result.Success(parsers.Value.Read());
     }
 
-    private async Task<Result<Unit>> SaveChanges(Result<Unit> enabling, Result<SubscribedParsersCollection> parsers, CancellationToken ct)
+    private async Task<Result<Unit>> SaveChanges(
+        Result<Unit> enabling,
+        Result<SubscribedParsersCollection> parsers,
+        CancellationToken ct
+    )
     {
-        if (parsers.IsFailure) return parsers.Error;
-        if (enabling.IsFailure) return enabling.Error;
+        if (parsers.IsFailure)
+            return parsers.Error;
+        if (enabling.IsFailure)
+            return enabling.Error;
         Result<Unit> saving = await repository.SaveChanges(parsers.Value, ct);
         return saving;
     }
-    
-    private Result<Unit> PermanentlyStartParsers(Result<SubscribedParsersCollection> parsers)
+
+    private static Result<Unit> PermanentlyStartParsers(Result<SubscribedParsersCollection> parsers)
     {
-        if (parsers.IsFailure) return parsers.Error;
-        return parsers.Value.PermanentlyEnableAll();
+        return parsers.IsFailure ? parsers.Error : parsers.Value.PermanentlyEnableAll();
     }
-    
-    private async Task<Result<SubscribedParsersCollection>> GetParsers(IEnumerable<Guid> identifiers, CancellationToken ct)
+
+    private async Task<Result<SubscribedParsersCollection>> GetParsers(
+        IEnumerable<Guid> identifiers,
+        CancellationToken ct
+    )
     {
         SubscribedParsersCollectionQuery query = new(Identifiers: identifiers);
         SubscribedParsersCollection parsers = await repository.Get(query, ct);
-        if (parsers.IsEmpty()) return Error.NotFound($"Парсеры не найдены.");
-        return parsers;
+        return parsers.IsEmpty() ? Error.NotFound($"Парсеры не найдены.") : parsers;
     }
 }

@@ -23,14 +23,12 @@ public static class SparesModuleInjection
     {
         public void InjectSparesModule()
         {
-            services.RegisterSparesDomain();
             services.RegisterSparesInfrastructure();
         }
 
         public void RegisterSparesModule(bool isDevelopment)
         {
             services.RegisterSharedInfrastructure(isDevelopment);
-            services.RegisterSparesDomain();
             services.RegisterSparesInfrastructure();
         }
 
@@ -53,18 +51,6 @@ public static class SparesModuleInjection
             services.TryAddSingleton<EmbeddingsProvider>();
             services.AddRabbitMq();
             services.AddPostgres();
-        }
-
-        private void RegisterSparesDomain()
-        {
-            new HandlersRegistrator(services)
-                .FromAssemblies([typeof(Spare).Assembly])
-                .RequireRegistrationOf(typeof(ICommandHandler<,>))
-                .RequireRegistrationOf(typeof(IEventTransporter<,>))
-                .AlsoAddValidators()
-                .AlsoAddDecorators()
-                .AlsoUseDecorators()
-                .Invoke();
         }
 
         public void RegisterSparesInfrastructure()

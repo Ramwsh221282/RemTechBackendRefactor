@@ -11,7 +11,7 @@ public static class Guids
     {
         return id != Guid.Empty;
     }
-    
+
     public static bool Empty(Guid id)
     {
         return id == Guid.Empty;

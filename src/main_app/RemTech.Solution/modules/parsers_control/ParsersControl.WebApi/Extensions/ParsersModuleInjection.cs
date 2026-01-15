@@ -1,15 +1,9 @@
-﻿using System.Reflection;
-using ParsersControl.Core.Contracts;
-using ParsersControl.Core.Parsers.Models;
+﻿using ParsersControl.Core.Contracts;
 using ParsersControl.Infrastructure.Listeners;
 using ParsersControl.Infrastructure.Migrations;
 using ParsersControl.Infrastructure.Parsers.CacheInvalidators;
-using ParsersControl.Infrastructure.Parsers.Commands.SubscribeParser;
-using ParsersControl.Infrastructure.Parsers.Queries.GetParser;
-using ParsersControl.Infrastructure.Parsers.Queries.GetParsers;
 using ParsersControl.Infrastructure.Parsers.Repository;
 using RemTech.SharedKernel.Configurations;
-using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
@@ -22,7 +16,6 @@ public static class ParsersModuleInjection
     {
         public void InjectParsersControlModule()
         {
-            services.AddDomainLayer();
             services.AddInfrastructureLayer();
         }
 
@@ -30,7 +23,6 @@ public static class ParsersModuleInjection
         {
             services.AddSharedInfrastructure(isDevelopment);
             services.AddInfrastructureLayer();
-            services.AddDomainLayer();
         }
 
         private void AddSharedInfrastructure(bool isDevelopment)
@@ -47,44 +39,17 @@ public static class ParsersModuleInjection
             services.AddRabbitMq();
         }
 
-        private void AddDomainLayer()
-        {
-            Assembly assembly = typeof(SubscribedParser).Assembly;
-            new HandlersRegistrator(services)
-                .FromAssemblies([assembly])
-                .RequireRegistrationOf(typeof(ICommandHandler<,>))
-                .RequireRegistrationOf(typeof(IEventTransporter<,>))
-                .AlsoAddValidators()
-                .AlsoAddDecorators()
-                .AlsoUseDecorators()
-                .Invoke();
-        }
-
         public void AddInfrastructureLayer()
         {
             services.AddEventListeners();
             services.AddRepositories();
             services.AddCacheInvalidators();
-            services.UseCachedQueryHandlers();
         }
 
         private void AddCacheInvalidators()
         {
             services.AddScoped<CachedParserArrayInvalidator>();
             services.AddScoped<ParserCacheRecordInvalidator>();
-        }
-
-        private void UseCachedQueryHandlers()
-        {
-            services.Decorate<
-                IQueryHandler<GetParsersQuery, IEnumerable<ParserResponse>>,
-                GetParsersCachedQueryHandler
-            >();
-
-            services.Decorate<
-                IQueryHandler<GetParserQuery, ParserResponse?>,
-                GetParserCachedQueryHandler
-            >();
         }
 
         private void AddEventListeners()

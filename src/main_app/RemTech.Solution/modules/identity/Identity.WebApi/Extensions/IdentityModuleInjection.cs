@@ -10,6 +10,7 @@ using Identity.Infrastructure.Accounts;
 using Identity.Infrastructure.Accounts.Commands.ConfirmTicket;
 using Identity.Infrastructure.Accounts.Queries.GetUser;
 using Identity.Infrastructure.Common;
+using Identity.Infrastructure.Common.BackgroundServices;
 using Identity.Infrastructure.Common.Migrations;
 using Identity.Infrastructure.Common.UnitOfWork;
 using Identity.Infrastructure.Permissions;
@@ -70,7 +71,6 @@ public static class IdentityModuleInjection
 
         private void AddDomain()
         {
-            services.AddDomainHandlers();
             services.AddPasswordRequirements();
         }
 
@@ -86,24 +86,13 @@ public static class IdentityModuleInjection
             services.AddSingleton<IAccountPasswordRequirement, UppercasePasswordRequirement>();
         }
 
-        private void AddDomainHandlers()
-        {
-            new HandlersRegistrator(services)
-                .FromAssemblies([typeof(Account).Assembly])
-                .RequireRegistrationOf(typeof(ICommandHandler<,>))
-                .AlsoAddDomainEventHandlers()
-                .AlsoAddValidators()
-                .AlsoAddDecorators()
-                .AlsoUseDecorators()
-                .Invoke();
-        }
-
         private void AddBackgroundServices()
         {
             services.AddHostedService<SuperUserAccountRegistrationOnStartupBackgroundService>();
             services.AddHostedService<SuperUserAccountPermissionsUpdateBackgroundServices>();
             services.AddHostedService<AccountsModuleOutboxProcessor>();
             services.AddHostedService<ExpiredTokensCleanerService>();
+            services.AddHostedService<AccountsModuleOutboxCleaner>();
         }
 
         public void AddInfrastructure()
@@ -114,9 +103,7 @@ public static class IdentityModuleInjection
             services.AddOutboxMessagePublishers();
             services.AddBackgroundServices();
             services.AddJwt();
-            services.UseCacheInvalidatingHandlers();
             services.UseCacheOnRepositories();
-            services.UseCacheOnQueryHandlers();
         }
 
         private void AddPasswordHasher()
@@ -146,14 +133,6 @@ public static class IdentityModuleInjection
             services.AddScoped<IRefreshTokensRepository, RefreshTokensRepository>();
             services.AddScoped<IAccessTokensRepository, AccessTokensRepository>();
             services.AddScoped<IAccountModuleOutbox, AccountsModuleOutbox>();
-        }
-
-        private void UseCacheOnQueryHandlers()
-        {
-            services.TryDecorate<
-                IQueryHandler<GetUserQuery, UserAccountResponse?>,
-                GetUserCachedQueryHandler
-            >();
         }
 
         private void AddJwt()

@@ -12,7 +12,7 @@ public static class EnvelopedResultsExtensions
         string? message = result.ResolveMessage();
         return new Envelope(code, body, message);
     }
-    
+
     public static Envelope AsEnvelope<T>(T result)
     {
         object? body = result;
@@ -20,7 +20,7 @@ public static class EnvelopedResultsExtensions
         string? message = null;
         return new Envelope(code, body, message);
     }
-    
+
     public static Envelope AsEnvelope<T, U>(T result, Func<T, U> converter)
     {
         U body = converter(result);
@@ -36,7 +36,7 @@ public static class EnvelopedResultsExtensions
             HttpStatusCode code = result.IsSuccess switch
             {
                 true => HttpStatusCode.OK,
-                false => result.ResolveStatusCodeByError(result.Error) 
+                false => result.ResolveStatusCodeByError(result.Error),
             };
 
             return (int)code;
@@ -58,12 +58,16 @@ public static class EnvelopedResultsExtensions
                 Error.ConflictError => HttpStatusCode.Conflict,
                 Error.NotFoundError => HttpStatusCode.NotFound,
                 Error.ValidationError => HttpStatusCode.BadRequest,
-                Error.NoneError => throw new InvalidOperationException("None error cannot be resolved to http status code."),
-                _ => throw new InvalidOperationException($"Unknown error type cannot be resolved to http status code. Error type: {error.GetType().Name}")
+                Error.NoneError => throw new InvalidOperationException(
+                    "None error cannot be resolved to http status code."
+                ),
+                _ => throw new InvalidOperationException(
+                    $"Unknown error type cannot be resolved to http status code. Error type: {error.GetType().Name}"
+                ),
             };
         }
     }
-    
+
     extension(Result result)
     {
         public Envelope AsEnvelope()
@@ -103,7 +107,7 @@ public static class EnvelopedResultsExtensions
             return new Envelope(code, body, message);
         }
 
-        public Envelope AsTypedEnvelope<U>(Func<T,U> onSuccess)
+        public Envelope AsTypedEnvelope<U>(Func<T, U> onSuccess)
         {
             object? body = result.IsSuccess ? onSuccess(result.Value) : null;
             int code = result.ResolveStatusCode();

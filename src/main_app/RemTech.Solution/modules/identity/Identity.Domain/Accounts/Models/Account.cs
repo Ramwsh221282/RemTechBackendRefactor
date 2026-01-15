@@ -1,11 +1,10 @@
 ﻿using Identity.Domain.Accounts.Models.Events;
-using Identity.Domain.Contracts;
 using Identity.Domain.Contracts.Cryptography;
 using Identity.Domain.PasswordRequirements;
 using Identity.Domain.Permissions;
 using Identity.Domain.Tickets;
+using RemTech.SharedKernel.Core.DomainEvents;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.Handlers;
 
 namespace Identity.Domain.Accounts.Models;
 

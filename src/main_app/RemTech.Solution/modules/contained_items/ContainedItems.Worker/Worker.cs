@@ -1,6 +1,6 @@
 namespace ContainedItems.Worker;
 
-public class Worker(ILogger<Worker> logger) : BackgroundService
+public class Worker : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
