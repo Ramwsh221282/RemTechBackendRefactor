@@ -2,7 +2,6 @@
 using System.Data.Common;
 using Dapper;
 using Identity.Domain.Accounts.Models;
-using Identity.Domain.Contracts;
 using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.Permissions;
 using Npgsql;

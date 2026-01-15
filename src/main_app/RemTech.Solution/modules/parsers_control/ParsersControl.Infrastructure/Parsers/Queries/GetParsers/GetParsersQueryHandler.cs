@@ -4,16 +4,18 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace ParsersControl.Infrastructure.Parsers.Queries.GetParsers;
 
-public sealed class GetParsersQueryHandler(ISubscribedParsersCollectionRepository repository) : IQueryHandler<GetParsersQuery, IEnumerable<ParserResponse>>
+public sealed class GetParsersQueryHandler(ISubscribedParsersCollectionRepository repository)
+    : IQueryHandler<GetParsersQuery, IEnumerable<ParserResponse>>
 {
     private ISubscribedParsersCollectionRepository Repository { get; } = repository;
-    
+
     public async Task<IEnumerable<ParserResponse>> Handle(
-        GetParsersQuery query, 
-        CancellationToken ct = default)
+        GetParsersQuery query,
+        CancellationToken ct = default
+    )
     {
-        SubscribedParsersCollection parsers = await Repository.Get(new SubscribedParsersCollectionQuery(), ct);
-        if (parsers.IsEmpty()) return [];
-        return parsers.Read().Select(ParserResponse.Create);
+        SubscribedParsersCollectionQuery emptyQuery = new();
+        SubscribedParsersCollection parsers = await Repository.Get(emptyQuery, ct);
+        return parsers.IsEmpty() ? [] : parsers.Read().Select(ParserResponse.Create);
     }
 }

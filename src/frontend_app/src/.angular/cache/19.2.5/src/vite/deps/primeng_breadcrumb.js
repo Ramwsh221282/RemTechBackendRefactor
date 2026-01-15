@@ -1,9 +1,14 @@
 import {
   Tooltip,
   TooltipModule
-} from "./chunk-PUED3G6W.js";
-import "./chunk-5H5CNZCN.js";
+} from "./chunk-4KJN4RXO.js";
+import {
+  Router,
+  RouterLink,
+  RouterModule
+} from "./chunk-XRVBDAJR.js";
 import "./chunk-5G7WYC4N.js";
+import "./chunk-5H5CNZCN.js";
 import {
   ChevronRightIcon,
   HomeIcon
@@ -18,11 +23,6 @@ import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-VPX34RLM.js";
-import {
-  Router,
-  RouterLink,
-  RouterModule
-} from "./chunk-XRVBDAJR.js";
 import "./chunk-CWYBPNCF.js";
 import "./chunk-NJ25EVEJ.js";
 import "./chunk-26BO7WFB.js";

@@ -7,12 +7,12 @@ namespace Identity.Infrastructure.Accounts.Queries.GetUser;
 public sealed class GetUserCachedQueryHandler(
     IQueryHandler<GetUserQuery, UserAccountResponse?> inner,
     HybridCache cache
-) : ICachingQueryHandler<GetUserQuery, UserAccountResponse?>
+) : IQueryExecutorWithCache<GetUserQuery, UserAccountResponse?>
 {
     private IQueryHandler<GetUserQuery, UserAccountResponse?> Inner { get; } = inner;
     private HybridCache Cache { get; } = cache;
 
-    public async Task<UserAccountResponse?> Handle(
+    public async Task<UserAccountResponse?> ExecuteWithCache(
         GetUserQuery query,
         CancellationToken ct = default
     ) =>
