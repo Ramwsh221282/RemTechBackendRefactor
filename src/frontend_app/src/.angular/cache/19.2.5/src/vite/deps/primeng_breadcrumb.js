@@ -23,10 +23,10 @@ import {
   PrimeTemplate,
   SharedModule
 } from "./chunk-VPX34RLM.js";
-import "./chunk-CWYBPNCF.js";
-import "./chunk-NJ25EVEJ.js";
 import "./chunk-26BO7WFB.js";
 import "./chunk-H6IZDMHA.js";
+import "./chunk-CWYBPNCF.js";
+import "./chunk-NJ25EVEJ.js";
 import {
   CommonModule,
   NgClass,

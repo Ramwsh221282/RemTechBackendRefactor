@@ -1,3 +1,4 @@
+using AvitoFirewallBypass;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -5,7 +6,6 @@ using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing;
 using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing.Extensions;
-using RemTechAvitoVehiclesParser.ParserWorkStages.Common.Commands.CreateCataloguePageUrls;
 using RemTechAvitoVehiclesParser.ParserWorkStages.PaginationParsing;
 using RemTechAvitoVehiclesParser.ParserWorkStages.PaginationParsing.Extensions;
 using RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Extensions;
@@ -24,13 +24,28 @@ public static class PaginationExtractionProcessImplementation
                 await using NpgSqlSession session = new(deps.NpgSql);
                 NpgSqlTransactionSource transactionSource = new(session, logger);
                 await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
-                WorkStageQuery stageQuery = new(Name: WorkStageConstants.EvaluationStageName, WithLock: true);
-                Maybe<ParserWorkStage> evalStage = await ParserWorkStage.GetSingle(session, stageQuery, ct);
+                WorkStageQuery stageQuery = new(
+                    Name: WorkStageConstants.EvaluationStageName,
+                    WithLock: true
+                );
+                Maybe<ParserWorkStage> evalStage = await ParserWorkStage.GetSingle(
+                    session,
+                    stageQuery,
+                    ct
+                );
                 if (!evalStage.HasValue)
                     return;
-                
-                ProcessingParserLinkQuery linksQuery = new(UnprocessedOnly: true, RetryLimit: 10, WithLock: true);
-                ProcessingParserLink[] links = await ProcessingParserLink.GetMany(session, linksQuery, ct: ct);
+
+                ProcessingParserLinkQuery linksQuery = new(
+                    UnprocessedOnly: true,
+                    RetryLimit: 10,
+                    WithLock: true
+                );
+                ProcessingParserLink[] links = await ProcessingParserLink.GetMany(
+                    session,
+                    linksQuery,
+                    ct: ct
+                );
                 if (links.Length == 0)
                 {
                     evalStage.Value.ToCatalogueStage();
@@ -48,16 +63,18 @@ public static class PaginationExtractionProcessImplementation
                     ProcessingParserLink link = links[i];
                     try
                     {
-                        CataloguePageUrl[] pagedUrls = await new CreateCataloguePageUrlsCommand(() => browser.GetPage(), link.Url, deps.Bypasses)
-                            .UseLogging(deps.Logger)
-                            .Handle();
-                        
-                        await pagedUrls.PersistMany(session);
+                        IPage page = await browser.GetPage();
+                        CataloguePageUrl[] results = await ExtractPagination(
+                            page,
+                            deps.Bypasses,
+                            link.Url
+                        );
+                        await results.PersistMany(session);
                         link = link.MarkProcessed();
                     }
                     catch (EvaluationFailedException)
                     {
-                        browser = await deps.Browsers.Recreate(browser); 
+                        browser = await deps.Browsers.Recreate(browser);
                     }
                     catch (Exception ex)
                     {
@@ -74,8 +91,59 @@ public static class PaginationExtractionProcessImplementation
                 await links.UpdateMany(session);
 
                 Result commit = await txn.Commit(ct);
-                if (commit.IsFailure) logger.Error(commit.Error, "Error at committing transaction");
+                if (commit.IsFailure)
+                    logger.Error(commit.Error, "Error at committing transaction");
                 logger.Information("Pagination extracting finished.");
             };
+    }
+
+    private static async Task<CataloguePageUrl[]> ExtractPagination(
+        IPage page,
+        AvitoBypassFactory factory,
+        string targetUrl
+    )
+    {
+        await page.PerformNavigation(targetUrl);
+        IAvitoBypassFirewall bypasser = factory.Create(page);
+        if (!await bypasser.Bypass())
+            throw new InvalidOperationException("Page is blocked.");
+        await page.ScrollBottom();
+        const string javaScript = """
+            (() => {
+            const currentUrl = window.location.href;
+            const paginationSelector = document.querySelector('nav[aria-label="Пагинация"]');
+            if (!paginationSelector) return [currentUrl];
+
+            const paginationGroupSelector = paginationSelector.querySelector('ul[data-marker="pagination-button"]');
+            if (!paginationGroupSelector) return [currentUrl];
+
+            const pageNumbersArray = Array.from(
+            paginationGroupSelector.querySelectorAll('span[class="styles-module-text-Z0vDE"]'))
+                .map(s => parseInt(s.innerText, 10));
+
+            const maxPage = Math.max(...pageNumbersArray);
+            const pagedUrls = [];
+
+            for (let i = 1; i <= maxPage; i++) {
+                const pagedUrl = currentUrl + '&p=' + i;
+                pagedUrls.push(pagedUrl);
+            }
+
+            return { maxPage, pagedUrls };
+            })();
+            """;
+        PaginationResult result = await page.EvaluateExpressionAsync<PaginationResult>(javaScript);
+        return
+        [
+            .. Enumerable
+                .Range(0, result.MaxPage)
+                .Select(p => CataloguePageUrl.New(result.PagedUrls[p])),
+        ];
+    }
+
+    private sealed class PaginationResult
+    {
+        public int MaxPage { get; set; }
+        public string[] PagedUrls { get; set; } = [];
     }
 }

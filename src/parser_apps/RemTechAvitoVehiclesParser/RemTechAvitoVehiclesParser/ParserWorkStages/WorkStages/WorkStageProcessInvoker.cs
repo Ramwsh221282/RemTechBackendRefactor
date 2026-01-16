@@ -14,7 +14,8 @@ public sealed class WorkStageProcessInvoker(WorkStageProcessDependencies deps) :
     public async Task Execute(IJobExecutionContext context)
     {
         Maybe<ParserWorkStage> workStage = await GetWorkStage(context.CancellationToken);
-        if (!workStage.HasValue) return;
+        if (!workStage.HasValue)
+            return;
 
         WorkStageProcess process = WorkStageProcessRouter.Route(workStage.Value);
         await process(deps, context.CancellationToken);

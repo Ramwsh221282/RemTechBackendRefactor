@@ -21,13 +21,13 @@ public static class DependencyInjectionExtensions
             {
                 services.RegisterParserDependencies(conf =>
                 {
-                    conf.AddSingleton<IOptions<ScrapingBrowserOptions>>(_ => Options.Create(new ScrapingBrowserOptions
-                    {
-                        Headless = true,
-                        DevelopmentMode = true,
-                    }));
+                    conf.AddSingleton(_ =>
+                        Options.Create(
+                            new ScrapingBrowserOptions { Headless = false, DevelopmentMode = true }
+                        )
+                    );
                 });
-                
+
                 services.AddContainedItemsProducer();
                 services.AddFinishParserProducer();
                 services.RegisterAvitoFirewallBypass();
@@ -44,7 +44,7 @@ public static class DependencyInjectionExtensions
                 services.AddNpgSqlOptionsFromAppsettings();
                 services.AddRabbitMqOptionsFromAppsettings();
             }
-            
+
             services.AddPostgres();
             services.AddMigrations([typeof(SchemaMigrations).Assembly]);
             services.AddRabbitMq();
