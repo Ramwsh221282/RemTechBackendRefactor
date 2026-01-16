@@ -5,9 +5,10 @@ using PuppeteerSharp;
 namespace RemTechAvitoVehiclesParser.ParserWorkStages.Common.Commands.ExtractConcreteItem;
 
 public sealed class ExtractConcreteItemCommand(
-    Func<Task<IPage>> pageSource, 
-    AvitoVehicle vehicle, 
-    AvitoBypassFactory bypassFactory) : IExtractConcreteItemCommand
+    Func<Task<IPage>> pageSource,
+    AvitoVehicle vehicle,
+    AvitoBypassFactory bypassFactory
+) : IExtractConcreteItemCommand
 {
     private static readonly Dictionary<string, bool> IgnoredCharacteristics = new()
     {
@@ -20,10 +21,11 @@ public sealed class ExtractConcreteItemCommand(
         ["VIN"] = true,
         ["Доступность"] = true,
     };
-    
+
     public async Task<AvitoVehicle> Handle()
     {
-        const string javaScript = @"
+        const string javaScript =
+            @"
                                   () => { 
                                   const breadCrumbsSelector = document.querySelector('div[id=""bx_item-breadcrumbs""]');
                                   const breadCrumbs = Array.from(breadCrumbsSelector.querySelectorAll('span[itemprop=""itemListElement""]'))
@@ -49,26 +51,34 @@ public sealed class ExtractConcreteItemCommand(
                                   return { title: title, characteristics: characteristics };
                                   }
                                   ";
-        
+
         IPage page = await pageSource();
         await page.PerformQuickNavigation(vehicle.CatalogueRepresentation.Url, timeout: 1500);
-        if (!await bypassFactory.Create(page).Bypass()) throw new InvalidOperationException("Unable to bypass Avito firewall");
-        
-        await page.ResilientWaitForSelector("div[id=\"bx_item-params\"]");
-        JsonExtractConcreteItemCommandData json = await page.EvaluateFunctionAsync<JsonExtractConcreteItemCommandData>(javaScript);
-        if (!json.AllPropertiesSet()) throw new InvalidOperationException("Unable to extract concrete item data");
+        if (!await bypassFactory.Create(page).Bypass())
+            throw new InvalidOperationException("Unable to bypass Avito firewall");
 
-        
-        json.Characteristics = json.Characteristics!.Where(NotBelongsToIgnoredCharacteristics).ToArray();
-        AvitoVehicleConcretePageRepresentation representation = new(json.Title!, json.CharacteristicsDictionary());
-        
-        return vehicle.CopyWith(veh => new()
-        {
-            ConcretePageRepresentation = representation,
-            CatalogueRepresentation = veh.CatalogueRepresentation,
-            Processed = false,
-            RetryCount = 0,
-        });
+        await page.ResilientWaitForSelector("div[id=\"bx_item-params\"]");
+        JsonExtractConcreteItemCommandData json =
+            await page.EvaluateFunctionAsync<JsonExtractConcreteItemCommandData>(javaScript);
+        if (!json.AllPropertiesSet())
+            throw new InvalidOperationException("Unable to extract concrete item data");
+
+        json.Characteristics = json.Characteristics!.Where(NotBelongsToIgnoredCharacteristics)
+            .ToArray();
+        AvitoVehicleConcretePageRepresentation representation = new(
+            json.Title!,
+            json.CharacteristicsDictionary()
+        );
+
+        return vehicle.CopyWith(veh =>
+            new()
+            {
+                ConcretePageRepresentation = representation,
+                CatalogueRepresentation = veh.CatalogueRepresentation,
+                Processed = false,
+                RetryCount = 0,
+            }
+        );
     }
 
     private static bool NotBelongsToIgnoredCharacteristics(JsonCharacteristic c)
@@ -77,11 +87,12 @@ public sealed class ExtractConcreteItemCommand(
         bool belongs = IgnoredCharacteristics.ContainsKey(name);
         return !belongs;
     }
-    
+
     private sealed class JsonExtractConcreteItemCommandData
     {
         public string? Title { get; set; }
         public JsonCharacteristic[]? Characteristics { get; set; }
+
         public bool AllPropertiesSet() => Title != null && Characteristics != null;
 
         public Dictionary<string, string> CharacteristicsDictionary()

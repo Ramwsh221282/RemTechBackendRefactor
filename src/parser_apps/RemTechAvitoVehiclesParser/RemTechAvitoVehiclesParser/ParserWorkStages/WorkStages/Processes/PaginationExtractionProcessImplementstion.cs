@@ -64,11 +64,14 @@ public static class PaginationExtractionProcessImplementation
                     try
                     {
                         IPage page = await browser.GetPage();
+
                         CataloguePageUrl[] results = await ExtractPagination(
                             page,
                             deps.Bypasses,
-                            link.Url
+                            link.Url,
+                            logger
                         );
+
                         await results.PersistMany(session);
                         link = link.MarkProcessed();
                     }
@@ -97,10 +100,12 @@ public static class PaginationExtractionProcessImplementation
             };
     }
 
+    // todo move this into shared avito library.
     private static async Task<CataloguePageUrl[]> ExtractPagination(
         IPage page,
         AvitoBypassFactory factory,
-        string targetUrl
+        string targetUrl,
+        Serilog.ILogger logger
     )
     {
         await page.PerformNavigation(targetUrl);
@@ -110,19 +115,22 @@ public static class PaginationExtractionProcessImplementation
         await page.ScrollBottom();
         const string javaScript = """
             (() => {
+
+            let maxPage = 0;
+            const pagedUrls = [];
+
             const currentUrl = window.location.href;
             const paginationSelector = document.querySelector('nav[aria-label="Пагинация"]');
-            if (!paginationSelector) return [currentUrl];
+            if (!paginationSelector) return { maxPage, pagedUrls };
 
             const paginationGroupSelector = paginationSelector.querySelector('ul[data-marker="pagination-button"]');
-            if (!paginationGroupSelector) return [currentUrl];
+            if (!paginationGroupSelector) return { maxPage, pagedUrls };
 
             const pageNumbersArray = Array.from(
             paginationGroupSelector.querySelectorAll('span[class="styles-module-text-Z0vDE"]'))
                 .map(s => parseInt(s.innerText, 10));
 
-            const maxPage = Math.max(...pageNumbersArray);
-            const pagedUrls = [];
+            maxPage = Math.max(...pageNumbersArray);
 
             for (let i = 1; i <= maxPage; i++) {
                 const pagedUrl = currentUrl + '&p=' + i;
@@ -133,12 +141,18 @@ public static class PaginationExtractionProcessImplementation
             })();
             """;
         PaginationResult result = await page.EvaluateExpressionAsync<PaginationResult>(javaScript);
-        return
+        CataloguePageUrl[] pages =
         [
             .. Enumerable
                 .Range(0, result.MaxPage)
                 .Select(p => CataloguePageUrl.New(result.PagedUrls[p])),
         ];
+        logger.Information("Extracted {PageCount} pages for url: {Url}", result.MaxPage, targetUrl);
+        foreach (CataloguePageUrl pageUrl in pages)
+        {
+            logger.Information("Paged Url: {PagedUrl}", pageUrl.Url);
+        }
+        return pages;
     }
 
     private sealed class PaginationResult
