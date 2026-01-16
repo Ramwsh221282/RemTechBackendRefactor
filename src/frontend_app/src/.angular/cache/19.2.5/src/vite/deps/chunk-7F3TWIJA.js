@@ -1,10 +1,4 @@
 import {
-  Button
-} from "./chunk-MEX7KUSE.js";
-import {
-  DomHandler
-} from "./chunk-5G7WYC4N.js";
-import {
   animate,
   animation,
   style,
@@ -15,6 +9,12 @@ import {
 import {
   zindexutils
 } from "./chunk-5H5CNZCN.js";
+import {
+  Button
+} from "./chunk-MEX7KUSE.js";
+import {
+  DomHandler
+} from "./chunk-5G7WYC4N.js";
 import {
   TimesIcon,
   WindowMaximizeIcon,
@@ -2270,4 +2270,4 @@ export {
   Dialog,
   DialogModule
 };
-//# sourceMappingURL=chunk-WWOOSECZ.js.map
+//# sourceMappingURL=chunk-7F3TWIJA.js.map

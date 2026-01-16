@@ -8,23 +8,23 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
-import { VehicleScrapersService } from '../../../scrapers-management-settings-page/services/vehicle-scrapers.service';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { Scraper } from '../../../scrapers-management-settings-page/types/Scraper';
 import { StringUtils } from '../../../../../../shared/utils/string-utils';
 import { MessageServiceUtils } from '../../../../../../shared/utils/message-service-utils';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
 import { Toast } from 'primeng/toast';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CreateNewParserLinkResponse } from '../../../scrapers-management-settings-page/types/CreateNewParserLinkResponse';
-import { HttpErrorResponse } from '@angular/common/http';
-import {ParserLinkResponse, ParserResponse} from '../../../../../../shared/api/parsers-module/parsers-responses';
-import {ParsersControlApiService} from '../../../../../../shared/api/parsers-module/parsers-control-api.service';
-import {DefaultParserResponse, NewParserLink} from '../../../../../../shared/api/parsers-module/parsers-factory';
-import {TableModule} from 'primeng/table';
+import {
+  ParserLinkResponse,
+  ParserResponse,
+} from '../../../../../../shared/api/parsers-module/parsers-responses';
+import {
+  DefaultParserResponse,
+  NewParserLink,
+} from '../../../../../../shared/api/parsers-module/parsers-factory';
+import { TableModule } from 'primeng/table';
 
 @Component({
   selector: 'app-scraper-add-link-dialog',
@@ -45,7 +45,7 @@ export class ScraperAddLinkDialogComponent {
 
   visibility: boolean;
   readonly oldScraperLinks: WritableSignal<ParserLinkResponse[]>;
-  readonly newScraperLinks: WritableSignal<ParserLinkResponse[]>
+  readonly newScraperLinks: WritableSignal<ParserLinkResponse[]>;
   readonly scraper: WritableSignal<ParserResponse>;
   private readonly _destroyRef: DestroyRef = inject(DestroyRef);
   addLinkForm: FormGroup = new FormGroup({
@@ -80,6 +80,7 @@ export class ScraperAddLinkDialogComponent {
   public confirmAdd(): void {
     if (this.newLinksAreEmpty()) return;
     const links: ParserLinkResponse[] = this.newScraperLinks();
+    this.newScraperLinks.set([]);
     this.linksAdded.emit(links);
   }
 
@@ -89,7 +90,9 @@ export class ScraperAddLinkDialogComponent {
 
   private appendLinkToList(name: string, url: string): void {
     const link: ParserLinkResponse = NewParserLink(name, url);
-    this.newScraperLinks.update((links: ParserLinkResponse[]): ParserLinkResponse[] => [...links, link]);
+    this.newScraperLinks.update(
+      (links: ParserLinkResponse[]): ParserLinkResponse[] => [...links, link],
+    );
   }
 
   private newLinksAreEmpty(): boolean {
@@ -98,8 +101,8 @@ export class ScraperAddLinkDialogComponent {
     if (empty)
       MessageServiceUtils.showError(
         this._messageService,
-        `Нет добавленных новых ссылок.`
-      )
+        `Нет добавленных новых ссылок.`,
+      );
     return empty;
   }
 
@@ -108,8 +111,8 @@ export class ScraperAddLinkDialogComponent {
     if (isEmpty) {
       MessageServiceUtils.showError(
         this._messageService,
-        `Название ссылки было пустым.`
-      )
+        `Название ссылки было пустым.`,
+      );
       return true;
     }
     return false;
@@ -120,8 +123,8 @@ export class ScraperAddLinkDialogComponent {
     if (isEmpty) {
       MessageServiceUtils.showError(
         this._messageService,
-        `URL ссылки был пустым.`
-      )
+        `URL ссылки был пустым.`,
+      );
       return true;
     }
     return false;
@@ -132,7 +135,7 @@ export class ScraperAddLinkDialogComponent {
     if (this.isDuplicatedByName(name, links)) {
       MessageServiceUtils.showError(
         this._messageService,
-        `Ссылка с названием ${name} уже существует.`
+        `Ссылка с названием ${name} уже существует.`,
       );
       return true;
     }
@@ -140,7 +143,7 @@ export class ScraperAddLinkDialogComponent {
     if (this.isDuplicatedByUrl(url, links)) {
       MessageServiceUtils.showError(
         this._messageService,
-        `Ссылка с URL ${url} уже существует.`
+        `Ссылка с URL ${url} уже существует.`,
       );
       return true;
     }
@@ -162,11 +165,14 @@ export class ScraperAddLinkDialogComponent {
     this.addLinkForm.reset();
   }
 
-  private isDuplicatedByName(name: string, links: ParserLinkResponse[]): boolean {
-    return links.some(link => link.UrlName === name);
+  private isDuplicatedByName(
+    name: string,
+    links: ParserLinkResponse[],
+  ): boolean {
+    return links.some((link) => link.UrlName === name);
   }
 
   private isDuplicatedByUrl(url: string, links: ParserLinkResponse[]): boolean {
-    return links.some(link => link.UrlValue === url);
+    return links.some((link) => link.UrlValue === url);
   }
 }
