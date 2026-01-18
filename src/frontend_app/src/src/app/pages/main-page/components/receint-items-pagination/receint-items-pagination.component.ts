@@ -32,18 +32,18 @@ export class ReceintItemsPaginationComponent {
   constructor(service: ContainedItemsService) {
     this._currentPage = signal(1);
     this._totalCount = signal(0);
-    effect(() => {
-      if (this._isCountInited) return;
-      service
-        .fetchRecentCount()
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (value: number): void => {
-            this._totalCount.set(value);
-            this._isCountInited = true;
-          },
-        });
-    });
+    // effect(() => {
+    //   if (this._isCountInited) return;
+    //   service
+    //     .fetchRecentCount()
+    //     .pipe(takeUntilDestroyed(this._destroyRef))
+    //     .subscribe({
+    //       next: (value: number): void => {
+    //         this._totalCount.set(value);
+    //         this._isCountInited = true;
+    //       },
+    //     });
+    // });
   }
 
   public get totalAmount(): number {

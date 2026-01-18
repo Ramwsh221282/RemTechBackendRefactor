@@ -1,15 +1,6 @@
-import {
-  Component,
-  DestroyRef,
-  effect,
-  inject,
-  signal,
-  WritableSignal,
-} from '@angular/core';
-import { PopularBrand } from '../../types/PopularBrand';
-import { PopularBrandsService } from '../../services/popular-brands-service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, Input, signal, WritableSignal } from '@angular/core';
 import { Router } from '@angular/router';
+import { BrandsPopularity } from '../../../../shared/api/main-page/main-page-responses';
 
 @Component({
   selector: 'app-popular-brands-block',
@@ -18,37 +9,27 @@ import { Router } from '@angular/router';
   styleUrl: './popular-brands-block.component.scss',
 })
 export class PopularBrandsBlockComponent {
-  private readonly _brands: WritableSignal<PopularBrand[]>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly _router: Router;
-  constructor(service: PopularBrandsService, router: Router) {
-    this._router = router;
-    this._brands = signal([]);
-    effect(() => {
-      service
-        .fetch()
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe((data: PopularBrand[]): void => {
-          this._brands.set(data);
-        });
-    });
-  }
-
-  public get brands(): PopularBrand[] {
-    return this._brands();
+  constructor(private readonly _router: Router) {
+    this.brands = signal([]);
   }
 
   public navigateAllClick(): void {
     this._router.navigate(['brands/all']);
   }
 
-  public navigateByBrand(brand: PopularBrand): void {
+  public navigateByBrand(brand: BrandsPopularity): void {
     this._router.navigate(['vehicles'], {
       queryParams: {
-        brandId: brand.id,
-        brandName: brand.name,
+        brandId: brand.Id,
+        brandName: brand.Name,
         page: 1,
       },
     });
+  }
+
+  readonly brands: WritableSignal<BrandsPopularity[]>;
+
+  @Input({ required: true }) set brands_setter(value: BrandsPopularity[]) {
+    this.brands.set(value.slice(0, 4));
   }
 }

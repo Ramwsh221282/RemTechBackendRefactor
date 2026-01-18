@@ -50,43 +50,43 @@ export class FastNavigationComponent {
     );
     this._categories = signal([]);
     this.selectedCategory = this._fastNavigationCategories()[0];
-    effect(() => {
-      service
-        .fetchCategories()
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (data: CatalogueCategory[]): void => {
-            this._categories.set(data);
-          },
-        });
-    });
-    effect(() => {
-      const selectedType: CatalogueCategory | undefined = this.selectedType();
-      if (selectedType !== undefined) {
-        service
-          .fetchCategoryBrands(selectedType.id)
-          .pipe(takeUntilDestroyed(this._destroyRef))
-          .subscribe({
-            next: (data: CatalogueBrand[]): void => {
-              this._brands.set(data);
-            },
-          });
-      }
-    });
-    effect(() => {
-      const selectedBrand: CatalogueBrand | undefined = this.selectedBrand();
-      const selectedType: CatalogueCategory | undefined = this.selectedType();
-      if (selectedBrand && selectedType) {
-        service
-          .fetchModelsCategoryBrands(selectedType.id, selectedBrand.id)
-          .pipe(takeUntilDestroyed(this._destroyRef))
-          .subscribe({
-            next: (data: CatalogueModel[]): void => {
-              this._models.set(data);
-            },
-          });
-      }
-    });
+    // effect(() => {
+    //   service
+    //     .fetchCategories()
+    //     .pipe(takeUntilDestroyed(this._destroyRef))
+    //     .subscribe({
+    //       next: (data: CatalogueCategory[]): void => {
+    //         this._categories.set(data);
+    //       },
+    //     });
+    // });
+    // effect(() => {
+    //   const selectedType: CatalogueCategory | undefined = this.selectedType();
+    //   if (selectedType !== undefined) {
+    //     service
+    //       .fetchCategoryBrands(selectedType.id)
+    //       .pipe(takeUntilDestroyed(this._destroyRef))
+    //       .subscribe({
+    //         next: (data: CatalogueBrand[]): void => {
+    //           this._brands.set(data);
+    //         },
+    //       });
+    //   }
+    // });
+    // effect(() => {
+    //   const selectedBrand: CatalogueBrand | undefined = this.selectedBrand();
+    //   const selectedType: CatalogueCategory | undefined = this.selectedType();
+    //   if (selectedBrand && selectedType) {
+    //     service
+    //       .fetchModelsCategoryBrands(selectedType.id, selectedBrand.id)
+    //       .pipe(takeUntilDestroyed(this._destroyRef))
+    //       .subscribe({
+    //         next: (data: CatalogueModel[]): void => {
+    //           this._models.set(data);
+    //         },
+    //       });
+    //   }
+    // });
   }
 
   public get vehicleBrands(): CatalogueBrand[] {

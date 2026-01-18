@@ -19,6 +19,7 @@
     "@angular/router": "^19.2.0",
     "@primeng/themes": "^19.0.10",
     "@tailwindcss/postcss": "^4.0.15",
+    "@tailwindcss/vite": "^4.1.18",
     "chart.js": "^4.4.9",
     "chartjs-plugin-zoom": "^2.2.0",
     "jwt-decode": "^4.0.0",

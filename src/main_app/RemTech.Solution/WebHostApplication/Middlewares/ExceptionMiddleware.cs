@@ -29,7 +29,11 @@ public sealed class ExceptionMiddleware
 
     private async Task HandleException(HttpContext context)
     {
-        Envelope envelope = new Envelope((int)HttpStatusCode.InternalServerError, null, "Internal server error");
+        Envelope envelope = new(
+            (int)HttpStatusCode.InternalServerError,
+            null,
+            "Internal server error"
+        );
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         context.Request.ContentType = "application/json";
         await context.Response.WriteAsJsonAsync(envelope, context.RequestAborted);
