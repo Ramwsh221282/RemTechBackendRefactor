@@ -1,7 +1,6 @@
 import {
   Component,
   DestroyRef,
-  effect,
   inject,
   signal,
   WritableSignal,
@@ -10,11 +9,12 @@ import { Select } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { CatalogueVehiclesService } from '../../../vehicles-page/services/CatalogueVehiclesService';
 import { CatalogueCategory } from '../../../vehicles-page/types/CatalogueCategory';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CatalogueBrand } from '../../../vehicles-page/types/CatalogueBrand';
 import { CatalogueModel } from '../../../vehicles-page/types/CatalogueModel';
 import { Router } from '@angular/router';
 import { InputText } from 'primeng/inputtext';
+import { BrandsApiService } from '../../../../shared/api/brands-module/brands-api.service';
+import { CategoriesApiService } from '../../../../shared/api/categories-module/categories-api.service';
 
 @Component({
   selector: 'app-fast-navigation',
@@ -23,24 +23,12 @@ import { InputText } from 'primeng/inputtext';
   styleUrl: './fast-navigation.component.scss',
 })
 export class FastNavigationComponent {
-  private readonly _fastNavigationCategories: WritableSignal<string[]>;
-  private readonly _currentNavigationCategory: WritableSignal<string>;
-  private readonly _categories: WritableSignal<CatalogueCategory[]>;
-  private readonly _brands: WritableSignal<CatalogueBrand[]>;
-  private readonly _models: WritableSignal<CatalogueModel[]>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly _router: Router;
-  public selectedCategory: string;
-  public selectedModel: WritableSignal<CatalogueModel | undefined> =
-    signal(undefined);
-  public selectedType: WritableSignal<CatalogueCategory | undefined> =
-    signal(undefined);
-  public selectedBrand: WritableSignal<CatalogueBrand | undefined> =
-    signal(undefined);
-  public vehicleTextInput: WritableSignal<string | undefined> =
-    signal(undefined);
-
-  constructor(service: CatalogueVehiclesService, router: Router) {
+  constructor(
+    categoriesService: CategoriesApiService,
+    brandsService: BrandsApiService,
+    modelsService: CatalogueVehiclesService,
+    router: Router,
+  ) {
     this._router = router;
     this._brands = signal([]);
     this._models = signal([]);
@@ -88,6 +76,23 @@ export class FastNavigationComponent {
     //   }
     // });
   }
+
+  private readonly _fastNavigationCategories: WritableSignal<string[]>;
+  private readonly _currentNavigationCategory: WritableSignal<string>;
+  private readonly _categories: WritableSignal<CatalogueCategory[]>;
+  private readonly _brands: WritableSignal<CatalogueBrand[]>;
+  private readonly _models: WritableSignal<CatalogueModel[]>;
+  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
+  private readonly _router: Router;
+  public selectedCategory: string;
+  public selectedModel: WritableSignal<CatalogueModel | undefined> =
+    signal(undefined);
+  public selectedType: WritableSignal<CatalogueCategory | undefined> =
+    signal(undefined);
+  public selectedBrand: WritableSignal<CatalogueBrand | undefined> =
+    signal(undefined);
+  public vehicleTextInput: WritableSignal<string | undefined> =
+    signal(undefined);
 
   public get vehicleBrands(): CatalogueBrand[] {
     return this._brands();
