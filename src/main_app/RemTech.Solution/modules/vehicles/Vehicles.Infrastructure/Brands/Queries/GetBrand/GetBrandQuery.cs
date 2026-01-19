@@ -1,4 +1,5 @@
-﻿using RemTech.SharedKernel.Core.Handlers;
+﻿using System.Text.Json;
+using RemTech.SharedKernel.Core.Handlers;
 
 namespace Vehicles.Infrastructure.Brands.Queries.GetBrand;
 

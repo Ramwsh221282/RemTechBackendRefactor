@@ -2,6 +2,7 @@
 using Dapper;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.Database;
+using Vehicles.Infrastructure.Brands.Queries.GetBrand;
 
 namespace Vehicles.Infrastructure.Brands.Queries.GetBrandByCategory;
 
@@ -55,7 +56,7 @@ public sealed class GetBrandQueryHandler(NpgSqlSession session)
 
         if (!string.IsNullOrWhiteSpace(query.BrandName))
         {
-            filters.Add("b.name ILIKE @brand_name");
+            filters.Add("b.name = @brand_name");
             parameters.Add("brand_name", $"%{query.BrandName}%");
         }
     }
