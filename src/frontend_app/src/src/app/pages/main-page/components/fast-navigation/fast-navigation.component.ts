@@ -1,20 +1,26 @@
 import {
   Component,
+  computed,
   DestroyRef,
+  effect,
   inject,
+  Signal,
   signal,
   WritableSignal,
 } from '@angular/core';
 import { Select } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { CatalogueVehiclesService } from '../../../vehicles-page/services/CatalogueVehiclesService';
-import { CatalogueCategory } from '../../../vehicles-page/types/CatalogueCategory';
 import { CatalogueBrand } from '../../../vehicles-page/types/CatalogueBrand';
 import { CatalogueModel } from '../../../vehicles-page/types/CatalogueModel';
 import { Router } from '@angular/router';
 import { InputText } from 'primeng/inputtext';
 import { BrandsApiService } from '../../../../shared/api/brands-module/brands-api.service';
 import { CategoriesApiService } from '../../../../shared/api/categories-module/categories-api.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, EMPTY, map, tap } from 'rxjs';
+import { CategoryResponse } from '../../../../shared/api/categories-module/categories-responses';
+import { TypedEnvelope } from '../../../../shared/api/envelope';
 
 @Component({
   selector: 'app-fast-navigation',
@@ -24,20 +30,22 @@ import { CategoriesApiService } from '../../../../shared/api/categories-module/c
 })
 export class FastNavigationComponent {
   constructor(
-    categoriesService: CategoriesApiService,
-    brandsService: BrandsApiService,
-    modelsService: CatalogueVehiclesService,
+    private readonly _categoriesService: CategoriesApiService,
+    private readonly _brandsService: BrandsApiService,
+    private readonly _modelsService: CatalogueVehiclesService,
     router: Router,
   ) {
     this._router = router;
-    this._brands = signal([]);
-    this._models = signal([]);
-    this._fastNavigationCategories = signal(['Техника', 'Запчасти']);
-    this._currentNavigationCategory = signal(
-      this._fastNavigationCategories()[0],
-    );
-    this._categories = signal([]);
-    this.selectedCategory = this._fastNavigationCategories()[0];
+    this.brands = signal([]);
+    this.models = signal([]);
+    this.categories = signal([]);
+    this.selectedBrand = undefined;
+    this.selectedModel = undefined;
+    this.selectedCategory = undefined;
+    this.selectedItemType = signal(undefined);
+    this.itemTypes = signal(['Техника', 'Запчасти']);
+    this.fetchCategories();
+
     // effect(() => {
     //   service
     //     .fetchCategories()
@@ -77,57 +85,68 @@ export class FastNavigationComponent {
     // });
   }
 
-  private readonly _fastNavigationCategories: WritableSignal<string[]>;
-  private readonly _currentNavigationCategory: WritableSignal<string>;
-  private readonly _categories: WritableSignal<CatalogueCategory[]>;
-  private readonly _brands: WritableSignal<CatalogueBrand[]>;
-  private readonly _models: WritableSignal<CatalogueModel[]>;
+  readonly itemTypes: WritableSignal<string[]>;
+  readonly selectedItemType: WritableSignal<string | undefined>;
+  readonly itemTypeIsVehicle: Signal<boolean> = computed(() => {
+    const selected: string | undefined = this.selectedItemType();
+    return !!selected && selected === 'Техника';
+  });
+  readonly itemTypeIsSpare: Signal<boolean> = computed(() => {
+    const selected: string | undefined = this.selectedItemType();
+    return !!selected && selected === 'Запчасти';
+  });
+
+  readonly categories: WritableSignal<CategoryResponse[]>;
+  readonly selectedCategory: CategoryResponse | undefined;
+  readonly categoryIsSelected: Signal<boolean> = computed(() => {
+    const selected: CategoryResponse | undefined = this.selectedCategory;
+    return selected !== undefined;
+  });
+
+  readonly brands: WritableSignal<CatalogueBrand[]>;
+  readonly selectedBrand: CatalogueBrand | undefined;
+  readonly brandIsSelected: Signal<boolean> = computed(() => {
+    const selected: CatalogueBrand | undefined = this.selectedBrand;
+    return selected !== undefined;
+  });
+
+  readonly models: WritableSignal<CatalogueModel[]>;
+  readonly selectedModel: CatalogueModel | undefined;
+  readonly modelIsSelected: Signal<boolean> = computed(() => {
+    const selected: CatalogueModel | undefined = this.selectedModel;
+    return selected !== undefined;
+  });
+
+  readonly categoriesList: Signal<string[]> = computed(() =>
+    this.categories().map((cat) => cat.Name),
+  );
+
   private readonly _destroyRef: DestroyRef = inject(DestroyRef);
   private readonly _router: Router;
-  public selectedCategory: string;
-  public selectedModel: WritableSignal<CatalogueModel | undefined> =
-    signal(undefined);
-  public selectedType: WritableSignal<CatalogueCategory | undefined> =
-    signal(undefined);
-  public selectedBrand: WritableSignal<CatalogueBrand | undefined> =
-    signal(undefined);
+
   public vehicleTextInput: WritableSignal<string | undefined> =
     signal(undefined);
 
-  public get vehicleBrands(): CatalogueBrand[] {
-    return this._brands();
-  }
-
-  public get vehicleTypes(): CatalogueCategory[] {
-    return this._categories();
-  }
-
-  public get models(): CatalogueModel[] {
-    return this._models();
-  }
-
-  public get navigationCategories(): string[] {
-    return this._fastNavigationCategories();
-  }
-
-  public get currentNavigationCategory(): string {
-    return this._currentNavigationCategory();
-  }
-
   public navigateVehicles(): void {
-    const brand: CatalogueBrand | undefined = this.selectedBrand();
-    const model: CatalogueModel | undefined = this.selectedModel();
-    const type: CatalogueCategory | undefined = this.selectedType();
-    if (brand && model && type) {
-      this._router.navigate(['vehicles'], {
-        queryParams: {
-          brandId: brand.id,
-          categoryId: type.id,
-          modelId: model.id,
-          page: 1,
-        },
-      });
-    }
+    // const brand: CatalogueBrand | undefined = this.selectedBrand();
+    // const model: CatalogueModel | undefined = this.selectedModel();
+    // const type: CatalogueCategory | undefined = this.selectedType();
+    // if (brand && model && type) {
+    //   this._router.navigate(['vehicles'], {
+    //     queryParams: {
+    //       brandId: brand.id,
+    //       categoryId: type.id,
+    //       modelId: model.id,
+    //       page: 1,
+    //     },
+    //   });
+    // }
+  }
+
+  public handleItemTypeChange($event: Event): void {
+    const selectedItemType: string | unknown = $event as unknown as string;
+    if (selectedItemType === 'Техника' || selectedItemType === 'Запчасти')
+      this.selectedItemType.set(selectedItemType);
   }
 
   public navigateSpares(): void {
@@ -142,5 +161,30 @@ export class FastNavigationComponent {
         },
       });
     }
+  }
+
+  private fetchCategories(): void {
+    effect(() => {
+      if (this.itemTypeIsVehicle()) {
+        console.log('fetching categories for vehicles');
+        this._categoriesService
+          .fetchCategories()
+          .pipe(
+            takeUntilDestroyed(this._destroyRef),
+            map((data: TypedEnvelope<CategoryResponse[]>) => {
+              let response: CategoryResponse[] = [];
+              if (data.body) response = data.body;
+              return response;
+            }),
+            tap((categories: CategoryResponse[]): void =>
+              this.categories.set(categories),
+            ),
+            catchError(() => {
+              return EMPTY;
+            }),
+          )
+          .subscribe();
+      }
+    });
   }
 }
