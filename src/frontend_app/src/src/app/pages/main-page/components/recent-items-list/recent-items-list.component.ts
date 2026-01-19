@@ -28,17 +28,17 @@ export class RecentItemsListComponent {
   constructor(service: ContainedItemsService) {
     this._page = signal(1);
     this._items = signal([]);
-    effect(() => {
-      const page: number = this._page();
-      service
-        .fetchRecent(page)
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (recent: SomeRecentItem[]): void => {
-            this._items.set(recent);
-          },
-        });
-    });
+    // effect(() => {
+    //   const page: number = this._page();
+    //   service
+    //     .fetchRecent(page)
+    //     .pipe(takeUntilDestroyed(this._destroyRef))
+    //     .subscribe({
+    //       next: (recent: SomeRecentItem[]): void => {
+    //         this._items.set(recent);
+    //       },
+    //     });
+    // });
   }
 
   public get items(): SomeRecentItem[] {

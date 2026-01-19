@@ -1,7 +1,6 @@
 import {
   Component,
   DestroyRef,
-  effect,
   inject,
   signal,
   WritableSignal,
@@ -10,11 +9,12 @@ import { Select } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { CatalogueVehiclesService } from '../../../vehicles-page/services/CatalogueVehiclesService';
 import { CatalogueCategory } from '../../../vehicles-page/types/CatalogueCategory';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CatalogueBrand } from '../../../vehicles-page/types/CatalogueBrand';
 import { CatalogueModel } from '../../../vehicles-page/types/CatalogueModel';
 import { Router } from '@angular/router';
 import { InputText } from 'primeng/inputtext';
+import { BrandsApiService } from '../../../../shared/api/brands-module/brands-api.service';
+import { CategoriesApiService } from '../../../../shared/api/categories-module/categories-api.service';
 
 @Component({
   selector: 'app-fast-navigation',
@@ -23,6 +23,60 @@ import { InputText } from 'primeng/inputtext';
   styleUrl: './fast-navigation.component.scss',
 })
 export class FastNavigationComponent {
+  constructor(
+    categoriesService: CategoriesApiService,
+    brandsService: BrandsApiService,
+    modelsService: CatalogueVehiclesService,
+    router: Router,
+  ) {
+    this._router = router;
+    this._brands = signal([]);
+    this._models = signal([]);
+    this._fastNavigationCategories = signal(['Техника', 'Запчасти']);
+    this._currentNavigationCategory = signal(
+      this._fastNavigationCategories()[0],
+    );
+    this._categories = signal([]);
+    this.selectedCategory = this._fastNavigationCategories()[0];
+    // effect(() => {
+    //   service
+    //     .fetchCategories()
+    //     .pipe(takeUntilDestroyed(this._destroyRef))
+    //     .subscribe({
+    //       next: (data: CatalogueCategory[]): void => {
+    //         this._categories.set(data);
+    //       },
+    //     });
+    // });
+    // effect(() => {
+    //   const selectedType: CatalogueCategory | undefined = this.selectedType();
+    //   if (selectedType !== undefined) {
+    //     service
+    //       .fetchCategoryBrands(selectedType.id)
+    //       .pipe(takeUntilDestroyed(this._destroyRef))
+    //       .subscribe({
+    //         next: (data: CatalogueBrand[]): void => {
+    //           this._brands.set(data);
+    //         },
+    //       });
+    //   }
+    // });
+    // effect(() => {
+    //   const selectedBrand: CatalogueBrand | undefined = this.selectedBrand();
+    //   const selectedType: CatalogueCategory | undefined = this.selectedType();
+    //   if (selectedBrand && selectedType) {
+    //     service
+    //       .fetchModelsCategoryBrands(selectedType.id, selectedBrand.id)
+    //       .pipe(takeUntilDestroyed(this._destroyRef))
+    //       .subscribe({
+    //         next: (data: CatalogueModel[]): void => {
+    //           this._models.set(data);
+    //         },
+    //       });
+    //   }
+    // });
+  }
+
   private readonly _fastNavigationCategories: WritableSignal<string[]>;
   private readonly _currentNavigationCategory: WritableSignal<string>;
   private readonly _categories: WritableSignal<CatalogueCategory[]>;
@@ -39,55 +93,6 @@ export class FastNavigationComponent {
     signal(undefined);
   public vehicleTextInput: WritableSignal<string | undefined> =
     signal(undefined);
-
-  constructor(service: CatalogueVehiclesService, router: Router) {
-    this._router = router;
-    this._brands = signal([]);
-    this._models = signal([]);
-    this._fastNavigationCategories = signal(['Техника', 'Запчасти']);
-    this._currentNavigationCategory = signal(
-      this._fastNavigationCategories()[0],
-    );
-    this._categories = signal([]);
-    this.selectedCategory = this._fastNavigationCategories()[0];
-    effect(() => {
-      service
-        .fetchCategories()
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (data: CatalogueCategory[]): void => {
-            this._categories.set(data);
-          },
-        });
-    });
-    effect(() => {
-      const selectedType: CatalogueCategory | undefined = this.selectedType();
-      if (selectedType !== undefined) {
-        service
-          .fetchCategoryBrands(selectedType.id)
-          .pipe(takeUntilDestroyed(this._destroyRef))
-          .subscribe({
-            next: (data: CatalogueBrand[]): void => {
-              this._brands.set(data);
-            },
-          });
-      }
-    });
-    effect(() => {
-      const selectedBrand: CatalogueBrand | undefined = this.selectedBrand();
-      const selectedType: CatalogueCategory | undefined = this.selectedType();
-      if (selectedBrand && selectedType) {
-        service
-          .fetchModelsCategoryBrands(selectedType.id, selectedBrand.id)
-          .pipe(takeUntilDestroyed(this._destroyRef))
-          .subscribe({
-            next: (data: CatalogueModel[]): void => {
-              this._models.set(data);
-            },
-          });
-      }
-    });
-  }
 
   public get vehicleBrands(): CatalogueBrand[] {
     return this._brands();

@@ -28,8 +28,5 @@ app.Run();
 
 namespace AvitoSparesParser
 {
-    public partial class Program
-    {
-
-    }
+    public partial class Program { }
 }

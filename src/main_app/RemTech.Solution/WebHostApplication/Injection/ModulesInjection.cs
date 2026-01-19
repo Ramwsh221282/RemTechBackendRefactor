@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using System.Transactions;
+using ContainedItems.Domain.Models;
 using ContainedItems.Infrastructure.Repositories;
 using ContainedItems.Worker.Extensions;
 using Identity.Domain.Accounts.Models;
@@ -47,23 +47,17 @@ public static class ModulesInjection
             services.RegisterConsumers(assemblies);
             services.RegisterDomainEventHandlers(assemblies);
 
-            services.UseTransactionalHandlers();
-            services.UseValidatingHandlers();
-            services.UseCacheInvalidatingHandlers();
-            services.UseLoggingCommandHandlers();
+            services.DecorateCommandHandlersWith(typeof(TransactionalHandler<,>));
+            services.DecorateCommandHandlersWith(typeof(ValidatingHandler<,>));
+            services.DecorateCommandHandlersWith(typeof(CacheInvalidatingHandler<,>));
+            services.DecorateCommandHandlersWith(typeof(LoggingHandler<,>));
         }
 
-        private void UseLoggingCommandHandlers() =>
-            services.Decorate(typeof(ICommandHandler<,>), typeof(LoggingHandler<,>));
-
-        private void UseTransactionalHandlers() =>
-            services.Decorate(typeof(ICommandHandler<,>), typeof(TransactionalHandler<,>));
-
-        private void UseValidatingHandlers() =>
-            services.Decorate(typeof(ICommandHandler<,>), typeof(ValidatingHandler<,>));
-
-        private void UseCacheInvalidatingHandlers() =>
-            services.Decorate(typeof(ICommandHandler<,>), typeof(CacheInvalidatingHandler<,>));
+        private void DecorateCommandHandlersWith(Type decoratorType)
+        {
+            Type commandHandlerType = typeof(ICommandHandler<,>);
+            services.TryDecorate(commandHandlerType, decoratorType);
+        }
 
         private void RegisterDomainEventHandlers(Assembly[] assemblies) =>
             services.Scan(x =>
@@ -72,7 +66,7 @@ public static class ModulesInjection
                     .UsingRegistrationStrategy(RegistrationStrategy.Skip)
                     .AsSelfWithInterfaces()
                     .WithScopedLifetime()
-                    .AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler)))
+                    .AddClasses(classes => classes.AssignableTo<IDomainEventHandler>())
                     .UsingRegistrationStrategy(RegistrationStrategy.Skip)
                     .AsSelfWithInterfaces()
                     .WithScopedLifetime()
@@ -124,7 +118,7 @@ public static class ModulesInjection
             typeof(Vehicle).Assembly,
             typeof(NpgSqlVehiclesPersister).Assembly,
             // contained items module
-            typeof(ContainedItemId).Assembly,
+            typeof(ContainedItem).Assembly,
             typeof(ContainedItemsRepository).Assembly,
             // parsers module
             typeof(SubscribedParser).Assembly,

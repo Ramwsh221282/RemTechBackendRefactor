@@ -16,6 +16,8 @@ nuget.config
 .vs/
 .code/
 .vscode/
+.angular/
+.angular
 
 # User-specific files
 *.rsuser

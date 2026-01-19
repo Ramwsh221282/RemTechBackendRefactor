@@ -1,8 +1,6 @@
+using AvitoFirewallBypass;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
-using RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Extensions;
-using RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Models;
-using AvitoFirewallBypass;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -10,6 +8,8 @@ using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing;
 using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing.Extensions;
 using RemTechAvitoVehiclesParser.ParserWorkStages.Common;
 using RemTechAvitoVehiclesParser.ParserWorkStages.Common.Commands.ExtractCatalogueItemData;
+using RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Extensions;
+using RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Models;
 
 namespace RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Processes;
 
@@ -26,7 +26,8 @@ public static class CataloguePagesParsingProcessImplementation
                     out _,
                     out Serilog.ILogger dLogger,
                     out NpgSqlConnectionFactory npgSql,
-                    out _, out _
+                    out _,
+                    out _
                 );
 
                 Serilog.ILogger logger = dLogger.ForContext<WorkStageProcess>();
@@ -34,9 +35,17 @@ public static class CataloguePagesParsingProcessImplementation
                 NpgSqlTransactionSource transactionSource = new(session, logger);
                 await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
 
-                WorkStageQuery stageQuery = new(Name: WorkStageConstants.CatalogueStageName, WithLock: true);
-                Maybe<ParserWorkStage> stage = await ParserWorkStage.GetSingle(session, stageQuery, ct);
-                if (!stage.HasValue) return;
+                WorkStageQuery stageQuery = new(
+                    Name: WorkStageConstants.CatalogueStageName,
+                    WithLock: true
+                );
+                Maybe<ParserWorkStage> stage = await ParserWorkStage.GetSingle(
+                    session,
+                    stageQuery,
+                    ct
+                );
+                if (!stage.HasValue)
+                    return;
 
                 CataloguePageUrlQuery pageUrlQuery = new(
                     UnprocessedOnly: true,
@@ -63,11 +72,17 @@ public static class CataloguePagesParsingProcessImplementation
 
                     try
                     {
-                        AvitoVehicle[] items = await new ExtractCatalogueItemDataCommand(() => browser.GetPage(), url, bypasses).UseLogging(dLogger).Handle();
+                        AvitoVehicle[] items = await new ExtractCatalogueItemDataCommand(
+                            () => browser.GetPage(),
+                            url,
+                            bypasses
+                        )
+                            .UseLogging(dLogger)
+                            .Handle();
                         url = url.MarkProcessed();
                         await items.PersistAsCatalogueRepresentation(session);
                     }
-                    catch(EvaluationFailedException)
+                    catch (EvaluationFailedException)
                     {
                         browser = await browsers.Recreate(browser);
                     }
@@ -84,7 +99,8 @@ public static class CataloguePagesParsingProcessImplementation
                 await browser.DestroyAsync();
                 await urls.UpdateMany(session);
                 Result commit = await txn.Commit(ct);
-                if (commit.IsFailure) logger.Error(commit.Error, "Error at committing transaction");
+                if (commit.IsFailure)
+                    logger.Error(commit.Error, "Error at committing transaction");
             };
     }
 }
