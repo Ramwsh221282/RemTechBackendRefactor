@@ -1,0 +1,50 @@
+<Solution>
+  <Folder Name="/modules/" />
+  <Folder Name="/modules/building_blocks/">
+    <Project Path="modules/building_blocks/RemTech.SharedKernel.Configurations/RemTech.SharedKernel.Configurations.csproj" />
+    <Project Path="modules/building_blocks/RemTech.SharedKernel.Core/RemTech.SharedKernel.Core.csproj" />
+    <Project Path="modules/building_blocks/RemTech.SharedKernel.Infrastructure.AesEncryption/RemTech.SharedKernel.Infrastructure.AesEncryption.csproj" />
+    <Project Path="modules/building_blocks/RemTech.SharedKernel.Infrastructure.Database/RemTech.SharedKernel.Infrastructure.Database.csproj" />
+    <Project Path="modules/building_blocks/RemTech.SharedKernel.Infrastructure.Quartz/RemTech.SharedKernel.Infrastructure.Quartz.csproj" />
+    <Project Path="modules/building_blocks/RemTech.SharedKernel.Infrastructure.RabbitMq/RemTech.SharedKernel.Infrastructure.RabbitMq.csproj" />
+    <Project Path="modules/building_blocks/RemTech.SharedKernel.Infrastructure.Redis/RemTech.SharedKernel.Infrastructure.Redis.csproj" />
+    <Project Path="modules/building_blocks/RemTech.SharedKernel.NN/RemTech.SharedKernel.NN.csproj" />
+    <Project Path="modules/building_blocks/RemTech.SharedKernel.Web/RemTech.SharedKernel.Web.csproj" />
+    <Project Path="modules/building_blocks/RemTech.Tests.Shared/RemTech.Tests.Shared.csproj" />
+  </Folder>
+  <Folder Name="/modules/contained_items/">
+    <Project Path="modules/contained_items/ContainedItems.Domain/ContainedItems.Domain.csproj" />
+    <Project Path="modules/contained_items/ContainedItems.Infrastructure/ContainedItems.Infrastructure.csproj" />
+    <Project Path="modules/contained_items/ContainedItems.Worker/ContainedItems.Worker.csproj" />
+  </Folder>
+  <Folder Name="/modules/identity/">
+    <Project Path="modules/identity/Identity.Domain/Identity.Domain.csproj" />
+    <Project Path="modules/identity/Identity.Infrastructure/Identity.Infrastructure.csproj" />
+    <Project Path="modules/identity/Identity.Tests/Identity.Tests.csproj" />
+    <Project Path="modules/identity/Identity.WebApi/Identity.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/modules/notifications/">
+    <Project Path="modules/notifications/Notifications.Core/Notifications.Core.csproj" />
+    <Project Path="modules/notifications/Notifications.Infrastructure/Notifications.Infrastructure.csproj" />
+    <Project Path="modules/notifications/Notifications.Tests/Notifications.Tests.csproj" />
+    <Project Path="modules/notifications/Notifications.WebApi/Notifications.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/modules/parsers_control/">
+    <Project Path="modules/parsers_control/ParsersControl.Core/ParsersControl.Core.csproj" />
+    <Project Path="modules/parsers_control/ParsersControl.Infrastructure/ParsersControl.Infrastructure.csproj" />
+    <Project Path="modules/parsers_control/ParsersControl.Tests/ParsersControl.Tests.csproj" />
+    <Project Path="modules/parsers_control/ParsersControl.WebApi/ParsersControl.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/modules/spares/">
+    <Project Path="modules/spares/Spares.Domain/Spares.Domain.csproj" />
+    <Project Path="modules/spares/Spares.Infrastructure/Spares.Infrastructure.csproj" />
+    <Project Path="modules/spares/Spares.WebApi/Spares.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/modules/vehicles/">
+    <Project Path="modules/vehicles/Vehicles.Domain/Vehicles.Domain.csproj" />
+    <Project Path="modules/vehicles/Vehicles.Infrastructure/Vehicles.Infrastructure.csproj" />
+    <Project Path="modules/vehicles/Vehicles.Tests/Vehicles.Tests.csproj" />
+    <Project Path="modules/vehicles/Vehicles.WebApi/Vehicles.WebApi.csproj" />
+  </Folder>
+  <Project Path="WebHostApplication/WebHostApplication.csproj" />
+</Solution>
