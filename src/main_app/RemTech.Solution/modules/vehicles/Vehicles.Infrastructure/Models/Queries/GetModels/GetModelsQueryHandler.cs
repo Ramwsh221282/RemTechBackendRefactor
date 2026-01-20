@@ -29,21 +29,12 @@ public sealed class GetModelsQueryHandler(NpgSqlSession session)
             SELECT
                 m.id,
                 m.name                
-<<<<<<< HEAD
-            FROM vehicles_module.models m      
-            INNER JOIN vehicles_module.vehicles v ON v.model_id = m.id
-            INNER JOIN contained_items_module.contained_items i ON v.id = i.id      
-            {CreateWhereClause(filterSql)} 
-            GROUP BY m.id, m.name
-            HAVING COUNT(v.id) > 0                       
-=======
             FROM vehicles_module.models m                        
             INNER JOIN vehicles_module.vehicles v ON v.model_id = m.id
             INNER JOIN contained_items_module.contained_items i ON v.id = i.id                  
             {CreateWhereClause(filterSql)}
             GROUP BY m.id, m.name
             HAVING COUNT(v.id) > 0
->>>>>>> 878914dc (Backend, Frontend. Refactored endpoints for more REST like)
             """;
 
         return (parameters, sql);
