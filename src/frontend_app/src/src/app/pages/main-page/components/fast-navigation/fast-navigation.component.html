@@ -26,7 +26,7 @@
       </p-select>
 
       @if (itemTypeIsVehicle()) {
-        <p-select
+        <!-- <p-select
           [fluid]="true"
           [options]="categoriesList()"
           [dataKey]="'Id'"
@@ -39,17 +39,20 @@
           [showClear]="true"
           placeholder="1. Выбрать тип техники"
           class="w-full md:w-56"
+        > -->
+        <p-select
+          [fluid]="true"
+          [options]="categories()"
+          [(ngModel)]="selectedCategory"
+          [filter]="true"
+          filterBy="Name"
+          [showClear]="true"
+          optionLabel="Name"
+          placeholder="1. Выбрать тип техники"
+          (onClear)="handleCategoryClear()"
+          (onChange)="handleCategoryChange($event)"
+          class="w-full md:w-56"
         >
-          <ng-template #selectedItem let-selectedOption>
-            <div class="flex items-center gap-2">
-              <div>{{ selectedOption.name }}</div>
-            </div>
-          </ng-template>
-          <ng-template let-type #item>
-            <div class="flex items-center gap-2">
-              <div>{{ type.name }}</div>
-            </div>
-          </ng-template>
         </p-select>
         @if (categoryIsSelected()) {
           <p-select
@@ -57,21 +60,14 @@
             [options]="brands()"
             [(ngModel)]="selectedBrand"
             [filter]="true"
-            filterBy="name"
+            filterBy="Name"
             [showClear]="true"
+            optionLabel="Name"
+            (onClear)="handleBrandClear()"
+            (onChange)="handleBrandChange($event)"
             placeholder="2. Выбрать марку техники"
             class="w-full md:w-56"
           >
-            <ng-template #selectedItem let-selectedOption>
-              <div class="flex items-center gap-2">
-                <div>{{ selectedOption.name }}</div>
-              </div>
-            </ng-template>
-            <ng-template let-brand #item>
-              <div class="flex items-center gap-2">
-                <div>{{ brand.name }}</div>
-              </div>
-            </ng-template>
           </p-select>
           @if (brandIsSelected()) {
             <p-select
@@ -80,20 +76,13 @@
               [(ngModel)]="selectedModel"
               [filter]="true"
               filterBy="name"
+              optionLabel="Name"
+              (onClear)="handleModelClear()"
+              (onChange)="handleModelChange($event)"
               [showClear]="true"
               placeholder="3. Выбрать модель техники"
               class="w-full md:w-56"
             >
-              <ng-template #selectedItem let-selectedOption>
-                <div class="flex items-center gap-2">
-                  <div>{{ selectedOption.name }}</div>
-                </div>
-              </ng-template>
-              <ng-template let-model #item>
-                <div class="flex items-center gap-2">
-                  <div>{{ model.name }}</div>
-                </div>
-              </ng-template>
             </p-select>
             @if (
               brandIsSelected() && categoryIsSelected() && modelIsSelected()

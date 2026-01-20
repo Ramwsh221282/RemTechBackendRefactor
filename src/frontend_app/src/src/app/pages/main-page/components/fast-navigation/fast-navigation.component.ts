@@ -8,7 +8,7 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
-import { Select } from 'primeng/select';
+import { Select, SelectChangeEvent } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { CatalogueVehiclesService } from '../../../vehicles-page/services/CatalogueVehiclesService';
 import { CatalogueBrand } from '../../../vehicles-page/types/CatalogueBrand';
@@ -21,6 +21,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY, map, tap } from 'rxjs';
 import { CategoryResponse } from '../../../../shared/api/categories-module/categories-responses';
 import { TypedEnvelope } from '../../../../shared/api/envelope';
+import { BrandResponse } from '../../../../shared/api/brands-module/brands-api.responses';
 
 @Component({
   selector: 'app-fast-navigation',
@@ -39,9 +40,9 @@ export class FastNavigationComponent {
     this.brands = signal([]);
     this.models = signal([]);
     this.categories = signal([]);
-    this.selectedBrand = undefined;
-    this.selectedModel = undefined;
-    this.selectedCategory = undefined;
+    this.selectedBrand = signal(undefined);
+    this.selectedModel = signal(undefined);
+    this.selectedCategory = signal(undefined);
     this.selectedItemType = signal(undefined);
     this.itemTypes = signal(['Техника', 'Запчасти']);
     this.fetchCategories();
@@ -97,29 +98,25 @@ export class FastNavigationComponent {
   });
 
   readonly categories: WritableSignal<CategoryResponse[]>;
-  readonly selectedCategory: CategoryResponse | undefined;
+  readonly selectedCategory: WritableSignal<CategoryResponse | undefined>;
   readonly categoryIsSelected: Signal<boolean> = computed(() => {
-    const selected: CategoryResponse | undefined = this.selectedCategory;
+    const selected: CategoryResponse | undefined = this.selectedCategory();
     return selected !== undefined;
   });
 
-  readonly brands: WritableSignal<CatalogueBrand[]>;
-  readonly selectedBrand: CatalogueBrand | undefined;
+  readonly brands: WritableSignal<BrandResponse[]>;
+  readonly selectedBrand: WritableSignal<BrandResponse | undefined>;
   readonly brandIsSelected: Signal<boolean> = computed(() => {
-    const selected: CatalogueBrand | undefined = this.selectedBrand;
+    const selected: BrandResponse | undefined = this.selectedBrand();
     return selected !== undefined;
   });
 
   readonly models: WritableSignal<CatalogueModel[]>;
-  readonly selectedModel: CatalogueModel | undefined;
+  readonly selectedModel: WritableSignal<CatalogueModel | undefined>;
   readonly modelIsSelected: Signal<boolean> = computed(() => {
-    const selected: CatalogueModel | undefined = this.selectedModel;
+    const selected: CatalogueModel | undefined = this.selectedModel();
     return selected !== undefined;
   });
-
-  readonly categoriesList: Signal<string[]> = computed(() =>
-    this.categories().map((cat) => cat.Name),
-  );
 
   private readonly _destroyRef: DestroyRef = inject(DestroyRef);
   private readonly _router: Router;
@@ -149,6 +146,33 @@ export class FastNavigationComponent {
       this.selectedItemType.set(selectedItemType);
   }
 
+  public handleCategoryClear(): void {
+    this.selectedCategory.set(undefined);
+  }
+
+  public handleCategoryChange($event: SelectChangeEvent): void {
+    const selectedCategory: CategoryResponse = $event.value as CategoryResponse;
+    this.selectedCategory.set(selectedCategory);
+  }
+
+  public handleBrandChange($event: SelectChangeEvent): void {
+    const selectedBrand: BrandResponse = $event.value as BrandResponse;
+    this.selectedBrand.set(selectedBrand);
+  }
+
+  public handleBrandClear(): void {
+    this.selectedBrand.set(undefined);
+  }
+
+  public handleModelChange($event: SelectChangeEvent): void {
+    const selectedModel: CatalogueModel = $event.value as CatalogueModel;
+    this.selectedModel.set(selectedModel);
+  }
+
+  public handleModelClear(): void {
+    this.selectedModel.set(undefined);
+  }
+
   public navigateSpares(): void {
     const input: string | undefined = this.vehicleTextInput();
     if (input === '<empty string>') {
@@ -161,6 +185,10 @@ export class FastNavigationComponent {
         },
       });
     }
+  }
+
+  private fetchBrands(): void {
+    effect(() => {});
   }
 
   private fetchCategories(): void {

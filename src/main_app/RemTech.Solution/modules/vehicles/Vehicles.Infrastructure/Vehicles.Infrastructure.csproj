@@ -1,25 +1,21 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Vehicles.Domain\Vehicles.Domain.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="2.0.0" />
     <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="2.0.0" />
     <PackageReference Include="RemTech.SharedKernel.Infrastructure.Redis" Version="2.0.0" />
     <PackageReference Include="RemTech.SharedKernel.NN" Version="2.0.0" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Brands\SeedingImplementation\Scripts\" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="Brands\SeedingImplementation\Scripts\0002.brands_seeding.sql" />
     <EmbeddedResource Include="Categories\SeedingImplementation\Scripts\0002.categories_seeding.sql" />

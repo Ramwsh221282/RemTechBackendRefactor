@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using Vehicles.Infrastructure.Brands.Queries.GetBrand;
-using Vehicles.Infrastructure.Brands.Queries.GetBrandByCategory;
 using WebHostApplication.Common.Envelope;
 
 namespace WebHostApplication.Modules.vehicles;
@@ -30,7 +29,7 @@ public sealed class BrandsController
             .ForBrandName(brandName)
             .ForModelId(modelId)
             .ForModelName(modelName);
-
+        
         BrandResponse? response = await handler.Handle(query, ct);
         return EnvelopeFactory.NotFoundOrOk(response, "Бренд не найден");
     }
