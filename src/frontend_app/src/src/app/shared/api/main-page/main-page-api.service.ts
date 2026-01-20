@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { finalize, Observable, shareReplay } from 'rxjs';
+import { finalize, map, Observable, shareReplay } from 'rxjs';
 import { TypedEnvelope } from '../envelope';
 import {
   MainPageItemStatsResponse,
@@ -12,9 +12,7 @@ import { apiUrl } from '../api-endpoint';
   providedIn: 'root',
 })
 export class MainPageApiService {
-  public fetchItemStatistics(): Observable<
-    TypedEnvelope<MainPageItemStatsResponse>
-  > {
+  public fetchItemStatistics(): Observable<MainPageItemStatsResponse> {
     return this.startFetchingStatistics();
   }
 
@@ -24,15 +22,23 @@ export class MainPageApiService {
     return this.startFetchingLastAddedItems();
   }
 
-  private startFetchingStatistics(): Observable<
-    TypedEnvelope<MainPageItemStatsResponse>
-  > {
+  private startFetchingStatistics(): Observable<MainPageItemStatsResponse> {
     if (this._statisticsFetch$) return this._statisticsFetch$;
-
     const requestUrl: string = `${this._apiUrl}/main-page/statistics`;
     this._statisticsFetch$ = this._httpClient
       .get<TypedEnvelope<MainPageItemStatsResponse>>(requestUrl)
       .pipe(
+        map((envelope: TypedEnvelope<MainPageItemStatsResponse>) => {
+          let response: MainPageItemStatsResponse = {
+            BrandsPopularity: [],
+            CategoriesPopularity: [],
+            ItemStats: [],
+          };
+          if (envelope.body) {
+            response = envelope.body;
+          }
+          return response;
+        }),
         finalize((): void => (this._statisticsFetch$ = undefined)),
         shareReplay({ refCount: true, bufferSize: 1 }),
       );
@@ -54,9 +60,7 @@ export class MainPageApiService {
     return this._lastAddedItemsFetch$;
   }
 
-  private _statisticsFetch$:
-    | Observable<TypedEnvelope<MainPageItemStatsResponse>>
-    | undefined;
+  private _statisticsFetch$: Observable<MainPageItemStatsResponse> | undefined;
 
   private _lastAddedItemsFetch$:
     | Observable<TypedEnvelope<MainPageLastAddedItemsResponse>>

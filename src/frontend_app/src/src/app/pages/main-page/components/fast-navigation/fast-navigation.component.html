@@ -26,20 +26,6 @@
       </p-select>
 
       @if (itemTypeIsVehicle()) {
-        <!-- <p-select
-          [fluid]="true"
-          [options]="categoriesList()"
-          [dataKey]="'Id'"
-          [ariaLabel]="'Name'"
-          [optionLabel]="'Name'"
-          [optionValue]="'Id'"
-          [(ngModel)]="selectedCategory"
-          [filter]="true"
-          filterBy="Name"
-          [showClear]="true"
-          placeholder="1. Выбрать тип техники"
-          class="w-full md:w-56"
-        > -->
         <p-select
           [fluid]="true"
           [options]="categories()"

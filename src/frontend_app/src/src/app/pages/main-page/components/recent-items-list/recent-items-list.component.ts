@@ -3,6 +3,7 @@ import {
   DestroyRef,
   effect,
   inject,
+  Input,
   signal,
   WritableSignal,
 } from '@angular/core';
@@ -13,6 +14,7 @@ import { ReceintItemCardComponent } from '../receint-item-card/receint-item-card
 import { ReceintItemsPaginationComponent } from '../receint-items-pagination/receint-items-pagination.component';
 import { NgIf } from '@angular/common';
 import { Paginator } from 'primeng/paginator';
+import { VehicleResponse } from '../../../../shared/api/vehicles-module/vehicles-api.responses';
 
 @Component({
   selector: 'app-recent-items-list',
@@ -21,13 +23,9 @@ import { Paginator } from 'primeng/paginator';
   styleUrl: './recent-items-list.component.scss',
 })
 export class RecentItemsListComponent {
-  private readonly _page: WritableSignal<number>;
-  private readonly _items: WritableSignal<SomeRecentItem[]>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-
-  constructor(service: ContainedItemsService) {
+  constructor() {
     this._page = signal(1);
-    this._items = signal([]);
+    this.vehicles = signal([]);
     // effect(() => {
     //   const page: number = this._page();
     //   service
@@ -41,9 +39,12 @@ export class RecentItemsListComponent {
     // });
   }
 
-  public get items(): SomeRecentItem[] {
-    return this._items();
+  @Input({ required: true }) set vehicles_setter(value: VehicleResponse[]) {
+    this.vehicles.set(value);
   }
+
+  readonly vehicles: WritableSignal<VehicleResponse[]>;
+  private readonly _page: WritableSignal<number>;
 
   public get page(): number {
     return this._page();

@@ -2,6 +2,8 @@ import {
   Component,
   computed,
   effect,
+  EventEmitter,
+  Output,
   Signal,
   signal,
   WritableSignal,
@@ -17,6 +19,13 @@ import { CategoryResponse } from '../../../../shared/api/categories-module/categ
 import { BrandResponse } from '../../../../shared/api/brands-module/brands-api.responses';
 import { ModelResponse } from '../../../../shared/api/models-module/models-responses';
 import { ModelsApiService } from '../../../../shared/api/models-module/models-api.service';
+import { VehiclesApiService } from '../../../../shared/api/vehicles-module/vehicles-api.service';
+import { DefaultGetVehiclesQueryParameters } from '../../../../shared/api/vehicles-module/vehicles-api.factories';
+import { GetVehiclesQueryParameters } from '../../../../shared/api/vehicles-module/vehicles-api.requests';
+import {
+  GetVehiclesQueryResponse,
+  VehicleResponse,
+} from '../../../../shared/api/vehicles-module/vehicles-api.responses';
 
 @Component({
   selector: 'app-fast-navigation',
@@ -29,6 +38,7 @@ export class FastNavigationComponent {
     private readonly _categoriesService: CategoriesApiService,
     private readonly _brandsService: BrandsApiService,
     private readonly _modelsService: ModelsApiService,
+    private readonly _vehiclesService: VehiclesApiService,
     private readonly _router: Router,
   ) {
     this.brands = signal([]);
@@ -38,11 +48,22 @@ export class FastNavigationComponent {
     this.selectedModel = signal(undefined);
     this.selectedCategory = signal(undefined);
     this.selectedItemType = signal(undefined);
+    this.query = signal({
+      ...DefaultGetVehiclesQueryParameters(),
+      Page: 1,
+      PageSize: 10,
+    });
     this.itemTypes = signal(['Техника', 'Запчасти']);
     this.fetchCategoriesOnItemTypeChange();
     this.fetchBrandsOnCategoryChange();
     this.fetchModelsOnBrandChange();
+    this.fetchVehiclesOnQueryChange();
+    this.vehiclesFetched = new EventEmitter<VehicleResponse[]>();
   }
+
+  private readonly query: WritableSignal<GetVehiclesQueryParameters>;
+  readonly vehicles: WritableSignal<VehicleResponse[]> = signal([]);
+  @Output() vehiclesFetched: EventEmitter<VehicleResponse[]>;
 
   readonly itemTypes: WritableSignal<string[]>;
   readonly selectedItemType: WritableSignal<string | undefined>;
@@ -103,29 +124,59 @@ export class FastNavigationComponent {
 
   public handleCategoryClear(): void {
     this.selectedCategory.set(undefined);
+    this.query.update(
+      (q: GetVehiclesQueryParameters): GetVehiclesQueryParameters => {
+        return { ...q, CategoryId: null };
+      },
+    );
   }
 
   public handleCategoryChange($event: SelectChangeEvent): void {
     const selectedCategory: CategoryResponse = $event.value as CategoryResponse;
     this.selectedCategory.set(selectedCategory);
+    this.query.update(
+      (q: GetVehiclesQueryParameters): GetVehiclesQueryParameters => {
+        return { ...q, CategoryId: selectedCategory.Id };
+      },
+    );
   }
 
   public handleBrandChange($event: SelectChangeEvent): void {
     const selectedBrand: BrandResponse = $event.value as BrandResponse;
     this.selectedBrand.set(selectedBrand);
+    this.query.update(
+      (q: GetVehiclesQueryParameters): GetVehiclesQueryParameters => {
+        return { ...q, BrandId: selectedBrand.Id };
+      },
+    );
   }
 
   public handleBrandClear(): void {
     this.selectedBrand.set(undefined);
+    this.query.update(
+      (q: GetVehiclesQueryParameters): GetVehiclesQueryParameters => {
+        return { ...q, BrandId: null };
+      },
+    );
   }
 
   public handleModelChange($event: SelectChangeEvent): void {
     const selectedModel: ModelResponse = $event.value as ModelResponse;
     this.selectedModel.set(selectedModel);
+    this.query.update(
+      (q: GetVehiclesQueryParameters): GetVehiclesQueryParameters => {
+        return { ...q, ModelId: selectedModel.Id };
+      },
+    );
   }
 
   public handleModelClear(): void {
     this.selectedModel.set(undefined);
+    this.query.update(
+      (q: GetVehiclesQueryParameters): GetVehiclesQueryParameters => {
+        return { ...q, ModelId: null };
+      },
+    );
   }
 
   public navigateSpares(): void {
@@ -195,6 +246,26 @@ export class FastNavigationComponent {
         )
         .pipe(
           tap((models: ModelResponse[]): void => this.models.set(models)),
+          catchError((): Observable<never> => EMPTY),
+        )
+        .subscribe();
+    });
+  }
+
+  private fetchVehiclesOnQueryChange(): void {
+    effect(() => {
+      const category: CategoryResponse | undefined = this.selectedCategory();
+      const brand: BrandResponse | undefined = this.selectedBrand();
+      const model: ModelResponse | undefined = this.selectedModel();
+      if (!category && !brand && !model) return;
+      const queryParams: GetVehiclesQueryParameters = this.query();
+      this._vehiclesService
+        .fetchVehicles(queryParams)
+        .pipe(
+          tap((response: GetVehiclesQueryResponse): void => {
+            this.vehicles.set(response.Vehicles);
+            this.vehiclesFetched.emit(response.Vehicles);
+          }),
           catchError((): Observable<never> => EMPTY),
         )
         .subscribe();

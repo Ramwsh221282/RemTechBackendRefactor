@@ -18,25 +18,14 @@ import {
   CategoriesPopularity,
   ItemStats,
   MainPageItemStatsResponse,
-  MainPageLastAddedItemsResponse,
-  SpareData,
-  VehicleData,
 } from '../../shared/api/main-page/main-page-responses';
-import { catchError, EMPTY, forkJoin, map, Observable, tap } from 'rxjs';
-import { TypedEnvelope } from '../../shared/api/envelope';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { HttpErrorResponse } from '@angular/common/http';
-import { MessageServiceUtils } from '../../shared/utils/message-service-utils';
+import { catchError, EMPTY, map, Observable, tap } from 'rxjs';
+import { VehicleResponse } from '../../shared/api/vehicles-module/vehicles-api.responses';
 
 type StatisticsResponseData = {
   categories: CategoriesPopularity[];
   brands: BrandsPopularity[];
   stats: ItemStats[];
-};
-
-type LastAddedItemsResponseData = {
-  vehicles: VehicleData[];
-  spares: SpareData[];
 };
 
 @Component({
@@ -61,79 +50,40 @@ export class MainPageComponent {
     this.brandsPopularity = signal([]);
     this.itemStats = signal([]);
     this.vehicles = signal([]);
-    this.spares = signal([]);
-    effect(() => {
-      this.fetchMainPageInformation();
-    });
+    this.fetchItemsStatistics();
   }
 
   readonly categoriesPopularity: WritableSignal<CategoriesPopularity[]>;
   readonly brandsPopularity: WritableSignal<BrandsPopularity[]>;
   readonly itemStats: WritableSignal<ItemStats[]>;
-  readonly vehicles: WritableSignal<VehicleData[]>;
-  readonly spares: WritableSignal<SpareData[]>;
+  readonly vehicles: WritableSignal<VehicleResponse[]>;
 
-  private fetchMainPageInformation(): void {
-    forkJoin([this.fetchLastAddedItems(), this.fetchItemsStatistics()])
-      .pipe(
-        takeUntilDestroyed(this._destroyRef),
-        tap((result): void => {
-          const items: LastAddedItemsResponseData = result[0];
-          const stats: StatisticsResponseData = result[1];
-          this.itemStats.set(stats.stats);
-          this.categoriesPopularity.set(stats.categories);
-          this.brandsPopularity.set(stats.brands);
-          this.vehicles.set(items.vehicles);
-          this.spares.set(items.spares);
-        }),
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          const message = error.error.message;
-          MessageServiceUtils.showError(this._messageService, message);
-          return EMPTY;
-        }),
-      )
-      .subscribe();
+  public handleVehiclesFetched($event: VehicleResponse[]): void {
+    console.log('Vehicles fetched event received in MainPageComponent');
+    this.vehicles.set($event);
+    console.log(this.vehicles());
   }
 
-  private fetchLastAddedItems(): Observable<LastAddedItemsResponseData> {
-    return this._apiService.fetchLastAddedItems().pipe(
-      takeUntilDestroyed(this._destroyRef),
-      map(
-        (
-          envelope: TypedEnvelope<MainPageLastAddedItemsResponse>,
-        ): LastAddedItemsResponseData => {
-          let response: LastAddedItemsResponseData = {
-            vehicles: [],
-            spares: [],
-          };
-          if (envelope.body) {
-            for (const item of envelope.body.Items) {
-              if (item.Spare) response.spares.push(item.Spare);
-              if (item.Vehicle) response.vehicles.push(item.Vehicle);
-            }
-          }
-          return response;
-        },
-      ),
-    );
-  }
-
-  private fetchItemsStatistics(): Observable<StatisticsResponseData> {
-    return this._apiService.fetchItemStatistics().pipe(
-      takeUntilDestroyed(this._destroyRef),
-      map((envelope: TypedEnvelope<MainPageItemStatsResponse>) => {
-        let response: StatisticsResponseData = {
-          brands: [],
-          categories: [],
-          stats: [],
-        };
-        if (envelope.body) {
-          response.brands = envelope.body.BrandsPopularity;
-          response.categories = envelope.body.CategoriesPopularity;
-          response.stats = envelope.body.ItemStats;
-        }
-        return response;
-      }),
-    );
+  private fetchItemsStatistics(): void {
+    effect(() => {
+      this._apiService
+        .fetchItemStatistics()
+        .pipe(
+          map((response: MainPageItemStatsResponse): StatisticsResponseData => {
+            return {
+              brands: response.BrandsPopularity,
+              categories: response.CategoriesPopularity,
+              stats: response.ItemStats,
+            };
+          }),
+          tap((data: StatisticsResponseData): void => {
+            this.itemStats.set(data.stats);
+            this.categoriesPopularity.set(data.categories);
+            this.brandsPopularity.set(data.brands);
+          }),
+          catchError((): Observable<never> => EMPTY),
+        )
+        .subscribe();
+    });
   }
 }
