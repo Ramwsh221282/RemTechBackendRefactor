@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Notifications.Core.PendingEmails.Features.AddPendingEmail;
 using Notifications.Infrastructure.Extensions;
@@ -7,7 +6,6 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace Notifications.Infrastructure.RabbitMq.Consumers;

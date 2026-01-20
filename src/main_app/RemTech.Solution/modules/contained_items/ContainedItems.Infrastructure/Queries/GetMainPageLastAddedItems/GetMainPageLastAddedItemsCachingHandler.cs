@@ -1,6 +1,3 @@
-using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
-
 namespace ContainedItems.Infrastructure.Queries.GetMainPageLastAddedItems;
 
 // public sealed class GetMainPageLastAddedItemsCachingHandler(

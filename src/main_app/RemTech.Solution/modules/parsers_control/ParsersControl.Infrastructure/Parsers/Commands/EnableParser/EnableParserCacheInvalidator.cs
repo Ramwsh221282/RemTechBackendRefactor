@@ -1,7 +1,6 @@
 ﻿using ParsersControl.Core.Features.EnableParser;
 using ParsersControl.Core.Parsers.Models;
 using ParsersControl.Infrastructure.Parsers.CacheInvalidators;
-using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Handlers.Decorators.CacheInvalidate;
 
 namespace ParsersControl.Infrastructure.Parsers.Commands.EnableParser;

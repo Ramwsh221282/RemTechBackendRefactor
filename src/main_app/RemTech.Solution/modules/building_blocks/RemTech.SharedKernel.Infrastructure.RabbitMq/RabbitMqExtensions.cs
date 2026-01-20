@@ -1,8 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
-using RemTech.SharedKernel.Configurations;
 using Scrutor;
 
 namespace RemTech.SharedKernel.Infrastructure.RabbitMq;
@@ -22,10 +20,12 @@ public static class RabbitMqExtensions
             services.TryAddSingleton<AggregatedConsumersHostedService>();
 
         public void AddConsumersFromAssemblies(IEnumerable<Assembly> assemblies) =>
-            services.Scan(x => x.FromAssemblies(assemblies)
-                .AddClasses(classes => classes.AssignableTo(typeof(IConsumer)))
-                .UsingRegistrationStrategy(RegistrationStrategy.Skip)
-                .AsSelfWithInterfaces()
-                .WithSingletonLifetime());
+            services.Scan(x =>
+                x.FromAssemblies(assemblies)
+                    .AddClasses(classes => classes.AssignableTo(typeof(IConsumer)))
+                    .UsingRegistrationStrategy(RegistrationStrategy.Skip)
+                    .AsSelfWithInterfaces()
+                    .WithSingletonLifetime()
+            );
     }
 }

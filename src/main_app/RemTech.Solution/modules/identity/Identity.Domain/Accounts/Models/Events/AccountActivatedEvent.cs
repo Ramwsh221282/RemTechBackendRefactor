@@ -1,5 +1,4 @@
 ﻿using RemTech.SharedKernel.Core.DomainEvents;
-using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Handlers.Decorators.DomainEvents;
 
 namespace Identity.Domain.Accounts.Models.Events;

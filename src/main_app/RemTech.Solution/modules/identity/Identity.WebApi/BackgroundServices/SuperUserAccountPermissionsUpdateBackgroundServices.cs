@@ -1,6 +1,5 @@
 ﻿using Identity.Domain.Accounts.Features.GivePermissions;
 using Identity.Domain.Accounts.Models;
-using Identity.Domain.Contracts;
 using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.Permissions;
 using Identity.WebApi.Options;
@@ -11,13 +10,15 @@ using RemTech.SharedKernel.Core.Handlers;
 namespace Identity.WebApi.BackgroundServices;
 
 public sealed class SuperUserAccountPermissionsUpdateBackgroundServices(
-    IServiceProvider services, 
-    Serilog.ILogger logger) : BackgroundService
+    IServiceProvider services,
+    Serilog.ILogger logger
+) : BackgroundService
 {
     private IServiceProvider Services { get; } = services;
-    private Serilog.ILogger Logger { get; } = logger.ForContext<SuperUserAccountPermissionsUpdateBackgroundServices>();
-    
-    protected async override Task ExecuteAsync(CancellationToken stoppingToken)
+    private Serilog.ILogger Logger { get; } =
+        logger.ForContext<SuperUserAccountPermissionsUpdateBackgroundServices>();
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -35,7 +36,11 @@ public sealed class SuperUserAccountPermissionsUpdateBackgroundServices(
             Result<Account> account = await GetSuperUserAccount(scope, ct);
             if (account.IsFailure)
             {
-                Logger.Warning("Super user account {login} {email} not found", options.Login, options.Email);
+                Logger.Warning(
+                    "Super user account {login} {email} not found",
+                    options.Login,
+                    options.Email
+                );
                 return;
             }
 
@@ -43,60 +48,86 @@ public sealed class SuperUserAccountPermissionsUpdateBackgroundServices(
             Permission[] permissionsToAdd = GetPermissionsToAdd(account.Value, permissions);
             if (permissionsToAdd.Length == 0)
             {
-                Logger.Debug("Super user account {login} {email} already has all permissions", options.Login, options.Email);
+                Logger.Debug(
+                    "Super user account {login} {email} already has all permissions",
+                    options.Login,
+                    options.Email
+                );
                 return;
             }
-            
-            Result result = await UpdateSuperUserAccountPermissions(scope, account.Value, permissionsToAdd, ct);
+
+            Result result = await UpdateSuperUserAccountPermissions(
+                scope,
+                account.Value,
+                permissionsToAdd,
+                ct
+            );
             if (result.IsFailure)
             {
                 Logger.Fatal(result.Error, "Error updating super user account permissions");
                 return;
             }
-            
+
             Logger.Information("Account permissions updated successfully.");
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Logger.Fatal(e, "Error updating super user account permissions.");
         }
     }
 
     private async Task<Result> UpdateSuperUserAccountPermissions(
-        AsyncServiceScope scope, 
-        Account account, 
+        AsyncServiceScope scope,
+        Account account,
         Permission[] permissions,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
-        IEnumerable<GivePermissionsPermissionsPayload> toAdd = permissions.Select(p => new GivePermissionsPermissionsPayload(p.Id.Value));
+        IEnumerable<GivePermissionsPermissionsPayload> toAdd = permissions.Select(
+            p => new GivePermissionsPermissionsPayload(p.Id.Value)
+        );
         GivePermissionsCommand command = new(account.Id.Value, toAdd);
-        return await scope.ServiceProvider
-            .GetRequiredService<ICommandHandler<GivePermissionsCommand, Account>>()
+        return await scope
+            .ServiceProvider.GetRequiredService<ICommandHandler<GivePermissionsCommand, Account>>()
             .Execute(command, ct);
     }
-    
+
     private Permission[] GetPermissionsToAdd(Account account, IEnumerable<Permission> permissions)
     {
-        return permissions.ExceptBy(account.PermissionsList.Select(p => p.Id.Value), p => p.Id.Value).ToArray();
+        return permissions
+            .ExceptBy(account.PermissionsList.Select(p => p.Id.Value), p => p.Id.Value)
+            .ToArray();
     }
-    
-    private async Task<IEnumerable<Permission>> GetAllPermissions(AsyncServiceScope scope, CancellationToken ct)
+
+    private async Task<IEnumerable<Permission>> GetAllPermissions(
+        AsyncServiceScope scope,
+        CancellationToken ct
+    )
     {
-        IPermissionsRepository permissionsRepository = scope.ServiceProvider.GetRequiredService<IPermissionsRepository>();
+        IPermissionsRepository permissionsRepository =
+            scope.ServiceProvider.GetRequiredService<IPermissionsRepository>();
         return await permissionsRepository.GetMany([], ct);
     }
-    
+
     private SuperUserCredentialsOptions GetOptions(AsyncServiceScope scope)
     {
-        SuperUserCredentialsOptions options = scope.ServiceProvider.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value;
+        SuperUserCredentialsOptions options = scope
+            .ServiceProvider.GetRequiredService<IOptions<SuperUserCredentialsOptions>>()
+            .Value;
         options.Validate();
         return options;
     }
 
-    private async Task<Result<Account>> GetSuperUserAccount(AsyncServiceScope scope, CancellationToken ct)
+    private async Task<Result<Account>> GetSuperUserAccount(
+        AsyncServiceScope scope,
+        CancellationToken ct
+    )
     {
-        IAccountsRepository accountsRepository = scope.ServiceProvider.GetRequiredService<IAccountsRepository>();
-        AccountSpecification specification = new AccountSpecification().WithLogin(GetOptions(scope).Login);
+        IAccountsRepository accountsRepository =
+            scope.ServiceProvider.GetRequiredService<IAccountsRepository>();
+        AccountSpecification specification = new AccountSpecification().WithLogin(
+            GetOptions(scope).Login
+        );
         return await accountsRepository.Get(specification, ct);
     }
 }

@@ -35,13 +35,22 @@ public sealed class CategoriesController
         return EnvelopeFactory.NotFoundOrOk(response, "Категория не найдена");
     }
 
-    [HttpGet("all")]
+    [HttpGet("list")]
     public async Task<Envelope> GetCategories(
+        [FromQuery(Name = "brandId")] Guid? brandId,
+        [FromQuery(Name = "brandName")] string? brandName,
+        [FromQuery(Name = "modelId")] Guid? modelId,
+        [FromQuery(Name = "modelName")] string? modelName,
         [FromServices] IQueryHandler<GetCategoriesQuery, IEnumerable<CategoryResponse>> handler,
         CancellationToken ct = default
     )
     {
-        GetCategoriesQuery query = new();
+        GetCategoriesQuery query = new GetCategoriesQuery()
+            .ForBrandId(brandId)
+            .ForBrandName(brandName)
+            .ForModelId(modelId)
+            .ForModelName(modelName);
+
         IEnumerable<CategoryResponse> response = await handler.Handle(query, ct);
         return EnvelopeFactory.Ok(response);
     }

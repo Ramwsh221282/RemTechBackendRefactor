@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { apiUrl } from '../api-endpoint';
-import { finalize, Observable, shareReplay } from 'rxjs';
+import { finalize, map, Observable, shareReplay } from 'rxjs';
 import { TypedEnvelope } from '../envelope';
 import { CategoryResponse } from './categories-responses';
 
@@ -11,13 +11,8 @@ import { CategoryResponse } from './categories-responses';
 export class CategoriesApiService {
   private readonly _httpClient: HttpClient = inject(HttpClient);
   private readonly _apiUrl: string = `${apiUrl}/categories`;
-
-  private _fetchingCategory:
-    | Observable<TypedEnvelope<CategoryResponse>>
-    | undefined;
-  private _fetchingCategories$:
-    | Observable<TypedEnvelope<CategoryResponse[]>>
-    | undefined;
+  private _fetchingCategory: Observable<CategoryResponse> | undefined;
+  private _fetchingCategories$: Observable<CategoryResponse[]> | undefined;
 
   public fetchCategory(
     id?: string | null | undefined,
@@ -26,7 +21,7 @@ export class CategoriesApiService {
     brandName?: string | null | undefined,
     modelId?: string | null | undefined,
     modelName?: string | null | undefined,
-  ): Observable<TypedEnvelope<CategoryResponse>> {
+  ): Observable<CategoryResponse> {
     return this.invokeFetchCategory(
       id,
       name,
@@ -37,18 +32,23 @@ export class CategoriesApiService {
     );
   }
 
-  public fetchCategories(): Observable<TypedEnvelope<CategoryResponse[]>> {
+  public fetchCategories(): Observable<CategoryResponse[]> {
     return this.invokeFetchCategories();
   }
 
-  private invokeFetchCategories(): Observable<
-    TypedEnvelope<CategoryResponse[]>
-  > {
+  private invokeFetchCategories(): Observable<CategoryResponse[]> {
     if (this._fetchingCategories$) return this._fetchingCategories$;
-    const requestUrl: string = `${this._apiUrl}/all`;
+    const requestUrl: string = `${this._apiUrl}/list`;
     this._fetchingCategories$ = this._httpClient
       .get<TypedEnvelope<CategoryResponse[]>>(requestUrl)
       .pipe(
+        map(
+          (envelope: TypedEnvelope<CategoryResponse[]>): CategoryResponse[] => {
+            let response: CategoryResponse[] = [];
+            if (envelope.body) response = envelope.body;
+            return response;
+          },
+        ),
         finalize((): void => (this._fetchingCategories$ = undefined)),
         shareReplay({ bufferSize: 1, refCount: true }),
       );
@@ -62,7 +62,7 @@ export class CategoriesApiService {
     brandName?: string | null | undefined,
     modelId?: string | null | undefined,
     modelName?: string | null | undefined,
-  ): Observable<TypedEnvelope<CategoryResponse>> {
+  ): Observable<CategoryResponse> {
     if (this._fetchingCategory) return this._fetchingCategory;
     let params: HttpParams = new HttpParams();
     if (id) params = params.append('id', id);
@@ -74,6 +74,10 @@ export class CategoriesApiService {
     this._fetchingCategory = this._httpClient
       .get<TypedEnvelope<CategoryResponse>>(this._apiUrl, { params })
       .pipe(
+        map((envelope: TypedEnvelope<CategoryResponse>): CategoryResponse => {
+          if (envelope.body) return envelope.body;
+          throw new Error('No category found in the response body');
+        }),
         finalize((): void => (this._fetchingCategory = undefined)),
         shareReplay({ bufferSize: 1, refCount: true }),
       );

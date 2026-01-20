@@ -50,13 +50,13 @@ public sealed class GetBrandQueryHandler(NpgSqlSession session)
         if (query.BrandId.HasValue && query.BrandId != Guid.Empty)
         {
             filters.Add("b.id = @brand_id");
-            parameters.Add("brand_id", query.BrandId);
+            parameters.Add("brand_id", query.BrandId.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(query.BrandName))
         {
-            filters.Add("b.name ILIKE @brand_name");
-            parameters.Add("brand_name", $"%{query.BrandName}%");
+            filters.Add("b.name = @brand_name");
+            parameters.Add("brand_name", query.BrandName, DbType.String);
         }
     }
 
@@ -70,7 +70,7 @@ public sealed class GetBrandQueryHandler(NpgSqlSession session)
         if (query.CategoryId.HasValue && query.CategoryId != Guid.Empty)
         {
             subFilters.Add("c.id = @category_id");
-            parameters.Add("category_id", query.CategoryId, DbType.String);
+            parameters.Add("category_id", query.CategoryId.Value, DbType.Guid);
         }
 
         if (!string.IsNullOrWhiteSpace(query.CategoryName))
@@ -105,7 +105,7 @@ public sealed class GetBrandQueryHandler(NpgSqlSession session)
         if (query.ModelId.HasValue && query.ModelId != Guid.Empty)
         {
             subFilters.Add("m.id = @model_id");
-            parameters.Add("model_id", query.ModelId, DbType.String);
+            parameters.Add("model_id", query.ModelId.Value, DbType.Guid);
         }
 
         if (!string.IsNullOrWhiteSpace(query.ModelName))

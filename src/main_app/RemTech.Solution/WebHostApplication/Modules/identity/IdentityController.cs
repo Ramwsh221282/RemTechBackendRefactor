@@ -10,8 +10,6 @@ using Identity.Domain.Accounts.Features.RegisterAccount;
 using Identity.Domain.Accounts.Features.ResetPassword;
 using Identity.Domain.Accounts.Features.VerifyToken;
 using Identity.Domain.Accounts.Models;
-using Identity.Domain.Contracts.Jwt;
-using Identity.Domain.Tokens;
 using Identity.Infrastructure.Accounts.Queries.GetUser;
 using Microsoft.AspNetCore.Mvc;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;

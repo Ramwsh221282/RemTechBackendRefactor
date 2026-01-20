@@ -1,17 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using RemTech.SharedKernel.Configurations;
-using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using RemTech.SharedKernel.NN;
 using Spares.Domain.Contracts;
 using Spares.Domain.Features;
-using Spares.Domain.Models;
 using Spares.Infrastructure.BackgroundServices;
 using Spares.Infrastructure.Migrations;
 using Spares.Infrastructure.Queries.GetSpares;
-using Spares.Infrastructure.RabbitMq.Consumers;
 using Spares.Infrastructure.RabbitMq.Producers;
 using Spares.Infrastructure.Repository;
 

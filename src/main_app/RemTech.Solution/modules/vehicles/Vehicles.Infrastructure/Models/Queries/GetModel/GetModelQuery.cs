@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using RemTech.SharedKernel.Core.Handlers;
-using Vehicles.Domain.Models;
 
 namespace Vehicles.Infrastructure.Models.Queries.GetModel;
 

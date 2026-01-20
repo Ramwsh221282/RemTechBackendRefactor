@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using RemTech.SharedKernel.Configurations;
-using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
@@ -12,7 +11,6 @@ using Vehicles.Domain.Contracts;
 using Vehicles.Domain.Features.AddVehicle;
 using Vehicles.Domain.Locations.Contracts;
 using Vehicles.Domain.Models.Contracts;
-using Vehicles.Domain.Vehicles;
 using Vehicles.Domain.Vehicles.Contracts;
 using Vehicles.Infrastructure.BackgroundServices;
 using Vehicles.Infrastructure.Brands.BrandsPersisterImplementation;
