@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using Vehicles.Infrastructure.Categories.Queries;
+using Vehicles.Infrastructure.Categories.Queries.GetCategory;
 using WebHostApplication.Common.Envelope;
 
 namespace WebHostApplication.Modules.vehicles;
@@ -31,6 +32,6 @@ public sealed class ModelsController
             .ForModelName(modelName);
 
         CategoryResponse? response = await handler.Handle(query, ct);
-        return EnvelopeExtensions.NotFoundOrOk(response, "Модель не найдена");
+        return EnvelopeFactory.NotFoundOrOk(response, "Модель не найдена");
     }
 }

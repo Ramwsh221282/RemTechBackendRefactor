@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
+using Vehicles.Infrastructure.Categories.Queries.GetCategories;
 using Vehicles.Infrastructure.Categories.Queries.GetCategory;
 using WebHostApplication.Common.Envelope;
 
@@ -31,6 +32,17 @@ public sealed class CategoriesController
             .ForModelName(modelName);
 
         CategoryResponse? response = await handler.Handle(query, ct);
-        return EnvelopeExtensions.NotFoundOrOk(response, "Категория не найдена");
+        return EnvelopeFactory.NotFoundOrOk(response, "Категория не найдена");
+    }
+
+    [HttpGet("all")]
+    public async Task<Envelope> GetCategories(
+        [FromServices] IQueryHandler<GetCategoriesQuery, IEnumerable<CategoryResponse>> handler,
+        CancellationToken ct = default
+    )
+    {
+        GetCategoriesQuery query = new();
+        IEnumerable<CategoryResponse> response = await handler.Handle(query, ct);
+        return EnvelopeFactory.Ok(response);
     }
 }

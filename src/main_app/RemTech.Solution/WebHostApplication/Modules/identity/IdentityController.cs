@@ -138,7 +138,7 @@ public sealed class IdentityController : Controller
         (_, string refreshToken) = HttpContext.GetIdentityTokens([], GetRefreshTokenMethods);
         GetUserByRefreshTokenQuery query = new(refreshToken);
         UserAccountResponse? user = await handler.Handle(query, ct);
-        return EnvelopeExtensions.NotFoundOrOk(user, "Пользователь не найден.");
+        return EnvelopeFactory.NotFoundOrOk(user, "Пользователь не найден.");
     }
 
     [HttpGet("confirmation")]

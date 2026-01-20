@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
+using Vehicles.Infrastructure.Brands.Queries.GetBrand;
 using Vehicles.Infrastructure.Brands.Queries.GetBrandByCategory;
 using WebHostApplication.Common.Envelope;
 
@@ -31,6 +32,6 @@ public sealed class BrandsController
             .ForModelName(modelName);
 
         BrandResponse? response = await handler.Handle(query, ct);
-        return EnvelopeExtensions.NotFoundOrOk(response, "Бренд не найден");
+        return EnvelopeFactory.NotFoundOrOk(response, "Бренд не найден");
     }
 }
