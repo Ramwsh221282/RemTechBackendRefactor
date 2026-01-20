@@ -25,14 +25,19 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session)
     {
         DynamicParameters parameters = new();
         List<string> filters = [];
+        filters.Add("i.deleted_at IS NULL");
         ApplyFilters(query, filters, parameters);
 
         string sql = $"""
             SELECT
             c.id as id,
             c.name as name
-            FROM vehicles_module.categories c            
-            {CreateWhereClause(filters)}            
+            FROM vehicles_module.categories c                        
+            INNER JOIN vehicles_module.vehicles v ON v.category_id = c.id
+            INNER JOIN contained_items_module.contained_items i ON v.id = i.id
+            {CreateWhereClause(filters)}                        
+            GROUP BY c.id, c.name
+            HAVING COUNT(v.id) > 0
             """;
 
         return (parameters, sql);
