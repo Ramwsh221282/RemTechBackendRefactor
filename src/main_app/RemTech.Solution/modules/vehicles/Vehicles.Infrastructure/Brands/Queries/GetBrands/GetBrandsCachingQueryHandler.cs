@@ -1,23 +1,21 @@
 using Microsoft.Extensions.Caching.Hybrid;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
-using Vehicles.Domain.Brands;
-using Vehicles.Infrastructure.Brands.Queries.GetBrand;
 
 namespace Vehicles.Infrastructure.Brands.Queries.GetBrands;
 
-public sealed class GetBrandCachingQueryHandler(
+public sealed class GetBrandsCachingQueryHandler(
     HybridCache cache,
-    IQueryHandler<GetBrandQuery, IEnumerable<BrandResponse>> inner
-) : IQueryExecutorWithCache<GetBrandQuery, IEnumerable<BrandResponse>>
+    IQueryHandler<GetBrandsQuery, IEnumerable<BrandResponse>> inner
+) : IQueryExecutorWithCache<GetBrandsQuery, IEnumerable<BrandResponse>>
 {
     public async Task<IEnumerable<BrandResponse>> ExecuteWithCache(
-        GetBrandQuery query,
+        GetBrandsQuery query,
         CancellationToken ct = default
     ) => await ReadFromCache(query, CreateCacheKey(query), ct);
 
     private async Task<IEnumerable<BrandResponse>> ReadFromCache(
-        GetBrandQuery query,
+        GetBrandsQuery query,
         string key,
         CancellationToken ct
     ) =>
@@ -27,5 +25,6 @@ public sealed class GetBrandCachingQueryHandler(
             cancellationToken: ct
         );
 
-    private static string CreateCacheKey(GetBrandQuery query) => $"{nameof(GetBrandQuery)}_{query}";
+    private static string CreateCacheKey(GetBrandsQuery query) =>
+        $"{nameof(GetBrandsQuery)}_{query}";
 }

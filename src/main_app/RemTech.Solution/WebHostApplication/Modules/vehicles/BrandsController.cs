@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
-using Vehicles.Infrastructure.Brands.Queries.GetBrand;
 using Vehicles.Infrastructure.Brands.Queries.GetBrands;
 using WebHostApplication.Common.Envelope;
 
@@ -11,32 +10,10 @@ namespace WebHostApplication.Modules.vehicles;
 [Route("api/brands")]
 public sealed class BrandsController
 {
-    [HttpGet]
-    public async Task<Envelope> GetBrand(
-        [FromQuery(Name = "categoryId")] Guid? categoryId,
-        [FromQuery(Name = "categoryName")] string? categoryName,
-        [FromQuery(Name = "brandId")] Guid? brandId,
-        [FromQuery(Name = "brandName")] string? brandName,
-        [FromQuery(Name = "modelId")] Guid? modelId,
-        [FromQuery(Name = "modelName")] string? modelName,
-        [FromServices] IQueryHandler<GetBrandQuery, BrandResponse?> handler,
-        CancellationToken ct = default
-    )
-    {
-        GetBrandQuery query = new GetBrandQuery()
-            .ForCategoryId(categoryId)
-            .ForCategoryName(categoryName)
-            .ForBrandId(brandId)
-            .ForBrandName(brandName)
-            .ForModelId(modelId)
-            .ForModelName(modelName);
-
-        BrandResponse? response = await handler.Handle(query, ct);
-        return EnvelopeFactory.NotFoundOrOk(response, "Бренд не найден");
-    }
-
-    [HttpGet("list")]
+    [HttpGet()]
     public async Task<Envelope> GetBrands(
+        [FromQuery(Name = "id")] Guid? id,
+        [FromQuery(Name = "name")] string? name,
         [FromQuery(Name = "categoryId")] Guid? categoryId,
         [FromQuery(Name = "categoryName")] string? categoryName,
         [FromQuery(Name = "modelId")] Guid? modelId,
@@ -46,6 +23,8 @@ public sealed class BrandsController
     )
     {
         GetBrandsQuery query = new GetBrandsQuery()
+            .ForId(id)
+            .ForName(name)
             .ForCategoryId(categoryId)
             .ForCategoryName(categoryName)
             .ForModelId(modelId)

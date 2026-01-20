@@ -2,7 +2,6 @@
 using Dapper;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.Database;
-using Vehicles.Infrastructure.Brands.Queries.GetBrand;
 
 namespace Vehicles.Infrastructure.Brands.Queries.GetBrands;
 
@@ -24,6 +23,7 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session)
         List<string> filters = [];
         filters.Add("i.deleted_at IS NULL");
         DynamicParameters parameters = new();
+
         ApplyFilters(query, filters, parameters);
 
         string sql = $"""
@@ -49,6 +49,18 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session)
     {
         List<string> subJoins = [];
         List<string> subFilters = [];
+
+        if (query.Id != null && query.Id != Guid.Empty)
+        {
+            filters.Add("b.id = @brand_id");
+            parameters.Add("brand_id", query.Id, DbType.Guid);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Name))
+        {
+            filters.Add("b.name = @brand_name");
+            parameters.Add("brand_name", query.Name, DbType.String);
+        }
 
         if (SomeCategoryFilterProvided(query))
             subJoins.Add("INNER JOIN vehicles_module.categories ic ON ic.id = v.category_id");

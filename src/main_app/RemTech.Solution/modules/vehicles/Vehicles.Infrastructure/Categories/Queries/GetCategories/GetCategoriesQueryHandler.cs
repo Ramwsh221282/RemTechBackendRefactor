@@ -2,7 +2,6 @@ using System.Data;
 using Dapper;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.Database;
-using Vehicles.Infrastructure.Categories.Queries.GetCategory;
 
 namespace Vehicles.Infrastructure.Categories.Queries.GetCategories;
 
@@ -51,6 +50,18 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session)
     {
         List<string> subFilterJoins = [];
         List<string> subFilters = [];
+
+        if (query.Id != null && query.Id != Guid.Empty)
+        {
+            filters.Add("c.id = @category_id");
+            parameters.Add("category_id", query.Id, DbType.Guid);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Name))
+        {
+            filters.Add("c.name = @category_name");
+            parameters.Add("category_name", query.Name, DbType.String);
+        }
 
         if (SomeBrandFilterProvided(query))
         {

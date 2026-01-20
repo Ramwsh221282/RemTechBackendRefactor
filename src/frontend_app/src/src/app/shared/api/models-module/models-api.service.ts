@@ -14,12 +14,16 @@ export class ModelsApiService {
   private fetchingModels$: Observable<ModelResponse[]> | undefined;
 
   public fetchModels(
+    id?: string | null | undefined,
+    name?: string | null | undefined,
     brandId?: string | null | undefined,
     brandName?: string | null | undefined,
     categoryId?: string | null | undefined,
     categoryName?: string | null | undefined,
   ): Observable<ModelResponse[]> {
     return this.invokeFetchingModels(
+      id,
+      name,
       brandId,
       brandName,
       categoryId,
@@ -28,20 +32,23 @@ export class ModelsApiService {
   }
 
   private invokeFetchingModels(
+    id?: string | null | undefined,
+    name?: string | null | undefined,
     brandId?: string | null | undefined,
     brandName?: string | null | undefined,
     categoryId?: string | null | undefined,
     categoryName?: string | null | undefined,
   ): Observable<ModelResponse[]> {
     if (this.fetchingModels$) return this.fetchingModels$;
-    const requestUrl: string = `${this._apiUrl}/list`;
     let params: HttpParams = new HttpParams();
+    if (id) params = params.append('id', id);
+    if (name) params = params.append('name', name);
     if (brandId) params = params.append('brandId', brandId);
     if (brandName) params = params.append('brandName', brandName);
     if (categoryId) params = params.append('categoryId', categoryId);
     if (categoryName) params = params.append('categoryName', categoryName);
     this.fetchingModels$ = this._httpClient
-      .get<TypedEnvelope<ModelResponse[]>>(requestUrl, { params })
+      .get<TypedEnvelope<ModelResponse[]>>(this._apiUrl, { params })
       .pipe(
         map((envelope): ModelResponse[] => {
           let response: ModelResponse[] = [];

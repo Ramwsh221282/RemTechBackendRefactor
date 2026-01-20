@@ -201,6 +201,8 @@ export class FastNavigationComponent {
         const selectedModel: ModelResponse | undefined = this.selectedModel();
         this._brandsService
           .fetchBrands(
+            null,
+            null,
             selectedCategory.Id,
             selectedCategory.Name,
             selectedModel?.Id,
@@ -239,6 +241,8 @@ export class FastNavigationComponent {
         this.selectedCategory();
       this._modelsService
         .fetchModels(
+          null,
+          null,
           selectedBrand.Id,
           selectedBrand.Name,
           selectedCategory?.Id,

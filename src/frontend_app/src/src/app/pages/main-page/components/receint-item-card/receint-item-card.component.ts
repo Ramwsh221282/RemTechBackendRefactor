@@ -1,7 +1,5 @@
 import { Component, Input, signal, WritableSignal } from '@angular/core';
-import { SomeRecentItem } from '../../types/SomeRecentItem';
-import { ContainedItemsService } from '../../services/contained-items-service';
-import { DecimalPipe, CurrencyPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { VehicleResponse } from '../../../../shared/api/vehicles-module/vehicles-api.responses';
 import { DefaultVehicleResponse } from '../../../../shared/api/vehicles-module/vehicles-api.factories';
 

@@ -8,6 +8,14 @@ public sealed class GetBrandsQuery : IQuery
     public string? CategoryName { get; private init; }
     public Guid? ModelId { get; private init; }
     public string? ModelName { get; private init; }
+    public Guid? Id { get; private init; }
+    public string? Name { get; private init; }
+
+    public GetBrandsQuery ForId(Guid? id) =>
+        id == null || id == Guid.Empty ? this : Copy(this, id: id);
+
+    public GetBrandsQuery ForName(string? name) =>
+        string.IsNullOrWhiteSpace(name) ? this : Copy(this, name: name);
 
     public GetBrandsQuery ForCategoryId(Guid? categoryId) =>
         categoryId == null || categoryId == Guid.Empty ? this : Copy(this, categoryId: categoryId);
@@ -23,6 +31,8 @@ public sealed class GetBrandsQuery : IQuery
 
     private static GetBrandsQuery Copy(
         GetBrandsQuery origin,
+        Guid? id = null,
+        string? name = null,
         Guid? categoryId = null,
         string? categoryName = null,
         Guid? modelId = null,
@@ -34,5 +44,7 @@ public sealed class GetBrandsQuery : IQuery
             CategoryName = categoryName ?? origin.CategoryName,
             ModelId = modelId ?? origin.ModelId,
             ModelName = modelName ?? origin.ModelName,
+            Id = id ?? origin.Id,
+            Name = name ?? origin.Name,
         };
 }

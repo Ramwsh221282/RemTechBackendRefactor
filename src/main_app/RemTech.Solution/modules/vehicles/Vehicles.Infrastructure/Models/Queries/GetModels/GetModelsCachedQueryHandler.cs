@@ -1,22 +1,21 @@
 using Microsoft.Extensions.Caching.Hybrid;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
-using Vehicles.Infrastructure.Models.Queries.GetModel;
 
 namespace Vehicles.Infrastructure.Models.Queries.GetModels;
 
 public sealed class GetModelsCachedQueryHandler(
     HybridCache cache,
-    IQueryHandler<GetModelQuery, IEnumerable<ModelResponse>> inner
-) : IQueryExecutorWithCache<GetModelQuery, IEnumerable<ModelResponse>>
+    IQueryHandler<GetModelsQuery, IEnumerable<ModelResponse>> inner
+) : IQueryExecutorWithCache<GetModelsQuery, IEnumerable<ModelResponse>>
 {
     public async Task<IEnumerable<ModelResponse>> ExecuteWithCache(
-        GetModelQuery query,
+        GetModelsQuery query,
         CancellationToken ct = default
     ) => await ReadFromCache(query, CreateCacheKey(query), ct);
 
     private async Task<IEnumerable<ModelResponse>> ReadFromCache(
-        GetModelQuery query,
+        GetModelsQuery query,
         string key,
         CancellationToken ct
     ) =>
@@ -26,5 +25,6 @@ public sealed class GetModelsCachedQueryHandler(
             cancellationToken: ct
         );
 
-    private static string CreateCacheKey(GetModelQuery query) => $"{nameof(GetModelQuery)}_{query}";
+    private static string CreateCacheKey(GetModelsQuery query) =>
+        $"{nameof(GetModelsQuery)}_{query}";
 }
