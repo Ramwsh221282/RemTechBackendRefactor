@@ -22,6 +22,7 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session)
     private static (DynamicParameters parameters, string sql) CreateSql(GetBrandsQuery query)
     {
         List<string> filters = [];
+        filters.Add("i.deleted_at IS NULL");
         DynamicParameters parameters = new();
         ApplyFilters(query, filters, parameters);
 
@@ -29,8 +30,12 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session)
             SELECT
             b.id as Id,
             b.name as Name
-            FROM vehicles_module.brands b            
-            {CreateWhereClause(filters)}                        
+            FROM vehicles_module.brands b     
+            INNER JOIN vehicles_module.vehicles v ON v.brand_id = b.id
+            INNER JOIN contained_items_module.contained_items i ON v.id = i.id       
+            {CreateWhereClause(filters)}                                    
+            GROUP BY b.id, b.name
+            HAVING COUNT(v.id) > 0
             """;
 
         return (parameters, sql);
