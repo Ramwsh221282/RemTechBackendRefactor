@@ -26,6 +26,9 @@ import {
   GetVehiclesQueryResponse,
   VehicleResponse,
 } from '../../../../shared/api/vehicles-module/vehicles-api.responses';
+import { SparesApiService } from '../../../../shared/api/spares-module/spares-api.service';
+import { SpareResponse } from '../../../../shared/api/spares-module/spares-api.responses';
+import { GetSparesQueryParameters } from '../../../../shared/api/spares-module/spares-api.requests';
 
 @Component({
   selector: 'app-fast-navigation',
@@ -39,6 +42,7 @@ export class FastNavigationComponent {
     private readonly _brandsService: BrandsApiService,
     private readonly _modelsService: ModelsApiService,
     private readonly _vehiclesService: VehiclesApiService,
+    private readonly _sparesService: SparesApiService,
     private readonly _router: Router,
   ) {
     this.brands = signal([]);
@@ -48,29 +52,44 @@ export class FastNavigationComponent {
     this.selectedModel = signal(undefined);
     this.selectedCategory = signal(undefined);
     this.selectedItemType = signal(undefined);
+    this.sparesFetched = new EventEmitter<SpareResponse[]>();
+    this.watchingChanged = new EventEmitter<{
+      vehicles: boolean;
+      spares: boolean;
+    }>();
     this.query = signal({
       ...DefaultGetVehiclesQueryParameters(),
       Page: 1,
       PageSize: 10,
     });
+    this.sparesQuery = signal({ Page: 1, PageSize: 10 });
     this.itemTypes = signal(['Техника', 'Запчасти']);
     this.fetchCategoriesOnItemTypeChange();
     this.fetchBrandsOnCategoryChange();
     this.fetchModelsOnBrandChange();
     this.fetchVehiclesOnQueryChange();
+    this.fetchSparesIfItemTypeIsSpare();
     this.vehiclesFetched = new EventEmitter<VehicleResponse[]>();
   }
 
   private readonly query: WritableSignal<GetVehiclesQueryParameters>;
-  readonly vehicles: WritableSignal<VehicleResponse[]> = signal([]);
+  private readonly sparesQuery: WritableSignal<GetSparesQueryParameters>;
+
   @Output() vehiclesFetched: EventEmitter<VehicleResponse[]>;
+  @Output() sparesFetched: EventEmitter<SpareResponse[]>;
+  @Output() watchingChanged: EventEmitter<{
+    vehicles: boolean;
+    spares: boolean;
+  }>;
 
   readonly itemTypes: WritableSignal<string[]>;
   readonly selectedItemType: WritableSignal<string | undefined>;
+
   readonly itemTypeIsVehicle: Signal<boolean> = computed(() => {
     const selected: string | undefined = this.selectedItemType();
     return !!selected && selected === 'Техника';
   });
+
   readonly itemTypeIsSpare: Signal<boolean> = computed(() => {
     const selected: string | undefined = this.selectedItemType();
     return !!selected && selected === 'Запчасти';
@@ -118,8 +137,16 @@ export class FastNavigationComponent {
 
   public handleItemTypeChange($event: Event): void {
     const selectedItemType: string | unknown = $event as unknown as string;
-    if (selectedItemType === 'Техника' || selectedItemType === 'Запчасти')
+
+    if (selectedItemType === 'Техника') {
       this.selectedItemType.set(selectedItemType);
+      this.watchingChanged.emit({ vehicles: true, spares: false });
+    }
+
+    if (selectedItemType === 'Запчасти') {
+      this.selectedItemType.set(selectedItemType);
+      this.watchingChanged.emit({ vehicles: false, spares: true });
+    }
   }
 
   public handleCategoryClear(): void {
@@ -267,10 +294,25 @@ export class FastNavigationComponent {
         .fetchVehicles(queryParams)
         .pipe(
           tap((response: GetVehiclesQueryResponse): void => {
-            this.vehicles.set(response.Vehicles);
             this.vehiclesFetched.emit(response.Vehicles);
           }),
           catchError((): Observable<never> => EMPTY),
+        )
+        .subscribe();
+    });
+  }
+
+  private fetchSparesIfItemTypeIsSpare(): void {
+    effect(() => {
+      const type: string | undefined = this.selectedItemType();
+      if (type !== 'Запчасти') return;
+      const query: GetSparesQueryParameters = this.sparesQuery();
+      this._sparesService
+        .fetchSpares(query)
+        .pipe(
+          tap((spares: SpareResponse[]): void => {
+            this.sparesFetched.emit(spares);
+          }),
         )
         .subscribe();
     });

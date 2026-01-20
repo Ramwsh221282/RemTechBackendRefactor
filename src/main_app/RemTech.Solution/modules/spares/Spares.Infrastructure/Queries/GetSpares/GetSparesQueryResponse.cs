@@ -10,25 +10,29 @@ public sealed class GetSparesQueryResponse
 
     public void SetTotalCount(int totalCound)
     {
-        if (TotalCount != 0) return;
+        if (TotalCount != 0)
+            return;
         TotalCount = totalCound;
     }
-    
+
     public void SetAveragePrice(double averagePrice)
     {
-        if (AveragePrice != 0) return;
+        if (AveragePrice != 0)
+            return;
         AveragePrice = averagePrice;
     }
-    
+
     public void SetMinimalPrice(double minimalPrice)
     {
-        if (MinimalPrice != 0) return;
+        if (MinimalPrice != 0)
+            return;
         MinimalPrice = minimalPrice;
     }
-    
+
     public void SetMaximalPrice(double maximalPrice)
     {
-        if (MaximalPrice != 0) return;
+        if (MaximalPrice != 0)
+            return;
         MaximalPrice = maximalPrice;
     }
 }

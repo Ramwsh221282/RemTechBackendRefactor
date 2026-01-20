@@ -15,9 +15,18 @@
 
 <div class="max-w-7xl mx-auto p-0 space-y-8">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <app-fast-navigation (vehiclesFetched)="handleVehiclesFetched($event)" />
+    <app-fast-navigation
+      (vehiclesFetched)="handleVehiclesFetched($event)"
+      (sparesFetched)="handleSparesFetched($event)"
+      (watchingChanged)="handleWatchSet($event)"
+    />
     <div class="lg:col-span-2">
-      <app-recent-items-list [vehicles_setter]="vehicles()" />
+      <app-recent-items-list
+        [vehicles_setter]="vehicles()"
+        [spares_setter]="spares()"
+        [watching_spares]="watchingSpares()"
+        [watching_vehicles]="watchingVehicles()"
+      />
     </div>
   </div>
 </div>

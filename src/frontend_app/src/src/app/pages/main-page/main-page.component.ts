@@ -21,6 +21,7 @@ import {
 } from '../../shared/api/main-page/main-page-responses';
 import { catchError, EMPTY, map, Observable, tap } from 'rxjs';
 import { VehicleResponse } from '../../shared/api/vehicles-module/vehicles-api.responses';
+import { SpareResponse } from '../../shared/api/spares-module/spares-api.responses';
 
 type StatisticsResponseData = {
   categories: CategoriesPopularity[];
@@ -41,27 +42,36 @@ type StatisticsResponseData = {
   styleUrl: './main-page.component.scss',
 })
 export class MainPageComponent {
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  constructor(
-    private readonly _apiService: MainPageApiService,
-    private readonly _messageService: MessageService,
-  ) {
+  constructor(private readonly _apiService: MainPageApiService) {
     this.categoriesPopularity = signal([]);
     this.brandsPopularity = signal([]);
     this.itemStats = signal([]);
     this.vehicles = signal([]);
+    this.spares = signal([]);
+    this.watchingSpares = signal(false);
+    this.watchingVehicles = signal(false);
     this.fetchItemsStatistics();
   }
 
   readonly categoriesPopularity: WritableSignal<CategoriesPopularity[]>;
   readonly brandsPopularity: WritableSignal<BrandsPopularity[]>;
-  readonly itemStats: WritableSignal<ItemStats[]>;
   readonly vehicles: WritableSignal<VehicleResponse[]>;
+  readonly watchingVehicles: WritableSignal<boolean>;
+  readonly watchingSpares: WritableSignal<boolean>;
+  readonly spares: WritableSignal<SpareResponse[]>;
+  readonly itemStats: WritableSignal<ItemStats[]>;
 
   public handleVehiclesFetched($event: VehicleResponse[]): void {
-    console.log('Vehicles fetched event received in MainPageComponent');
     this.vehicles.set($event);
-    console.log(this.vehicles());
+  }
+
+  public handleSparesFetched($event: SpareResponse[]): void {
+    this.spares.set($event);
+  }
+
+  public handleWatchSet($event: { vehicles: boolean; spares: boolean }): void {
+    this.watchingVehicles.set($event.vehicles);
+    this.watchingSpares.set($event.spares);
   }
 
   private fetchItemsStatistics(): void {
