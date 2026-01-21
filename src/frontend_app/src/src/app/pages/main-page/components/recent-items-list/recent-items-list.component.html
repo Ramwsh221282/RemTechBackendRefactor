@@ -28,9 +28,10 @@
         }
       </div>
     </div>
+
     <app-pagination
       [total_count]="sparesPaginationProps().totalCount"
-      [current_page]="sparesPaginationProps().page"
+      [current_page]="this.sparesPaginationProps().page"
       [page_size]="sparesPaginationProps().pageSize"
       (pageChanged)="handleSparesPageChange($event)"
     >

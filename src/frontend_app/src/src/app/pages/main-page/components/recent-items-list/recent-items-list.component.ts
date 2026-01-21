@@ -11,7 +11,6 @@ import { VehicleResponse } from '../../../../shared/api/vehicles-module/vehicles
 import { SpareResponse } from '../../../../shared/api/spares-module/spares-api.responses';
 import { RecentSpareCardComponent } from '../receint-item-card/recent-spare-card/recent-spare-card.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
-import {} from '../fast-navigation/fast-navigation.component';
 
 @Component({
   selector: 'app-recent-items-list',
