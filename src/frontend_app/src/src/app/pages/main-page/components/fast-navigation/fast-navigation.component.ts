@@ -11,7 +11,6 @@ import {
 } from '@angular/core';
 import { Select } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
-import { InputText } from 'primeng/inputtext';
 import { tap } from 'rxjs';
 import { CategoryResponse } from '../../../../shared/api/categories-module/categories-responses';
 import { BrandResponse } from '../../../../shared/api/brands-module/brands-api.responses';
@@ -32,7 +31,6 @@ import { FastNavigationSparesComponent } from './fast-navigation-spares/fast-nav
   imports: [
     Select,
     FormsModule,
-    InputText,
     FastNavigationVehiclesComponent,
     FastNavigationSparesComponent,
   ],
