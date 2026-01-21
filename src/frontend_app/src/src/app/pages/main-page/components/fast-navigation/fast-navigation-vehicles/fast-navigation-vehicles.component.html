@@ -1,0 +1,54 @@
+<p-select
+  [fluid]="true"
+  [options]="categories()"
+  [(ngModel)]="vehiclesFetchProps().category"
+  [filter]="true"
+  filterBy="Name"
+  [showClear]="true"
+  optionLabel="Name"
+  placeholder="1. Выбрать тип техники"
+  (onClear)="handleUserCategoryClear()"
+  (onChange)="handleUserCategoryChange($event)"
+  class="w-full md:w-56"
+>
+</p-select>
+@if (userSelectedCategory()) {
+  <p-select
+    [fluid]="true"
+    [options]="brands()"
+    [(ngModel)]="vehiclesFetchProps().brand"
+    [filter]="true"
+    filterBy="Name"
+    [showClear]="true"
+    optionLabel="Name"
+    (onClear)="handleUserBrandClear()"
+    (onChange)="handleUserBrandChange($event)"
+    placeholder="2. Выбрать марку техники"
+    class="w-full md:w-56"
+  >
+  </p-select>
+  @if (userSelectedBrand()) {
+    <p-select
+      [fluid]="true"
+      [options]="models()"
+      [(ngModel)]="vehiclesFetchProps().model"
+      [filter]="true"
+      filterBy="name"
+      optionLabel="Name"
+      (onClear)="handleUserModelClear()"
+      (onChange)="handleUserModelChange($event)"
+      [showClear]="true"
+      placeholder="3. Выбрать модель техники"
+      class="w-full md:w-56"
+    >
+    </p-select>
+    @if (userSelectedBrand() && userSelectedCategory() && userSelectedModel()) {
+      <button
+        (click)="navigateVehicles()"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
+      >
+        Найти предложения
+      </button>
+    }
+  }
+}

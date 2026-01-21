@@ -20,6 +20,8 @@
     "typeRoots": [
       "node_modules/@types",
       "node_modules/@angular",
+      "node_modules/@primeng",
+      "node_modules/@angular-devkit/",
       "node_modules/@angular/common/http"
     ]
   },

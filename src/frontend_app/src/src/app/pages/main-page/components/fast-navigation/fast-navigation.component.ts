@@ -9,23 +9,14 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
-import { Select, SelectChangeEvent } from 'primeng/select';
+import { Select } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { InputText } from 'primeng/inputtext';
-import { BrandsApiService } from '../../../../shared/api/brands-module/brands-api.service';
-import { CategoriesApiService } from '../../../../shared/api/categories-module/categories-api.service';
-import { catchError, EMPTY, Observable, tap } from 'rxjs';
+import { tap } from 'rxjs';
 import { CategoryResponse } from '../../../../shared/api/categories-module/categories-responses';
 import { BrandResponse } from '../../../../shared/api/brands-module/brands-api.responses';
 import { ModelResponse } from '../../../../shared/api/models-module/models-responses';
-import { ModelsApiService } from '../../../../shared/api/models-module/models-api.service';
-import { VehiclesApiService } from '../../../../shared/api/vehicles-module/vehicles-api.service';
-import { DefaultGetVehiclesQueryParameters } from '../../../../shared/api/vehicles-module/vehicles-api.factories';
-import { GetVehiclesQueryParameters } from '../../../../shared/api/vehicles-module/vehicles-api.requests';
-import {
-  GetVehiclesQueryResponse,
-  VehicleResponse,
-} from '../../../../shared/api/vehicles-module/vehicles-api.responses';
+import { VehicleResponse } from '../../../../shared/api/vehicles-module/vehicles-api.responses';
 import { SparesApiService } from '../../../../shared/api/spares-module/spares-api.service';
 import {
   GetSparesQueryResponse,
@@ -33,25 +24,23 @@ import {
 } from '../../../../shared/api/spares-module/spares-api.responses';
 import { GetSparesQueryParameters } from '../../../../shared/api/spares-module/spares-api.requests';
 import { DefaultGetSpareParameters } from '../../../../shared/api/spares-module/spares-api.factories';
-import { StringUtils } from '../../../../shared/utils/string-utils';
+import { FastNavigationVehiclesComponent } from './fast-navigation-vehicles/fast-navigation-vehicles.component';
+import { FastNavigationSparesComponent } from './fast-navigation-spares/fast-navigation-spares.component';
 
 @Component({
   selector: 'app-fast-navigation',
-  imports: [Select, FormsModule, InputText],
+  imports: [
+    Select,
+    FormsModule,
+    InputText,
+    FastNavigationVehiclesComponent,
+    FastNavigationSparesComponent,
+  ],
   templateUrl: './fast-navigation.component.html',
   styleUrl: './fast-navigation.component.scss',
 })
 export class FastNavigationComponent {
-  constructor(
-    private readonly _categoriesService: CategoriesApiService,
-    private readonly _brandsService: BrandsApiService,
-    private readonly _modelsService: ModelsApiService,
-    private readonly _vehiclesService: VehiclesApiService,
-    private readonly _sparesService: SparesApiService,
-  ) {
-    this.brands = signal([]);
-    this.models = signal([]);
-    this.categories = signal([]);
+  constructor(private readonly _sparesService: SparesApiService) {
     this.sparesFetched = new EventEmitter<{
       spares: SpareResponse[];
       totalCount: number;
@@ -84,10 +73,6 @@ export class FastNavigationComponent {
     });
 
     this.itemTypes = ['Техника', 'Запчасти'];
-    this.fetchCategoriesOnItemTypeChange();
-    this.fetchBrandsOnCategoryChange();
-    this.fetchModelsOnBrandChange();
-    this.fetchVehiclesOnQueryChange();
     this.fetchSparesOnQueryChange();
   }
 
@@ -148,14 +133,6 @@ export class FastNavigationComponent {
   }>;
 
   readonly itemTypes: string[];
-  readonly categories: WritableSignal<CategoryResponse[]>;
-  readonly brands: WritableSignal<BrandResponse[]>;
-  readonly models: WritableSignal<ModelResponse[]>;
-
-  readonly readSelectedItemType: Signal<string> = computed((): string => {
-    const vehicleProps = this.vehiclesFetchProps();
-    return vehicleProps.isWatching ? 'Техника' : 'Запчасти';
-  });
 
   readonly userIsWatchingVehicles: Signal<boolean> = computed((): boolean => {
     return this.vehiclesFetchProps().isWatching;
@@ -165,16 +142,9 @@ export class FastNavigationComponent {
     return this.sparesFetchProps().isWatching;
   });
 
-  readonly userSelectedCategory: Signal<boolean> = computed((): boolean => {
-    return !!this.vehiclesFetchProps().category;
-  });
-
-  readonly userSelectedBrand: Signal<boolean> = computed((): boolean => {
-    return !!this.vehiclesFetchProps().brand;
-  });
-
-  readonly userSelectedModel: Signal<boolean> = computed((): boolean => {
-    return !!this.vehiclesFetchProps().model;
+  readonly readSelectedItemType: Signal<string> = computed((): string => {
+    const vehicleProps = this.vehiclesFetchProps();
+    return vehicleProps.isWatching ? 'Техника' : 'Запчасти';
   });
 
   public spareTextInput: WritableSignal<string | undefined> = signal(undefined);
@@ -205,121 +175,10 @@ export class FastNavigationComponent {
       this.watchingChanged.emit({ vehicles: false, spares: true });
   }
 
-  public handleUserCategoryClear(): void {
-    this.categorySelected.emit(undefined);
-  }
-
-  public handleUserCategoryChange($event: SelectChangeEvent): void {
-    const selectedCategory: CategoryResponse = $event.value as CategoryResponse;
-    this.categorySelected.emit(selectedCategory);
-  }
-
-  public handleUserBrandChange($event: SelectChangeEvent): void {
-    const selectedBrand: BrandResponse = $event.value as BrandResponse;
-    this.brandSelected.emit(selectedBrand);
-  }
-
-  public handleUserBrandClear(): void {
-    this.brandSelected.emit(undefined);
-  }
-
-  public handleUserModelChange($event: SelectChangeEvent): void {
-    const selectedModel: ModelResponse = $event.value as ModelResponse;
-    this.modelSelected.emit(selectedModel);
-  }
-
-  public handleUserModelClear(): void {
-    this.modelSelected.emit(undefined);
-  }
-
-  public handleSpareTextSearchUserInput($event: Event): void {
-    const input: string = $event as unknown as string;
-    if (StringUtils.isEmptyOrWhiteSpace(input))
-      this.spareTextSearchChanged.emit(undefined);
-    else this.spareTextSearchChanged.emit(input);
-  }
-
-  private fetchBrandsOnCategoryChange(): void {
-    effect(() => {
-      const props = this.vehiclesFetchProps();
-      if (props.category) {
-        this._brandsService
-          .fetchBrands(
-            null,
-            null,
-            props.category.Id,
-            props.category.Name,
-            props.model?.Id,
-            props.model?.Name,
-          )
-          .pipe(
-            tap((brands: BrandResponse[]): void => this.brands.set(brands)),
-            catchError((): Observable<never> => EMPTY),
-          )
-          .subscribe();
-      }
-    });
-  }
-
-  private fetchCategoriesOnItemTypeChange(): void {
-    effect(() => {
-      const props = this.vehiclesFetchProps();
-      if (!props.isWatching) return;
-      this._categoriesService
-        .fetchCategories()
-        .pipe(
-          tap((categories: CategoryResponse[]): void =>
-            this.categories.set(categories),
-          ),
-          catchError((): Observable<never> => EMPTY),
-        )
-        .subscribe();
-    });
-  }
-
-  private fetchModelsOnBrandChange(): void {
-    effect(() => {
-      const props = this.vehiclesFetchProps();
-      if (!props.brand) return;
-      this._modelsService
-        .fetchModels(
-          null,
-          null,
-          props.brand.Id,
-          props.brand.Name,
-          props.category?.Id,
-          props.category?.Name,
-        )
-        .pipe(
-          tap((models: ModelResponse[]): void => this.models.set(models)),
-          catchError((): Observable<never> => EMPTY),
-        )
-        .subscribe();
-    });
-  }
-
-  private fetchVehiclesOnQueryChange(): void {
-    effect(() => {
-      const props: {
-        page?: number | undefined;
-        pageSize?: number | undefined;
-        isWatching: boolean;
-        category?: CategoryResponse | undefined;
-        brand?: BrandResponse | undefined;
-        model?: ModelResponse | undefined;
-      } = this.vehiclesFetchProps();
-      if (!props.isWatching) return;
-      if (!props.category || !props.brand || !props.model) return;
-      const query: GetVehiclesQueryParameters = {
-        ...DefaultGetVehiclesQueryParameters(),
-        Page: props.page,
-        PageSize: props.pageSize,
-        BrandId: props.brand?.Id,
-        CategoryId: props.category?.Id,
-        ModelId: props.model?.Id,
-      };
-      this.invokeFetchVehicles(query);
-    });
+  public handleUserSpareTextInput($event: Event): void {
+    const inputText: string = ($event.target as HTMLInputElement).value;
+    this.spareTextSearchChanged.emit(inputText);
+    this.spareTextInput.set(inputText);
   }
 
   private fetchSparesOnQueryChange(): void {
@@ -350,21 +209,6 @@ export class FastNavigationComponent {
             totalCount: response.TotalCount,
           });
         }),
-      )
-      .subscribe();
-  }
-
-  private invokeFetchVehicles(query: GetVehiclesQueryParameters): void {
-    this._vehiclesService
-      .fetchVehicles(query)
-      .pipe(
-        tap((response: GetVehiclesQueryResponse): void => {
-          this.vehiclesFetched.emit({
-            vehicles: response.Vehicles,
-            totalCount: response.TotalCount,
-          });
-        }),
-        catchError((): Observable<never> => EMPTY),
       )
       .subscribe();
   }
