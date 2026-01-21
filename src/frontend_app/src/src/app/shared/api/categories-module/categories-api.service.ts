@@ -20,6 +20,10 @@ export class CategoriesApiService {
     brandName?: string | null | undefined,
     modelId?: string | null | undefined,
     modelName?: string | null | undefined,
+    page?: number | null | undefined,
+    pageSize?: number | null | undefined,
+    withVehiclesCount: boolean = false,
+    textSearch?: string | null | undefined,
   ): Observable<CategoryResponse[]> {
     return this.invokeFetchCategories(
       id,
@@ -28,6 +32,10 @@ export class CategoriesApiService {
       brandName,
       modelId,
       modelName,
+      page,
+      pageSize,
+      withVehiclesCount,
+      textSearch,
     );
   }
 
@@ -38,8 +46,13 @@ export class CategoriesApiService {
     brandName?: string | null | undefined,
     modelId?: string | null | undefined,
     modelName?: string | null | undefined,
+    page?: number | null | undefined,
+    pageSize?: number | null | undefined,
+    withVehiclesCount: boolean = false,
+    textSearch?: string | null | undefined,
   ): Observable<CategoryResponse[]> {
     if (this._fetchingCategories$) return this._fetchingCategories$;
+    const includes: string[] = [];
     let params: HttpParams = new HttpParams();
     if (id) params = params.append('id', id);
     if (name) params = params.append('name', name);
@@ -47,6 +60,18 @@ export class CategoriesApiService {
     if (brandName) params = params.append('brandName', brandName);
     if (modelId) params = params.append('modelId', modelId);
     if (modelName) params = params.append('modelName', modelName);
+    if (page) params = params.append('page', page.toString());
+    if (pageSize) params = params.append('pageSize', pageSize.toString());
+    if (textSearch) {
+      params = params.append('text-search', textSearch);
+      includes.push('text-search-score');
+    }
+    if (withVehiclesCount) includes.push('vehicles-count');
+    if (includes.length > 0) {
+      for (const include of includes) {
+        params = params.append('include', include);
+      }
+    }
     this._fetchingCategories$ = this._httpClient
       .get<TypedEnvelope<CategoryResponse[]>>(this._apiUrl, { params })
       .pipe(
