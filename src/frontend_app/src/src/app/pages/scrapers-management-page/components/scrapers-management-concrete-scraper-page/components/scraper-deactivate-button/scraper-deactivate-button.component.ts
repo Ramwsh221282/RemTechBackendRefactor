@@ -6,14 +6,12 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
-import { Toast } from 'primeng/toast';
-import { ConfirmDialog } from 'primeng/confirmdialog';
-import {ParserResponse} from '../../../../../../shared/api/parsers-module/parsers-responses';
-import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module/parsers-factory';
+import { ParserResponse } from '../../../../../../shared/api/parsers-module/parsers-responses';
+import { DefaultParserResponse } from '../../../../../../shared/api/parsers-module/parsers-factory';
 
 @Component({
   selector: 'app-scraper-deactivate-button',
-  imports: [Toast, ConfirmDialog],
+  imports: [],
   templateUrl: './scraper-deactivate-button.component.html',
   styleUrl: './scraper-deactivate-button.component.scss',
   providers: [],

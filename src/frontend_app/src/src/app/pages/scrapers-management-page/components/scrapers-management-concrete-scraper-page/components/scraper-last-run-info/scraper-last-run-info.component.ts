@@ -1,14 +1,11 @@
 import { Component, Input, signal, WritableSignal } from '@angular/core';
-import {DatePipe, NgIf} from '@angular/common';
-import { Scraper } from '../../../scrapers-management-settings-page/types/Scraper';
-import { VehicleScrapersService } from '../../../scrapers-management-settings-page/services/vehicle-scrapers.service';
-import { Toast } from 'primeng/toast';
-import {ParserResponse} from '../../../../../../shared/api/parsers-module/parsers-responses';
-import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module/parsers-factory';
+import { DatePipe } from '@angular/common';
+import { ParserResponse } from '../../../../../../shared/api/parsers-module/parsers-responses';
+import { DefaultParserResponse } from '../../../../../../shared/api/parsers-module/parsers-factory';
 
 @Component({
   selector: 'app-scraper-last-run-info',
-  imports: [DatePipe, NgIf],
+  imports: [DatePipe],
   templateUrl: './scraper-last-run-info.component.html',
   styleUrl: './scraper-last-run-info.component.scss',
 })

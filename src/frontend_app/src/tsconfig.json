@@ -1,5 +1,3 @@
-/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
-/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
   "compileOnSave": false,
   "compilerOptions": {
@@ -9,6 +7,10 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "disableSizeLimit": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
     "skipLibCheck": true,
     "isolatedModules": true,
     "esModuleInterop": true,
@@ -22,7 +24,9 @@
       "node_modules/@angular",
       "node_modules/@primeng",
       "node_modules/@angular-devkit/",
-      "node_modules/@angular/common/http"
+      "node_modules/@angular/common/http",
+      "node_modules/@angular/common",
+      "node_modules"
     ]
   },
   "angularCompilerOptions": {
