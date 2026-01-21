@@ -2,9 +2,10 @@ import { inject, Injectable } from '@angular/core';
 import { apiUrl } from '../api-endpoint';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { finalize, map, Observable, shareReplay } from 'rxjs';
-import { GetSparesQueryResponse, SpareResponse } from './spares-api.responses';
+import { GetSparesQueryResponse } from './spares-api.responses';
 import { TypedEnvelope } from '../envelope';
 import { GetSparesQueryParameters } from './spares-api.requests';
+import { DefaultGetSparesQueryResponse } from './spares-api.factories';
 
 @Injectable({
   providedIn: 'root',
@@ -12,17 +13,17 @@ import { GetSparesQueryParameters } from './spares-api.requests';
 export class SparesApiService {
   private readonly _apiUrl: string = `${apiUrl}/spares`;
   private readonly _httpClient: HttpClient = inject(HttpClient);
-  private fetchingSpares$: Observable<SpareResponse[]> | undefined;
+  private fetchingSpares$: Observable<GetSparesQueryResponse> | undefined;
 
   public fetchSpares(
     query: GetSparesQueryParameters,
-  ): Observable<SpareResponse[]> {
+  ): Observable<GetSparesQueryResponse> {
     return this.invokeFetchingSpares(query);
   }
 
   private invokeFetchingSpares(
     query: GetSparesQueryParameters,
-  ): Observable<SpareResponse[]> {
+  ): Observable<GetSparesQueryResponse> {
     if (this.fetchingSpares$) return this.fetchingSpares$;
     let params: HttpParams = new HttpParams();
     if (query.RegionId) params = params.append('region-id', query.RegionId);
@@ -43,9 +44,18 @@ export class SparesApiService {
         map(
           (
             envelope: TypedEnvelope<GetSparesQueryResponse>,
-          ): SpareResponse[] => {
-            let response: SpareResponse[] = [];
-            if (envelope.body) response = [...envelope.body.Spares];
+          ): GetSparesQueryResponse => {
+            let response: GetSparesQueryResponse =
+              DefaultGetSparesQueryResponse();
+            if (envelope.body)
+              response = {
+                ...response,
+                AveragePrice: envelope.body.AveragePrice,
+                MaximalPrice: envelope.body.MaximalPrice,
+                MinimalPrice: envelope.body.MinimalPrice,
+                TotalCount: envelope.body.TotalCount,
+                Spares: envelope.body.Spares,
+              };
             return response;
           },
         ),

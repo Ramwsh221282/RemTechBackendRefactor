@@ -7,9 +7,9 @@
     <div class="space-y-4">
       <p-select
         [fluid]="true"
-        [options]="itemTypes()"
-        [(ngModel)]="selectedItemType"
-        (ngModelChange)="handleItemTypeChange($event)"
+        [options]="itemTypes"
+        [(ngModel)]="readSelectedItemType"
+        (ngModelChange)="handleUserItemTypeSelect($event)"
         placeholder="Выбрать категорию"
         class="w-full md:w-56"
       >
@@ -25,53 +25,55 @@
         </ng-template>
       </p-select>
 
-      @if (itemTypeIsVehicle()) {
+      @if (userIsWatchingVehicles()) {
         <p-select
           [fluid]="true"
           [options]="categories()"
-          [(ngModel)]="selectedCategory"
+          [(ngModel)]="vehiclesFetchProps().category"
           [filter]="true"
           filterBy="Name"
           [showClear]="true"
           optionLabel="Name"
           placeholder="1. Выбрать тип техники"
-          (onClear)="handleCategoryClear()"
-          (onChange)="handleCategoryChange($event)"
+          (onClear)="handleUserCategoryClear()"
+          (onChange)="handleUserCategoryChange($event)"
           class="w-full md:w-56"
         >
         </p-select>
-        @if (categoryIsSelected()) {
+        @if (userSelectedCategory()) {
           <p-select
             [fluid]="true"
             [options]="brands()"
-            [(ngModel)]="selectedBrand"
+            [(ngModel)]="vehiclesFetchProps().brand"
             [filter]="true"
             filterBy="Name"
             [showClear]="true"
             optionLabel="Name"
-            (onClear)="handleBrandClear()"
-            (onChange)="handleBrandChange($event)"
+            (onClear)="handleUserBrandClear()"
+            (onChange)="handleUserBrandChange($event)"
             placeholder="2. Выбрать марку техники"
             class="w-full md:w-56"
           >
           </p-select>
-          @if (brandIsSelected()) {
+          @if (userSelectedBrand()) {
             <p-select
               [fluid]="true"
               [options]="models()"
-              [(ngModel)]="selectedModel"
+              [(ngModel)]="vehiclesFetchProps().model"
               [filter]="true"
               filterBy="name"
               optionLabel="Name"
-              (onClear)="handleModelClear()"
-              (onChange)="handleModelChange($event)"
+              (onClear)="handleUserModelClear()"
+              (onChange)="handleUserModelChange($event)"
               [showClear]="true"
               placeholder="3. Выбрать модель техники"
               class="w-full md:w-56"
             >
             </p-select>
             @if (
-              brandIsSelected() && categoryIsSelected() && modelIsSelected()
+              userSelectedBrand() &&
+              userSelectedCategory() &&
+              userSelectedModel()
             ) {
               <button
                 (click)="navigateVehicles()"
@@ -83,12 +85,13 @@
           }
         }
       }
-      @if (itemTypeIsSpare()) {
+      @if (userIsWatchingSpares()) {
         <input
           pInputText
           [placeholder]="'Введите что интересует'"
           [fluid]="true"
-          [(ngModel)]="vehicleTextInput"
+          [(ngModel)]="spareTextInput"
+          (ngModelChange)="handleSpareTextSearchUserInput($event)"
         />
         <button
           (click)="navigateSpares()"

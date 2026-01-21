@@ -1,5 +1,15 @@
 import { GetSparesQueryParameters } from './spares-api.requests';
-import { SpareResponse } from './spares-api.responses';
+import { GetSparesQueryResponse, SpareResponse } from './spares-api.responses';
+
+export const DefaultGetSparesQueryResponse = (): GetSparesQueryResponse => {
+  return {
+    AveragePrice: 0,
+    TotalCount: 0,
+    Spares: [],
+    MaximalPrice: 0,
+    MinimalPrice: 0,
+  };
+};
 
 export const DefaultSpareResponse = (): SpareResponse => {
   return {

@@ -4,7 +4,6 @@ import { ButtonModule } from 'primeng/button';
 import { HeaderComponent } from './shared/components/app-menu/header/header.component';
 import { SidebarComponent } from './shared/components/app-menu/sidebar/sidebar.component';
 import { RouterOutlet } from '@angular/router';
-import { AnimationsFactory } from './shared/animations/animations-factory';
 
 @Component({
   selector: 'app-root',

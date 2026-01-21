@@ -10,10 +10,6 @@
         @for (item of vehicles(); track item.VehicleId) {
           <app-recent-vehicle [item_setter]="item" />
         }
-        <app-receint-items-pagination
-          [page_setter]="page"
-          (pageChanged)="acceptPageChange($event)"
-        />
       </div>
     </div>
   </div>
@@ -30,11 +26,14 @@
         @for (item of spares(); track item.Id) {
           <app-recent-spare-card [spare_setter]="item" />
         }
-        <app-receint-items-pagination
-          [page_setter]="page"
-          (pageChanged)="acceptPageChange($event)"
-        />
       </div>
     </div>
+    <app-pagination
+      [total_count]="sparesPaginationProps().totalCount"
+      [current_page]="sparesPaginationProps().page"
+      [page_size]="sparesPaginationProps().pageSize"
+      (pageChanged)="handleSparesPageChange($event)"
+    >
+    </app-pagination>
   </div>
 }
