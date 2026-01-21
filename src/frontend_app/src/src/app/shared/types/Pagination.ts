@@ -5,6 +5,27 @@ export type Pagination = {
   pageSize: number;
 };
 
+export const PaginationWithPage: (
+  page: number,
+  pagination: Pagination,
+) => Pagination = (page: number, pagination: Pagination): Pagination => {
+  return { ...pagination, page: page };
+};
+
+export const PaginationWithPageSize: (
+  pageSize: number,
+  pagination: Pagination,
+) => Pagination = (pageSize: number, pagination: Pagination): Pagination => {
+  return { ...pagination, pageSize: pageSize };
+};
+
+export const NewPagination: (page: number, size: number) => Pagination = (
+  page: number,
+  size: number,
+): Pagination => {
+  return { page: page, pageSize: size };
+};
+
 export class PaginationService {
   public static initialized(page: number, size: number): Pagination {
     return { page: page, pageSize: size };

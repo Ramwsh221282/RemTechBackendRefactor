@@ -1,5 +1,5 @@
-import {CategoryResponse} from './categories-responses';
+import { CategoryResponse } from './categories-responses';
 
 export const DefaultCategory = (): CategoryResponse => {
-  return { Id: '', Name: '' };
-}
+  return { Id: '', Name: '', VehiclesCount: null };
+};

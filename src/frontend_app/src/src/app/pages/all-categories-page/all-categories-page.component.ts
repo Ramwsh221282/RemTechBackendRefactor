@@ -1,20 +1,13 @@
-import {
-  Component,
-  DestroyRef,
-  effect,
-  inject,
-  signal,
-  WritableSignal,
-} from '@angular/core';
+import { Component, effect, signal, WritableSignal } from '@angular/core';
 import { NgForOf, NgIf } from '@angular/common';
-import { QueryCategoriesResponse } from './types/QueryCategoriesResponse';
-import { AllCategoriesService } from './services/AllCategoriesService';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import { Button } from 'primeng/button';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { StringUtils } from '../../shared/utils/string-utils';
 import { Router } from '@angular/router';
+import { CategoryResponse } from '../../shared/api/categories-module/categories-responses';
+import { CategoriesApiService } from '../../shared/api/categories-module/categories-api.service';
+import { catchError, EMPTY, tap } from 'rxjs';
 
 @Component({
   selector: 'app-all-categories-page',
@@ -23,53 +16,34 @@ import { Router } from '@angular/router';
   styleUrl: './all-categories-page.component.scss',
 })
 export class AllCategoriesPageComponent {
-  private readonly _page: WritableSignal<number>;
-  private readonly _text: WritableSignal<string | null>;
-  private readonly _categories: WritableSignal<QueryCategoriesResponse[]>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly _totalCount: WritableSignal<number>;
-  public readonly searchForm: FormGroup = new FormGroup({
-    text: new FormControl(''),
-  });
-
   constructor(
-    service: AllCategoriesService,
+    private readonly _service: CategoriesApiService,
     private readonly _router: Router,
   ) {
-    this._page = signal(1);
-    this._text = signal(null);
-    this._categories = signal([]);
-    this._totalCount = signal(0);
+    this.page = signal(1);
+    this.text = signal(null);
+    this.categories = signal([]);
+    this.totalCount = signal(0);
     effect(() => {
-      const text: string | null = this._text();
-      service
-        .fetchCount(text)
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (amount: number): void => {
-            this._totalCount.set(amount);
-          },
-        });
-    });
-    effect(() => {
-      const page: number = this._page();
-      const text: string | null = this._text();
-      service
-        .fetchCategories(page, text)
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (data: QueryCategoriesResponse[]): void => {
-            this._categories.set(data);
-          },
-        });
+      const page: number = this.page();
+      const text: string | null = this.text();
+      this.fetchCategories(page, 10, text);
     });
   }
 
-  public navigateByCategory(category: QueryCategoriesResponse): void {
+  readonly page: WritableSignal<number>;
+  readonly text: WritableSignal<string | null>;
+  readonly categories: WritableSignal<CategoryResponse[]>;
+  readonly totalCount: WritableSignal<number>;
+  readonly searchForm: FormGroup = new FormGroup({
+    text: new FormControl(''),
+  });
+
+  public navigateByCategory(category: CategoryResponse): void {
     this._router.navigate(['vehicles'], {
       queryParams: {
-        categoryId: category.id,
-        categoryName: category.name,
+        categoryId: category.Id,
+        categoryName: category.Name,
         page: 1,
       },
     });
@@ -77,36 +51,52 @@ export class AllCategoriesPageComponent {
 
   public resetSearchForm(): void {
     this.searchForm.reset();
-    this.submitSearch();
+    this.applyUserTextSearchInput(null);
   }
 
   public textSearchFormSubmit(): void {
-    this.submitSearch();
-  }
-
-  private submitSearch(): void {
-    const formValues = this.searchForm.value;
-    const text: string = formValues.text;
-    if (StringUtils.isEmptyOrWhiteSpace(text)) {
-      this._text.set(null);
-      return;
-    }
-    this._text.set(text);
-  }
-
-  public get currentPage(): number {
-    return this._page();
-  }
-
-  public get totalCount(): number {
-    return this._totalCount();
+    const input: string | null = this.readUserTextSearchInputFromForm();
+    this.applyUserTextSearchInput(input);
   }
 
   public changePage(page: number): void {
-    this._page.set(page);
+    this.page.set(page);
   }
 
-  public get categories(): QueryCategoriesResponse[] {
-    return this._categories();
+  private readUserTextSearchInputFromForm(): string | null {
+    const formValues = this.searchForm.value;
+    const text: string = formValues.text;
+    return StringUtils.isEmptyOrWhiteSpace(text) ? null : text;
+  }
+
+  private applyUserTextSearchInput(input: string | null): void {
+    this.text.set(input);
+  }
+
+  private fetchCategories(
+    page: number,
+    pageSize: number,
+    text: string | null,
+  ): void {
+    this._service
+      .fetchCategories(
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        page,
+        pageSize,
+        true,
+        text,
+      )
+      .pipe(
+        tap((categories: CategoryResponse[]): void =>
+          this.categories.set(categories),
+        ),
+        catchError(() => EMPTY),
+      )
+      .subscribe();
   }
 }

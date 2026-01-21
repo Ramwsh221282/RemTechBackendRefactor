@@ -18,6 +18,10 @@ public sealed class CategoriesController
         [FromQuery(Name = "brandName")] string? brandName,
         [FromQuery(Name = "modelId")] Guid? modelId,
         [FromQuery(Name = "modelName")] string? modelName,
+        [FromQuery(Name = "include")] IEnumerable<string>? includedInformation,
+        [FromQuery(Name = "text-search")] string? textSearch,
+        [FromQuery(Name = "page")] int? page,
+        [FromQuery(Name = "pageSize")] int? pageSize,
         [FromServices] IQueryHandler<GetCategoriesQuery, IEnumerable<CategoryResponse>> handler,
         CancellationToken ct = default
     )
@@ -28,7 +32,11 @@ public sealed class CategoriesController
             .ForModelId(modelId)
             .ForModelName(modelName)
             .ForId(id)
-            .ForName(name);
+            .ForName(name)
+            .WithIncludedInformation(includedInformation)
+            .WithPage(page)
+            .WithPageSize(pageSize)
+            .WithTextSearch(textSearch);
 
         IEnumerable<CategoryResponse> response = await handler.Handle(query, ct);
         return EnvelopeFactory.Ok(response);

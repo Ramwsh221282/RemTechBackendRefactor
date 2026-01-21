@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using RemTech.SharedKernel.Core.Handlers;
 
 namespace Vehicles.Infrastructure.Categories.Queries.GetCategories;
@@ -10,6 +12,27 @@ public class GetCategoriesQuery : IQuery
     public string? ModelName { get; private init; }
     public Guid? Id { get; private init; }
     public string? Name { get; private init; }
+    public IEnumerable<string>? IncludedInformation { get; private set; }
+
+    public int? Page { get; private set; }
+    public int? PageSize { get; private set; }
+    public string? TextSearch { get; private set; }
+
+    [JsonIgnore]
+    private Dictionary<string, string> IncludedInformationKeys =>
+        IncludedInformation is null
+            ? []
+            : IncludedInformation.ToDictionary(info => info.ToLowerInvariant(), info => info);
+
+    public GetCategoriesQuery WithPage(int? page) => Copy(this, page: page);
+
+    public GetCategoriesQuery WithPageSize(int? pageSize) => Copy(this, pageSize: pageSize);
+
+    public GetCategoriesQuery WithTextSearch(string? textSearch) =>
+        Copy(this, textSearch: textSearch);
+
+    public GetCategoriesQuery WithIncludedInformation(IEnumerable<string>? includedInformation) =>
+        Copy(this, includedInformation: includedInformation);
 
     public GetCategoriesQuery ForId(Guid? id) =>
         id == null || id == Guid.Empty ? this : Copy(this, id: id);
@@ -29,10 +52,10 @@ public class GetCategoriesQuery : IQuery
     public GetCategoriesQuery ForModelName(string? modelName) =>
         string.IsNullOrWhiteSpace(modelName) ? this : Copy(this, modelName: modelName);
 
-    public override string ToString()
-    {
-        return string.Empty;
-    }
+    public override string ToString() => JsonSerializer.Serialize(this);
+
+    public bool ContainsIncludedInformationKey(string key) =>
+        IncludedInformationKeys.ContainsKey(key);
 
     private static GetCategoriesQuery Copy(
         GetCategoriesQuery origin,
@@ -41,7 +64,11 @@ public class GetCategoriesQuery : IQuery
         Guid? modelId = null,
         string? modelName = null,
         Guid? id = null,
-        string? name = null
+        string? name = null,
+        IEnumerable<string>? includedInformation = null,
+        int? page = null,
+        int? pageSize = null,
+        string? textSearch = null
     ) =>
         new()
         {
@@ -51,5 +78,11 @@ public class GetCategoriesQuery : IQuery
             ModelName = modelName ?? origin.ModelName,
             Id = id ?? origin.Id,
             Name = name ?? origin.Name,
+            IncludedInformation = includedInformation is null
+                ? origin.IncludedInformation
+                : [.. includedInformation, .. origin.IncludedInformation ?? []],
+            Page = page ?? origin.Page,
+            PageSize = pageSize ?? origin.PageSize,
+            TextSearch = textSearch ?? origin.TextSearch,
         };
 }

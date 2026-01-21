@@ -1,11 +1,15 @@
 using System.Data;
+using System.Data.Common;
 using Dapper;
+using Npgsql;
+using Pgvector;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.Database;
+using RemTech.SharedKernel.NN;
 
 namespace Vehicles.Infrastructure.Categories.Queries.GetCategories;
 
-public sealed class GetCategoriesQueryHandler(NpgSqlSession session)
+public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
     : IQueryHandler<GetCategoriesQuery, IEnumerable<CategoryResponse>>
 {
     public async Task<IEnumerable<CategoryResponse>> Handle(
@@ -15,12 +19,12 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session)
     {
         (DynamicParameters parameters, string sql) = CreateSql(query);
         CommandDefinition command = new(sql, parameters, cancellationToken: ct);
-        return await session.QueryMultipleRows<CategoryResponse>(command);
+        NpgsqlConnection connection = await session.GetConnection(ct);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+        return await MapFromReader(reader, ct);
     }
 
-    private static (DynamicParameters parameters, string filterSql) CreateSql(
-        GetCategoriesQuery query
-    )
+    private (DynamicParameters parameters, string filterSql) CreateSql(GetCategoriesQuery query)
     {
         DynamicParameters parameters = new();
         List<string> filters = [];
@@ -31,18 +35,94 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session)
             SELECT
             c.id as id,
             c.name as name
+            {IncludeVehiclesAmountIfProvided(query)}        
+            {IncludeTextSearchScore(query)}
             FROM vehicles_module.categories c                        
             INNER JOIN vehicles_module.vehicles v ON v.category_id = c.id
             INNER JOIN contained_items_module.contained_items i ON v.id = i.id
             {CreateWhereClause(filters)}                        
             GROUP BY c.id, c.name
-            HAVING COUNT(v.id) > 0
+            HAVING COUNT(v.id) > 0            
+            {UseEmbeddingsOrderBy(query)}
+            {ApplyPagination(query)}
             """;
 
         return (parameters, sql);
     }
 
-    private static void ApplyFilters(
+    private static async Task<IEnumerable<CategoryResponse>> MapFromReader(
+        DbDataReader reader,
+        CancellationToken ct
+    )
+    {
+        List<CategoryResponse> responses = [];
+        while (await reader.ReadAsync(ct))
+        {
+            Guid id = reader.GetGuid(reader.GetOrdinal("id"));
+            string name = reader.GetString(reader.GetOrdinal("name"));
+            CategoryResponse response = new(id, name)
+            {
+                VehiclesCount = ContainsColumn(reader, "vehicle_count")
+                    ? reader.GetInt32(reader.GetOrdinal("vehicle_count"))
+                    : null,
+                TextSearchScore = ContainsColumn(reader, "text_search_score")
+                    ? reader.GetFloat(reader.GetOrdinal("text_search_score"))
+                    : null,
+            };
+
+            responses.Add(response);
+        }
+
+        return responses;
+    }
+
+    private static bool ContainsColumn(DbDataReader reader, string columnName)
+    {
+        for (int i = 0; i < reader.FieldCount; i++)
+        {
+            if (reader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static string UseEmbeddingsOrderBy(GetCategoriesQuery query)
+    {
+        if (!string.IsNullOrWhiteSpace(query.TextSearch))
+            return "ORDER BY c.embedding <-> @embedding ASC";
+        return string.Empty;
+    }
+
+    private void ApplyTextSearchFilter(
+        GetCategoriesQuery query,
+        List<string> filters,
+        DynamicParameters parameters
+    )
+    {
+        if (string.IsNullOrWhiteSpace(query.TextSearch))
+            return;
+        Vector vector = new(embeddings.Generate(query.TextSearch));
+        parameters.Add("@embedding", vector);
+        parameters.Add("@text_search", query.TextSearch, DbType.String);
+        filters.Add(
+            "(c.embedding <-> @embedding < 0.81 OR c.name ILIKE '%' || @text_search || '%' OR ts_rank_cd(to_tsvector('russian', c.name), plainto_tsquery('russian', @text_search)) > 0)"
+        );
+    }
+
+    private void ApplyFilters(
+        GetCategoriesQuery query,
+        List<string> filters,
+        DynamicParameters parameters
+    )
+    {
+        ApplyMainQueryFilters(query, filters, parameters);
+        ApplyQuerySubFilters(query, filters, parameters);
+        ApplyTextSearchFilter(query, filters, parameters);
+    }
+
+    private static void ApplyQuerySubFilters(
         GetCategoriesQuery query,
         List<string> filters,
         DynamicParameters parameters
@@ -50,18 +130,6 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session)
     {
         List<string> subFilterJoins = [];
         List<string> subFilters = [];
-
-        if (query.Id != null && query.Id != Guid.Empty)
-        {
-            filters.Add("c.id = @category_id");
-            parameters.Add("category_id", query.Id, DbType.Guid);
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.Name))
-        {
-            filters.Add("c.name = @category_name");
-            parameters.Add("category_name", query.Name, DbType.String);
-        }
 
         if (SomeBrandFilterProvided(query))
         {
@@ -111,6 +179,46 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session)
             """
         );
     }
+
+    private static string ApplyPagination(GetCategoriesQuery query)
+    {
+        if (query.Page == null || query.PageSize == null)
+            return string.Empty;
+
+        int normalizedPage = (query.Page <= 0) ? 1 : query.Page.Value;
+        int normalizedPageSize = (query.PageSize >= 50) ? 50 : query.PageSize.Value;
+        int offset = (normalizedPage - 1) * normalizedPageSize;
+        return $"LIMIT {normalizedPageSize} OFFSET {offset}";
+    }
+
+    private static void ApplyMainQueryFilters(
+        GetCategoriesQuery query,
+        List<string> filters,
+        DynamicParameters parameters
+    )
+    {
+        if (query.Id != null && query.Id != Guid.Empty)
+        {
+            filters.Add("c.id = @category_id");
+            parameters.Add("category_id", query.Id, DbType.Guid);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Name))
+        {
+            filters.Add("c.name = @category_name");
+            parameters.Add("category_name", query.Name, DbType.String);
+        }
+    }
+
+    private static string IncludeTextSearchScore(GetCategoriesQuery query) =>
+        query.ContainsIncludedInformationKey("text-search-score")
+            ? ", c.embedding <-> @embedding as text_search_score"
+            : string.Empty;
+
+    private static string IncludeVehiclesAmountIfProvided(GetCategoriesQuery query) =>
+        query.ContainsIncludedInformationKey("vehicles-count")
+            ? ", COUNT(v.id) as vehicle_count"
+            : string.Empty;
 
     private static string CreateWhereClause(List<string> filters) =>
         filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
