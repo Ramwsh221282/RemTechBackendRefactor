@@ -2,13 +2,16 @@
   [@expandCollapse]="isSideBarVisible ? 'expand' : 'collapse'"
   class="app-display-root"
 >
-<nav class="app-nav">
-  <app-header/>
-</nav>
-<aside class="app-aside">
-  <app-sidebar [isExpanded]="isSideBarVisible" (closeClicked)="acceptSideBarClose()"/>
-</aside>
-<main class="app-main">
-  <router-outlet></router-outlet>
-</main>
+  <nav class="app-nav">
+    <app-header />
+  </nav>
+  <aside class="app-aside">
+    <app-sidebar
+      [isExpanded]="isSideBarVisible"
+      (closeClicked)="acceptSideBarClose()"
+    />
+  </aside>
+  <main class="app-main">
+    <router-outlet></router-outlet>
+  </main>
 </body>

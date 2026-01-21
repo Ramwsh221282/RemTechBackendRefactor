@@ -23,26 +23,29 @@ public sealed class VehiclesController
         [FromQuery(Name = "page")] int page,
         [FromQuery(Name = "page-size")] int pageSize,
         [FromQuery(Name = "text-search")] string? textSearch,
-        [FromQuery(Name = "characteristics")] IEnumerable<CharacteristicQueryParameter>? characteristics,
+        [FromQuery(Name = "characteristics")]
+            IEnumerable<CharacteristicQueryParameter>? characteristics,
         [FromServices] IQueryHandler<GetVehiclesQuery, GetVehiclesQueryResponse> handler,
         CancellationToken ct
     )
     {
-        GetVehiclesQuery query = new(new GetVehiclesQueryParameters()
-            .ForBrand(brandId)
-            .ForCategory(categoryId)
-            .ForRegion(regionId)
-            .ForModel(modelId)
-            .ForNds(isNds)
-            .ForMinimalPrice(minimalPrice)
-            .ForMaximalPrice(maximalPrice)
-            .ForSort(sort)
-            .ForSortFields(sortFields)
-            .ForPage(page)
-            .ForPageSize(pageSize)
-            .ForTextSearch(textSearch)
-            .ForCharacteristics(characteristics, c => (c.Id, c.Value)));
-        
+        GetVehiclesQuery query = new(
+            new GetVehiclesQueryParameters()
+                .ForBrand(brandId)
+                .ForCategory(categoryId)
+                .ForRegion(regionId)
+                .ForModel(modelId)
+                .ForNds(isNds)
+                .ForMinimalPrice(minimalPrice)
+                .ForMaximalPrice(maximalPrice)
+                .ForSort(sort)
+                .ForSortFields(sortFields)
+                .ForPage(page)
+                .ForPageSize(pageSize)
+                .ForTextSearch(textSearch)
+                .ForCharacteristics(characteristics, c => (c.Id, c.Value))
+        );
+
         GetVehiclesQueryResponse result = await handler.Handle(query, ct);
         return EnvelopedResultsExtensions.AsEnvelope(result);
     }

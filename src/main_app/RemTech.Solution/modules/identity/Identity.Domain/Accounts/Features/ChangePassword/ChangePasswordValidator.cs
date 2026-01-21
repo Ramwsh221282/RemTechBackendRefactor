@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using Identity.Domain.Accounts.Models;
-using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace Identity.Domain.Accounts.Features.ChangePassword;

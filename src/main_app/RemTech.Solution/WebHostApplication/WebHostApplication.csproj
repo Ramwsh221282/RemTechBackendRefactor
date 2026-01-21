@@ -4,7 +4,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\modules\contained_items\ContainedItems.Worker\ContainedItems.Worker.csproj" />
     <ProjectReference Include="..\modules\identity\Identity.WebApi\Identity.WebApi.csproj" />
@@ -13,7 +12,6 @@
     <ProjectReference Include="..\modules\spares\Spares.WebApi\Spares.WebApi.csproj" />
     <ProjectReference Include="..\modules\vehicles\Vehicles.WebApi\Vehicles.WebApi.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="RemTech.SharedKernel.Web" Version="2.0.0" />
   </ItemGroup>

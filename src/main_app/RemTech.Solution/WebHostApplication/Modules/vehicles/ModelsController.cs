@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
-using Vehicles.Infrastructure.Categories.Queries;
+using Vehicles.Infrastructure.Models.Queries.GetModels;
 using WebHostApplication.Common.Envelope;
 
 namespace WebHostApplication.Modules.vehicles;
@@ -10,27 +10,23 @@ namespace WebHostApplication.Modules.vehicles;
 [Route("api/models")]
 public sealed class ModelsController
 {
-    [HttpGet]
-    public async Task<Envelope> GetModel(
-        [FromQuery(Name = "categoryId")] Guid? categoryId,
-        [FromQuery(Name = "categoryName")] string? categoryName,
+    [HttpGet()]
+    public async Task<Envelope> GetModels(
         [FromQuery(Name = "brandId")] Guid? brandId,
         [FromQuery(Name = "brandName")] string? brandName,
-        [FromQuery(Name = "modelId")] Guid? modelId,
-        [FromQuery(Name = "modelName")] string? modelName,
-        [FromServices] IQueryHandler<GetCategoryQuery, CategoryResponse?> handler,
+        [FromQuery(Name = "categoryId")] Guid? categoryId,
+        [FromQuery(Name = "categoryName")] string? categoryName,
+        [FromServices] IQueryHandler<GetModelsQuery, IEnumerable<ModelResponse>> handler,
         CancellationToken ct = default
     )
     {
-        GetCategoryQuery query = new GetCategoryQuery()
-            .ForId(categoryId)
-            .ForName(categoryName)
+        GetModelsQuery query = new GetModelsQuery()
             .ForBrandId(brandId)
             .ForBrandName(brandName)
-            .ForModelId(modelId)
-            .ForModelName(modelName);
+            .ForCategoryId(categoryId)
+            .ForCategoryName(categoryName);
 
-        CategoryResponse? response = await handler.Handle(query, ct);
-        return EnvelopeExtensions.NotFoundOrOk(response, "Модель не найдена");
+        IEnumerable<ModelResponse> response = await handler.Handle(query, ct);
+        return EnvelopeFactory.Ok(response);
     }
 }

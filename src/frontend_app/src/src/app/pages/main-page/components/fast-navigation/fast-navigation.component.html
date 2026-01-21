@@ -7,9 +7,9 @@
     <div class="space-y-4">
       <p-select
         [fluid]="true"
-        [options]="itemTypes()"
-        [(ngModel)]="selectedItemType"
-        (ngModelChange)="handleItemTypeChange($event)"
+        [options]="itemTypes"
+        [(ngModel)]="readSelectedItemType"
+        (ngModelChange)="handleUserItemTypeSelect($event)"
         placeholder="Выбрать категорию"
         class="w-full md:w-56"
       >
@@ -25,78 +25,55 @@
         </ng-template>
       </p-select>
 
-      @if (itemTypeIsVehicle()) {
+      @if (userIsWatchingVehicles()) {
         <p-select
           [fluid]="true"
-          [options]="categoriesList()"
-          [dataKey]="'Id'"
-          [ariaLabel]="'Name'"
-          [optionLabel]="'Name'"
-          [optionValue]="'Id'"
-          [(ngModel)]="selectedCategory"
+          [options]="categories()"
+          [(ngModel)]="vehiclesFetchProps().category"
           [filter]="true"
           filterBy="Name"
           [showClear]="true"
+          optionLabel="Name"
           placeholder="1. Выбрать тип техники"
+          (onClear)="handleUserCategoryClear()"
+          (onChange)="handleUserCategoryChange($event)"
           class="w-full md:w-56"
         >
-          <ng-template #selectedItem let-selectedOption>
-            <div class="flex items-center gap-2">
-              <div>{{ selectedOption.name }}</div>
-            </div>
-          </ng-template>
-          <ng-template let-type #item>
-            <div class="flex items-center gap-2">
-              <div>{{ type.name }}</div>
-            </div>
-          </ng-template>
         </p-select>
-        @if (categoryIsSelected()) {
+        @if (userSelectedCategory()) {
           <p-select
             [fluid]="true"
             [options]="brands()"
-            [(ngModel)]="selectedBrand"
+            [(ngModel)]="vehiclesFetchProps().brand"
             [filter]="true"
-            filterBy="name"
+            filterBy="Name"
             [showClear]="true"
+            optionLabel="Name"
+            (onClear)="handleUserBrandClear()"
+            (onChange)="handleUserBrandChange($event)"
             placeholder="2. Выбрать марку техники"
             class="w-full md:w-56"
           >
-            <ng-template #selectedItem let-selectedOption>
-              <div class="flex items-center gap-2">
-                <div>{{ selectedOption.name }}</div>
-              </div>
-            </ng-template>
-            <ng-template let-brand #item>
-              <div class="flex items-center gap-2">
-                <div>{{ brand.name }}</div>
-              </div>
-            </ng-template>
           </p-select>
-          @if (brandIsSelected()) {
+          @if (userSelectedBrand()) {
             <p-select
               [fluid]="true"
               [options]="models()"
-              [(ngModel)]="selectedModel"
+              [(ngModel)]="vehiclesFetchProps().model"
               [filter]="true"
               filterBy="name"
+              optionLabel="Name"
+              (onClear)="handleUserModelClear()"
+              (onChange)="handleUserModelChange($event)"
               [showClear]="true"
               placeholder="3. Выбрать модель техники"
               class="w-full md:w-56"
             >
-              <ng-template #selectedItem let-selectedOption>
-                <div class="flex items-center gap-2">
-                  <div>{{ selectedOption.name }}</div>
-                </div>
-              </ng-template>
-              <ng-template let-model #item>
-                <div class="flex items-center gap-2">
-                  <div>{{ model.name }}</div>
-                </div>
-              </ng-template>
             </p-select>
             @if (
-              brandIsSelected() && categoryIsSelected() && modelIsSelected()
+              userSelectedBrand() &&
+              userSelectedCategory() &&
+              userSelectedModel()
             ) {
               <button
                 (click)="navigateVehicles()"
@@ -108,12 +85,13 @@
           }
         }
       }
-      @if (itemTypeIsVehicle()) {
+      @if (userIsWatchingSpares()) {
         <input
           pInputText
           [placeholder]="'Введите что интересует'"
           [fluid]="true"
-          [(ngModel)]="vehicleTextInput"
+          [(ngModel)]="spareTextInput"
+          (ngModelChange)="handleSpareTextSearchUserInput($event)"
         />
         <button
           (click)="navigateSpares()"

@@ -20,7 +20,8 @@ public sealed class SparesController
         [FromQuery(Name = "sort-mode")] string? sortMode,
         [FromQuery(Name = "oem")] string? oem,
         [FromServices] IQueryHandler<GetSparesQuery, GetSparesQueryResponse> handler,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         GetSparesQuery query = new GetSparesQuery()
             .ForRegion(regionId)

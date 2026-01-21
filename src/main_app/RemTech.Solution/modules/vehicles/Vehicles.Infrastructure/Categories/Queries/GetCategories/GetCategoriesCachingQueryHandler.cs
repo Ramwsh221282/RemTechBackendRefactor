@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Caching.Hybrid;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
-using Vehicles.Infrastructure.Categories.Queries.GetCategory;
 
 namespace Vehicles.Infrastructure.Categories.Queries.GetCategories;
 

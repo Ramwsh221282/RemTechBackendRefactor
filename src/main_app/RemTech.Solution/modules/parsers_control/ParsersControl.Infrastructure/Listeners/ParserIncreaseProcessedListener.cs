@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using ParsersControl.Core.Features.SetParsedAmount;
 using ParsersControl.Core.Parsers.Models;
@@ -12,9 +11,10 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 namespace ParsersControl.Infrastructure.Listeners;
 
 public sealed class ParserIncreaseProcessedListener(
-    RabbitMqConnectionSource rabbitMq, 
-    Serilog.ILogger logger, 
-    IServiceProvider services) : IConsumer
+    RabbitMqConnectionSource rabbitMq,
+    Serilog.ILogger logger,
+    IServiceProvider services
+) : IConsumer
 {
     private const string Exchange = "parsers";
     private const string Queue = "parsers.increase_processed";
@@ -23,11 +23,18 @@ public sealed class ParserIncreaseProcessedListener(
     private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
     private Serilog.ILogger Logger { get; } = logger.ForContext<ParserIncreaseProcessedListener>();
     private IServiceProvider Services { get; } = services;
-    private IChannel Channel => _channel ?? throw new NullReferenceException("Channel was not initialized.");
-    
+    private IChannel Channel =>
+        _channel ?? throw new NullReferenceException("Channel was not initialized.");
+
     public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
     {
-        _channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+        _channel = await TopicConsumerInitialization.InitializeChannel(
+            RabbitMq,
+            Exchange,
+            Queue,
+            RoutingKey,
+            ct
+        );
     }
 
     public async Task StartConsuming(CancellationToken ct = default)
@@ -42,55 +49,63 @@ public sealed class ParserIncreaseProcessedListener(
         await Channel.CloseAsync(ct);
     }
 
-    private AsyncEventHandler<BasicDeliverEventArgs> Handler => async (_, @event) =>
-    {
-        Logger.Information("Handling message.");
-        try
+    private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
+        async (_, @event) =>
         {
-            ParserIncreaseProcessedMessage message = ParserIncreaseProcessedMessage.CreateFrom(@event);
-            if (!IsMessageValid(message, out string error))
+            Logger.Information("Handling message.");
+            try
             {
-                Logger.Error("Denied message: {Error}", error);
-                return;
+                ParserIncreaseProcessedMessage message = ParserIncreaseProcessedMessage.CreateFrom(
+                    @event
+                );
+                if (!IsMessageValid(message, out string error))
+                {
+                    Logger.Error("Denied message: {Error}", error);
+                    return;
+                }
+
+                SetParsedAmountCommand command = CreateCommand(message);
+                Result result = await HandleCommand(command);
+                if (result.IsFailure)
+                    Logger.Error("Error handling command: {Error}", result.Error.Message);
+                Logger.Information("Message handled.");
             }
-            
-            SetParsedAmountCommand command = CreateCommand(message);
-            Result result = await HandleCommand(command);
-            if (result.IsFailure) Logger.Error("Error handling command: {Error}", result.Error.Message);
-            Logger.Information("Message handled.");
-        }
-        catch (Exception e)
-        {
-            Logger.Fatal(e, "Error handling message.");
-        }
-        finally
-        {
-            await Channel.BasicAckAsync(@event.DeliveryTag, false);
-        }
-    };
+            catch (Exception e)
+            {
+                Logger.Fatal(e, "Error handling message.");
+            }
+            finally
+            {
+                await Channel.BasicAckAsync(@event.DeliveryTag, false);
+            }
+        };
 
     private bool IsMessageValid(ParserIncreaseProcessedMessage message, out string error)
     {
         List<string> errors = [];
-        if (message.Id == Guid.Empty) errors.Add("Идентификатор парсера пуст");
-        if (message.Amount == 0) errors.Add("Количество обработанных пуст");
+        if (message.Id == Guid.Empty)
+            errors.Add("Идентификатор парсера пуст");
+        if (message.Amount == 0)
+            errors.Add("Количество обработанных пуст");
         error = string.Join(", ", errors);
         return errors.Count == 0;
     }
 
-   private async Task<Result> HandleCommand(SetParsedAmountCommand command)
+    private async Task<Result> HandleCommand(SetParsedAmountCommand command)
     {
         await using AsyncServiceScope scope = Services.CreateAsyncScope();
-        return await scope.ServiceProvider
-            .GetRequiredService<ICommandHandler<SetParsedAmountCommand, SubscribedParser>>()
+        return await scope
+            .ServiceProvider.GetRequiredService<
+                ICommandHandler<SetParsedAmountCommand, SubscribedParser>
+            >()
             .Execute(command);
     }
-    
+
     private SetParsedAmountCommand CreateCommand(ParserIncreaseProcessedMessage message)
     {
         return new SetParsedAmountCommand(message.Id, message.Amount);
     }
-    
+
     private sealed class ParserIncreaseProcessedMessage
     {
         public Guid Id { get; set; }

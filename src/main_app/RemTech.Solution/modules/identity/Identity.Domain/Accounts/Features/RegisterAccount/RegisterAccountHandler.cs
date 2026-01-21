@@ -1,6 +1,4 @@
 ﻿using Identity.Domain.Accounts.Models;
-using Identity.Domain.Accounts.Models.Events;
-using Identity.Domain.Contracts;
 using Identity.Domain.Contracts.Cryptography;
 using Identity.Domain.Contracts.Outbox;
 using Identity.Domain.Contracts.Persistence;

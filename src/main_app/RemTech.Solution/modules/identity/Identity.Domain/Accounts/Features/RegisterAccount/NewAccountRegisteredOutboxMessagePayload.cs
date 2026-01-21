@@ -1,5 +1,4 @@
-﻿using Identity.Domain.Contracts;
-using Identity.Domain.Contracts.Outbox;
+﻿using Identity.Domain.Contracts.Outbox;
 
 namespace Identity.Domain.Accounts.Features.RegisterAccount;
 

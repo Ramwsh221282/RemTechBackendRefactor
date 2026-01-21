@@ -1,11 +1,8 @@
-﻿using System.Reflection;
-using ContainedItems.Domain.Contracts;
+﻿using ContainedItems.Domain.Contracts;
 using ContainedItems.Infrastructure.BackgroundServices;
 using ContainedItems.Infrastructure.Producers;
 using ContainedItems.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
-using RemTech.SharedKernel.Infrastructure.Database;
-using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace ContainedItems.Infrastructure;
 

@@ -1,26 +1,39 @@
 import {
   Component,
   computed,
-  DestroyRef,
   effect,
-  inject,
+  EventEmitter,
+  Input,
+  Output,
   Signal,
   signal,
   WritableSignal,
 } from '@angular/core';
-import { Select } from 'primeng/select';
+import { Select, SelectChangeEvent } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
-import { CatalogueVehiclesService } from '../../../vehicles-page/services/CatalogueVehiclesService';
-import { CatalogueBrand } from '../../../vehicles-page/types/CatalogueBrand';
-import { CatalogueModel } from '../../../vehicles-page/types/CatalogueModel';
-import { Router } from '@angular/router';
 import { InputText } from 'primeng/inputtext';
 import { BrandsApiService } from '../../../../shared/api/brands-module/brands-api.service';
 import { CategoriesApiService } from '../../../../shared/api/categories-module/categories-api.service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, EMPTY, map, tap } from 'rxjs';
+import { catchError, EMPTY, Observable, tap } from 'rxjs';
 import { CategoryResponse } from '../../../../shared/api/categories-module/categories-responses';
-import { TypedEnvelope } from '../../../../shared/api/envelope';
+import { BrandResponse } from '../../../../shared/api/brands-module/brands-api.responses';
+import { ModelResponse } from '../../../../shared/api/models-module/models-responses';
+import { ModelsApiService } from '../../../../shared/api/models-module/models-api.service';
+import { VehiclesApiService } from '../../../../shared/api/vehicles-module/vehicles-api.service';
+import { DefaultGetVehiclesQueryParameters } from '../../../../shared/api/vehicles-module/vehicles-api.factories';
+import { GetVehiclesQueryParameters } from '../../../../shared/api/vehicles-module/vehicles-api.requests';
+import {
+  GetVehiclesQueryResponse,
+  VehicleResponse,
+} from '../../../../shared/api/vehicles-module/vehicles-api.responses';
+import { SparesApiService } from '../../../../shared/api/spares-module/spares-api.service';
+import {
+  GetSparesQueryResponse,
+  SpareResponse,
+} from '../../../../shared/api/spares-module/spares-api.responses';
+import { GetSparesQueryParameters } from '../../../../shared/api/spares-module/spares-api.requests';
+import { DefaultGetSpareParameters } from '../../../../shared/api/spares-module/spares-api.factories';
+import { StringUtils } from '../../../../shared/utils/string-utils';
 
 @Component({
   selector: 'app-fast-navigation',
@@ -32,100 +45,139 @@ export class FastNavigationComponent {
   constructor(
     private readonly _categoriesService: CategoriesApiService,
     private readonly _brandsService: BrandsApiService,
-    private readonly _modelsService: CatalogueVehiclesService,
-    router: Router,
+    private readonly _modelsService: ModelsApiService,
+    private readonly _vehiclesService: VehiclesApiService,
+    private readonly _sparesService: SparesApiService,
   ) {
-    this._router = router;
     this.brands = signal([]);
     this.models = signal([]);
     this.categories = signal([]);
-    this.selectedBrand = undefined;
-    this.selectedModel = undefined;
-    this.selectedCategory = undefined;
-    this.selectedItemType = signal(undefined);
-    this.itemTypes = signal(['Техника', 'Запчасти']);
-    this.fetchCategories();
+    this.sparesFetched = new EventEmitter<{
+      spares: SpareResponse[];
+      totalCount: number;
+    }>();
+    this.watchingChanged = new EventEmitter<{
+      vehicles: boolean;
+      spares: boolean;
+    }>();
+    this.vehiclesFetched = new EventEmitter<{
+      vehicles: VehicleResponse[];
+      totalCount: number;
+    }>();
+    this.brandSelected = new EventEmitter<BrandResponse | undefined>();
+    this.categorySelected = new EventEmitter<CategoryResponse | undefined>();
+    this.modelSelected = new EventEmitter<ModelResponse | undefined>();
+    this.spareTextSearchChanged = new EventEmitter<string | undefined>();
 
-    // effect(() => {
-    //   service
-    //     .fetchCategories()
-    //     .pipe(takeUntilDestroyed(this._destroyRef))
-    //     .subscribe({
-    //       next: (data: CatalogueCategory[]): void => {
-    //         this._categories.set(data);
-    //       },
-    //     });
-    // });
-    // effect(() => {
-    //   const selectedType: CatalogueCategory | undefined = this.selectedType();
-    //   if (selectedType !== undefined) {
-    //     service
-    //       .fetchCategoryBrands(selectedType.id)
-    //       .pipe(takeUntilDestroyed(this._destroyRef))
-    //       .subscribe({
-    //         next: (data: CatalogueBrand[]): void => {
-    //           this._brands.set(data);
-    //         },
-    //       });
-    //   }
-    // });
-    // effect(() => {
-    //   const selectedBrand: CatalogueBrand | undefined = this.selectedBrand();
-    //   const selectedType: CatalogueCategory | undefined = this.selectedType();
-    //   if (selectedBrand && selectedType) {
-    //     service
-    //       .fetchModelsCategoryBrands(selectedType.id, selectedBrand.id)
-    //       .pipe(takeUntilDestroyed(this._destroyRef))
-    //       .subscribe({
-    //         next: (data: CatalogueModel[]): void => {
-    //           this._models.set(data);
-    //         },
-    //       });
-    //   }
-    // });
+    this.sparesFetchProps = signal({
+      isWatching: false,
+      page: undefined,
+      pageSize: undefined,
+    });
+    this.vehiclesFetchProps = signal({
+      page: undefined,
+      brand: undefined,
+      category: undefined,
+      model: undefined,
+      isWatching: false,
+      pageSize: undefined,
+    });
+
+    this.itemTypes = ['Техника', 'Запчасти'];
+    this.fetchCategoriesOnItemTypeChange();
+    this.fetchBrandsOnCategoryChange();
+    this.fetchModelsOnBrandChange();
+    this.fetchVehiclesOnQueryChange();
+    this.fetchSparesOnQueryChange();
   }
 
-  readonly itemTypes: WritableSignal<string[]>;
-  readonly selectedItemType: WritableSignal<string | undefined>;
-  readonly itemTypeIsVehicle: Signal<boolean> = computed(() => {
-    const selected: string | undefined = this.selectedItemType();
-    return !!selected && selected === 'Техника';
-  });
-  readonly itemTypeIsSpare: Signal<boolean> = computed(() => {
-    const selected: string | undefined = this.selectedItemType();
-    return !!selected && selected === 'Запчасти';
-  });
+  readonly sparesFetchProps: WritableSignal<{
+    page?: number | undefined;
+    pageSize?: number | undefined;
+    isWatching: boolean;
+    textSearch?: string | undefined;
+  }>;
 
+  readonly vehiclesFetchProps: WritableSignal<{
+    page?: number | undefined;
+    pageSize?: number | undefined;
+    isWatching: boolean;
+    category?: CategoryResponse | undefined;
+    brand?: BrandResponse | undefined;
+    model?: ModelResponse | undefined;
+    textSearch?: string | undefined;
+  }>;
+
+  @Input({ required: true }) set spares_fetch_props(value: {
+    page?: number | undefined;
+    pageSize?: number | undefined;
+    isWatching: boolean;
+    textSearch?: string | undefined;
+  }) {
+    this.sparesFetchProps.set(value);
+  }
+
+  @Input({ required: true }) set vehicles_fetch_props(value: {
+    page?: number | undefined;
+    pageSize?: number | undefined;
+    isWatching: boolean;
+    category?: CategoryResponse | undefined;
+    brand?: BrandResponse | undefined;
+    model?: ModelResponse | undefined;
+    textSearch?: string | undefined;
+  }) {
+    this.vehiclesFetchProps.set(value);
+  }
+
+  @Output() brandSelected: EventEmitter<BrandResponse | undefined>;
+  @Output() categorySelected: EventEmitter<CategoryResponse | undefined>;
+  @Output() modelSelected: EventEmitter<ModelResponse | undefined>;
+  @Output() spareTextSearchChanged: EventEmitter<string | undefined>;
+
+  @Output() vehiclesFetched: EventEmitter<{
+    vehicles: VehicleResponse[];
+    totalCount: number;
+  }>;
+  @Output() sparesFetched: EventEmitter<{
+    spares: SpareResponse[];
+    totalCount: number;
+  }>;
+  @Output() watchingChanged: EventEmitter<{
+    vehicles: boolean;
+    spares: boolean;
+  }>;
+
+  readonly itemTypes: string[];
   readonly categories: WritableSignal<CategoryResponse[]>;
-  readonly selectedCategory: CategoryResponse | undefined;
-  readonly categoryIsSelected: Signal<boolean> = computed(() => {
-    const selected: CategoryResponse | undefined = this.selectedCategory;
-    return selected !== undefined;
+  readonly brands: WritableSignal<BrandResponse[]>;
+  readonly models: WritableSignal<ModelResponse[]>;
+
+  readonly readSelectedItemType: Signal<string> = computed((): string => {
+    const vehicleProps = this.vehiclesFetchProps();
+    return vehicleProps.isWatching ? 'Техника' : 'Запчасти';
   });
 
-  readonly brands: WritableSignal<CatalogueBrand[]>;
-  readonly selectedBrand: CatalogueBrand | undefined;
-  readonly brandIsSelected: Signal<boolean> = computed(() => {
-    const selected: CatalogueBrand | undefined = this.selectedBrand;
-    return selected !== undefined;
+  readonly userIsWatchingVehicles: Signal<boolean> = computed((): boolean => {
+    return this.vehiclesFetchProps().isWatching;
   });
 
-  readonly models: WritableSignal<CatalogueModel[]>;
-  readonly selectedModel: CatalogueModel | undefined;
-  readonly modelIsSelected: Signal<boolean> = computed(() => {
-    const selected: CatalogueModel | undefined = this.selectedModel;
-    return selected !== undefined;
+  readonly userIsWatchingSpares: Signal<boolean> = computed((): boolean => {
+    return this.sparesFetchProps().isWatching;
   });
 
-  readonly categoriesList: Signal<string[]> = computed(() =>
-    this.categories().map((cat) => cat.Name),
-  );
+  readonly userSelectedCategory: Signal<boolean> = computed((): boolean => {
+    return !!this.vehiclesFetchProps().category;
+  });
 
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly _router: Router;
+  readonly userSelectedBrand: Signal<boolean> = computed((): boolean => {
+    return !!this.vehiclesFetchProps().brand;
+  });
 
-  public vehicleTextInput: WritableSignal<string | undefined> =
-    signal(undefined);
+  readonly userSelectedModel: Signal<boolean> = computed((): boolean => {
+    return !!this.vehiclesFetchProps().model;
+  });
+
+  public spareTextInput: WritableSignal<string | undefined> = signal(undefined);
 
   public navigateVehicles(): void {
     // const brand: CatalogueBrand | undefined = this.selectedBrand();
@@ -143,48 +195,177 @@ export class FastNavigationComponent {
     // }
   }
 
-  public handleItemTypeChange($event: Event): void {
+  public navigateSpares(): void {}
+
+  public handleUserItemTypeSelect($event: Event): void {
     const selectedItemType: string | unknown = $event as unknown as string;
-    if (selectedItemType === 'Техника' || selectedItemType === 'Запчасти')
-      this.selectedItemType.set(selectedItemType);
+    if (selectedItemType === 'Техника')
+      this.watchingChanged.emit({ vehicles: true, spares: false });
+    if (selectedItemType === 'Запчасти')
+      this.watchingChanged.emit({ vehicles: false, spares: true });
   }
 
-  public navigateSpares(): void {
-    const input: string | undefined = this.vehicleTextInput();
-    if (input === '<empty string>') {
-      this._router.navigate(['spares']);
-    } else {
-      this._router.navigate(['spares'], {
-        queryParams: {
-          textSearch: input,
-          page: 1,
-        },
-      });
-    }
+  public handleUserCategoryClear(): void {
+    this.categorySelected.emit(undefined);
   }
 
-  private fetchCategories(): void {
+  public handleUserCategoryChange($event: SelectChangeEvent): void {
+    const selectedCategory: CategoryResponse = $event.value as CategoryResponse;
+    this.categorySelected.emit(selectedCategory);
+  }
+
+  public handleUserBrandChange($event: SelectChangeEvent): void {
+    const selectedBrand: BrandResponse = $event.value as BrandResponse;
+    this.brandSelected.emit(selectedBrand);
+  }
+
+  public handleUserBrandClear(): void {
+    this.brandSelected.emit(undefined);
+  }
+
+  public handleUserModelChange($event: SelectChangeEvent): void {
+    const selectedModel: ModelResponse = $event.value as ModelResponse;
+    this.modelSelected.emit(selectedModel);
+  }
+
+  public handleUserModelClear(): void {
+    this.modelSelected.emit(undefined);
+  }
+
+  public handleSpareTextSearchUserInput($event: Event): void {
+    const input: string = $event as unknown as string;
+    if (StringUtils.isEmptyOrWhiteSpace(input))
+      this.spareTextSearchChanged.emit(undefined);
+    else this.spareTextSearchChanged.emit(input);
+  }
+
+  private fetchBrandsOnCategoryChange(): void {
     effect(() => {
-      if (this.itemTypeIsVehicle()) {
-        console.log('fetching categories for vehicles');
-        this._categoriesService
-          .fetchCategories()
+      const props = this.vehiclesFetchProps();
+      if (props.category) {
+        this._brandsService
+          .fetchBrands(
+            null,
+            null,
+            props.category.Id,
+            props.category.Name,
+            props.model?.Id,
+            props.model?.Name,
+          )
           .pipe(
-            takeUntilDestroyed(this._destroyRef),
-            map((data: TypedEnvelope<CategoryResponse[]>) => {
-              let response: CategoryResponse[] = [];
-              if (data.body) response = data.body;
-              return response;
-            }),
-            tap((categories: CategoryResponse[]): void =>
-              this.categories.set(categories),
-            ),
-            catchError(() => {
-              return EMPTY;
-            }),
+            tap((brands: BrandResponse[]): void => this.brands.set(brands)),
+            catchError((): Observable<never> => EMPTY),
           )
           .subscribe();
       }
     });
+  }
+
+  private fetchCategoriesOnItemTypeChange(): void {
+    effect(() => {
+      const props = this.vehiclesFetchProps();
+      if (!props.isWatching) return;
+      this._categoriesService
+        .fetchCategories()
+        .pipe(
+          tap((categories: CategoryResponse[]): void =>
+            this.categories.set(categories),
+          ),
+          catchError((): Observable<never> => EMPTY),
+        )
+        .subscribe();
+    });
+  }
+
+  private fetchModelsOnBrandChange(): void {
+    effect(() => {
+      const props = this.vehiclesFetchProps();
+      if (!props.brand) return;
+      this._modelsService
+        .fetchModels(
+          null,
+          null,
+          props.brand.Id,
+          props.brand.Name,
+          props.category?.Id,
+          props.category?.Name,
+        )
+        .pipe(
+          tap((models: ModelResponse[]): void => this.models.set(models)),
+          catchError((): Observable<never> => EMPTY),
+        )
+        .subscribe();
+    });
+  }
+
+  private fetchVehiclesOnQueryChange(): void {
+    effect(() => {
+      const props: {
+        page?: number | undefined;
+        pageSize?: number | undefined;
+        isWatching: boolean;
+        category?: CategoryResponse | undefined;
+        brand?: BrandResponse | undefined;
+        model?: ModelResponse | undefined;
+      } = this.vehiclesFetchProps();
+      if (!props.isWatching) return;
+      if (!props.category || !props.brand || !props.model) return;
+      const query: GetVehiclesQueryParameters = {
+        ...DefaultGetVehiclesQueryParameters(),
+        Page: props.page,
+        PageSize: props.pageSize,
+        BrandId: props.brand?.Id,
+        CategoryId: props.category?.Id,
+        ModelId: props.model?.Id,
+      };
+      this.invokeFetchVehicles(query);
+    });
+  }
+
+  private fetchSparesOnQueryChange(): void {
+    effect(() => {
+      const props: {
+        page?: number | undefined;
+        pageSize?: number | undefined;
+        isWatching: boolean;
+      } = this.sparesFetchProps();
+      if (!props.isWatching) return;
+      const query: GetSparesQueryParameters = {
+        ...DefaultGetSpareParameters(),
+        Page: props.page,
+        PageSize: props.pageSize,
+        TextSearch: this.spareTextInput(),
+      };
+      this.invokeFetchSpares(query);
+    });
+  }
+
+  private invokeFetchSpares(query: GetSparesQueryParameters): void {
+    this._sparesService
+      .fetchSpares(query)
+      .pipe(
+        tap((response: GetSparesQueryResponse): void => {
+          this.sparesFetched.emit({
+            spares: response.Spares,
+            totalCount: response.TotalCount,
+          });
+        }),
+      )
+      .subscribe();
+  }
+
+  private invokeFetchVehicles(query: GetVehiclesQueryParameters): void {
+    this._vehiclesService
+      .fetchVehicles(query)
+      .pipe(
+        tap((response: GetVehiclesQueryResponse): void => {
+          this.vehiclesFetched.emit({
+            vehicles: response.Vehicles,
+            totalCount: response.TotalCount,
+          });
+        }),
+        catchError((): Observable<never> => EMPTY),
+      )
+      .subscribe();
   }
 }

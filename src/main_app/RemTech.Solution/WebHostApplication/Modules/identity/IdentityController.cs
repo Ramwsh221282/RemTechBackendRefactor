@@ -10,8 +10,6 @@ using Identity.Domain.Accounts.Features.RegisterAccount;
 using Identity.Domain.Accounts.Features.ResetPassword;
 using Identity.Domain.Accounts.Features.VerifyToken;
 using Identity.Domain.Accounts.Models;
-using Identity.Domain.Contracts.Jwt;
-using Identity.Domain.Tokens;
 using Identity.Infrastructure.Accounts.Queries.GetUser;
 using Microsoft.AspNetCore.Mvc;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -138,7 +136,7 @@ public sealed class IdentityController : Controller
         (_, string refreshToken) = HttpContext.GetIdentityTokens([], GetRefreshTokenMethods);
         GetUserByRefreshTokenQuery query = new(refreshToken);
         UserAccountResponse? user = await handler.Handle(query, ct);
-        return EnvelopeExtensions.NotFoundOrOk(user, "Пользователь не найден.");
+        return EnvelopeFactory.NotFoundOrOk(user, "Пользователь не найден.");
     }
 
     [HttpGet("confirmation")]

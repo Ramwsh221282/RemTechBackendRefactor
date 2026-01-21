@@ -1,12 +1,4 @@
-import {
-  Component,
-  DestroyRef,
-  effect,
-  inject,
-  signal,
-  WritableSignal,
-} from '@angular/core';
-import { MessageService } from 'primeng/api';
+import { Component, effect, signal, WritableSignal } from '@angular/core';
 import { ContainedItemsInfoComponent } from './components/contained-items-info/contained-items-info.component';
 import { PopularCategoriesBlockComponent } from './components/popular-categories-block/popular-categories-block.component';
 import { PopularBrandsBlockComponent } from './components/popular-brands-block/popular-brands-block.component';
@@ -18,25 +10,18 @@ import {
   CategoriesPopularity,
   ItemStats,
   MainPageItemStatsResponse,
-  MainPageLastAddedItemsResponse,
-  SpareData,
-  VehicleData,
 } from '../../shared/api/main-page/main-page-responses';
-import { catchError, EMPTY, forkJoin, map, Observable, tap } from 'rxjs';
-import { TypedEnvelope } from '../../shared/api/envelope';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { HttpErrorResponse } from '@angular/common/http';
-import { MessageServiceUtils } from '../../shared/utils/message-service-utils';
+import { catchError, EMPTY, map, Observable, tap } from 'rxjs';
+import { VehicleResponse } from '../../shared/api/vehicles-module/vehicles-api.responses';
+import { SpareResponse } from '../../shared/api/spares-module/spares-api.responses';
+import { CategoryResponse } from '../../shared/api/categories-module/categories-responses';
+import { BrandResponse } from '../../shared/api/brands-module/brands-api.responses';
+import { ModelResponse } from '../../shared/api/models-module/models-responses';
 
 type StatisticsResponseData = {
   categories: CategoriesPopularity[];
   brands: BrandsPopularity[];
   stats: ItemStats[];
-};
-
-type LastAddedItemsResponseData = {
-  vehicles: VehicleData[];
-  spares: SpareData[];
 };
 
 @Component({
@@ -52,88 +37,100 @@ type LastAddedItemsResponseData = {
   styleUrl: './main-page.component.scss',
 })
 export class MainPageComponent {
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  constructor(
-    private readonly _apiService: MainPageApiService,
-    private readonly _messageService: MessageService,
-  ) {
+  constructor(private readonly _apiService: MainPageApiService) {
     this.categoriesPopularity = signal([]);
     this.brandsPopularity = signal([]);
     this.itemStats = signal([]);
     this.vehicles = signal([]);
     this.spares = signal([]);
-    effect(() => {
-      this.fetchMainPageInformation();
-    });
+    this.watchingSpares = signal(false);
+    this.watchingVehicles = signal(false);
+    this.selectedBrand = signal(undefined);
+    this.selectedCategory = signal(undefined);
+    this.selectedModel = signal(undefined);
+    this.vehiclesTextSearch = signal(undefined);
+    this.sparesTextSearch = signal(undefined);
+    this.fetchItemsStatistics();
   }
 
   readonly categoriesPopularity: WritableSignal<CategoriesPopularity[]>;
   readonly brandsPopularity: WritableSignal<BrandsPopularity[]>;
+  readonly vehicles: WritableSignal<VehicleResponse[]>;
+  readonly watchingVehicles: WritableSignal<boolean>;
+  readonly watchingSpares: WritableSignal<boolean>;
+  readonly spares: WritableSignal<SpareResponse[]>;
   readonly itemStats: WritableSignal<ItemStats[]>;
-  readonly vehicles: WritableSignal<VehicleData[]>;
-  readonly spares: WritableSignal<SpareData[]>;
+  readonly sparesPaginationState: WritableSignal<number> = signal(1);
+  readonly vehiclesPaginationState: WritableSignal<number> = signal(1);
+  readonly totalSparesCount: WritableSignal<number> = signal(0);
+  readonly totalVehiclesCount: WritableSignal<number> = signal(0);
+  readonly itemsPerPage: number = 10;
+  readonly selectedCategory: WritableSignal<CategoryResponse | undefined>;
+  readonly selectedBrand: WritableSignal<BrandResponse | undefined>;
+  readonly selectedModel: WritableSignal<ModelResponse | undefined>;
+  readonly vehiclesTextSearch: WritableSignal<string | undefined>;
+  readonly sparesTextSearch: WritableSignal<string | undefined>;
 
-  private fetchMainPageInformation(): void {
-    forkJoin([this.fetchLastAddedItems(), this.fetchItemsStatistics()])
-      .pipe(
-        takeUntilDestroyed(this._destroyRef),
-        tap((result): void => {
-          const items: LastAddedItemsResponseData = result[0];
-          const stats: StatisticsResponseData = result[1];
-          this.itemStats.set(stats.stats);
-          this.categoriesPopularity.set(stats.categories);
-          this.brandsPopularity.set(stats.brands);
-          this.vehicles.set(items.vehicles);
-          this.spares.set(items.spares);
-        }),
-        catchError((error: HttpErrorResponse): Observable<never> => {
-          const message = error.error.message;
-          MessageServiceUtils.showError(this._messageService, message);
-          return EMPTY;
-        }),
-      )
-      .subscribe();
+  public handleSparesPageChange($event: number): void {
+    this.sparesPaginationState.set($event);
   }
 
-  private fetchLastAddedItems(): Observable<LastAddedItemsResponseData> {
-    return this._apiService.fetchLastAddedItems().pipe(
-      takeUntilDestroyed(this._destroyRef),
-      map(
-        (
-          envelope: TypedEnvelope<MainPageLastAddedItemsResponse>,
-        ): LastAddedItemsResponseData => {
-          let response: LastAddedItemsResponseData = {
-            vehicles: [],
-            spares: [],
-          };
-          if (envelope.body) {
-            for (const item of envelope.body.Items) {
-              if (item.Spare) response.spares.push(item.Spare);
-              if (item.Vehicle) response.vehicles.push(item.Vehicle);
-            }
-          }
-          return response;
-        },
-      ),
-    );
+  public handleVehiclesPageChange($event: number): void {
+    this.vehiclesPaginationState.set($event);
   }
 
-  private fetchItemsStatistics(): Observable<StatisticsResponseData> {
-    return this._apiService.fetchItemStatistics().pipe(
-      takeUntilDestroyed(this._destroyRef),
-      map((envelope: TypedEnvelope<MainPageItemStatsResponse>) => {
-        let response: StatisticsResponseData = {
-          brands: [],
-          categories: [],
-          stats: [],
-        };
-        if (envelope.body) {
-          response.brands = envelope.body.BrandsPopularity;
-          response.categories = envelope.body.CategoriesPopularity;
-          response.stats = envelope.body.ItemStats;
-        }
-        return response;
-      }),
-    );
+  public handleVehiclesFetched($event: {
+    vehicles: VehicleResponse[];
+    totalCount: number;
+  }): void {
+    this.vehicles.set($event.vehicles);
+    this.totalVehiclesCount.set($event.totalCount);
+  }
+
+  public handleSparesFetched($event: {
+    spares: SpareResponse[];
+    totalCount: number;
+  }): void {
+    this.spares.set($event.spares);
+    this.totalSparesCount.set($event.totalCount);
+  }
+
+  public handleWatchSet($event: { vehicles: boolean; spares: boolean }): void {
+    this.watchingVehicles.set($event.vehicles);
+    this.watchingSpares.set($event.spares);
+  }
+
+  private fetchItemsStatistics(): void {
+    effect(() => {
+      this._apiService
+        .fetchItemStatistics()
+        .pipe(
+          map(
+            (response: MainPageItemStatsResponse): StatisticsResponseData =>
+              this.mapToCurrentComponentStatisticsProps(response),
+          ),
+          tap((data: StatisticsResponseData): void =>
+            this.refreshStatisticsSignals(data),
+          ),
+          catchError((): Observable<never> => EMPTY),
+        )
+        .subscribe();
+    });
+  }
+
+  private mapToCurrentComponentStatisticsProps(
+    response: MainPageItemStatsResponse,
+  ): StatisticsResponseData {
+    return {
+      brands: response.BrandsPopularity,
+      categories: response.CategoriesPopularity,
+      stats: response.ItemStats,
+    };
+  }
+
+  private refreshStatisticsSignals(data: StatisticsResponseData): void {
+    this.itemStats.set(data.stats);
+    this.categoriesPopularity.set(data.categories);
+    this.brandsPopularity.set(data.brands);
   }
 }
