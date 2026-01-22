@@ -1,4 +1,4 @@
-import { Component, DestroyRef, effect, inject, signal, WritableSignal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, Signal, signal, WritableSignal } from '@angular/core';
 import { CatalogueVehicle } from './types/CatalogueVehicle';
 import { ActivatedRoute, Params } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +11,10 @@ import {
 import { VehicleCategoryFilterFormPartComponent } from './components/vehicle-category-filter-form-part/vehicle-category-filter-form-part.component';
 import { VehicleBrandFilterFormPartComponent } from './components/vehicle-brand-filter-form-part/vehicle-brand-filter-form-part.component';
 import { VehicleModelFilterFormPartComponent } from './components/vehicle-model-filter-form-part/vehicle-model-filter-form-part.component';
-import { VehicleRegionsFilterFormPartComponent } from './components/vehicle-regions-filter-form-part/vehicle-regions-filter-form-part.component';
+import {
+    VehicleRegionsFilterFormPartComponent,
+    VehicleRegionsFilterFormPartProps,
+} from './components/vehicle-regions-filter-form-part/vehicle-regions-filter-form-part.component';
 import { VehicleCardComponent } from './components/vehicle-card/vehicle-card.component';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import { VehiclesApiService } from '../../shared/api/vehicles-module/vehicles-api.service';
@@ -25,12 +28,16 @@ import { GetVehiclesQueryResponse } from '../../shared/api/vehicles-module/vehic
 import { LocationsApiService } from '../../shared/api/locations-module/locations-api.service';
 import { LocationResponse } from '../../shared/api/locations-module/locations.responses';
 import { GetLocationsQueryParameters } from '../../shared/api/locations-module/locations.requests';
-import { DefaultLocationQuery } from '../../shared/api/locations-module/locations.factories';
+import {
+    DefaultLocationQuery,
+    LocationsQueryWithOrderByName,
+} from '../../shared/api/locations-module/locations.factories';
 
 type ActivatedVehicleRouteParams = {
     category: CategoryResponse | null | undefined;
     brand: BrandResponse | null | undefined;
     model: ModelResponse | null | undefined;
+    location: LocationResponse | null | undefined;
 };
 
 type AggregatedStatisticsInfo = {
@@ -50,7 +57,7 @@ export const defaultAggregatedStatisticsInfo: () => AggregatedStatisticsInfo = (
 };
 
 export const defaultActivatedVehicleRouteParams: () => ActivatedVehicleRouteParams = () => {
-    return { brand: undefined, category: undefined, model: undefined };
+    return { brand: undefined, category: undefined, model: undefined, location: undefined };
 };
 
 @Component({
@@ -79,7 +86,9 @@ export class VehiclesPageComponent {
     readonly totalAmount: WritableSignal<number> = signal(0);
     readonly destroyRef: DestroyRef = inject(DestroyRef);
     readonly vehiclesQuery: WritableSignal<GetVehiclesQueryParameters> = signal(DefaultGetVehiclesQueryParameters());
-    readonly locationsQuery: WritableSignal<GetLocationsQueryParameters> = signal(DefaultLocationQuery());
+    readonly locationsQuery: WritableSignal<GetLocationsQueryParameters> = signal(
+        LocationsQueryWithOrderByName(true, DefaultLocationQuery()),
+    );
 
     readonly itemsPerPage: number = 20;
     readonly aggregatedStatistics: WritableSignal<AggregatedStatisticsInfo> = signal(defaultAggregatedStatisticsInfo());
@@ -96,10 +105,21 @@ export class VehiclesPageComponent {
         this.fetchVehicles(query);
     });
 
+    readonly locationsFilterProps: Signal<VehicleRegionsFilterFormPartProps> = computed(
+        (): VehicleRegionsFilterFormPartProps => {
+            return { locations: this.locations(), selectedLocation: this.activatedRouteParams().location };
+        },
+    );
+
     readonly fetchLocationsOnQueryChangeEffect = effect(() => {
         const query: GetLocationsQueryParameters = this.locationsQuery();
         this.fetchLocations(query);
     });
+
+    public handleLocationFilterTyped($event: string | null | undefined): void {
+        const current: GetLocationsQueryParameters = this.locationsQuery();
+        this.updateLocationsQuery(current.CategoryId, current.BrandId, $event);
+    }
 
     public acceptTextSearch($event: string | undefined): void {
         // const part: TextSearchPart = new TextSearchPart($event);
@@ -161,21 +181,29 @@ export class VehiclesPageComponent {
             const category: CategoryResponse | null = extractCategoryFromQueryParams(params);
             const brand: BrandResponse | null = extractBrandFromQueryParams(params);
             const page: number | null = extractPageFromQueryParams(params);
-            this.updateActivatedVehicleRouteParams(category, brand);
+            this.updateActivatedVehicleRouteParams(category, brand, null);
             this.updateVehiclesQuery(page, category, brand);
-            this.updateLocationsQuery(category, brand);
+            this.updateLocationsQuery(category?.Id, brand?.Id, undefined);
         });
     }
 
-    private updateActivatedVehicleRouteParams(category: CategoryResponse | null, brand: BrandResponse | null): void {
+    private updateActivatedVehicleRouteParams(
+        category: CategoryResponse | null,
+        brand: BrandResponse | null,
+        location: LocationResponse | null | undefined,
+    ): void {
         this.activatedRouteParams.update((state: ActivatedVehicleRouteParams) => {
-            return { ...state, brand, category };
+            return { ...state, brand, category, location };
         });
     }
 
-    private updateLocationsQuery(category: CategoryResponse | null, brand: BrandResponse | null): void {
+    private updateLocationsQuery(
+        categoryId: string | null | undefined,
+        brandId: string | null | undefined,
+        textSearch: string | null | undefined,
+    ): void {
         this.locationsQuery.update((state: GetLocationsQueryParameters): GetLocationsQueryParameters => {
-            return { ...state, CategoryId: category?.Id, BrandId: brand?.Id };
+            return { ...state, CategoryId: categoryId, BrandId: brandId, TextSearch: textSearch };
         });
     }
 

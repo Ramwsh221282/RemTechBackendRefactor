@@ -19,6 +19,7 @@ public sealed class GetLocationsQuery : IQuery
     public string? BrandName { get; private init; } = null;
     public string? ModelName { get; private init; } = null;
     public IEnumerable<string>? Includes { get; private init; } = null;
+    public bool? UseOrderByName { get; private init; } = null;
 
     [JsonIgnore]
     private Dictionary<string, string>? _includedInformationKeys_cached = null;
@@ -38,6 +39,9 @@ public sealed class GetLocationsQuery : IQuery
     public GetLocationsQuery WithBrandId(Guid? brandId) => Copy(this, brandId: brandId);
 
     public GetLocationsQuery WithModelId(Guid? modelId) => Copy(this, modelId: modelId);
+
+    public GetLocationsQuery WithOrderByName(bool? useOrderByName) =>
+        Copy(this, orderByName: useOrderByName);
 
     public GetLocationsQuery WithCategoryName(string? categoryName) =>
         Copy(this, categoryName: categoryName);
@@ -76,7 +80,8 @@ public sealed class GetLocationsQuery : IQuery
         string? categoryName = null,
         string? brandName = null,
         string? modelName = null,
-        IEnumerable<string>? includes = null
+        IEnumerable<string>? includes = null,
+        bool? orderByName = null
     ) =>
         new()
         {
@@ -90,6 +95,7 @@ public sealed class GetLocationsQuery : IQuery
             BrandName = brandName ?? original.BrandName,
             ModelName = modelName ?? original.ModelName,
             Includes = includes is null ? original.Includes : [.. includes],
+            UseOrderByName = orderByName ?? original.UseOrderByName,
         };
 
     public static GetLocationsQuery Create() => new() { Amount = 20 };

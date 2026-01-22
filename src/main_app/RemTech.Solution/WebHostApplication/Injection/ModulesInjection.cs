@@ -39,7 +39,7 @@ public static class ModulesInjection
             services.RegisterInfrastructureDependencies();
 
             services.RegisterHandlers(typeof(IQueryHandler<,>), assemblies);
-            services.RegisterHandlers(typeof(ICachingQueryHandler<,>), assemblies);
+            services.RegisterHandlers(typeof(IQueryExecutorWithCache<,>), assemblies);
             services.RegisterHandlers(typeof(IEventTransporter<,>), assemblies);
             services.RegisterHandlers(typeof(ICacheInvalidator<,>), assemblies);
             services.RegisterHandlers(typeof(ICommandHandler<,>), assemblies);
@@ -57,6 +57,12 @@ public static class ModulesInjection
         {
             Type commandHandlerType = typeof(ICommandHandler<,>);
             services.TryDecorate(commandHandlerType, decoratorType);
+        }
+
+        private void DecorateQueryHandlersWith(Type type)
+        {
+            Type queryHandlerType = typeof(IQueryHandler<,>);
+            services.TryDecorate(queryHandlerType, type);
         }
 
         private void RegisterDomainEventHandlers(Assembly[] assemblies) =>

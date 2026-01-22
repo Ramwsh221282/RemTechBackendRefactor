@@ -77,7 +77,7 @@ public sealed class GetLocationsQueryHandler(
               {CreateWhereClause(filters)}
               GROUP BY r.id, r.name
               HAVING COUNT(v.id) > 0              
-              {AddOrderBy(query, [OrderByTextSearchSimilarity])}
+              {AddOrderBy(query, [OrderByTextSearchSimilarity, OrderByLocationName])}
               {CreateLimitClause(query)}
             """;
 
@@ -102,9 +102,8 @@ public sealed class GetLocationsQueryHandler(
             .. includeSource.Select(s => s.Invoke(query)).Where(s => !string.IsNullOrWhiteSpace(s)),
         ];
 
-        return includes.Length == 0
-            ? string.Empty
-            : string.Join(", ", includeSource.Select(source => source.Invoke(query)));
+        string include = includes.Length == 0 ? string.Empty : ", " + string.Join(", ", includes);
+        return include;
     }
 
     private static string AddOrderBy(
@@ -297,7 +296,7 @@ public sealed class GetLocationsQueryHandler(
 
     private static string IncludeTextSearchScore(GetLocationsQuery query) =>
         query.ContainsInclude("text-search-score")
-            ? "l.embedding <-> @embedding AS TextSearchScore"
+            ? "r.embedding <-> @embedding AS TextSearchScore"
             : string.Empty;
 
     private static string IncludeVehiclesCount(GetLocationsQuery query) =>
@@ -305,6 +304,14 @@ public sealed class GetLocationsQueryHandler(
 
     private static string CreateWhereClause(List<string> filters) =>
         filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
+
+    private static string OrderByLocationName(GetLocationsQuery query)
+    {
+        if (query.UseOrderByName == null)
+            return string.Empty;
+        bool use = query.UseOrderByName.Value;
+        return use ? "Name ASC" : "Name DESC";
+    }
 
     private static string OrderByTextSearchSimilarity(GetLocationsQuery query)
     {

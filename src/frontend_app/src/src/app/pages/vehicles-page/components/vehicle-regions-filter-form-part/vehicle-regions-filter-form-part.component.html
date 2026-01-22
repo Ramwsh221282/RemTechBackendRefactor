@@ -1,15 +1,14 @@
-<p-select (onChange)="onChange($event)" [fluid]="true" [options]="regions" [(ngModel)]="selectedRegion"
-          optionLabel="name" [filter]="true"
-          filterBy="name"
-          [showClear]="true" placeholder="Выбрать регион" class="w-full md:w-56">
-  <ng-template #selectedItem let-selectedOption>
-    <div class="flex items-center gap-2">
-      <div>{{ selectedOption.name }}</div>
-    </div>
-  </ng-template>
-  <ng-template let-region #item>
-    <div class="flex items-center gap-2">
-      <div>{{ region.name + ' ' + region.kind }}</div>
-    </div>
-  </ng-template>
-</p-select>
+<p-select
+    (onChange)="userChangesLocation($event)"
+    [fluid]="true"
+    [options]="locations()"
+    [(ngModel)]="selectedLocation"
+    optionLabel="Name"
+    [filter]="true"
+    filterBy="Name"
+    [showClear]="true"
+    (onFilter)="handleUserFiltersLocation($event)"
+    [emptyMessage]="'Локации не найдены'"
+    placeholder="Выбрать регион"
+    class="w-full md:w-56"
+/>

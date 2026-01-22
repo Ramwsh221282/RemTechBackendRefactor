@@ -20,6 +20,7 @@ public sealed class LocationsController
         [FromQuery(Name = "brand-name")] string? brandName,
         [FromQuery(Name = "model-name")] string? modelName,
         [FromQuery(Name = "amount")] int? amount,
+        [FromQuery(Name = "order-by-name")] bool? orderByName,
         [FromQuery(Name = "include")] IEnumerable<string>? includes,
         [FromServices] IQueryHandler<GetLocationsQuery, IEnumerable<LocationsResponse>> handler,
         CancellationToken ct = default
@@ -36,7 +37,8 @@ public sealed class LocationsController
             .WithBrandName(brandName)
             .WithModelName(modelName)
             .WithIncludes(includes)
-            .WithAmount(amount);
+            .WithAmount(amount)
+            .WithOrderByName(orderByName);
 
         IEnumerable<LocationsResponse> result = await handler.Handle(query, ct);
         return EnvelopedResultsExtensions.AsEnvelope(result);
