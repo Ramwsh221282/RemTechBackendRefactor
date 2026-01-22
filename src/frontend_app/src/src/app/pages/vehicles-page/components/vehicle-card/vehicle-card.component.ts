@@ -2,7 +2,7 @@ import { Component, Input, signal, WritableSignal } from '@angular/core';
 import { CatalogueVehicle } from '../../types/CatalogueVehicle';
 import { CatalogueVehiclesService } from '../../services/CatalogueVehiclesService';
 import { DecimalPipe, NgForOf, NgIf } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-vehicle-card',

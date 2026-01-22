@@ -20,7 +20,8 @@
     <div class="flex justify-between items-start">
       <div>
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-          {{ vehicle.categoryName }} {{ vehicle.brandName }} {{ vehicle.modelName }}
+          {{ vehicle.categoryName }} {{ vehicle.brandName }}
+          {{ vehicle.modelName }}
         </h3>
       </div>
 
@@ -29,7 +30,7 @@
           {{ vehicle.price | number }} ₽
         </p>
         <p class="text-xs text-gray-500 dark:text-gray-400">
-          {{ vehicle.isNds ? 'с НДС' : 'без НДС' }}
+          {{ vehicle.isNds ? "с НДС" : "без НДС" }}
         </p>
       </div>
     </div>
@@ -42,13 +43,17 @@
   </div>
 
   <div
-    class="md:col-span-12 border-t border-gray-100 dark:border-gray-700 px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+    class="md:col-span-12 border-t border-gray-100 dark:border-gray-700 px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3"
+  >
     <div class="flex flex-wrap gap-2">
       <ng-container *ngFor="let ctx of vehicle.characteristics">
         <div class="text-sm bg-gray-50 dark:bg-gray-900 rounded px-2 py-1">
-          <span class="text-gray-500 dark:text-gray-400 mr-1">{{ ctx.name }}:</span>
-          <span
-            class="font-medium text-gray-800 dark:text-gray-200">{{ ctx.value }} {{ ctx.measure }}</span>
+          <span class="text-gray-500 dark:text-gray-400 mr-1"
+            >{{ ctx.name }}:</span
+          >
+          <span class="font-medium text-gray-800 dark:text-gray-200"
+            >{{ ctx.value }} {{ ctx.measure }}</span
+          >
         </div>
       </ng-container>
     </div>
@@ -64,11 +69,20 @@
         class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
       >
         Подробнее
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M5 12h14M12 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        <svg
+          class="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+        >
+          <path
+            d="M5 12h14M12 5l7 7-7 7"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
         </svg>
       </button>
-
     </div>
   </div>
 </div>
