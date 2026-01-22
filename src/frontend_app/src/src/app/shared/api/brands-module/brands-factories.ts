@@ -1,5 +1,5 @@
-import {BrandResponse} from './brands-api.responses';
+import { BrandResponse } from './brands-api.responses';
 
 export const DefaultBrand = (): BrandResponse => {
-  return { Id: '', Name: '' };
-}
+  return { Id: '', Name: '', VehiclesCount: null, TextSearchScore: null };
+};

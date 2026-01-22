@@ -37,7 +37,7 @@
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
-        *ngFor="let brand of brands"
+        *ngFor="let brand of brands()"
         class="group cursor-pointer"
         (click)="navigateByBrand(brand)"
       >
@@ -48,7 +48,7 @@
             <h2
               class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
             >
-              {{ brand.name }}
+              {{ brand.Name }}
             </h2>
             <div class="mt-auto">
               <span
@@ -66,18 +66,20 @@
                     clip-rule="evenodd"
                   ></path>
                 </svg>
-                {{ brand.itemsCount }} объявлений
+                @if (brand.VehiclesCount) {
+                  <span>{{ brand.VehiclesCount }} объявлений</span>
+                }
               </span>
             </div>
           </div>
         </div>
       </div>
-      @if (totalCount > 30) {
+      @if (totalCount() > 30) {
         <app-pagination
-          (pageChanged)="changePage($event)"
-          *ngIf="totalCount > 30"
-          [current_page]="currentPage"
-          [total_count]="totalCount"
+          (pageChanged)="handlePageChange($event)"
+          *ngIf="totalCount() > 30"
+          [current_page]="page()"
+          [total_count]="totalCount()"
           [page_size]="30"
         />
       }

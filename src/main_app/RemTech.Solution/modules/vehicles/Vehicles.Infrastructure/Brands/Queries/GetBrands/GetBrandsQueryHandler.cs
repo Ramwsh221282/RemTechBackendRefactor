@@ -1,11 +1,15 @@
 ﻿using System.Data;
+using System.Data.Common;
 using Dapper;
+using Npgsql;
+using Pgvector;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.Database;
+using RemTech.SharedKernel.NN;
 
 namespace Vehicles.Infrastructure.Brands.Queries.GetBrands;
 
-public sealed class GetBrandsQueryHandler(NpgSqlSession session)
+public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
     : IQueryHandler<GetBrandsQuery, IEnumerable<BrandResponse>>
 {
     public async Task<IEnumerable<BrandResponse>> Handle(
@@ -15,10 +19,12 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session)
     {
         (DynamicParameters parameters, string sql) = CreateSql(query);
         CommandDefinition command = session.FormCommand(sql, parameters, ct);
-        return await session.QueryMultipleRows<BrandResponse>(command);
+        NpgsqlConnection connection = await session.GetConnection(ct);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+        return await MapFromReader(reader, ct);
     }
 
-    private static (DynamicParameters parameters, string sql) CreateSql(GetBrandsQuery query)
+    private (DynamicParameters parameters, string sql) CreateSql(GetBrandsQuery query)
     {
         List<string> filters = [];
         filters.Add("i.deleted_at IS NULL");
@@ -30,18 +36,111 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session)
             SELECT
             b.id as Id,
             b.name as Name
+            {IncludeAdditionals(
+                query,
+                [IncludeVehiclesCount, IncludeVehiclesTextSearchScore, IncludeBrandsTotalCount]
+            )}
             FROM vehicles_module.brands b     
             INNER JOIN vehicles_module.vehicles v ON v.brand_id = b.id
             INNER JOIN contained_items_module.contained_items i ON v.id = i.id       
             {CreateWhereClause(filters)}                                    
             GROUP BY b.id, b.name
             HAVING COUNT(v.id) > 0
+            {IncludeOrderBy(query, [IncludeTextSearchOrderBy])}
+            {IncludePagination(query)}
             """;
 
         return (parameters, sql);
     }
 
-    private static void ApplyFilters(
+    private static async Task<IEnumerable<BrandResponse>> MapFromReader(
+        DbDataReader reader,
+        CancellationToken ct
+    )
+    {
+        List<BrandResponse> brands = [];
+        while (await reader.ReadAsync(ct))
+        {
+            Guid id = reader.GetGuid(reader.GetOrdinal("Id"));
+            string name = reader.GetString(reader.GetOrdinal("Name"));
+            BrandResponse brand = new(id, name);
+
+            if (ReaderHasColumn(reader, "VehiclesCount"))
+                brand.VehiclesCount = reader.GetInt32(reader.GetOrdinal("VehiclesCount"));
+
+            if (ReaderHasColumn(reader, "TextSearchScore"))
+                brand.TextSearchScore = reader.GetFloat(reader.GetOrdinal("TextSearchScore"));
+
+            if (ReaderHasColumn(reader, "TotalCount"))
+                brand.TotalCount = reader.GetInt32(reader.GetOrdinal("TotalCount"));
+
+            brands.Add(brand);
+        }
+
+        return brands;
+    }
+
+    private static string IncludeAdditionals(
+        GetBrandsQuery query,
+        Func<GetBrandsQuery, string>[] includes
+    )
+    {
+        string[] normalized =
+        [
+            .. includes.Select(i => i.Invoke(query)).Where(i => !string.IsNullOrWhiteSpace(i)),
+        ];
+        return normalized.Length == 0 ? string.Empty : ", " + string.Join(", ", normalized);
+    }
+
+    private static string IncludeTextSearchOrderBy(GetBrandsQuery query) =>
+        string.IsNullOrWhiteSpace(query.TextSearch)
+            ? string.Empty
+            : "b.embedding <-> @embedding ASC";
+
+    private static string IncludePagination(GetBrandsQuery query) =>
+        (query.Page.HasValue && query.PageSize.HasValue)
+            ? $"LIMIT {query.PageSize.Value} OFFSET {(query.Page.Value - 1) * query.PageSize.Value}"
+            : string.Empty;
+
+    private static string IncludeOrderBy(
+        GetBrandsQuery query,
+        Func<GetBrandsQuery, string>[] includes
+    )
+    {
+        string[] normalized =
+        [
+            .. includes.Select(i => i.Invoke(query)).Where(i => !string.IsNullOrWhiteSpace(i)),
+        ];
+
+        return normalized.Length == 0 ? string.Empty : "ORDER BY " + string.Join(", ", normalized);
+    }
+
+    private static string IncludeVehiclesCount(GetBrandsQuery query) =>
+        !query.ContainsFieldInclude("vehicles-count")
+            ? string.Empty
+            : "COUNT(v.id) AS VehiclesCount";
+
+    private static string IncludeBrandsTotalCount(GetBrandsQuery query) =>
+        !query.ContainsFieldInclude("brands-count")
+            ? string.Empty
+            : "COUNT(*) OVER() AS TotalCount";
+
+    private static string IncludeVehiclesTextSearchScore(GetBrandsQuery query) =>
+        !query.ContainsFieldInclude("text-search-score")
+            ? string.Empty
+            : "b.embedding <-> @embedding";
+
+    private void ApplyFilters(
+        GetBrandsQuery query,
+        List<string> filters,
+        DynamicParameters parameters
+    )
+    {
+        ApplyMainQueryFilters(query, filters, parameters);
+        ApplySubQueryFilters(query, filters, parameters);
+    }
+
+    private void ApplySubQueryFilters(
         GetBrandsQuery query,
         List<string> filters,
         DynamicParameters parameters
@@ -49,18 +148,6 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session)
     {
         List<string> subJoins = [];
         List<string> subFilters = [];
-
-        if (query.Id != null && query.Id != Guid.Empty)
-        {
-            filters.Add("b.id = @brand_id");
-            parameters.Add("brand_id", query.Id, DbType.Guid);
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.Name))
-        {
-            filters.Add("b.name = @brand_name");
-            parameters.Add("brand_name", query.Name, DbType.String);
-        }
 
         if (SomeCategoryFilterProvided(query))
             subJoins.Add("INNER JOIN vehicles_module.categories ic ON ic.id = v.category_id");
@@ -106,6 +193,52 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session)
             )
             """
         );
+    }
+
+    private void ApplyMainQueryFilters(
+        GetBrandsQuery query,
+        List<string> filters,
+        DynamicParameters parameters
+    )
+    {
+        if (query.Id != null && query.Id != Guid.Empty)
+        {
+            filters.Add("b.id = @brand_id");
+            parameters.Add("brand_id", query.Id, DbType.Guid);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Name))
+        {
+            filters.Add("b.name = @brand_name");
+            parameters.Add("brand_name", query.Name, DbType.String);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.TextSearch))
+        {
+            Vector vector = new(embeddings.Generate(query.TextSearch));
+            parameters.Add("@embedding", vector);
+            parameters.Add("@text_search", query.TextSearch, DbType.String);
+            filters.Add(
+                """ 
+                (
+                b.embedding <-> @embedding <= 0.81
+                OR ts_rand_cd(to_tsvector('russian', b.name), to_tsquery('russian', @text_search)) > 0 
+                OR b.name ILIKE '%' || @text_search || '%'
+                )
+                """
+            );
+        }
+    }
+
+    private static bool ReaderHasColumn(DbDataReader reader, string columnName)
+    {
+        for (int i = 0; i < reader.FieldCount; i++)
+        {
+            if (reader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
     }
 
     private static string CreateWhereClause(List<string> filters) =>
