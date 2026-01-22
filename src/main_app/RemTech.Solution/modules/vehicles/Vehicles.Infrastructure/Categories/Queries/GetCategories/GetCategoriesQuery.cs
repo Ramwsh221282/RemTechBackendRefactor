@@ -19,10 +19,15 @@ public class GetCategoriesQuery : IQuery
     public string? TextSearch { get; private set; }
 
     [JsonIgnore]
+    private Dictionary<string, string>? _includedInformationKeys_cached = null;
+
+    [JsonIgnore]
     private Dictionary<string, string> IncludedInformationKeys =>
         IncludedInformation is null
             ? []
-            : IncludedInformation.ToDictionary(info => info.ToLowerInvariant(), info => info);
+            : _includedInformationKeys_cached ??= IncludedInformation
+                .ToHashSet()
+                .ToDictionary(i => i, i => i);
 
     public GetCategoriesQuery WithPage(int? page) => Copy(this, page: page);
 

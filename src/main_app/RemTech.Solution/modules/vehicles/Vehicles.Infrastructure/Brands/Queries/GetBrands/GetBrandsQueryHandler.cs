@@ -140,7 +140,7 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
         ApplySubQueryFilters(query, filters, parameters);
     }
 
-    private void ApplySubQueryFilters(
+    private static void ApplySubQueryFilters(
         GetBrandsQuery query,
         List<string> filters,
         DynamicParameters parameters

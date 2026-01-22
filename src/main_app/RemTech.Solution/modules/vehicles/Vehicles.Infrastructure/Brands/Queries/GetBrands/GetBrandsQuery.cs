@@ -17,8 +17,13 @@ public sealed class GetBrandsQuery : IQuery
     public string? TextSearch { get; private set; }
 
     [JsonIgnore]
+    private Dictionary<string, string>? _includedInformationKeys_cached = null;
+
+    [JsonIgnore]
     private Dictionary<string, string> IncludedInformationKeys =>
-        Includes is null ? [] : Includes.ToDictionary(i => i, i => i);
+        _includedInformationKeys_cached ??= Includes is null
+            ? []
+            : Includes.ToHashSet().ToDictionary(i => i, i => i);
 
     public bool ContainsFieldInclude(string include) =>
         IncludedInformationKeys.ContainsKey(include);
