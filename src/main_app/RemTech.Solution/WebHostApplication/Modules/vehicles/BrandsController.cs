@@ -18,6 +18,10 @@ public sealed class BrandsController
         [FromQuery(Name = "categoryName")] string? categoryName,
         [FromQuery(Name = "modelId")] Guid? modelId,
         [FromQuery(Name = "modelName")] string? modelName,
+        [FromQuery(Name = "page")] int? page,
+        [FromQuery(Name = "pageSize")] int? pageSize,
+        [FromQuery(Name = "include")] IEnumerable<string>? includes,
+        [FromQuery(Name = "text-search")] string? textSearch,
         [FromServices] IQueryHandler<GetBrandsQuery, IEnumerable<BrandResponse>> handler,
         CancellationToken ct = default
     )
@@ -28,7 +32,11 @@ public sealed class BrandsController
             .ForCategoryId(categoryId)
             .ForCategoryName(categoryName)
             .ForModelId(modelId)
-            .ForModelName(modelName);
+            .ForModelName(modelName)
+            .WithPageSize(pageSize)
+            .WithPagination(page)
+            .WithTextSearch(textSearch)
+            .WithInclude(includes);
 
         IEnumerable<BrandResponse> response = await handler.Handle(query, ct);
         return EnvelopeFactory.Ok(response);

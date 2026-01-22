@@ -20,6 +20,11 @@ export class BrandsApiService {
     categoryName?: string | null | undefined,
     modelId?: string | null | undefined,
     modelName?: string | null | undefined,
+    page?: number | null | undefined,
+    pageSize?: number | null | undefined,
+    textSearch?: string | null | undefined,
+    useVehiclesCount: boolean = false,
+    useBrandsCount: boolean = false,
   ): Observable<BrandResponse[]> {
     return this.invokeBrandsFetch(
       id,
@@ -28,6 +33,11 @@ export class BrandsApiService {
       categoryName,
       modelId,
       modelName,
+      page,
+      pageSize,
+      textSearch,
+      useVehiclesCount,
+      useBrandsCount,
     );
   }
 
@@ -38,15 +48,37 @@ export class BrandsApiService {
     categoryName?: string | null | undefined,
     modelId?: string | null | undefined,
     modelName?: string | null | undefined,
+    page?: number | null | undefined,
+    pageSize?: number | null | undefined,
+    textSearch?: string | null | undefined,
+    useVehiclesCount: boolean = false,
+    useBrandsCount: boolean = false,
   ): Observable<BrandResponse[]> {
     if (this._fetchingBrands$) return this._fetchingBrands$;
+
     let params: HttpParams = new HttpParams();
+    const includes: string[] = [];
+
     if (id) params = params.append('id', id);
     if (name) params = params.append('name', name);
     if (categoryId) params = params.append('categoryId', categoryId);
     if (categoryName) params = params.append('categoryName', categoryName);
     if (modelId) params = params.append('modelId', modelId);
     if (modelName) params = params.append('modelName', modelName);
+    if (page) params = params.append('page', page.toString());
+    if (pageSize) params = params.append('pageSize', pageSize.toString());
+    if (useVehiclesCount) params = params.append('include', 'vehicles-count');
+    if (useBrandsCount) params = params.append('include', 'brands-count');
+    if (textSearch) {
+      params = params.append('text-search', textSearch);
+      params = params.append('include', 'text-search-score');
+    }
+    if (includes) {
+      for (const include of includes) {
+        params = params.append('include', include);
+      }
+    }
+
     this._fetchingBrands$ = this._httpClient
       .get<TypedEnvelope<BrandResponse[]>>(this._apiUrl, { params })
       .pipe(

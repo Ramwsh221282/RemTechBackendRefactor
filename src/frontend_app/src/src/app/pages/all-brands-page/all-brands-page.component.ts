@@ -1,27 +1,18 @@
-import {
-  Component,
-  DestroyRef,
-  effect,
-  inject,
-  signal,
-  WritableSignal,
-} from '@angular/core';
-import { QueryCategoriesResponse } from '../all-categories-page/types/QueryCategoriesResponse';
+import { Component, effect, signal, WritableSignal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { StringUtils } from '../../shared/utils/string-utils';
-import { QueryBrandResponse } from './types/QueryBrandResponse';
-import { AllBrandsService } from './services/AllBrandsService';
 import { Button } from 'primeng/button';
 import { NgForOf, NgIf } from '@angular/common';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
-import { PopularBrand } from '../main-page/types/PopularBrand';
 import { Router } from '@angular/router';
+import { BrandsApiService } from '../../shared/api/brands-module/brands-api.service';
+import { BrandResponse } from '../../shared/api/brands-module/brands-api.responses';
+import { catchError, EMPTY, Observable, tap } from 'rxjs';
 
 @Component({
   selector: 'app-all-brands-page',
@@ -37,90 +28,86 @@ import { Router } from '@angular/router';
   styleUrl: './all-brands-page.component.scss',
 })
 export class AllBrandsPageComponent {
-  private readonly _page: WritableSignal<number>;
-  private readonly _text: WritableSignal<string | null>;
-  private readonly _brands: WritableSignal<QueryBrandResponse[]>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly _totalCount: WritableSignal<number>;
-  public readonly searchForm: FormGroup = new FormGroup({
+  constructor(
+    private readonly _service: BrandsApiService,
+    private readonly _router: Router,
+  ) {
+    this.page = signal(1);
+    this.text = signal(null);
+    this.brands = signal([]);
+    this.totalCount = signal(0);
+    effect(() => {
+      const page: number = this.page();
+      const text: string | null = this.text();
+      this.fetchBrands(page, text);
+    });
+  }
+
+  readonly page: WritableSignal<number>;
+  readonly text: WritableSignal<string | null>;
+  readonly brands: WritableSignal<BrandResponse[]>;
+  readonly totalCount: WritableSignal<number>;
+  readonly searchForm: FormGroup = new FormGroup({
     text: new FormControl(''),
   });
 
-  constructor(
-    service: AllBrandsService,
-    private readonly _router: Router,
-  ) {
-    this._page = signal(1);
-    this._text = signal(null);
-    this._brands = signal([]);
-    this._totalCount = signal(0);
-    effect(() => {
-      const text: string | null = this._text();
-      service
-        .fetchCount(text)
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (amount: number): void => {
-            this._totalCount.set(amount);
-          },
-        });
-    });
-    effect(() => {
-      const page: number = this._page();
-      const text: string | null = this._text();
-      service
-        .fetchBrands(page, text)
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (data: QueryCategoriesResponse[]): void => {
-            this._brands.set(data);
-          },
-        });
-    });
+  public handlePageChange(page: number): void {
+    console.log(page);
   }
 
   public resetSearchForm(): void {
     this.searchForm.reset();
-    this.submitSearch();
+    this.submitSearch(null);
   }
 
   public textSearchFormSubmit(): void {
-    this.submitSearch();
+    const input: string | null = this.readUserTextSearchInput();
+    this.submitSearch(input);
   }
 
-  public navigateByBrand(brand: PopularBrand): void {
+  public navigateByBrand(brand: BrandResponse): void {
     this._router.navigate(['vehicles'], {
       queryParams: {
-        brandId: brand.id,
-        brandName: brand.name,
+        brandId: brand.Id,
+        brandName: brand.Name,
         page: 1,
       },
     });
   }
 
-  private submitSearch(): void {
+  private readUserTextSearchInput(): string | null {
     const formValues = this.searchForm.value;
     const text: string = formValues.text;
-    if (StringUtils.isEmptyOrWhiteSpace(text)) {
-      this._text.set(null);
-      return;
-    }
-    this._text.set(text);
+    return StringUtils.isEmptyOrWhiteSpace(text) ? null : text;
   }
 
-  public get currentPage(): number {
-    return this._page();
+  private submitSearch(input: string | null): void {
+    this.text.set(input);
   }
 
-  public get totalCount(): number {
-    return this._totalCount();
-  }
-
-  public changePage(page: number): void {
-    this._page.set(page);
-  }
-
-  public get brands(): QueryBrandResponse[] {
-    return this._brands();
+  private fetchBrands(page: number, text: string | null): void {
+    this._service
+      .fetchBrands(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        page,
+        30,
+        text,
+        true,
+        true,
+      )
+      .pipe(
+        tap((response: BrandResponse[]): void => {
+          this.brands.set(response);
+          if (response.length > 0 && response[0].TotalCount)
+            this.totalCount.set(response[0].TotalCount);
+        }),
+        catchError((): Observable<never> => EMPTY),
+      )
+      .subscribe();
   }
 }

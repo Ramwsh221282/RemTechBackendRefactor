@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using RemTech.SharedKernel.Core.Handlers;
 
 namespace Vehicles.Infrastructure.Brands.Queries.GetBrands;
@@ -10,6 +11,29 @@ public sealed class GetBrandsQuery : IQuery
     public string? ModelName { get; private init; }
     public Guid? Id { get; private init; }
     public string? Name { get; private init; }
+    public IEnumerable<string>? Includes { get; private init; }
+    public int? Page { get; private set; }
+    public int? PageSize { get; private set; }
+    public string? TextSearch { get; private set; }
+
+    [JsonIgnore]
+    private Dictionary<string, string> IncludedInformationKeys =>
+        Includes is null ? [] : Includes.ToDictionary(i => i, i => i);
+
+    public bool ContainsFieldInclude(string include) =>
+        IncludedInformationKeys.ContainsKey(include);
+
+    public GetBrandsQuery WithInclude(IEnumerable<string>? includes) =>
+        includes is null || !includes.Any() ? this : Copy(this, includes: includes);
+
+    public GetBrandsQuery WithPagination(int? page) =>
+        page == null || page <= 0 ? this : Copy(this, page: page);
+
+    public GetBrandsQuery WithPageSize(int? pageSize) =>
+        pageSize == null || pageSize >= 30 ? this : Copy(this, pageSize: pageSize);
+
+    public GetBrandsQuery WithTextSearch(string? textSearch) =>
+        string.IsNullOrWhiteSpace(textSearch) ? this : Copy(this, textSearch: textSearch);
 
     public GetBrandsQuery ForId(Guid? id) =>
         id == null || id == Guid.Empty ? this : Copy(this, id: id);
@@ -36,7 +60,11 @@ public sealed class GetBrandsQuery : IQuery
         Guid? categoryId = null,
         string? categoryName = null,
         Guid? modelId = null,
-        string? modelName = null
+        string? modelName = null,
+        IEnumerable<string>? includes = null,
+        int? page = null,
+        int? pageSize = null,
+        string? textSearch = null
     ) =>
         new()
         {
@@ -46,5 +74,9 @@ public sealed class GetBrandsQuery : IQuery
             ModelName = modelName ?? origin.ModelName,
             Id = id ?? origin.Id,
             Name = name ?? origin.Name,
+            Includes = includes ?? origin.Includes,
+            Page = page ?? origin.Page,
+            PageSize = pageSize ?? origin.PageSize,
+            TextSearch = textSearch ?? origin.TextSearch,
         };
 }
