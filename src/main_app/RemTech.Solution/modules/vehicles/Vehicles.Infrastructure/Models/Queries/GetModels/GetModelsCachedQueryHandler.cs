@@ -9,10 +9,8 @@ public sealed class GetModelsCachedQueryHandler(
 	IQueryHandler<GetModelsQuery, IEnumerable<ModelResponse>> inner
 ) : IQueryExecutorWithCache<GetModelsQuery, IEnumerable<ModelResponse>>
 {
-	public async Task<IEnumerable<ModelResponse>> ExecuteWithCache(
-		GetModelsQuery query,
-		CancellationToken ct = default
-	) => await ReadFromCache(query, CreateCacheKey(query), ct);
+	public Task<IEnumerable<ModelResponse>> ExecuteWithCache(GetModelsQuery query, CancellationToken ct = default) =>
+		ReadFromCache(query, CreateCacheKey(query), ct);
 
 	private async Task<IEnumerable<ModelResponse>> ReadFromCache(
 		GetModelsQuery query,

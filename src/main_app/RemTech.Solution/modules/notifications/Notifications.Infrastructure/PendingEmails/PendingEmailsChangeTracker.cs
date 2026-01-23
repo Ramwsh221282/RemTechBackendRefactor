@@ -16,10 +16,10 @@ public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
 			Tracking.TryAdd(notification.Id, notification.Copy());
 	}
 
-	public async Task Save(IEnumerable<PendingEmailNotification> notifications, CancellationToken ct = default)
+	public Task Save(IEnumerable<PendingEmailNotification> notifications, CancellationToken ct = default)
 	{
 		IEnumerable<PendingEmailNotification> tracking = GetTrackingNotifications(notifications);
-		await SavePendingEmailNotificationChanges(tracking, ct);
+		return SavePendingEmailNotificationChanges(tracking, ct);
 	}
 
 	private async Task SavePendingEmailNotificationChanges(

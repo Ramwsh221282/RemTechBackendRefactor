@@ -6,15 +6,15 @@ namespace RemTech.SharedKernel.Infrastructure.Database;
 
 public sealed class NpgSqlConnectionFactory
 {
-	private readonly NpgsqlDataSource _dataSource;
+    private readonly NpgsqlDataSource _dataSource;
 
-	public NpgSqlConnectionFactory(IOptions<NpgSqlOptions> options)
-	{
-		NpgsqlDataSourceBuilder builder = new(options.Value.ToConnectionString());
-		builder.UseVector();
-		_dataSource = builder.Build();
-	}
+    public NpgSqlConnectionFactory(IOptions<NpgSqlOptions> options)
+    {
+        NpgsqlDataSourceBuilder builder = new(options.Value.ToConnectionString());
+        builder.UseVector();
+        _dataSource = builder.Build();
+    }
 
-	public async Task<NpgsqlConnection> Create(CancellationToken ct = default) =>
-		await _dataSource.OpenConnectionAsync(ct);
+    public async Task<NpgsqlConnection> Create(CancellationToken ct = default) =>
+        await _dataSource.OpenConnectionAsync(ct);
 }

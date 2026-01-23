@@ -9,8 +9,8 @@ public sealed class EmbeddingsProviderOptions
 	{
 		if (string.IsNullOrWhiteSpace(TokenizerPath))
 			throw new InvalidOperationException("Tokenizer path is empty.");
-		if (string.IsNullOrWhiteSpace(ModelPath))
-			throw new InvalidOperationException("Model path is empty.");
-		return true;
+		return string.IsNullOrWhiteSpace(ModelPath)
+			? throw new InvalidOperationException("Model path is empty.")
+			: true;
 	}
 }

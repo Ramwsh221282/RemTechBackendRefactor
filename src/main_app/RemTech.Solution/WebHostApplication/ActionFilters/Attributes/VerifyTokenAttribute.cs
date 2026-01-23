@@ -5,6 +5,6 @@ namespace WebHostApplication.ActionFilters.Attributes;
 
 public sealed class VerifyTokenAttribute : TypeFilterAttribute
 {
-	public VerifyTokenAttribute()
-		: base(typeof(VerifyTokenFilter)) { }
+    public VerifyTokenAttribute()
+        : base(typeof(VerifyTokenFilter)) { }
 }

@@ -7,9 +7,9 @@ namespace ParsersControl.Core.Features.SetLinkWorkTime;
 
 public sealed class SetLinkWorkTimeValidator : AbstractValidator<SetLinkWorkingTimeCommand>
 {
-	public SetLinkWorkTimeValidator()
-	{
-		RuleFor(x => x.ParserId).MustBeValid(SubscribedParserId.Create);
-		RuleFor(x => x.LinkId).MustBeValid(SubscribedParserLinkId.From);
-	}
+    public SetLinkWorkTimeValidator()
+    {
+        RuleFor(x => x.ParserId).MustBeValid(SubscribedParserId.Create);
+        RuleFor(x => x.LinkId).MustBeValid(SubscribedParserLinkId.From);
+    }
 }

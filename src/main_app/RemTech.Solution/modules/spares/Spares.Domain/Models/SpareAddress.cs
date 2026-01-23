@@ -4,13 +4,13 @@ namespace Spares.Domain.Models;
 
 public sealed record SpareAddress
 {
-	public string Value { get; }
+    public string Value { get; }
 
-	private SpareAddress(string value)
-	{
-		Value = value;
-	}
+    private SpareAddress(string value)
+    {
+        Value = value;
+    }
 
-	public static Result<SpareAddress> Create(string value) =>
-		string.IsNullOrWhiteSpace(value) ? Error.Validation("Адрес не может быть пустым") : new SpareAddress(value);
+    public static Result<SpareAddress> Create(string value) =>
+        string.IsNullOrWhiteSpace(value) ? Error.Validation("Адрес не может быть пустым") : new SpareAddress(value);
 }

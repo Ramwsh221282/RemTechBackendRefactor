@@ -58,14 +58,10 @@ public sealed class NpgSqlVehiclesPersister(NpgSqlSession session, EmbeddingsPro
 		return parameters;
 	}
 
-	private static string CreateTextForEmbedding(Location location, Vehicle vehicle)
-	{
-		string text =
-			$"{vehicle.Text.Value.Trim()} {vehicle.Characteristics.Select(c => $"{c.Name.Value.Trim()} {c.Value.Value.Trim()}").Aggregate((a, b) => $"{a} {b}").Trim()} {location.Name.Value.Trim()}";
-		return text;
-	}
+	private static string CreateTextForEmbedding(Location location, Vehicle vehicle) =>
+		$"{vehicle.Text.Value.Trim()} {vehicle.Characteristics.Select(c => $"{c.Name.Value.Trim()} {c.Value.Value.Trim()}").Aggregate((a, b) => $"{a} {b}").Trim()} {location.Name.Value.Trim()}";
 
-	private static async Task PersistCharacteristics(
+	private static Task<int> PersistCharacteristics(
 		NpgSqlSession session,
 		NpgsqlConnection connection,
 		Vehicle vehicle,
@@ -98,6 +94,6 @@ public sealed class NpgSqlVehiclesPersister(NpgSqlSession session, EmbeddingsPro
 			transaction: session.Transaction,
 			cancellationToken: ct
 		);
-		await connection.ExecuteAsync(command);
+		return connection.ExecuteAsync(command);
 	}
 }

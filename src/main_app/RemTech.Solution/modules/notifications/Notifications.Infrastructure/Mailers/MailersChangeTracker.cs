@@ -16,10 +16,10 @@ public sealed class MailersChangeTracker(NpgSqlSession session)
 			Tracking.TryAdd(mailer.Id.Value, mailer.Copy());
 	}
 
-	public async Task Save(IEnumerable<Mailer> mailers, CancellationToken ct = default)
+	public Task Save(IEnumerable<Mailer> mailers, CancellationToken ct = default)
 	{
 		IEnumerable<Mailer> tracking = GetTrackingMailers(mailers);
-		await SaveMailerChanges(tracking, ct);
+		return SaveMailerChanges(tracking, ct);
 	}
 
 	private async Task SaveMailerChanges(IEnumerable<Mailer> mailers, CancellationToken ct)

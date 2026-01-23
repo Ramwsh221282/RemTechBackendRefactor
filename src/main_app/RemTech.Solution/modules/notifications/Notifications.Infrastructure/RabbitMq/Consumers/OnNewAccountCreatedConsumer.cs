@@ -34,11 +34,11 @@ public sealed class OnNewAccountCreatedConsumer(
 		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
 	}
 
-	public async Task StartConsuming(CancellationToken ct = default)
+	public Task StartConsuming(CancellationToken ct = default)
 	{
 		AsyncEventingBasicConsumer consumer = new(Channel);
 		consumer.ReceivedAsync += Handler;
-		await Channel.BasicConsumeAsync(Queue, false, consumer, ct);
+		return Channel.BasicConsumeAsync(Queue, false, consumer, ct);
 	}
 
 	public async Task Shutdown(CancellationToken ct = default)
@@ -81,7 +81,7 @@ public sealed class OnNewAccountCreatedConsumer(
 			}
 		};
 
-	private async Task<Result<Unit>> HandleMessage(NewAccountRegisteredOutboxMessagePayload payload)
+	private Task<Result<Unit>> HandleMessage(NewAccountRegisteredOutboxMessagePayload payload)
 	{
 		string confirmationLink = BuildConfirmationLinkUrl(payload);
 		AddPendingEmailCommand command = new(
@@ -89,7 +89,7 @@ public sealed class OnNewAccountCreatedConsumer(
 			"Подтверждение почты",
 			$"Для подтверждения почты перейдите по ссылке {confirmationLink}"
 		);
-		return await Services.CreatePendingMessage(command);
+		return Services.CreatePendingMessage(command);
 	}
 
 	private string BuildConfirmationLinkUrl(NewAccountRegisteredOutboxMessagePayload payload)

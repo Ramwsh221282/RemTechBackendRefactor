@@ -12,6 +12,5 @@ public sealed class AccountActivatedEvent(Guid accountId, string accountEmail, s
 	public string AccountEmail { get; } = accountEmail;
 	public string AccountLogin { get; } = accountLogin;
 
-	public async Task PublishTo(IDomainEventHandler handler, CancellationToken ct = default) =>
-		await handler.Handle(this, ct);
+	public Task PublishTo(IDomainEventHandler handler, CancellationToken ct = default) => handler.Handle(this, ct);
 }

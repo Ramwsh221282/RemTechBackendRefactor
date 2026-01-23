@@ -37,11 +37,11 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
 		await Channel.CloseAsync(cancellationToken: ct);
 	}
 
-	public async Task StartConsuming(CancellationToken ct = default)
+	public Task StartConsuming(CancellationToken ct = default)
 	{
 		AsyncEventingBasicConsumer consumer = new(Channel);
 		consumer.ReceivedAsync += Handler;
-		await Channel.BasicConsumeAsync(Queue, autoAck: false, consumer, ct);
+		return Channel.BasicConsumeAsync(Queue, autoAck: false, consumer, ct);
 	}
 
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
@@ -79,13 +79,13 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
 			}
 		};
 
-	private async Task<Result<Unit>> HandleMessage(ResetPasswordRequiredMessage message, string confirmationUrl)
+	private Task<Result<Unit>> HandleMessage(ResetPasswordRequiredMessage message, string confirmationUrl)
 	{
 		string body = $"Для сброса пароля учетной записи необходимо перейти по ссылке: {confirmationUrl}";
 		const string subject = "Сброс пароля";
 		string recipient = message.AccountEmail;
 		AddPendingEmailCommand command = new(Recipient: recipient, Subject: subject, Body: body);
-		return await Services.CreatePendingMessage(command);
+		return Services.CreatePendingMessage(command);
 	}
 
 	private string BuildResetPasswordUrl(ResetPasswordRequiredMessage message)

@@ -20,15 +20,15 @@ public sealed partial record MailerCredentials
 		Email = email;
 	}
 
-	public async Task<MailerCredentials> Encrypt(
+	public Task<MailerCredentials> Encrypt(
 		IMailerCredentialsCryptography cryptography,
 		CancellationToken ct = default
-	) => await cryptography.Encrypt(this, ct);
+	) => cryptography.Encrypt(this, ct);
 
-	public async Task<MailerCredentials> Decrypt(
+	public Task<MailerCredentials> Decrypt(
 		IMailerCredentialsCryptography cryptography,
 		CancellationToken ct = default
-	) => await cryptography.Decrypt(this, ct);
+	) => cryptography.Decrypt(this, ct);
 
 	public static Result<MailerCredentials> Create(string smtpPassword, string email)
 	{

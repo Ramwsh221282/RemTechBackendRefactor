@@ -9,10 +9,10 @@ public sealed class GetLocationsCachedQueryHandler(
 	IQueryHandler<GetLocationsQuery, IEnumerable<LocationsResponse>> handler
 ) : IQueryExecutorWithCache<GetLocationsQuery, IEnumerable<LocationsResponse>>
 {
-	public async Task<IEnumerable<LocationsResponse>> ExecuteWithCache(
+	public Task<IEnumerable<LocationsResponse>> ExecuteWithCache(
 		GetLocationsQuery query,
 		CancellationToken ct = default
-	) => await ReadFromCache(query, CreateCacheKey(query), ct);
+	) => ReadFromCache(query, CreateCacheKey(query), ct);
 
 	private async Task<IEnumerable<LocationsResponse>> ReadFromCache(
 		GetLocationsQuery query,

@@ -31,20 +31,20 @@ public sealed class ChangeCredentialsHandler(
 		return mailer.Value;
 	}
 
-	private async Task<MailerCredentials> CreateEncryptedCredentials(
+	private Task<MailerCredentials> CreateEncryptedCredentials(
 		ChangeCredentialsCommand command,
 		CancellationToken ct
-	) => await MailerCredentials.Create(command.SmtpPassword, command.Email).Value.Encrypt(cryptography, ct);
+	) => MailerCredentials.Create(command.SmtpPassword, command.Email).Value.Encrypt(cryptography, ct);
 
-	private async Task<Result<Mailer>> GetRequiredMailer(ChangeCredentialsCommand command, CancellationToken ct)
+	private Task<Result<Mailer>> GetRequiredMailer(ChangeCredentialsCommand command, CancellationToken ct)
 	{
 		MailersSpecification specification = new MailersSpecification().WithId(command.Id).WithLockRequired();
-		return await repository.Get(specification, ct);
+		return repository.Get(specification, ct);
 	}
 
-	private async Task<bool> CredentialsEmailDuplicated(ChangeCredentialsCommand command, CancellationToken ct)
+	private Task<bool> CredentialsEmailDuplicated(ChangeCredentialsCommand command, CancellationToken ct)
 	{
 		MailersSpecification specification = new MailersSpecification().WithEmail(command.Email);
-		return await repository.Exists(specification, ct);
+		return repository.Exists(specification, ct);
 	}
 }

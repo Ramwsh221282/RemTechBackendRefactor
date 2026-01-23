@@ -9,10 +9,10 @@ public sealed class GetCategoriesCachingQueryHandler(
 	IQueryHandler<GetCategoriesQuery, IEnumerable<CategoryResponse>> inner
 ) : IQueryExecutorWithCache<GetCategoriesQuery, IEnumerable<CategoryResponse>>
 {
-	public async Task<IEnumerable<CategoryResponse>> ExecuteWithCache(
+	public Task<IEnumerable<CategoryResponse>> ExecuteWithCache(
 		GetCategoriesQuery query,
 		CancellationToken ct = default
-	) => await ReadFromCache(query, CreateCacheKey(query), ct);
+	) => ReadFromCache(query, CreateCacheKey(query), ct);
 
 	private async Task<IEnumerable<CategoryResponse>> ReadFromCache(
 		GetCategoriesQuery query,

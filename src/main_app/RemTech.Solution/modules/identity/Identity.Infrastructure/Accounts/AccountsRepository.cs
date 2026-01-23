@@ -17,7 +17,7 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 
 	private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
 
-	public async Task Add(Account account, CancellationToken ct = default)
+	public Task Add(Account account, CancellationToken ct = default)
 	{
 		const string sql = """
 			INSERT INTO identity_module.accounts
@@ -27,15 +27,15 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 			""";
 
 		CommandDefinition command = Session.FormCommand(sql, GetParameters(account), ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
-	public async Task<bool> Exists(AccountSpecification specification, CancellationToken ct = default)
+	public Task<bool> Exists(AccountSpecification specification, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(specification);
 		string sql = $"SELECT EXISTS (SELECT 1 FROM identity_module.accounts a {filterSql})";
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		return await Session.QuerySingleRow<bool>(command);
+		return Session.QuerySingleRow<bool>(command);
 	}
 
 	private async Task<Result<Account>> SearchWithRefreshTokenFilter(
@@ -158,7 +158,13 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 				PermissionDescription.Create(permissionDescription)
 			);
 
-			account.Permissions.Add(permission);
+			Result<Unit> result = account.Permissions.Add(permission);
+			if (result.IsFailure)
+			{
+				throw new InvalidOperationException(
+					$"Ошибка при добавлении разрешения {permissionId} к учетной записи {id}: {result.Error.Message}"
+				);
+			}
 		}
 
 		return mappings.Count == 0 ? null : mappings.First().Value;
@@ -202,7 +208,7 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		await BlockAccountPermissions(account, ct);
 	}
 
-	private async Task BlockAccount(Account account, CancellationToken ct)
+	private Task BlockAccount(Account account, CancellationToken ct)
 	{
 		const string sql = """
 			SELECT a.id FROM identity_module.accounts a
@@ -212,10 +218,10 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		DynamicParameters parameters = new();
 		parameters.Add("@accountId", account.Id.Value, DbType.Guid);
 		CommandDefinition command = new(sql, parameters, transaction: Session.Transaction, cancellationToken: ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
-	private async Task BlockAccountPermissions(Account account, CancellationToken ct)
+	private Task BlockAccountPermissions(Account account, CancellationToken ct)
 	{
 		const string sql = """
 			SELECT ap.permission_id FROM identity_module.account_permissions ap
@@ -225,7 +231,7 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		DynamicParameters parameters = new();
 		parameters.Add("@accountId", account.Id.Value, DbType.Guid);
 		CommandDefinition command = new(sql, parameters, transaction: Session.Transaction, cancellationToken: ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	private static object GetParameters(Account account) =>

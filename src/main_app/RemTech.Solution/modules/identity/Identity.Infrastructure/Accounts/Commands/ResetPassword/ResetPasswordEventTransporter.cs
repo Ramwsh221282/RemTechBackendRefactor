@@ -38,9 +38,9 @@ public sealed class ResetPasswordEventTransporter(RabbitMqProducer producer, Ser
 			TicketPurpose: result.TicketPurpose
 		);
 
-	private async Task PublishMessageToRabbitMq(ResetPasswordRequiredMessage message, CancellationToken ct)
+	private Task PublishMessageToRabbitMq(ResetPasswordRequiredMessage message, CancellationToken ct)
 	{
 		RabbitMqPublishOptions options = new() { Persistent = true };
-		await Producer.PublishDirectAsync(message, Exchange, message.TicketPurpose, options, ct);
+		return Producer.PublishDirectAsync(message, Exchange, message.TicketPurpose, options, ct);
 	}
 }

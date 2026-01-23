@@ -24,5 +24,5 @@ public sealed class NpgSqlTransactionScope(NpgsqlTransaction transaction) : ITra
 
 	public void Dispose() => Transaction.Dispose();
 
-	public async ValueTask DisposeAsync() => await Transaction.DisposeAsync();
+	public ValueTask DisposeAsync() => Transaction.DisposeAsync();
 }

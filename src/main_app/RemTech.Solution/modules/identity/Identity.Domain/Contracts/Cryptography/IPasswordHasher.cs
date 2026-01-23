@@ -4,6 +4,6 @@ namespace Identity.Domain.Contracts.Cryptography;
 
 public interface IPasswordHasher
 {
-	public AccountPassword Hash(AccountPassword password);
-	public bool Verify(string input, AccountPassword hashed);
+    public AccountPassword Hash(AccountPassword password);
+    public bool Verify(string input, AccountPassword hashed);
 }

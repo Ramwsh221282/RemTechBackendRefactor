@@ -18,7 +18,7 @@ public sealed class IntegrationalTestsFactory : WebApplicationFactory<Notificati
 {
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
     private readonly RabbitMqContainer _rabbitMq = new RabbitMqBuilder().BuildRabbitMqContainer();
-    
+
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
@@ -55,7 +55,7 @@ public sealed class IntegrationalTestsFactory : WebApplicationFactory<Notificati
         services.AddConsumersFromAssemblies([typeof(OnNewAccountCreatedConsumer).Assembly]);
         services.AddAggregatedConsumersBackgroundService();
     }
-    
+
     private static void ReconfigureAesCryptography(IServiceCollection services)
     {
         services.RemoveAll<IConfigureOptions<AesEncryptionOptions>>();

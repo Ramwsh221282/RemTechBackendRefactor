@@ -10,7 +10,7 @@ public sealed class SetLinkParsedAmountCacheInvalidator(
 	ParserCacheRecordInvalidator recordInvalidator
 ) : ICacheInvalidator<SetLinkParsedAmountCommand, SubscribedParserLink>
 {
-	public async Task InvalidateCache(
+	public Task InvalidateCache(
 		SetLinkParsedAmountCommand command,
 		SubscribedParserLink result,
 		CancellationToken ct = default
@@ -18,6 +18,6 @@ public sealed class SetLinkParsedAmountCacheInvalidator(
 	{
 		Task[] tasks = [arrayInvalidator.Invalidate(ct), recordInvalidator.Invalidate(command.ParserId, ct)];
 
-		await Task.WhenAll(tasks);
+		return Task.WhenAll(tasks);
 	}
 }

@@ -10,10 +10,10 @@ public sealed class ChangeCredentialsCacheInvalidator(
 	MailerRecordCacheInvalidator recordCacheInvalidator
 ) : ICacheInvalidator<ChangeCredentialsCommand, Mailer>
 {
-	public async Task InvalidateCache(ChangeCredentialsCommand command, Mailer result, CancellationToken ct = default)
+	public Task InvalidateCache(ChangeCredentialsCommand command, Mailer result, CancellationToken ct = default)
 	{
 		Task[] tasks = [arrayCacheInvalidator.Invalidate(ct), recordCacheInvalidator.Invalidate(result.Id.Value, ct)];
 
-		await Task.WhenAll(tasks);
+		return Task.WhenAll(tasks);
 	}
 }

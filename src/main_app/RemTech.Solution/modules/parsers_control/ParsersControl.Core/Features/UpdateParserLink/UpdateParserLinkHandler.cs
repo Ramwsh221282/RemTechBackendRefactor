@@ -71,17 +71,17 @@ public sealed class UpdateParserLinkHandler(ISubscribedParsersRepository reposit
 	{
 		if (parser.IsFailure)
 			return parser.Error;
-		if (link.IsFailure)
-			return link.Error;
-		return ParserLinkUpdater.Create(link.Value.Id.Value, activity: null, name: name, url: url);
+		return link.IsFailure
+			? (Result<ParserLinkUpdater>)link.Error
+			: ParserLinkUpdater.Create(link.Value.Id.Value, activity: null, name: name, url: url);
 	}
 
 	private static Result<SubscribedParserLink> FindLink(Result<SubscribedParser> parser, Guid linkId) =>
 		parser.IsFailure ? parser.Error : parser.Value.FindLink(linkId);
 
-	private async Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
+	private Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
 	{
 		SubscribedParserQuery query = new SubscribedParserQuery().WithId(parserId).RequireLock();
-		return await SubscribedParser.FromRepository(repository, query, ct);
+		return SubscribedParser.FromRepository(repository, query, ct);
 	}
 }

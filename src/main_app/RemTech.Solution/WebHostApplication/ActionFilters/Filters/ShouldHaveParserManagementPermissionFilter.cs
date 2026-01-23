@@ -6,14 +6,14 @@ namespace WebHostApplication.ActionFilters.Filters;
 
 public sealed class ShouldHaveParserManagementPermissionFilter(IJwtTokenManager manager) : IAsyncActionFilter
 {
-	public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
-	{
-		if (!context.HttpContext.HasPermission("parser.management", manager))
-		{
-			await context.HttpContext.WriteForbiddenResult();
-			return;
-		}
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    {
+        if (!context.HttpContext.HasPermission("parser.management", manager))
+        {
+            await context.HttpContext.WriteForbiddenResult();
+            return;
+        }
 
-		await next();
-	}
+        await next();
+    }
 }

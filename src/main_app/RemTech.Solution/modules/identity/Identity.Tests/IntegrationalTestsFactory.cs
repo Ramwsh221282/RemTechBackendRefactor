@@ -22,7 +22,7 @@ public sealed class IntegrationalTestsFactory : WebApplicationFactory<Identity.W
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
     private readonly RabbitMqContainer _rabbitMqContainer = new RabbitMqBuilder().BuildRabbitMqContainer();
     private readonly RedisContainer _redisContainer = new RedisBuilder().BuildRedisContainer();
-    
+
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
@@ -75,14 +75,14 @@ public sealed class IntegrationalTestsFactory : WebApplicationFactory<Identity.W
 
         services.AddSingleton(options);
     }
-    
+
     private void ReRegisterJwtOptionsSettings(IServiceCollection services)
     {
         services.RemoveAll<IConfigureOptions<JwtOptions>>();
         services.RemoveAll<IOptions<JwtOptions>>();
         services.AddOptions<JwtOptions>().BindConfiguration(nameof(JwtOptions));
     }
-    
+
     private void ReRegisterSuperUserOptionsSettings(IServiceCollection services)
     {
         services.RemoveAll<IConfigureOptions<SuperUserCredentialsOptions>>();

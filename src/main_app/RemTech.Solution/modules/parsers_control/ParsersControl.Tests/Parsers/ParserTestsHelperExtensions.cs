@@ -29,7 +29,7 @@ public static class ParserTestsHelperExtensions
                 scope.ServiceProvider.GetRequiredService<FakeParserSubscribeProducer>();
             await producer.Publish(id, domain, type);
         }
-        
+
         public async Task<Result<SubscribedParser>> InvokeSubscription(string domain, string type, Guid id)
         {
             SubscribeParserCommand command = new(id, domain, type);
@@ -37,11 +37,11 @@ public static class ParserTestsHelperExtensions
             ICommandHandler<SubscribeParserCommand, SubscribedParser> handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<SubscribeParserCommand, SubscribedParser>>();
             return await handler.Execute(command);
         }
-    
+
         public async Task<Result<IEnumerable<SubscribedParserLink>>> AddLink(Guid parserId, string linkUrl, string linkName)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
-            AddParserLinkCommand command = new(parserId, [ new AddParserLinkCommandArg(linkUrl, linkName) ]);
+            AddParserLinkCommand command = new(parserId, [new AddParserLinkCommandArg(linkUrl, linkName)]);
             return await scope.ServiceProvider
                 .GetRequiredService<ICommandHandler<AddParserLinkCommand, IEnumerable<SubscribedParserLink>>>()
                 .Execute(command);
@@ -55,7 +55,7 @@ public static class ParserTestsHelperExtensions
                 .GetRequiredService<ICommandHandler<UpdateParserLinksCommand, IEnumerable<SubscribedParserLink>>>()
                 .Execute(command);
         }
-        
+
         public async Task<Result> UpdateLinks(Guid parserId, IEnumerable<UpdateParserLinksCommandInfo> updates)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
@@ -72,7 +72,7 @@ public static class ParserTestsHelperExtensions
             SubscribedParserQuery query = new(Id: parserId);
             return await repository.Get(query);
         }
-        
+
         public async Task<bool> EnsureSaved(Guid id)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
@@ -80,7 +80,7 @@ public static class ParserTestsHelperExtensions
             Result<SubscribedParser> parser = await repository.Get(new SubscribedParserQuery(Id: id));
             return parser.IsSuccess;
         }
-        
+
         public async Task<Result<SubscribedParser>> EnableParser(Guid id)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
@@ -89,7 +89,7 @@ public static class ParserTestsHelperExtensions
             EnableParserCommand command = new(id);
             return await handler.Execute(command);
         }
-    
+
         public async Task<Result<SubscribedParser>> StartParser(Guid id)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
@@ -98,10 +98,10 @@ public static class ParserTestsHelperExtensions
             StartParserCommand command = new(id);
             return await handler.Execute(command);
         }
-    
+
         public async Task<Result<SubscribedParserLink>> ChangeLinkActivity(
-            Guid parserId, 
-            Guid linkId, 
+            Guid parserId,
+            Guid linkId,
             bool activity)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
@@ -110,7 +110,7 @@ public static class ParserTestsHelperExtensions
             ChangeLinkActivityCommand command = new(parserId, linkId, activity);
             return await service.Execute(command);
         }
-        
+
         public async Task<Result<SubscribedParser>> SleepParser(Guid id)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();
@@ -119,7 +119,7 @@ public static class ParserTestsHelperExtensions
             StartParserCommand command = new(id);
             return await handler.Execute(command);
         }
-    
+
         public async Task<Result<SubscribedParser>> DisableParser(Guid id)
         {
             await using AsyncServiceScope scope = services.CreateAsyncScope();

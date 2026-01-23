@@ -84,9 +84,7 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsP
 
 	private static string UseEmbeddingsOrderBy(GetCategoriesQuery query)
 	{
-		if (!string.IsNullOrWhiteSpace(query.TextSearch))
-			return "ORDER BY c.embedding <-> @embedding ASC";
-		return string.Empty;
+		return !string.IsNullOrWhiteSpace(query.TextSearch) ? "ORDER BY c.embedding <-> @embedding ASC" : string.Empty;
 	}
 
 	private void ApplyTextSearchFilter(GetCategoriesQuery query, List<string> filters, DynamicParameters parameters)

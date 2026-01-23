@@ -42,9 +42,9 @@ public sealed class RefreshTokenHandler(
 		return new AuthenticationResult(newAccessToken.RawToken, newRefreshToken.TokenValue);
 	}
 
-	private async Task<Result<Account>> GetRequiredAccount(RefreshToken refreshToken, CancellationToken ct)
+	private Task<Result<Account>> GetRequiredAccount(RefreshToken refreshToken, CancellationToken ct)
 	{
 		AccountSpecification spec = new AccountSpecification().WithId(refreshToken.AccountId).WithLock();
-		return await accounts.Find(spec, ct);
+		return accounts.Find(spec, ct);
 	}
 }

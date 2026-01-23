@@ -80,15 +80,11 @@ public sealed class PublishContainedItemsToAddBackgroundService(
 		return await repository.Query(query, ct);
 	}
 
-	private static async Task MarkItemsSaved(
-		NpgSqlSession session,
-		IEnumerable<ContainedItem> items,
-		CancellationToken ct
-	)
+	private static Task MarkItemsSaved(NpgSqlSession session, IEnumerable<ContainedItem> items, CancellationToken ct)
 	{
 		ContainedItemsRepository repository = new(session);
 		foreach (ContainedItem item in items)
 			item.MarkSaved();
-		await repository.UpdateMany(items, ct);
+		return repository.UpdateMany(items, ct);
 	}
 }

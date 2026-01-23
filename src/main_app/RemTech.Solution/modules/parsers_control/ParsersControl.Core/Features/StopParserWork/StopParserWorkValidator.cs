@@ -6,8 +6,8 @@ namespace ParsersControl.Core.Features.StopParserWork;
 
 public sealed class StopParserWorkValidator : AbstractValidator<StopParserWorkCommand>
 {
-	public StopParserWorkValidator()
-	{
-		RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
-	}
+    public StopParserWorkValidator()
+    {
+        RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
+    }
 }

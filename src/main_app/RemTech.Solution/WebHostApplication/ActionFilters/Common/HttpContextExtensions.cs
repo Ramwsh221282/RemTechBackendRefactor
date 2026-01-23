@@ -91,12 +91,12 @@ public static class HttpContextExtensions
 			return manager.ReadToken(token).ContainsPermission(permission);
 		}
 
-		public async Task WriteForbiddenResult()
+		public Task WriteForbiddenResult()
 		{
 			context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
 			context.Response.ContentType = "application/json";
 			Envelope envelope = ForbiddenEnvelope();
-			await context.Response.WriteAsJsonAsync(envelope, context.CancellationToken);
+			return context.Response.WriteAsJsonAsync(envelope, context.CancellationToken);
 		}
 	}
 
@@ -104,9 +104,7 @@ public static class HttpContextExtensions
 
 	private static string GetCookieValueOrEmpty(HttpContext context, string cookieName)
 	{
-		if (!context.Request.Cookies.TryGetValue(cookieName, out string? cookieValue))
-			return string.Empty;
-		return cookieValue;
+		return !context.Request.Cookies.TryGetValue(cookieName, out string? cookieValue) ? string.Empty : cookieValue;
 	}
 
 	private static string GetHeaderValueOrEmpty(HttpContext context, string headerName)

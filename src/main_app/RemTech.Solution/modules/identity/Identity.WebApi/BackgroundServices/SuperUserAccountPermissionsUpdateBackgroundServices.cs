@@ -85,11 +85,11 @@ public sealed class SuperUserAccountPermissionsUpdateBackgroundServices(
 	private static Permission[] GetPermissionsToAdd(Account account, IEnumerable<Permission> permissions) =>
 		[.. permissions.ExceptBy(account.PermissionsList.Select(p => p.Id.Value), p => p.Id.Value)];
 
-	private static async Task<IEnumerable<Permission>> GetAllPermissions(AsyncServiceScope scope, CancellationToken ct)
+	private static Task<IEnumerable<Permission>> GetAllPermissions(AsyncServiceScope scope, CancellationToken ct)
 	{
 		IPermissionsRepository permissionsRepository =
 			scope.ServiceProvider.GetRequiredService<IPermissionsRepository>();
-		return await permissionsRepository.GetMany([], ct);
+		return permissionsRepository.GetMany([], ct);
 	}
 
 	private static SuperUserCredentialsOptions GetOptions(AsyncServiceScope scope)
@@ -101,10 +101,10 @@ public sealed class SuperUserAccountPermissionsUpdateBackgroundServices(
 		return options;
 	}
 
-	private static async Task<Result<Account>> GetSuperUserAccount(AsyncServiceScope scope, CancellationToken ct)
+	private static Task<Result<Account>> GetSuperUserAccount(AsyncServiceScope scope, CancellationToken ct)
 	{
 		IAccountsRepository accountsRepository = scope.ServiceProvider.GetRequiredService<IAccountsRepository>();
 		AccountSpecification specification = new AccountSpecification().WithLogin(GetOptions(scope).Login);
-		return await accountsRepository.Find(specification, ct);
+		return accountsRepository.Find(specification, ct);
 	}
 }

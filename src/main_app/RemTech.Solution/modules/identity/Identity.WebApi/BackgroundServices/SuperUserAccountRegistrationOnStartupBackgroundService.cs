@@ -56,7 +56,7 @@ public sealed class SuperUserAccountRegistrationOnStartupBackgroundService(
 			scope.ServiceProvider.GetRequiredService<IPasswordHasher>()
 		);
 
-	private static async Task AddAccount(
+	private static Task AddAccount(
 		SuperUserCredentialsOptions options,
 		IAccountsRepository repository,
 		IPasswordHasher hasher,
@@ -69,16 +69,16 @@ public sealed class SuperUserAccountRegistrationOnStartupBackgroundService(
 			password: AccountPassword.Create(options.Password).Value.HashBy(hasher),
 			status: AccountActivationStatus.Activated()
 		);
-		await repository.Add(account, ct);
+		return repository.Add(account, ct);
 	}
 
-	private static async Task<bool> AccountExists(
+	private static Task<bool> AccountExists(
 		SuperUserCredentialsOptions options,
 		IAccountsRepository repository,
 		CancellationToken ct
 	)
 	{
 		AccountSpecification specification = new AccountSpecification().WithEmail(options.Email);
-		return await repository.Exists(specification, ct: ct);
+		return repository.Exists(specification, ct: ct);
 	}
 }

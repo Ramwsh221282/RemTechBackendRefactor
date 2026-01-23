@@ -5,6 +5,6 @@ namespace WebHostApplication.ActionFilters.Attributes;
 
 public sealed class IdentityManagementPermissionAttribute : TypeFilterAttribute
 {
-	public IdentityManagementPermissionAttribute()
-		: base(typeof(ShouldHaveIdentityManagementPermissionFilter)) { }
+    public IdentityManagementPermissionAttribute()
+        : base(typeof(ShouldHaveIdentityManagementPermissionFilter)) { }
 }

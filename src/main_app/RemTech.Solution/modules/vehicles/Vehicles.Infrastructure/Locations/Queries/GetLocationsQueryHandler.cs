@@ -282,12 +282,13 @@ public sealed class GetLocationsQueryHandler(
 
 	private static string OrderByTextSearchSimilarity(GetLocationsQuery query)
 	{
-		if (query.ContainsInclude("text-search-score"))
-		{
-			return !string.IsNullOrWhiteSpace(query.TextSearch) ? "TextSearchScore ASC" : string.Empty;
-		}
-
-		return !string.IsNullOrWhiteSpace(query.TextSearch) ? "r.embedding <-> @embedding ASC" : string.Empty;
+		return query.ContainsInclude("text-search-score")
+			? !string.IsNullOrWhiteSpace(query.TextSearch)
+				? "TextSearchScore ASC"
+				: string.Empty
+			: !string.IsNullOrWhiteSpace(query.TextSearch)
+				? "r.embedding <-> @embedding ASC"
+				: string.Empty;
 	}
 
 	private static bool ReaderContainsField(DbDataReader reader, string fieldName)

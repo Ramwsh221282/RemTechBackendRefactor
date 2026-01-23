@@ -2,5 +2,5 @@
 
 public interface IDomainEventBearer
 {
-	public IReadOnlyList<IDomainEvent> Events { get; }
+    public IReadOnlyList<IDomainEvent> Events { get; }
 }

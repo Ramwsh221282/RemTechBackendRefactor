@@ -3,19 +3,19 @@
 namespace Identity.Infrastructure.Accounts.Queries.GetUser;
 
 public sealed record UserAccountResponse(
-	Guid Id,
-	string Login,
-	string Email,
-	bool IsActivated,
-	IEnumerable<UserAccountPermissionResponse> Permissions
+    Guid Id,
+    string Login,
+    string Email,
+    bool IsActivated,
+    IEnumerable<UserAccountPermissionResponse> Permissions
 )
 {
-	public static UserAccountResponse Create(Account account) =>
-		new(
-			account.Id.Value,
-			account.Login.Value,
-			account.Email.Value,
-			account.ActivationStatus.Value,
-			account.PermissionsList.Select(p => UserAccountPermissionResponse.Create(p))
-		);
+    public static UserAccountResponse Create(Account account) =>
+        new(
+            account.Id.Value,
+            account.Login.Value,
+            account.Email.Value,
+            account.ActivationStatus.Value,
+            account.PermissionsList.Select(p => UserAccountPermissionResponse.Create(p))
+        );
 }

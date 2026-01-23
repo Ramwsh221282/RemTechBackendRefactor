@@ -10,14 +10,10 @@ public sealed class StopParserWorkCacheInvalidator(
 	ParserCacheRecordInvalidator recordInvalidator
 ) : ICacheInvalidator<StopParserWorkCommand, SubscribedParser>
 {
-	public async Task InvalidateCache(
-		StopParserWorkCommand command,
-		SubscribedParser result,
-		CancellationToken ct = default
-	)
+	public Task InvalidateCache(StopParserWorkCommand command, SubscribedParser result, CancellationToken ct = default)
 	{
 		Task[] tasks = [arrayInvalidator.Invalidate(ct), recordInvalidator.Invalidate(result, ct)];
 
-		await Task.WhenAll(tasks);
+		return Task.WhenAll(tasks);
 	}
 }

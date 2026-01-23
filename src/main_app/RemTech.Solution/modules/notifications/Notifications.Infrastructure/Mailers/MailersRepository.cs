@@ -14,7 +14,7 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 	private NpgSqlSession Session { get; } = session;
 	private INotificationsModuleUnitOfWork ChangeTracker { get; } = changeTracker;
 
-	public async Task Add(Mailer mailer, CancellationToken ct = default)
+	public Task Add(Mailer mailer, CancellationToken ct = default)
 	{
 		const string sql = """
 			INSERT INTO notifications_module.mailers
@@ -24,7 +24,7 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 			""";
 		object parameters = GetParameters(mailer);
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	public async Task<Result<Mailer>> Get(MailersSpecification specification, CancellationToken ct = default)
@@ -70,20 +70,20 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 		return mailers;
 	}
 
-	public async Task<bool> Exists(MailersSpecification specification, CancellationToken ct = default)
+	public Task<bool> Exists(MailersSpecification specification, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(specification);
 		string sql = $"SELECT EXISTS(SELECT 1 FROM notifications_module.mailers m {filterSql})";
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		return await Session.QuerySingleRow<bool>(command);
+		return Session.QuerySingleRow<bool>(command);
 	}
 
-	public async Task Delete(Mailer mailer, CancellationToken ct = default)
+	public Task Delete(Mailer mailer, CancellationToken ct = default)
 	{
 		const string sql = "DELETE FROM notifications_module.mailers WHERE id = @id";
 		object parameters = new { id = mailer.Id.Value };
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	private static Mailer Map(IDataReader reader)

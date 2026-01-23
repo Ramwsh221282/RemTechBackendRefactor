@@ -57,10 +57,8 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 		return collection;
 	}
 
-	public async Task<Result<Unit>> SaveChanges(
-		SubscribedParsersCollection collection,
-		CancellationToken ct = default
-	) => await _changeTracker.SaveChanges(collection, session, ct);
+	public Task<Result<Unit>> SaveChanges(SubscribedParsersCollection collection, CancellationToken ct = default) =>
+		_changeTracker.SaveChanges(collection, session, ct);
 
 	private static async Task<SubscribedParsersCollection> MapFromReader(DbDataReader reader, CancellationToken ct)
 	{
@@ -79,7 +77,14 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 				continue;
 
 			SubscribedParserLink link = MapParserLink(linkId.Value, parser, reader);
-			parser.AddLinkIgnoringStatePolitics(link);
+			Result<Unit> result = parser.AddLinkIgnoringStatePolitics(link);
+			if (result.IsFailure)
+			{
+				throw new InvalidOperationException(
+					$"Error at mapping parser link in {nameof(MapFromReader)} method in {nameof(SubscribedParsersCollectionRepository)}: "
+						+ result.Error.Message
+				);
+			}
 		}
 
 		return new SubscribedParsersCollection(values.Select(p => p.Value));

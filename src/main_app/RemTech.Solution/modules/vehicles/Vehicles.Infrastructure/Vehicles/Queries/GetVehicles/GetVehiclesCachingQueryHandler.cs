@@ -9,10 +9,8 @@ public sealed class GetVehiclesCachingQueryHandler(
 	IQueryHandler<GetVehiclesQuery, GetVehiclesQueryResponse> inner
 ) : IQueryExecutorWithCache<GetVehiclesQuery, GetVehiclesQueryResponse>
 {
-	public async Task<GetVehiclesQueryResponse> ExecuteWithCache(
-		GetVehiclesQuery query,
-		CancellationToken ct = default
-	) => await ReadFromCache(query, FormCacheKey(query), ct);
+	public Task<GetVehiclesQueryResponse> ExecuteWithCache(GetVehiclesQuery query, CancellationToken ct = default) =>
+		ReadFromCache(query, FormCacheKey(query), ct);
 
 	private async Task<GetVehiclesQueryResponse> ReadFromCache(
 		GetVehiclesQuery query,

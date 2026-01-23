@@ -16,7 +16,7 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 	private NpgSqlSession Session { get; } = session;
 	private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
 
-	public async Task Add(AccountTicket ticket, CancellationToken ct = default)
+	public Task Add(AccountTicket ticket, CancellationToken ct = default)
 	{
 		const string sql = """
 			INSERT INTO identity_module.tickets
@@ -26,7 +26,7 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 			""";
 		object parameters = GetParameters(ticket);
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	public async Task<Result<AccountTicket>> Find(
@@ -77,13 +77,13 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 		return mappings.Count == 0 ? null : mappings.First().Value;
 	}
 
-	private async Task BlockTicket(AccountTicket ticket, CancellationToken ct = default)
+	private Task BlockTicket(AccountTicket ticket, CancellationToken ct = default)
 	{
 		const string sql = "SELECT id FROM identity_module.tickets WHERE id = @ticketId FOR UPDATE";
 		DynamicParameters parameters = new();
 		parameters.Add("@ticketId", ticket.TicketId, DbType.Guid);
 		CommandDefinition command = new(sql, parameters, transaction: Session.Transaction, cancellationToken: ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	private static (DynamicParameters parameters, string filterSql) WhereClause(

@@ -9,10 +9,8 @@ public sealed class GetBrandsCachingQueryHandler(
 	IQueryHandler<GetBrandsQuery, IEnumerable<BrandResponse>> inner
 ) : IQueryExecutorWithCache<GetBrandsQuery, IEnumerable<BrandResponse>>
 {
-	public async Task<IEnumerable<BrandResponse>> ExecuteWithCache(
-		GetBrandsQuery query,
-		CancellationToken ct = default
-	) => await ReadFromCache(query, CreateCacheKey(query), ct);
+	public Task<IEnumerable<BrandResponse>> ExecuteWithCache(GetBrandsQuery query, CancellationToken ct = default) =>
+		ReadFromCache(query, CreateCacheKey(query), ct);
 
 	private async Task<IEnumerable<BrandResponse>> ReadFromCache(
 		GetBrandsQuery query,

@@ -10,14 +10,10 @@ public sealed class ChangeScheduleCacheInvalidator(
 	ParserCacheRecordInvalidator recordInvalidator
 ) : ICacheInvalidator<ChangeScheduleCommand, SubscribedParser>
 {
-	public async Task InvalidateCache(
-		ChangeScheduleCommand command,
-		SubscribedParser result,
-		CancellationToken ct = default
-	)
+	public Task InvalidateCache(ChangeScheduleCommand command, SubscribedParser result, CancellationToken ct = default)
 	{
 		Task[] tasks = [arrayInvalidator.Invalidate(ct), recordInvalidator.Invalidate(result, ct)];
 
-		await Task.WhenAll(tasks);
+		return Task.WhenAll(tasks);
 	}
 }

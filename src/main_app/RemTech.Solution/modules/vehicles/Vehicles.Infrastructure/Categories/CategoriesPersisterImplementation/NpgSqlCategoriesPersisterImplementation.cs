@@ -47,9 +47,9 @@ public sealed class NpgSqlCategoriesPersisterImplementation(NpgSqlSession sessio
 			return Error.Conflict("Unable to resolve category.");
 		if (HasFromExactSearch(found))
 			return MapToCategoryFromExactSearch(found);
-		if (HasFromEmbeddingSearch(found))
-			return MapToCategoryFromEmbeddingSearch(found);
-		return Error.Conflict("Unable to resolve category.");
+		return HasFromEmbeddingSearch(found)
+			? (Result<Category>)MapToCategoryFromEmbeddingSearch(found)
+			: (Result<Category>)Error.Conflict("Unable to resolve category.");
 	}
 
 	private static DynamicParameters BuildParameters(Category category, Vector vector)

@@ -2,5 +2,5 @@
 
 public sealed class GetVehicleCharacteristicsQueryResponse
 {
-	public IReadOnlyCollection<VehicleCharacteristicsResponse> Characteristics { get; set; } = [];
+    public IReadOnlyCollection<VehicleCharacteristicsResponse> Characteristics { get; set; } = [];
 }

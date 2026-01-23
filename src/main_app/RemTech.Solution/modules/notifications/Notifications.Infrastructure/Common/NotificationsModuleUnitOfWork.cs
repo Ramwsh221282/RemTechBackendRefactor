@@ -13,13 +13,12 @@ public sealed class NotificationsModuleUnitOfWork(
 {
 	private MailersChangeTracker Mailers { get; } = mailers;
 
-	public async Task Save(IEnumerable<Mailer> mailers, CancellationToken ct = default) =>
-		await Mailers.Save(mailers, ct);
+	public Task Save(IEnumerable<Mailer> mailers, CancellationToken ct = default) => Mailers.Save(mailers, ct);
 
-	public async Task Save(Mailer mailer, CancellationToken ct = default) => await Mailers.Save([mailer], ct);
+	public Task Save(Mailer mailer, CancellationToken ct = default) => Mailers.Save([mailer], ct);
 
-	public async Task Save(IEnumerable<PendingEmailNotification> notifications, CancellationToken ct = default) =>
-		await pendingEmails.Save(notifications, ct);
+	public Task Save(IEnumerable<PendingEmailNotification> notifications, CancellationToken ct = default) =>
+		pendingEmails.Save(notifications, ct);
 
 	public void Track(IEnumerable<Mailer> mailers) => Mailers.Track(mailers);
 

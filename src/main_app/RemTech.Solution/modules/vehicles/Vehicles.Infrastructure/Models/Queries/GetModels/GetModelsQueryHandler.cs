@@ -8,11 +8,11 @@ namespace Vehicles.Infrastructure.Models.Queries.GetModels;
 public sealed class GetModelsQueryHandler(NpgSqlSession session)
 	: IQueryHandler<GetModelsQuery, IEnumerable<ModelResponse>>
 {
-	public async Task<IEnumerable<ModelResponse>> Handle(GetModelsQuery query, CancellationToken ct = default)
+	public Task<IEnumerable<ModelResponse>> Handle(GetModelsQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string sql) = CreateSql(query);
 		CommandDefinition command = new(sql, parameters, cancellationToken: ct);
-		return await session.QueryMultipleRows<ModelResponse>(command);
+		return session.QueryMultipleRows<ModelResponse>(command);
 	}
 
 	private static (DynamicParameters parameters, string filterSql) CreateSql(GetModelsQuery query)

@@ -8,30 +8,30 @@ namespace ContainedItems.Worker.Extensions;
 
 public static class ContainedItemsModuleInjection
 {
-	extension(IServiceCollection services)
-	{
-		public void InjectContainedItemsModule() => services.RegisterInfrastructure();
+    extension(IServiceCollection services)
+    {
+        public void InjectContainedItemsModule() => services.RegisterInfrastructure();
 
-		public void AddContainedItemsModule(bool isDevelopment)
-		{
-			services.RegisterSharedDependencies(isDevelopment);
-			services.RegisterInfrastructure();
-		}
+        public void AddContainedItemsModule(bool isDevelopment)
+        {
+            services.RegisterSharedDependencies(isDevelopment);
+            services.RegisterInfrastructure();
+        }
 
-		public void RegisterInfrastructure() => services.AddContainedItemsInfrastructure();
+        public void RegisterInfrastructure() => services.AddContainedItemsInfrastructure();
 
-		private void RegisterSharedDependencies(bool isDevelopment)
-		{
-			if (isDevelopment)
-			{
-				services.AddMigrations([typeof(ContainedItemsInfrastructureInjection).Assembly]);
-				services.AddNpgSqlOptionsFromAppsettings();
-				services.AddRabbitMqOptionsFromAppsettings();
-			}
+        private void RegisterSharedDependencies(bool isDevelopment)
+        {
+            if (isDevelopment)
+            {
+                services.AddMigrations([typeof(ContainedItemsInfrastructureInjection).Assembly]);
+                services.AddNpgSqlOptionsFromAppsettings();
+                services.AddRabbitMqOptionsFromAppsettings();
+            }
 
-			services.RegisterLogging();
-			services.AddPostgres();
-			services.AddRabbitMq();
-		}
-	}
+            services.RegisterLogging();
+            services.AddPostgres();
+            services.AddRabbitMq();
+        }
+    }
 }

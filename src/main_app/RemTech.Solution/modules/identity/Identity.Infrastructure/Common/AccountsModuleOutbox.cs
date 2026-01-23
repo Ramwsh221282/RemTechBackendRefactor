@@ -13,7 +13,7 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleU
 
 	private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
 
-	public async Task Add(IdentityOutboxMessage message, CancellationToken ct = default)
+	public Task Add(IdentityOutboxMessage message, CancellationToken ct = default)
 	{
 		const string sql = """
 			INSERT INTO
@@ -34,7 +34,7 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleU
 		};
 
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	public async Task<IdentityOutboxMessage[]> GetMany(OutboxMessageSpecification spec, CancellationToken ct = default)

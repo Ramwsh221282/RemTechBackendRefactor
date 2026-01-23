@@ -6,8 +6,8 @@ namespace ParsersControl.Core.Features.EnableParser;
 
 public sealed class EnableParserValidator : AbstractValidator<EnableParserCommand>
 {
-	public EnableParserValidator()
-	{
-		RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
-	}
+    public EnableParserValidator()
+    {
+        RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
+    }
 }

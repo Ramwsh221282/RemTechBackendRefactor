@@ -2,7 +2,7 @@
 
 public static class Numbers
 {
-	public static bool IsNegative(int number) => number < 0;
+    public static bool IsNegative(int number) => number < 0;
 
-	public static bool NotNegative(int number) => !IsNegative(number);
+    public static bool NotNegative(int number) => !IsNegative(number);
 }

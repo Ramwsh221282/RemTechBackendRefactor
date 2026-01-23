@@ -10,10 +10,10 @@ public sealed class AddMailerCacheInvalidator(
 	MailerRecordCacheInvalidator recordInvalidator
 ) : ICacheInvalidator<AddMailerCommand, Mailer>
 {
-	public async Task InvalidateCache(AddMailerCommand command, Mailer result, CancellationToken ct = default)
+	public Task InvalidateCache(AddMailerCommand command, Mailer result, CancellationToken ct = default)
 	{
 		Task[] tasks = [arrayInvalidator.Invalidate(ct), recordInvalidator.Invalidate(result.Id.Value, ct)];
 
-		await Task.WhenAll(tasks);
+		return Task.WhenAll(tasks);
 	}
 }

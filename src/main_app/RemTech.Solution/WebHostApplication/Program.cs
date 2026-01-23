@@ -7,7 +7,7 @@ using WebHostApplication.Middlewares;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.RegisterApplicationModules();
 if (builder.Environment.IsDevelopment())
-	builder.Services.RegisterConfigurationFromAppsettings();
+    builder.Services.RegisterConfigurationFromAppsettings();
 builder.Services.RegisterSharedDependencies(builder.Configuration);
 builder.Services.RegisterModuleMigrations();
 builder.Services.AddSwaggerGen();
@@ -16,15 +16,15 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddCors(options =>
 {
-	IConfigurationSection section = builder.Configuration.GetSection(nameof(FrontendOptions));
-	string? url = section["Url"] ?? throw new InvalidOperationException("Frontend URL option is empty.");
-	options.AddPolicy(
-		"frontend",
-		policy =>
-		{
-			policy.WithOrigins(url).AllowCredentials().AllowAnyMethod().AllowAnyHeader();
-		}
-	);
+    IConfigurationSection section = builder.Configuration.GetSection(nameof(FrontendOptions));
+    string? url = section["Url"] ?? throw new InvalidOperationException("Frontend URL option is empty.");
+    options.AddPolicy(
+        "frontend",
+        policy =>
+        {
+            policy.WithOrigins(url).AllowCredentials().AllowAnyMethod().AllowAnyHeader();
+        }
+    );
 });
 
 WebApplication app = builder.Build();
@@ -42,5 +42,5 @@ app.Run();
 
 namespace WebHostApplication
 {
-	public partial class Program { }
+    public partial class Program { }
 }

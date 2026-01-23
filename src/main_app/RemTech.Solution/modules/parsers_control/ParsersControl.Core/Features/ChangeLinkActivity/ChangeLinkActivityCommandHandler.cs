@@ -50,9 +50,9 @@ public sealed class ChangeLinkActivityCommandHandler(ISubscribedParsersRepositor
 			? Result.Failure<SubscribedParserLink>(parser.Error)
 			: parser.Value.ChangeLinkActivity(parser.Value.FindLink(linkId), isActive);
 
-	private async Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
+	private Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
 	{
 		SubscribedParserQuery query = new(Id: parserId, WithLock: true);
-		return await SubscribedParser.FromRepository(repository, query, ct);
+		return SubscribedParser.FromRepository(repository, query, ct);
 	}
 }

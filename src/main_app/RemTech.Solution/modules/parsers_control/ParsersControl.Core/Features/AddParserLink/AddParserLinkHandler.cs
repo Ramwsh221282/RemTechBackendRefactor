@@ -52,9 +52,9 @@ public sealed class AddParserLinkHandler(ISubscribedParsersRepository repository
 		return parser.Value.AddLinks(infos);
 	}
 
-	private async Task<Result<SubscribedParser>> GetRequiredParser(Guid id, CancellationToken ct)
+	private Task<Result<SubscribedParser>> GetRequiredParser(Guid id, CancellationToken ct)
 	{
 		SubscribedParserQuery query = new(Id: id, WithLock: true);
-		return await repository.Get(query, ct: ct);
+		return repository.Get(query, ct: ct);
 	}
 }

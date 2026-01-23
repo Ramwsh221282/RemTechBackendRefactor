@@ -6,5 +6,5 @@ namespace ParsersControl.Core.Features.PermantlyStartParsing;
 
 public sealed class PermantlyStartParsingValidator : AbstractValidator<PermantlyStartParsingCommand>
 {
-	public PermantlyStartParsingValidator() => RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
+    public PermantlyStartParsingValidator() => RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
 }

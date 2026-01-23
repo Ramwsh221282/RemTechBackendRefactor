@@ -11,16 +11,16 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 {
 	private NpgSqlSession Session { get; } = session;
 
-	public async Task<bool> Exists(Guid accountId, CancellationToken ct = default)
+	public Task<bool> Exists(Guid accountId, CancellationToken ct = default)
 	{
 		const string sql =
 			"SELECT EXISTS (SELECT 1 FROM identity_module.refresh_tokens WHERE account_id = @account_id)";
 		object parameters = new { account_id = accountId };
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		return await Session.QuerySingleRow<bool>(command);
+		return Session.QuerySingleRow<bool>(command);
 	}
 
-	public async Task Add(RefreshToken token, CancellationToken ct = default)
+	public Task Add(RefreshToken token, CancellationToken ct = default)
 	{
 		const string sql = """
 			INSERT INTO identity_module.refresh_tokens
@@ -39,10 +39,10 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		};
 
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
-	public async Task Update(RefreshToken token, CancellationToken ct = default)
+	public Task Update(RefreshToken token, CancellationToken ct = default)
 	{
 		const string sql = """
 			UPDATE identity_module.refresh_tokens 
@@ -59,7 +59,7 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		};
 
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	public async Task<Result<RefreshToken>> Find(Guid accountId, CancellationToken ct = default)
@@ -104,13 +104,13 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		return token is null ? Error.NotFound("Токен обновления не найден.") : token;
 	}
 
-	public async Task Delete(RefreshToken token, CancellationToken ct = default)
+	public Task Delete(RefreshToken token, CancellationToken ct = default)
 	{
 		const string sql =
 			"DELETE FROM identity_module.refresh_tokens WHERE account_id = @account_id AND token_value = @token_value";
 		object parameters = new { account_id = token.AccountId, token_value = token.TokenValue };
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	private static RefreshToken Map(IDataReader reader)
@@ -122,7 +122,7 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		return new RefreshToken(accountId, tokenValue, expiresAt, createdAt);
 	}
 
-	public async Task Delete(Guid AccountId, CancellationToken ct = default)
+	public Task Delete(Guid AccountId, CancellationToken ct = default)
 	{
 		const string sql = """
 			    DELETE FROM identity_module.refresh_tokens
@@ -130,6 +130,6 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 			""";
 		object parameters = new { account_id = AccountId };
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 }

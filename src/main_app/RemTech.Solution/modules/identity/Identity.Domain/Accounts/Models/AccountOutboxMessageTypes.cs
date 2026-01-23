@@ -2,5 +2,5 @@
 
 public static class AccountOutboxMessageTypes
 {
-	public const string NewAccountCreated = "new-account-registered";
+    public const string NewAccountCreated = "new-account-registered";
 }

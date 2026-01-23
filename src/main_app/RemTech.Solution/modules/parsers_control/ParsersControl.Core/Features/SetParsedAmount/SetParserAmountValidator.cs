@@ -6,8 +6,8 @@ namespace ParsersControl.Core.Features.SetParsedAmount;
 
 public sealed class SetParserAmountValidator : AbstractValidator<SetParsedAmountCommand>
 {
-	public SetParserAmountValidator()
-	{
-		RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
-	}
+    public SetParserAmountValidator()
+    {
+        RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
+    }
 }

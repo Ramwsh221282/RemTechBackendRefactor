@@ -15,7 +15,7 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 	private NpgSqlSession Session { get; } = session;
 	private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
 
-	public async Task<bool> Exists(PermissionSpecification specification, CancellationToken ct = default)
+	public Task<bool> Exists(PermissionSpecification specification, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(specification);
 		string sql = $"""
@@ -27,10 +27,10 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 			""";
 
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		return await Session.QuerySingleRow<bool>(command);
+		return Session.QuerySingleRow<bool>(command);
 	}
 
-	public async Task Add(Permission permission, CancellationToken ct = default)
+	public Task Add(Permission permission, CancellationToken ct = default)
 	{
 		const string sql = """
 			INSERT INTO identity_module.permissions
@@ -47,7 +47,7 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		};
 
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	public async Task Add(IEnumerable<Permission> permissions, CancellationToken ct = default)
@@ -147,13 +147,13 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		return permissions;
 	}
 
-	private async Task BlockPermission(Permission permission, CancellationToken ct = default)
+	private Task BlockPermission(Permission permission, CancellationToken ct = default)
 	{
 		const string sql = "SELECT id FROM identity_module.permissions WHERE id = @permissionId FOR UPDATE";
 		DynamicParameters parameters = new();
 		parameters.Add("@permissionId", permission.Id.Value, DbType.Guid);
 		CommandDefinition command = new(sql, parameters, transaction: Session.Transaction, cancellationToken: ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	private async Task<IEnumerable<Permission>> GetMultiple(CommandDefinition command, CancellationToken ct)

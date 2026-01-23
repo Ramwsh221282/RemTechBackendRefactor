@@ -51,11 +51,10 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		return session.Execute(command);
 	}
 
-	public async Task Save(IEnumerable<SubscribedParser> parsers, CancellationToken ct = default) =>
-		await _tracker.SaveChanges(parsers, ct);
+	public Task Save(IEnumerable<SubscribedParser> parsers, CancellationToken ct = default) =>
+		_tracker.SaveChanges(parsers, ct);
 
-	public async Task Save(SubscribedParser parser, CancellationToken ct = default) =>
-		await _tracker.SaveChanges([parser], ct);
+	public Task Save(SubscribedParser parser, CancellationToken ct = default) => _tracker.SaveChanges([parser], ct);
 
 	public async Task<Result<SubscribedParser>> Get(SubscribedParserQuery query, CancellationToken ct = default)
 	{
@@ -105,9 +104,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 	{
 		public bool Equals(SubscribedParser? x, SubscribedParser? y)
 		{
-			if (x is null || y is null)
-				return x == y;
-			return x.Id == y.Id;
+			return x is null || y is null ? x == y : x.Id == y.Id;
 		}
 
 		public int GetHashCode(SubscribedParser obj) => obj.Id.GetHashCode();
@@ -185,7 +182,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		return filterSql.Count == 0 ? (parameters, "") : (parameters, $" WHERE {string.Join(" AND ", filterSql)}");
 	}
 
-	private async Task Block(SubscribedParserQuery query, CancellationToken ct)
+	private Task Block(SubscribedParserQuery query, CancellationToken ct)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(query);
 		string sql = $"""
@@ -195,7 +192,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			FOR UPDATE OF p
 			""";
 		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
-		await session.Execute(command);
+		return session.Execute(command);
 	}
 
 	private sealed class ChangeTracker(NpgSqlSession session)

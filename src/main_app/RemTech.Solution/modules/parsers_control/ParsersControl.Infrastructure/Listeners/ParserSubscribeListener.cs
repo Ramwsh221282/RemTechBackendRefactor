@@ -4,6 +4,7 @@ using ParsersControl.Core.Features.SubscribeParser;
 using ParsersControl.Core.Parsers.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
@@ -33,13 +34,13 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 		Consumer = CreateConsumer(_channel);
 	}
 
-	public async Task StartConsuming(CancellationToken ct = default)
+	public Task StartConsuming(CancellationToken ct = default)
 	{
 		if (Channel is null)
 			throw new InvalidOperationException("Channel is not initialized.");
-		if (Consumer is null)
-			throw new InvalidOperationException("Consumer is not initialized.");
-		await Channel.BasicConsumeAsync(queue: Queue, autoAck: false, consumer: Consumer, cancellationToken: ct);
+		return Consumer is null
+			? throw new InvalidOperationException("Consumer is not initialized.")
+			: (Task)Channel.BasicConsumeAsync(queue: Queue, autoAck: false, consumer: Consumer, cancellationToken: ct);
 	}
 
 	public async Task Shutdown(CancellationToken ct = default)
@@ -49,8 +50,8 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 		await Channel.DisposeAsync();
 	}
 
-	private static async Task DeclareExchange(IChannel channel, CancellationToken ct) =>
-		await channel.ExchangeDeclareAsync(
+	private static Task DeclareExchange(IChannel channel, CancellationToken ct) =>
+		channel.ExchangeDeclareAsync(
 			exchange: Exchange,
 			type: "topic",
 			durable: true,
@@ -58,8 +59,8 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 			cancellationToken: ct
 		);
 
-	private static async Task DeclareQueue(IChannel channel, CancellationToken ct) =>
-		await channel.QueueDeclareAsync(
+	private static Task<QueueDeclareOk> DeclareQueue(IChannel channel, CancellationToken ct) =>
+		channel.QueueDeclareAsync(
 			queue: Queue,
 			durable: true,
 			exclusive: false,
@@ -67,8 +68,8 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 			cancellationToken: ct
 		);
 
-	private static async Task BindQueue(IChannel channel, CancellationToken ct) =>
-		await channel.QueueBindAsync(queue: Queue, exchange: Exchange, routingKey: RoutingKey, cancellationToken: ct);
+	private static Task BindQueue(IChannel channel, CancellationToken ct) =>
+		channel.QueueBindAsync(queue: Queue, exchange: Exchange, routingKey: RoutingKey, cancellationToken: ct);
 
 	private AsyncEventingBasicConsumer CreateConsumer(IChannel channel)
 	{
@@ -82,7 +83,13 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 				SubscribeParserMessage message = SubscribeParserMessage.Create(@event);
 				await using AsyncServiceScope scope = services.CreateAsyncScope();
 				SubscribeParserCommand command = new(message.parser_id, message.parser_domain, message.parser_type);
-				await HandleCommand(command, scope);
+				Result<SubscribedParser> result = await HandleCommand(command, scope);
+
+				if (result.IsFailure)
+				{
+					Logger.Error("Error at subscribing parser. {Error}", result.Error.Message);
+				}
+
 				await Channel.BasicAckAsync(deliveryTag, false);
 			}
 			catch (Exception ex)
@@ -95,8 +102,11 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 		return consumer;
 	}
 
-	private static async Task HandleCommand(SubscribeParserCommand command, AsyncServiceScope scope) =>
-		await scope
+	private static Task<Result<SubscribedParser>> HandleCommand(
+		SubscribeParserCommand command,
+		AsyncServiceScope scope
+	) =>
+		scope
 			.ServiceProvider.GetRequiredService<ICommandHandler<SubscribeParserCommand, SubscribedParser>>()
 			.Execute(command);
 

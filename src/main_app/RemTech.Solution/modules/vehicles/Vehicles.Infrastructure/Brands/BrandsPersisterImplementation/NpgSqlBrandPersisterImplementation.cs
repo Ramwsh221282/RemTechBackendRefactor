@@ -45,9 +45,9 @@ public sealed class NpgSqlBrandPersisterImplementation(EmbeddingsProvider embedd
 			return Error.Conflict("Unable to resolve brand.");
 		if (HasFromExactSearch(found))
 			return MapToBrandFromExactSearch(found);
-		if (HasFromEmbeddingSearch(found))
-			return MapToBrandFromEmbeddingSearch(found);
-		return Error.Conflict("Unable to resolve brand.");
+		return HasFromEmbeddingSearch(found)
+			? (Result<Brand>)MapToBrandFromEmbeddingSearch(found)
+			: (Result<Brand>)Error.Conflict("Unable to resolve brand.");
 	}
 
 	private static DynamicParameters BuildParameters(Brand brand, Vector vector)

@@ -15,8 +15,6 @@ public sealed class GetParserQueryHandler(ISubscribedParsersRepository repositor
 	{
 		SubscribedParserQuery spec = new SubscribedParserQuery().WithId(query.Id);
 		Result<SubscribedParser> result = await Repository.Get(spec, ct);
-		if (result.IsFailure)
-			return null;
-		return ParserResponse.Create(result.Value);
+		return result.IsFailure ? null : ParserResponse.Create(result.Value);
 	}
 }

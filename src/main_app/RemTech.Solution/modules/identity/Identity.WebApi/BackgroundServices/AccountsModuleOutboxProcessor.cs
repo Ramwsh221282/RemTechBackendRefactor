@@ -70,10 +70,10 @@ public sealed class AccountsModuleOutboxProcessor(
 			new IdentityOutboxMessageChangeTracker(session)
 		);
 
-	private static async Task<IdentityOutboxMessage[]> GetMessages(
+	private static Task<IdentityOutboxMessage[]> GetMessages(
 		IAccountModuleOutbox outbox,
 		CancellationToken ct = default
-	) => await outbox.GetMany(new OutboxMessageSpecification().OfLimit(50).OfNotSentOnly().OfWithLock(), ct);
+	) => outbox.GetMany(new OutboxMessageSpecification().OfLimit(50).OfNotSentOnly().OfWithLock(), ct);
 
 	private async Task PublishMessages(IdentityOutboxMessage[] messages, CancellationToken ct = default)
 	{

@@ -10,14 +10,14 @@ public sealed class OnParserStartedEventListener(RabbitMqProducer producer, Seri
 {
 	private Serilog.ILogger Logger { get; } = logger.ForContext<IOnParserStartedListener>();
 
-	public async Task Handle(SubscribedParser parser, CancellationToken ct = default)
+	public Task Handle(SubscribedParser parser, CancellationToken ct = default)
 	{
 		Logger.Information("Handling on parser started event.");
 		(Guid parserId, string domain, string type, IReadOnlyList<SubscribedParserLink> links) = GetParserInfo(parser);
 		(string exchange, string routingKey) = FormPublishingOptions(domain, type);
 		Logger.Information("Domain: {Domain}, Type: {Type}, Id: {Id}", domain, type, parserId);
 		StartParserMessage body = CreatePayload(parserId, domain, type, links);
-		await PublishMessage(exchange, routingKey, body, ct);
+		return PublishMessage(exchange, routingKey, body, ct);
 	}
 
 	private static (Guid parserId, string domain, string type, IReadOnlyList<SubscribedParserLink> links) GetParserInfo(

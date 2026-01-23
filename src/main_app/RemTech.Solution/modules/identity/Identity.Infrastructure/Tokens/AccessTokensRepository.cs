@@ -11,7 +11,7 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 {
 	private NpgSqlSession Session { get; } = session;
 
-	public async Task Add(AccessToken token, CancellationToken ct = default)
+	public Task Add(AccessToken token, CancellationToken ct = default)
 	{
 		const string sql = """
 			INSERT INTO identity_module.access_tokens
@@ -35,7 +35,7 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		};
 
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	public async Task<Result<AccessToken>> Find(Guid tokenId, bool withLock = false, CancellationToken ct = default)
@@ -59,9 +59,9 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		object parameters = new { token_id = tokenId };
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
 		AccessToken? token = await Session.QuerySingleUsingReader(command, Map);
-		if (token is null)
-			return Error.NotFound("Токен доступа не найден.");
-		return token;
+		return token is null
+			? (Result<AccessToken>)Error.NotFound("Токен доступа не найден.")
+			: (Result<AccessToken>)token;
 	}
 
 	public async Task<Result<AccessToken>> Find(
@@ -89,17 +89,17 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		object parameters = new { raw_token = accessToken };
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
 		AccessToken? token = await Session.QuerySingleUsingReader(command, Map);
-		if (token is null)
-			return Error.NotFound("Токен доступа не найден.");
-		return token;
+		return token is null
+			? (Result<AccessToken>)Error.NotFound("Токен доступа не найден.")
+			: (Result<AccessToken>)token;
 	}
 
-	public async Task UpdateTokenExpired(string rawToken, CancellationToken ct = default)
+	public Task UpdateTokenExpired(string rawToken, CancellationToken ct = default)
 	{
 		const string sql = "UPDATE identity_module.access_tokens SET is_expired = TRUE WHERE raw_token = @raw_token";
 		object parameters = new { raw_token = rawToken };
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	public async Task<IEnumerable<AccessToken>> FindExpired(
@@ -146,12 +146,12 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		await Session.Execute(command);
 	}
 
-	public async Task Remove(AccessToken token, CancellationToken ct = default)
+	public Task Remove(AccessToken token, CancellationToken ct = default)
 	{
 		const string sql = "DELETE FROM identity_module.access_tokens WHERE token_id = @token_id";
 		object parameters = new { token_id = token.TokenId };
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	private static AccessToken Map(IDataReader reader)

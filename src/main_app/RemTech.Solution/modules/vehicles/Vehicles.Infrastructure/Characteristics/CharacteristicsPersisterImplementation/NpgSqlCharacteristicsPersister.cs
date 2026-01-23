@@ -59,7 +59,7 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 		return parameters;
 	}
 
-	private async Task SaveAsNewCharacteristic(Characteristic characteristic, Vector vector, CancellationToken ct)
+	private Task SaveAsNewCharacteristic(Characteristic characteristic, Vector vector, CancellationToken ct)
 	{
 		const string sql =
 			"INSERT INTO vehicles_module.characteristics (id, name, embedding) VALUES (@id, @name, @input_embedding) ON CONFLICT (name) DO NOTHING";
@@ -68,7 +68,7 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 		parameters.Add("@name", characteristic.Name.Value, DbType.String);
 		parameters.Add("@input_embedding", vector);
 		CommandDefinition command = session.FormCommand(sql, parameters, ct);
-		await session.Execute(command);
+		return session.Execute(command);
 	}
 
 	private static bool HasFromEmbeddingSearch(NpgSqlSearchResult result) =>

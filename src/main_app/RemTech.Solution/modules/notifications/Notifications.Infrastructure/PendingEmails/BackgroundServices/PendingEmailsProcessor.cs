@@ -107,13 +107,13 @@ public sealed class PendingEmailsProcessor(
 			await mailers[i].DecryptCredentials(Cryptography, ct);
 	}
 
-	private static async Task<Mailer[]> GetMailers(IMailersRepository repository, CancellationToken ct)
+	private static Task<Mailer[]> GetMailers(IMailersRepository repository, CancellationToken ct)
 	{
 		MailersSpecification specification = new MailersSpecification().WithLockRequired();
-		return await repository.GetMany(specification, ct);
+		return repository.GetMany(specification, ct);
 	}
 
-	private static async Task<PendingEmailNotification[]> GetPendingEmails(
+	private static Task<PendingEmailNotification[]> GetPendingEmails(
 		PendingEmailNotificationsRepository repository,
 		CancellationToken ct
 	)
@@ -122,7 +122,7 @@ public sealed class PendingEmailsProcessor(
 			.OfNotSentOnly()
 			.WithLock()
 			.WithLimit(50);
-		return await repository.GetMany(specification, ct);
+		return repository.GetMany(specification, ct);
 	}
 
 	private static NotificationsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session) =>

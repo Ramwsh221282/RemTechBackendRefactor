@@ -45,9 +45,9 @@ public sealed class DisableParserHandler(ISubscribedParsersRepository repository
 		return Unit.Value;
 	}
 
-	private async Task<Result<SubscribedParser>> GetRequiredParser(Guid id, CancellationToken ct)
+	private Task<Result<SubscribedParser>> GetRequiredParser(Guid id, CancellationToken ct)
 	{
 		SubscribedParserQuery query = new SubscribedParserQuery().WithId(id).RequireLock();
-		return await SubscribedParser.FromRepository(repository, query, ct);
+		return SubscribedParser.FromRepository(repository, query, ct);
 	}
 }

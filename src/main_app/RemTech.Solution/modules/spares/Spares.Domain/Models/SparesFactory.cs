@@ -45,20 +45,20 @@ public static class SparesFactory
 			return typeResult.Error;
 
 		Result<SpareAddress> addressResult = SpareAddress.Create(address);
-		if (addressResult.IsFailure)
-			return addressResult.Error;
-
-		return new Spare(
-			Id: itemId.Value,
-			Details: new SpareDetails(
-				Oem: oemResult.Value,
-				Text: textResult.Value,
-				Price: priceResult.Value,
-				Type: typeResult.Value,
-				Address: addressResult.Value,
-				Photos: photosResult.Value
-			),
-			Source: sourceResult.Value
-		);
+		return addressResult.IsFailure
+			? (Result<Spare>)addressResult.Error
+			: (Result<Spare>)
+				new Spare(
+					Id: itemId.Value,
+					Details: new SpareDetails(
+						Oem: oemResult.Value,
+						Text: textResult.Value,
+						Price: priceResult.Value,
+						Type: typeResult.Value,
+						Address: addressResult.Value,
+						Photos: photosResult.Value
+					),
+					Source: sourceResult.Value
+				);
 	}
 }

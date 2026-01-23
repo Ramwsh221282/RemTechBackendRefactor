@@ -4,6 +4,7 @@ using ParsersControl.Core.Features.FinishParser;
 using ParsersControl.Core.Parsers.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
@@ -26,17 +27,17 @@ public sealed class ParserFinishListener(
 	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
 		_channel = await TopicConsumerInitialization.InitializeChannel(rabbitMq, Exchange, Queue, RoutingKey, ct);
 
-	public async Task StartConsuming(CancellationToken ct = default)
+	public Task StartConsuming(CancellationToken ct = default)
 	{
 		AsyncEventingBasicConsumer consumer = new(Channel);
 		consumer.ReceivedAsync += Handler;
-		await Channel.BasicConsumeAsync(Queue, false, consumer, cancellationToken: ct);
+		return Channel.BasicConsumeAsync(Queue, false, consumer, cancellationToken: ct);
 	}
 
-	public async Task Shutdown(CancellationToken ct = default) => await Channel.CloseAsync(ct);
+	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
 
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
-		async (sender, ea) =>
+		async (_, ea) =>
 		{
 			Logger.Information("Received message. {Queue} {Exchange} {RoutingKey}", Queue, Exchange, RoutingKey);
 			try
@@ -46,7 +47,12 @@ public sealed class ParserFinishListener(
 					scope.ServiceProvider.GetRequiredService<ICommandHandler<FinishParserCommand, SubscribedParser>>();
 				ParserFinishMessage message = ParserFinishMessage.FromEvent(ea);
 				FinishParserCommand command = new(message.Id, message.TotalElapsedSeconds);
-				await handler.Execute(command);
+				Result<SubscribedParser> result = await handler.Execute(command);
+				if (result.IsFailure)
+				{
+					Logger.Error("Error at finishing parser. {Error}", result.Error.Message);
+				}
+
 				await Channel.BasicAckAsync(ea.DeliveryTag, false);
 			}
 			catch (Exception e)

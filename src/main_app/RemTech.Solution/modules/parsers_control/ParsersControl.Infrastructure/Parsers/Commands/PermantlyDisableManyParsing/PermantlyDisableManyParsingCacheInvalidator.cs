@@ -10,7 +10,7 @@ public sealed class PermantlyDisableManyParsingCacheInvalidator(
 	ParserCacheRecordInvalidator recordInvalidator
 ) : ICacheInvalidator<PermantlyDisableManyParsingCommand, IEnumerable<SubscribedParser>>
 {
-	public async Task InvalidateCache(
+	public Task InvalidateCache(
 		PermantlyDisableManyParsingCommand command,
 		IEnumerable<SubscribedParser> result,
 		CancellationToken ct = default
@@ -22,6 +22,6 @@ public sealed class PermantlyDisableManyParsingCacheInvalidator(
 			.. result.Select(p => recordInvalidator.Invalidate(p, ct)),
 		];
 
-		await Task.WhenAll(recordInvalidationTasks);
+		return Task.WhenAll(recordInvalidationTasks);
 	}
 }

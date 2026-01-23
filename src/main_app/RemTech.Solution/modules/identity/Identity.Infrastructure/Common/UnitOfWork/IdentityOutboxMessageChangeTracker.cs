@@ -16,10 +16,10 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 			Tracking.TryAdd(message.Id, message.Clone());
 	}
 
-	public async Task Save(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct = default)
+	public Task Save(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct = default)
 	{
 		IEnumerable<IdentityOutboxMessage> tracking = GetTrackingMessages(messages);
-		await SaveOutboxMessageChanges(tracking, ct);
+		return SaveOutboxMessageChanges(tracking, ct);
 	}
 
 	private async Task SaveOutboxMessageChanges(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct)

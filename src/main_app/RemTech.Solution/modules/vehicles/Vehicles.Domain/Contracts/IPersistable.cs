@@ -3,7 +3,7 @@
 namespace Vehicles.Domain.Contracts;
 
 public interface IPersistable<T>
-	where T : class
+    where T : class
 {
-	public Task<Result<T>> SaveBy(IPersister persister, CancellationToken ct = default);
+    public Task<Result<T>> SaveBy(IPersister persister, CancellationToken ct = default);
 }

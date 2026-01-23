@@ -16,7 +16,7 @@ public sealed class PendingEmailNotificationsRepository(
 	private NpgSqlSession Session { get; } = session;
 	private INotificationsModuleUnitOfWork ChangeTracker { get; } = changeTracker;
 
-	public async Task Add(PendingEmailNotification notification, CancellationToken ct = default)
+	public Task Add(PendingEmailNotification notification, CancellationToken ct = default)
 	{
 		const string sql = """
 			INSERT INTO notifications_module.pending_emails
@@ -35,7 +35,7 @@ public sealed class PendingEmailNotificationsRepository(
 		};
 
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await Session.Execute(command);
+		return Session.Execute(command);
 	}
 
 	public async Task<PendingEmailNotification[]> GetMany(

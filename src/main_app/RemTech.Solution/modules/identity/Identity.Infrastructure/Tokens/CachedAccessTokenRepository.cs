@@ -27,9 +27,7 @@ public sealed class CachedAccessTokenRepository(HybridCache cache, IAccessTokens
 			async cancellationToken =>
 			{
 				Result<AccessToken> result = await GetFromInner(tokenId, withLock, cancellationToken);
-				if (result.IsFailure)
-					return null;
-				return result.Value;
+				return result.IsFailure ? null : result.Value;
 			},
 			cancellationToken: ct
 		);
@@ -37,20 +35,17 @@ public sealed class CachedAccessTokenRepository(HybridCache cache, IAccessTokens
 		return token is null ? Error.NotFound("Token not found.") : token;
 	}
 
-	public async Task<Result<AccessToken>> Find(
-		string accessToken,
-		bool withLock = false,
-		CancellationToken ct = default
-	) => await Inner.Find(accessToken, withLock, ct);
+	public Task<Result<AccessToken>> Find(string accessToken, bool withLock = false, CancellationToken ct = default) =>
+		Inner.Find(accessToken, withLock, ct);
 
-	public async Task UpdateTokenExpired(string rawToken, CancellationToken ct = default) =>
-		await Inner.UpdateTokenExpired(rawToken, ct);
+	public Task UpdateTokenExpired(string rawToken, CancellationToken ct = default) =>
+		Inner.UpdateTokenExpired(rawToken, ct);
 
-	public async Task<IEnumerable<AccessToken>> FindExpired(
+	public Task<IEnumerable<AccessToken>> FindExpired(
 		int maxCount = 50,
 		bool withLock = false,
 		CancellationToken ct = default
-	) => await Inner.FindExpired(maxCount, withLock, ct);
+	) => Inner.FindExpired(maxCount, withLock, ct);
 
 	public async Task Remove(IEnumerable<AccessToken> tokens, CancellationToken ct = default)
 	{
@@ -69,6 +64,6 @@ public sealed class CachedAccessTokenRepository(HybridCache cache, IAccessTokens
 		await Cache.RemoveAsync(key, cancellationToken: ct);
 	}
 
-	private async Task<Result<AccessToken>> GetFromInner(Guid tokenId, bool withLock, CancellationToken ct) =>
-		await Inner.Find(tokenId, withLock, ct);
+	private Task<Result<AccessToken>> GetFromInner(Guid tokenId, bool withLock, CancellationToken ct) =>
+		Inner.Find(tokenId, withLock, ct);
 }

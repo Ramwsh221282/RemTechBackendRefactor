@@ -49,16 +49,16 @@ public static class IdentityModuleTestExtensions
 				.Execute(command);
 		}
 
-		public async Task<Result<Account>> GetAccountByEmail(string email)
+		public Task<Result<Account>> GetAccountByEmail(string email)
 		{
 			AccountSpecification specification = new AccountSpecification().WithEmail(email);
-			return await services.GetAccount(specification);
+			return services.GetAccount(specification);
 		}
 
-		public async Task<Result<Account>> GetAccountByName(string name)
+		public Task<Result<Account>> GetAccountByName(string name)
 		{
 			AccountSpecification specification = new AccountSpecification().WithLogin(name);
-			return await services.GetAccount(specification);
+			return services.GetAccount(specification);
 		}
 
 		public async Task<Result<Account>> GivePermissions(Guid accountId, IEnumerable<Guid> permissionIds)
@@ -82,8 +82,8 @@ public static class IdentityModuleTestExtensions
 				: await permissions.GetMany(specs, CancellationToken.None);
 		}
 
-		public async Task<Result<Account>> GivePermission(Guid accountId, Guid permissionId) =>
-			await services.GivePermissions(accountId, [permissionId]);
+		public Task<Result<Account>> GivePermission(Guid accountId, Guid permissionId) =>
+			services.GivePermissions(accountId, [permissionId]);
 
 		private async Task<Result<Account>> GetAccount(AccountSpecification specification)
 		{
@@ -108,9 +108,9 @@ public static class IdentityModuleTestExtensions
 				.GetRequiredService<IOptions<SuperUserCredentialsOptions>>()
 				.Value;
 			Result<Account> account = await services.GetAccountByEmail(options.Email);
-			if (account.IsFailure)
-				throw new Exception($"Super user account not found: {options.Email}");
-			return account.Value;
+			return account.IsFailure
+				? throw new Exception($"Super user account not found: {options.Email}")
+				: account.Value;
 		}
 
 		public async Task<Result<Unit>> ConfirmAccountTicket(Guid accountId, Guid ticketId)

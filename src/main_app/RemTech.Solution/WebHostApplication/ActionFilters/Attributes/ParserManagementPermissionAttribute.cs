@@ -5,6 +5,6 @@ namespace WebHostApplication.ActionFilters.Attributes;
 
 public sealed class ParserManagementPermissionAttribute : TypeFilterAttribute
 {
-	public ParserManagementPermissionAttribute()
-		: base(typeof(ShouldHaveParserManagementPermissionFilter)) { }
+    public ParserManagementPermissionAttribute()
+        : base(typeof(ShouldHaveParserManagementPermissionFilter)) { }
 }

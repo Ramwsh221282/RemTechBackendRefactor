@@ -18,9 +18,9 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
 			return fullResult.Error;
 		if (fullResult.Value.Region is null)
 			return Error.NotFound("Unable to resolve location.");
-		if (fullResult.IsFailure)
-			return Error.NotFound("Unable to resolve location.");
-		return CreateLocationFromSearchResult(fullResult);
+		return fullResult.IsFailure
+			? (Result<Location>)Error.NotFound("Unable to resolve location.")
+			: (Result<Location>)CreateLocationFromSearchResult(fullResult);
 	}
 
 	private async Task<Result<NpgSqlSearchResult>> TrySearchFullInfo(string rawText, CancellationToken ct)
@@ -87,10 +87,9 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
 		locationParts.Add(result.Region.RegionName);
 		locationParts.Add(result.Region.RegionKind);
 
-		if (result.City is not null)
+		if (result.City is not null && !string.IsNullOrWhiteSpace(result.City.CityName))
 		{
-			if (!string.IsNullOrWhiteSpace(result.City.CityName))
-				locationParts.Add(result.City.CityName);
+			locationParts.Add(result.City.CityName);
 		}
 
 		string fullName = string.Join(", ", locationParts);

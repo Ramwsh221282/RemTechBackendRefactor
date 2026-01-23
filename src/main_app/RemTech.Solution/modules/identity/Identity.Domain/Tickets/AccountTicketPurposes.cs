@@ -2,6 +2,6 @@
 
 public static class AccountTicketPurposes
 {
-	public const string EmailConfirmationRequired = "email-confirmation-required";
-	public const string ResetPassword = "reset-password";
+    public const string EmailConfirmationRequired = "email-confirmation-required";
+    public const string ResetPassword = "reset-password";
 }

@@ -87,8 +87,7 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 		public string Type { get; set; } = string.Empty;
 	}
 
-	public async Task Publish(ContainedItem item, CancellationToken ct = default) => await Publish([item], ct);
+	public Task Publish(ContainedItem item, CancellationToken ct = default) => Publish([item], ct);
 
-	public async Task PublishMany(IEnumerable<ContainedItem> items, CancellationToken ct = default) =>
-		await Publish(items, ct);
+	public Task PublishMany(IEnumerable<ContainedItem> items, CancellationToken ct = default) => Publish(items, ct);
 }

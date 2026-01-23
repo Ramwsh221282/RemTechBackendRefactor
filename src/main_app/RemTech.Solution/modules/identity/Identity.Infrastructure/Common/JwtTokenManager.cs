@@ -10,10 +10,12 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Infrastructure.Common;
 
-public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenManager
+public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogger logger) : IJwtTokenManager
 {
 	private TokenValidationParameters? _validationParameters;
 	private JwtOptions Options { get; } = options.Value;
+
+	private Serilog.ILogger Logger { get; } = logger.ForContext<JwtTokenManager>();
 
 	public AccessToken GenerateToken(Account account)
 	{
@@ -42,13 +44,13 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
 
 			TokenValidationParameters parameters = CreateValidationParameters();
 			TokenValidationResult validationResult = await handler.ValidateTokenAsync(jwtToken, parameters);
-			if (!validationResult.IsValid)
-				return Error.Unauthorized("Invalid token");
-
-			return validationResult;
+			return !validationResult.IsValid
+				? (Result<TokenValidationResult>)Error.Unauthorized("Invalid token")
+				: (Result<TokenValidationResult>)validationResult;
 		}
-		catch
+		catch (Exception ex)
 		{
+			Logger.Fatal(ex, "Error processing password reset required message.");
 			return Error.Unauthorized("Invalid token");
 		}
 	}

@@ -6,10 +6,10 @@ namespace Identity.Domain.Accounts.Features.ConfirmPasswordReset;
 
 public sealed class ConfirmResetPasswordValidator : AbstractValidator<ConfirmResetPasswordCommand>
 {
-	public ConfirmResetPasswordValidator()
-	{
-		RuleFor(x => x.AccountId).MustBeValid(AccountId.Create);
-		RuleFor(x => x.TicketId).MustBeValid(AccountId.Create);
-		RuleFor(x => x.NewPassword).MustBeValid(AccountPassword.Create);
-	}
+    public ConfirmResetPasswordValidator()
+    {
+        RuleFor(x => x.AccountId).MustBeValid(AccountId.Create);
+        RuleFor(x => x.TicketId).MustBeValid(AccountId.Create);
+        RuleFor(x => x.NewPassword).MustBeValid(AccountPassword.Create);
+    }
 }

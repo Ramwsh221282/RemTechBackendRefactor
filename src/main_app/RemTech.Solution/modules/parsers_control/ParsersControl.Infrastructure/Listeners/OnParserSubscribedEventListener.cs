@@ -12,7 +12,7 @@ public sealed class OnParserSubscribedEventListener(RabbitMqConnectionSource rab
 {
 	private Serilog.ILogger Logger { get; } = logger.ForContext<IOnParserSubscribedListener>();
 
-	public async Task Handle(SubscribedParser parser, CancellationToken ct = default)
+	public Task Handle(SubscribedParser parser, CancellationToken ct = default)
 	{
 		(string domain, string type) = GetParserInfo(parser);
 		(string exchange, string queue, string routingKey) = FormPublishingOptions(domain, type);
@@ -31,7 +31,7 @@ public sealed class OnParserSubscribedEventListener(RabbitMqConnectionSource rab
 		);
 
 		ReadOnlyMemory<byte> body = CreatePayload(parser.Id.Value, domain, type);
-		await PublishMessage(queue, exchange, routingKey, body, ct);
+		return PublishMessage(queue, exchange, routingKey, body, ct);
 	}
 
 	private static (string domain, string type) GetParserInfo(SubscribedParser parser)

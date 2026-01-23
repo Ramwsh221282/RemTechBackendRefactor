@@ -33,6 +33,6 @@ public sealed class SuperUserCreationTests(IntegrationalTestsFactory factory) : 
 		return permissions.ToArray();
 	}
 
-	private async Task<Result<Account>> GetSuperUserAccount(SuperUserCredentialsOptions options) =>
-		await Services.GetAccountByName(options.Login);
+	private Task<Result<Account>> GetSuperUserAccount(SuperUserCredentialsOptions options) =>
+		Services.GetAccountByName(options.Login);
 }

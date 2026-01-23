@@ -7,7 +7,7 @@ namespace Identity.Tests;
 public sealed class PermissionCreatingTests(IntegrationalTestsFactory factory) : IClassFixture<IntegrationalTestsFactory>
 {
     private IServiceProvider Services { get; } = factory.Services;
-    
+
     [Fact]
     private async Task Add_Permissions_List_Success()
     {
@@ -18,7 +18,7 @@ public sealed class PermissionCreatingTests(IntegrationalTestsFactory factory) :
             new("permission.third", "Test third permission"),
             new("permission.fourth", "Test fourth permission"),
         ];
-        
+
         Result<IEnumerable<Permission>> result = await Services.AddPermissions(payload);
         Assert.True(result.IsSuccess);
     }
@@ -33,10 +33,10 @@ public sealed class PermissionCreatingTests(IntegrationalTestsFactory factory) :
             new("permission.third", "Test third permission"),
             new("permission.fourth", "Test fourth permission"),
         ];
-        
+
         Result<IEnumerable<Permission>> result1 = await Services.AddPermissions(payload1);
         Assert.True(result1.IsSuccess);
-        
+
         IEnumerable<AddPermissionCommandPayload> payload2 =
         [
             new("permission.third", "Test third permission"),
@@ -44,7 +44,7 @@ public sealed class PermissionCreatingTests(IntegrationalTestsFactory factory) :
             new("permission.fifth", "Test fifth permission"),
             new("permission.sixth", "Test sixth permission"),
         ];
-        
+
         Result<IEnumerable<Permission>> result2 = await Services.AddPermissions(payload2);
         Assert.True(result2.IsFailure);
     }

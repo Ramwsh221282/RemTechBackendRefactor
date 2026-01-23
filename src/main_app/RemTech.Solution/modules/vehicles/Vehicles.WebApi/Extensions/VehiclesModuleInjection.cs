@@ -27,60 +27,60 @@ namespace Vehicles.WebApi.Extensions;
 
 public static class VehiclesModuleInjection
 {
-	extension(IServiceCollection services)
-	{
-		public void InjectVehiclesModule() => services.RegisterInfrastructureLayerDependencies();
+    extension(IServiceCollection services)
+    {
+        public void InjectVehiclesModule() => services.RegisterInfrastructureLayerDependencies();
 
-		public void RegisterVehiclesModule(bool isDevelopment)
-		{
-			services.RegisterSharedInfrastructure(isDevelopment);
-			services.RegisterInfrastructureLayerDependencies();
-		}
+        public void RegisterVehiclesModule(bool isDevelopment)
+        {
+            services.RegisterSharedInfrastructure(isDevelopment);
+            services.RegisterInfrastructureLayerDependencies();
+        }
 
-		public void RegisterInfrastructureLayerDependencies()
-		{
-			services.RegisterPersisters();
-			services.RegisterBackgroundServices();
-			services.RegisterProducers();
-		}
+        public void RegisterInfrastructureLayerDependencies()
+        {
+            services.RegisterPersisters();
+            services.RegisterBackgroundServices();
+            services.RegisterProducers();
+        }
 
-		private void RegisterMigrations(Assembly assembly) => services.AddMigrations([assembly]);
+        private void RegisterMigrations(Assembly assembly) => services.AddMigrations([assembly]);
 
-		private void RegisterProducers() =>
-			services.AddSingleton<IOnVehiclesAddedEventPublisher, OnVehiclesAddedProducer>();
+        private void RegisterProducers() =>
+            services.AddSingleton<IOnVehiclesAddedEventPublisher, OnVehiclesAddedProducer>();
 
-		private void RegisterPersisters()
-		{
-			services.AddScoped<IVehiclesListPersister, NpgSqlVehiclesListPersister>();
-			services.AddScoped<IBrandPersister, NpgSqlBrandPersisterImplementation>();
-			services.AddScoped<IModelsPersister, NpgSqlModelPersister>();
-			services.AddScoped<ICategoryPersister, NpgSqlCategoriesPersisterImplementation>();
-			services.AddScoped<ICharacteristicsPersister, NpgSqlCharacteristicsPersister>();
-			services.AddScoped<ILocationsPersister, NpgSqlLocationsPersister>();
-			services.AddScoped<IVehiclesPersister, NpgSqlVehiclesPersister>();
-			services.AddScoped<IPersister, NpgSqlPersister>();
-		}
+        private void RegisterPersisters()
+        {
+            services.AddScoped<IVehiclesListPersister, NpgSqlVehiclesListPersister>();
+            services.AddScoped<IBrandPersister, NpgSqlBrandPersisterImplementation>();
+            services.AddScoped<IModelsPersister, NpgSqlModelPersister>();
+            services.AddScoped<ICategoryPersister, NpgSqlCategoriesPersisterImplementation>();
+            services.AddScoped<ICharacteristicsPersister, NpgSqlCharacteristicsPersister>();
+            services.AddScoped<ILocationsPersister, NpgSqlLocationsPersister>();
+            services.AddScoped<IVehiclesPersister, NpgSqlVehiclesPersister>();
+            services.AddScoped<IPersister, NpgSqlPersister>();
+        }
 
-		private void RegisterBackgroundServices() => services.AddHostedService<VehicleEmbeddingsUpdaterService>();
+        private void RegisterBackgroundServices() => services.AddHostedService<VehicleEmbeddingsUpdaterService>();
 
-		private void RegisterSharedInfrastructure(bool isDevelopment)
-		{
-			services.RegisterLogging();
-			if (isDevelopment)
-			{
-				Assembly assembly = typeof(NpgSqlVehiclesPersister).Assembly;
-				services.RegisterMigrations(assembly);
-				services.AddNpgSqlOptionsFromAppsettings();
-				services.AddRabbitMqOptionsFromAppsettings();
-				services.RegisterFromAppsettings();
-				services
-					.AddOptions<GetVehiclesThresholdConstants>()
-					.BindConfiguration(nameof(GetVehiclesThresholdConstants));
-			}
+        private void RegisterSharedInfrastructure(bool isDevelopment)
+        {
+            services.RegisterLogging();
+            if (isDevelopment)
+            {
+                Assembly assembly = typeof(NpgSqlVehiclesPersister).Assembly;
+                services.RegisterMigrations(assembly);
+                services.AddNpgSqlOptionsFromAppsettings();
+                services.AddRabbitMqOptionsFromAppsettings();
+                services.RegisterFromAppsettings();
+                services
+                    .AddOptions<GetVehiclesThresholdConstants>()
+                    .BindConfiguration(nameof(GetVehiclesThresholdConstants));
+            }
 
-			services.AddSingleton<EmbeddingsProvider>();
-			services.AddPostgres();
-			services.AddRabbitMq();
-		}
-	}
+            services.AddSingleton<EmbeddingsProvider>();
+            services.AddPostgres();
+            services.AddRabbitMq();
+        }
+    }
 }

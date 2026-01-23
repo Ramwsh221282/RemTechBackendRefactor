@@ -18,12 +18,12 @@ public sealed class AddMailerHandler(IMailersRepository repository, IMailerCrede
 		return mailer;
 	}
 
-	private async Task<bool> MailerWithEmailExists(AddMailerCommand command, CancellationToken ct)
+	private Task<bool> MailerWithEmailExists(AddMailerCommand command, CancellationToken ct)
 	{
 		MailersSpecification specification = new MailersSpecification().WithEmail(command.Email);
-		return await repository.Exists(specification, ct);
+		return repository.Exists(specification, ct);
 	}
 
-	private async Task<MailerCredentials> CreateEncryptedCredentials(AddMailerCommand command, CancellationToken ct) =>
-		await MailerCredentials.Create(command.SmtpPassword, command.Email).Value.Encrypt(cryptography, ct);
+	private Task<MailerCredentials> CreateEncryptedCredentials(AddMailerCommand command, CancellationToken ct) =>
+		MailerCredentials.Create(command.SmtpPassword, command.Email).Value.Encrypt(cryptography, ct);
 }

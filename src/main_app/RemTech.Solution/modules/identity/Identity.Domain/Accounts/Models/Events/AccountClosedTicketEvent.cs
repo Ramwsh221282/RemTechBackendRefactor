@@ -12,6 +12,5 @@ public sealed class AccountClosedTicketEvent(Guid accountId, Guid ticketId) : ID
 	public Guid AccountId { get; } = accountId;
 	public Guid TicketId { get; } = ticketId;
 
-	public async Task PublishTo(IDomainEventHandler handler, CancellationToken ct = default) =>
-		await handler.Handle(this, ct);
+	public Task PublishTo(IDomainEventHandler handler, CancellationToken ct = default) => handler.Handle(this, ct);
 }

@@ -49,9 +49,12 @@ public sealed class SubscribedParser
 	public Result<IEnumerable<SubscribedParserLink>> AddLinks(IEnumerable<SubscribedParserLinkUrlInfo> urlInfos)
 	{
 		if (State.IsWorking())
+		{
 			return Error.Conflict(
 				$"Для добавления ссылок парсер должен быть в состоянии {SubscribedParserState.Disabled.Value} или {SubscribedParserState.Sleeping.Value}."
 			);
+		}
+
 		List<SubscribedParserLink> newLinks = [];
 		foreach (SubscribedParserLinkUrlInfo info in urlInfos)
 		{
@@ -78,9 +81,12 @@ public sealed class SubscribedParser
 	public Result<Unit> AddWorkTime(long totalElapsedSeconds)
 	{
 		if (!State.IsWorking())
+		{
 			return Error.Conflict(
 				$"Для добавления времени работы парсер должен быть в состоянии {SubscribedParserState.Working.Value}."
 			);
+		}
+
 		Result<ParsingStatistics> updated = Statistics.AddWorkTime(totalElapsedSeconds);
 		if (updated.IsFailure)
 			return updated.Error;
@@ -91,9 +97,12 @@ public sealed class SubscribedParser
 	public Result<SubscribedParserLink> AddLink(SubscribedParserLinkUrlInfo urlInfo)
 	{
 		if (State.IsWorking())
+		{
 			return Error.Conflict(
 				$"Для добавления ссылки парсер должен быть в состоянии {SubscribedParserState.Disabled.Value} или {SubscribedParserState.Sleeping.Value}."
 			);
+		}
+
 		SubscribedParserLink link = SubscribedParserLink.New(this, urlInfo);
 		if (ContainsLinkWithName(link))
 			return Error.Conflict($"Парсер уже содержит ссылку с именем {link.UrlInfo.Name}.");
@@ -184,25 +193,25 @@ public sealed class SubscribedParser
 	public Result<SubscribedParserLink> FindLink(Func<SubscribedParserLinkUrlInfo, bool> predicate)
 	{
 		SubscribedParserLink? link = Links.FirstOrDefault(l => predicate(l.UrlInfo));
-		if (link is null)
-			return Error.NotFound($"Ссылка не найдена.");
-		return link;
+		return link is null
+			? (Result<SubscribedParserLink>)Error.NotFound($"Ссылка не найдена.")
+			: (Result<SubscribedParserLink>)link;
 	}
 
 	public Result<SubscribedParserLink> FindLink(Guid id)
 	{
 		SubscribedParserLink? link = Links.FirstOrDefault(l => l.Id.Value == id);
-		if (link is null)
-			return Error.NotFound($"Ссылка не найдена.");
-		return link;
+		return link is null
+			? (Result<SubscribedParserLink>)Error.NotFound($"Ссылка не найдена.")
+			: (Result<SubscribedParserLink>)link;
 	}
 
 	public Result<SubscribedParserLink> FindLink(SubscribedParserLinkId id)
 	{
 		SubscribedParserLink? link = Links.FirstOrDefault(l => l.Id == id);
-		if (link is null)
-			return Error.NotFound($"Ссылка не найдена.");
-		return link;
+		return link is null
+			? (Result<SubscribedParserLink>)Error.NotFound($"Ссылка не найдена.")
+			: (Result<SubscribedParserLink>)link;
 	}
 
 	public Result<SubscribedParserLink> ChangeLinkActivity(SubscribedParserLink link, bool isActive)
@@ -242,18 +251,21 @@ public sealed class SubscribedParser
 
 		if (!AllLinksHaveUniqueName(out string[] dupNames))
 			return Error.Conflict("Парсер содержит ссылки с одинаковым именем: " + string.Join(", ", dupNames));
-		if (!AllLinksHaveUniqueUrl(out string[] dupUrls))
-			return Error.Conflict("Парсер содержит ссылки с одинаковым адресом: " + string.Join(", ", dupUrls));
-
-		return Result.Success(Links.AsEnumerable());
+		return !AllLinksHaveUniqueUrl(out string[] dupUrls)
+			? (Result<IEnumerable<SubscribedParserLink>>)
+				Error.Conflict("Парсер содержит ссылки с одинаковым адресом: " + string.Join(", ", dupUrls))
+			: Result.Success(Links.AsEnumerable());
 	}
 
 	public Result<Unit> FinishWork(long totalElapsedSeconds)
 	{
 		if (!State.IsWorking())
+		{
 			return Error.Conflict(
 				$"Парсер не в состоянии {SubscribedParserState.Working.Value}, чтобы завершить работу."
 			);
+		}
+
 		Result<ParsingStatistics> update = Statistics.AddWorkTime(totalElapsedSeconds);
 		if (update.IsFailure)
 			return update.Error;
@@ -266,7 +278,7 @@ public sealed class SubscribedParser
 	public Result<Unit> PermantlyEnable()
 	{
 		if (HasNoLinks())
-			return Error.Conflict($"Парсер не содержит ссылок.");
+			return Error.Conflict("Парсер не содержит ссылок.");
 		if (State.IsWorking())
 			return Error.Conflict($"Парсер уже в состоянии {State.Value}.");
 		State = SubscribedParserState.Working;
@@ -283,9 +295,12 @@ public sealed class SubscribedParser
 	public Result<SubscribedParserLink> RemoveLink(SubscribedParserLink link)
 	{
 		if (!State.IsDisabled() && !State.IsSleeping())
+		{
 			return Error.Conflict(
 				$"Для удаления ссылки парсер должен быть в состоянии {SubscribedParserState.Disabled.Value} или {SubscribedParserState.Sleeping.Value}."
 			);
+		}
+
 		if (!BelongsToParser(link))
 			return Error.Conflict($"Ссылка {link.Id.Value} не принадлежит парсеру {Id.Value}.");
 		Links = [.. Links.Where(l => l.Id != link.Id)];
@@ -295,25 +310,31 @@ public sealed class SubscribedParser
 	public Result<SubscribedParserLink> AddLinkParsedAmount(SubscribedParserLink link, int count)
 	{
 		if (!State.IsWorking())
+		{
 			return Error.Conflict(
 				$"Для добавления количества обработанных данных парсер должен быть в состоянии {SubscribedParserState.Working.Value}."
 			);
+		}
+
 		if (!BelongsToParser(link))
 			return Error.Conflict($"Ссылка {link.Id.Value} не принадлежит парсеру {Id.Value}.");
-		link.AddParsedCount(count);
-		return link;
+		Result result = link.AddParsedCount(count);
+		return result.IsFailure ? (Result<SubscribedParserLink>)result.Error : (Result<SubscribedParserLink>)link;
 	}
 
 	public Result<SubscribedParserLink> AddLinkWorkTime(SubscribedParserLink link, long totalElapsedSeconds)
 	{
 		if (!State.IsWorking())
+		{
 			return Error.Conflict(
 				$"Для добавления времени работы парсер должен быть в состоянии {SubscribedParserState.Working.Value}."
 			);
+		}
+
 		if (!BelongsToParser(link))
 			return Error.Conflict($"Ссылка {link.Id.Value} не принадлежит парсеру {Id.Value}.");
-		link.AddWorkTime(totalElapsedSeconds);
-		return link;
+		Result result = link.AddWorkTime(totalElapsedSeconds);
+		return result.IsFailure ? (Result<SubscribedParserLink>)result.Error : (Result<SubscribedParserLink>)link;
 	}
 
 	public Result<SubscribedParserLink> EditLink(SubscribedParserLink link, string? newName, string? newUrl)
@@ -325,9 +346,10 @@ public sealed class SubscribedParser
 			return Result.Failure<SubscribedParserLink>(editResult.Error);
 		if (ContainsLinkWithName(editResult.Value))
 			return Error.Conflict($"Парсер уже содержит ссылку с именем {editResult.Value.UrlInfo.Name}.");
-		if (ContainsLinkWithUrl(editResult.Value))
-			return Error.Conflict($"Парсер уже содержит ссылку с адресом {editResult.Value.UrlInfo.Url}.");
-		return editResult;
+		return ContainsLinkWithUrl(editResult.Value)
+			? (Result<SubscribedParserLink>)
+				Error.Conflict($"Парсер уже содержит ссылку с адресом {editResult.Value.UrlInfo.Url}.")
+			: editResult;
 	}
 
 	public Result<Unit> Enable()
@@ -342,9 +364,12 @@ public sealed class SubscribedParser
 	public Result<Unit> FinishWork()
 	{
 		if (!State.IsWorking())
+		{
 			return Error.Conflict(
 				$"Парсер не в состоянии {SubscribedParserState.Working.Value}, чтобы завершить работу."
 			);
+		}
+
 		State = SubscribedParserState.Sleeping;
 		Result<SubscribedParserSchedule> updated = Schedule.WithFinishedAt(DateTime.UtcNow);
 		if (updated.IsFailure)
@@ -361,9 +386,12 @@ public sealed class SubscribedParser
 	)
 	{
 		if (await repository.Exists(identity, ct: ct))
+		{
 			return Error.Conflict(
 				$"Парсер для домена {identity.DomainName} и типа {identity.ServiceType} уже существует."
 			);
+		}
+
 		ParsingStatistics statistics = ParsingStatistics.New();
 		SubscribedParserState state = SubscribedParserState.Disabled;
 		SubscribedParserSchedule schedule = SubscribedParserSchedule.New();
@@ -398,9 +426,9 @@ public sealed class SubscribedParser
 
 	private Result<int> GetSpecifiedWaitDays()
 	{
-		if (!Schedule.WaitDays.HasValue)
-			return Error.Conflict($"Дни ожидания не указаны.");
-		return Result.Success(Schedule.WaitDays.Value);
+		return !Schedule.WaitDays.HasValue
+			? (Result<int>)Error.Conflict("Дни ожидания не указаны.")
+			: Result.Success(Schedule.WaitDays.Value);
 	}
 
 	private bool HasNoLinks() => Links.Count == 0;

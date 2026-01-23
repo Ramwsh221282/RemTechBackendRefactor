@@ -13,35 +13,35 @@ namespace ParsersControl.Tests;
 
 public sealed class IntegrationalTestsFixture : WebApplicationFactory<ParsersControl.WebApi.Program>, IAsyncLifetime
 {
-	private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
-	private readonly RabbitMqContainer _rabbitContainer = new RabbitMqBuilder().BuildRabbitMqContainer();
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
+    private readonly RabbitMqContainer _rabbitContainer = new RabbitMqBuilder().BuildRabbitMqContainer();
 
-	protected override void ConfigureWebHost(IWebHostBuilder builder)
-	{
-		base.ConfigureWebHost(builder);
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        base.ConfigureWebHost(builder);
 
-		builder.ConfigureServices(s =>
-		{
-			s.AddPostgres();
-			s.RegisterLogging();
-			s.ReRegisterNpgSqlOptions(_dbContainer);
-			s.ReRegisterRabbitMqOptions(_rabbitContainer);
-			s.AddScoped<IOnParserSubscribedListener, FakeOnParserSubscribedListener>();
-			s.AddScoped<IOnParserStartedListener, FakeOnParserWorkStartedListener>();
-			s.AddTransient<FakeParserSubscribeProducer>();
-		});
-	}
+        builder.ConfigureServices(s =>
+        {
+            s.AddPostgres();
+            s.RegisterLogging();
+            s.ReRegisterNpgSqlOptions(_dbContainer);
+            s.ReRegisterRabbitMqOptions(_rabbitContainer);
+            s.AddScoped<IOnParserSubscribedListener, FakeOnParserSubscribedListener>();
+            s.AddScoped<IOnParserStartedListener, FakeOnParserWorkStartedListener>();
+            s.AddTransient<FakeParserSubscribeProducer>();
+        });
+    }
 
-	public async Task InitializeAsync()
-	{
-		await _dbContainer.StartAsync();
-		await _rabbitContainer.StartAsync();
-		Services.ApplyModuleMigrations();
-	}
+    public async Task InitializeAsync()
+    {
+        await _dbContainer.StartAsync();
+        await _rabbitContainer.StartAsync();
+        Services.ApplyModuleMigrations();
+    }
 
-	public new async Task DisposeAsync()
-	{
-		await _dbContainer.StopAsync();
-		await _rabbitContainer.StopAsync();
-	}
+    public new async Task DisposeAsync()
+    {
+        await _dbContainer.StopAsync();
+        await _rabbitContainer.StopAsync();
+    }
 }

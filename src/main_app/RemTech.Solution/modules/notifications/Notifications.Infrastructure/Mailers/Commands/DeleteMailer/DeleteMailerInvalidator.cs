@@ -9,7 +9,7 @@ public sealed class DeleteMailerInvalidator(
 	MailerRecordCacheInvalidator recordCacheInvalidator
 ) : ICacheInvalidator<DeleteMailerCommand, Guid>
 {
-	public async Task InvalidateCache(
+	public Task InvalidateCache(
 		DeleteMailerCommand command,
 		Guid result,
 		CancellationToken ct = new CancellationToken()
@@ -17,6 +17,6 @@ public sealed class DeleteMailerInvalidator(
 	{
 		Task[] tasks = [arrayCacheInvalidator.Invalidate(ct), recordCacheInvalidator.Invalidate(result, ct)];
 
-		await Task.WhenAll(tasks);
+		return Task.WhenAll(tasks);
 	}
 }

@@ -5,6 +5,6 @@ namespace WebHostApplication.ActionFilters.Attributes;
 
 public sealed class AccessTelemetryPermissionAttribute : TypeFilterAttribute
 {
-	public AccessTelemetryPermissionAttribute()
-		: base(typeof(ShouldHaveAccessTelemetryPermissionFilter)) { }
+    public AccessTelemetryPermissionAttribute()
+        : base(typeof(ShouldHaveAccessTelemetryPermissionFilter)) { }
 }

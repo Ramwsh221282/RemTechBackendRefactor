@@ -10,7 +10,7 @@ public sealed class PermantlyStartParsingCacheInvalidator(
 	ParserCacheRecordInvalidator recordInvalidator
 ) : ICacheInvalidator<PermantlyStartParsingCommand, SubscribedParser>
 {
-	public async Task InvalidateCache(
+	public Task InvalidateCache(
 		PermantlyStartParsingCommand command,
 		SubscribedParser result,
 		CancellationToken ct = default
@@ -18,6 +18,6 @@ public sealed class PermantlyStartParsingCacheInvalidator(
 	{
 		Task[] tasks = [arrayInvalidator.Invalidate(ct), recordInvalidator.Invalidate(result, ct)];
 
-		await Task.WhenAll(tasks);
+		return Task.WhenAll(tasks);
 	}
 }

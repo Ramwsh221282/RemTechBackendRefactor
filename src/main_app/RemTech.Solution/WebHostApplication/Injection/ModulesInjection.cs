@@ -37,120 +37,120 @@ namespace WebHostApplication.Injection;
 
 public static class ModulesInjection
 {
-	extension(IServiceCollection services)
-	{
-		public void RegisterSharedDependencies(IConfigurationManager configuration)
-		{
-			services.RegisterLogging();
-			services.AddPostgres();
-			services.AddRabbitMq();
-			services.RegisterHybridCache(configuration);
-			RemTech.SharedKernel.Infrastructure.AesEncryption.AesCryptographyExtensions.AddAesCryptography(services);
-			services.TryAddSingleton<EmbeddingsProvider>();
-		}
+    extension(IServiceCollection services)
+    {
+        public void RegisterSharedDependencies(IConfigurationManager configuration)
+        {
+            services.RegisterLogging();
+            services.AddPostgres();
+            services.AddRabbitMq();
+            services.RegisterHybridCache(configuration);
+            RemTech.SharedKernel.Infrastructure.AesEncryption.AesCryptographyExtensions.AddAesCryptography(services);
+            services.TryAddSingleton<EmbeddingsProvider>();
+        }
 
-		public void RegisterModuleMigrations()
-		{
-			Assembly[] assemblies = GetModulesAssemblies();
-			services.AddMigrations(assemblies);
-		}
+        public void RegisterModuleMigrations()
+        {
+            Assembly[] assemblies = GetModulesAssemblies();
+            services.AddMigrations(assemblies);
+        }
 
-		public void RegisterApplicationModules()
-		{
-			Assembly[] assemblies = GetModulesAssemblies();
-			services.RegisterInfrastructureDependencies();
+        public void RegisterApplicationModules()
+        {
+            Assembly[] assemblies = GetModulesAssemblies();
+            services.RegisterInfrastructureDependencies();
 
-			services.RegisterHandlers(typeof(IQueryHandler<,>), assemblies);
-			services.RegisterHandlers(typeof(IQueryExecutorWithCache<,>), assemblies);
-			services.RegisterHandlers(typeof(IEventTransporter<,>), assemblies);
-			services.RegisterHandlers(typeof(ICacheInvalidator<,>), assemblies);
-			services.RegisterHandlers(typeof(ICommandHandler<,>), assemblies);
+            services.RegisterHandlers(typeof(IQueryHandler<,>), assemblies);
+            services.RegisterHandlers(typeof(IQueryExecutorWithCache<,>), assemblies);
+            services.RegisterHandlers(typeof(IEventTransporter<,>), assemblies);
+            services.RegisterHandlers(typeof(ICacheInvalidator<,>), assemblies);
+            services.RegisterHandlers(typeof(ICommandHandler<,>), assemblies);
 
-			services.RegisterConsumers(assemblies);
-			services.RegisterDomainEventHandlers(assemblies);
+            services.RegisterConsumers(assemblies);
+            services.RegisterDomainEventHandlers(assemblies);
 
-			services.DecorateCommandHandlersWith(typeof(TransactionalHandler<,>));
-			services.DecorateCommandHandlersWith(typeof(ValidatingHandler<,>));
-			services.DecorateCommandHandlersWith(typeof(CacheInvalidatingHandler<,>));
-			services.DecorateCommandHandlersWith(typeof(LoggingHandler<,>));
-		}
+            services.DecorateCommandHandlersWith(typeof(TransactionalHandler<,>));
+            services.DecorateCommandHandlersWith(typeof(ValidatingHandler<,>));
+            services.DecorateCommandHandlersWith(typeof(CacheInvalidatingHandler<,>));
+            services.DecorateCommandHandlersWith(typeof(LoggingHandler<,>));
+        }
 
-		private void DecorateCommandHandlersWith(Type decoratorType)
-		{
-			Type commandHandlerType = typeof(ICommandHandler<,>);
-			services.TryDecorate(commandHandlerType, decoratorType);
-		}
+        private void DecorateCommandHandlersWith(Type decoratorType)
+        {
+            Type commandHandlerType = typeof(ICommandHandler<,>);
+            services.TryDecorate(commandHandlerType, decoratorType);
+        }
 
-		private void DecorateQueryHandlersWith(Type type)
-		{
-			Type queryHandlerType = typeof(IQueryHandler<,>);
-			services.TryDecorate(queryHandlerType, type);
-		}
+        private void DecorateQueryHandlersWith(Type type)
+        {
+            Type queryHandlerType = typeof(IQueryHandler<,>);
+            services.TryDecorate(queryHandlerType, type);
+        }
 
-		private void RegisterDomainEventHandlers(Assembly[] assemblies) =>
-			services.Scan(x =>
-				x.FromAssemblies(assemblies)
-					.AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler<>)))
-					.UsingRegistrationStrategy(RegistrationStrategy.Skip)
-					.AsSelfWithInterfaces()
-					.WithScopedLifetime()
-					.AddClasses(classes => classes.AssignableTo<IDomainEventHandler>())
-					.UsingRegistrationStrategy(RegistrationStrategy.Skip)
-					.AsSelfWithInterfaces()
-					.WithScopedLifetime()
-			);
+        private void RegisterDomainEventHandlers(Assembly[] assemblies) =>
+            services.Scan(x =>
+                x.FromAssemblies(assemblies)
+                    .AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler<>)))
+                    .UsingRegistrationStrategy(RegistrationStrategy.Skip)
+                    .AsSelfWithInterfaces()
+                    .WithScopedLifetime()
+                    .AddClasses(classes => classes.AssignableTo<IDomainEventHandler>())
+                    .UsingRegistrationStrategy(RegistrationStrategy.Skip)
+                    .AsSelfWithInterfaces()
+                    .WithScopedLifetime()
+            );
 
-		private void RegisterHandlers(Type handlerType, Assembly[] assemblies) =>
-			services.Scan(x =>
-				x.FromAssemblies(assemblies)
-					.AddClasses(classes => classes.AssignableTo(handlerType))
-					.UsingRegistrationStrategy(RegistrationStrategy.Skip)
-					.AsSelfWithInterfaces()
-					.WithScopedLifetime()
-			);
+        private void RegisterHandlers(Type handlerType, Assembly[] assemblies) =>
+            services.Scan(x =>
+                x.FromAssemblies(assemblies)
+                    .AddClasses(classes => classes.AssignableTo(handlerType))
+                    .UsingRegistrationStrategy(RegistrationStrategy.Skip)
+                    .AsSelfWithInterfaces()
+                    .WithScopedLifetime()
+            );
 
-		private void RegisterConsumers(Assembly[] assemblies)
-		{
-			services.Scan(x =>
-				x.FromAssemblies(assemblies)
-					.AddClasses(classes => classes.AssignableTo<IConsumer>())
-					.AsSelfWithInterfaces()
-					.WithSingletonLifetime()
-			);
-			services.AddHostedService<AggregatedConsumersHostedService>();
-		}
+        private void RegisterConsumers(Assembly[] assemblies)
+        {
+            services.Scan(x =>
+                x.FromAssemblies(assemblies)
+                    .AddClasses(classes => classes.AssignableTo<IConsumer>())
+                    .AsSelfWithInterfaces()
+                    .WithSingletonLifetime()
+            );
+            services.AddHostedService<AggregatedConsumersHostedService>();
+        }
 
-		private void RegisterInfrastructureDependencies()
-		{
-			ParsersModuleInjection.AddInfrastructureLayer(services);
-			NotificationsModuleInjection.AddInfrastructureLayer(services);
-			IdentityModuleInjection.AddInfrastructure(services);
-			ContainedItemsModuleInjection.RegisterInfrastructure(services);
-			SparesModuleInjection.RegisterSparesInfrastructure(services);
-			VehiclesModuleInjection.RegisterInfrastructureLayerDependencies(services);
-		}
-	}
+        private void RegisterInfrastructureDependencies()
+        {
+            ParsersModuleInjection.AddInfrastructureLayer(services);
+            NotificationsModuleInjection.AddInfrastructureLayer(services);
+            IdentityModuleInjection.AddInfrastructure(services);
+            ContainedItemsModuleInjection.RegisterInfrastructure(services);
+            SparesModuleInjection.RegisterSparesInfrastructure(services);
+            VehiclesModuleInjection.RegisterInfrastructureLayerDependencies(services);
+        }
+    }
 
-	private static Assembly[] GetModulesAssemblies() =>
-		[
+    private static Assembly[] GetModulesAssemblies() =>
+        [
 			// spares module
 			typeof(Spare).Assembly,
-			typeof(SparesRepository).Assembly,
+            typeof(SparesRepository).Assembly,
 			// identity module
 			typeof(Account).Assembly,
-			typeof(AccountsRepository).Assembly,
+            typeof(AccountsRepository).Assembly,
 			// notifications module
 			typeof(Mailer).Assembly,
-			typeof(MailersRepository).Assembly,
+            typeof(MailersRepository).Assembly,
 			// vehicles module
 			typeof(Vehicle).Assembly,
-			typeof(NpgSqlVehiclesPersister).Assembly,
+            typeof(NpgSqlVehiclesPersister).Assembly,
 			// contained items module
 			typeof(ContainedItem).Assembly,
-			typeof(ContainedItemsRepository).Assembly,
+            typeof(ContainedItemsRepository).Assembly,
 			// parsers module
 			typeof(SubscribedParser).Assembly,
-			typeof(SubscribedParsersRepository).Assembly,
-			typeof(VehicleEmbeddingsUpdaterService).Assembly,
-		];
+            typeof(SubscribedParsersRepository).Assembly,
+            typeof(VehicleEmbeddingsUpdaterService).Assembly,
+        ];
 }

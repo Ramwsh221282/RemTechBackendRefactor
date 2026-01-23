@@ -18,29 +18,27 @@ public sealed class AccountsModuleUnitOfWork(
 	private PermissionsChangeTracker Permissions { get; } = permissions;
 	private IdentityOutboxMessageChangeTracker OutboxMessages { get; } = outboxMessages;
 
-	public async Task Save(IEnumerable<Account> account, CancellationToken ct = default) =>
-		await Accounts.SaveChanges(account, ct);
+	public Task Save(IEnumerable<Account> accounts, CancellationToken ct = default) =>
+		Accounts.SaveChanges(accounts, ct);
 
-	public async Task Save(Account account, CancellationToken ct = default) =>
-		await Accounts.SaveChanges([account], ct);
+	public Task Save(Account account, CancellationToken ct = default) => Accounts.SaveChanges([account], ct);
 
-	public async Task Save(IEnumerable<Permission> permissions, CancellationToken ct = default) =>
-		await Permissions.SaveChanges(permissions, ct);
+	public Task Save(IEnumerable<Permission> permissions, CancellationToken ct = default) =>
+		Permissions.SaveChanges(permissions, ct);
 
-	public async Task Save(Permission permission, CancellationToken ct = default) =>
-		await Permissions.SaveChanges([permission], ct);
+	public Task Save(Permission permission, CancellationToken ct = default) =>
+		Permissions.SaveChanges([permission], ct);
 
-	public async Task Save(IEnumerable<AccountTicket> tickets, CancellationToken ct = default) =>
-		await AccountTickets.SaveChanges(tickets, ct);
+	public Task Save(IEnumerable<AccountTicket> tickets, CancellationToken ct = default) =>
+		AccountTickets.SaveChanges(tickets, ct);
 
-	public async Task Save(AccountTicket ticket, CancellationToken ct = default) =>
-		await AccountTickets.SaveChanges([ticket], ct);
+	public Task Save(AccountTicket ticket, CancellationToken ct = default) => AccountTickets.SaveChanges([ticket], ct);
 
-	public async Task Save(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct = default) =>
-		await OutboxMessages.Save(messages, ct);
+	public Task Save(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct = default) =>
+		OutboxMessages.Save(messages, ct);
 
-	public async Task Save(IdentityOutboxMessage message, CancellationToken ct = default) =>
-		await OutboxMessages.Save([message], ct);
+	public Task Save(IdentityOutboxMessage message, CancellationToken ct = default) =>
+		OutboxMessages.Save([message], ct);
 
 	public void Track(IEnumerable<Account> accounts) => Accounts.StartTracking(accounts);
 

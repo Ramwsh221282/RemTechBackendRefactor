@@ -9,7 +9,7 @@ namespace ContainedItems.Infrastructure.Repositories;
 
 public sealed class ContainedItemsRepository(NpgSqlSession session) : IContainedItemsRepository
 {
-	public async Task<ContainedItem[]> Query(ContainedItemsQuery query, CancellationToken ct = default)
+	public Task<ContainedItem[]> Query(ContainedItemsQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(query);
 		string lockClause = LockClause(query);
@@ -31,10 +31,10 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
 			{limitClause}
 			""";
 		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
-		return await session.QueryMultipleUsingReader(command, MapFromReader);
+		return session.QueryMultipleUsingReader(command, MapFromReader);
 	}
 
-	public async Task<int> AddMany(IEnumerable<ContainedItem> items, CancellationToken ct = default)
+	public Task<int> AddMany(IEnumerable<ContainedItem> items, CancellationToken ct = default)
 	{
 		const string sql = """
 			INSERT INTO contained_items_module.contained_items 
@@ -44,10 +44,10 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
 			ON CONFLICT (service_item_id) DO NOTHING 
 			""";
 		object[] parameters = items.ExtractForParameters();
-		return await session.ExecuteBulkWithAffectedCount(sql, parameters);
+		return session.ExecuteBulkWithAffectedCount(sql, parameters);
 	}
 
-	public async Task UpdateMany(IEnumerable<ContainedItem> items, CancellationToken ct = default)
+	public Task UpdateMany(IEnumerable<ContainedItem> items, CancellationToken ct = default)
 	{
 		const string sql = """
 			UPDATE contained_items_module.contained_items
@@ -56,7 +56,7 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
 			WHERE id = @id    
 			""";
 		object[] parameters = items.ExtractForParameters();
-		await session.ExecuteBulk(sql, parameters);
+		return session.ExecuteBulk(sql, parameters);
 	}
 
 	private static (DynamicParameters parameters, string filterSql) WhereClause(ContainedItemsQuery query)

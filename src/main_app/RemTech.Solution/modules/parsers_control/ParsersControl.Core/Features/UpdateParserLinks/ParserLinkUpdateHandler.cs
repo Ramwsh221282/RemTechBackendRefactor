@@ -41,10 +41,10 @@ public sealed class ParserLinkUpdateHandler(ISubscribedParsersRepository reposit
 	private static IEnumerable<ParserLinkUpdater> GetUpdaters(UpdateParserLinksCommand command) =>
 		command.UpdateParameters.Select(p => ParserLinkUpdater.Create(p.LinkId, p.Activity, p.Name, p.Url).Value);
 
-	private async Task<Result<SubscribedParser>> GetParser(Guid id, CancellationToken ct)
+	private Task<Result<SubscribedParser>> GetParser(Guid id, CancellationToken ct)
 	{
 		SubscribedParserQuery query = new(Id: id);
-		return await SubscribedParser.FromRepository(repository, query, ct);
+		return SubscribedParser.FromRepository(repository, query, ct);
 	}
 
 	private static Result<IEnumerable<SubscribedParserLink>> UpdateLinks(
