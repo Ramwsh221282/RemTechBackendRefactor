@@ -26,16 +26,17 @@ public sealed class GetSparesQueryHandler(
 		return await CreateResponse(reader, ct);
 	}
 
-	private async Task<GetSparesQueryResponse> CreateResponse(DbDataReader reader, CancellationToken ct)
+	private static async Task<GetSparesQueryResponse> CreateResponse(DbDataReader reader, CancellationToken ct)
 	{
 		GetSparesQueryResponse response = new();
+		List<SpareResponse> spares = [];
 		while (await reader.ReadAsync(ct))
 		{
 			response.SetTotalCount(reader.GetInt32(reader.GetOrdinal("total_count")));
 			response.SetAveragePrice(reader.GetDouble(reader.GetOrdinal("average_price")));
 			response.SetMinimalPrice(reader.GetDouble(reader.GetOrdinal("minimal_price")));
 			response.SetMaximalPrice(reader.GetDouble(reader.GetOrdinal("maximal_price")));
-			response.Spares.Add(
+			spares.Add(
 				new SpareResponse()
 				{
 					Id = reader.GetGuid(reader.GetOrdinal("spare_id")),
@@ -50,6 +51,7 @@ public sealed class GetSparesQueryHandler(
 			);
 		}
 
+		response.Spares = spares;
 		return response;
 	}
 
@@ -120,7 +122,7 @@ public sealed class GetSparesQueryHandler(
 			ApplyOemSearch(query.Oem, parameters, filters);
 	}
 
-	private void ApplyPagination(GetSparesQuery query, DynamicParameters parameters, List<string> paginationSql)
+	private static void ApplyPagination(GetSparesQuery query, DynamicParameters parameters, List<string> paginationSql)
 	{
 		int limit = query.PageSize;
 		int offset = (query.Page - 1) * limit;
@@ -130,7 +132,7 @@ public sealed class GetSparesQueryHandler(
 		parameters.Add("@offset", offset, DbType.Int32);
 	}
 
-	private void ApplyOrderBy(GetSparesQuery query, List<string> orderBySql)
+	private static void ApplyOrderBy(GetSparesQuery query, List<string> orderBySql)
 	{
 		string orderMode = query.OrderMode;
 		if (orderMode == "DESC" || orderMode == "ASC")

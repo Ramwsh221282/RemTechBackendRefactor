@@ -28,12 +28,13 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
 	{
 		List<string> setClauses = [];
 		DynamicParameters parameters = new();
+		Permission[] permissionsArray = [.. permissions];
 
-		if (permissions.Any(p => p.Name.Value != _tracking[p.Id.Value].Name.Value))
+		if (permissionsArray.Any(p => p.Name.Value != _tracking[p.Id.Value].Name.Value))
 		{
 			string clause = string.Join(
 				" ",
-				permissions.Select(
+				permissionsArray.Select(
 					(p, i) =>
 					{
 						string paramName = $"@name_{i}";
@@ -45,11 +46,11 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
 			setClauses.Add($"name = CASE {clause} ELSE name END");
 		}
 
-		if (permissions.Any(p => p.Description.Value != _tracking[p.Id.Value].Description.Value))
+		if (permissionsArray.Any(p => p.Description.Value != _tracking[p.Id.Value].Description.Value))
 		{
 			string clause = string.Join(
 				" ",
-				permissions.Select(
+				permissionsArray.Select(
 					(p, i) =>
 					{
 						string paramName = $"@description_{i}";
@@ -66,7 +67,7 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
 
 		List<Guid> ids = [];
 		int index = 0;
-		foreach (Permission permission in permissions)
+		foreach (Permission permission in permissionsArray)
 		{
 			string paramName = $"@permission_id_{index}";
 			parameters.Add(paramName, permission.Id.Value, DbType.Guid);
@@ -86,7 +87,7 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
 		await Session.Execute(command);
 	}
 
-	private IEnumerable<Permission> GetTrackingPermissions(IEnumerable<Permission> permissions)
+	private List<Permission> GetTrackingPermissions(IEnumerable<Permission> permissions)
 	{
 		List<Permission> tracking = [];
 		foreach (Permission permission in permissions)
@@ -97,8 +98,5 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
 		return tracking;
 	}
 
-	private string WhenClause(int index)
-	{
-		return $"WHEN p.id = @permission_id_{index}";
-	}
+	private static string WhenClause(int index) => $"WHEN p.id = @permission_id_{index}";
 }

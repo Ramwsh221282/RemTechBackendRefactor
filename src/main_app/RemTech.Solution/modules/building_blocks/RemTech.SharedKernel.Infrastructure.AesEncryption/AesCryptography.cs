@@ -16,7 +16,7 @@ public sealed record AesCryptography(IOptions<AesEncryptionOptions> Options)
 		byte[] bytesAfterEncryption;
 		await using (MemoryStream ms = new())
 		{
-			await ms.WriteAsync(aes.IV, 0, aes.IV.Length, ct);
+			await ms.WriteAsync(new ReadOnlyMemory<byte>(aes.IV), ct);
 			await using (CryptoStream cs = new(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
 			await using (StreamWriter sw = new(cs, leaveOpen: false))
 			{
@@ -25,8 +25,7 @@ public sealed record AesCryptography(IOptions<AesEncryptionOptions> Options)
 			bytesAfterEncryption = ms.ToArray();
 		}
 
-		string encryptedText = Convert.ToBase64String(bytesAfterEncryption);
-		return encryptedText;
+		return Convert.ToBase64String(bytesAfterEncryption);
 	}
 
 	public async Task<string> DecryptText(string text, CancellationToken ct)

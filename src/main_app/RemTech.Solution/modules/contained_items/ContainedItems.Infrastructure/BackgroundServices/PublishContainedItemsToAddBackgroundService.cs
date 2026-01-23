@@ -29,7 +29,7 @@ public sealed class PublishContainedItemsToAddBackgroundService(
 	{
 		Logger.Information("Invoking publishing");
 		await using NpgSqlSession session = new(connectionFactory);
-		ITransactionSource source = new NpgSqlTransactionSource(session);
+		NpgSqlTransactionSource source = new(session);
 		ITransactionScope transaction = await source.BeginTransaction(ct);
 
 		try
@@ -61,11 +61,10 @@ public sealed class PublishContainedItemsToAddBackgroundService(
 		CancellationToken ct
 	)
 	{
-		IGrouping<string, ContainedItem>[] itemsGroupedByType = items.GroupBy(i => i.CreatorInfo.Type).ToArray();
-		foreach (IGrouping<string, ContainedItem> group in itemsGroupedByType)
+		foreach (IGrouping<string, ContainedItem> group in items.GroupBy(i => i.CreatorInfo.Type))
 		{
 			string type = group.Key;
-			ContainedItem[] itemsOfType = group.ToArray();
+			ContainedItem[] itemsOfType = [.. group];
 			IItemPublishingStrategy strategy = factory.Resolve(type);
 			await strategy.PublishMany(itemsOfType, ct);
 		}
@@ -76,8 +75,8 @@ public sealed class PublishContainedItemsToAddBackgroundService(
 		CancellationToken ct
 	)
 	{
-		IContainedItemsRepository repository = new ContainedItemsRepository(session);
-		ContainedItemsQuery query = new(Status: ContainedItemStatus.PendingToSave.Value, WithLock: true, Limit: 50);
+		ContainedItemsRepository repository = new(session);
+		ContainedItemsQuery query = new(Status: ContainedItemStatus.PendingToSave.Value, Limit: 50, WithLock: true);
 		return await repository.Query(query, ct);
 	}
 
@@ -87,7 +86,7 @@ public sealed class PublishContainedItemsToAddBackgroundService(
 		CancellationToken ct
 	)
 	{
-		IContainedItemsRepository repository = new ContainedItemsRepository(session);
+		ContainedItemsRepository repository = new(session);
 		foreach (ContainedItem item in items)
 			item.MarkSaved();
 		await repository.UpdateMany(items, ct);

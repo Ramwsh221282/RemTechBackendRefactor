@@ -2,14 +2,14 @@
 
 public sealed class OutboxMessageSpecification
 {
-	public string? Type { get; private set; } = null;
-	public DateTime? CreatedDateTime { get; private set; } = null;
-	public DateTime? SentDateTime { get; private set; } = null;
-	public bool? SentOnly { get; private set; } = null;
-	public bool? NotSentOnly { get; private set; } = null;
-	public bool? WithLock { get; private set; } = null;
-	public int? Limit { get; private set; } = null;
-	public int? RetryCountLessThan { get; private set; } = null;
+	public string? Type { get; private set; }
+	public DateTime? CreatedDateTime { get; private set; }
+	public DateTime? SentDateTime { get; private set; }
+	public bool? SentOnly { get; private set; }
+	public bool? NotSentOnly { get; private set; }
+	public bool? WithLock { get; private set; }
+	public int? Limit { get; private set; }
+	public int? RetryCountLessThan { get; private set; }
 
 	public OutboxMessageSpecification OfLimit(int limit)
 	{

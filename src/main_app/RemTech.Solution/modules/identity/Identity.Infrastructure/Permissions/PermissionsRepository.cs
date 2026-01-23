@@ -190,12 +190,12 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		while (await reader.ReadAsync(ct))
 		{
 			Guid id = reader.GetValue<Guid>("id");
-			if (!mappings.TryGetValue(id, out Permission? permission))
+			if (!mappings.TryGetValue(id, out _))
 			{
 				string name = reader.GetValue<string>("name");
 				string description = reader.GetValue<string>("description");
 
-				permission = new Permission(
+				Permission? permission = new(
 					PermissionId.Create(id),
 					PermissionName.Create(name),
 					PermissionDescription.Create(description)
@@ -207,7 +207,7 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		return mappings.Count == 0 ? null : mappings.First().Value;
 	}
 
-	private (DynamicParameters parameters, string filterSql) WhereClause(PermissionSpecification specification)
+	private static (DynamicParameters parameters, string filterSql) WhereClause(PermissionSpecification specification)
 	{
 		DynamicParameters parameters = new();
 		List<string> filterSql = [];

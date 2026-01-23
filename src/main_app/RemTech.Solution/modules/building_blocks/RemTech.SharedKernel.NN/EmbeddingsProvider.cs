@@ -16,10 +16,9 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 
 	public IReadOnlyList<ReadOnlyMemory<float>> GenerateBatch(IReadOnlyList<string> texts)
 	{
-		if (texts == null)
-			throw new ArgumentNullException(nameof(texts));
+		ArgumentNullException.ThrowIfNull(texts);
 		if (texts.Count == 0)
-			return Array.Empty<ReadOnlyMemory<float>>();
+			return [];
 
 		int batchSize = texts.Count;
 		int[][] tokenArrays = new int[batchSize][];
@@ -40,8 +39,8 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 			tokenArrays[i] = sortedTokens;
 		}
 
-		DenseTensor<long> inputIdsTensor = new DenseTensor<long>(new[] { batchSize, maxLen });
-		DenseTensor<long> attentionMaskTensor = new DenseTensor<long>(new[] { batchSize, maxLen });
+		DenseTensor<long> inputIdsTensor = new([batchSize, maxLen]);
+		DenseTensor<long> attentionMaskTensor = new([batchSize, maxLen]);
 
 		const long padTokenId = 0;
 		for (int b = 0; b < batchSize; b++)
@@ -72,9 +71,11 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 		Tensor<float> outputTensor = modelResults[1].AsTensor<float>();
 
 		if (outputTensor.Dimensions.Length != 2)
+		{
 			throw new NotSupportedException(
 				$"Expected 2D output [batch, hiddenDim], got rank {outputTensor.Dimensions.Length}"
 			);
+		}
 
 		int outBatch = outputTensor.Dimensions[0];
 		int hiddenDim = outputTensor.Dimensions[1];
@@ -98,26 +99,23 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 
 	private EmbeddingData TokenizeSingle(string text)
 	{
-		var stringTensor = new DenseTensor<string>(new[] { 1 });
+		var stringTensor = new DenseTensor<string>([1]);
 		stringTensor[0] = text;
-
-		NamedOnnxValue[] tokenizerInputs = { NamedOnnxValue.CreateFromTensor("inputs", stringTensor) };
-
+		NamedOnnxValue[] tokenizerInputs = [NamedOnnxValue.CreateFromTensor("inputs", stringTensor)];
 		return EmbeddingData.Create(tokenizerInputs, Tokenizer);
 	}
 
 	public ReadOnlyMemory<float> Generate(string text)
 	{
-		DenseTensor<string> stringTensor = new DenseTensor<string>(new[] { 1 });
+		DenseTensor<string> stringTensor = new([1]);
 		stringTensor[0] = text;
 
-		NamedOnnxValue[] tokenizerInputs = new[] { NamedOnnxValue.CreateFromTensor("inputs", stringTensor) };
-
+		NamedOnnxValue[] tokenizerInputs = [NamedOnnxValue.CreateFromTensor("inputs", stringTensor)];
 		EmbeddingData embeddingData = EmbeddingData.Create(tokenizerInputs, Tokenizer);
 
 		int len = embeddingData.Length;
-		DenseTensor<long> inputIdsTensor = new DenseTensor<long>(new[] { 1, len });
-		DenseTensor<long> attentionMaskTensor = new DenseTensor<long>(new[] { 1, len });
+		DenseTensor<long> inputIdsTensor = new([1, len]);
+		DenseTensor<long> attentionMaskTensor = new([1, len]);
 		Span<int> sortedTokens = len <= 256 ? stackalloc int[len] : new int[len];
 		embeddingData.CopySortedTokensTo(sortedTokens);
 
@@ -143,14 +141,13 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 	{
 		using IDisposableReadOnlyCollection<DisposableNamedOnnxValue>? modelResults = modelSession.Run(modelInputs);
 		Tensor<float>? tensor = modelResults[1].AsTensor<float>();
-		return new ReadOnlyMemory<float>(tensor.ToArray());
+		return new ReadOnlyMemory<float>([.. tensor]);
 	}
 
 	private static ReadOnlyMemory<float> GetEmbeddings(List<NamedOnnxValue> modelInputs, InferenceSession modelSession)
 	{
 		using IDisposableReadOnlyCollection<DisposableNamedOnnxValue>? modelResults = modelSession.Run(modelInputs);
-		float[] sentenceEmbedding = modelResults[1].AsTensor<float>().ToArray();
-		return sentenceEmbedding;
+		return modelResults[1].AsTensor<float>().ToArray();
 	}
 
 	public void Dispose()

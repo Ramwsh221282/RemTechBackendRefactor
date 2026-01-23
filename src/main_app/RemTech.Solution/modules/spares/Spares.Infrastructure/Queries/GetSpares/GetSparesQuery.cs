@@ -4,15 +4,15 @@ namespace Spares.Infrastructure.Queries.GetSpares;
 
 public sealed class GetSparesQuery : IQuery
 {
-	public Guid? RegionId { get; private set; } = null;
-	public long? PriceMin { get; private set; } = null;
-	public long? PriceMax { get; private set; } = null;
-	public string? TextSearch { get; private set; } = null;
+	public Guid? RegionId { get; private set; }
+	public long? PriceMin { get; private set; }
+	public long? PriceMax { get; private set; }
+	public string? TextSearch { get; private set; }
 	public int Page { get; private set; } = 1;
 	public int PageSize { get; private set; } = 50;
 	public string OrderMode { get; private set; } = "NONE";
 
-	public string? Oem { get; private set; } = null;
+	public string? Oem { get; private set; }
 
 	public GetSparesQuery ForRegion(Guid? regionId)
 	{

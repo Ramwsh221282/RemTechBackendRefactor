@@ -29,15 +29,9 @@ public static partial class EmailStringModule
 			return new EmailString(input!, true);
 		}
 
-		private static bool MatchesEmailRegex(string input)
-		{
-			return EmailRegex().IsMatch(input);
-		}
+		private static bool MatchesEmailRegex(string input) => EmailRegex().IsMatch(input);
 
-		private static bool IsNullOrEmpty(string? input)
-		{
-			return string.IsNullOrWhiteSpace(input);
-		}
+		private static bool IsNullOrEmpty(string? input) => string.IsNullOrWhiteSpace(input);
 
 		private static bool HasValidFormat(string? input)
 		{

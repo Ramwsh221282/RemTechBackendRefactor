@@ -145,7 +145,7 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 				mappings.Add(id, account);
 			}
 
-			if (reader.IsDBNull(reader.GetOrdinal("account_permission_id")))
+			if (await reader.IsDBNullAsync(reader.GetOrdinal("account_permission_id"), ct))
 				continue;
 
 			Guid permissionId = reader.GetValue<Guid>("account_permission_id");
@@ -240,7 +240,7 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		};
 	}
 
-	async Task<Result<Account>> IAccountsRepository.Get(AccountSpecification specification, CancellationToken ct) =>
+	async Task<Result<Account>> IAccountsRepository.Find(AccountSpecification specification, CancellationToken ct) =>
 		string.IsNullOrWhiteSpace(specification.RefreshToken)
 			? await Get(specification, ct)
 			: await SearchWithRefreshTokenFilter(specification, ct);

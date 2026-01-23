@@ -57,7 +57,7 @@ public sealed class ConfirmTicketHandler(
 	private async Task<Result<Account>> GetRequiredAccount(ConfirmTicketCommand command, CancellationToken ct)
 	{
 		AccountSpecification specification = new AccountSpecification().WithId(command.AccountId).WithLock();
-		return await accounts.Get(specification, ct);
+		return await accounts.Find(specification, ct);
 	}
 
 	private async Task<Result<AccountTicket>> GetRequiredAccountTicket(
@@ -70,6 +70,6 @@ public sealed class ConfirmTicketHandler(
 			.WithTicketId(command.TicketId)
 			.NotFinished()
 			.WithLockRequired();
-		return await accountTickets.Get(specification, ct);
+		return await accountTickets.Find(specification, ct);
 	}
 }

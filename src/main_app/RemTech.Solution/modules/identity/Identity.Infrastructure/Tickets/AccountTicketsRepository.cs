@@ -29,7 +29,7 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 		await Session.Execute(command);
 	}
 
-	public async Task<Result<AccountTicket>> Get(
+	public async Task<Result<AccountTicket>> Find(
 		AccountTicketSpecification specification,
 		CancellationToken ct = default
 	)
@@ -86,7 +86,9 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 		await Session.Execute(command);
 	}
 
-	private (DynamicParameters parameters, string filterSql) WhereClause(AccountTicketSpecification specification)
+	private static (DynamicParameters parameters, string filterSql) WhereClause(
+		AccountTicketSpecification specification
+	)
 	{
 		DynamicParameters parameters = new();
 		List<string> filterSql = [];
@@ -120,7 +122,7 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 		return (parameters, filterSql.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filterSql)}");
 	}
 
-	private object GetParameters(AccountTicket ticket)
+	private static object GetParameters(AccountTicket ticket)
 	{
 		return new
 		{

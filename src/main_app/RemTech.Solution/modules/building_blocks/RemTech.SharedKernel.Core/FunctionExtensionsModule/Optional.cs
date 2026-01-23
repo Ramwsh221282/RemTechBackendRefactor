@@ -12,50 +12,30 @@ public class Optional
 		HasValue = hasValue;
 	}
 
-	public U Map<U>(Func<U> onHasValue, Func<U> onNoneValue)
-	{
-		return HasValue ? onHasValue() : onNoneValue();
-	}
+	public U Map<U>(Func<U> onHasValue, Func<U> onNoneValue) => HasValue ? onHasValue() : onNoneValue();
 
-	public U Map<U>(U onHasValue, U onNoneValue)
-	{
-		return HasValue ? onHasValue : onNoneValue;
-	}
+	public U Map<U>(U onHasValue, U onNoneValue) => HasValue ? onHasValue : onNoneValue;
 
-	public static Optional<T> Some<T>(T value)
-	{
-		return new Optional<T>(value);
-	}
+	public static Optional<T> Some<T>(T value) => new(value);
 
-	public static Optional<T> FromNullable<T>(T? value)
-	{
-		return value is null ? None<T>() : Some(value);
-	}
+	public static Optional<T> FromNullable<T>(T? value) => value is null ? None<T>() : Some(value);
 
-	public static Optional<DateTime> FromNullable(DateTime? value)
-	{
-		return value.HasValue ? Some(value.Value) : None<DateTime>();
-	}
+	public static Optional<DateTime> FromNullable(DateTime? value) =>
+		value.HasValue ? Some(value.Value) : None<DateTime>();
 
-	public static Optional<T> None<T>()
-	{
-		return new Optional<T>();
-	}
+	public static Optional<T> None<T>() => new();
 
-	public static bool AllValuesExist(IEnumerable<Optional> optionals)
-	{
-		return !optionals.Any(optional => !optional.HasValue);
-	}
+	public static bool AllValuesExist(IEnumerable<Optional> optionals) => optionals.All(optional => optional.HasValue);
 
 	public static bool AllValuesExist<T>(T @object)
 		where T : notnull
 	{
-		var fields = @object
+		IEnumerable<FieldInfo> fields = @object
 			.GetType()
 			.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
 			.Where(f => f.FieldType.IsGenericType && f.FieldType.GetGenericTypeDefinition() == typeof(Optional<>));
 
-		var optionals = fields.Select(f => (Optional)f.GetValue(@object)!);
+		IEnumerable<Optional> optionals = fields.Select(f => (Optional)f.GetValue(@object)!);
 		return AllValuesExist(optionals);
 	}
 }
@@ -103,15 +83,9 @@ public sealed class Optional<T> : Optional
 			await action(Value);
 	}
 
-	public static Optional<T> Some(T value)
-	{
-		return new Optional<T>(value);
-	}
+	public static Optional<T> Some(T value) => new(value);
 
-	public static Optional<T> None()
-	{
-		return new Optional<T>();
-	}
+	public static Optional<T> None() => new();
 
 	public static implicit operator Optional<T>(T value)
 	{

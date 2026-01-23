@@ -78,10 +78,10 @@ public sealed class ConfirmResetPasswordHandler(
 	}
 
 	public async Task<Result<Account>> GetAccount(ConfirmResetPasswordCommand command, CancellationToken ct) =>
-		await accounts.Get(new AccountSpecification().WithId(command.AccountId).WithLock(), ct);
+		await accounts.Find(new AccountSpecification().WithId(command.AccountId).WithLock(), ct);
 
 	public async Task<Result<AccountTicket>> GetTicket(ConfirmResetPasswordCommand command, CancellationToken ct) =>
-		await tickets.Get(
+		await tickets.Find(
 			new AccountTicketSpecification()
 				.WithTicketId(command.TicketId)
 				.WithAccountId(command.AccountId)

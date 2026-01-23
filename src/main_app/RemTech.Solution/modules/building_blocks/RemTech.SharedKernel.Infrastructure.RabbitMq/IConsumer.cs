@@ -4,7 +4,7 @@ namespace RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 public interface IConsumer
 {
-	Task InitializeChannel(IConnection connection, CancellationToken ct = default);
-	Task StartConsuming(CancellationToken ct = default);
-	Task Shutdown(CancellationToken ct = default);
+	public Task InitializeChannel(IConnection connection, CancellationToken ct = default);
+	public Task StartConsuming(CancellationToken ct = default);
+	public Task Shutdown(CancellationToken ct = default);
 }

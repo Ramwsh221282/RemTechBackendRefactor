@@ -49,7 +49,7 @@ public sealed class NpgSqlVehiclesListPersister(NpgSqlSession session) : IVehicl
 		return await connection.ExecuteAsync(sql, parameters, transaction: session.Transaction);
 	}
 
-	private IEnumerable<VehiclePersistInfo> FilterFromExisting(
+	private static IEnumerable<VehiclePersistInfo> FilterFromExisting(
 		IEnumerable<VehiclePersistInfo> infos,
 		IEnumerable<Guid> existing
 	) => infos.Where(i => !existing.Contains(i.Vehicle.Id.Value));

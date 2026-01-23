@@ -16,16 +16,16 @@ public static class EnvelopedResultsExtensions
 	public static Envelope AsEnvelope<T>(T result)
 	{
 		object? body = result;
-		int code = (int)HttpStatusCode.OK;
-		string? message = null;
+		const int code = (int)HttpStatusCode.OK;
+		const string? message = null;
 		return new Envelope(code, body, message);
 	}
 
 	public static Envelope AsEnvelope<T, U>(T result, Func<T, U> converter)
 	{
 		U body = converter(result);
-		int code = (int)HttpStatusCode.OK;
-		string? message = null;
+		const int code = (int)HttpStatusCode.OK;
+		const string? message = null;
 		return new Envelope(code, body, message);
 	}
 
@@ -36,19 +36,15 @@ public static class EnvelopedResultsExtensions
 			HttpStatusCode code = result.IsSuccess switch
 			{
 				true => HttpStatusCode.OK,
-				false => result.ResolveStatusCodeByError(result.Error),
+				false => ResolveStatusCodeByError(result.Error),
 			};
 
 			return (int)code;
 		}
 
-		private string? ResolveMessage()
-		{
-			string? message = result.IsFailure ? result.Error.Message : null;
-			return message;
-		}
+		private string? ResolveMessage() => result.IsFailure ? result.Error.Message : null;
 
-		private HttpStatusCode ResolveStatusCodeByError(Error error)
+		private static HttpStatusCode ResolveStatusCodeByError(Error error)
 		{
 			return error switch
 			{
@@ -76,7 +72,7 @@ public static class EnvelopedResultsExtensions
 			{
 				object? body = null;
 				string error = result.Error.Message;
-				HttpStatusCode code = result.ResolveStatusCodeByError(result.Error);
+				HttpStatusCode code = ResolveStatusCodeByError(result.Error);
 				return new Envelope((int)code, body, error);
 			}
 			else

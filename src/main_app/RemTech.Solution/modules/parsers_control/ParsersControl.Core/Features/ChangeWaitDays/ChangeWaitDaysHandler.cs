@@ -39,7 +39,7 @@ public sealed class ChangeWaitDaysHandler(ISubscribedParsersRepository repositor
 		return await SubscribedParser.FromRepository(repository, query, ct);
 	}
 
-	private Result<Unit> SetRequiredWaitDays(int days, Result<SubscribedParser> parser)
+	private static Result<Unit> SetRequiredWaitDays(int days, Result<SubscribedParser> parser)
 	{
 		if (parser.IsFailure)
 			return parser.Error;

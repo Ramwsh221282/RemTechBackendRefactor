@@ -25,7 +25,7 @@ public sealed class ExpiredTokensCleanerService(Serilog.ILogger logger, IService
 		{
 			await using AsyncServiceScope scope = Services.CreateAsyncScope();
 			IAccessTokensRepository repository = scope.ServiceProvider.GetRequiredService<IAccessTokensRepository>();
-			AccessToken[] expired = (await repository.GetExpired(withLock: true, ct: ct)).ToArray();
+			AccessToken[] expired = [.. await repository.FindExpired(withLock: true, ct: ct)];
 			if (expired.Length == 0)
 			{
 				Logger.Information("No expired tokens found.");

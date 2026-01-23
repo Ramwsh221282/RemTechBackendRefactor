@@ -22,15 +22,12 @@ public sealed class ChangeCredentialsHandler(
 		if (mailer.IsFailure)
 			return mailer.Error;
 
-		if (mailer.Value.Credentials.Email != command.Email)
-		{
-			if (await CredentialsEmailDuplicated(command, ct))
-				return Error.Conflict($"Настройка почтового сервиса с адресом: {command.Email} уже существует.");
-		}
+		if (mailer.Value.Credentials.Email != command.Email || await CredentialsEmailDuplicated(command, ct))
+			return Error.Conflict($"Настройка почтового сервиса с адресом: {command.Email} уже существует.");
 
 		MailerCredentials credentials = await CreateEncryptedCredentials(command, ct);
 		mailer.Value.ChangeCredentials(credentials);
-		await unitOfWork.Save(mailer.Value);
+		await unitOfWork.Save(mailer.Value, ct);
 		return mailer.Value;
 	}
 

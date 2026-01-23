@@ -14,15 +14,15 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 
 	public async Task Publish(IEnumerable<ContainedItem> items, CancellationToken ct = default)
 	{
-		if (!items.Any())
+		ContainedItem[] itemArray = [.. items];
+		if (itemArray.Length == 0)
 		{
 			Logger.Information("No items to publish");
 			return;
 		}
 
-		IEnumerable<IGrouping<Guid, ContainedItem>> group = items.GroupBy(i => i.CreatorInfo.CreatorId).ToArray();
 		RabbitMqPublishOptions options = new() { Persistent = true };
-		foreach (IGrouping<Guid, ContainedItem> entry in group)
+		foreach (IGrouping<Guid, ContainedItem> entry in itemArray.GroupBy(i => i.CreatorInfo.CreatorId))
 		{
 			ContainedItem first = entry.First();
 			AddSparesMessage message = CreateMessage(first, entry);
@@ -35,7 +35,7 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 		}
 	}
 
-	private AddSparesMessage CreateMessage(ContainedItem first, IEnumerable<ContainedItem> items) =>
+	private static AddSparesMessage CreateMessage(ContainedItem first, IEnumerable<ContainedItem> items) =>
 		new()
 		{
 			CreatorId = first.CreatorInfo.CreatorId,

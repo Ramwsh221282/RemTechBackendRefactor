@@ -38,7 +38,7 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		await Session.Execute(command);
 	}
 
-	public async Task<Result<AccessToken>> Get(Guid tokenId, bool withLock = false, CancellationToken ct = default)
+	public async Task<Result<AccessToken>> Find(Guid tokenId, bool withLock = false, CancellationToken ct = default)
 	{
 		string sql = $"""
 			SELECT
@@ -64,7 +64,7 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		return token;
 	}
 
-	public async Task<Result<AccessToken>> Get(
+	public async Task<Result<AccessToken>> Find(
 		string accessToken,
 		bool withLock = false,
 		CancellationToken ct = default
@@ -102,7 +102,7 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		await Session.Execute(command);
 	}
 
-	public async Task<IEnumerable<AccessToken>> GetExpired(
+	public async Task<IEnumerable<AccessToken>> FindExpired(
 		int maxCount = 50,
 		bool withLock = false,
 		CancellationToken ct = default
@@ -133,9 +133,10 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 
 	public async Task Remove(IEnumerable<AccessToken> tokens, CancellationToken ct = default)
 	{
-		if (!tokens.Any())
+		AccessToken[] tokensArray = [.. tokens];
+		if (tokensArray.Length == 0)
 			return;
-		Guid[] ids = tokens.Select(t => t.TokenId).ToArray();
+		Guid[] ids = [.. tokensArray.Select(t => t.TokenId)];
 		const string sql = """
 			DELETE FROM identity_module.access_tokens
 			WHERE token_id = ANY(@token_ids)

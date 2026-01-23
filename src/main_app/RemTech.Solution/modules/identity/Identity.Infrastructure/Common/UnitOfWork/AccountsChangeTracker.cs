@@ -56,7 +56,7 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 	{
 		if (!removed.Item2.Any())
 			return;
-		Guid[] permissionIds = removed.Item2.Select(p => p.Id.Value).ToArray();
+		Guid[] permissionIds = [.. removed.Item2.Select(p => p.Id.Value)];
 		Guid accountId = removed.Item1.Value;
 		const string sql = """
 			DELETE FROM identity_module.account_permissions
@@ -69,7 +69,10 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 		await Session.Execute(command);
 	}
 
-	private (AccountId, IEnumerable<Permission> removed) GetRemovedPermissions(Account account, Account original) =>
+	private static (AccountId, IEnumerable<Permission> removed) GetRemovedPermissions(
+		Account account,
+		Account original
+	) =>
 		(
 			account.Id,
 			original.Permissions.Permissions.ExceptBy(
@@ -78,7 +81,7 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 			)
 		);
 
-	private (AccountId accountId, IEnumerable<Permission> added) GetAddedPermissions(
+	private static (AccountId accountId, IEnumerable<Permission> added) GetAddedPermissions(
 		Account account,
 		Account original
 	) =>
@@ -92,14 +95,15 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 
 	private async Task SaveAccountChanges(IEnumerable<Account> tracking, CancellationToken ct)
 	{
+		Account[] trackingArray = [.. tracking];
 		List<string> caseSet = [];
 		DynamicParameters parameters = new();
 
-		if (tracking.Any(a => a.Login.Value != Accounts[a.Id.Value].Login.Value))
+		if (trackingArray.Any(a => a.Login.Value != Accounts[a.Id.Value].Login.Value))
 		{
 			string clause = string.Join(
 				" ",
-				tracking.Select(
+				trackingArray.Select(
 					(a, i) =>
 					{
 						string when = $"{WhenById(i)} THEN @login_{i}";
@@ -111,11 +115,11 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 			caseSet.Add($"login = CASE {clause} ELSE login END");
 		}
 
-		if (tracking.Any(a => a.Email.Value != Accounts[a.Id.Value].Email.Value))
+		if (trackingArray.Any(a => a.Email.Value != Accounts[a.Id.Value].Email.Value))
 		{
 			string clause = string.Join(
 				" ",
-				tracking.Select(
+				trackingArray.Select(
 					(a, i) =>
 					{
 						string when = $"{WhenById(i)} THEN @email_{i}";
@@ -127,11 +131,11 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 			caseSet.Add($"email = CASE {clause} ELSE email END");
 		}
 
-		if (tracking.Any(a => a.ActivationStatus.Value != Accounts[a.Id.Value].ActivationStatus.Value))
+		if (trackingArray.Any(a => a.ActivationStatus.Value != Accounts[a.Id.Value].ActivationStatus.Value))
 		{
 			string clause = string.Join(
 				" ",
-				tracking.Select(
+				trackingArray.Select(
 					(a, i) =>
 					{
 						string when = $"{WhenById(i)} THEN @activation_status_{i}";
@@ -143,11 +147,11 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 			caseSet.Add($"activation_status = CASE {clause} ELSE activation_status END");
 		}
 
-		if (tracking.Any(a => a.Password.Value != Accounts[a.Id.Value].Password.Value))
+		if (trackingArray.Any(a => a.Password.Value != Accounts[a.Id.Value].Password.Value))
 		{
 			string clause = string.Join(
 				" ",
-				tracking.Select(
+				trackingArray.Select(
 					(a, i) =>
 					{
 						string when = $"{WhenById(i)} THEN @password_{i}";
@@ -164,7 +168,7 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 
 		List<Guid> ids = [];
 		int index = 0;
-		foreach (Account account in tracking)
+		foreach (Account account in trackingArray)
 		{
 			string paramName = $"@id_{index}";
 			parameters.Add(paramName, account.Id.Value, DbType.Guid);
@@ -178,12 +182,9 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 		await Session.Execute(command);
 	}
 
-	private string WhenById(int index)
-	{
-		return $"WHEN a.id = @id_{index}";
-	}
+	private static string WhenById(int index) => $"WHEN a.id = @id_{index}";
 
-	private IEnumerable<Account> GetTrackingAccounts(IEnumerable<Account> accounts)
+	private List<Account> GetTrackingAccounts(IEnumerable<Account> accounts)
 	{
 		List<Account> tracking = [];
 		foreach (Account account in accounts)

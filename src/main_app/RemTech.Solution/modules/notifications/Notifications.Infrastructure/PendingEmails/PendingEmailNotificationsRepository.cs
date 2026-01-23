@@ -67,11 +67,12 @@ public sealed class PendingEmailNotificationsRepository(
 
 	public async Task<int> Remove(IEnumerable<PendingEmailNotification> notifications, CancellationToken ct = default)
 	{
-		if (!notifications.Any())
+		PendingEmailNotification[] array = [.. notifications];
+		if (array.Length == 0)
 			return 0;
 		const string sql = "DELETE FROM notifications_module.pending_emails WHERE id = ANY (@ids)";
 		DynamicParameters parameters = new();
-		parameters.Add("@ids", notifications.Select(n => n.Id).ToArray());
+		parameters.Add("@ids", array.Select(n => n.Id).ToArray());
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
 		NpgsqlConnection connection = await Session.GetConnection(ct);
 		return await connection.ExecuteAsync(command);
@@ -108,7 +109,7 @@ public sealed class PendingEmailNotificationsRepository(
 	}
 
 	private static string LockClause(PendingEmailNotificationsSpecification specification) =>
-		specification.LockRequired.HasValue && specification.LockRequired.Value ? "FOR UPDATE OF n" : string.Empty;
+		specification.LockRequired == true ? "FOR UPDATE OF n" : string.Empty;
 
 	private static string LimitClause(PendingEmailNotificationsSpecification specification) =>
 		specification.Limit.HasValue ? $"LIMIT {specification.Limit.Value}" : string.Empty;

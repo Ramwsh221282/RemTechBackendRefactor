@@ -27,21 +27,16 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 		return Transaction;
 	}
 
-	public CommandDefinition FormCommand(string sql, object parameters, CancellationToken ct)
-	{
-		return new CommandDefinition(sql, parameters, cancellationToken: ct, transaction: Transaction);
-	}
+	public CommandDefinition FormCommand(string sql, object parameters, CancellationToken ct) =>
+		new(sql, parameters, transaction: Transaction, cancellationToken: ct);
 
-	public CommandDefinition FormCommand(string sql, DynamicParameters parameters, CancellationToken ct)
-	{
-		return new CommandDefinition(sql, parameters, cancellationToken: ct, transaction: Transaction);
-	}
+	public CommandDefinition FormCommand(string sql, DynamicParameters parameters, CancellationToken ct) =>
+		new(sql, parameters, transaction: Transaction, cancellationToken: ct);
 
 	public async Task<int> WithAffectedCallback(CommandDefinition command, CancellationToken ct)
 	{
 		NpgsqlConnection connection = await GetConnection(ct);
-		int result = await connection.ExecuteAsync(command);
-		return result;
+		return await connection.ExecuteAsync(command);
 	}
 
 	public async Task Execute(CommandDefinition command)
@@ -54,7 +49,7 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 	{
 		NpgsqlTransaction transaction = await GetTransaction(ct);
 		NpgsqlConnection connection = await GetConnection(CancellationToken.None);
-		CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: transaction);
+		CommandDefinition command = new(sql, parameters, transaction: transaction, cancellationToken: ct);
 		await connection.ExecuteAsync(command);
 	}
 
@@ -67,22 +62,19 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 	public async Task<T> QuerySingleRow<T>(CommandDefinition command)
 	{
 		NpgsqlConnection connection = await GetConnection(CancellationToken.None);
-		T result = await connection.QuerySingleAsync<T>(command);
-		return result;
+		return await connection.QuerySingleAsync<T>(command);
 	}
 
 	public async Task<T?> QueryMaybeRow<T>(CommandDefinition command)
 	{
 		NpgsqlConnection connection = await GetConnection(CancellationToken.None);
-		T? result = await connection.QueryFirstOrDefaultAsync<T>(command);
-		return result;
+		return await connection.QueryFirstOrDefaultAsync<T>(command);
 	}
 
 	public async Task<IEnumerable<T>> QueryMultipleRows<T>(CommandDefinition command)
 	{
 		NpgsqlConnection connection = await GetConnection(CancellationToken.None);
-		IEnumerable<T> result = await connection.QueryAsync<T>(command);
-		return result;
+		return await connection.QueryAsync<T>(command);
 	}
 
 	public async ValueTask DisposeAsync()
@@ -136,7 +128,7 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 		List<T> result = [];
 		while (await reader.ReadAsync())
 			result.Add(mapper(reader));
-		return result.ToArray();
+		return [.. result];
 	}
 
 	public async Task<T[]> QueryMultipleUsingReader<T>(
@@ -146,7 +138,7 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 		CancellationToken ct = default
 	)
 	{
-		HashSet<T> results = new HashSet<T>(comparer);
+		HashSet<T> results = new(comparer);
 		NpgsqlConnection connection = await GetConnection(ct);
 		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
 		while (await reader.ReadAsync(ct))
@@ -155,7 +147,7 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 			results.Add(item);
 		}
 
-		return results.ToArray();
+		return [.. results];
 	}
 
 	public async Task ExecuteBulk(string sql, object[] parameters)
@@ -172,14 +164,7 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 
 	public void Dispose()
 	{
-		if (Transaction != null)
-		{
-			Transaction.Dispose();
-		}
-
-		if (_connection != null)
-		{
-			_connection.Dispose();
-		}
+		Transaction?.Dispose();
+		_connection?.Dispose();
 	}
 }

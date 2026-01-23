@@ -4,19 +4,19 @@ namespace Vehicles.Infrastructure.Vehicles.Queries.GetVehicles;
 
 public sealed class GetVehiclesQueryParameters
 {
-	public Guid? BrandId { get; private set; } = null;
-	public Guid? CategoryId { get; private set; } = null;
-	public Guid? RegionId { get; private set; } = null;
-	public Guid? ModelId { get; private set; } = null;
-	public bool? IsNds { get; private set; } = null;
-	public long? MinimalPrice { get; private set; } = null;
-	public long? MaximalPrice { get; private set; } = null;
-	public IEnumerable<string>? SortFields { get; private set; } = null;
+	public Guid? BrandId { get; private set; }
+	public Guid? CategoryId { get; private set; }
+	public Guid? RegionId { get; private set; }
+	public Guid? ModelId { get; private set; }
+	public bool? IsNds { get; private set; }
+	public long? MinimalPrice { get; private set; }
+	public long? MaximalPrice { get; private set; }
+	public IEnumerable<string>? SortFields { get; private set; }
 	public string Sort { get; private set; } = "NONE";
 	public int Page { get; private set; } = 1;
 	public int PageSize { get; private set; } = 50;
 	public string? TextSearch { get; private set; }
-	public Dictionary<Guid, string>? Characteristics { get; private set; } = null;
+	public Dictionary<Guid, string>? Characteristics { get; private set; }
 
 	public GetVehiclesQueryParameters ForBrand(Guid? brandId)
 	{

@@ -29,7 +29,7 @@ public sealed class EditLinkUrlInfoHandler(ISubscribedParsersRepository reposito
 		return await SubscribedParser.FromRepository(repository, query, ct);
 	}
 
-	private Result<SubscribedParserLink> EditLink(
+	private static Result<SubscribedParserLink> EditLink(
 		Result<SubscribedParser> parser,
 		Guid linkId,
 		string? newName,

@@ -8,7 +8,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0" />
-		<PackageReference Include="RemTech.SharedKernel.Configurations" Version="2.0.0" />
+		<PackageReference Include="RemTech.SharedKernel.Configurations" Version="2.*" />
 		<PackageReference Include="Testcontainers" Version="4.8.1" />
 		<PackageReference Include="Testcontainers.PostgreSql" Version="4.8.1" />
 		<PackageReference Include="Testcontainers.RabbitMq" Version="4.8.1" />

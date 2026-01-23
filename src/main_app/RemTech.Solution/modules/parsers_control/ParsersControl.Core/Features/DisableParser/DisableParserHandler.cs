@@ -33,7 +33,7 @@ public sealed class DisableParserHandler(ISubscribedParsersRepository repository
 		return Result.Success(Unit.Value);
 	}
 
-	private Result<Unit> Disable(Result<SubscribedParser> parser)
+	private static Result<Unit> Disable(Result<SubscribedParser> parser)
 	{
 		if (parser.IsFailure)
 			return parser.Error;

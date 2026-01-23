@@ -254,20 +254,21 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			CancellationToken ct
 		)
 		{
-			if (!linksToUpdate.Any())
+			SubscribedParserLink[] linksToUpdateArray = [.. linksToUpdate];
+			if (linksToUpdateArray.Length == 0)
 				return;
 			if (linksToCompare.Count == 0)
 				return;
 
-			Guid[] ids = [.. linksToUpdate.Select(l => l.Id.Value)];
+			Guid[] ids = [.. linksToUpdateArray.Select(l => l.Id.Value)];
 			List<string> setClauses = [];
 			DynamicParameters parameters = new();
 
-			if (linksToUpdate.Any(l => l.Active != linksToCompare[l.Id.Value].Active))
+			if (linksToUpdateArray.Any(l => l.Active != linksToCompare[l.Id.Value].Active))
 			{
 				string caseWhen = string.Join(
 					" ",
-					linksToUpdate.Select(
+					linksToUpdateArray.Select(
 						(l, i) =>
 						{
 							string paramName = $"@active_{i}";
@@ -280,14 +281,14 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			}
 
 			if (
-				linksToUpdate.Any(l =>
+				linksToUpdateArray.Any(l =>
 					l.Statistics.ParsedCount.Value != linksToCompare[l.Id.Value].Statistics.ParsedCount.Value
 				)
 			)
 			{
 				string caseWhen = string.Join(
 					" ",
-					linksToUpdate.Select(
+					linksToUpdateArray.Select(
 						(l, i) =>
 						{
 							string paramName = $"@processed_{i}";
@@ -300,7 +301,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			}
 
 			if (
-				linksToUpdate.Any(l =>
+				linksToUpdateArray.Any(l =>
 					l.Statistics.WorkTime.TotalElapsedSeconds
 					!= linksToCompare[l.Id.Value].Statistics.WorkTime.TotalElapsedSeconds
 				)
@@ -308,7 +309,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			{
 				string caseWhen = string.Join(
 					" ",
-					linksToUpdate.Select(
+					linksToUpdateArray.Select(
 						(l, i) =>
 						{
 							string paramName = $"@elapsed_seconds_{i}";
@@ -320,11 +321,11 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 				setClauses.Add($"elapsed_seconds = CASE {caseWhen} ELSE elapsed_seconds END");
 			}
 
-			if (linksToUpdate.Any(l => l.UrlInfo.Name != linksToCompare[l.Id.Value].UrlInfo.Name))
+			if (linksToUpdateArray.Any(l => l.UrlInfo.Name != linksToCompare[l.Id.Value].UrlInfo.Name))
 			{
 				string caseWhen = string.Join(
 					" ",
-					linksToUpdate.Select(
+					linksToUpdateArray.Select(
 						(l, i) =>
 						{
 							string paramName = $"@name_{i}";
@@ -336,11 +337,11 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 				setClauses.Add($"name = CASE {caseWhen} ELSE name END");
 			}
 
-			if (linksToUpdate.Any(l => l.UrlInfo.Url != linksToCompare[l.Id.Value].UrlInfo.Url))
+			if (linksToUpdateArray.Any(l => l.UrlInfo.Url != linksToCompare[l.Id.Value].UrlInfo.Url))
 			{
 				string caseWhen = string.Join(
 					" ",
-					linksToUpdate.Select(
+					linksToUpdateArray.Select(
 						(l, i) =>
 						{
 							string paramName = $"@url_{i}";

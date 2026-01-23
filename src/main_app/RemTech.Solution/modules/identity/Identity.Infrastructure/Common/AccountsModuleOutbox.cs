@@ -72,17 +72,17 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleU
 		return new IdentityOutboxMessage(id, type, retryCount, created, sent, payloadJson);
 	}
 
-	private string LockClause(OutboxMessageSpecification spec)
+	private static string LockClause(OutboxMessageSpecification spec)
 	{
-		return spec.WithLock.HasValue && spec.WithLock.Value ? "FOR UPDATE" : string.Empty;
+		return spec.WithLock == true ? "FOR UPDATE" : string.Empty;
 	}
 
-	private string LimitClause(OutboxMessageSpecification spec)
+	private static string LimitClause(OutboxMessageSpecification spec)
 	{
 		return spec.Limit.HasValue ? $"LIMIT {spec.Limit.Value}" : string.Empty;
 	}
 
-	private (DynamicParameters parameters, string filterSql) WhereClause(OutboxMessageSpecification spec)
+	private static (DynamicParameters parameters, string filterSql) WhereClause(OutboxMessageSpecification spec)
 	{
 		List<string> filters = [];
 		DynamicParameters parameters = new();

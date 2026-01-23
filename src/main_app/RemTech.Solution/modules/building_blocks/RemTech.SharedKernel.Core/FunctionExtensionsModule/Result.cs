@@ -24,25 +24,13 @@ public class Result
 		return Failure<T>(Error);
 	}
 
-	public static Result Success()
-	{
-		return new Result();
-	}
+	public static Result Success() => new();
 
-	public static Result<T> Success<T>(T value)
-	{
-		return new Result<T>(value);
-	}
+	public static Result<T> Success<T>(T value) => new(value);
 
-	public static Result<T> Failure<T>(Error error)
-	{
-		return new Result<T>(error);
-	}
+	public static Result<T> Failure<T>(Error error) => new(error);
 
-	public static Result Failure(Error error)
-	{
-		return new Result(error);
-	}
+	public static Result Failure(Error error) => new(error);
 
 	public static implicit operator Result(Error error)
 	{

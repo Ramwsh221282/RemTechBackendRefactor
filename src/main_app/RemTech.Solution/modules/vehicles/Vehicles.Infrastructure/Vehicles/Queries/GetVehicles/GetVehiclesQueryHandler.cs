@@ -54,13 +54,14 @@ public sealed class GetVehiclesQueryHandler(
 	)
 	{
 		GetVehiclesQueryResponse response = new();
+		List<VehicleResponse> vehicles = [];
 		while (await reader.ReadAsync(ct))
 		{
 			response.SetTotalCount(reader.GetInt32(reader.GetOrdinal("total_count")));
 			response.SetAveragePrice(reader.GetDouble(reader.GetOrdinal("avg_price")));
 			response.SetMinimalPrice(reader.GetDouble(reader.GetOrdinal("min_price")));
 			response.SetMaximalPrice(reader.GetDouble(reader.GetOrdinal("max_price")));
-			response.Vehicles.Add(
+			vehicles.Add(
 				new VehicleResponse()
 				{
 					VehicleId = reader.GetGuid(reader.GetOrdinal("vehicle_id")),
@@ -76,7 +77,7 @@ public sealed class GetVehiclesQueryHandler(
 					Price = reader.GetInt64(reader.GetOrdinal("price")),
 					IsNds = reader.GetBoolean(reader.GetOrdinal("is_nds")),
 					Text = reader.GetString(reader.GetOrdinal("text")),
-					ReleaseYear = reader.IsDBNull(reader.GetOrdinal("release_year"))
+					ReleaseYear = await reader.IsDBNullAsync(reader.GetOrdinal("release_year"), ct)
 						? null
 						: reader.GetInt32(reader.GetOrdinal("release_year")),
 					Photos = JsonSerializer.Deserialize<string[]>(reader.GetString(reader.GetOrdinal("photos")))!,
@@ -87,6 +88,7 @@ public sealed class GetVehiclesQueryHandler(
 			);
 		}
 
+		response.Vehicles = vehicles;
 		return response;
 	}
 
@@ -225,7 +227,7 @@ public sealed class GetVehiclesQueryHandler(
 			return (parameters, string.Empty);
 		if (queryParameters.SortFields is null)
 			return (parameters, string.Empty);
-		if (queryParameters.SortFields.Any() == false)
+		if (!queryParameters.SortFields.Any())
 			return (parameters, string.Empty);
 		string? sortMode = queryParameters.Sort switch
 		{

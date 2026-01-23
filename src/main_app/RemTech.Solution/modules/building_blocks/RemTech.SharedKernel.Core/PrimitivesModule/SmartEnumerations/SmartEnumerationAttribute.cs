@@ -29,7 +29,7 @@ public static class SmartEnumerations
 		Type familyMemberType = typeof(TEnum);
 		return !IsFamilyDeclarer<TEnum>(familyMemberType)
 			? throw new ApplicationException($"{familyMemberType.Name} is not a smart enumerations family declarer.")
-			: _families.GetOrAdd(familyMemberType, _ => LoadFamilies<TEnum>().ToArray<object>());
+			: _families.GetOrAdd(familyMemberType, _ => [.. LoadFamilies<TEnum>()]);
 	}
 
 	private static Result<TEnum> ResolveMember<TFrom, TEnum>(
@@ -39,7 +39,7 @@ public static class SmartEnumerations
 	)
 		where TEnum : class
 	{
-		foreach (TEnum member in families)
+		foreach (TEnum member in families.Cast<TEnum>())
 		{
 			if (matcher(from, member))
 				return member;
@@ -66,5 +66,6 @@ public static class SmartEnumerations
 	}
 }
 
+[AttributeUsage(AttributeTargets.Class)]
 public sealed class SmartEnumerationAttribute<TEnum> : Attribute
-	where TEnum : class { }
+	where TEnum : class;

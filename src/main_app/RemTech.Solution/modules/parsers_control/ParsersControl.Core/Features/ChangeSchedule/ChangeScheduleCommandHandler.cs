@@ -29,7 +29,7 @@ public sealed class ChangeScheduleCommandHandler(ISubscribedParsersRepository re
 		return Result.Success();
 	}
 
-	private Result<Unit> SetRequiredSchedule(ChangeScheduleCommand command, Result<SubscribedParser> parser)
+	private static Result<Unit> SetRequiredSchedule(ChangeScheduleCommand command, Result<SubscribedParser> parser)
 	{
 		if (parser.IsFailure)
 			return parser.Error;

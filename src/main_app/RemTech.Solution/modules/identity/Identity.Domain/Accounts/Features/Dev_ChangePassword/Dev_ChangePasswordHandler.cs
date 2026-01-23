@@ -33,11 +33,11 @@ public sealed class Dev_ChangePasswordHandler(
 	private async Task<Result<Account>> ResolveAccount(Dev_ChangePasswordCommand command, CancellationToken ct)
 	{
 		if (command.AccountId.HasValue)
-			return await accounts.Get(new AccountSpecification().WithId(command.AccountId.Value), ct: ct);
+			return await accounts.Find(new AccountSpecification().WithId(command.AccountId.Value), ct: ct);
 		if (!string.IsNullOrWhiteSpace(command.AccountLogin))
-			return await accounts.Get(new AccountSpecification().WithLogin(command.AccountLogin), ct: ct);
+			return await accounts.Find(new AccountSpecification().WithLogin(command.AccountLogin), ct: ct);
 		if (!string.IsNullOrWhiteSpace(command.AccountEmail))
-			return await accounts.Get(new AccountSpecification().WithEmail(command.AccountEmail), ct: ct);
+			return await accounts.Find(new AccountSpecification().WithEmail(command.AccountEmail), ct: ct);
 		return Error.Validation("Account not specified.");
 	}
 }

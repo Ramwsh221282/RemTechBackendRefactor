@@ -7,7 +7,7 @@ namespace Identity.Domain.Contracts.Persistence;
 
 public interface IAccountsModuleUnitOfWork
 {
-	Task Save(IEnumerable<Account> account, CancellationToken ct = default);
+	Task Save(IEnumerable<Account> accounts, CancellationToken ct = default);
 	Task Save(Account account, CancellationToken ct = default);
 	Task Save(IEnumerable<Permission> permissions, CancellationToken ct = default);
 	Task Save(Permission permission, CancellationToken ct = default);

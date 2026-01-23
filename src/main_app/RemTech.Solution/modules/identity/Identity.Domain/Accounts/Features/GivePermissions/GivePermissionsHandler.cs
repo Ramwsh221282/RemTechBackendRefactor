@@ -8,22 +8,15 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 namespace Identity.Domain.Accounts.Features.GivePermissions;
 
 [TransactionalHandler]
-public sealed class GivePermissionsHandler : ICommandHandler<GivePermissionsCommand, Account>
+public sealed class GivePermissionsHandler(
+	IAccountsRepository accounts,
+	IPermissionsRepository permissions,
+	IAccountsModuleUnitOfWork unitOfWork
+) : ICommandHandler<GivePermissionsCommand, Account>
 {
-	private IAccountsRepository Accounts { get; }
-	private IPermissionsRepository Permissions { get; }
-	private IAccountsModuleUnitOfWork UnitOfWork { get; }
-
-	public GivePermissionsHandler(
-		IAccountsRepository accounts,
-		IPermissionsRepository permissions,
-		IAccountsModuleUnitOfWork unitOfWork
-	)
-	{
-		Accounts = accounts;
-		Permissions = permissions;
-		UnitOfWork = unitOfWork;
-	}
+	private IAccountsRepository Accounts { get; } = accounts;
+	private IPermissionsRepository Permissions { get; } = permissions;
+	private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
 
 	public async Task<Result<Account>> Execute(
 		GivePermissionsCommand command,
@@ -34,11 +27,11 @@ public sealed class GivePermissionsHandler : ICommandHandler<GivePermissionsComm
 		if (account.IsFailure)
 			return account.Error;
 
-		IEnumerable<Permission> permissions = await GetRequiredPermissions(command, ct);
-		if (!PermissionsFound(permissions, command, out Error error))
+		IEnumerable<Permission> queriedPermissions = await GetRequiredPermissions(command, ct);
+		if (!PermissionsFound(queriedPermissions, command, out Error error))
 			return error;
 
-		Result<Unit> add = account.Value.AddPermissions(permissions);
+		Result<Unit> add = account.Value.AddPermissions(queriedPermissions);
 		if (add.IsFailure)
 			return add.Error;
 
@@ -46,7 +39,11 @@ public sealed class GivePermissionsHandler : ICommandHandler<GivePermissionsComm
 		return account.Value;
 	}
 
-	private bool PermissionsFound(IEnumerable<Permission> permissions, GivePermissionsCommand command, out Error error)
+	private static bool PermissionsFound(
+		IEnumerable<Permission> permissions,
+		GivePermissionsCommand command,
+		out Error error
+	)
 	{
 		error = Error.NoError();
 		IEnumerable<Guid> notFoundPermissions = command
@@ -75,6 +72,6 @@ public sealed class GivePermissionsHandler : ICommandHandler<GivePermissionsComm
 	private async Task<Result<Account>> GetRequiredAccount(GivePermissionsCommand command, CancellationToken ct)
 	{
 		AccountSpecification spec = new AccountSpecification().WithId(command.AccountId).WithLock();
-		return await Accounts.Get(spec, ct);
+		return await Accounts.Find(spec, ct);
 	}
 }

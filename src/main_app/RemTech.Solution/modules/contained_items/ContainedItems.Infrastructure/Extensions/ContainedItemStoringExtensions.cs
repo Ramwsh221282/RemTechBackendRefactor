@@ -24,7 +24,7 @@ public static class ContainedItemStoringExtensions
 				creator_domain = item.CreatorInfo.Domain,
 				content = item.Info.Content,
 				created_at = item.Info.CreatedAt,
-				deleted_at = item.Info.DeletedAt.HasValue ? item.Info.DeletedAt.Value : (DateTime?)null,
+				deleted_at = item.Info.DeletedAt,
 				status = item.Status.Value,
 			};
 	}

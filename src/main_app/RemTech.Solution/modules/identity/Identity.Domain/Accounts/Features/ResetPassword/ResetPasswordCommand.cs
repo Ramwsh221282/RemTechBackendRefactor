@@ -51,13 +51,13 @@ public sealed class ResetPasswordCommandHandler(IAccountsRepository accounts, IA
 	private async Task<Result<Account>> FindAccountByEmail(string email, CancellationToken ct)
 	{
 		AccountSpecification spec = new AccountSpecification().WithEmail(email).WithLock();
-		return await accounts.Get(spec, ct);
+		return await accounts.Find(spec, ct);
 	}
 
 	private async Task<Result<Account>> FindAccountByLogin(string login, CancellationToken ct)
 	{
 		AccountSpecification spec = new AccountSpecification().WithLogin(login).WithLock();
-		return await accounts.Get(spec, ct);
+		return await accounts.Find(spec, ct);
 	}
 
 	private static Result<Unit> CanResetPassword(Result<Account> account)

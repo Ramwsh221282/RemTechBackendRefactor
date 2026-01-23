@@ -28,12 +28,13 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 	{
 		List<string> updateSet = [];
 		DynamicParameters parameters = new();
+		AccountTicket[] ticketsArray = [.. tickets];
 
-		if (tickets.Any(t => t.Finished != _tracking[t.TicketId].Finished))
+		if (ticketsArray.Any(t => t.Finished != _tracking[t.TicketId].Finished))
 		{
 			string clause = string.Join(
 				" ",
-				tickets.Select(
+				ticketsArray.Select(
 					(t, i) =>
 					{
 						string paramName = $"@finished_{i}";
@@ -50,7 +51,7 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 
 		List<Guid> ids = [];
 		int index = 0;
-		foreach (AccountTicket ticket in tickets)
+		foreach (AccountTicket ticket in ticketsArray)
 		{
 			Guid id = ticket.TicketId;
 			string paramName = $"@ticket_id_{index}";
@@ -71,7 +72,7 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 		await Session.Execute(command);
 	}
 
-	private IEnumerable<AccountTicket> GetTrackingTickets(IEnumerable<AccountTicket> tickets)
+	private List<AccountTicket> GetTrackingTickets(IEnumerable<AccountTicket> tickets)
 	{
 		List<AccountTicket> tracking = [];
 		foreach (AccountTicket ticket in tickets)
@@ -82,8 +83,5 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 		return tracking;
 	}
 
-	private string WhenClause(int index)
-	{
-		return $"WHEN ac.id = @ticket_id_{index}";
-	}
+	private static string WhenClause(int index) => $"WHEN ac.id = @ticket_id_{index}";
 }

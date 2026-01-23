@@ -13,6 +13,6 @@
 		<ProjectReference Include="..\modules\vehicles\Vehicles.WebApi\Vehicles.WebApi.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="RemTech.SharedKernel.Web" Version="2.0.1" />
+		<PackageReference Include="RemTech.SharedKernel.Web" Version="2.*" />
 	</ItemGroup>
 </Project>

@@ -23,15 +23,15 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
 
 	public async Task PublishMany(IEnumerable<ContainedItem> items, CancellationToken ct = default)
 	{
-		if (!items.Any())
+		ContainedItem[] itemArray = [.. items];
+		if (itemArray.Length == 0)
 		{
 			Logger.Information("No items to publish");
 			return;
 		}
 
 		RabbitMqPublishOptions options = new() { Persistent = true };
-		IEnumerable<IGrouping<Guid, ContainedItem>> grouped = items.GroupBy(i => i.CreatorInfo.CreatorId);
-		foreach (IGrouping<Guid, ContainedItem> group in grouped)
+		foreach (IGrouping<Guid, ContainedItem> group in itemArray.GroupBy(i => i.CreatorInfo.CreatorId))
 		{
 			ContainedItem first = group.First();
 			AddVehicleMessage message = CreateMessage(first, group);

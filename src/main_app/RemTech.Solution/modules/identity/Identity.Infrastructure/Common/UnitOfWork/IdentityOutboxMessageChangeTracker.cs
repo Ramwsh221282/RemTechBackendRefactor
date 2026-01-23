@@ -24,17 +24,18 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 
 	private async Task SaveOutboxMessageChanges(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct)
 	{
-		if (!messages.Any())
+		IdentityOutboxMessage[] messagesArray = [.. messages];
+		if (messagesArray.Length == 0)
 			return;
 
 		List<string> setClauses = [];
 		DynamicParameters parameters = new();
 
-		if (messages.Any(m => m.RetryCount != Tracking[m.Id].RetryCount))
+		if (messagesArray.Any(m => m.RetryCount != Tracking[m.Id].RetryCount))
 		{
 			string setClause = string.Join(
 				" ",
-				messages.Select(
+				messagesArray.Select(
 					(m, i) =>
 					{
 						string paramName = $"@retry_count_{i}";
@@ -46,11 +47,11 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 			setClauses.Add($"retry_count = CASE {setClause} ELSE retry_count END");
 		}
 
-		if (messages.Any(m => m.Sent.HasValue && !Tracking[m.Id].Sent.HasValue))
+		if (messagesArray.Any(m => m.Sent.HasValue && !Tracking[m.Id].Sent.HasValue))
 		{
 			string setClause = string.Join(
 				" ",
-				messages.Select(
+				messagesArray.Select(
 					(m, i) =>
 					{
 						string paramName = $"@sent_{i}";
@@ -67,7 +68,7 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 
 		int index = 0;
 		List<Guid> ids = [];
-		foreach (IdentityOutboxMessage message in messages)
+		foreach (IdentityOutboxMessage message in messagesArray)
 		{
 			string paramName = $"@id_{index}";
 			parameters.Add(paramName, message.Id, DbType.Guid);
@@ -82,12 +83,12 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 		await Session.Execute(command);
 	}
 
-	private IEnumerable<IdentityOutboxMessage> GetTrackingMessages(IEnumerable<IdentityOutboxMessage> messages)
+	private List<IdentityOutboxMessage> GetTrackingMessages(IEnumerable<IdentityOutboxMessage> messages)
 	{
 		List<IdentityOutboxMessage> tracking = [];
 		foreach (IdentityOutboxMessage message in messages)
 		{
-			if (!Tracking.TryGetValue(message.Id, out IdentityOutboxMessage? tracked))
+			if (!Tracking.TryGetValue(message.Id, out IdentityOutboxMessage? _))
 				continue;
 			tracking.Add(message);
 		}

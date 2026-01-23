@@ -49,21 +49,14 @@ public sealed class RegisterAccountHandler(
 			account.Login.Value
 		);
 
-		IdentityOutboxMessage message = IdentityOutboxMessage.CreateNew(
-			AccountOutboxMessageTypes.NewAccountCreated,
-			payload
-		);
-
-		return message;
+		return IdentityOutboxMessage.CreateNew(AccountOutboxMessageTypes.NewAccountCreated, payload);
 	}
 
 	private Result<AccountPassword> ApprovePassword(RegisterAccountCommand command)
 	{
 		AccountPassword password = AccountPassword.Create(command.Password);
 		Result<Unit> satisfies = password.Satisfies(new PasswordRequirement().Use(passwordRequirements));
-		if (satisfies.IsFailure)
-			return satisfies.Error;
-		return password;
+		return satisfies.IsFailure ? (Result<AccountPassword>)satisfies.Error : (Result<AccountPassword>)password;
 	}
 
 	private async Task<Result<Unit>> ApproveRegistration(RegisterAccountCommand command, CancellationToken ct)
@@ -72,34 +65,27 @@ public sealed class RegisterAccountHandler(
 		if (emailCheck.IsFailure)
 			return emailCheck.Error;
 		Result<Unit> loginCheck = await CheckAccountLoginDuplicate(command.Login, ct);
-		if (loginCheck.IsFailure)
-			return loginCheck.Error;
-		return Unit.Value;
+		return loginCheck.IsFailure ? (Result<Unit>)loginCheck.Error : (Result<Unit>)Unit.Value;
 	}
 
-	private Account CreateAccount(AccountPassword password, RegisterAccountCommand command)
+	private static Account CreateAccount(AccountPassword password, RegisterAccountCommand command)
 	{
 		AccountEmail email = AccountEmail.Create(command.Email);
 		AccountLogin login = AccountLogin.Create(command.Login);
-		Account account = Account.New(email, login, password);
-		return account;
+		return Account.New(email, login, password);
 	}
 
 	private async Task<Result<Unit>> CheckAccountEmailDuplicate(string email, CancellationToken ct)
 	{
 		AccountSpecification specification = new AccountSpecification().WithEmail(email);
 		bool exists = await accounts.Exists(specification, ct);
-		if (exists)
-			return Error.Conflict("Учетная запись с таким email уже существует.");
-		return Result.Success(Unit.Value);
+		return exists ? Error.Conflict("Учетная запись с таким email уже существует.") : Result.Success(Unit.Value);
 	}
 
 	private async Task<Result<Unit>> CheckAccountLoginDuplicate(string login, CancellationToken ct)
 	{
 		AccountSpecification specification = new AccountSpecification().WithLogin(login);
 		bool exists = await accounts.Exists(specification, ct);
-		if (exists)
-			return Error.Conflict("Учетная запись с таким логином уже существует.");
-		return Result.Success(Unit.Value);
+		return exists ? Error.Conflict("Учетная запись с таким логином уже существует.") : Result.Success(Unit.Value);
 	}
 }

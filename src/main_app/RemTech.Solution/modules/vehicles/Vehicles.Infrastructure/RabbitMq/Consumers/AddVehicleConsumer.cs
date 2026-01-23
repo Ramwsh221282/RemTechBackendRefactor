@@ -25,10 +25,8 @@ public sealed class AddVehicleConsumer(
 	private Serilog.ILogger Logger { get; } = logger.ForContext<AddVehicleConsumer>();
 	private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
 
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
-	{
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
 		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
-	}
 
 	public async Task StartConsuming(CancellationToken ct = default)
 	{
@@ -37,10 +35,7 @@ public sealed class AddVehicleConsumer(
 		await Channel.BasicConsumeAsync(Queue, false, consumer, ct);
 	}
 
-	public async Task Shutdown(CancellationToken ct = default)
-	{
-		await Channel.CloseAsync(ct);
-	}
+	public async Task Shutdown(CancellationToken ct = default) => await Channel.CloseAsync(ct);
 
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, @event) =>

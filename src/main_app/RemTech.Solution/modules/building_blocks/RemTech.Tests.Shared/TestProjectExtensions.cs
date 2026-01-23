@@ -123,7 +123,7 @@ public static class TestProjectExtensions
 		string[] hostParts = parts[1].Split(':', StringSplitOptions.RemoveEmptyEntries);
 
 		string host = hostParts[0];
-		string port = hostParts[1].Replace("/", string.Empty);
+		string port = hostParts[1].Replace("/", string.Empty, StringComparison.OrdinalIgnoreCase);
 		string[] userParts = parts[0]
 			.Split("//", StringSplitOptions.RemoveEmptyEntries)[1]
 			.Split(':', StringSplitOptions.RemoveEmptyEntries);

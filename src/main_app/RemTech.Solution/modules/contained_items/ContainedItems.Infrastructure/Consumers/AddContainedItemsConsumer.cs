@@ -25,10 +25,8 @@ public sealed class AddContainedItemsConsumer(
 	private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
 	private IChannel Channel => _channel ?? throw new InvalidOperationException("Channel was not initialized");
 
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
-	{
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
 		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
-	}
 
 	public async Task StartConsuming(CancellationToken ct = default)
 	{
@@ -37,10 +35,7 @@ public sealed class AddContainedItemsConsumer(
 		await Channel.BasicConsumeAsync(Queue, autoAck: false, consumer: consumer, cancellationToken: ct);
 	}
 
-	public async Task Shutdown(CancellationToken ct = default)
-	{
-		await Channel.CloseAsync(cancellationToken: ct);
-	}
+	public async Task Shutdown(CancellationToken ct = default) => await Channel.CloseAsync(cancellationToken: ct);
 
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, @event) =>
@@ -85,10 +80,8 @@ public sealed class AddContainedItemsConsumer(
 		public string CreatorType { get; set; } = string.Empty;
 		public AddContainedItemMessagePayload[] Items { get; set; } = [];
 
-		public static AddContainedItemsMessage FromEventArgs(BasicDeliverEventArgs ea)
-		{
-			return JsonSerializer.Deserialize<AddContainedItemsMessage>(ea.Body.Span)!;
-		}
+		public static AddContainedItemsMessage FromEventArgs(BasicDeliverEventArgs ea) =>
+			JsonSerializer.Deserialize<AddContainedItemsMessage>(ea.Body.Span)!;
 	}
 
 	private sealed class AddContainedItemMessagePayload

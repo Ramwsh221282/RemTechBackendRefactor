@@ -27,16 +27,17 @@ public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
 		CancellationToken ct
 	)
 	{
-		if (!notifications.Any())
+		PendingEmailNotification[] notificationsArray = [.. notifications];
+		if (notificationsArray.Length == 0)
 			return;
 		List<string> setClauses = [];
 		DynamicParameters parameters = new();
 
-		if (notifications.Any(n => n.WasSent != Tracking[n.Id].WasSent))
+		if (notificationsArray.Any(n => n.WasSent != Tracking[n.Id].WasSent))
 		{
 			string clauses = string.Join(
 				" ",
-				notifications.Select(
+				notificationsArray.Select(
 					(n, i) =>
 					{
 						string paramName = $"@was_sent_{i}";
@@ -53,7 +54,7 @@ public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
 
 		List<Guid> ids = [];
 		int index = 0;
-		foreach (PendingEmailNotification notification in notifications)
+		foreach (PendingEmailNotification notification in notificationsArray)
 		{
 			string paramName = $"@id_{index}";
 			parameters.Add(paramName, notification.Id, DbType.Guid);
@@ -74,16 +75,17 @@ public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
 		await Session.Execute(command);
 	}
 
-	private string WhenClause(int i) => $"WHEN p.id = @id_{i}";
+	private static string WhenClause(int i) => $"WHEN p.id = @id_{i}";
 
-	private IEnumerable<PendingEmailNotification> GetTrackingNotifications(
-		IEnumerable<PendingEmailNotification> notifications
-	)
+	private List<PendingEmailNotification> GetTrackingNotifications(IEnumerable<PendingEmailNotification> notifications)
 	{
 		List<PendingEmailNotification> result = [];
 		foreach (PendingEmailNotification notification in notifications)
-			if (Tracking.TryGetValue(notification.Id, out PendingEmailNotification? tracked))
+		{
+			if (Tracking.TryGetValue(notification.Id, out _))
 				result.Add(notification);
+		}
+
 		return result;
 	}
 }

@@ -301,9 +301,12 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 			if (processedCases.Count > 0)
 				setClauses.Add($"processed = CASE {string.Join(" ", processedCases)} ELSE processed END");
 			if (elapsedSecondsCases.Count > 0)
+			{
 				setClauses.Add(
 					$"elapsed_seconds = CASE {string.Join(" ", elapsedSecondsCases)} ELSE elapsed_seconds END"
 				);
+			}
+
 			if (setClauses.Count == 0)
 				return Result.Success(Unit.Value);
 
@@ -321,7 +324,7 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 			catch (Exception e)
 			{
 				_logger.Fatal(e, "Не удалось сохранить изменения.");
-				return Error.Conflict($"Не удалось сохранить изменения.");
+				return Error.Conflict("Не удалось сохранить изменения.");
 			}
 
 			return Result.Success(Unit.Value);

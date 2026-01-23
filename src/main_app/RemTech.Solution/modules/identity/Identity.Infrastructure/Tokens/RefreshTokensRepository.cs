@@ -62,7 +62,7 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		await Session.Execute(command);
 	}
 
-	public async Task<Result<RefreshToken>> Get(Guid accountId, CancellationToken ct = default)
+	public async Task<Result<RefreshToken>> Find(Guid accountId, CancellationToken ct = default)
 	{
 		const string sql = """
 			SELECT 
@@ -80,7 +80,7 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		return token is null ? Error.NotFound("Токен обновления не найден.") : token;
 	}
 
-	public async Task<Result<RefreshToken>> Get(
+	public async Task<Result<RefreshToken>> Find(
 		string refreshToken,
 		bool withLock = false,
 		CancellationToken ct = default

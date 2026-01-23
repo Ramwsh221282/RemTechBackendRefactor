@@ -39,7 +39,7 @@ public sealed class AddParserLinkHandler(ISubscribedParsersRepository repository
 		return Result.Success();
 	}
 
-	private Result<IEnumerable<SubscribedParserLink>> AddLinks(
+	private static Result<IEnumerable<SubscribedParserLink>> AddLinks(
 		Result<SubscribedParser> parser,
 		IEnumerable<AddParserLinkCommandArg> args
 	)

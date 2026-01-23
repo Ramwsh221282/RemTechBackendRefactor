@@ -19,7 +19,7 @@ public sealed class RefreshTokenHandler(
 {
 	public async Task<Result<AuthenticationResult>> Execute(RefreshTokenCommand command, CancellationToken ct = default)
 	{
-		Result<RefreshToken> refreshToken = await refreshTokens.Get(command.RefreshToken, withLock: true, ct);
+		Result<RefreshToken> refreshToken = await refreshTokens.Find(command.RefreshToken, withLock: true, ct);
 		if (refreshToken.IsFailure)
 			return Error.Unauthorized("Token not found.");
 
@@ -45,6 +45,6 @@ public sealed class RefreshTokenHandler(
 	private async Task<Result<Account>> GetRequiredAccount(RefreshToken refreshToken, CancellationToken ct)
 	{
 		AccountSpecification spec = new AccountSpecification().WithId(refreshToken.AccountId).WithLock();
-		return await accounts.Get(spec, ct);
+		return await accounts.Find(spec, ct);
 	}
 }

@@ -22,7 +22,7 @@ public sealed class SparePhotoCollection
 		int failuresCount = photos.Count(p => p.IsFailure);
 		return failuresCount switch
 		{
-			0 => Create(photos.Select(p => p.Value).ToList()),
+			0 => Create(photos.ConvertAll(p => p.Value)),
 			_ => Error.Validation($"Фото запчастей содержат {failuresCount} ошибок."),
 		};
 	}

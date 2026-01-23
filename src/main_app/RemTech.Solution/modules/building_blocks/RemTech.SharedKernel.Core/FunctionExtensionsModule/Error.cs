@@ -4,10 +4,7 @@ public abstract class Error(string message)
 {
 	public string Message => message;
 
-	public static Error Validation(string message)
-	{
-		return new ValidationError(message);
-	}
+	public static Error Validation(string message) => new ValidationError(message);
 
 	public static Error Validation(IEnumerable<string> errors)
 	{
@@ -15,55 +12,26 @@ public abstract class Error(string message)
 		return Validation(singleMessage);
 	}
 
-	public static Error NotSet(string valueName)
-	{
-		return new ValidationError($"{valueName} значение не установлено.");
-	}
+	public static Error NotSet(string valueName) => new ValidationError($"{valueName} значение не установлено.");
 
-	public static Error GreaterThan(string valueName, int maxLength)
-	{
-		return new ValidationError($"{valueName} значение превышает длину {maxLength} символов.");
-	}
+	public static Error GreaterThan(string valueName, int maxLength) =>
+		new ValidationError($"{valueName} значение превышает длину {maxLength} символов.");
 
-	public static Error InvalidFormat(string valueName)
-	{
-		return new ValidationError($"{valueName} некорректный формат.");
-	}
+	public static Error InvalidFormat(string valueName) => new ValidationError($"{valueName} некорректный формат.");
 
-	public static Error Validation(Result result)
-	{
-		return new ValidationError(result.Error.Message);
-	}
+	public static Error Validation(Result result) => new ValidationError(result.Error.Message);
 
-	public static Error Application(string message)
-	{
-		return new ApplicationError(message);
-	}
+	public static Error Application(string message) => new ApplicationError(message);
 
-	public static Error NotFound(string message)
-	{
-		return new NotFoundError(message);
-	}
+	public static Error NotFound(string message) => new NotFoundError(message);
 
-	public static Error Unauthorized(string message)
-	{
-		return new UnauthorizedError(message);
-	}
+	public static Error Unauthorized(string message) => new UnauthorizedError(message);
 
-	public static Error Forbidden(string message)
-	{
-		return new ForbiddenError(message);
-	}
+	public static Error Forbidden(string message) => new ForbiddenError(message);
 
-	public static Error Conflict(string message)
-	{
-		return new ConflictError(message);
-	}
+	public static Error Conflict(string message) => new ConflictError(message);
 
-	public static Error NoError()
-	{
-		return new NoneError();
-	}
+	public static Error NoError() => new NoneError();
 
 	public sealed class ForbiddenError : Error
 	{

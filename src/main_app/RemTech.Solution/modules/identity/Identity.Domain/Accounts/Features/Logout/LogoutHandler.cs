@@ -17,8 +17,8 @@ public sealed class LogoutHandler(IAccessTokensRepository accessTokens, IRefresh
 		if (string.IsNullOrWhiteSpace(command.RefreshToken))
 			return Error.Validation("Refresh token is empty.");
 
-		Result<AccessToken> accessToken = await accessTokens.Get(command.AccessToken, withLock: true, ct: ct);
-		Result<RefreshToken> refreshToken = await refreshTokens.Get(command.RefreshToken, withLock: true, ct: ct);
+		Result<AccessToken> accessToken = await accessTokens.Find(command.AccessToken, withLock: true, ct: ct);
+		Result<RefreshToken> refreshToken = await refreshTokens.Find(command.RefreshToken, withLock: true, ct: ct);
 
 		if (accessToken.IsSuccess)
 			await accessTokens.Remove(accessToken.Value, ct);

@@ -13,7 +13,7 @@ public static class TopicConsumerInitialization
 	)
 	{
 		IConnection connection = await connectionSource.GetConnection(ct);
-		IChannel channel = await connection.CreateChannelAsync();
+		IChannel channel = await connection.CreateChannelAsync(cancellationToken: ct);
 		await DeclareExchange(channel, exchangeName);
 		await DeclareQueue(channel, queueName);
 		await BindQueue(channel, queueName, exchangeName, routingKey);
@@ -22,12 +22,12 @@ public static class TopicConsumerInitialization
 
 	private static async Task DeclareExchange(IChannel channel, string exchangeName)
 	{
-		await channel.ExchangeDeclareAsync(exchange: exchangeName, durable: true, autoDelete: false, type: "topic");
+		await channel.ExchangeDeclareAsync(exchange: exchangeName, type: "topic", durable: true, autoDelete: false);
 	}
 
 	private static async Task DeclareQueue(IChannel channel, string queueName)
 	{
-		await channel.QueueDeclareAsync(queue: queueName, durable: true, autoDelete: false, exclusive: false);
+		await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false);
 	}
 
 	private static async Task BindQueue(IChannel channel, string queueName, string exchangeName, string routingKey)

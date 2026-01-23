@@ -9,6 +9,6 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.0" />
-		<PackageReference Include="RemTech.SharedKernel.Configurations" Version="2.0.0" />
+		<PackageReference Include="RemTech.SharedKernel.Configurations" Version="2.*" />
 	</ItemGroup>
 </Project>

@@ -49,8 +49,7 @@ public sealed class AccountsModuleOutboxCleaner(Serilog.ILogger logger, NpgSqlCo
 			WHERE sent is not NULL
 			""";
 
-		CommandDefinition command = new(sql, cancellationToken: ct, transaction: session.Transaction);
-
+		CommandDefinition command = new(sql, transaction: session.Transaction, cancellationToken: ct);
 		NpgsqlConnection connection = await session.GetConnection(ct: ct);
 		return await connection.ExecuteAsync(command);
 	}

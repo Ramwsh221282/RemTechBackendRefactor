@@ -9,10 +9,7 @@ public sealed class UniqueSequence<T>
 		_items = items;
 	}
 
-	public IEnumerable<U> Map<U>(Func<T, U> selector)
-	{
-		return _items.Select(selector);
-	}
+	public IEnumerable<U> Map<U>(Func<T, U> selector) => _items.Select(selector);
 
 	public U[] MapToArray<U>(Func<T, U> factory)
 	{
@@ -58,7 +55,7 @@ public sealed class UniqueSequence<T>
 
 		foreach (T item in items)
 		{
-			var key = keySelector(item);
+			TSource? key = keySelector(item);
 			if (!seenKeys.Add(key))
 				return Error.Validation("Коллекция не уникальна.");
 
@@ -84,24 +81,14 @@ public static class UniqueSequenceExtensions
 {
 	extension<T>(IEnumerable<T> items)
 	{
-		public Result<UniqueSequence<T>> TryBecomeUnique()
-		{
-			return UniqueSequence<T>.Create(items);
-		}
+		public Result<UniqueSequence<T>> TryBecomeUnique() => UniqueSequence<T>.Create(items);
 
-		public Result<UniqueSequence<T>> TryBecomeUnique(string onError)
-		{
-			return UniqueSequence<T>.Create(items, onError);
-		}
+		public Result<UniqueSequence<T>> TryBecomeUnique(string onError) => UniqueSequence<T>.Create(items, onError);
 
-		public Result<UniqueSequence<T>> TryBecomeUnique<TSource>(Func<T, TSource> selector)
-		{
-			return UniqueSequence<T>.Create(items, selector);
-		}
+		public Result<UniqueSequence<T>> TryBecomeUnique<TSource>(Func<T, TSource> selector) =>
+			UniqueSequence<T>.Create(items, selector);
 
-		public Result<UniqueSequence<T>> TryBecomeUnique<TSource>(Func<T, TSource> selector, string onError)
-		{
-			return UniqueSequence<T>.Create(items, selector, onError);
-		}
+		public Result<UniqueSequence<T>> TryBecomeUnique<TSource>(Func<T, TSource> selector, string onError) =>
+			UniqueSequence<T>.Create(items, selector, onError);
 	}
 }

@@ -4,14 +4,9 @@ using RemTech.SharedKernel.Core.InfrastructureContracts;
 
 namespace RemTech.SharedKernel.Infrastructure.Database;
 
-public sealed class NpgSqlTransactionScope : ITransactionScope
+public sealed class NpgSqlTransactionScope(NpgsqlTransaction transaction) : ITransactionScope
 {
-	private NpgsqlTransaction Transaction { get; }
-
-	public NpgSqlTransactionScope(NpgsqlTransaction transaction)
-	{
-		Transaction = transaction;
-	}
+	private NpgsqlTransaction Transaction { get; } = transaction;
 
 	public async Task<Result> Commit(CancellationToken ct = default)
 	{
@@ -27,13 +22,7 @@ public sealed class NpgSqlTransactionScope : ITransactionScope
 		}
 	}
 
-	public void Dispose()
-	{
-		Transaction.Dispose();
-	}
+	public void Dispose() => Transaction.Dispose();
 
-	public async ValueTask DisposeAsync()
-	{
-		await Transaction.DisposeAsync();
-	}
+	public async ValueTask DisposeAsync() => await Transaction.DisposeAsync();
 }

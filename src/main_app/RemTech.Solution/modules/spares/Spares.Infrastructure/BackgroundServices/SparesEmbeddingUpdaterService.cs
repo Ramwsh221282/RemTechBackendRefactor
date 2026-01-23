@@ -48,9 +48,9 @@ public sealed class SparesEmbeddingUpdaterService(
 		if (spares.Length == 0)
 			return;
 
-		string[] texts = spares.Select(s => s.TextForEmbedding).ToArray();
-		IReadOnlyList<ReadOnlyMemory<float>> embeddings = Embeddings.GenerateBatch(texts);
-		await UpdateSpareEmbeddings(session, spares, embeddings, ct);
+		string[] texts = [.. spares.Select(s => s.TextForEmbedding)];
+		IReadOnlyList<ReadOnlyMemory<float>> generatedEmbeddings = Embeddings.GenerateBatch(texts);
+		await UpdateSpareEmbeddings(session, spares, generatedEmbeddings, ct);
 		Result commit = await transaction.Commit(ct);
 		if (commit.IsFailure)
 			Logger.Fatal(commit.Error, "Error committing transaction.");
@@ -59,7 +59,7 @@ public sealed class SparesEmbeddingUpdaterService(
 	private async Task UpdateSpareEmbeddings(
 		NpgSqlSession session,
 		SpareWithoutEmbedding[] spares,
-		IReadOnlyList<ReadOnlyMemory<float>> embeddings,
+		IReadOnlyList<ReadOnlyMemory<float>> generatedEmbeddings,
 		CancellationToken ct
 	)
 	{
@@ -73,7 +73,7 @@ public sealed class SparesEmbeddingUpdaterService(
 			string embeddingParam = $"@embedding_{i}";
 			updateClauses.Add($"WHEN s.id = {idParam} THEN {embeddingParam}");
 			parameters.Add(idParam, spares[i].Id, DbType.Guid);
-			parameters.Add(embeddingParam, new Vector(embeddings[i]));
+			parameters.Add(embeddingParam, new Vector(generatedEmbeddings[i]));
 		}
 
 		parameters.Add("@ids", ids);

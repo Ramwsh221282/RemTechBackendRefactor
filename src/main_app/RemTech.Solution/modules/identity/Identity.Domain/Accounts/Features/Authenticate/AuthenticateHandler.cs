@@ -50,6 +50,6 @@ public sealed class AuthenticateHandler(
 		if (!string.IsNullOrEmpty(command.Email))
 			spec = spec.WithEmail(command.Email);
 
-		return await accounts.Get(spec, ct);
+		return await accounts.Find(spec, ct);
 	}
 }

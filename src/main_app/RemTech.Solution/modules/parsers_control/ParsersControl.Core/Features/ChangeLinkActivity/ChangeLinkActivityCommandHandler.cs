@@ -41,12 +41,14 @@ public sealed class ChangeLinkActivityCommandHandler(ISubscribedParsersRepositor
 		return Result.Success();
 	}
 
-	private Result<SubscribedParserLink> ChangeLinkActivity(Result<SubscribedParser> parser, Guid linkId, bool isActive)
-	{
-		if (parser.IsFailure)
-			return Result.Failure<SubscribedParserLink>(parser.Error);
-		return parser.Value.ChangeLinkActivity(parser.Value.FindLink(linkId), isActive);
-	}
+	private static Result<SubscribedParserLink> ChangeLinkActivity(
+		Result<SubscribedParser> parser,
+		Guid linkId,
+		bool isActive
+	) =>
+		parser.IsFailure
+			? Result.Failure<SubscribedParserLink>(parser.Error)
+			: parser.Value.ChangeLinkActivity(parser.Value.FindLink(linkId), isActive);
 
 	private async Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
 	{

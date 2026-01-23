@@ -22,7 +22,7 @@ public sealed class AddPermissionsHandler(IPermissionsRepository repository)
 		return Result.Success(permissions);
 	}
 
-	private bool HasDuplicates(IEnumerable<Permission> duplicates, out Error error)
+	private static bool HasDuplicates(IEnumerable<Permission> duplicates, out Error error)
 	{
 		error = Error.NoError();
 		if (duplicates.Any())
@@ -35,12 +35,12 @@ public sealed class AddPermissionsHandler(IPermissionsRepository repository)
 		return false;
 	}
 
-	private IEnumerable<Permission> CreatePermissions(IEnumerable<AddPermissionCommandPayload> payloads) =>
+	private static IEnumerable<Permission> CreatePermissions(IEnumerable<AddPermissionCommandPayload> payloads) =>
 		payloads.Select(p =>
 			Permission.CreateNew(PermissionName.Create(p.Name), PermissionDescription.Create(p.Description))
 		);
 
-	private IEnumerable<PermissionSpecification> CreateSpecificationsForExistanceCheck(
+	private static IEnumerable<PermissionSpecification> CreateSpecificationsForExistanceCheck(
 		IEnumerable<Permission> permissions
 	) => permissions.Select(p => new PermissionSpecification().WithName(p.Name.Value));
 

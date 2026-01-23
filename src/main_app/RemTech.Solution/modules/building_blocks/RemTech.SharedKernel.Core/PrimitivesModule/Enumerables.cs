@@ -6,17 +6,14 @@ public static class Enumerables
 {
 	extension<T>(IEnumerable<T> enumerable)
 	{
-		public U[] Map<U>(Func<T, U> func)
-		{
-			return enumerable.ToArray().Map(func);
-		}
+		public U[] Map<U>(Func<T, U> func) => enumerable.ToArray().Map(func);
 	}
 
 	extension<T>(T[] array)
 	{
 		public U[] Map<U>(Func<T, U> func)
 		{
-			int startIndex = 0;
+			const int startIndex = 0;
 			return array.MapRecursive(new U[array.Length], startIndex, func);
 		}
 
@@ -32,15 +29,9 @@ public static class Enumerables
 			return element == null ? Optional.None<T>() : Optional.Some(element);
 		}
 
-		public T[] With(T item)
-		{
-			return [item, .. array];
-		}
+		public T[] With(T item) => [item, .. array];
 
-		public T[] Without(T item, Func<T, bool> removeCriteria)
-		{
-			return [.. array.Where(removeCriteria).ToArray()];
-		}
+		public T[] Without(Func<T, bool> removeCriteria) => [.. array.Where(removeCriteria).ToArray()];
 
 		private U[] MapRecursive<U>(U[] result, int index, Func<T, U> func)
 		{

@@ -18,8 +18,8 @@ public sealed class AccountsModuleUnitOfWork(
 	private PermissionsChangeTracker Permissions { get; } = permissions;
 	private IdentityOutboxMessageChangeTracker OutboxMessages { get; } = outboxMessages;
 
-	public async Task Save(IEnumerable<Account> accounts, CancellationToken ct = default) =>
-		await Accounts.SaveChanges(accounts, ct);
+	public async Task Save(IEnumerable<Account> account, CancellationToken ct = default) =>
+		await Accounts.SaveChanges(account, ct);
 
 	public async Task Save(Account account, CancellationToken ct = default) =>
 		await Accounts.SaveChanges([account], ct);

@@ -2,12 +2,11 @@
 
 public sealed class GetVehiclesQueryResponse
 {
-	public int TotalCount { get; private set; } = 0;
-	public double AveragePrice { get; private set; } = 0;
-	public double MinimalPrice { get; private set; } = 0;
-	public double MaximalPrice { get; private set; } = 0;
-
-	public List<VehicleResponse> Vehicles { get; } = [];
+	public int TotalCount { get; private set; }
+	public double AveragePrice { get; private set; }
+	public double MinimalPrice { get; private set; }
+	public double MaximalPrice { get; private set; }
+	public IReadOnlyCollection<VehicleResponse> Vehicles { get; set; } = [];
 
 	public void SetTotalCount(int totalCount)
 	{
@@ -18,22 +17,24 @@ public sealed class GetVehiclesQueryResponse
 
 	public void SetAveragePrice(double averagePrice)
 	{
-		if (AveragePrice != 0)
+		if (PriceValueNotProvided(averagePrice))
 			return;
 		AveragePrice = averagePrice;
 	}
 
 	public void SetMinimalPrice(double minimalPrice)
 	{
-		if (MinimalPrice != 0)
+		if (PriceValueNotProvided(minimalPrice))
 			return;
 		MinimalPrice = minimalPrice;
 	}
 
 	public void SetMaximalPrice(double maximalPrice)
 	{
-		if (MaximalPrice != 0)
+		if (PriceValueNotProvided(maximalPrice))
 			return;
 		MaximalPrice = maximalPrice;
 	}
+
+	private static bool PriceValueNotProvided(double priceValue) => Math.Abs(priceValue) <= 0;
 }

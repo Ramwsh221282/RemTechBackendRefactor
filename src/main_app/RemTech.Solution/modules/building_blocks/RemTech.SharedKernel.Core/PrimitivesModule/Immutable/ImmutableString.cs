@@ -1,23 +1,12 @@
 ﻿namespace RemTech.SharedKernel.Core.PrimitivesModule.Immutable;
 
-public sealed class ImmutableString
+public sealed class ImmutableString(string value)
 {
-	private readonly string _value;
+	private readonly string _value = value;
 
-	public ImmutableString(string value)
-	{
-		_value = value;
-	}
+	public string Read() => _value;
 
-	public string Read()
-	{
-		return _value;
-	}
-
-	public override string ToString()
-	{
-		return _value;
-	}
+	public override string ToString() => _value;
 
 	public static implicit operator string(ImmutableString value)
 	{

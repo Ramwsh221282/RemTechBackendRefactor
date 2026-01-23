@@ -39,10 +39,7 @@ public sealed class PendingEmailsProcessor(
 		Logger.Information("Pending emails processor started.");
 		await using NpgSqlSession session = new(NpgSql);
 		INotificationsModuleUnitOfWork unitOfWork = CreateUnitOfWork(session);
-		IPendingEmailNotificationsRepository pendingEmailsRepostiory = new PendingEmailNotificationsRepository(
-			session,
-			unitOfWork
-		);
+		PendingEmailNotificationsRepository pendingEmailsRepostiory = new(session, unitOfWork);
 		IMailersRepository mailersRepository = new MailersRepository(session, unitOfWork);
 		NpgSqlTransactionSource transactionSource = new(session);
 		await using ITransactionScope scope = await transactionSource.BeginTransaction(ct);
@@ -84,7 +81,7 @@ public sealed class PendingEmailsProcessor(
 		}
 	}
 
-	private Mailer GetRandomMailer(Mailer[] mailers)
+	private static Mailer GetRandomMailer(Mailer[] mailers)
 	{
 		int index = new Random().Next(mailers.Length);
 		return mailers[index];
@@ -110,14 +107,14 @@ public sealed class PendingEmailsProcessor(
 			await mailers[i].DecryptCredentials(Cryptography, ct);
 	}
 
-	private async Task<Mailer[]> GetMailers(IMailersRepository repository, CancellationToken ct)
+	private static async Task<Mailer[]> GetMailers(IMailersRepository repository, CancellationToken ct)
 	{
 		MailersSpecification specification = new MailersSpecification().WithLockRequired();
 		return await repository.GetMany(specification, ct);
 	}
 
-	private async Task<PendingEmailNotification[]> GetPendingEmails(
-		IPendingEmailNotificationsRepository repository,
+	private static async Task<PendingEmailNotification[]> GetPendingEmails(
+		PendingEmailNotificationsRepository repository,
 		CancellationToken ct
 	)
 	{
@@ -128,6 +125,6 @@ public sealed class PendingEmailsProcessor(
 		return await repository.GetMany(specification, ct);
 	}
 
-	private INotificationsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session) =>
-		new NotificationsModuleUnitOfWork(new MailersChangeTracker(session), new PendingEmailsChangeTracker(session));
+	private static NotificationsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session) =>
+		new(new MailersChangeTracker(session), new PendingEmailsChangeTracker(session));
 }

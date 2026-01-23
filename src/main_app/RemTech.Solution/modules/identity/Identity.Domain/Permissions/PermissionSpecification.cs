@@ -5,7 +5,7 @@ public sealed class PermissionSpecification
 	public Guid? Id { get; private set; }
 	public string? Name { get; private set; }
 	public string? Description { get; private set; }
-	public bool LockRequired { get; private set; } = false;
+	public bool LockRequired { get; private set; }
 
 	public PermissionSpecification WithId(Guid id)
 	{

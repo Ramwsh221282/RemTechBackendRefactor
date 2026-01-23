@@ -41,15 +41,15 @@ public sealed class OnParserStartedEventListener(RabbitMqProducer producer, Seri
 	private sealed class StartParserMessage
 	{
 		public Guid parser_id { get; set; }
-		public string parser_domain { get; set; }
-		public string parser_type { get; set; }
-		public StartParserMessageLinks[] parser_links { get; set; }
+		public required string parser_domain { get; set; }
+		public required string parser_type { get; set; }
+		public required StartParserMessageLinks[] parser_links { get; set; }
 	}
 
 	public sealed class StartParserMessageLinks
 	{
-		public Guid id { get; set; }
-		public string url { get; set; }
+		public required Guid id { get; set; }
+		public required string url { get; set; }
 	}
 
 	private static StartParserMessage CreatePayload(

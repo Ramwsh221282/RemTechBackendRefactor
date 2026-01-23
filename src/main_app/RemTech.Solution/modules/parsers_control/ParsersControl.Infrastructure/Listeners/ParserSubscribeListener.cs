@@ -81,11 +81,8 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 			{
 				SubscribeParserMessage message = SubscribeParserMessage.Create(@event);
 				await using AsyncServiceScope scope = services.CreateAsyncScope();
-				var handler = scope.ServiceProvider.GetRequiredService<
-					ICommandHandler<SubscribeParserCommand, SubscribedParser>
-				>();
 				SubscribeParserCommand command = new(message.parser_id, message.parser_domain, message.parser_type);
-				await handler.Execute(command);
+				await HandleCommand(command, scope);
 				await Channel.BasicAckAsync(deliveryTag, false);
 			}
 			catch (Exception ex)
@@ -98,15 +95,18 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 		return consumer;
 	}
 
+	private static async Task HandleCommand(SubscribeParserCommand command, AsyncServiceScope scope) =>
+		await scope
+			.ServiceProvider.GetRequiredService<ICommandHandler<SubscribeParserCommand, SubscribedParser>>()
+			.Execute(command);
+
 	private sealed class SubscribeParserMessage
 	{
 		public Guid parser_id { get; set; }
 		public string parser_domain { get; set; } = null!;
 		public string parser_type { get; set; } = null!;
 
-		public static SubscribeParserMessage Create(BasicDeliverEventArgs @event)
-		{
-			return JsonSerializer.Deserialize<SubscribeParserMessage>(@event.Body.Span)!;
-		}
+		public static SubscribeParserMessage Create(BasicDeliverEventArgs @event) =>
+			JsonSerializer.Deserialize<SubscribeParserMessage>(@event.Body.Span)!;
 	}
 }

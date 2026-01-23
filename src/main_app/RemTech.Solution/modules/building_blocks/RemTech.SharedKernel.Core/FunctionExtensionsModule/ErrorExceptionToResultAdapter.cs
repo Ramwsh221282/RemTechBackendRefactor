@@ -4,9 +4,8 @@ namespace RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 public sealed class ErrorExceptionToResultAdapter(ErrorException ex)
 {
-	public Result Adapt()
-	{
-		return ex switch
+	public Result Adapt() =>
+		ex switch
 		{
 			ErrorException.ValidationException => Result.Failure(Error.Validation(ex.Error)),
 			ErrorException.ConflictException => Result.Failure(Error.Conflict(ex.Error)),
@@ -14,5 +13,4 @@ public sealed class ErrorExceptionToResultAdapter(ErrorException ex)
 			ErrorException.NotFoundException => Result.Failure(Error.NotFound(ex.Error)),
 			_ => throw new ApplicationException($"Unable to resolve error type: {ex.GetType().Name}"),
 		};
-	}
 }

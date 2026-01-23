@@ -4,13 +4,10 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Notifications.Core.Mailers;
 
-public sealed record MailerCredentials
+public sealed partial record MailerCredentials
 {
-	private static readonly string[] AllowedSmtpHosts = new[] { "smtp.yandex.ru", "smtp.mail.ru", "smtp.gmail.com" };
-	private static readonly Regex EmailRegex = new(
-		@"^[^@\s]+@[^@\s]+\.[^@\s]+$",
-		RegexOptions.Compiled | RegexOptions.IgnoreCase
-	);
+	private static readonly string[] AllowedSmtpHosts = ["smtp.yandex.ru", "smtp.mail.ru", "smtp.gmail.com"];
+	private static readonly Regex EmailRegex = RegexExpression();
 
 	public string SmtpPassword { get; }
 	public string SmtpHost { get; }
@@ -63,10 +60,12 @@ public sealed record MailerCredentials
 	{
 		string[] parts = email.Split('@');
 		string host = parts[1];
-		string? resolved = AllowedSmtpHosts.FirstOrDefault(h => h.EndsWith(host));
-		if (resolved is null)
-			return Error.Validation($"Хост почты: {host} не поддерживается для настройки почтового сервиса.");
-
-		return resolved;
+		string? resolved = AllowedSmtpHosts.FirstOrDefault(h => h.EndsWith(host, StringComparison.OrdinalIgnoreCase));
+		return resolved
+			?? (Result<string>)
+				Error.Validation($"Хост почты: {host} не поддерживается для настройки почтового сервиса.");
 	}
+
+	[GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "ru-RU")]
+	private static partial Regex RegexExpression();
 }

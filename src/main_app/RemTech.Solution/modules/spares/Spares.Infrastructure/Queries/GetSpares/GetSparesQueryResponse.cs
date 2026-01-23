@@ -6,33 +6,35 @@ public sealed class GetSparesQueryResponse
 	public double AveragePrice { get; private set; }
 	public double MinimalPrice { get; private set; }
 	public double MaximalPrice { get; private set; }
-	public List<SpareResponse> Spares { get; } = [];
+	public IReadOnlyCollection<SpareResponse> Spares { get; set; } = [];
 
 	public void SetTotalCount(int totalCound)
 	{
-		if (TotalCount != 0)
+		if (PriceIsAlreadySet(TotalCount))
 			return;
 		TotalCount = totalCound;
 	}
 
 	public void SetAveragePrice(double averagePrice)
 	{
-		if (AveragePrice != 0)
+		if (PriceIsAlreadySet(AveragePrice))
 			return;
 		AveragePrice = averagePrice;
 	}
 
 	public void SetMinimalPrice(double minimalPrice)
 	{
-		if (MinimalPrice != 0)
+		if (PriceIsAlreadySet(MinimalPrice))
 			return;
 		MinimalPrice = minimalPrice;
 	}
 
 	public void SetMaximalPrice(double maximalPrice)
 	{
-		if (MaximalPrice != 0)
+		if (PriceIsAlreadySet(MaximalPrice))
 			return;
 		MaximalPrice = maximalPrice;
 	}
+
+	private static bool PriceIsAlreadySet(double price) => Math.Abs(price) != 0;
 }

@@ -66,8 +66,8 @@ public sealed class ChangePasswordHandler(
 			return account.Error;
 		if (change.IsFailure)
 			return change.Error;
-		Result<AccessToken> accessToken = await accessTokens.Get(command.AccessToken, withLock: true, ct);
-		Result<RefreshToken> refreshToken = await refreshTokens.Get(command.RefreshToken, withLock: true, ct);
+		Result<AccessToken> accessToken = await accessTokens.Find(command.AccessToken, withLock: true, ct);
+		Result<RefreshToken> refreshToken = await refreshTokens.Find(command.RefreshToken, withLock: true, ct);
 		if (accessToken.IsSuccess)
 			await accessTokens.Remove(accessToken.Value, ct);
 		if (refreshToken.IsSuccess)
@@ -86,6 +86,6 @@ public sealed class ChangePasswordHandler(
 	private async Task<Result<Account>> GetRequiredAccount(ChangePasswordCommand command, CancellationToken ct)
 	{
 		AccountSpecification specification = new AccountSpecification().WithId(command.Id).WithLock();
-		return await accounts.Get(specification, ct);
+		return await accounts.Find(specification, ct);
 	}
 }

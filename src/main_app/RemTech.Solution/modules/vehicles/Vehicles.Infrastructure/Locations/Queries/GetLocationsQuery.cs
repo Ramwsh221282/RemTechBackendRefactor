@@ -10,19 +10,19 @@ public sealed class GetLocationsQuery : IQuery
 	private GetLocationsQuery() { }
 
 	public int? Amount { get; private init; } = 20;
-	public string? TextSearch { get; private init; } = null;
-	public Guid? Id { get; private init; } = null;
-	public Guid? CategoryId { get; private init; } = null;
-	public Guid? BrandId { get; private init; } = null;
-	public Guid? ModelId { get; private init; } = null;
-	public string? CategoryName { get; private init; } = null;
-	public string? BrandName { get; private init; } = null;
-	public string? ModelName { get; private init; } = null;
-	public IEnumerable<string>? Includes { get; private init; } = null;
-	public bool? UseOrderByName { get; private init; } = null;
+	public string? TextSearch { get; private init; }
+	public Guid? Id { get; private init; }
+	public Guid? CategoryId { get; private init; }
+	public Guid? BrandId { get; private init; }
+	public Guid? ModelId { get; private init; }
+	public string? CategoryName { get; private init; }
+	public string? BrandName { get; private init; }
+	public string? ModelName { get; private init; }
+	public IEnumerable<string>? Includes { get; private init; }
+	public bool? UseOrderByName { get; private init; }
 
 	[JsonIgnore]
-	private Dictionary<string, string>? _includedInformationKeys_cached = null;
+	private Dictionary<string, string>? _includedInformationKeys_cached;
 
 	[JsonIgnore]
 	private Dictionary<string, string> IncludedInformationKeys =>
@@ -53,13 +53,13 @@ public sealed class GetLocationsQuery : IQuery
 	public bool ContainsInclude(string includeName) => IncludedInformationKeys.ContainsKey(includeName);
 
 	public bool ContainsCategoryFilter() =>
-		CategoryId != null && CategoryId.Value != Guid.Empty || !string.IsNullOrWhiteSpace(CategoryName);
+		(CategoryId != null && CategoryId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(CategoryName);
 
 	public bool ContainsBrandFilter() =>
-		BrandId != null && BrandId.Value != Guid.Empty || !string.IsNullOrWhiteSpace(BrandName);
+		(BrandId != null && BrandId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(BrandName);
 
 	public bool ContainsModelFilter() =>
-		ModelId != null && ModelId.Value != Guid.Empty || !string.IsNullOrWhiteSpace(ModelName);
+		(ModelId != null && ModelId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(ModelName);
 
 	private static GetLocationsQuery Copy(
 		GetLocationsQuery original,

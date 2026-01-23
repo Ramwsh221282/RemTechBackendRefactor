@@ -24,40 +24,39 @@ public sealed class MailersChangeTracker(NpgSqlSession session)
 
 	private async Task SaveMailerChanges(IEnumerable<Mailer> mailers, CancellationToken ct)
 	{
-		if (!mailers.Any())
+		Mailer[] mailersArray = [.. mailers];
+		if (mailersArray.Length == 0)
 			return;
 
 		List<string> setClauses = [];
 		DynamicParameters parameters = new();
 
-		if (mailers.Any(m => m.Credentials.Email != Tracking[m.Id.Value].Credentials.Email))
+		if (mailersArray.Any(m => m.Credentials.Email != Tracking[m.Id.Value].Credentials.Email))
 		{
 			string clause = string.Join(
 				" ",
-				mailers.Select(
+				mailersArray.Select(
 					(m, i) =>
 					{
 						string paramName = $"@email_{i}";
 						parameters.Add(paramName, m.Credentials.Email, DbType.String);
-						string whenClause = $"{WhenClause(i)} THEN {paramName}";
-						return whenClause;
+						return $"{WhenClause(i)} THEN {paramName}";
 					}
 				)
 			);
 			setClauses.Add($"email = CASE {clause} ELSE email END");
 		}
 
-		if (mailers.Any(m => m.Credentials.SmtpPassword != Tracking[m.Id.Value].Credentials.SmtpPassword))
+		if (mailersArray.Any(m => m.Credentials.SmtpPassword != Tracking[m.Id.Value].Credentials.SmtpPassword))
 		{
 			string clause = string.Join(
 				" ",
-				mailers.Select(
+				mailersArray.Select(
 					(m, i) =>
 					{
 						string paramName = $"@smtpPassword_{i}";
 						parameters.Add(paramName, m.Credentials.SmtpPassword, DbType.String);
-						string whenClause = $"{WhenClause(i)} THEN {paramName}";
-						return whenClause;
+						return $"{WhenClause(i)} THEN {paramName}";
 					}
 				)
 			);
@@ -69,7 +68,7 @@ public sealed class MailersChangeTracker(NpgSqlSession session)
 
 		int index = 0;
 		List<Guid> ids = [];
-		foreach (Mailer mailer in mailers)
+		foreach (Mailer mailer in mailersArray)
 		{
 			Guid value = mailer.Id.Value;
 			string paramName = $"@id_{index}";
@@ -91,7 +90,7 @@ public sealed class MailersChangeTracker(NpgSqlSession session)
 		await Session.Execute(command);
 	}
 
-	private IEnumerable<Mailer> GetTrackingMailers(IEnumerable<Mailer> mailers)
+	private List<Mailer> GetTrackingMailers(IEnumerable<Mailer> mailers)
 	{
 		List<Mailer> tracking = [];
 		foreach (Mailer mailer in mailers)
@@ -104,8 +103,5 @@ public sealed class MailersChangeTracker(NpgSqlSession session)
 		return tracking;
 	}
 
-	private string WhenClause(int index)
-	{
-		return $"WHEN m.id=@id_{index}";
-	}
+	private static string WhenClause(int index) => $"WHEN m.id=@id_{index}";
 }

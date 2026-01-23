@@ -23,8 +23,7 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 	private async Task<int> ExecuteCommand(CommandDefinition command, CancellationToken ct)
 	{
 		NpgsqlConnection connection = await session.GetConnection(ct);
-		int affected = await connection.ExecuteAsync(command);
-		return affected;
+		return await connection.ExecuteAsync(command);
 	}
 
 	private async Task<IEnumerable<Spare>> FilterFromExisting(IEnumerable<Spare> spares)
@@ -35,8 +34,9 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 			""";
 
 		DynamicParameters parameters = new();
-		Guid[] ids = spares.Select(s => s.Id.Value).ToArray();
-		string[] urls = spares.Select(s => s.Source.Url).ToArray();
+		Spare[] array = [.. spares];
+		Guid[] ids = [.. array.Select(s => s.Id.Value)];
+		string[] urls = [.. array.Select(s => s.Source.Url)];
 		parameters.Add("@ids", ids);
 		parameters.Add("@urls", urls);
 		CommandDefinition command = new(sql, parameters, transaction: session.Transaction);
@@ -50,8 +50,7 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 		string insertClause = string.Join(", ", insertClauses);
 		string insertSql =
 			$"INSERT INTO spares_module.spares (url, id, price, is_nds, oem, text, region_id, type) VALUES {insertClause}";
-		CommandDefinition command = new(insertSql, parameters, transaction: session.Transaction);
-		return command;
+		return new(insertSql, parameters, transaction: session.Transaction);
 	}
 
 	private async Task FillParameters(

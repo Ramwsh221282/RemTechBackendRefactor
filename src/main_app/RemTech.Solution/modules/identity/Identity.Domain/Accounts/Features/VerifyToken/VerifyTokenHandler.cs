@@ -12,7 +12,7 @@ public sealed class VerifyTokenHandler(IAccessTokensRepository accessTokens, IJw
 {
 	public async Task<Result<Unit>> Execute(VerifyTokenCommand command, CancellationToken ct = default)
 	{
-		Result<AccessToken> token = await accessTokens.Get(command.Token, withLock: true, ct);
+		Result<AccessToken> token = await accessTokens.Find(command.Token, withLock: true, ct);
 		if (token.IsFailure)
 			return Error.Unauthorized("Token not found.");
 

@@ -2,11 +2,11 @@
 
 public sealed class AccountSpecification
 {
-	public Guid? Id { get; private set; } = null;
-	public string? Email { get; private set; } = null;
-	public string? Login { get; private set; } = null;
-	public bool LockRequired { get; private set; } = false;
-	public string? RefreshToken { get; private set; } = null;
+	public Guid? Id { get; private set; }
+	public string? Email { get; private set; }
+	public string? Login { get; private set; }
+	public bool LockRequired { get; private set; }
+	public string? RefreshToken { get; private set; }
 
 	public AccountSpecification WithRefreshToken(string refreshToken)
 	{

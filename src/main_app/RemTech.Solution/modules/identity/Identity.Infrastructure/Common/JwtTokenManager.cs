@@ -53,7 +53,7 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
 		}
 	}
 
-	private (long expiresAt, long createdAt) ReadTokenLifeTime(string tokenString)
+	private static (long expiresAt, long createdAt) ReadTokenLifeTime(string tokenString)
 	{
 		JwtSecurityTokenHandler handler = new();
 		JwtSecurityToken token = handler.ReadJwtToken(tokenString);
@@ -64,7 +64,7 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
 		);
 	}
 
-	private AccessToken CreateStructuredAccessToken(string tokenString)
+	private static AccessToken CreateStructuredAccessToken(string tokenString)
 	{
 		JwtSecurityTokenHandler handler = new();
 		JwtSecurityToken token = handler.ReadJwtToken(tokenString);
@@ -103,7 +103,7 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
 
 	private string CreateToken(SecurityTokenDescriptor descriptor)
 	{
-		JwtSecurityToken token = new JwtSecurityToken(
+		JwtSecurityToken token = new(
 			issuer: Options.Issuer,
 			audience: Options.Audience,
 			claims: descriptor.Subject.Claims,
@@ -114,31 +114,29 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
 
-	private string CreateRefreshToken(int days = 7)
+	private static string CreateRefreshToken(int days = 7)
 	{
-		JwtSecurityToken token = new JwtSecurityToken(
-			notBefore: DateTime.UtcNow,
-			expires: DateTime.UtcNow.AddDays(days)
-		);
+		JwtSecurityToken token = new(notBefore: DateTime.UtcNow, expires: DateTime.UtcNow.AddDays(days));
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
 
 	private SecurityTokenDescriptor CreateTokenDescriptor(Account account)
 	{
-		SecurityTokenDescriptor tokenDescriptor = new();
-		tokenDescriptor.Subject = CreateClaims(account);
-		tokenDescriptor.Expires = DateTime.UtcNow.AddMinutes(5);
-		tokenDescriptor.SigningCredentials = CreateSigningCredentials();
-		return tokenDescriptor;
+		return new()
+		{
+			Subject = CreateClaims(account),
+			Expires = DateTime.UtcNow.AddMinutes(5),
+			SigningCredentials = CreateSigningCredentials(),
+		};
 	}
 
 	private SigningCredentials CreateSigningCredentials()
 	{
-		SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Options.SecretKey));
+		SymmetricSecurityKey key = new(Encoding.ASCII.GetBytes(Options.SecretKey));
 		return new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 	}
 
-	private ClaimsIdentity CreateClaims(Account account)
+	private static ClaimsIdentity CreateClaims(Account account)
 	{
 		List<Claim> claims = [];
 		claims.Add(new Claim(ClaimTypes.Name, account.Login.Value));

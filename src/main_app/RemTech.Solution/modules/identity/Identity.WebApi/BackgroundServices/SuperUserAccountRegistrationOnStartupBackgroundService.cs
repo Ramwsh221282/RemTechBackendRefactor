@@ -7,68 +7,78 @@ using Microsoft.Extensions.Options;
 namespace Identity.WebApi.BackgroundServices;
 
 public sealed class SuperUserAccountRegistrationOnStartupBackgroundService(
-    IServiceProvider services,
-    Serilog.ILogger logger) : BackgroundService
+	IServiceProvider services,
+	Serilog.ILogger logger
+) : BackgroundService
 {
-    private IServiceProvider Services { get; } = services;
-    private Serilog.ILogger Logger { get; } = logger.ForContext<SuperUserAccountRegistrationOnStartupBackgroundService>();
-    
-    protected async override Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        while (!await Executed(stoppingToken)) { }
-    }
+	private IServiceProvider Services { get; } = services;
+	private Serilog.ILogger Logger { get; } =
+		logger.ForContext<SuperUserAccountRegistrationOnStartupBackgroundService>();
 
-    private async Task<bool> Executed(CancellationToken ct)
-    {
-        try
-        {
-            await using AsyncServiceScope scope = Services.CreateAsyncScope();
-            (SuperUserCredentialsOptions options, IAccountsRepository repository, IPasswordHasher cryptography) =
-                GetDependencies(scope);
+	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+	{
+		while (!await Executed(stoppingToken)) { }
+	}
 
-            options.Validate();
-            if (await AccountExists(options, repository, ct))
-            {
-                Logger.Warning("Account already exists {Name} {Email}", options.Login, options.Email);
-                return true;
-            }
+	private async Task<bool> Executed(CancellationToken ct)
+	{
+		try
+		{
+			await using AsyncServiceScope scope = Services.CreateAsyncScope();
+			(SuperUserCredentialsOptions options, IAccountsRepository repository, IPasswordHasher cryptography) =
+				GetDependencies(scope);
 
-            await AddAccount(options, repository, cryptography, ct);
-            return true;
-        }
-        catch (Exception e)
-        { 
-            Logger.Fatal(e, "Error creating super user account");
-            return false;
-        }
-    }
+			options.Validate();
+			if (await AccountExists(options, repository, ct))
+			{
+				Logger.Warning("Account already exists {Name} {Email}", options.Login, options.Email);
+				return true;
+			}
 
-    private (
-        SuperUserCredentialsOptions options,
-        IAccountsRepository repository,
-        IPasswordHasher cryptography)
-        GetDependencies(AsyncServiceScope scope) => (
-        scope.ServiceProvider.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value,
-        scope.ServiceProvider.GetRequiredService<IAccountsRepository>(),
-        scope.ServiceProvider.GetRequiredService<IPasswordHasher>());
-    
-    private async Task AddAccount(
-        SuperUserCredentialsOptions options, 
-        IAccountsRepository repository,
-        IPasswordHasher hasher,
-        CancellationToken ct)
-    {
-        Account account = Account.Create(
-            email: AccountEmail.Create(options.Email),
-            login: AccountLogin.Create(options.Login),
-            password: AccountPassword.Create(options.Password).Value.HashBy(hasher),
-            status: AccountActivationStatus.Activated());
-        await repository.Add(account, ct);
-    }
-    
-    private async Task<bool> AccountExists(SuperUserCredentialsOptions options, IAccountsRepository repository, CancellationToken ct)
-    {
-        AccountSpecification specification = new AccountSpecification().WithEmail(options.Email);
-        return await repository.Exists(specification, ct: ct);
-    }
+			await AddAccount(options, repository, cryptography, ct);
+			return true;
+		}
+		catch (Exception e)
+		{
+			Logger.Fatal(e, "Error creating super user account");
+			return false;
+		}
+	}
+
+	private static (
+		SuperUserCredentialsOptions options,
+		IAccountsRepository repository,
+		IPasswordHasher cryptography
+	) GetDependencies(AsyncServiceScope scope) =>
+		(
+			scope.ServiceProvider.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value,
+			scope.ServiceProvider.GetRequiredService<IAccountsRepository>(),
+			scope.ServiceProvider.GetRequiredService<IPasswordHasher>()
+		);
+
+	private static async Task AddAccount(
+		SuperUserCredentialsOptions options,
+		IAccountsRepository repository,
+		IPasswordHasher hasher,
+		CancellationToken ct
+	)
+	{
+		Account account = Account.Create(
+			email: AccountEmail.Create(options.Email),
+			login: AccountLogin.Create(options.Login),
+			password: AccountPassword.Create(options.Password).Value.HashBy(hasher),
+			status: AccountActivationStatus.Activated()
+		);
+		await repository.Add(account, ct);
+	}
+
+	private static async Task<bool> AccountExists(
+		SuperUserCredentialsOptions options,
+		IAccountsRepository repository,
+		CancellationToken ct
+	)
+	{
+		AccountSpecification specification = new AccountSpecification().WithEmail(options.Email);
+		return await repository.Exists(specification, ct: ct);
+	}
 }

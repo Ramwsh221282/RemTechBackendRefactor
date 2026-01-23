@@ -1,11 +1,8 @@
 ﻿namespace RemTech.SharedKernel.Core.PrimitivesModule.Exceptions;
 
-public abstract class ErrorException : Exception
+public abstract class ErrorException(string error) : Exception(error)
 {
-	public ErrorException(string error)
-		: base(error) => Error = error;
-
-	public string Error { get; }
+	public string Error { get; } = error;
 
 	public class ConflictException(string error) : ErrorException(error);
 

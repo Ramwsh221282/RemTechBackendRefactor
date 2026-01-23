@@ -27,14 +27,15 @@ public sealed class GetVehiclesCharacteristicsQueryHandler(NpgSqlSession session
 	)
 	{
 		GetVehicleCharacteristicsQueryResponse response = new();
+		List<VehicleCharacteristicsResponse> characteristics = [];
 		while (await reader.ReadAsync(ct))
 		{
-			response.Characteristics.Add(
+			characteristics.Add(
 				new VehicleCharacteristicsResponse()
 				{
 					Id = reader.GetGuid(reader.GetOrdinal("id")),
 					Name = reader.GetString(reader.GetOrdinal("name")),
-					Values = (string[])reader.GetValue(reader.GetOrdinal("values"))!,
+					Values = (string[])reader.GetValue(reader.GetOrdinal("values")),
 				}
 			);
 		}
@@ -62,8 +63,7 @@ public sealed class GetVehiclesCharacteristicsQueryHandler(NpgSqlSession session
 			{filterSql}
 			)) IS TRUE;
 			""";
-		CommandDefinition command = new(sql, parameters, cancellationToken: ct);
-		return command;
+		return new(sql, parameters, cancellationToken: ct);
 	}
 
 	private static (DynamicParameters parameters, string filterSql) FormFilters(GetVehicleCharacteristicsQuery query)

@@ -2,20 +2,11 @@
 
 public static class Guids
 {
-	public static bool NotEmpty(Guid? id)
-	{
-		return id.HasValue;
-	}
+	public static bool NotEmpty(Guid? id) => id.HasValue;
 
-	public static bool NotEmpty(Guid id)
-	{
-		return id != Guid.Empty;
-	}
+	public static bool NotEmpty(Guid id) => id != Guid.Empty;
 
-	public static bool Empty(Guid id)
-	{
-		return id == Guid.Empty;
-	}
+	public static bool Empty(Guid id) => id == Guid.Empty;
 
 	public static bool Empty(Guid? id)
 	{

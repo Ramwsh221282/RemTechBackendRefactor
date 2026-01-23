@@ -24,10 +24,8 @@ public sealed class AddSparesConsumer(
 	private IServiceProvider Services { get; } = services;
 	private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
 
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
-	{
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
 		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
-	}
 
 	public async Task StartConsuming(CancellationToken ct = default)
 	{
@@ -36,10 +34,7 @@ public sealed class AddSparesConsumer(
 		await Channel.BasicConsumeAsync(Queue, autoAck: false, consumer: consumer, cancellationToken: ct);
 	}
 
-	public async Task Shutdown(CancellationToken ct = default)
-	{
-		await Channel.CloseAsync(ct);
-	}
+	public async Task Shutdown(CancellationToken ct = default) => await Channel.CloseAsync(ct);
 
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, @event) =>
@@ -56,8 +51,8 @@ public sealed class AddSparesConsumer(
 				}
 
 				AddSparesCommand command = CreateCommandFrom(message);
-				(Guid creatorId, int added) result = await SaveSpares(Services, command);
-				Logger.Information("Added {Count} spares by {Id}", result.added, result.creatorId);
+				(Guid creatorId, int added) = await SaveSpares(Services, command);
+				Logger.Information("Added {Count} spares by {Id}", added, creatorId);
 			}
 			catch (Exception e)
 			{
@@ -78,7 +73,7 @@ public sealed class AddSparesConsumer(
 			errors.Add("Тип создателя пуст");
 		if (string.IsNullOrWhiteSpace(message.CreatorDomain))
 			errors.Add("Домен создателя пуст");
-		if (message.Payload == null || !message.Payload.Any())
+		if (message.Payload?.Any() != true)
 			errors.Add("Список запчастей пуст");
 		error = string.Join(", ", errors);
 		return errors.Count == 0;

@@ -55,15 +55,15 @@ public sealed class Dev_ChangeEmailHandler(IAccountsRepository repository, IAcco
 	private async Task<Result<Account>> ResolveAccount(Dev_ChangeEmailCommand command, CancellationToken ct) =>
 		command switch
 		{
-			{ AccountId: not null } => await repository.Get(
+			{ AccountId: not null } => await repository.Find(
 				new AccountSpecification().WithId(command.AccountId.Value).WithLock(),
 				ct
 			),
-			{ Email: not null } when !string.IsNullOrWhiteSpace(command.Email) => await repository.Get(
+			{ Email: not null } when !string.IsNullOrWhiteSpace(command.Email) => await repository.Find(
 				new AccountSpecification().WithEmail(command.Email).WithLock(),
 				ct
 			),
-			{ Login: not null } when !string.IsNullOrWhiteSpace(command.Login) => await repository.Get(
+			{ Login: not null } when !string.IsNullOrWhiteSpace(command.Login) => await repository.Find(
 				new AccountSpecification().WithLogin(command.Login).WithLock(),
 				ct
 			),
