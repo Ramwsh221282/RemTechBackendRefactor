@@ -9,7 +9,7 @@
     [filter]="true"
     filterBy="Name"
     [showClear]="true"
-    [placeholder]="currentCategory() === null ? 'Выберите категорию' : currentCategory().Name"
+    [placeholder]="currentCategory() === null ? 'Выберите категорию' : currentCategory()!.Name"
     [ngModel]="currentCategory"
     [name]="'123123'"
     class="w-full md:w-56"

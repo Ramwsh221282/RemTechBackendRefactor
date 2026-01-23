@@ -60,6 +60,163 @@ export const defaultActivatedVehicleRouteParams: () => ActivatedVehicleRoutePara
     return { brand: undefined, category: undefined, model: undefined, location: undefined };
 };
 
+export type VehiclesCatalogueFilterSeletionsModel = {
+    category: CategoryResponse | null | undefined;
+    brand: BrandResponse | null | undefined;
+    model: ModelResponse | null | undefined;
+    location: LocationResponse | null | undefined;
+};
+
+export class VehiclesCatalogueSelectFiltersBearer {
+    private constructor(private readonly _model: VehiclesCatalogueFilterSeletionsModel) {}
+
+    public useCategory(category: CategoryResponse | null | undefined): VehiclesCatalogueSelectFiltersBearer {
+        return new VehiclesCatalogueSelectFiltersBearer({ ...this._model, category });
+    }
+
+    public useBrand(brand: BrandResponse | null | undefined): VehiclesCatalogueSelectFiltersBearer {
+        return new VehiclesCatalogueSelectFiltersBearer({ ...this._model, brand });
+    }
+
+    public useModel(model: ModelResponse | null | undefined): VehiclesCatalogueSelectFiltersBearer {
+        return new VehiclesCatalogueSelectFiltersBearer({ ...this._model, model });
+    }
+
+    public useLocation(location: LocationResponse | null | undefined): VehiclesCatalogueSelectFiltersBearer {
+        return new VehiclesCatalogueSelectFiltersBearer({ ...this._model, location });
+    }
+
+    public static default(): VehiclesCatalogueSelectFiltersBearer {
+        return new VehiclesCatalogueSelectFiltersBearer({
+            category: undefined,
+            brand: undefined,
+            model: undefined,
+            location: undefined,
+        });
+    }
+}
+
+export type VehiclesCatalogueVehicleFiltersBearerModel = {
+    brandId: string | null | undefined;
+    categoryId: string | null | undefined;
+    regionId: string | null | undefined;
+    modelId: string | null | undefined;
+    isNds: boolean | null | undefined;
+    minimalPrice: number | null | undefined;
+    maximalPrice: number | null | undefined;
+    sortFields: string[] | null | undefined;
+    sort: string | null | undefined;
+    page: number | null | undefined;
+    pageSize: number | null | undefined;
+    textSearch: string | null | undefined;
+};
+
+export class VehiclesCatalogueVehicleFiltersBearer {
+    private constructor(private readonly _model: VehiclesCatalogueVehicleFiltersBearerModel) {}
+
+    public useBrand(
+        brand: BrandResponse | null | undefined = undefined,
+        brandId: string | null | undefined = undefined,
+    ): VehiclesCatalogueVehicleFiltersBearer {
+        if (brand) return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, brandId: brand.Id });
+        if (brandId) return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, brandId: brandId });
+        return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, brandId: undefined });
+    }
+
+    public useCategory(
+        category: CategoryResponse | null | undefined = undefined,
+        categoryId: string | null | undefined = undefined,
+    ) {
+        if (category) return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, categoryId: category.Id });
+        if (categoryId) return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, categoryId: categoryId });
+        return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, categoryId: undefined });
+    }
+
+    public useLocation(
+        location: LocationResponse | null | undefined = undefined,
+        locationId: string | null | undefined = undefined,
+    ) {
+        if (location) return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, regionId: location.Id });
+        if (locationId) return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, regionId: locationId });
+        return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, regionId: undefined });
+    }
+
+    public convertToQueryParameters(): GetVehiclesQueryParameters {
+        return {
+            BrandId: this._model.brandId,
+            CategoryId: this._model.categoryId,
+            RegionId: this._model.regionId,
+            ModelId: this._model.modelId,
+            IsNds: this._model.isNds,
+            MinimalPrice: this._model.minimalPrice,
+            MaximalPrice: this._model.maximalPrice,
+            SortFields: this._model.sortFields,
+            Sort: this._model.sort,
+            Page: this._model.page,
+            PageSize: this._model.pageSize,
+            TextSearch: this._model.textSearch,
+        };
+    }
+
+    public useNds(isNds: boolean | null | undefined): VehiclesCatalogueVehicleFiltersBearer {
+        return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, isNds });
+    }
+
+    public useMinimalPrice(minimalPrice: number | null | undefined): VehiclesCatalogueVehicleFiltersBearer {
+        return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, minimalPrice });
+    }
+
+    public useMaximalPrice(maximalPrice: number | null | undefined): VehiclesCatalogueVehicleFiltersBearer {
+        return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, maximalPrice });
+    }
+
+    public useSortFields(sortFields: string[] | null | undefined): VehiclesCatalogueVehicleFiltersBearer {
+        return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, sortFields });
+    }
+
+    public useSort(sort: string | null | undefined): VehiclesCatalogueVehicleFiltersBearer {
+        return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, sort });
+    }
+
+    public usePage(page: number | null | undefined): VehiclesCatalogueVehicleFiltersBearer {
+        return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, page });
+    }
+
+    public usePageSize(pageSize: number | null | undefined): VehiclesCatalogueVehicleFiltersBearer {
+        return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, pageSize });
+    }
+
+    public useTextSearch(textSearch: string | null | undefined): VehiclesCatalogueVehicleFiltersBearer {
+        return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, textSearch });
+    }
+
+    public useModel(
+        model: ModelResponse | null | undefined = undefined,
+        modelId: string | null | undefined = undefined,
+    ) {
+        if (model) return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, modelId: model.Id });
+        if (modelId) return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, modelId: modelId });
+        return new VehiclesCatalogueVehicleFiltersBearer({ ...this._model, modelId: undefined });
+    }
+
+    public static default(): VehiclesCatalogueVehicleFiltersBearer {
+        return new VehiclesCatalogueVehicleFiltersBearer({
+            brandId: undefined,
+            categoryId: undefined,
+            regionId: undefined,
+            modelId: undefined,
+            isNds: undefined,
+            minimalPrice: undefined,
+            maximalPrice: undefined,
+            sortFields: undefined,
+            sort: undefined,
+            page: undefined,
+            pageSize: undefined,
+            textSearch: undefined,
+        });
+    }
+}
+
 @Component({
     selector: 'app-vehicles-page',
     imports: [
@@ -90,6 +247,14 @@ export class VehiclesPageComponent {
         LocationsQueryWithOrderByName(true, DefaultLocationQuery()),
     );
 
+    readonly selectFiltersBearer: WritableSignal<VehiclesCatalogueSelectFiltersBearer> = signal(
+        VehiclesCatalogueSelectFiltersBearer.default(),
+    );
+
+    readonly vehiclesFiltersBearer: WritableSignal<VehiclesCatalogueVehicleFiltersBearer> = signal(
+        VehiclesCatalogueVehicleFiltersBearer.default(),
+    );
+
     readonly itemsPerPage: number = 20;
     readonly aggregatedStatistics: WritableSignal<AggregatedStatisticsInfo> = signal(defaultAggregatedStatisticsInfo());
     private readonly _service: VehiclesApiService = inject(VehiclesApiService);
@@ -97,7 +262,7 @@ export class VehiclesPageComponent {
     private readonly _locationsService: LocationsApiService = inject(LocationsApiService);
 
     readonly routeActivatedEffect = effect(() => {
-        this.readVehicleQueryParametersFromActivatedRouteParameters();
+        this.initializeSelectBearerFromActivatedRoute();
     });
 
     readonly fetchVehiclesOnQueryChangeEffect = effect(() => {
@@ -176,49 +341,35 @@ export class VehiclesPageComponent {
         // this._paginationPart.set(part);
     }
 
-    private readVehicleQueryParametersFromActivatedRouteParameters(): void {
+    private initializeSelectBearerFromActivatedRoute(): void {
         this._activatedRoute.queryParams.subscribe((params: Params) => {
-            const category: CategoryResponse | null = extractCategoryFromQueryParams(params);
-            const brand: BrandResponse | null = extractBrandFromQueryParams(params);
-            const page: number | null = extractPageFromQueryParams(params);
-            this.updateActivatedVehicleRouteParams(category, brand, null);
-            this.updateVehiclesQuery(page, category, brand);
-            this.updateLocationsQuery(category?.Id, brand?.Id, undefined);
-        });
-    }
-
-    private updateActivatedVehicleRouteParams(
-        category: CategoryResponse | null,
-        brand: BrandResponse | null,
-        location: LocationResponse | null | undefined,
-    ): void {
-        this.activatedRouteParams.update((state: ActivatedVehicleRouteParams) => {
-            return { ...state, brand, category, location };
+            const page: number | null | undefined = extractPageFromQueryParams(params);
+            const brand: BrandResponse | null | undefined = extractBrandFromQueryParams(params);
+            const category: CategoryResponse | null | undefined = extractCategoryFromQueryParams(params);
+            const selectsBearer: VehiclesCatalogueSelectFiltersBearer = this.selectFiltersBearer()
+                .useCategory(category)
+                .useBrand(brand);
+            const vehiclesBearer: VehiclesCatalogueVehicleFiltersBearer = this.vehiclesFiltersBearer()
+                .useBrand(brand)
+                .useCategory(category);
+            this.selectFiltersBearer.set(selectsBearer);
+            this.vehiclesFiltersBearer.set(vehiclesBearer);
+            this.locationsQuery.update((state: GetLocationsQueryParameters): GetLocationsQueryParameters => {
+                return { ...state, BrandId: brand?.Id, CategoryId: category?.Id };
+            });
+            this.vehiclesFiltersBearer.update((state: VehiclesCatalogueVehicleFiltersBearer) => {
+                return state.usePage(page).useBrand(brand).useCategory(category);
+            });
         });
     }
 
     private updateLocationsQuery(
-        categoryId: string | null | undefined,
-        brandId: string | null | undefined,
-        textSearch: string | null | undefined,
+        categoryId: string | null | undefined = undefined,
+        brandId: string | null | undefined = undefined,
+        textSearch: string | null | undefined = undefined,
     ): void {
         this.locationsQuery.update((state: GetLocationsQueryParameters): GetLocationsQueryParameters => {
             return { ...state, CategoryId: categoryId, BrandId: brandId, TextSearch: textSearch };
-        });
-    }
-
-    private updateVehiclesQuery(
-        page: number | null,
-        category: CategoryResponse | null,
-        brand: BrandResponse | null,
-    ): void {
-        this.vehiclesQuery.update((state: GetVehiclesQueryParameters) => {
-            return {
-                ...state,
-                Page: page,
-                CategoryId: category?.Id,
-                BrandId: brand?.Id,
-            };
         });
     }
 
@@ -255,7 +406,7 @@ export class VehiclesPageComponent {
     }
 }
 
-const extractCategoryFromQueryParams: (params: Params) => CategoryResponse | null = (
+const extractCategoryFromQueryParams: (params: Params) => CategoryResponse | null | undefined = (
     params: Params,
 ): CategoryResponse | null => {
     const categoryId: string | undefined = params['categoryId'];
@@ -264,7 +415,7 @@ const extractCategoryFromQueryParams: (params: Params) => CategoryResponse | nul
     return { Id: categoryId, Name: categoryName };
 };
 
-const extractPageFromQueryParams: (params: Params) => number | null = (params: Params): number | null => {
+const extractPageFromQueryParams: (params: Params) => number | null | undefined = (params: Params): number | null => {
     const pageStr: string | undefined = params['page'];
     if (!pageStr) return null;
     const pageNum = Number(pageStr);
@@ -272,7 +423,7 @@ const extractPageFromQueryParams: (params: Params) => number | null = (params: P
     return pageNum;
 };
 
-const extractBrandFromQueryParams: (params: Params) => BrandResponse | null = (
+const extractBrandFromQueryParams: (params: Params) => BrandResponse | null | undefined = (
     params: Params,
 ): BrandResponse | null => {
     const brandId: string | undefined = params['brandId'];

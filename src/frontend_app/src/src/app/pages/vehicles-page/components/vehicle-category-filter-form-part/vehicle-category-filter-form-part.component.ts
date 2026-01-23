@@ -11,17 +11,16 @@ import { CategoryResponse } from '../../../../shared/api/categories-module/categ
     styleUrl: './vehicle-category-filter-form-part.component.scss',
 })
 export class VehicleCategoryFilterFormPartComponent {
-    // readonly currentCategory: WritableSignal<CategoryResponse | null | undefined> = signal(undefined);
-    // readonly categories: WritableSignal<CategoryResponse[]> = signal([]);
-
-    readonly currentCategory: WritableSignal<CategoryResponse> = signal({ Id: '123', Name: 'Sedan' });
-    readonly categories: WritableSignal<CategoryResponse[]> = signal([this.currentCategory()]);
+    readonly currentCategory: WritableSignal<CategoryResponse | null | undefined> = signal(undefined);
+    readonly categories: WritableSignal<CategoryResponse[]> = signal([]);
 
     @Input({ required: true }) set current_category(value: CategoryResponse | null | undefined) {
-        // if (value) {
-        //     this.categories.set([value]);
-        //     this.currentCategory.set(value);
-        // }
+        this.currentCategory.set(value);
+        if (value) {
+            this.categories.update((categories: CategoryResponse[]): CategoryResponse[] => {
+                return [value, ...categories.filter((category: CategoryResponse): boolean => category.Id !== value.Id)];
+            });
+        }
     }
 
     @Output() onCategorySelect: EventEmitter<string | null | undefined> = new EventEmitter<string | null | undefined>();
