@@ -280,16 +280,14 @@ public sealed class GetLocationsQueryHandler(
 		return use ? "Name ASC" : "Name DESC";
 	}
 
-	private static string OrderByTextSearchSimilarity(GetLocationsQuery query)
-	{
-		return query.ContainsInclude("text-search-score")
+	private static string OrderByTextSearchSimilarity(GetLocationsQuery query) =>
+		query.ContainsInclude("text-search-score")
 			? !string.IsNullOrWhiteSpace(query.TextSearch)
 				? "TextSearchScore ASC"
 				: string.Empty
 			: !string.IsNullOrWhiteSpace(query.TextSearch)
 				? "r.embedding <-> @embedding ASC"
 				: string.Empty;
-	}
 
 	private static bool ReaderContainsField(DbDataReader reader, string fieldName)
 	{
