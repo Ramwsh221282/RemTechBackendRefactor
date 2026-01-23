@@ -83,9 +83,8 @@ public sealed class AddVehicleConsumer(
 	private static AddVehicleCreatorCommandPayload CreateCreatorPayload(AddVehicleMessage message) =>
 		new(CreatorId: message.CreatorId, CreatorDomain: message.CreatorDomain, CreatorType: message.CreatorType);
 
-	private static IEnumerable<AddVehicleVehiclesCommandPayload> CreateVehiclesPayload(AddVehicleMessage message)
-	{
-		return message.Payload.Select(p => new AddVehicleVehiclesCommandPayload(
+	private static IEnumerable<AddVehicleVehiclesCommandPayload> CreateVehiclesPayload(AddVehicleMessage message) =>
+		message.Payload.Select(p => new AddVehicleVehiclesCommandPayload(
 			Id: p.Id,
 			Title: p.Title,
 			Url: p.Url,
@@ -96,7 +95,6 @@ public sealed class AddVehicleConsumer(
 			Characteristics: p.Characteristics.Select(c => new AddVehicleCommandCharacteristics(c.Name, c.Value))
 				.ToArray()
 		));
-	}
 
 	private static bool IsMessageValid(AddVehicleMessage message, out string error)
 	{
@@ -120,10 +118,8 @@ public sealed class AddVehicleConsumer(
 		public required string CreatorType { get; set; }
 		public required IEnumerable<AddVehicleMessagePayload> Payload { get; set; }
 
-		public static AddVehicleMessage CreateFrom(BasicDeliverEventArgs @event)
-		{
-			return JsonSerializer.Deserialize<AddVehicleMessage>(@event.Body.Span)!;
-		}
+		public static AddVehicleMessage CreateFrom(BasicDeliverEventArgs @event) =>
+			JsonSerializer.Deserialize<AddVehicleMessage>(@event.Body.Span)!;
 	}
 
 	private sealed class AddVehicleMessagePayload

@@ -9,7 +9,7 @@ public sealed class GetMailersHandler(IMailersRepository repository)
 {
 	public async Task<IEnumerable<MailerResponse>> Handle(GetMailersQuery query, CancellationToken ct = default)
 	{
-		MailersSpecification specification = new MailersSpecification();
+		MailersSpecification specification = new();
 		Mailer[] mailers = await repository.GetMany(specification, ct);
 		return mailers.Select(MailerResponse.Create);
 	}

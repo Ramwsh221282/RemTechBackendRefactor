@@ -15,10 +15,7 @@ public sealed class ContainedItem(
 		ContainedItemInfo info
 	) => new(id, serviceItemId, creatorInfo, info, ContainedItemStatus.PendingToSave);
 
-	public void MarkSaved()
-	{
-		Status = ContainedItemStatus.Saved;
-	}
+	public void MarkSaved() => Status = ContainedItemStatus.Saved;
 
 	public ContainedItemId Id { get; } = id;
 	public ServiceItemId ServiceItemId { get; } = serviceItemId;

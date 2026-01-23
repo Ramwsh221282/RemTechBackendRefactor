@@ -16,66 +16,51 @@ namespace Spares.WebApi.Extensions;
 
 public static class SparesModuleInjection
 {
-    extension(IServiceCollection services)
-    {
-        public void InjectSparesModule()
-        {
-            services.RegisterSparesInfrastructure();
-        }
+	extension(IServiceCollection services)
+	{
+		public void InjectSparesModule() => services.RegisterSparesInfrastructure();
 
-        public void RegisterSparesModule(bool isDevelopment)
-        {
-            services.RegisterSharedInfrastructure(isDevelopment);
-            services.RegisterSparesInfrastructure();
-        }
+		public void RegisterSparesModule(bool isDevelopment)
+		{
+			services.RegisterSharedInfrastructure(isDevelopment);
+			services.RegisterSparesInfrastructure();
+		}
 
-        private void RegisterSharedInfrastructure(bool isDevelopment)
-        {
-            services.RegisterLogging();
-            if (isDevelopment)
-            {
-                services.AddMigrations([typeof(SparesSchemaMigration).Assembly]);
-                services.AddNpgSqlOptionsFromAppsettings();
-                services.AddRabbitMqOptionsFromAppsettings();
-                services
-                    .AddOptions<EmbeddingsProviderOptions>()
-                    .BindConfiguration(nameof(EmbeddingsProviderOptions));
-                services
-                    .AddOptions<GetSparesThresholdConstants>()
-                    .BindConfiguration(nameof(GetSparesThresholdConstants));
-            }
+		private void RegisterSharedInfrastructure(bool isDevelopment)
+		{
+			services.RegisterLogging();
+			if (isDevelopment)
+			{
+				services.AddMigrations([typeof(SparesSchemaMigration).Assembly]);
+				services.AddNpgSqlOptionsFromAppsettings();
+				services.AddRabbitMqOptionsFromAppsettings();
+				services.AddOptions<EmbeddingsProviderOptions>().BindConfiguration(nameof(EmbeddingsProviderOptions));
+				services
+					.AddOptions<GetSparesThresholdConstants>()
+					.BindConfiguration(nameof(GetSparesThresholdConstants));
+			}
 
-            services.TryAddSingleton<EmbeddingsProvider>();
-            services.AddRabbitMq();
-            services.AddPostgres();
-        }
+			services.TryAddSingleton<EmbeddingsProvider>();
+			services.AddRabbitMq();
+			services.AddPostgres();
+		}
 
-        public void RegisterSparesInfrastructure()
-        {
-            services.RegisterRepositories();
-            services.RegisterRegionProvider();
-            services.RegisterBackgroundServices();
-            services.RegisterProducers();
-        }
+		public void RegisterSparesInfrastructure()
+		{
+			services.RegisterRepositories();
+			services.RegisterRegionProvider();
+			services.RegisterBackgroundServices();
+			services.RegisterProducers();
+		}
 
-        private void RegisterBackgroundServices()
-        {
-            services.AddHostedService<SparesEmbeddingUpdaterService>();
-        }
+		private void RegisterBackgroundServices() => services.AddHostedService<SparesEmbeddingUpdaterService>();
 
-        private void RegisterRepositories()
-        {
-            services.AddScoped<ISparesRepository, SparesRepository>();
-        }
+		private void RegisterRepositories() => services.AddScoped<ISparesRepository, SparesRepository>();
 
-        private void RegisterRegionProvider()
-        {
-            services.AddScoped<ISpareAddressProvider, EmbeddingSearchAddressProvider>();
-        }
+		private void RegisterRegionProvider() =>
+			services.AddScoped<ISpareAddressProvider, EmbeddingSearchAddressProvider>();
 
-        private void RegisterProducers()
-        {
-            services.AddSingleton<IOnSparesAddedEventPublisher, OnVehiclesAddedProducer>();
-        }
-    }
+		private void RegisterProducers() =>
+			services.AddSingleton<IOnSparesAddedEventPublisher, OnVehiclesAddedProducer>();
+	}
 }

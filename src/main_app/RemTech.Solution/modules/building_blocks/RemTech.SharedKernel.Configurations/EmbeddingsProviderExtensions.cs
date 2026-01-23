@@ -6,9 +6,7 @@ public static class EmbeddingsProviderExtensions
 {
 	extension(IServiceCollection services)
 	{
-		public void RegisterFromAppsettings()
-		{
+		public void RegisterFromAppsettings() =>
 			services.AddOptions<EmbeddingsProviderOptions>().BindConfiguration(nameof(EmbeddingsProviderOptions));
-		}
 	}
 }

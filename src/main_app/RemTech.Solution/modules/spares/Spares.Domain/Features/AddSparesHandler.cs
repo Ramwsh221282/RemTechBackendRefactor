@@ -17,9 +17,7 @@ public sealed class AddSparesHandler(ISparesRepository repository) : ICommandHan
 		return (creatorId, addedCount);
 	}
 
-	public static Spare[] CreateSpares(IEnumerable<AddSpareCommandPayload> spareInfo)
-	{
-		return
+	public static Spare[] CreateSpares(IEnumerable<AddSpareCommandPayload> spareInfo) =>
 		[
 			.. spareInfo
 				.Select(info =>
@@ -38,5 +36,4 @@ public sealed class AddSparesHandler(ISparesRepository repository) : ICommandHan
 				.Where(r => r.IsSuccess)
 				.Select(s => s.Value),
 		];
-	}
 }

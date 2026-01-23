@@ -247,14 +247,12 @@ public sealed class IdentityController : ControllerBase
 		context.Response.Cookies.Append(RefreshTokenName, result.RefreshToken, options);
 	}
 
-	private static CookieOptions CreateCookieOptions()
-	{
-		return new CookieOptions()
+	private static CookieOptions CreateCookieOptions() =>
+		new()
 		{
 			HttpOnly = true,
 			SameSite = SameSiteMode.None,
 			Expires = DateTime.UtcNow.AddDays(30),
 			Secure = true,
 		};
-	}
 }

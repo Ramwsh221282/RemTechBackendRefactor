@@ -182,8 +182,5 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		};
 	}
 
-	private static string LockClause(bool withLock)
-	{
-		return withLock ? "FOR UPDATE" : string.Empty;
-	}
+	private static string LockClause(bool withLock) => withLock ? "FOR UPDATE" : string.Empty;
 }

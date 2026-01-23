@@ -118,13 +118,11 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 		return (parameters, filters.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filters)}");
 	}
 
-	private static object GetParameters(Mailer mailer)
-	{
-		return new
+	private static object GetParameters(Mailer mailer) =>
+		new
 		{
 			id = mailer.Id.Value,
 			email = mailer.Credentials.Email,
 			smtp_password = mailer.Credentials.SmtpPassword,
 		};
-	}
 }

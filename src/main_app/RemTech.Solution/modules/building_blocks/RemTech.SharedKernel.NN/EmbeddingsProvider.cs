@@ -61,7 +61,7 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 			}
 		}
 
-		var modelInputs = new[]
+		NamedOnnxValue[] modelInputs = new[]
 		{
 			NamedOnnxValue.CreateFromTensor("input_ids", inputIdsTensor),
 			NamedOnnxValue.CreateFromTensor("attention_mask", attentionMaskTensor),
@@ -87,7 +87,7 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 
 		for (int b = 0; b < batchSize; b++)
 		{
-			var arr = new float[hiddenDim];
+			float[] arr = new float[hiddenDim];
 			for (int h = 0; h < hiddenDim; h++)
 				arr[h] = outputTensor[b, h];
 
@@ -99,7 +99,7 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 
 	private EmbeddingData TokenizeSingle(string text)
 	{
-		var stringTensor = new DenseTensor<string>([1]);
+		DenseTensor<string> stringTensor = new DenseTensor<string>([1]);
 		stringTensor[0] = text;
 		NamedOnnxValue[] tokenizerInputs = [NamedOnnxValue.CreateFromTensor("inputs", stringTensor)];
 		return EmbeddingData.Create(tokenizerInputs, Tokenizer);
@@ -125,7 +125,7 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 			attentionMaskTensor[0, i] = 1;
 		}
 
-		var modelInputs = new[]
+		NamedOnnxValue[] modelInputs = new[]
 		{
 			NamedOnnxValue.CreateFromTensor("input_ids", inputIdsTensor),
 			NamedOnnxValue.CreateFromTensor("attention_mask", attentionMaskTensor),

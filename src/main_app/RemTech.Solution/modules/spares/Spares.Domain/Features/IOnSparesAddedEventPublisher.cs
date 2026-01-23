@@ -2,5 +2,5 @@
 
 public interface IOnSparesAddedEventPublisher
 {
-	Task Publish(Guid creatorId, int addedAmount, CancellationToken ct = default);
+	public Task Publish(Guid creatorId, int addedAmount, CancellationToken ct = default);
 }

@@ -1,7 +1,7 @@
 ﻿namespace RemTech.SharedKernel.Core.Handlers.Decorators.CacheInvalidate;
 
-public interface ICacheInvalidator<TCommand, TResult>
+public interface ICacheInvalidator<in TCommand, in TResult>
 	where TCommand : ICommand
 {
-	Task InvalidateCache(TCommand command, TResult result, CancellationToken ct = default);
+	public Task InvalidateCache(TCommand command, TResult result, CancellationToken ct = default);
 }

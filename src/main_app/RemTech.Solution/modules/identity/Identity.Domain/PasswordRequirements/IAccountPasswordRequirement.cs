@@ -5,5 +5,5 @@ namespace Identity.Domain.PasswordRequirements;
 
 public interface IAccountPasswordRequirement
 {
-	Result<Unit> Satisfies(AccountPassword password);
+	public Result<Unit> Satisfies(AccountPassword password);
 }

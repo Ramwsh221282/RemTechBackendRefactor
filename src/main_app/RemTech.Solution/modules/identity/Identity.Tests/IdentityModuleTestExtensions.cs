@@ -82,10 +82,8 @@ public static class IdentityModuleTestExtensions
 				: await permissions.GetMany(specs, CancellationToken.None);
 		}
 
-		public async Task<Result<Account>> GivePermission(Guid accountId, Guid permissionId)
-		{
-			return await services.GivePermissions(accountId, [permissionId]);
-		}
+		public async Task<Result<Account>> GivePermission(Guid accountId, Guid permissionId) =>
+			await services.GivePermissions(accountId, [permissionId]);
 
 		private async Task<Result<Account>> GetAccount(AccountSpecification specification)
 		{
@@ -102,10 +100,7 @@ public static class IdentityModuleTestExtensions
 			return await outbox.GetMany(spec, CancellationToken.None);
 		}
 
-		public IJwtTokenManager GetJwtTokenManager()
-		{
-			return services.GetRequiredService<IJwtTokenManager>();
-		}
+		public IJwtTokenManager GetJwtTokenManager() => services.GetRequiredService<IJwtTokenManager>();
 
 		public async Task<Account> GetSuperUserAccount()
 		{
@@ -154,10 +149,8 @@ public static class IdentityModuleTestExtensions
 				.Execute(command);
 		}
 
-		public SuperUserCredentialsOptions GetSuperUserCredentials()
-		{
-			return services.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value;
-		}
+		public SuperUserCredentialsOptions GetSuperUserCredentials() =>
+			services.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value;
 
 		public async Task<Result<AccountTicket>> GetTicketOfPurpose(string purpose)
 		{

@@ -4,5 +4,5 @@ namespace Vehicles.Domain.Locations.Contracts;
 
 public interface ILocationsPersister
 {
-	Task<Result<Location>> Save(Location location, CancellationToken ct = default);
+	public Task<Result<Location>> Save(Location location, CancellationToken ct = default);
 }

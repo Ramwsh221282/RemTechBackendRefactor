@@ -49,10 +49,7 @@ public static class SmartEnumerations
 	}
 
 	private static bool IsFamilyDeclarer<TEnum>(Type type)
-		where TEnum : class
-	{
-		return type.GetCustomAttribute<SmartEnumerationAttribute<TEnum>>() != null && type.IsAbstract;
-	}
+		where TEnum : class => type.GetCustomAttribute<SmartEnumerationAttribute<TEnum>>() != null && type.IsAbstract;
 
 	private static IEnumerable<TEnum> LoadFamilies<TEnum>()
 		where TEnum : class

@@ -62,15 +62,13 @@ public sealed class AccountsModuleOutboxProcessor(
 		}
 	}
 
-	private static AccountsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session)
-	{
-		return new AccountsModuleUnitOfWork(
+	private static AccountsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session) =>
+		new(
 			new AccountsChangeTracker(session),
 			new AccountTicketsChangeTracker(session),
 			new PermissionsChangeTracker(session),
 			new IdentityOutboxMessageChangeTracker(session)
 		);
-	}
 
 	private static async Task<IdentityOutboxMessage[]> GetMessages(
 		IAccountModuleOutbox outbox,

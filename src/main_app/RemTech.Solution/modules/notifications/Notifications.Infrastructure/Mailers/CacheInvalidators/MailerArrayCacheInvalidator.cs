@@ -6,7 +6,7 @@ public sealed class MailerArrayCacheInvalidator(HybridCache cache)
 {
 	public async Task Invalidate(CancellationToken ct = default)
 	{
-		string key = "mailers_array";
+		const string key = "mailers_array";
 		await cache.RemoveAsync(key, ct);
 	}
 }

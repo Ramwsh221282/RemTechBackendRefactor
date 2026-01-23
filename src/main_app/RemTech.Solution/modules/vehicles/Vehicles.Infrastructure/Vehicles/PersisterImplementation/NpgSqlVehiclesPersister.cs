@@ -25,7 +25,7 @@ public sealed class NpgSqlVehiclesPersister(NpgSqlSession session, EmbeddingsPro
 			""";
 		NpgsqlConnection connection = await session.GetConnection(ct);
 		DynamicParameters parameters = CreateParameters(info, embeddings);
-		CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
 		int affected = await connection.ExecuteAsync(command);
 		if (affected == 0)
 			return Error.Conflict("Unable to save vehicle.");
@@ -41,7 +41,7 @@ public sealed class NpgSqlVehiclesPersister(NpgSqlSession session, EmbeddingsPro
 		string jsonCharacteristics = JsonSerializer.Serialize(
 			vehicle.Characteristics.Select(c => new { Name = c.Name.Value, c.Value.Value })
 		);
-		Vector vector = new Vector(embeddings.Generate(CreateTextForEmbedding(location, vehicle)));
+		Vector vector = new(embeddings.Generate(CreateTextForEmbedding(location, vehicle)));
 		DynamicParameters parameters = new();
 		parameters.Add("@id", vehicle.Id.Value, DbType.Guid);
 		parameters.Add("@brand_id", vehicle.BrandId.Id, DbType.Guid);
@@ -95,8 +95,8 @@ public sealed class NpgSqlVehiclesPersister(NpgSqlSession session, EmbeddingsPro
 		CommandDefinition command = new(
 			insertClause,
 			parameters,
-			cancellationToken: ct,
-			transaction: session.Transaction
+			transaction: session.Transaction,
+			cancellationToken: ct
 		);
 		await connection.ExecuteAsync(command);
 	}

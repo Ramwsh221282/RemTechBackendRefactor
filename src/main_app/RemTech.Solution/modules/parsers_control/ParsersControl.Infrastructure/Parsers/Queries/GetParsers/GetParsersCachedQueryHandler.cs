@@ -14,7 +14,7 @@ public sealed class GetParsersCachedQueryHandler(
 		CancellationToken ct = default
 	)
 	{
-		string cacheKey = ParserCacheContants.Array;
+		const string cacheKey = ParserCacheContants.Array;
 		return await cache.GetOrCreateAsync(
 			cacheKey,
 			async cancellationToken =>

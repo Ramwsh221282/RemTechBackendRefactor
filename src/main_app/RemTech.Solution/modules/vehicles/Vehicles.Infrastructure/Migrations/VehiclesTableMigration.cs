@@ -51,8 +51,5 @@ public sealed class VehiclesTableMigration : Migration
 		);
 	}
 
-	public override void Down()
-	{
-		Delete.Table("vehicles").InSchema("vehicles_module");
-	}
+	public override void Down() => Delete.Table("vehicles").InSchema("vehicles_module");
 }

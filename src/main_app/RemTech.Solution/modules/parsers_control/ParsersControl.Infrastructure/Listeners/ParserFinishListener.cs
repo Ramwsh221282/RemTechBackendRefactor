@@ -23,10 +23,8 @@ public sealed class ParserFinishListener(
 	private Serilog.ILogger Logger { get; } = logger.ForContext<ParserFinishListener>();
 	private IChannel Channel => _channel ?? throw new InvalidOperationException("Channel is not initialized.");
 
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
-	{
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
 		_channel = await TopicConsumerInitialization.InitializeChannel(rabbitMq, Exchange, Queue, RoutingKey, ct);
-	}
 
 	public async Task StartConsuming(CancellationToken ct = default)
 	{
@@ -35,10 +33,7 @@ public sealed class ParserFinishListener(
 		await Channel.BasicConsumeAsync(Queue, false, consumer, cancellationToken: ct);
 	}
 
-	public async Task Shutdown(CancellationToken ct = default)
-	{
-		await Channel.CloseAsync(ct);
-	}
+	public async Task Shutdown(CancellationToken ct = default) => await Channel.CloseAsync(ct);
 
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (sender, ea) =>
@@ -72,9 +67,7 @@ public sealed class ParserFinishListener(
 		public Guid Id { get; set; }
 		public long TotalElapsedSeconds { get; set; }
 
-		public static ParserFinishMessage FromEvent(BasicDeliverEventArgs ea)
-		{
-			return JsonSerializer.Deserialize<ParserFinishMessage>(ea.Body.Span)!;
-		}
+		public static ParserFinishMessage FromEvent(BasicDeliverEventArgs ea) =>
+			JsonSerializer.Deserialize<ParserFinishMessage>(ea.Body.Span)!;
 	}
 }

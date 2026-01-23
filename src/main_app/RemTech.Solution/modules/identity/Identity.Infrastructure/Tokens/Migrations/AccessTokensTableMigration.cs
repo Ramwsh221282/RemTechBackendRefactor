@@ -5,8 +5,7 @@ namespace Identity.Infrastructure.Tokens.Migrations;
 [Migration(1767696579)]
 public sealed class AccessTokensTableMigration : Migration
 {
-	public override void Up()
-	{
+	public override void Up() =>
 		Execute.Sql(
 			"""
 			CREATE TABLE IF NOT EXISTS identity_module.access_tokens 
@@ -23,10 +22,6 @@ public sealed class AccessTokensTableMigration : Migration
 			);
 			"""
 		);
-	}
 
-	public override void Down()
-	{
-		Execute.Sql("DROP TABLE IF EXISTS identity_module.access_tokens;");
-	}
+	public override void Down() => Execute.Sql("DROP TABLE IF EXISTS identity_module.access_tokens;");
 }

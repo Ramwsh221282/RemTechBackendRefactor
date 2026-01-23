@@ -24,7 +24,7 @@ public static class QuartzOutboxDependencyInjection
 
 			services.AddQuartz(q =>
 			{
-				foreach (var jobType in jobTypes)
+				foreach (Type jobType in jobTypes)
 				{
 					string typeName = jobType.Name;
 					CronScheduleAttribute? cronSchedule = jobType.GetCustomAttribute<CronScheduleAttribute>();

@@ -22,14 +22,11 @@ public sealed class RefreshToken(Guid accountId, string tokenValue, long expires
 		return IsExpired(created);
 	}
 
-	public bool IsExpired(long currentUnixTime)
-	{
-		return currentUnixTime > ExpiresAt;
-	}
+	public bool IsExpired(long currentUnixTime) => currentUnixTime > ExpiresAt;
 
 	private static string GenerateRandomString()
 	{
-		var randomBytes = new byte[32];
+		byte[] randomBytes = new byte[32];
 		using RandomNumberGenerator rng = RandomNumberGenerator.Create();
 		rng.GetBytes(randomBytes);
 		return Convert.ToBase64String(randomBytes).Replace('+', '-').Replace('/', '_').TrimEnd('=');

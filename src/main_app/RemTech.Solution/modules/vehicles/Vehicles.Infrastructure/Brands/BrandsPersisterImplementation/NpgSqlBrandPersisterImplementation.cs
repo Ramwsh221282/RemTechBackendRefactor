@@ -59,10 +59,8 @@ public sealed class NpgSqlBrandPersisterImplementation(EmbeddingsProvider embedd
 		return parameters;
 	}
 
-	private static bool HasFromEmbeddingSearch(NpgSqlSearchResult result)
-	{
-		return result.EmbeddingId.HasValue && result.EmbeddingName is not null;
-	}
+	private static bool HasFromEmbeddingSearch(NpgSqlSearchResult result) =>
+		result.EmbeddingId.HasValue && result.EmbeddingName is not null;
 
 	private static Brand MapToBrandFromEmbeddingSearch(NpgSqlSearchResult result)
 	{
@@ -71,10 +69,8 @@ public sealed class NpgSqlBrandPersisterImplementation(EmbeddingsProvider embedd
 		return new Brand(id, name);
 	}
 
-	private static bool HasFromExactSearch(NpgSqlSearchResult result)
-	{
-		return result.ExactId.HasValue && result.ExactName is not null;
-	}
+	private static bool HasFromExactSearch(NpgSqlSearchResult result) =>
+		result.ExactId.HasValue && result.ExactName is not null;
 
 	private static Brand MapToBrandFromExactSearch(NpgSqlSearchResult result)
 	{

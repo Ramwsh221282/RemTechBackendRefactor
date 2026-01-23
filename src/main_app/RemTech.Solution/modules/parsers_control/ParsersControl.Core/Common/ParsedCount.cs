@@ -17,15 +17,9 @@ public readonly record struct ParsedCount
 		return new ParsedCount(Value + amount);
 	}
 
-	public static Result<ParsedCount> Create(int value)
-	{
-		return value < 0
-			? Error.Validation("Количество обработанных данных парсером не может быть отрицательным.")
-			: new ParsedCount(value);
-	}
+    public static Result<ParsedCount> Create(int value) => value < 0
+            ? Error.Validation("Количество обработанных данных парсером не может быть отрицательным.")
+            : new ParsedCount(value);
 
-	public static ParsedCount New()
-	{
-		return Create(0).Value;
-	}
+    public static ParsedCount New() => Create(0).Value;
 }

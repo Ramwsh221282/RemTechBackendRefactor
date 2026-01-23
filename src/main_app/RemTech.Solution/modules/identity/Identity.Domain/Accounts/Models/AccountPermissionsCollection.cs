@@ -41,15 +41,9 @@ public sealed class AccountPermissionsCollection(AccountId id, IEnumerable<Permi
 		return permission is null ? Error.NotFound("Разрешение не найдено.") : Result.Success(permission);
 	}
 
-	private bool HasPermission(Permission permission)
-	{
-		return _permissions.Any(p => p.Id == permission.Id);
-	}
+	private bool HasPermission(Permission permission) => _permissions.Any(p => p.Id == permission.Id);
 
 	public AccountPermissionsCollection Clone() => new(this);
 
-	public static AccountPermissionsCollection Empty(AccountId id)
-	{
-		return new AccountPermissionsCollection(id, []);
-	}
+	public static AccountPermissionsCollection Empty(AccountId id) => new(id, []);
 }

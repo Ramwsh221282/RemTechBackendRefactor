@@ -74,17 +74,17 @@ public sealed class OnParserSubscribedEventListener(RabbitMqConnectionSource rab
 
 		await channel.ExchangeDeclareAsync(
 			exchange: exchange,
+			type: "topic",
 			durable: true,
 			autoDelete: false,
-			type: "topic",
 			cancellationToken: ct
 		);
 
 		await channel.QueueDeclareAsync(
 			queue: queue,
 			durable: false,
-			autoDelete: false,
 			exclusive: false,
+			autoDelete: false,
 			cancellationToken: ct
 		);
 

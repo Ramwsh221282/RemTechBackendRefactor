@@ -95,8 +95,5 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 		return tracking;
 	}
 
-	private static string WhenClause(int index)
-	{
-		return $"WHEN m.id = @id_{index}";
-	}
+	private static string WhenClause(int index) => $"WHEN m.id = @id_{index}";
 }

@@ -174,9 +174,6 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 			return x.Name == y.Name;
 		}
 
-		public int GetHashCode(Characteristic obj)
-		{
-			return HashCode.Combine(obj.Name);
-		}
+		public int GetHashCode(Characteristic obj) => HashCode.Combine(obj.Name);
 	}
 }

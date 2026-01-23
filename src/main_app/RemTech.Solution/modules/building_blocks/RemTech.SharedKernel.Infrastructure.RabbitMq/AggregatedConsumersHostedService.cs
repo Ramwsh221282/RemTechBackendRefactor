@@ -64,7 +64,7 @@ public sealed class AggregatedConsumersHostedService(
 		CancellationToken ct
 	)
 	{
-		var initTasks = consumers.Select(async c =>
+		IEnumerable<Task> initTasks = consumers.Select(async c =>
 		{
 			try
 			{
@@ -93,7 +93,7 @@ public sealed class AggregatedConsumersHostedService(
 		CancellationToken ct
 	)
 	{
-		var startTasks = consumers.Select(async c =>
+		IEnumerable<Task> startTasks = consumers.Select(async c =>
 		{
 			try
 			{

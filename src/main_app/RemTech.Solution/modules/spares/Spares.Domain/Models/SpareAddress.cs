@@ -11,10 +11,6 @@ public sealed record SpareAddress
 		Value = value;
 	}
 
-	public static Result<SpareAddress> Create(string value)
-	{
-		return string.IsNullOrWhiteSpace(value)
-			? Error.Validation("Адрес не может быть пустым")
-			: new SpareAddress(value);
-	}
+	public static Result<SpareAddress> Create(string value) =>
+		string.IsNullOrWhiteSpace(value) ? Error.Validation("Адрес не может быть пустым") : new SpareAddress(value);
 }

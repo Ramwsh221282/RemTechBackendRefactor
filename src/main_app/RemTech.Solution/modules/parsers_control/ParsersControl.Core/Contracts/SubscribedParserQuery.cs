@@ -28,8 +28,5 @@ public sealed record SubscribedParserQuery(
 		return this with { Type = type };
 	}
 
-	public SubscribedParserQuery RequireLock()
-	{
-		return this with { WithLock = true };
-	}
+	public SubscribedParserQuery RequireLock() => this with { WithLock = true };
 }

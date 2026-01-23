@@ -1,7 +1,7 @@
 ﻿namespace RemTech.SharedKernel.Core.Handlers.Decorators.DomainEvents;
 
-public interface IEventTransporter<TCommand, TResult>
+public interface IEventTransporter<in TCommand, in TResult>
 	where TCommand : ICommand
 {
-	Task Transport(TResult result, CancellationToken ct = default);
+	public Task Transport(TResult result, CancellationToken ct = default);
 }

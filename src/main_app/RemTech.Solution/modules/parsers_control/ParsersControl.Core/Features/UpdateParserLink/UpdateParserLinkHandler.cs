@@ -73,7 +73,7 @@ public sealed class UpdateParserLinkHandler(ISubscribedParsersRepository reposit
 			return parser.Error;
 		if (link.IsFailure)
 			return link.Error;
-		return ParserLinkUpdater.Create(link.Value.Id.Value, name: name, url: url, activity: null);
+		return ParserLinkUpdater.Create(link.Value.Id.Value, activity: null, name: name, url: url);
 	}
 
 	private static Result<SubscribedParserLink> FindLink(Result<SubscribedParser> parser, Guid linkId) =>

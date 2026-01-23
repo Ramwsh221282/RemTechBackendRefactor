@@ -9,8 +9,6 @@ public sealed class VehicleCharacteristicByNameComparer : IEqualityComparer<Vehi
 		return x.Name == y.Name;
 	}
 
-	public int GetHashCode(VehicleCharacteristic obj)
-	{
-		return HashCode.Combine(obj.VehicleId, obj.CharacteristicId, obj.Name);
-	}
+	public int GetHashCode(VehicleCharacteristic obj) =>
+		HashCode.Combine(obj.VehicleId, obj.CharacteristicId, obj.Name);
 }

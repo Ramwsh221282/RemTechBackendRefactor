@@ -100,10 +100,7 @@ public static class HttpContextExtensions
 		}
 	}
 
-	private static Envelope ForbiddenEnvelope()
-	{
-		return new((int)HttpStatusCode.Forbidden, null, "Forbidden");
-	}
+	private static Envelope ForbiddenEnvelope() => new((int)HttpStatusCode.Forbidden, null, "Forbidden");
 
 	private static string GetCookieValueOrEmpty(HttpContext context, string cookieName)
 	{

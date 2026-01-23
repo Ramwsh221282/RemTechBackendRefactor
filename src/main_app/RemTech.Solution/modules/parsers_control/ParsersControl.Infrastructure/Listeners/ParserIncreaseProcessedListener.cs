@@ -25,10 +25,8 @@ public sealed class ParserIncreaseProcessedListener(
 	private IServiceProvider Services { get; } = services;
 	private IChannel Channel => _channel ?? throw new InvalidOperationException("Channel was not initialized.");
 
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
-	{
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
 		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
-	}
 
 	public async Task StartConsuming(CancellationToken ct = default)
 	{
@@ -37,10 +35,7 @@ public sealed class ParserIncreaseProcessedListener(
 		await Channel.BasicConsumeAsync(Queue, false, consumer, ct);
 	}
 
-	public async Task Shutdown(CancellationToken ct = default)
-	{
-		await Channel.CloseAsync(ct);
-	}
+	public async Task Shutdown(CancellationToken ct = default) => await Channel.CloseAsync(ct);
 
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, @event) =>
@@ -90,19 +85,15 @@ public sealed class ParserIncreaseProcessedListener(
 			.Execute(command);
 	}
 
-	private static SetParsedAmountCommand CreateCommand(ParserIncreaseProcessedMessage message)
-	{
-		return new SetParsedAmountCommand(message.Id, message.Amount);
-	}
+	private static SetParsedAmountCommand CreateCommand(ParserIncreaseProcessedMessage message) =>
+		new(message.Id, message.Amount);
 
 	private sealed class ParserIncreaseProcessedMessage
 	{
 		public Guid Id { get; set; }
 		public int Amount { get; set; }
 
-		public static ParserIncreaseProcessedMessage CreateFrom(BasicDeliverEventArgs @event)
-		{
-			return JsonSerializer.Deserialize<ParserIncreaseProcessedMessage>(@event.Body.Span)!;
-		}
+		public static ParserIncreaseProcessedMessage CreateFrom(BasicDeliverEventArgs @event) =>
+			JsonSerializer.Deserialize<ParserIncreaseProcessedMessage>(@event.Body.Span)!;
 	}
 }

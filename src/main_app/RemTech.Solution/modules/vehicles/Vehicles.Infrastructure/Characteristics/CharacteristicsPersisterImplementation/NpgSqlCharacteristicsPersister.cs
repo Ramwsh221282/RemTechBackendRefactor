@@ -71,10 +71,8 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 		await session.Execute(command);
 	}
 
-	private static bool HasFromEmbeddingSearch(NpgSqlSearchResult result)
-	{
-		return result.EmbeddingId.HasValue && result.EmbeddingName is not null;
-	}
+	private static bool HasFromEmbeddingSearch(NpgSqlSearchResult result) =>
+		result.EmbeddingId.HasValue && result.EmbeddingName is not null;
 
 	private static Characteristic MapToCharacteristicFromEmbeddingSearch(NpgSqlSearchResult result)
 	{
@@ -83,10 +81,8 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 		return new Characteristic(id, name);
 	}
 
-	private static bool HasFromExactSearch(NpgSqlSearchResult result)
-	{
-		return result.ExactId.HasValue && result.ExactName is not null;
-	}
+	private static bool HasFromExactSearch(NpgSqlSearchResult result) =>
+		result.ExactId.HasValue && result.ExactName is not null;
 
 	private static Characteristic MapToCharacteristicFromExactSearch(NpgSqlSearchResult result)
 	{

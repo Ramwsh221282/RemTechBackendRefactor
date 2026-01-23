@@ -5,31 +5,31 @@ namespace ParsersControl.Tests.Parsers.EnableParser;
 
 public sealed class EnableParserTests(IntegrationalTestsFixture fixture) : IClassFixture<IntegrationalTestsFixture>
 {
-    private IServiceProvider Services { get; } = fixture.Services;
-    
-    [Fact]
-    public async Task Enable_Parser_Success()
-    {
-        string type = "Some Type";
-        string domain = "Some Domain";
-        Guid id = Guid.NewGuid();
-        Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
-        Assert.True(result.IsSuccess);
-        Result<SubscribedParser> enabled = await Services.EnableParser(id);
-        Assert.True(enabled.IsSuccess);
-    }
-    
-    [Fact]
-    private async Task Enable_Parser_When_Already_Enabled_Failure()
-    {
-        string type = "Some Type";
-        string domain = "Some Domain";
-        Guid id = Guid.NewGuid();
-        Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
-        Assert.True(result.IsSuccess);
-        Result<SubscribedParser> enabled = await Services.EnableParser(id);
-        Assert.True(enabled.IsSuccess);
-        Result<SubscribedParser> again = await Services.EnableParser(id);
-        Assert.False(again.IsSuccess);
-    }
+	private IServiceProvider Services { get; } = fixture.Services;
+
+	[Fact]
+	public async Task Enable_Parser_Success()
+	{
+		const string type = "Some Type";
+		const string domain = "Some Domain";
+		Guid id = Guid.NewGuid();
+		Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
+		Assert.True(result.IsSuccess);
+		Result<SubscribedParser> enabled = await Services.EnableParser(id);
+		Assert.True(enabled.IsSuccess);
+	}
+
+	[Fact]
+	private async Task Enable_Parser_When_Already_Enabled_Failure()
+	{
+		const string type = "Some Type";
+		const string domain = "Some Domain";
+		Guid id = Guid.NewGuid();
+		Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
+		Assert.True(result.IsSuccess);
+		Result<SubscribedParser> enabled = await Services.EnableParser(id);
+		Assert.True(enabled.IsSuccess);
+		Result<SubscribedParser> again = await Services.EnableParser(id);
+		Assert.False(again.IsSuccess);
+	}
 }

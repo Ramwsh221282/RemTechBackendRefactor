@@ -14,9 +14,8 @@ public sealed class ParserLinkResponseModel
 	public required int Minutes { get; init; }
 	public required int Seconds { get; init; }
 
-	public static ParserLinkResponseModel ConvertFrom(SubscribedParserLink link)
-	{
-		return new ParserLinkResponseModel()
+	public static ParserLinkResponseModel ConvertFrom(SubscribedParserLink link) =>
+		new()
 		{
 			Id = link.Id.Value,
 			Name = link.UrlInfo.Name,
@@ -28,10 +27,7 @@ public sealed class ParserLinkResponseModel
 			Minutes = link.Statistics.WorkTime.Minutes,
 			Seconds = link.Statistics.WorkTime.Seconds,
 		};
-	}
 
-	public static IEnumerable<ParserLinkResponseModel> ConvertFrom(IEnumerable<SubscribedParserLink> links)
-	{
-		return [.. links.Select(ConvertFrom)];
-	}
+	public static IEnumerable<ParserLinkResponseModel> ConvertFrom(IEnumerable<SubscribedParserLink> links) =>
+		[.. links.Select(ConvertFrom)];
 }

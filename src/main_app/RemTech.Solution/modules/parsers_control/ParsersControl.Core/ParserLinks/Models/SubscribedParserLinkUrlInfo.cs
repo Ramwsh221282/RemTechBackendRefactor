@@ -14,20 +14,11 @@ public sealed record SubscribedParserLinkUrlInfo
 		Name = name;
 	}
 
-	public Result<SubscribedParserLinkUrlInfo> Rename(string otherName)
-	{
-		return Create(Url, otherName);
-	}
+	public Result<SubscribedParserLinkUrlInfo> Rename(string otherName) => Create(Url, otherName);
 
-	public Result<SubscribedParserLinkUrlInfo> ChangeUrl(string otherUrl)
-	{
-		return Create(otherUrl, Name);
-	}
+	public Result<SubscribedParserLinkUrlInfo> ChangeUrl(string otherUrl) => Create(otherUrl, Name);
 
-	public SubscribedParserLinkUrlInfo Copy()
-	{
-		return new SubscribedParserLinkUrlInfo(Url, Name);
-	}
+	public SubscribedParserLinkUrlInfo Copy() => new(Url, Name);
 
 	public static Result<SubscribedParserLinkUrlInfo> Create(string url, string name)
 	{

@@ -12,20 +12,11 @@ public abstract class ErrorException(string error) : Exception(error)
 
 	public class InternalException(string error) : ErrorException(error);
 
-	public static ConflictException Conflict(string message)
-	{
-		return new ConflictException(message);
-	}
+	public static ConflictException Conflict(string message) => new(message);
 
-	public static NotFoundException NotFound(string message)
-	{
-		return new NotFoundException(message);
-	}
+	public static NotFoundException NotFound(string message) => new(message);
 
-	public static ValidationException Validation(string message)
-	{
-		return new ValidationException(message);
-	}
+	public static ValidationException Validation(string message) => new(message);
 
 	public static ValidationException ValueNotSet(string valueName)
 	{
@@ -57,8 +48,5 @@ public abstract class ErrorException(string error) : Exception(error)
 		return Validation(message);
 	}
 
-	public static InternalException Internal(string message)
-	{
-		return new InternalException(message);
-	}
+	public static InternalException Internal(string message) => new(message);
 }

@@ -25,15 +25,10 @@ public readonly record struct SubscribedParserSchedule
 		WaitDays = waitDays;
 	}
 
-	public Result<SubscribedParserSchedule> WithStartedAt(DateTime startedAt)
-	{
-		return Create(startedAt, FinishedAt, NextRun, WaitDays);
-	}
+	public Result<SubscribedParserSchedule> WithStartedAt(DateTime startedAt) =>
+		Create(startedAt, FinishedAt, NextRun, WaitDays);
 
-	public SubscribedParserSchedule WithNextRun(DateTime nextRun)
-	{
-		return Create(StartedAt, FinishedAt, nextRun, WaitDays);
-	}
+	public SubscribedParserSchedule WithNextRun(DateTime nextRun) => Create(StartedAt, FinishedAt, nextRun, WaitDays);
 
 	public Result<SubscribedParserSchedule> WithFinishedAt(DateTime finishedAt)
 	{
@@ -43,10 +38,8 @@ public readonly record struct SubscribedParserSchedule
 		return result.Value.AdjustNextRun();
 	}
 
-	public Result<SubscribedParserSchedule> WithWaitDays(int waitDays)
-	{
-		return Create(StartedAt, FinishedAt, NextRun, waitDays);
-	}
+	public Result<SubscribedParserSchedule> WithWaitDays(int waitDays) =>
+		Create(StartedAt, FinishedAt, NextRun, waitDays);
 
 	private SubscribedParserSchedule AdjustNextRun()
 	{
@@ -56,10 +49,7 @@ public readonly record struct SubscribedParserSchedule
 		return Create(StartedAt, FinishedAt, newNextRun, WaitDays);
 	}
 
-	public static SubscribedParserSchedule New()
-	{
-		return new() { WaitDays = 1 };
-	}
+	public static SubscribedParserSchedule New() => new() { WaitDays = 1 };
 
 	public static Result<SubscribedParserSchedule> Create(
 		DateTime? startedAt,

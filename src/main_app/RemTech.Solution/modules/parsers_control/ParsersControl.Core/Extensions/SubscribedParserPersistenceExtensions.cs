@@ -12,17 +12,12 @@ public static class SubscribedParserPersistenceExtensions
 			ISubscribedParsersRepository repository,
 			SubscribedParserQuery query,
 			CancellationToken ct = default
-		)
-		{
-			return await repository.Get(query, ct);
-		}
+		) => await repository.Get(query, ct);
 	}
 
 	extension(SubscribedParser parser)
 	{
-		public async Task SaveChanges(ISubscribedParsersRepository repository, CancellationToken ct = default)
-		{
+		public async Task SaveChanges(ISubscribedParsersRepository repository, CancellationToken ct = default) =>
 			await repository.Save(parser, ct);
-		}
 	}
 }

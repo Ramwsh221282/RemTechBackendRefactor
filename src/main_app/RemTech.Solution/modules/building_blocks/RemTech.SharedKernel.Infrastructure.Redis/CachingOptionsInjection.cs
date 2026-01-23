@@ -6,9 +6,7 @@ public static class CachingOptionsInjection
 {
 	extension(IServiceCollection services)
 	{
-		public void AddCachingOptionsFromAppsettings(string sectionName = nameof(CachingOptions))
-		{
+		public void AddCachingOptionsFromAppsettings(string sectionName = nameof(CachingOptions)) =>
 			services.AddOptions<CachingOptions>().BindConfiguration(sectionName);
-		}
 	}
 }

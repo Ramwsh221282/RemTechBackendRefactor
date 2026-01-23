@@ -122,14 +122,12 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 		return (parameters, filterSql.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filterSql)}");
 	}
 
-	private static object GetParameters(AccountTicket ticket)
-	{
-		return new
+	private static object GetParameters(AccountTicket ticket) =>
+		new
 		{
 			id = ticket.TicketId,
 			creator_id = ticket.AccountId.Value,
 			finished = ticket.Finished,
 			purpose = ticket.Purpose,
 		};
-	}
 }

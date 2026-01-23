@@ -10,12 +10,10 @@ public readonly record struct SubscribedParserId
 
 	private SubscribedParserId(Guid value) => Value = value;
 
-	public static Result<SubscribedParserId> Create(Guid value)
-	{
-		return value == Guid.Empty
+	public static Result<SubscribedParserId> Create(Guid value) =>
+		value == Guid.Empty
 			? Error.Validation("Идентификатор подписки парсера не может быть пустым.")
 			: new SubscribedParserId(value);
-	}
 
 	public static SubscribedParserId New()
 	{

@@ -49,7 +49,6 @@ public static class SparesFactory
 			return addressResult.Error;
 
 		return new Spare(
-			Source: sourceResult.Value,
 			Id: itemId.Value,
 			Details: new SpareDetails(
 				Oem: oemResult.Value,
@@ -58,7 +57,8 @@ public static class SparesFactory
 				Type: typeResult.Value,
 				Address: addressResult.Value,
 				Photos: photosResult.Value
-			)
+			),
+			Source: sourceResult.Value
 		);
 	}
 }

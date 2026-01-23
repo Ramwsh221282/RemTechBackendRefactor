@@ -57,10 +57,10 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 		return collection;
 	}
 
-	public async Task<Result<Unit>> SaveChanges(SubscribedParsersCollection collection, CancellationToken ct = default)
-	{
-		return await _changeTracker.SaveChanges(collection, session, ct);
-	}
+	public async Task<Result<Unit>> SaveChanges(
+		SubscribedParsersCollection collection,
+		CancellationToken ct = default
+	) => await _changeTracker.SaveChanges(collection, session, ct);
 
 	private static async Task<SubscribedParsersCollection> MapFromReader(DbDataReader reader, CancellationToken ct)
 	{
@@ -169,7 +169,7 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 			""";
 		DynamicParameters parameters = new();
 		parameters.Add("@ids", identifiers.ToArray(), DbType.Guid);
-		CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
 		NpgsqlConnection connection = await session.GetConnection(ct);
 		await connection.ExecuteAsync(command);
 	}

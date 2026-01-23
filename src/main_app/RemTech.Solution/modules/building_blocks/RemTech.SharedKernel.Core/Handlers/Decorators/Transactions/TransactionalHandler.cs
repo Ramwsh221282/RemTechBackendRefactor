@@ -6,28 +6,20 @@ using RemTech.SharedKernel.Core.InfrastructureContracts;
 
 namespace RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
-public sealed class TransactionalHandler<TCommand, TResult> : ITransactionalCommandHandler<TCommand, TResult>
+public sealed class TransactionalHandler<TCommand, TResult>(
+	Serilog.ILogger logger,
+	IEnumerable<IEventTransporter<TCommand, TResult>> transporters,
+	ICommandHandler<TCommand, TResult> inner,
+	ITransactionSource transactionSource
+) : ITransactionalCommandHandler<TCommand, TResult>
 	where TCommand : ICommand
 {
-	private IEnumerable<IEventTransporter<TCommand, TResult>> Transporters { get; }
-	private ICommandHandler<TCommand, TResult> Inner { get; }
-	private ITransactionSource TransactionSource { get; }
-	private Serilog.ILogger Logger { get; }
+	private IEnumerable<IEventTransporter<TCommand, TResult>> Transporters { get; } = transporters;
+	private ICommandHandler<TCommand, TResult> Inner { get; } = inner;
+	private ITransactionSource TransactionSource { get; } = transactionSource;
+	private Serilog.ILogger Logger { get; } = logger.ForContext<TransactionalHandler<TCommand, TResult>>();
 
 	private static readonly ConcurrentDictionary<Type, bool> TransactionalAttributeCache = new();
-
-	public TransactionalHandler(
-		Serilog.ILogger logger,
-		IEnumerable<IEventTransporter<TCommand, TResult>> transporters,
-		ICommandHandler<TCommand, TResult> inner,
-		ITransactionSource transactionSource
-	)
-	{
-		Logger = logger.ForContext<TransactionalHandler<TCommand, TResult>>();
-		Transporters = transporters;
-		Inner = inner;
-		TransactionSource = transactionSource;
-	}
 
 	public async Task<Result<TResult>> Execute(TCommand command, CancellationToken ct = default)
 	{
@@ -80,7 +72,7 @@ public sealed class TransactionalHandler<TCommand, TResult> : ITransactionalComm
 			rootType,
 			static t =>
 			{
-				HashSet<Type> visited = new HashSet<Type>();
+				HashSet<Type> visited = [];
 				return HasTransactionalAttributeForTypeRecursive(t, visited);
 			}
 		);

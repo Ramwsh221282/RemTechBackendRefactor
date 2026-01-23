@@ -5,6 +5,6 @@ namespace Identity.Domain.Contracts.Persistence;
 
 public interface IAccountTicketsRepository
 {
-	Task Add(AccountTicket ticket, CancellationToken ct = default);
-	Task<Result<AccountTicket>> Find(AccountTicketSpecification specification, CancellationToken ct = default);
+	public Task Add(AccountTicket ticket, CancellationToken ct = default);
+	public Task<Result<AccountTicket>> Find(AccountTicketSpecification specification, CancellationToken ct = default);
 }

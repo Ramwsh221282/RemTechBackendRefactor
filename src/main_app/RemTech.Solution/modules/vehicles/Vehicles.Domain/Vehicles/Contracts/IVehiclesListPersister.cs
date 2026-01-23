@@ -2,5 +2,5 @@
 
 public interface IVehiclesListPersister
 {
-	Task<int> Persist(IEnumerable<VehiclePersistInfo> infos, CancellationToken ct = default);
+	public Task<int> Persist(IEnumerable<VehiclePersistInfo> infos, CancellationToken ct = default);
 }

@@ -63,7 +63,7 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
 		using JsonDocument document = JsonDocument.Parse(item.Info.Content);
 
 		List<AddVehicleCharacteristic> characteristics = [];
-		foreach (var ctx in document.RootElement.GetProperty("characteristics").EnumerateArray())
+		foreach (JsonElement ctx in document.RootElement.GetProperty("characteristics").EnumerateArray())
 		{
 			string name = ctx.GetProperty("name").GetString()!;
 			string value = ctx.GetProperty("value").GetString()!;

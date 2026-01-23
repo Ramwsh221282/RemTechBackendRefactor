@@ -22,7 +22,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			              WHERE domain = @domain AND type = @type)
 			""";
 		object parameters = new { domain = identity.DomainName, type = identity.ServiceType };
-		CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
 		return session.QuerySingleRow<bool>(command);
 	}
 
@@ -47,7 +47,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			wait_days = parser.Schedule.WaitDays == null ? (object?)null : parser.Schedule.WaitDays.Value,
 			next_run = parser.Schedule.NextRun == null ? (object?)null : parser.Schedule.NextRun.Value,
 		};
-		CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
 		return session.Execute(command);
 	}
 
@@ -86,7 +86,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			{filterSql}
 			""";
 
-		CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
 		(SubscribedParser? parser, List<SubscribedParserLink> links) = await session.QuerySingleUsingReader(
 			command,
 			MapFromReader,
@@ -110,10 +110,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			return x.Id == y.Id;
 		}
 
-		public int GetHashCode(SubscribedParser obj)
-		{
-			return obj.Id.GetHashCode();
-		}
+		public int GetHashCode(SubscribedParser obj) => obj.Id.GetHashCode();
 	}
 
 	private static SubscribedParserLink? MapLinkFromReader(IDataReader reader)
@@ -197,7 +194,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			{filterSql}
 			FOR UPDATE OF p
 			""";
-		CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
 		await session.Execute(command);
 	}
 
@@ -229,8 +226,8 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			CommandDefinition command = new(
 				updateClause,
 				parameters,
-				cancellationToken: ct,
-				transaction: Session.Transaction
+				transaction: Session.Transaction,
+				cancellationToken: ct
 			);
 
 			NpgsqlConnection connection = await Session.GetConnection(ct);
@@ -402,7 +399,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		{
 			if (!links.Any())
 				return;
-			string sql = "DELETE FROM parsers_control_module.parser_links pl WHERE pl.id = ANY (@ids)";
+			const string sql = "DELETE FROM parsers_control_module.parser_links pl WHERE pl.id = ANY (@ids)";
 			Guid[] ids = [.. links.Select(l => l.Id.Value)];
 			DynamicParameters parameters = new();
 			parameters.Add("@ids", ids);
@@ -414,7 +411,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		{
 			if (!links.Any())
 				return;
-			string sql = """
+			const string sql = """
 				INSERT INTO parsers_control_module.parser_links (id, parser_id, name, url, processed, elapsed_seconds, is_active) 
 				VALUES (@id, @parser_id, @name, @url, @processed, @elapsed_seconds, @is_active)
 				""";
@@ -477,7 +474,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 
 			if (tracking.Any(u => u.Schedule.NextRun != _trackingParsers[u.Id.Value].Schedule.NextRun))
 			{
-				var caseWhen = string.Join(
+				string caseWhen = string.Join(
 					" ",
 					tracking.Select(
 						(p, i) =>
@@ -497,7 +494,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 
 			if (tracking.Any(u => u.Schedule.WaitDays != _trackingParsers[u.Id.Value].Schedule.WaitDays))
 			{
-				var caseWhen = string.Join(
+				string caseWhen = string.Join(
 					" ",
 					tracking.Select(
 						(p, i) =>
@@ -517,7 +514,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 
 			if (tracking.Any(u => u.Schedule.StartedAt != _trackingParsers[u.Id.Value].Schedule.StartedAt))
 			{
-				var caseWhen = string.Join(
+				string caseWhen = string.Join(
 					" ",
 					tracking.Select(
 						(p, i) =>
@@ -597,7 +594,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		private List<SubscribedParser> GetTrackingParsers(IEnumerable<SubscribedParser> parsers)
 		{
 			List<SubscribedParser> updated = [];
-			foreach (var parser in parsers)
+			foreach (SubscribedParser parser in parsers)
 			{
 				if (!_trackingParsers.TryGetValue(parser.Id.Value, out _))
 					continue;
@@ -606,14 +603,8 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			return updated;
 		}
 
-		private static string CreateLinkWhenClause(int index)
-		{
-			return $"WHEN pl.id = @id_{index}";
-		}
+		private static string CreateLinkWhenClause(int index) => $"WHEN pl.id = @id_{index}";
 
-		private static string CreateParserWhenClause(int index)
-		{
-			return $"WHEN p.id = @id_{index}";
-		}
+		private static string CreateParserWhenClause(int index) => $"WHEN p.id = @id_{index}";
 	}
 }

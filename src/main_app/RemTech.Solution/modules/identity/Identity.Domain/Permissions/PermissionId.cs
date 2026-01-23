@@ -18,10 +18,8 @@ public readonly record struct PermissionId
 
 	public static PermissionId New() => new(Guid.NewGuid());
 
-	public static Result<PermissionId> Create(Guid value)
-	{
-		return value == Guid.Empty
+	public static Result<PermissionId> Create(Guid value) =>
+		value == Guid.Empty
 			? Error.Validation("Идентификатор разрешения не может быть пустым.")
 			: new PermissionId(value);
-	}
 }

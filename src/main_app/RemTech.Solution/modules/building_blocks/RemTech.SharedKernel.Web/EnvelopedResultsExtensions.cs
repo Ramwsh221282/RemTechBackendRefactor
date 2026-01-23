@@ -44,9 +44,8 @@ public static class EnvelopedResultsExtensions
 
 		private string? ResolveMessage() => result.IsFailure ? result.Error.Message : null;
 
-		private static HttpStatusCode ResolveStatusCodeByError(Error error)
-		{
-			return error switch
+		private static HttpStatusCode ResolveStatusCodeByError(Error error) =>
+			error switch
 			{
 				Error.ForbiddenError => HttpStatusCode.Forbidden,
 				Error.UnauthorizedError => HttpStatusCode.Unauthorized,
@@ -61,7 +60,6 @@ public static class EnvelopedResultsExtensions
 					$"Unknown error type cannot be resolved to http status code. Error type: {error.GetType().Name}"
 				),
 			};
-		}
 	}
 
 	extension(Result result)

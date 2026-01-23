@@ -228,9 +228,8 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		await Session.Execute(command);
 	}
 
-	private static object GetParameters(Account account)
-	{
-		return new
+	private static object GetParameters(Account account) =>
+		new
 		{
 			id = account.Id.Value,
 			email = account.Email.Value,
@@ -238,7 +237,6 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 			login = account.Login.Value,
 			activation_status = account.ActivationStatus.Value,
 		};
-	}
 
 	async Task<Result<Account>> IAccountsRepository.Find(AccountSpecification specification, CancellationToken ct) =>
 		string.IsNullOrWhiteSpace(specification.RefreshToken)

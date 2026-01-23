@@ -5,8 +5,7 @@ namespace Vehicles.Infrastructure.Migrations;
 [Migration(1767032660)]
 public sealed class CharacteristicTableMigration : Migration
 {
-	public override void Up()
-	{
+	public override void Up() =>
 		Execute.Sql(
 			"""
 			CREATE TABLE IF NOT EXISTS vehicles_module.characteristics (
@@ -18,10 +17,6 @@ public sealed class CharacteristicTableMigration : Migration
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_characteristics_name ON vehicles_module.characteristics(name);
 			"""
 		);
-	}
 
-	public override void Down()
-	{
-		Delete.Table("characteristics").InSchema("vehicles_module");
-	}
+	public override void Down() => Delete.Table("characteristics").InSchema("vehicles_module");
 }

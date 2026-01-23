@@ -6,8 +6,7 @@ namespace Vehicles.Infrastructure.Migrations;
 [Migration(1767097877)]
 public sealed class VehicleCharacteristicsMigration : Migration
 {
-	public override void Up()
-	{
+	public override void Up() =>
 		Create
 			.Table("vehicle_characteristics")
 			.InSchema("vehicles_module")
@@ -25,10 +24,6 @@ public sealed class VehicleCharacteristicsMigration : Migration
 			.WithColumn("name")
 			.AsString()
 			.NotNullable();
-	}
 
-	public override void Down()
-	{
-		Delete.Table("vehicle_characteristics").InSchema("vehicles_module");
-	}
+	public override void Down() => Delete.Table("vehicle_characteristics").InSchema("vehicles_module");
 }

@@ -29,15 +29,9 @@ public sealed record ParsingStatistics
 		return this with { WorkTime = updated.Value };
 	}
 
-	public ParsingStatistics ResetWorkTime()
-	{
-		return this with { WorkTime = ParsingWorkTime.New() };
-	}
+	public ParsingStatistics ResetWorkTime() => this with { WorkTime = ParsingWorkTime.New() };
 
-	public ParsingStatistics ResetParsedCount()
-	{
-		return this with { ParsedCount = ParsedCount.New() };
-	}
+	public ParsingStatistics ResetParsedCount() => this with { ParsedCount = ParsedCount.New() };
 
 	public static ParsingStatistics New()
 	{

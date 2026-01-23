@@ -86,10 +86,8 @@ public sealed class AddSparesConsumer(
 		public string CreatorDomain { get; set; } = string.Empty;
 		public IEnumerable<AddSpareMessagePayload> Payload { get; set; } = [];
 
-		public static AddSparesMessage ConvertMessageFrom(BasicDeliverEventArgs @event)
-		{
-			return JsonSerializer.Deserialize<AddSparesMessage>(@event.Body.ToArray())!;
-		}
+		public static AddSparesMessage ConvertMessageFrom(BasicDeliverEventArgs @event) =>
+			JsonSerializer.Deserialize<AddSparesMessage>(@event.Body.ToArray())!;
 	}
 
 	private sealed class AddSpareMessagePayload
@@ -127,8 +125,8 @@ public sealed class AddSparesConsumer(
 		new(
 			ContainedItemId: payload.ContainedItemId,
 			Source: payload.Url,
-			Title: payload.Title,
 			Oem: payload.Oem,
+			Title: payload.Title,
 			Price: payload.Price,
 			IsNds: payload.IsNds,
 			Address: payload.Address,

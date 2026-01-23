@@ -10,10 +10,9 @@ public sealed class CachingQueryHandler<TQuery, TResult>(
 
 	public async Task<TResult> Handle(TQuery query, CancellationToken ct = default)
 	{
-		foreach (var executor in _executors)
+		foreach (IQueryExecutorWithCache<TQuery, TResult> executor in _executors)
 		{
-			TResult result = await executor.ExecuteWithCache(query, ct);
-			return result;
+			return await executor.ExecuteWithCache(query, ct);
 		}
 
 		return await handler.Handle(query, ct);

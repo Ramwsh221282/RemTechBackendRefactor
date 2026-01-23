@@ -61,10 +61,8 @@ public sealed class NpgSqlCategoriesPersisterImplementation(NpgSqlSession sessio
 		return parameters;
 	}
 
-	private static bool HasFromEmbeddingSearch(NpgSqlSearchResult result)
-	{
-		return result.EmbeddingId.HasValue && result.EmbeddingName is not null;
-	}
+	private static bool HasFromEmbeddingSearch(NpgSqlSearchResult result) =>
+		result.EmbeddingId.HasValue && result.EmbeddingName is not null;
 
 	private static Category MapToCategoryFromEmbeddingSearch(NpgSqlSearchResult result)
 	{
@@ -73,10 +71,8 @@ public sealed class NpgSqlCategoriesPersisterImplementation(NpgSqlSession sessio
 		return new Category(id, name);
 	}
 
-	private static bool HasFromExactSearch(NpgSqlSearchResult result)
-	{
-		return result.ExactId.HasValue && result.ExactName is not null;
-	}
+	private static bool HasFromExactSearch(NpgSqlSearchResult result) =>
+		result.ExactId.HasValue && result.ExactName is not null;
 
 	private static Category MapToCategoryFromExactSearch(NpgSqlSearchResult result)
 	{

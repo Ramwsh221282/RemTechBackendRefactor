@@ -5,8 +5,7 @@ namespace Identity.Infrastructure.Accounts.Migrations;
 [Migration(1767457400)]
 public sealed class AccountTableMigration : Migration
 {
-	public override void Up()
-	{
+	public override void Up() =>
 		Create
 			.Table("accounts")
 			.InSchema("identity_module")
@@ -26,10 +25,6 @@ public sealed class AccountTableMigration : Migration
 			.WithColumn("activation_status")
 			.AsBoolean()
 			.NotNullable();
-	}
 
-	public override void Down()
-	{
-		Delete.Table("accounts").InSchema("identity_module");
-	}
+	public override void Down() => Delete.Table("accounts").InSchema("identity_module");
 }

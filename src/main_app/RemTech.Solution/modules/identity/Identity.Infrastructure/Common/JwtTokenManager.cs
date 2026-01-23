@@ -120,15 +120,13 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options) : IJwtTokenMan
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
 
-	private SecurityTokenDescriptor CreateTokenDescriptor(Account account)
-	{
-		return new()
+	private SecurityTokenDescriptor CreateTokenDescriptor(Account account) =>
+		new()
 		{
 			Subject = CreateClaims(account),
 			Expires = DateTime.UtcNow.AddMinutes(5),
 			SigningCredentials = CreateSigningCredentials(),
 		};
-	}
 
 	private SigningCredentials CreateSigningCredentials()
 	{

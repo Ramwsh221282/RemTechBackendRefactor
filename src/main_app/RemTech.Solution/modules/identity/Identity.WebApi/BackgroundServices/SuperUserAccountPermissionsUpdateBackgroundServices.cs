@@ -82,10 +82,8 @@ public sealed class SuperUserAccountPermissionsUpdateBackgroundServices(
 			.Execute(command, ct);
 	}
 
-	private static Permission[] GetPermissionsToAdd(Account account, IEnumerable<Permission> permissions)
-	{
-		return [.. permissions.ExceptBy(account.PermissionsList.Select(p => p.Id.Value), p => p.Id.Value)];
-	}
+	private static Permission[] GetPermissionsToAdd(Account account, IEnumerable<Permission> permissions) =>
+		[.. permissions.ExceptBy(account.PermissionsList.Select(p => p.Id.Value), p => p.Id.Value)];
 
 	private static async Task<IEnumerable<Permission>> GetAllPermissions(AsyncServiceScope scope, CancellationToken ct)
 	{

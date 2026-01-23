@@ -35,10 +35,8 @@ public sealed class PermantlyStartManyParsingHandler(ISubscribedParsersCollectio
 		return saving;
 	}
 
-	private static Result<Unit> PermanentlyStartParsers(Result<SubscribedParsersCollection> parsers)
-	{
-		return parsers.IsFailure ? parsers.Error : parsers.Value.PermanentlyEnableAll();
-	}
+	private static Result<Unit> PermanentlyStartParsers(Result<SubscribedParsersCollection> parsers) =>
+		parsers.IsFailure ? parsers.Error : parsers.Value.PermanentlyEnableAll();
 
 	private async Task<Result<SubscribedParsersCollection>> GetParsers(
 		IEnumerable<Guid> identifiers,

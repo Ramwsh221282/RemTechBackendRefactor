@@ -26,10 +26,7 @@ public sealed class SubscribedParserLink
 	public ParsingStatistics Statistics { get; private set; }
 	public bool Active { get; private set; }
 
-	public void ResetWorkTime()
-	{
-		Statistics = Statistics.ResetWorkTime();
-	}
+	public void ResetWorkTime() => Statistics = Statistics.ResetWorkTime();
 
 	public Result AddParsedCount(int count)
 	{

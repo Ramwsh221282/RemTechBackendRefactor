@@ -26,8 +26,5 @@ public sealed class TicketTableMigration : Migration
 		Execute.Sql("CREATE INDEX IF NOT EXISTS idx_tickets_creator_id ON identity_module.tickets(creator_id)");
 	}
 
-	public override void Down()
-	{
-		Delete.Table("tickets").InSchema("identity_module");
-	}
+	public override void Down() => Delete.Table("tickets").InSchema("identity_module");
 }

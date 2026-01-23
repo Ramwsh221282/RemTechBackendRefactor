@@ -8,10 +8,8 @@ public sealed class FrontendOptions
 {
 	public string FrontendUrl { get; set; } = string.Empty;
 
-	public static void AddFrontendOptions(IServiceCollection services)
-	{
+	public static void AddFrontendOptions(IServiceCollection services) =>
 		services.AddOptions<FrontendOptions>().BindConfiguration(nameof(FrontendOptions));
-	}
 
 	public static void ReconfigureOptions(IServiceCollection services, FrontendOptions reconfigured)
 	{

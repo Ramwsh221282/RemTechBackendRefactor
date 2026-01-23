@@ -43,7 +43,7 @@ public sealed class Vehicle(
 
 	public void AddCharacteristics(IEnumerable<VehicleCharacteristicToAdd> characteristics)
 	{
-		var comparer = new VehicleCharacteristicByNameComparer();
+		VehicleCharacteristicByNameComparer comparer = new VehicleCharacteristicByNameComparer();
 		HashSet<VehicleCharacteristic> result = new(comparer);
 		foreach (VehicleCharacteristicToAdd characteristic in characteristics)
 			result.Add(new VehicleCharacteristic(this, characteristic.Characteristic, characteristic.Value));

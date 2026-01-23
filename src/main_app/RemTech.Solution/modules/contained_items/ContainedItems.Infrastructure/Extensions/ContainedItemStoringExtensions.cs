@@ -6,10 +6,7 @@ public static class ContainedItemStoringExtensions
 {
 	extension(IEnumerable<ContainedItem> items)
 	{
-		internal object[] ExtractForParameters()
-		{
-			return items.Select(i => i.ExtractForParameter()).ToArray();
-		}
+		internal object[] ExtractForParameters() => items.Select(i => i.ExtractForParameter()).ToArray();
 	}
 
 	extension(ContainedItem item)

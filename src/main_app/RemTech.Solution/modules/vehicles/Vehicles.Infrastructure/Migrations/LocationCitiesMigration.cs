@@ -5,8 +5,7 @@ namespace Vehicles.Infrastructure.Migrations;
 [Migration(1767086200)]
 public sealed class LocationCitiesMigration : Migration
 {
-	public override void Up()
-	{
+	public override void Up() =>
 		Execute.Sql(
 			"""
 			CREATE TABLE IF NOT EXISTS vehicles_module.cities (
@@ -18,10 +17,6 @@ public sealed class LocationCitiesMigration : Migration
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_cities_name ON vehicles_module.cities(name);
 			"""
 		);
-	}
 
-	public override void Down()
-	{
-		Delete.Table("cities").InSchema("vehicles_module");
-	}
+	public override void Down() => Delete.Table("cities").InSchema("vehicles_module");
 }

@@ -46,10 +46,7 @@ public sealed class Account(
 		return Result.Success(Unit.Value);
 	}
 
-	public Result<AccountTicket> CreateTicket(string purpose)
-	{
-		return AccountTicket.New(this, purpose);
-	}
+	public Result<AccountTicket> CreateTicket(string purpose) => AccountTicket.New(this, purpose);
 
 	public Result<Unit> AddPermissions(IEnumerable<Permission> permissions)
 	{

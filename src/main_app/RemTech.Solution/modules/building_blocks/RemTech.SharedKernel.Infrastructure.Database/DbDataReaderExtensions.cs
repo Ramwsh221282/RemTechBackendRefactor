@@ -20,10 +20,8 @@ public static class DbDataReaderExtensions
 		};
 	}
 
-	public static bool IsNull(this IDataReader reader, string columnName)
-	{
-		return reader.IsDBNull(reader.GetOrdinal(columnName));
-	}
+	public static bool IsNull(this IDataReader reader, string columnName) =>
+		reader.IsDBNull(reader.GetOrdinal(columnName));
 
 	public static T? GetNullable<T>(this IDataReader reader, string columnName)
 		where T : struct

@@ -15,10 +15,7 @@ public sealed record ParsingWorkTime
 		TotalElapsedSeconds = totalElapsedSeconds;
 	}
 
-	public static ParsingWorkTime New()
-	{
-		return new ParsingWorkTime(InitialValue);
-	}
+	public static ParsingWorkTime New() => new(InitialValue);
 
 	public static Result<ParsingWorkTime> FromTotalElapsedSeconds(long totalElapsedSeconds)
 	{

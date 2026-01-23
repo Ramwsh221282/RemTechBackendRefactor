@@ -5,8 +5,7 @@ namespace Identity.Infrastructure.Accounts.Migrations;
 [Migration(1767457500)]
 public sealed class AccountPermissionsMigration : Migration
 {
-	public override void Up()
-	{
+	public override void Up() =>
 		Execute.Sql(
 			"""
 			CREATE TABLE IF NOT EXISTS identity_module.account_permissions (
@@ -18,10 +17,6 @@ public sealed class AccountPermissionsMigration : Migration
 			);
 			"""
 		);
-	}
 
-	public override void Down()
-	{
-		Execute.Sql("DROP TABLE IF EXISTS identity_module.account_permissions;");
-	}
+	public override void Down() => Execute.Sql("DROP TABLE IF EXISTS identity_module.account_permissions;");
 }

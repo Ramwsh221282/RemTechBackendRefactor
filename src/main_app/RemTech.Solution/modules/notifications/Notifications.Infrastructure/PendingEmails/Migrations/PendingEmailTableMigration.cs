@@ -5,8 +5,7 @@ namespace Notifications.Infrastructure.PendingEmails.Migrations;
 [Migration(1767617300)]
 public sealed class PendingEmailTableMigration : Migration
 {
-	public override void Up()
-	{
+	public override void Up() =>
 		Execute.Sql(
 			"""
 			CREATE TABLE IF NOT EXISTS notifications_module.pending_emails
@@ -19,10 +18,6 @@ public sealed class PendingEmailTableMigration : Migration
 			)
 			"""
 		);
-	}
 
-	public override void Down()
-	{
-		Execute.Sql("DROP TABLE IF EXISTS notifications_module.pending_emails");
-	}
+	public override void Down() => Execute.Sql("DROP TABLE IF EXISTS notifications_module.pending_emails");
 }

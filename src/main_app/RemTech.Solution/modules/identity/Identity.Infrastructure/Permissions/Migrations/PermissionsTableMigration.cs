@@ -23,8 +23,5 @@ public sealed class PermissionsTableMigration : Migration
 		Execute.Sql("CREATE INDEX IF NOT EXISTS idx_permissions_name ON identity_module.permissions(name)");
 	}
 
-	public override void Down()
-	{
-		Delete.Table("permissions").InSchema("identity_module");
-	}
+	public override void Down() => Delete.Table("permissions").InSchema("identity_module");
 }

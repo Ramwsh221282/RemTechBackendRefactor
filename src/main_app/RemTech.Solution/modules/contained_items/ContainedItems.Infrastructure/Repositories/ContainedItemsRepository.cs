@@ -30,7 +30,7 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
 			{lockClause}
 			{limitClause}
 			""";
-		CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
 		return await session.QueryMultipleUsingReader(command, MapFromReader);
 	}
 
@@ -79,15 +79,10 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
 		return filters.Count == 0 ? (parameters, string.Empty) : (parameters, $"WHERE {string.Join(" AND ", filters)}");
 	}
 
-	private static string LimitClause(ContainedItemsQuery query)
-	{
-		return query.Limit.HasValue ? $"LIMIT {query.Limit.Value}" : string.Empty;
-	}
+	private static string LimitClause(ContainedItemsQuery query) =>
+		query.Limit.HasValue ? $"LIMIT {query.Limit.Value}" : string.Empty;
 
-	private static string LockClause(ContainedItemsQuery query)
-	{
-		return query.WithLock ? "FOR UPDATE" : string.Empty;
-	}
+	private static string LockClause(ContainedItemsQuery query) => query.WithLock ? "FOR UPDATE" : string.Empty;
 
 	private static ContainedItem MapFromReader(IDataReader reader)
 	{

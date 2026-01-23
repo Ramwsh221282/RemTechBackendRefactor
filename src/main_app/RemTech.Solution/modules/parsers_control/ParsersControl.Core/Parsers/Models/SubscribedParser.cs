@@ -367,15 +367,12 @@ public sealed class SubscribedParser
 		ParsingStatistics statistics = ParsingStatistics.New();
 		SubscribedParserState state = SubscribedParserState.Disabled;
 		SubscribedParserSchedule schedule = SubscribedParserSchedule.New();
-		SubscribedParser parser = new SubscribedParser(id, identity, statistics, state, schedule);
+		SubscribedParser parser = new(id, identity, statistics, state, schedule);
 		await repository.Add(parser, ct: ct);
 		return parser;
 	}
 
-	public static SubscribedParser CreateCopy(SubscribedParser parser)
-	{
-		return new SubscribedParser(parser);
-	}
+	public static SubscribedParser CreateCopy(SubscribedParser parser) => new(parser);
 
 	private bool BelongsToParser(SubscribedParserLink link) => link.ParserId == Id;
 
@@ -406,13 +403,7 @@ public sealed class SubscribedParser
 		return Result.Success(Schedule.WaitDays.Value);
 	}
 
-	private bool HasNoLinks()
-	{
-		return Links.Count == 0;
-	}
+	private bool HasNoLinks() => Links.Count == 0;
 
-	private bool AllLinksAreInactive()
-	{
-		return Links.All(l => !l.Active);
-	}
+	private bool AllLinksAreInactive() => Links.All(l => !l.Active);
 }

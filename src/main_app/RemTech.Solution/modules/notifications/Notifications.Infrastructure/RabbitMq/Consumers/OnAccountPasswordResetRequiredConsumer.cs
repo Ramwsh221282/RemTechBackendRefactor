@@ -82,7 +82,7 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
 	private async Task<Result<Unit>> HandleMessage(ResetPasswordRequiredMessage message, string confirmationUrl)
 	{
 		string body = $"Для сброса пароля учетной записи необходимо перейти по ссылке: {confirmationUrl}";
-		string subject = "Сброс пароля";
+		const string subject = "Сброс пароля";
 		string recipient = message.AccountEmail;
 		AddPendingEmailCommand command = new(Recipient: recipient, Subject: subject, Body: body);
 		return await Services.CreatePendingMessage(command);
