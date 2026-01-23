@@ -2,66 +2,66 @@
 
 public abstract class ErrorException : Exception
 {
-    public ErrorException(string error)
-        : base(error) => Error = error;
+	public ErrorException(string error)
+		: base(error) => Error = error;
 
-    public string Error { get; }
+	public string Error { get; }
 
-    public class ConflictException(string error) : ErrorException(error);
+	public class ConflictException(string error) : ErrorException(error);
 
-    public class NotFoundException(string error) : ErrorException(error);
+	public class NotFoundException(string error) : ErrorException(error);
 
-    public class ValidationException(string error) : ErrorException(error);
+	public class ValidationException(string error) : ErrorException(error);
 
-    public class InternalException(string error) : ErrorException(error);
+	public class InternalException(string error) : ErrorException(error);
 
-    public static ConflictException Conflict(string message)
-    {
-        return new ConflictException(message);
-    }
+	public static ConflictException Conflict(string message)
+	{
+		return new ConflictException(message);
+	}
 
-    public static NotFoundException NotFound(string message)
-    {
-        return new NotFoundException(message);
-    }
+	public static NotFoundException NotFound(string message)
+	{
+		return new NotFoundException(message);
+	}
 
-    public static ValidationException Validation(string message)
-    {
-        return new ValidationException(message);
-    }
+	public static ValidationException Validation(string message)
+	{
+		return new ValidationException(message);
+	}
 
-    public static ValidationException ValueNotSet(string valueName)
-    {
-        string message = $"{valueName}. Значение не заполнено.";
-        return Validation(message);
-    }
+	public static ValidationException ValueNotSet(string valueName)
+	{
+		string message = $"{valueName}. Значение не заполнено.";
+		return Validation(message);
+	}
 
-    public static ValidationException ValueExcess(string valueName, int length)
-    {
-        string message = $"{valueName}. Превышает длину {length}.";
-        return Validation(message);
-    }
+	public static ValidationException ValueExcess(string valueName, int length)
+	{
+		string message = $"{valueName}. Превышает длину {length}.";
+		return Validation(message);
+	}
 
-    public static ValidationException ValueInvalidFormat(string valueName)
-    {
-        string message = $"{valueName}. Некорректный формат.";
-        return Validation(message);
-    }
+	public static ValidationException ValueInvalidFormat(string valueName)
+	{
+		string message = $"{valueName}. Некорректный формат.";
+		return Validation(message);
+	}
 
-    public static ValidationException ValueInvalid(string valueName)
-    {
-        string message = $"{valueName}. Невалидное значение.";
-        return Validation(message);
-    }
+	public static ValidationException ValueInvalid(string valueName)
+	{
+		string message = $"{valueName}. Невалидное значение.";
+		return Validation(message);
+	}
 
-    public static ValidationException ValueInvalid(string valueName, string value)
-    {
-        string message = $"{valueName}. Невалидное значение {value}.";
-        return Validation(message);
-    }
+	public static ValidationException ValueInvalid(string valueName, string value)
+	{
+		string message = $"{valueName}. Невалидное значение {value}.";
+		return Validation(message);
+	}
 
-    public static InternalException Internal(string message)
-    {
-        return new InternalException(message);
-    }
+	public static InternalException Internal(string message)
+	{
+		return new InternalException(message);
+	}
 }

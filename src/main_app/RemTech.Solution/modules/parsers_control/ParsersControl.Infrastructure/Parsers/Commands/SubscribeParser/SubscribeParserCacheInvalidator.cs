@@ -6,18 +6,18 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.CacheInvalidate;
 namespace ParsersControl.Infrastructure.Parsers.Commands.SubscribeParser;
 
 public sealed class SubscribeParserCacheInvalidator(
-    CachedParserArrayInvalidator arrayInvalidator,
-    ParserCacheRecordInvalidator recordInvalidator
+	CachedParserArrayInvalidator arrayInvalidator,
+	ParserCacheRecordInvalidator recordInvalidator
 ) : ICacheInvalidator<SubscribeParserCommand, SubscribedParser>
 {
-    public async Task InvalidateCache(
-        SubscribeParserCommand command,
-        SubscribedParser result,
-        CancellationToken ct = default
-    )
-    {
-        Task[] tasks = [arrayInvalidator.Invalidate(ct), recordInvalidator.Invalidate(result, ct)];
+	public async Task InvalidateCache(
+		SubscribeParserCommand command,
+		SubscribedParser result,
+		CancellationToken ct = default
+	)
+	{
+		Task[] tasks = [arrayInvalidator.Invalidate(ct), recordInvalidator.Invalidate(result, ct)];
 
-        await Task.WhenAll(tasks);
-    }
+		await Task.WhenAll(tasks);
+	}
 }

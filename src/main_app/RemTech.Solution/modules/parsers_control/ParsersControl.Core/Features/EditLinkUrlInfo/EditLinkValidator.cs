@@ -7,9 +7,9 @@ namespace ParsersControl.Core.Features.EditLinkUrlInfo;
 
 public sealed class EditLinkValidator : AbstractValidator<EditLinkUrlInfoCommand>
 {
-    public EditLinkValidator()
-    {
-        RuleFor(x => x.ParserId).MustBeValid(SubscribedParserId.Create);
-        RuleFor(x => x.LinkId).MustBeValid(SubscribedParserLinkId.From);
-    }
+	public EditLinkValidator()
+	{
+		RuleFor(x => x.ParserId).MustBeValid(SubscribedParserId.Create);
+		RuleFor(x => x.LinkId).MustBeValid(SubscribedParserLinkId.From);
+	}
 }

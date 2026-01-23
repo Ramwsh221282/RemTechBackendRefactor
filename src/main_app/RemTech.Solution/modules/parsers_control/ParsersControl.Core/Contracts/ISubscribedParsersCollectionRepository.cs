@@ -5,6 +5,6 @@ namespace ParsersControl.Core.Contracts;
 
 public interface ISubscribedParsersCollectionRepository
 {
-    Task<SubscribedParsersCollection> Get(SubscribedParsersCollectionQuery query, CancellationToken ct = default);
-    Task<Result<Unit>> SaveChanges(SubscribedParsersCollection collection, CancellationToken ct = default);
+	Task<SubscribedParsersCollection> Get(SubscribedParsersCollectionQuery query, CancellationToken ct = default);
+	Task<Result<Unit>> SaveChanges(SubscribedParsersCollection collection, CancellationToken ct = default);
 }

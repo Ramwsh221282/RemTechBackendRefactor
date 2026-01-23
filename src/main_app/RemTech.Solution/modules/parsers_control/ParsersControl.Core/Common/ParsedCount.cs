@@ -4,27 +4,28 @@ namespace ParsersControl.Core.Common;
 
 public readonly record struct ParsedCount
 {
-    public int Value { get; private init; }
-    
-    public ParsedCount() => Value = 0;
-    
-    private ParsedCount(int value) => Value = value;
+	public int Value { get; private init; }
 
-    public Result<ParsedCount> Add(int amount)
-    {
-        if (amount < 0) return Error.Validation("Количество добавляемых данных парсером не может быть отрицательным.");
-        return new ParsedCount(Value + amount);
-    }
-    
-    public static Result<ParsedCount> Create(int value)
-    {
-        return value < 0
-            ? Error.Validation("Количество обработанных данных парсером не может быть отрицательным.")
-            : new ParsedCount(value);
-    }
+	public ParsedCount() => Value = 0;
 
-    public static ParsedCount New()
-    {
-        return Create(0).Value;
-    }
+	private ParsedCount(int value) => Value = value;
+
+	public Result<ParsedCount> Add(int amount)
+	{
+		if (amount < 0)
+			return Error.Validation("Количество добавляемых данных парсером не может быть отрицательным.");
+		return new ParsedCount(Value + amount);
+	}
+
+	public static Result<ParsedCount> Create(int value)
+	{
+		return value < 0
+			? Error.Validation("Количество обработанных данных парсером не может быть отрицательным.")
+			: new ParsedCount(value);
+	}
+
+	public static ParsedCount New()
+	{
+		return Create(0).Value;
+	}
 }

@@ -2,5 +2,5 @@
 
 public interface ITransactionSource
 {
-    Task<ITransactionScope> BeginTransaction(CancellationToken ct = default);
+	Task<ITransactionScope> BeginTransaction(CancellationToken ct = default);
 }

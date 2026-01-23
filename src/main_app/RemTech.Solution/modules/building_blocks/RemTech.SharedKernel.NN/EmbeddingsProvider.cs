@@ -7,194 +7,189 @@ namespace RemTech.SharedKernel.NN;
 
 public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> options)
 {
-    private Lazy<InferenceSession> TokenizerSessionLazy { get; } = new(MakeTokenizerSession(options.Value));
-    private Lazy<InferenceSession> ModelSessionLazy { get; } = new(MakeModelSession(options.Value));
-    
-    private InferenceSession Tokenizer => TokenizerSessionLazy.Value;
-    private InferenceSession Model => ModelSessionLazy.Value;
-    private bool Disposed { get; set; }
+	private Lazy<InferenceSession> TokenizerSessionLazy { get; } = new(MakeTokenizerSession(options.Value));
+	private Lazy<InferenceSession> ModelSessionLazy { get; } = new(MakeModelSession(options.Value));
 
-    public IReadOnlyList<ReadOnlyMemory<float>> GenerateBatch(IReadOnlyList<string> texts)
-    {
-        if (texts == null) throw new ArgumentNullException(nameof(texts));
-        if (texts.Count == 0) return Array.Empty<ReadOnlyMemory<float>>();
+	private InferenceSession Tokenizer => TokenizerSessionLazy.Value;
+	private InferenceSession Model => ModelSessionLazy.Value;
+	private bool Disposed { get; set; }
 
-        int batchSize = texts.Count;
-        int[][] tokenArrays = new int[batchSize][];
-        int[] lengths = new int[batchSize];
-        int maxLen = 0;
+	public IReadOnlyList<ReadOnlyMemory<float>> GenerateBatch(IReadOnlyList<string> texts)
+	{
+		if (texts == null)
+			throw new ArgumentNullException(nameof(texts));
+		if (texts.Count == 0)
+			return Array.Empty<ReadOnlyMemory<float>>();
 
-        for (int i = 0; i < batchSize; i++)
-        {
-            EmbeddingData embeddingData = TokenizeSingle(texts[i]);
+		int batchSize = texts.Count;
+		int[][] tokenArrays = new int[batchSize][];
+		int[] lengths = new int[batchSize];
+		int maxLen = 0;
 
-            int len = embeddingData.Length;
-            lengths[i] = len;
-            if (len > maxLen) maxLen = len;
+		for (int i = 0; i < batchSize; i++)
+		{
+			EmbeddingData embeddingData = TokenizeSingle(texts[i]);
 
-            int[] sortedTokens = new int[len];
-            embeddingData.CopySortedTokensTo(sortedTokens);
-            tokenArrays[i] = sortedTokens;
-        }
-        
-        DenseTensor<long> inputIdsTensor = new DenseTensor<long>(new[] { batchSize, maxLen });
-        DenseTensor<long> attentionMaskTensor = new DenseTensor<long>(new[] { batchSize, maxLen });
+			int len = embeddingData.Length;
+			lengths[i] = len;
+			if (len > maxLen)
+				maxLen = len;
 
-        const long padTokenId = 0;
-        for (int b = 0; b < batchSize; b++)
-        {
-            int len = lengths[b];
-            int[] tokens = tokenArrays[b];
-            
-            for (int i = 0; i < len; i++)
-            {
-                inputIdsTensor[b, i] = tokens[i];
-                attentionMaskTensor[b, i] = 1;
-            }
-            
-            for (int i = len; i < maxLen; i++)
-            {
-                inputIdsTensor[b, i] = padTokenId;
-                attentionMaskTensor[b, i] = 0;
-            }
-        }
+			int[] sortedTokens = new int[len];
+			embeddingData.CopySortedTokensTo(sortedTokens);
+			tokenArrays[i] = sortedTokens;
+		}
 
-        var modelInputs = new[]
-        {
-            NamedOnnxValue.CreateFromTensor("input_ids", inputIdsTensor),
-            NamedOnnxValue.CreateFromTensor("attention_mask", attentionMaskTensor),
-        };
-        
-        using IDisposableReadOnlyCollection<DisposableNamedOnnxValue> modelResults = Model.Run(modelInputs);
-        Tensor<float> outputTensor = modelResults[1].AsTensor<float>();
-        
-        if (outputTensor.Dimensions.Length != 2)
-            throw new NotSupportedException(
-                $"Expected 2D output [batch, hiddenDim], got rank {outputTensor.Dimensions.Length}");
+		DenseTensor<long> inputIdsTensor = new DenseTensor<long>(new[] { batchSize, maxLen });
+		DenseTensor<long> attentionMaskTensor = new DenseTensor<long>(new[] { batchSize, maxLen });
 
-        int outBatch = outputTensor.Dimensions[0];
-        int hiddenDim = outputTensor.Dimensions[1];
+		const long padTokenId = 0;
+		for (int b = 0; b < batchSize; b++)
+		{
+			int len = lengths[b];
+			int[] tokens = tokenArrays[b];
 
-        if (outBatch != batchSize)
-            throw new InvalidOperationException($"Model output batch size {outBatch} != input batch size {batchSize}");
+			for (int i = 0; i < len; i++)
+			{
+				inputIdsTensor[b, i] = tokens[i];
+				attentionMaskTensor[b, i] = 1;
+			}
 
-        ReadOnlyMemory<float>[] result = new ReadOnlyMemory<float>[batchSize];
+			for (int i = len; i < maxLen; i++)
+			{
+				inputIdsTensor[b, i] = padTokenId;
+				attentionMaskTensor[b, i] = 0;
+			}
+		}
 
-        for (int b = 0; b < batchSize; b++)
-        {
-            var arr = new float[hiddenDim];
-            for (int h = 0; h < hiddenDim; h++)
-                arr[h] = outputTensor[b, h];
+		var modelInputs = new[]
+		{
+			NamedOnnxValue.CreateFromTensor("input_ids", inputIdsTensor),
+			NamedOnnxValue.CreateFromTensor("attention_mask", attentionMaskTensor),
+		};
 
-            result[b] = arr;
-        }
+		using IDisposableReadOnlyCollection<DisposableNamedOnnxValue> modelResults = Model.Run(modelInputs);
+		Tensor<float> outputTensor = modelResults[1].AsTensor<float>();
 
-        return result;
-    }
-    
-    private EmbeddingData TokenizeSingle(string text)
-    {
-        var stringTensor = new DenseTensor<string>(new[] { 1 });
-        stringTensor[0] = text;
+		if (outputTensor.Dimensions.Length != 2)
+			throw new NotSupportedException(
+				$"Expected 2D output [batch, hiddenDim], got rank {outputTensor.Dimensions.Length}"
+			);
 
-        NamedOnnxValue[] tokenizerInputs =
-        {
-            NamedOnnxValue.CreateFromTensor("inputs", stringTensor),
-        };
+		int outBatch = outputTensor.Dimensions[0];
+		int hiddenDim = outputTensor.Dimensions[1];
 
-        return EmbeddingData.Create(tokenizerInputs, Tokenizer);
-    }
-    
-    public ReadOnlyMemory<float> Generate(string text)
-    {
-        DenseTensor<string> stringTensor = new DenseTensor<string>(new[] { 1 });
-        stringTensor[0] = text;
+		if (outBatch != batchSize)
+			throw new InvalidOperationException($"Model output batch size {outBatch} != input batch size {batchSize}");
 
-        NamedOnnxValue[] tokenizerInputs = new[]
-        {
-            NamedOnnxValue.CreateFromTensor("inputs", stringTensor),
-        };
+		ReadOnlyMemory<float>[] result = new ReadOnlyMemory<float>[batchSize];
 
-        EmbeddingData embeddingData = EmbeddingData.Create(tokenizerInputs, Tokenizer);
+		for (int b = 0; b < batchSize; b++)
+		{
+			var arr = new float[hiddenDim];
+			for (int h = 0; h < hiddenDim; h++)
+				arr[h] = outputTensor[b, h];
 
-        int len = embeddingData.Length;
-        DenseTensor<long> inputIdsTensor = new DenseTensor<long>(new[] { 1, len });
-        DenseTensor<long> attentionMaskTensor = new DenseTensor<long>(new[] { 1, len });
-        Span<int> sortedTokens = len <= 256 ? stackalloc int[len] : new int[len];
-        embeddingData.CopySortedTokensTo(sortedTokens);
+			result[b] = arr;
+		}
 
-        for (int i = 0; i < len; i++)
-        {
-            inputIdsTensor[0, i] = sortedTokens[i];
-            attentionMaskTensor[0, i] = 1;
-        }
+		return result;
+	}
 
-        var modelInputs = new[]
-        {
-            NamedOnnxValue.CreateFromTensor("input_ids", inputIdsTensor),
-            NamedOnnxValue.CreateFromTensor("attention_mask", attentionMaskTensor),
-        };
+	private EmbeddingData TokenizeSingle(string text)
+	{
+		var stringTensor = new DenseTensor<string>(new[] { 1 });
+		stringTensor[0] = text;
 
-        return GetEmbeddings(modelInputs, Model);
-    }
-     
-    private static ReadOnlyMemory<float> GetEmbeddings(
-        IReadOnlyList<NamedOnnxValue> modelInputs,
-        InferenceSession modelSession)
-    {
-        using IDisposableReadOnlyCollection<DisposableNamedOnnxValue>? modelResults = modelSession.Run(modelInputs);
-        Tensor<float>? tensor = modelResults[1].AsTensor<float>();
-        return new ReadOnlyMemory<float>(tensor.ToArray());
-    }
+		NamedOnnxValue[] tokenizerInputs = { NamedOnnxValue.CreateFromTensor("inputs", stringTensor) };
 
-    private static ReadOnlyMemory<float> GetEmbeddings(
-        List<NamedOnnxValue> modelInputs,
-        InferenceSession modelSession
-    )
-    {
-        using IDisposableReadOnlyCollection<DisposableNamedOnnxValue>? modelResults =
-            modelSession.Run(modelInputs);
-        float[] sentenceEmbedding = modelResults[1].AsTensor<float>().ToArray();
-        return sentenceEmbedding;
-    }
+		return EmbeddingData.Create(tokenizerInputs, Tokenizer);
+	}
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+	public ReadOnlyMemory<float> Generate(string text)
+	{
+		DenseTensor<string> stringTensor = new DenseTensor<string>(new[] { 1 });
+		stringTensor[0] = text;
 
-    private void Dispose(bool disposing)
-    {
-        if (!Disposed)
-        {
-            if (disposing)
-            {
-                TokenizerSessionLazy.Value.Dispose();
-                ModelSessionLazy.Value.Dispose();
-            }
-            Disposed = true;
-        }
-    }
+		NamedOnnxValue[] tokenizerInputs = new[] { NamedOnnxValue.CreateFromTensor("inputs", stringTensor) };
 
-    ~EmbeddingsProvider()
-    {
-        Dispose(false);
-    }
+		EmbeddingData embeddingData = EmbeddingData.Create(tokenizerInputs, Tokenizer);
 
-    private static InferenceSession MakeTokenizerSession(EmbeddingsProviderOptions options)
-    {
-        options.Validate();
-        SessionOptions tokenizerOptions = new();
-        tokenizerOptions.RegisterOrtExtensions();
-        return new InferenceSession(options.TokenizerPath, tokenizerOptions);
-    }
+		int len = embeddingData.Length;
+		DenseTensor<long> inputIdsTensor = new DenseTensor<long>(new[] { 1, len });
+		DenseTensor<long> attentionMaskTensor = new DenseTensor<long>(new[] { 1, len });
+		Span<int> sortedTokens = len <= 256 ? stackalloc int[len] : new int[len];
+		embeddingData.CopySortedTokensTo(sortedTokens);
 
-    private static InferenceSession MakeModelSession(EmbeddingsProviderOptions options)
-    {
-        options.Validate();
-        SessionOptions modelOptions = new();
-        modelOptions.GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL;
-        return new InferenceSession(options.ModelPath, modelOptions);
-    }
+		for (int i = 0; i < len; i++)
+		{
+			inputIdsTensor[0, i] = sortedTokens[i];
+			attentionMaskTensor[0, i] = 1;
+		}
+
+		var modelInputs = new[]
+		{
+			NamedOnnxValue.CreateFromTensor("input_ids", inputIdsTensor),
+			NamedOnnxValue.CreateFromTensor("attention_mask", attentionMaskTensor),
+		};
+
+		return GetEmbeddings(modelInputs, Model);
+	}
+
+	private static ReadOnlyMemory<float> GetEmbeddings(
+		IReadOnlyList<NamedOnnxValue> modelInputs,
+		InferenceSession modelSession
+	)
+	{
+		using IDisposableReadOnlyCollection<DisposableNamedOnnxValue>? modelResults = modelSession.Run(modelInputs);
+		Tensor<float>? tensor = modelResults[1].AsTensor<float>();
+		return new ReadOnlyMemory<float>(tensor.ToArray());
+	}
+
+	private static ReadOnlyMemory<float> GetEmbeddings(List<NamedOnnxValue> modelInputs, InferenceSession modelSession)
+	{
+		using IDisposableReadOnlyCollection<DisposableNamedOnnxValue>? modelResults = modelSession.Run(modelInputs);
+		float[] sentenceEmbedding = modelResults[1].AsTensor<float>().ToArray();
+		return sentenceEmbedding;
+	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	private void Dispose(bool disposing)
+	{
+		if (!Disposed)
+		{
+			if (disposing)
+			{
+				TokenizerSessionLazy.Value.Dispose();
+				ModelSessionLazy.Value.Dispose();
+			}
+			Disposed = true;
+		}
+	}
+
+	~EmbeddingsProvider()
+	{
+		Dispose(false);
+	}
+
+	private static InferenceSession MakeTokenizerSession(EmbeddingsProviderOptions options)
+	{
+		options.Validate();
+		SessionOptions tokenizerOptions = new();
+		tokenizerOptions.RegisterOrtExtensions();
+		return new InferenceSession(options.TokenizerPath, tokenizerOptions);
+	}
+
+	private static InferenceSession MakeModelSession(EmbeddingsProviderOptions options)
+	{
+		options.Validate();
+		SessionOptions modelOptions = new();
+		modelOptions.GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL;
+		return new InferenceSession(options.ModelPath, modelOptions);
+	}
 }

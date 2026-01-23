@@ -5,7 +5,6 @@ namespace WebHostApplication.ActionFilters.Attributes;
 
 public sealed class NotificationsManagementPermissionAttribute : TypeFilterAttribute
 {
-    public NotificationsManagementPermissionAttribute() : base(typeof(ShouldHaveNotificationsManagementPermissionFilter))
-    {
-    }
+	public NotificationsManagementPermissionAttribute()
+		: base(typeof(ShouldHaveNotificationsManagementPermissionFilter)) { }
 }

@@ -7,8 +7,8 @@ namespace Identity.Domain.Contracts.Jwt;
 
 public interface IJwtTokenManager
 {
-    AccessToken GenerateToken(Account account);
-    AccessToken ReadToken(string tokenString);
-    Task<Result<TokenValidationResult>> GetValidToken(string jwtToken);
-    RefreshToken GenerateRefreshToken(Guid accountId);
+	AccessToken GenerateToken(Account account);
+	AccessToken ReadToken(string tokenString);
+	Task<Result<TokenValidationResult>> GetValidToken(string jwtToken);
+	RefreshToken GenerateRefreshToken(Guid accountId);
 }

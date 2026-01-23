@@ -7,9 +7,9 @@ namespace ParsersControl.Core.Features.DeleteLinkFromParser;
 
 public sealed class DeleteLinkFromParserValidator : AbstractValidator<DeleteLinkFromParserCommand>
 {
-    public DeleteLinkFromParserValidator()
-    {
-        RuleFor(c => c.ParserId).MustBeValid(SubscribedParserId.Create);
-        RuleFor(c => c.LinkId).MustBeValid(SubscribedParserLinkId.From);
-    }
+	public DeleteLinkFromParserValidator()
+	{
+		RuleFor(c => c.ParserId).MustBeValid(SubscribedParserId.Create);
+		RuleFor(c => c.LinkId).MustBeValid(SubscribedParserLinkId.From);
+	}
 }

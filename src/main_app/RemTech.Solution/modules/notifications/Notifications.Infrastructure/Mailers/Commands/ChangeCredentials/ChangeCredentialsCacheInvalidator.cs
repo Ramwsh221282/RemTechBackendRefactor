@@ -6,22 +6,14 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.CacheInvalidate;
 namespace Notifications.Infrastructure.Mailers.Commands.ChangeCredentials;
 
 public sealed class ChangeCredentialsCacheInvalidator(
-    MailerArrayCacheInvalidator arrayCacheInvalidator,
-    MailerRecordCacheInvalidator recordCacheInvalidator
+	MailerArrayCacheInvalidator arrayCacheInvalidator,
+	MailerRecordCacheInvalidator recordCacheInvalidator
 ) : ICacheInvalidator<ChangeCredentialsCommand, Mailer>
 {
-    public async Task InvalidateCache(
-        ChangeCredentialsCommand command,
-        Mailer result,
-        CancellationToken ct = default
-    )
-    {
-        Task[] tasks =
-        [
-            arrayCacheInvalidator.Invalidate(ct),
-            recordCacheInvalidator.Invalidate(result.Id.Value, ct),
-        ];
+	public async Task InvalidateCache(ChangeCredentialsCommand command, Mailer result, CancellationToken ct = default)
+	{
+		Task[] tasks = [arrayCacheInvalidator.Invalidate(ct), recordCacheInvalidator.Invalidate(result.Id.Value, ct)];
 
-        await Task.WhenAll(tasks);
-    }
+		await Task.WhenAll(tasks);
+	}
 }

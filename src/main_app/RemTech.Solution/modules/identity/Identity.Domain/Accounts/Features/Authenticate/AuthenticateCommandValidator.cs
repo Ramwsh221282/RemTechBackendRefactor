@@ -6,14 +6,10 @@ namespace Identity.Domain.Accounts.Features.Authenticate;
 
 public sealed class AuthenticateCommandValidator : AbstractValidator<AuthenticateCommand>
 {
-    public AuthenticateCommandValidator()
-    {
-        RuleFor(x => x.Email)
-            .MustBeValid(x => AccountEmail.Create(x!))
-            .When(x => !string.IsNullOrWhiteSpace(x.Email));
-        RuleFor(x => x.Login)
-            .MustBeValid(x => AccountLogin.Create(x!))
-            .When(x => !string.IsNullOrWhiteSpace(x.Login));
-        RuleFor(x => x.Password).NotEmpty().WithMessage("Пароль не указан.");
-    }
+	public AuthenticateCommandValidator()
+	{
+		RuleFor(x => x.Email).MustBeValid(x => AccountEmail.Create(x!)).When(x => !string.IsNullOrWhiteSpace(x.Email));
+		RuleFor(x => x.Login).MustBeValid(x => AccountLogin.Create(x!)).When(x => !string.IsNullOrWhiteSpace(x.Login));
+		RuleFor(x => x.Password).NotEmpty().WithMessage("Пароль не указан.");
+	}
 }

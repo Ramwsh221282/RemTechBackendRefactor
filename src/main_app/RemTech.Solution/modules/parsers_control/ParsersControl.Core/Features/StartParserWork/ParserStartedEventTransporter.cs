@@ -5,13 +5,8 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.DomainEvents;
 namespace ParsersControl.Core.Features.StartParserWork;
 
 public sealed class ParserStartedEventTransporter(IOnParserStartedListener listener)
-    : IEventTransporter<StartParserCommand, SubscribedParser>
+	: IEventTransporter<StartParserCommand, SubscribedParser>
 {
-    public async Task Transport(
-        SubscribedParser result,
-        CancellationToken ct = new CancellationToken()
-    )
-    {
-        await listener.Handle(result, ct);
-    }
+	public async Task Transport(SubscribedParser result, CancellationToken ct = new CancellationToken()) =>
+		await listener.Handle(result, ct);
 }

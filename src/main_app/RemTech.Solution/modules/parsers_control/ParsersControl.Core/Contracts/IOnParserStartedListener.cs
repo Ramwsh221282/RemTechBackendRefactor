@@ -4,5 +4,5 @@ namespace ParsersControl.Core.Contracts;
 
 public interface IOnParserStartedListener
 {
-    Task Handle(SubscribedParser parser, CancellationToken ct = default);
+	Task Handle(SubscribedParser parser, CancellationToken ct = default);
 }

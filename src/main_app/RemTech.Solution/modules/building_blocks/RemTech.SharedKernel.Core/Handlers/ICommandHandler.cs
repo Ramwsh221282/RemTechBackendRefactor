@@ -3,7 +3,7 @@
 namespace RemTech.SharedKernel.Core.Handlers;
 
 public interface ICommandHandler<in TCommand, TResult>
-    where TCommand : ICommand
+	where TCommand : ICommand
 {
-    Task<Result<TResult>> Execute(TCommand command, CancellationToken ct = default);
+	Task<Result<TResult>> Execute(TCommand command, CancellationToken ct = default);
 }

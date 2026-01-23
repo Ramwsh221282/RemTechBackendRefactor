@@ -7,17 +7,17 @@ namespace Notifications.Infrastructure.Extensions;
 
 public static class NotificationsServiceProviderExtensions
 {
-    extension(IServiceProvider services)
-    {
-        public async Task<Result<Unit>> CreatePendingMessage(
-            AddPendingEmailCommand command,
-            CancellationToken ct = default
-        )
-        {
-            await using AsyncServiceScope scope = services.CreateAsyncScope();
-            return await scope
-                .ServiceProvider.GetRequiredService<ICommandHandler<AddPendingEmailCommand, Unit>>()
-                .Execute(command, ct);
-        }
-    }
+	extension(IServiceProvider services)
+	{
+		public async Task<Result<Unit>> CreatePendingMessage(
+			AddPendingEmailCommand command,
+			CancellationToken ct = default
+		)
+		{
+			await using AsyncServiceScope scope = services.CreateAsyncScope();
+			return await scope
+				.ServiceProvider.GetRequiredService<ICommandHandler<AddPendingEmailCommand, Unit>>()
+				.Execute(command, ct);
+		}
+	}
 }

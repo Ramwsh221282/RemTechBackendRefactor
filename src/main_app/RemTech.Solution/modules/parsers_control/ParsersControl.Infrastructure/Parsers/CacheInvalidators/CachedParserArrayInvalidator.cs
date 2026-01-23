@@ -5,8 +5,8 @@ namespace ParsersControl.Infrastructure.Parsers.CacheInvalidators;
 
 public sealed class CachedParserArrayInvalidator(HybridCache cache)
 {
-    public async Task Invalidate(CancellationToken ct = default)
-    {
-        await cache.RemoveAsync(ParserCacheContants.Array, cancellationToken: ct);
-    }
+	public async Task Invalidate(CancellationToken ct = default)
+	{
+		await cache.RemoveAsync(ParserCacheContants.Array, cancellationToken: ct);
+	}
 }

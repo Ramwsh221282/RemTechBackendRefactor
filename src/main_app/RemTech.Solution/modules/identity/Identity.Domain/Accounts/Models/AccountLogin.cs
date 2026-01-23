@@ -4,17 +4,17 @@ namespace Identity.Domain.Accounts.Models;
 
 public sealed record AccountLogin
 {
-    public string Value { get; }
+	public string Value { get; }
 
-    private AccountLogin(string value)
-    {
-        Value = value;
-    }
+	private AccountLogin(string value)
+	{
+		Value = value;
+	}
 
-    public static Result<AccountLogin> Create(string value)
-    {
-        return string.IsNullOrWhiteSpace(value)
-            ? Error.Validation("Логин не может быть пустым.")
-            : new AccountLogin(value);
-    }
+	public static Result<AccountLogin> Create(string value)
+	{
+		return string.IsNullOrWhiteSpace(value)
+			? Error.Validation("Логин не может быть пустым.")
+			: new AccountLogin(value);
+	}
 }

@@ -1,7 +1,6 @@
 {
-  "$schema": "https://csharpier.com/schemas/configuration.json",
-  "indent_size": 4,
-  "print_width": 120,
-  "tab_width": 4,
-  "use_tabs": false
+  "printWidth": 120,
+  "useTabs": true,
+  "indentSize": 4,
+  "endOfLine": "auto"
 }

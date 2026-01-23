@@ -10,23 +10,23 @@ namespace WebHostApplication.Modules.vehicles;
 [Route("api/models")]
 public sealed class ModelsController
 {
-    [HttpGet()]
-    public async Task<Envelope> GetModels(
-        [FromQuery(Name = "brandId")] Guid? brandId,
-        [FromQuery(Name = "brandName")] string? brandName,
-        [FromQuery(Name = "categoryId")] Guid? categoryId,
-        [FromQuery(Name = "categoryName")] string? categoryName,
-        [FromServices] IQueryHandler<GetModelsQuery, IEnumerable<ModelResponse>> handler,
-        CancellationToken ct = default
-    )
-    {
-        GetModelsQuery query = new GetModelsQuery()
-            .ForBrandId(brandId)
-            .ForBrandName(brandName)
-            .ForCategoryId(categoryId)
-            .ForCategoryName(categoryName);
+	[HttpGet()]
+	public async Task<Envelope> GetModels(
+		[FromQuery(Name = "brandId")] Guid? brandId,
+		[FromQuery(Name = "brandName")] string? brandName,
+		[FromQuery(Name = "categoryId")] Guid? categoryId,
+		[FromQuery(Name = "categoryName")] string? categoryName,
+		[FromServices] IQueryHandler<GetModelsQuery, IEnumerable<ModelResponse>> handler,
+		CancellationToken ct = default
+	)
+	{
+		GetModelsQuery query = new GetModelsQuery()
+			.ForBrandId(brandId)
+			.ForBrandName(brandName)
+			.ForCategoryId(categoryId)
+			.ForCategoryName(categoryName);
 
-        IEnumerable<ModelResponse> response = await handler.Handle(query, ct);
-        return EnvelopeFactory.Ok(response);
-    }
+		IEnumerable<ModelResponse> response = await handler.Handle(query, ct);
+		return EnvelopeFactory.Ok(response);
+	}
 }

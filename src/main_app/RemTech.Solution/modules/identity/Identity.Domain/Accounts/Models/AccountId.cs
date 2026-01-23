@@ -4,18 +4,18 @@ namespace Identity.Domain.Accounts.Models;
 
 public readonly record struct AccountId
 {
-    public Guid Value { get; }
+	public Guid Value { get; }
 
-    public AccountId() => Value = Guid.NewGuid();
+	public AccountId() => Value = Guid.NewGuid();
 
-    private AccountId(Guid value) => Value = value;
+	private AccountId(Guid value) => Value = value;
 
-    public static AccountId New() => new(Guid.NewGuid());
+	public static AccountId New() => new(Guid.NewGuid());
 
-    public static Result<AccountId> Create(Guid value)
-    {
-        return value == Guid.Empty
-            ? Error.Validation("Идентификатор учетной записи не может быть пустым.")
-            : new AccountId(value);
-    }
+	public static Result<AccountId> Create(Guid value)
+	{
+		return value == Guid.Empty
+			? Error.Validation("Идентификатор учетной записи не может быть пустым.")
+			: new AccountId(value);
+	}
 }

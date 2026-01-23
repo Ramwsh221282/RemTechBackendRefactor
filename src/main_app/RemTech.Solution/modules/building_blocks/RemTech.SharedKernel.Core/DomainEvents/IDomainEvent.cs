@@ -4,5 +4,5 @@ namespace RemTech.SharedKernel.Core.DomainEvents;
 
 public interface IDomainEvent
 {
-    Task PublishTo(IDomainEventHandler handler, CancellationToken ct = default);
+	Task PublishTo(IDomainEventHandler handler, CancellationToken ct = default);
 }

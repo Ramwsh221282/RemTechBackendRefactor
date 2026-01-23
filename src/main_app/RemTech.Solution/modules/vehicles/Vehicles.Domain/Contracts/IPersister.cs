@@ -10,11 +10,11 @@ namespace Vehicles.Domain.Contracts;
 
 public interface IPersister
 {
-    Task<Result<Brand>> Save(Brand brand, CancellationToken ct = default);
-    Task<Result<Model>> Save(Model model, CancellationToken ct = default);
-    Task<Result<Location>> Save(Location location, CancellationToken ct = default);
-    Task<Result<Category>> Save(Category category, CancellationToken ct = default);
-    Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default);
-    Task<Result<VehiclePersistInfo>> Save(VehiclePersistInfo info, CancellationToken ct = default);
-    Task<int> Save(IEnumerable<VehiclePersistInfo> infos, CancellationToken ct = default);
+	Task<Result<Brand>> Save(Brand brand, CancellationToken ct = default);
+	Task<Result<Model>> Save(Model model, CancellationToken ct = default);
+	Task<Result<Location>> Save(Location location, CancellationToken ct = default);
+	Task<Result<Category>> Save(Category category, CancellationToken ct = default);
+	Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default);
+	Task<Result<VehiclePersistInfo>> Save(VehiclePersistInfo info, CancellationToken ct = default);
+	Task<int> Save(IEnumerable<VehiclePersistInfo> infos, CancellationToken ct = default);
 }

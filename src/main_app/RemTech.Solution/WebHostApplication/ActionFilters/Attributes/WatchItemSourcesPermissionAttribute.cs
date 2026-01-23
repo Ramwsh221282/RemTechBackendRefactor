@@ -5,7 +5,6 @@ namespace WebHostApplication.ActionFilters.Attributes;
 
 public sealed class WatchItemSourcesPermissionAttribute : TypeFilterAttribute
 {
-    public WatchItemSourcesPermissionAttribute() : base(typeof(ShouldHaveWatchItemSourcesPermissionFilter))
-    {
-    }
+	public WatchItemSourcesPermissionAttribute()
+		: base(typeof(ShouldHaveWatchItemSourcesPermissionFilter)) { }
 }
