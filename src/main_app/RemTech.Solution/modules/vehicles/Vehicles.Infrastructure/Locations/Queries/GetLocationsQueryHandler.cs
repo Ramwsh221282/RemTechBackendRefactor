@@ -89,9 +89,7 @@ public sealed class GetLocationsQueryHandler(
 	private static string AddIncludes(GetLocationsQuery query, Func<GetLocationsQuery, string>[] includeSource)
 	{
 		string[] includes = [.. includeSource.Select(s => s.Invoke(query)).Where(s => !string.IsNullOrWhiteSpace(s))];
-
-		string include = includes.Length == 0 ? string.Empty : ", " + string.Join(", ", includes);
-		return include;
+		return includes.Length == 0 ? string.Empty : ", " + string.Join(", ", includes);
 	}
 
 	private static string AddOrderBy(GetLocationsQuery query, Func<GetLocationsQuery, string>[] orderBySources)
@@ -155,13 +153,7 @@ public sealed class GetLocationsQueryHandler(
 		ApplyModelsFilter(query, subJoins, subFilters, parameters);
 		ApplyLocationForSubfilters(query, subFilters, parameters);
 
-		if (subJoins.Count > 0)
-			filters.AddRange(subJoins);
-
-		if (subFilters.Count > 0)
-			filters.AddRange(subFilters);
-
-		if (subJoins.Count == 0 || subFilters.Count == 0)
+		if (subJoins.Count == 0 && subFilters.Count == 0)
 			return;
 
 		string join = $"""
@@ -169,7 +161,7 @@ public sealed class GetLocationsQueryHandler(
 			    SELECT 1
 			    FROM vehicles_module.vehicles iv
 			    {string.Join("\n", subJoins)}
-			    WHERE iv.location_id = r.id
+			    WHERE iv.region_id = r.id
 			    AND {string.Join(" AND ", subFilters)}
 			)
 			""";

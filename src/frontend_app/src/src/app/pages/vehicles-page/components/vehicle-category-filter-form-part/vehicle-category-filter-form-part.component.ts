@@ -5,27 +5,33 @@ import { Select, SelectChangeEvent } from 'primeng/select';
 import { CategoryResponse } from '../../../../shared/api/categories-module/categories-responses';
 
 @Component({
-	selector: 'app-vehicle-category-filter-form-part',
-	imports: [FormsModule, Select],
-	templateUrl: './vehicle-category-filter-form-part.component.html',
-	styleUrl: './vehicle-category-filter-form-part.component.scss',
+    selector: 'app-vehicle-category-filter-form-part',
+    imports: [FormsModule, Select],
+    templateUrl: './vehicle-category-filter-form-part.component.html',
+    styleUrl: './vehicle-category-filter-form-part.component.scss',
 })
 export class VehicleCategoryFilterFormPartComponent {
-	readonly currentCategory: WritableSignal<CategoryResponse | null | undefined> = signal(undefined);
-	readonly categories: WritableSignal<CatalogueCategory[]> = signal([]);
+    // readonly currentCategory: WritableSignal<CategoryResponse | null | undefined> = signal(undefined);
+    // readonly categories: WritableSignal<CategoryResponse[]> = signal([]);
 
-	@Input({ required: true }) set current_category(value: CategoryResponse | null | undefined) {
-		this.currentCategory.set(value);
-	}
+    readonly currentCategory: WritableSignal<CategoryResponse> = signal({ Id: '123', Name: 'Sedan' });
+    readonly categories: WritableSignal<CategoryResponse[]> = signal([this.currentCategory()]);
 
-	@Output() onCategorySelect: EventEmitter<string | null | undefined> = new EventEmitter();
+    @Input({ required: true }) set current_category(value: CategoryResponse | null | undefined) {
+        // if (value) {
+        //     this.categories.set([value]);
+        //     this.currentCategory.set(value);
+        // }
+    }
 
-	public onChange($event: SelectChangeEvent): void {
-		const category: CatalogueCategory | null = $event.value as CatalogueCategory;
-		if (category) {
-			this.onCategorySelect.emit(category.id);
-			return;
-		}
-		this.onCategorySelect.emit(undefined);
-	}
+    @Output() onCategorySelect: EventEmitter<string | null | undefined> = new EventEmitter<string | null | undefined>();
+
+    public onChange($event: SelectChangeEvent): void {
+        const category: CatalogueCategory | null = $event.value as CatalogueCategory;
+        if (category) {
+            this.onCategorySelect.emit(category.id);
+            return;
+        }
+        this.onCategorySelect.emit(undefined);
+    }
 }
