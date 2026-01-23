@@ -1,20 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MailKit" Version="4.14.1" />
-    <PackageReference Include="MimeKit" Version="4.14.0" />
-    <PackageReference Include="RemTech.SharedKernel.Infrastructure.AesEncryption" Version="2.0.0" />
-    <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="2.0.0" />
-    <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="2.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="MailKit" Version="4.14.1" />
+		<PackageReference Include="MimeKit" Version="4.14.0" />
+		<PackageReference Include="RemTech.SharedKernel.Infrastructure.AesEncryption" Version="2.0.0" />
+		<PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="2.0.1" />
+		<PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="2.0.0" />
+		<PackageReference Include="RemTech.SharedKernel.Infrastructure.Redis" Version="2.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Infrastructure.Redis\RemTech.SharedKernel.Infrastructure.Redis.csproj" />
-    <ProjectReference Include="..\Notifications.Core\Notifications.Core.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Notifications.Core\Notifications.Core.csproj" />
+	</ItemGroup>
 </Project>

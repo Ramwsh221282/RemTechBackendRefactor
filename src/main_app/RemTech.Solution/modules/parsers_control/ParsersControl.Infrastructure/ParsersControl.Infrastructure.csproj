@@ -1,21 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\*.sql" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Migrations\*.sql" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="2.0.0" />
-    <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="2.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="2.0.1" />
+		<PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="2.0.1" />
+		<PackageReference Include="RemTech.SharedKernel.Infrastructure.Redis" Version="2.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\building_blocks\RemTech.SharedKernel.Infrastructure.Redis\RemTech.SharedKernel.Infrastructure.Redis.csproj" />
-    <ProjectReference Include="..\ParsersControl.Core\ParsersControl.Core.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ParsersControl.Core\ParsersControl.Core.csproj" />
+	</ItemGroup>
 </Project>
