@@ -1,58 +1,62 @@
 <div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Каталог техники</h1>
-        </div>
+	<div class="container mx-auto px-4 py-8">
+		<div class="text-center mb-8">
+			<h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Каталог техники</h1>
+		</div>
 
-        <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <aside class="lg:col-span-1">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 sticky top-4">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Фильтры</h2>
-                        <app-vehicle-price-filter-form-part (onPriceChangeSubmit)="acceptPrice($event)" />
-                        <div class="flex flex-col gap-2">
-                            <app-vehicle-category-filter-form-part
-                                [current_category]="activatedRouteParams().category"
-                            />
-                            <app-vehicle-brand-filter-form-part [current_brand]="activatedRouteParams().brand" />
-                            <app-vehicle-model-filter-form-part [current_model]="activatedRouteParams().model" />
-                            <app-vehicle-regions-filter-form-part
-                                [location_props]="locationsFilterProps()"
-                                (locationFilterTyped)="handleLocationFilterTyped($event)"
-                            />
-                        </div>
-                    </div>
-                </aside>
+		<div class="max-w-7xl mx-auto">
+			<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+				<aside class="lg:col-span-1">
+					<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 sticky top-4">
+						<h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Фильтры</h2>
+						<app-vehicle-price-filter-form-part (onPriceChangeSubmit)="handleUserPriceFilterInput($event)" />
+						<div class="flex flex-col gap-2">
+							<app-vehicle-category-filter-form-part
+								[properties]="{ currentCategory: selectFilterParameters().category, categories: categories() }"
+							/>
+							<app-vehicle-brand-filter-form-part
+								[properties]="{ currentBrand: selectFilterParameters().brand, brands: brands() }"
+							/>
+							<app-vehicle-model-filter-form-part
+								[properties]="{ currentModel: selectFilterParameters().model, models: models() }"
+							/>
+							<app-vehicle-regions-filter-form-part
+								[location_props]="{ locations: locations(), selectedLocation: selectFilterParameters().location }"
+								(locationFilterTyped)="handleUserFiltersLocations($event)"
+							/>
+						</div>
+					</div>
+				</aside>
 
-                <div class="lg:col-span-3">
-                    <app-vehicles-text-search (textSearchSubmit)="acceptTextSearch($event)">
-                        <app-vehicles-price-sort (sortChange)="acceptSortMode($event)" />
-                    </app-vehicles-text-search>
+				<div class="lg:col-span-3">
+					<app-vehicles-text-search (textSearchSubmit)="handleUserVehiclesTextSearchSubmit($event)">
+						<app-vehicles-price-sort (sortChange)="handleUserVehiclePriceSortModeChange($event)" />
+					</app-vehicles-text-search>
 
-                    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                        Найдено:
-                        <span class="font-semibold">{{ totalAmount() }}</span> объявлений
-                    </div>
+					<div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+						Найдено:
+						<span class="font-semibold">{{ vehicles().TotalCount }}</span> объявлений
+					</div>
 
-                    <div class="space-y-4">
-                        @for (vehicle of vehicles(); track vehicle.id) {
-                            <article
-                                class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow duration-200 overflow-hidden"
-                            >
-                                <app-vehicle-card [vehicle_setter]="vehicle" />
-                            </article>
-                        }
-                    </div>
-                    @if (totalAmount() > itemsPerPage) {
-                        <app-pagination
+					<div class="space-y-4">
+						@for (vehicle of vehicles().Vehicles; track vehicle.VehicleId) {
+							<article
+								class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow duration-200 overflow-hidden"
+							>
+								<app-vehicle-card [vehicle]="vehicle" />
+							</article>
+						}
+					</div>
+					<!-- @if (totalAmount() > itemsPerPage) {
+						<app-pagination
                             (pageChanged)="changePage($event)"
                             [current_page]="vehiclesQuery().Page ?? 1"
                             [total_count]="totalAmount()"
                             [page_size]="vehiclesQuery().PageSize ?? itemsPerPage"
                         />
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
+					} -->
+				</div>
+			</div>
+		</div>
+	</div>
 </div>

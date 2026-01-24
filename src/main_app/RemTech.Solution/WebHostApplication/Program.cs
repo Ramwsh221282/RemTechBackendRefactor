@@ -1,3 +1,5 @@
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Web;
 using SwaggerThemes;
@@ -11,7 +13,9 @@ if (builder.Environment.IsDevelopment())
 builder.Services.RegisterSharedDependencies(builder.Configuration);
 builder.Services.RegisterModuleMigrations();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
+builder
+	.Services.AddControllers()
+	.AddJsonOptions(options => options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All));
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddCors(options =>

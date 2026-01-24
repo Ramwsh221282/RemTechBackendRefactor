@@ -18,12 +18,14 @@ public sealed class GetVehiclesQueryHandler(
 ) : IQueryHandler<GetVehiclesQuery, GetVehiclesQueryResponse>
 {
 	private GetVehiclesThresholdConstants SearchOptions { get; } = textSearchOptions.Value;
+	private NpgSqlSession Session { get; } = session;
+	private EmbeddingsProvider Embeddings { get; } = embeddings;
 
 	public async Task<GetVehiclesQueryResponse> Handle(GetVehiclesQuery query, CancellationToken ct = default)
 	{
-		(DynamicParameters parameters, string sql) = FormSqlQuery(query, embeddings, SearchOptions);
+		(DynamicParameters parameters, string sql) = FormSqlQuery(query, Embeddings, SearchOptions);
 		CommandDefinition command = new(sql, parameters, cancellationToken: ct);
-		await using NpgsqlConnection connection = await session.GetConnection(ct);
+		await using NpgsqlConnection connection = await Session.GetConnection(ct);
 		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
 		return await FormResponseUsingReader(reader, ct);
 	}
@@ -57,40 +59,41 @@ public sealed class GetVehiclesQueryHandler(
 		List<VehicleResponse> vehicles = [];
 		while (await reader.ReadAsync(ct))
 		{
-			response.SetTotalCount(reader.GetInt32(reader.GetOrdinal("total_count")));
-			response.SetAveragePrice(reader.GetDouble(reader.GetOrdinal("avg_price")));
-			response.SetMinimalPrice(reader.GetDouble(reader.GetOrdinal("min_price")));
-			response.SetMaximalPrice(reader.GetDouble(reader.GetOrdinal("max_price")));
-			vehicles.Add(
-				new VehicleResponse()
-				{
-					VehicleId = reader.GetGuid(reader.GetOrdinal("vehicle_id")),
-					BrandId = reader.GetGuid(reader.GetOrdinal("brand_id")),
-					BrandName = reader.GetString(reader.GetOrdinal("brand_name")),
-					CategoryId = reader.GetGuid(reader.GetOrdinal("category_id")),
-					CategoryName = reader.GetString(reader.GetOrdinal("category_name")),
-					ModelId = reader.GetGuid(reader.GetOrdinal("model_id")),
-					ModelName = reader.GetString(reader.GetOrdinal("model_name")),
-					RegionId = reader.GetGuid(reader.GetOrdinal("region_id")),
-					RegionName = reader.GetString(reader.GetOrdinal("region_name")),
-					Source = reader.GetString(reader.GetOrdinal("source")),
-					Price = reader.GetInt64(reader.GetOrdinal("price")),
-					IsNds = reader.GetBoolean(reader.GetOrdinal("is_nds")),
-					Text = reader.GetString(reader.GetOrdinal("text")),
-					ReleaseYear = await reader.IsDBNullAsync(reader.GetOrdinal("release_year"), ct)
-						? null
-						: reader.GetInt32(reader.GetOrdinal("release_year")),
-					Photos = JsonSerializer.Deserialize<string[]>(reader.GetString(reader.GetOrdinal("photos")))!,
-					Characteristics = JsonSerializer.Deserialize<VehicleCharacteristicsResponse[]>(
-						reader.GetString(reader.GetOrdinal("characteristics"))
-					)!,
-				}
-			);
+			response.TotalCount = reader.GetInt32(reader.GetOrdinal("total_count"));
+			response.AveragePrice = reader.GetDouble(reader.GetOrdinal("avg_price"));
+			response.MinimalPrice = reader.GetDouble(reader.GetOrdinal("min_price"));
+			response.MaximalPrice = reader.GetDouble(reader.GetOrdinal("max_price"));
+			vehicles.Add(CreateFromReader(reader));
 		}
 
 		response.Vehicles = vehicles;
 		return response;
 	}
+
+	private static VehicleResponse CreateFromReader(DbDataReader reader) =>
+		new()
+		{
+			VehicleId = reader.GetGuid(reader.GetOrdinal("vehicle_id")),
+			BrandId = reader.GetGuid(reader.GetOrdinal("brand_id")),
+			BrandName = reader.GetString(reader.GetOrdinal("brand_name")),
+			CategoryId = reader.GetGuid(reader.GetOrdinal("category_id")),
+			CategoryName = reader.GetString(reader.GetOrdinal("category_name")),
+			ModelId = reader.GetGuid(reader.GetOrdinal("model_id")),
+			ModelName = reader.GetString(reader.GetOrdinal("model_name")),
+			RegionId = reader.GetGuid(reader.GetOrdinal("region_id")),
+			RegionName = reader.GetString(reader.GetOrdinal("region_name")),
+			Source = reader.GetString(reader.GetOrdinal("source")),
+			Price = reader.GetInt64(reader.GetOrdinal("price")),
+			IsNds = reader.GetBoolean(reader.GetOrdinal("is_nds")),
+			Text = reader.GetString(reader.GetOrdinal("text")),
+			ReleaseYear = reader.IsDBNull(reader.GetOrdinal("release_year"))
+				? null
+				: reader.GetInt32(reader.GetOrdinal("release_year")),
+			Photos = JsonSerializer.Deserialize<string[]>(reader.GetString(reader.GetOrdinal("photos")))!,
+			Characteristics = JsonSerializer.Deserialize<VehicleCharacteristicsResponse[]>(
+				reader.GetString(reader.GetOrdinal("characteristics"))
+			)!,
+		};
 
 	private static (DynamicParameters parameters, string vehiclesCTEQuery) FormVehiclesQuery(
 		GetVehiclesQueryParameters queryParameters,

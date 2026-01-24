@@ -1,6 +1,6 @@
-import { Component, computed, DestroyRef, effect, inject, Signal, signal, WritableSignal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, Signal, signal, WritableSignal } from '@angular/core';
 import { CatalogueVehicle } from './types/CatalogueVehicle';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, ParamMap, Params } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { VehiclesTextSearchComponent } from './components/vehicles-text-search/vehicles-text-search.component';
 import { VehiclesPriceSortComponent } from './components/vehicles-price-sort/vehicles-price-sort.component';
@@ -21,55 +21,23 @@ import { VehiclesApiService } from '../../shared/api/vehicles-module/vehicles-ap
 import { CategoryResponse } from '../../shared/api/categories-module/categories-responses';
 import { BrandResponse } from '../../shared/api/brands-module/brands-api.responses';
 import { ModelResponse } from '../../shared/api/models-module/models-responses';
-import { catchError, EMPTY, tap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, Observable, tap } from 'rxjs';
 import { GetVehiclesQueryResponse } from '../../shared/api/vehicles-module/vehicles-api.responses';
 import { LocationsApiService } from '../../shared/api/locations-module/locations-api.service';
 import { LocationResponse } from '../../shared/api/locations-module/locations.responses';
-import { GetLocationsQueryParameters } from '../../shared/api/locations-module/locations.requests';
-import { DefaultLocationQuery, LocationsQueryWithOrderByName } from '../../shared/api/locations-module/locations.factories';
 import { CategoriesApiService } from '../../shared/api/categories-module/categories-api.service';
 import { BrandsApiService } from '../../shared/api/brands-module/brands-api.service';
 import { ModelsApiService } from '../../shared/api/models-module/models-api.service';
 import { GetCategoriesQuery } from '../../shared/api/categories-module/categories-get-query';
 import { GetBrandsQuery } from '../../shared/api/brands-module/brands-get-query';
 import { GetVehiclesQuery } from '../../shared/api/vehicles-module/vehicles-get-query';
-
-type ActivatedVehicleRouteParams = {
-	category: CategoryResponse | null | undefined;
-	brand: BrandResponse | null | undefined;
-	model: ModelResponse | null | undefined;
-	location: LocationResponse | null | undefined;
-};
-
-type AggregatedStatisticsInfo = {
-	totalVehiclesCount: number;
-	averagePrice: number;
-	minimalPrice: number;
-	maximalPrice: number;
-};
-
-export const defaultAggregatedStatisticsInfo: () => AggregatedStatisticsInfo = () => {
-	return {
-		totalVehiclesCount: 0,
-		averagePrice: 0,
-		minimalPrice: 0,
-		maximalPrice: 0,
-	};
-};
-
-export const defaultActivatedVehicleRouteParams: () => ActivatedVehicleRouteParams = () => {
-	return { brand: undefined, category: undefined, model: undefined, location: undefined };
-};
-
-export type VehiclesCatalogueFilterSeletionsModel = {
-	category: CategoryResponse | null | undefined;
-	brand: BrandResponse | null | undefined;
-	model: ModelResponse | null | undefined;
-	location: LocationResponse | null | undefined;
-};
+import { GetLocationsQuery } from '../../shared/api/locations-module/locations-get-query';
+import { HttpErrorResponse } from '@angular/common/http';
+import { GetModelsQuery } from '../../shared/api/models-module/models-get-query';
+import { Title } from '@angular/platform-browser';
 
 export class VehiclesCatalogueSelectFiltersBearer {
-	private constructor(private readonly _model: VehiclesCatalogueFilterSeletionsModel) {}
+	private constructor(private readonly _model: VehiclesCatalogueFilterSeletions) {}
 
 	public useCategory(category: CategoryResponse | null | undefined): VehiclesCatalogueSelectFiltersBearer {
 		return new VehiclesCatalogueSelectFiltersBearer({ ...this._model, category });
@@ -114,212 +82,210 @@ export class VehiclesCatalogueSelectFiltersBearer {
 	templateUrl: './vehicles-page.component.html',
 	styleUrl: './vehicles-page.component.scss',
 })
-export class VehiclesPageComponent {
-	readonly activatedRouteParams: WritableSignal<ActivatedVehicleRouteParams> = signal(defaultActivatedVehicleRouteParams());
-	readonly vehicles: WritableSignal<CatalogueVehicle[]> = signal([]);
-	readonly categories: WritableSignal<CategoryResponse[]> = signal([]);
-	readonly brands: WritableSignal<BrandResponse[]> = signal([]);
-	readonly models: WritableSignal<ModelResponse[]> = signal([]);
-	readonly locations: WritableSignal<LocationResponse[]> = signal([]);
-	readonly totalAmount: WritableSignal<number> = signal(0);
-	readonly destroyRef: DestroyRef = inject(DestroyRef);
-	readonly vehiclesQuery: WritableSignal<GetVehiclesQuery> = signal(GetVehiclesQuery.default());
-	readonly locationsQuery: WritableSignal<GetLocationsQueryParameters> = signal(
-		LocationsQueryWithOrderByName(true, DefaultLocationQuery()),
-	);
-
-	readonly selectFiltersBearer: WritableSignal<VehiclesCatalogueSelectFiltersBearer> = signal(
-		VehiclesCatalogueSelectFiltersBearer.default(),
-	);
-
-	readonly itemsPerPage: number = 20;
-	readonly aggregatedStatistics: WritableSignal<AggregatedStatisticsInfo> = signal(defaultAggregatedStatisticsInfo());
-	private readonly _vehiclesService: VehiclesApiService = inject(VehiclesApiService);
+export class VehiclesPageComponent implements OnInit {
+	private readonly _title: Title = inject(Title);
+	private readonly _activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+	private readonly _locationsService: LocationsApiService = inject(LocationsApiService);
 	private readonly _categoriesService: CategoriesApiService = inject(CategoriesApiService);
 	private readonly _brandsService: BrandsApiService = inject(BrandsApiService);
 	private readonly _modelsService: ModelsApiService = inject(ModelsApiService);
-	private readonly _activatedRoute: ActivatedRoute = inject(ActivatedRoute);
-	private readonly _locationsService: LocationsApiService = inject(LocationsApiService);
+	private readonly _vehiclesService: VehiclesApiService = inject(VehiclesApiService);
 
-	readonly routeActivatedEffect = effect(() => {
-		this.initializeSelectBearerFromActivatedRoute();
+	readonly vehiclesPageSize: number = 30;
+	readonly locations: WritableSignal<LocationResponse[]> = signal([]);
+	readonly vehicles: WritableSignal<GetVehiclesQueryResponse> = signal(defaultVehiclesQueryResponse());
+	readonly categories: WritableSignal<CategoryResponse[]> = signal([]);
+	readonly brands: WritableSignal<BrandResponse[]> = signal([]);
+	readonly models: WritableSignal<ModelResponse[]> = signal([]);
+	readonly statisticsInfo: WritableSignal<AggregatedStatisticsInfo> = signal(defaultAggregatedStatisticsInfo());
+	readonly selectFilterParameters: WritableSignal<VehiclesCatalogueFilterSeletions> = signal(defaultCatalogueFilterSelections());
+	readonly vehiclesQuery: WritableSignal<GetVehiclesQuery> = signal(defaultVehiclesQuery());
+	readonly locationsQuery: WritableSignal<GetLocationsQuery> = signal(defaultLocationsQuery());
+	readonly brandsQuery: WritableSignal<GetBrandsQuery> = signal(GetBrandsQuery.default());
+	readonly modelsQuery: WritableSignal<GetModelsQuery> = signal(GetModelsQuery.default());
+
+	readonly fetchLocationsOnQueryChange = effect((): void => {
+		const query: GetLocationsQuery = this.locationsQuery();
+		this._locationsService
+			.fetchLocations(query)
+			.pipe(
+				tap((locations: LocationResponse[]): void => this.locations.set(locations)),
+				catchError((): Observable<never> => EMPTY),
+			)
+			.subscribe();
 	});
 
-	readonly fetchVehiclesOnQueryChangeEffect = effect(() => {
+	readonly updateBrandsQueryOnFiltersSelect = effect((): void => {
+		const filterSelections: VehiclesCatalogueFilterSeletions = this.selectFilterParameters();
+		this.brandsQuery.update((state: GetBrandsQuery): GetBrandsQuery => {
+			return state.useCategoryId(filterSelections.category?.Id).useModelId(filterSelections.model?.Id);
+		});
+	});
+
+	readonly updateModelsQueryOnFiltersSelect = effect((): void => {
+		const filterSelections: VehiclesCatalogueFilterSeletions = this.selectFilterParameters();
+		this.modelsQuery.update((state: GetModelsQuery): GetModelsQuery => {
+			return state.useCategoryId(filterSelections.category?.Id).useBrandId(filterSelections.brand?.Id);
+		});
+	});
+
+	readonly fetchBrandsOnQueryChange = effect((): void => {
+		const query: GetBrandsQuery = this.brandsQuery();
+		this._brandsService
+			.fetchBrands(query)
+			.pipe(
+				tap((brands: BrandResponse[]): void => this.brands.set(brands)),
+				catchError((): Observable<never> => EMPTY),
+			)
+			.subscribe();
+	});
+
+	readonly fetchModelsOnQueryChange = effect((): void => {
+		const query: GetModelsQuery = this.modelsQuery();
+		this._modelsService
+			.fetchModels(query)
+			.pipe(
+				tap((models: ModelResponse[]): void => this.models.set(models)),
+				catchError((): Observable<never> => EMPTY),
+			)
+			.subscribe();
+	});
+
+	readonly fetchVehiclesOnQueryChange = effect((): void => {
 		const query: GetVehiclesQuery = this.vehiclesQuery();
-		this.fetchVehicles(query);
+		this._vehiclesService
+			.fetchVehicles(query)
+			.pipe(
+				tap((response: GetVehiclesQueryResponse): void => this.vehicles.set(response)),
+				catchError((): Observable<never> => EMPTY),
+			)
+			.subscribe();
 	});
 
-	readonly locationsFilterProps: Signal<VehicleRegionsFilterFormPartProps> = computed((): VehicleRegionsFilterFormPartProps => {
-		return { locations: this.locations(), selectedLocation: this.activatedRouteParams().location };
-	});
-
-	readonly fetchLocationsOnQueryChangeEffect = effect(() => {
-		const query: GetLocationsQueryParameters = this.locationsQuery();
-		this.fetchLocations(query);
-	});
-
-	public handleLocationFilterTyped($event: string | null | undefined): void {
-		const current: GetLocationsQueryParameters = this.locationsQuery();
-		this.updateLocationsQuery(current.CategoryId, current.BrandId, $event);
+	public ngOnInit(): void {
+		this.initializePageTitle();
+		this.readParametersFromActivatedRoute(this._activatedRoute);
+		this.fetchVehiclesCategoryBrandModelsOptions();
 	}
 
-	public acceptTextSearch($event: string | undefined): void {
-		// const part: TextSearchPart = new TextSearchPart($event);
-		// this._textSearchPart.set(part);
-		// this.resetPage();
+	private initializePageTitle(): void {
+		this._title.setTitle('Техника');
 	}
 
-	public acceptSortMode($event: string | undefined): void {
-		// const part: SortModePart = new SortModePart($event);
-		// this._sortModePart.set(part);
+	private fetchVehiclesCategoryBrandModelsOptions(): void {
+		const category: CategoryResponse | null | undefined = this.selectFilterParameters().category;
+		const brand: BrandResponse | null | undefined = this.selectFilterParameters().brand;
+		const categoryFetch: Observable<CategoryResponse[]> = this._categoriesService.fetchCategories(GetCategoriesQuery.default());
+		const brandFetch: Observable<BrandResponse[]> = this._brandsService.fetchBrands(
+			GetBrandsQuery.default().useCategoryId(category?.Id),
+		);
+		const modelFetch: Observable<ModelResponse[]> = this._modelsService.fetchModels(
+			GetModelsQuery.default().useCategoryId(category?.Id).useBrandId(brand?.Id),
+		);
+		forkJoin([categoryFetch, brandFetch, modelFetch])
+			.pipe(
+				tap((response: [CategoryResponse[], BrandResponse[], ModelResponse[]]) => {
+					this.categories.set(response[0]);
+					this.brands.set(response[1]);
+					this.models.set(response[2]);
+				}),
+			)
+			.subscribe();
 	}
 
-	public acceptCategory($event: string | undefined): void {
-		// const part: CategoryIdPart = new CategoryIdPart($event);
-		// this._categoryIdPart.set(part);
-		// this.resetPage();
-	}
-
-	public acceptModel($event: string | undefined): void {
-		// const part: ModelIdPart = new ModelIdPart($event);
-		// this._modelIdPart.set(part);
-		// this.resetPage();
-	}
-
-	public acceptRegion($event: string | undefined): void {
-		// const part: LocationIdPart = new LocationIdPart($event);
-		// this._locationIdPart.set(part);
-		// this.resetPage();
-	}
-
-	public acceptPrice($event: PriceSubmitEvent): void {
-		// const part: PriceFilterPart = new PriceFilterPart(
-		//   $event.priceFrom,
-		//   $event.priceTo,
-		// );
-		// this._priceFilterPart.set(part);
-		// this.resetPage();
-	}
-
-	public changePage($event: number): void {
-		// const part: PaginationPart = new PaginationPart($event);
-		// this._paginationPart.set(part);
-		// window.scroll(0, 0);
-	}
-
-	public acceptBrand($event: string | undefined): void {
-		// const part: BrandIdPart = new BrandIdPart($event);
-		// this._brandIdPart.set(part);
-		// this.resetPage();
-	}
-
-	private resetPage(): void {
-		// const part: PaginationPart = new PaginationPart(1);
-		// this._paginationPart.set(part);
-	}
-
-	private initializeSelectBearerFromActivatedRoute(): void {
-		this._activatedRoute.queryParams.subscribe((params: Params) => {
+	private readParametersFromActivatedRoute(route: ActivatedRoute): void {
+		route.queryParamMap.subscribe((params: ParamMap): void => {
+			const categoryInfo: CategoryResponse | null | undefined = extractCategoryFromQueryParams(params);
+			const brandInfo: BrandResponse | null | undefined = extractBrandFromQueryParams(params);
 			const page: number | null | undefined = extractPageFromQueryParams(params);
-			const brand: BrandResponse | null | undefined = extractBrandFromQueryParams(params);
-			const category: CategoryResponse | null | undefined = extractCategoryFromQueryParams(params);
-			const selectsBearer: VehiclesCatalogueSelectFiltersBearer = this.selectFiltersBearer().useCategory(category).useBrand(brand);
-			this.selectFiltersBearer.set(selectsBearer);
-			this.vehiclesQuery.update(
-				(state: GetVehiclesQuery): GetVehiclesQuery => state.usePage(page).useBrand(brand).useCategory(category),
-			);
-			this.locationsQuery.update((state: GetLocationsQueryParameters): GetLocationsQueryParameters => {
-				return { ...state, BrandId: brand?.Id, CategoryId: category?.Id };
+			this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
+				return { ...state, brand: brandInfo, category: categoryInfo };
+			});
+			this.vehiclesQuery.update((state: GetVehiclesQuery): GetVehiclesQuery => {
+				return state.usePage(page).useCategory(categoryInfo, categoryInfo?.Id).useBrand(brandInfo, brandInfo?.Id);
+			});
+			this.locationsQuery.update((state: GetLocationsQuery): GetLocationsQuery => {
+				return state.useCategoryId(categoryInfo?.Id).useBrandId(brandInfo?.Id);
 			});
 		});
 	}
 
-	private updateLocationsQuery(
-		categoryId: string | null | undefined = undefined,
-		brandId: string | null | undefined = undefined,
-		textSearch: string | null | undefined = undefined,
-	): void {
-		this.locationsQuery.update((state: GetLocationsQueryParameters): GetLocationsQueryParameters => {
-			return { ...state, CategoryId: categoryId, BrandId: brandId, TextSearch: textSearch };
+	public handleUserPriceFilterInput(userPriceSubmit: PriceSubmitEvent): void {
+		this.vehiclesQuery.update((state: GetVehiclesQuery): GetVehiclesQuery => {
+			return state.useMinimalPrice(userPriceSubmit.priceFrom).useMaximalPrice(userPriceSubmit.priceTo);
 		});
 	}
 
-	private fetchBrands(query: GetBrandsQuery): void {
-		this._brandsService
-			.fetchBrands(query)
-			.pipe(
-				tap((response: BrandResponse[]): void => {
-					this.brands.set(response);
-				}),
-				catchError(() => EMPTY),
-			)
-			.subscribe();
+	public handleUserFiltersLocations(userInput: string | null | undefined): void {
+		this.locationsQuery.update((state: GetLocationsQuery): GetLocationsQuery => {
+			return state.useTextSearch(userInput);
+		});
 	}
 
-	private fetchCategories(query: GetCategoriesQuery): void {
-		this._categoriesService
-			.fetchCategories(query)
-			.pipe(
-				tap((response: CategoryResponse[]): void => this.categories.set(response)),
-				catchError(() => EMPTY),
-			)
-			.subscribe();
-	}
+	public handleUserVehiclesTextSearchSubmit(userInput: string | undefined): void {}
 
-	private fetchLocations(query: GetLocationsQueryParameters): void {
-		this._locationsService
-			.fetchLocations(query)
-			.pipe(
-				tap((response: LocationResponse[]): void => {
-					this.locations.set(response);
-				}),
-				catchError(() => EMPTY),
-			)
-			.subscribe();
-	}
-
-	private fetchVehicles(query: GetVehiclesQuery): void {
-		this._vehiclesService
-			.fetchVehicles(query)
-			.pipe(
-				tap((response: GetVehiclesQueryResponse) => {
-					this.aggregatedStatistics.update((old: AggregatedStatisticsInfo): AggregatedStatisticsInfo => {
-						return {
-							...old,
-							totalVehiclesCount: response.TotalCount,
-							averagePrice: response.AveragePrice,
-							minimalPrice: response.MinimalPrice,
-							maximalPrice: response.MaximalPrice,
-						};
-					});
-				}),
-				catchError(() => EMPTY),
-			)
-			.subscribe();
-	}
+	public handleUserVehiclePriceSortModeChange(sortMode: string | undefined): void {}
 }
 
-const extractCategoryFromQueryParams: (params: Params) => CategoryResponse | null | undefined = (
-	params: Params,
-): CategoryResponse | null => {
-	const categoryId: string | undefined = params['categoryId'];
-	const categoryName: string | undefined = params['categoryName'];
-	if (!categoryId || !categoryName) return null;
-	return { Id: categoryId, Name: categoryName };
+type AggregatedStatisticsInfo = {
+	totalVehiclesCount: number;
+	averagePrice: number;
+	minimalPrice: number;
+	maximalPrice: number;
 };
 
-const extractPageFromQueryParams: (params: Params) => number | null | undefined = (params: Params): number | null => {
-	const pageStr: string | undefined = params['page'];
+const defaultAggregatedStatisticsInfo: () => AggregatedStatisticsInfo = () => {
+	return {
+		totalVehiclesCount: 0,
+		averagePrice: 0,
+		minimalPrice: 0,
+		maximalPrice: 0,
+	};
+};
+
+const defaultVehiclesQuery: () => GetVehiclesQuery = () => {
+	return GetVehiclesQuery.default().usePageSize(30).usePage(1);
+};
+
+const defaultLocationsQuery: () => GetLocationsQuery = () => {
+	return GetLocationsQuery.default().useAmount(20);
+};
+
+const defaultCatalogueFilterSelections: () => VehiclesCatalogueFilterSeletions = () => {
+	return { brand: undefined, category: undefined, model: undefined, location: undefined };
+};
+
+const defaultVehiclesQueryResponse: () => GetVehiclesQueryResponse = () => {
+	return { Vehicles: [], TotalCount: 0, AveragePrice: 0, MaximalPrice: 0, MinimalPrice: 0 };
+};
+
+type VehiclesCatalogueFilterSeletions = {
+	category: CategoryResponse | null | undefined;
+	brand: BrandResponse | null | undefined;
+	model: ModelResponse | null | undefined;
+	location: LocationResponse | null | undefined;
+};
+
+const extractCategoryFromQueryParams: (params: ParamMap) => CategoryResponse | null | undefined = (
+	params: ParamMap,
+): CategoryResponse | null => {
+	const id: string | null | undefined = params.get('categoryId');
+	const name: string | null | undefined = params.get('categoryName');
+	if (!id || !name) return null;
+	return { Id: id, Name: name };
+};
+
+const extractPageFromQueryParams: (params: ParamMap) => number | null | undefined = (params: ParamMap): number | null => {
+	const pageStr: string | null | undefined = params.get('page');
 	if (!pageStr) return null;
-	const pageNum = Number(pageStr);
+	const pageNum: number = Number(pageStr);
 	if (Number.isNaN(pageNum) || pageNum < 1) return null;
 	return pageNum;
 };
 
-const extractBrandFromQueryParams: (params: Params) => BrandResponse | null | undefined = (params: Params): BrandResponse | null => {
-	const brandId: string | undefined = params['brandId'];
-	const brandName: string | undefined = params['brandName'];
+const extractBrandFromQueryParams: (params: ParamMap) => BrandResponse | null | undefined = (params: ParamMap): BrandResponse | null => {
+	const brandId: string | null | undefined = params.get('brandId');
+	const brandName: string | null | undefined = params.get('brandName');
 	if (!brandId || !brandName) return null;
 	return { Id: brandId, Name: brandName };
 };
