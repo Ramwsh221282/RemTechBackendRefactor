@@ -10,21 +10,26 @@ import { CategoryResponse } from '../../../../shared/api/categories-module/categ
 	styleUrl: './vehicle-category-filter-form-part.component.scss',
 })
 export class VehicleCategoryFilterFormPartComponent {
-	properties: InputSignal<VehicleCategoryFilterFormPartComponentProps> = input(defaultProps());
+	categories: InputSignal<CategoryResponse[]> = input(defaultCategories());
+	currentCategory: InputSignal<CategoryResponse | null | undefined> = input(defaultCategory());
 	@Output() categorySelected: EventEmitter<CategoryResponse | null | undefined> = new EventEmitter<CategoryResponse | null | undefined>();
+
 	public onChange($event: SelectChangeEvent): void {
-		console.log($event);
+		const category: CategoryResponse | null | undefined = $event.value;
+		this.categorySelected.emit(category);
+	}
+
+	public get placeHolderText(): string {
+		const currentCategory: CategoryResponse | null | undefined = this.currentCategory();
+		if (!currentCategory) return 'Выбрать категорию';
+		return currentCategory.Name;
 	}
 }
 
-type VehicleCategoryFilterFormPartComponentProps = {
-	currentCategory: CategoryResponse | null | undefined;
-	categories: CategoryResponse[];
-};
+function defaultCategory(): CategoryResponse | null | undefined {
+	return undefined;
+}
 
-const defaultProps: () => VehicleCategoryFilterFormPartComponentProps = (): VehicleCategoryFilterFormPartComponentProps => {
-	return {
-		currentCategory: null,
-		categories: [],
-	};
-};
+function defaultCategories(): CategoryResponse[] {
+	return [];
+}

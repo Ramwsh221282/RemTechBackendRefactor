@@ -21,7 +21,7 @@ type GetBrandsQueryParameters = {
 };
 
 export class GetBrandsQuery {
-	private constructor(private readonly parameters: GetBrandsQueryParameters) {}
+	private constructor(public readonly parameters: GetBrandsQueryParameters) {}
 	public static default(): GetBrandsQuery {
 		return new GetBrandsQuery({
 			id: undefined,

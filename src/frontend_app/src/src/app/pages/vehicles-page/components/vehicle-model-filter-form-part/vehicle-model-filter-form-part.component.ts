@@ -10,25 +10,19 @@ import { ModelResponse } from '../../../../shared/api/models-module/models-respo
 	styleUrl: './vehicle-model-filter-form-part.component.scss',
 })
 export class VehicleModelFilterFormPartComponent {
-	properties: InputSignal<VehicleModelFilterFormPartComponentProps> = input(defaultProps());
-	@Output() modelSelected: EventEmitter<string | null | undefined> = new EventEmitter<string | null | undefined>();
-	public onChange($event: SelectChangeEvent): void {}
+	disabled: InputSignal<boolean> = input(false);
+	models: InputSignal<ModelResponse[]> = input<ModelResponse[]>([]);
+	currentModel: InputSignal<ModelResponse | null | undefined> = input<ModelResponse | null | undefined>(null);
+	@Output() modelSelected: EventEmitter<ModelResponse | null | undefined> = new EventEmitter<ModelResponse | null | undefined>();
+
+	public onChange($event: SelectChangeEvent): void {
+		const model: ModelResponse | null | undefined = $event.value;
+		this.modelSelected.emit(model);
+	}
 
 	get placeHolderText(): string {
-		const currentModel: ModelResponse | null | undefined = this.properties().currentModel;
+		const currentModel: ModelResponse | null | undefined = this.currentModel();
 		if (!currentModel) return 'Выбрать модель';
 		return currentModel.Name;
 	}
 }
-
-type VehicleModelFilterFormPartComponentProps = {
-	currentModel: ModelResponse | null | undefined;
-	models: ModelResponse[];
-};
-
-const defaultProps: () => VehicleModelFilterFormPartComponentProps = (): VehicleModelFilterFormPartComponentProps => {
-	return {
-		currentModel: null,
-		models: [],
-	};
-};

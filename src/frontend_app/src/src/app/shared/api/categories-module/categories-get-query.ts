@@ -20,7 +20,7 @@ type GetCategoriesQueryParameters = {
 };
 
 export class GetCategoriesQuery {
-	private constructor(private readonly parameters: GetCategoriesQueryParameters) {}
+	private constructor(public readonly parameters: GetCategoriesQueryParameters) {}
 
 	public toHttpParams(): HttpParams {
 		const includes: string[] = [];

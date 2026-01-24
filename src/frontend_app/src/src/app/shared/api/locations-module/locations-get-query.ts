@@ -1,5 +1,8 @@
 import { HttpParams } from '@angular/common/http';
 import { LocationResponse } from './locations.responses';
+import { CategoryResponse } from '../categories-module/categories-responses';
+import { BrandResponse } from '../brands-module/brands-api.responses';
+import { ModelResponse } from '../models-module/models-responses';
 
 type GetLocationsQueryParameters = {
 	Amount: number | undefined | null;
@@ -89,21 +92,21 @@ export class GetLocationsQuery {
 
 	public useCategoryId(
 		categoryId: string | null | undefined = undefined,
-		category: LocationResponse | null | undefined = undefined,
+		category: CategoryResponse | null | undefined = undefined,
 	): GetLocationsQuery {
 		return new GetLocationsQuery({ ...this.params, CategoryId: categoryId ?? category?.Id ?? undefined });
 	}
 
 	public useBrandId(
 		brandId: string | null | undefined = undefined,
-		brand: LocationResponse | null | undefined = undefined,
+		brand: BrandResponse | null | undefined = undefined,
 	): GetLocationsQuery {
 		return new GetLocationsQuery({ ...this.params, BrandId: brandId ?? brand?.Id ?? undefined });
 	}
 
 	public useModelId(
 		modelId: string | null | undefined = undefined,
-		model: LocationResponse | null | undefined = undefined,
+		model: ModelResponse | null | undefined = undefined,
 	): GetLocationsQuery {
 		return new GetLocationsQuery({ ...this.params, ModelId: modelId ?? model?.Id ?? undefined });
 	}

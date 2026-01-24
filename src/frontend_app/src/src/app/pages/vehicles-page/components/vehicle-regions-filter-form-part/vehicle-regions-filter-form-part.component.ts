@@ -1,52 +1,38 @@
-import { Component, EventEmitter, Input, Output, signal, WritableSignal } from '@angular/core';
+import { Component, EventEmitter, input, InputSignal, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Select, SelectChangeEvent, SelectFilterEvent } from 'primeng/select';
+import { Select, SelectChangeEvent } from 'primeng/select';
 import { LocationResponse } from '../../../../shared/api/locations-module/locations.responses';
-import { StringUtils } from '../../../../shared/utils/string-utils';
-
-export type VehicleRegionsFilterFormPartProps = {
-    locations: LocationResponse[];
-    selectedLocation: LocationResponse | null | undefined;
-};
-
-export const DefaultVehicleRegionsFilterFormPartProps: VehicleRegionsFilterFormPartProps = {
-    locations: [],
-    selectedLocation: undefined,
-};
 
 @Component({
-    selector: 'app-vehicle-regions-filter-form-part',
-    imports: [FormsModule, Select],
-    templateUrl: './vehicle-regions-filter-form-part.component.html',
-    styleUrl: './vehicle-regions-filter-form-part.component.scss',
+	selector: 'app-vehicle-regions-filter-form-part',
+	imports: [FormsModule, Select],
+	templateUrl: './vehicle-regions-filter-form-part.component.html',
+	styleUrl: './vehicle-regions-filter-form-part.component.scss',
 })
 export class VehicleRegionsFilterFormPartComponent {
-    readonly selectedLocation: WritableSignal<LocationResponse | null | undefined> = signal<
-        LocationResponse | null | undefined
-    >(undefined);
+	disabled: InputSignal<boolean> = input(false);
+	selectedLocation: InputSignal<LocationResponse | null | undefined> = input(defaultCurrentLocation());
+	locations: InputSignal<LocationResponse[]> = input(defaultLocations());
 
-    readonly locations: WritableSignal<LocationResponse[]> = signal([]);
+	@Output() locationSelected: EventEmitter<LocationResponse | null | undefined> = new EventEmitter<LocationResponse | null | undefined>();
 
-    @Input({ required: true }) set location_props(value: VehicleRegionsFilterFormPartProps) {
-        this.locations.set(value.locations);
-        this.selectedLocation.set(value.selectedLocation);
-    }
+	public userChangesLocation($event: SelectChangeEvent): void {
+		const location: LocationResponse | null | undefined = $event.value;
+		this.locationSelected.emit(location);
+	}
 
-    @Output() locationSelected: EventEmitter<LocationResponse | null | undefined> = new EventEmitter<
-        LocationResponse | null | undefined
-    >();
-    @Output() locationFilterTyped: EventEmitter<string | null | undefined> = new EventEmitter<
-        string | null | undefined
-    >();
+	public get placeHolderText(): string {
+		if (!this.selectedLocation) return 'Выбрать регион';
+		const location: LocationResponse | null | undefined = this.selectedLocation();
+		if (!location) return 'Выбрать регион';
+		return location.Name;
+	}
+}
 
-    public userChangesLocation($event: SelectChangeEvent): void {}
+function defaultCurrentLocation(): LocationResponse | null | undefined {
+	return undefined;
+}
 
-    public handleUserFiltersLocation($event: SelectFilterEvent): void {
-        const input: string = $event.filter;
-        if (StringUtils.isEmptyOrWhiteSpace(input)) {
-            this.locationFilterTyped.emit(undefined);
-            return;
-        }
-        this.locationFilterTyped.emit(input);
-    }
+function defaultLocations(): LocationResponse[] {
+	return [];
 }

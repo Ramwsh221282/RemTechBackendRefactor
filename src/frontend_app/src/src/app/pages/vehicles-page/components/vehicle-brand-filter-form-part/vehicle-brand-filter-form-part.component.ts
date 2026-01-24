@@ -1,4 +1,4 @@
-import { Component, EventEmitter, input, Input, Output, signal, WritableSignal } from '@angular/core';
+import { Component, EventEmitter, input, InputSignal, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Select, SelectChangeEvent } from 'primeng/select';
 import { BrandResponse } from '../../../../shared/api/brands-module/brands-api.responses';
@@ -10,19 +10,19 @@ import { BrandResponse } from '../../../../shared/api/brands-module/brands-api.r
 	styleUrl: './vehicle-brand-filter-form-part.component.scss',
 })
 export class VehicleBrandFilterFormPartComponent {
-	properties = input<VehicleBrandFilterFormPartComponentProps>(defaultProps());
+	disabled: InputSignal<boolean> = input(false);
+	brands: InputSignal<BrandResponse[]> = input<BrandResponse[]>([]);
+	currentBrand: InputSignal<BrandResponse | null | undefined> = input<BrandResponse | null | undefined>(null);
 	@Output() brandChange: EventEmitter<BrandResponse | null | undefined> = new EventEmitter<BrandResponse | null | undefined>();
-	public onChange($event: SelectChangeEvent): void {}
+
+	public onChange($event: SelectChangeEvent): void {
+		const brand: BrandResponse | null | undefined = $event.value;
+		this.brandChange.emit(brand);
+	}
+
+	public get placeHolderText(): string {
+		const currentBrand: BrandResponse | null | undefined = this.currentBrand();
+		if (!currentBrand) return 'Выбрать марку';
+		return currentBrand.Name;
+	}
 }
-
-type VehicleBrandFilterFormPartComponentProps = {
-	currentBrand: BrandResponse | null | undefined;
-	brands: BrandResponse[];
-};
-
-const defaultProps: () => VehicleBrandFilterFormPartComponentProps = (): VehicleBrandFilterFormPartComponentProps => {
-	return {
-		currentBrand: null,
-		brands: [],
-	};
-};

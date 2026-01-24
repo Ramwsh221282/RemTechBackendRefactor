@@ -20,86 +20,86 @@ export type GetVehiclesQueryParameters = {
 };
 
 export class GetVehiclesQuery {
-	private constructor(private readonly _parameters: GetVehiclesQueryParameters) {}
+	private constructor(public readonly parameters: GetVehiclesQueryParameters) {}
 
 	public toHttpParams(): HttpParams {
 		let params: HttpParams = new HttpParams();
 
-		if (this._parameters.brandId) params = params.append('brand', this._parameters.brandId);
-		if (this._parameters.categoryId) params = params.append('category', this._parameters.categoryId);
-		if (this._parameters.regionId) params = params.append('region', this._parameters.regionId);
-		if (this._parameters.modelId) params = params.append('model', this._parameters.modelId);
-		if (this._parameters.isNds) params = params.append('nds', this._parameters.isNds.toString());
-		if (this._parameters.minimalPrice) params = params.append('price-min', this._parameters.minimalPrice.toString());
-		if (this._parameters.maximalPrice) params = params.append('price-max', this._parameters.maximalPrice.toString());
-		if (this._parameters.sort) params = params.append('sort', this._parameters.sort);
-		if (this._parameters.sortFields) {
-			this._parameters.sortFields.forEach((field: string) => {
+		if (this.parameters.brandId) params = params.append('brand', this.parameters.brandId);
+		if (this.parameters.categoryId) params = params.append('category', this.parameters.categoryId);
+		if (this.parameters.regionId) params = params.append('region', this.parameters.regionId);
+		if (this.parameters.modelId) params = params.append('model', this.parameters.modelId);
+		if (this.parameters.isNds) params = params.append('nds', this.parameters.isNds.toString());
+		if (this.parameters.minimalPrice) params = params.append('price-min', this.parameters.minimalPrice.toString());
+		if (this.parameters.maximalPrice) params = params.append('price-max', this.parameters.maximalPrice.toString());
+		if (this.parameters.sort) params = params.append('sort', this.parameters.sort);
+		if (this.parameters.sortFields) {
+			this.parameters.sortFields.forEach((field: string) => {
 				params = params.append('sort-fields', field);
 			});
 		}
 
-		if (this._parameters.page) params = params.append('page', this._parameters.page.toString());
-		if (this._parameters.pageSize) params = params.append('page-size', this._parameters.pageSize.toString());
-		if (this._parameters.textSearch) params = params.append('text-search', this._parameters.textSearch);
+		if (this.parameters.page) params = params.append('page', this.parameters.page.toString());
+		if (this.parameters.pageSize) params = params.append('page-size', this.parameters.pageSize.toString());
+		if (this.parameters.textSearch) params = params.append('text-search', this.parameters.textSearch);
 
 		return params;
 	}
 
 	public useBrand(brand: BrandResponse | null | undefined = undefined, brandId: string | null | undefined = undefined): GetVehiclesQuery {
-		if (brand) return new GetVehiclesQuery({ ...this._parameters, brandId: brand.Id });
-		if (brandId) return new GetVehiclesQuery({ ...this._parameters, brandId: brandId });
-		return new GetVehiclesQuery({ ...this._parameters, brandId: undefined });
+		if (brand) return new GetVehiclesQuery({ ...this.parameters, brandId: brand.Id });
+		if (brandId) return new GetVehiclesQuery({ ...this.parameters, brandId: brandId });
+		return new GetVehiclesQuery({ ...this.parameters, brandId: undefined });
 	}
 
 	public useCategory(category: CategoryResponse | null | undefined = undefined, categoryId: string | null | undefined = undefined) {
-		if (category) return new GetVehiclesQuery({ ...this._parameters, categoryId: category.Id });
-		if (categoryId) return new GetVehiclesQuery({ ...this._parameters, categoryId: categoryId });
-		return new GetVehiclesQuery({ ...this._parameters, categoryId: undefined });
+		if (category) return new GetVehiclesQuery({ ...this.parameters, categoryId: category.Id });
+		if (categoryId) return new GetVehiclesQuery({ ...this.parameters, categoryId: categoryId });
+		return new GetVehiclesQuery({ ...this.parameters, categoryId: undefined });
 	}
 
 	public useLocation(location: LocationResponse | null | undefined = undefined, locationId: string | null | undefined = undefined) {
-		if (location) return new GetVehiclesQuery({ ...this._parameters, regionId: location.Id });
-		if (locationId) return new GetVehiclesQuery({ ...this._parameters, regionId: locationId });
-		return new GetVehiclesQuery({ ...this._parameters, regionId: undefined });
+		if (location) return new GetVehiclesQuery({ ...this.parameters, regionId: location.Id });
+		if (locationId) return new GetVehiclesQuery({ ...this.parameters, regionId: locationId });
+		return new GetVehiclesQuery({ ...this.parameters, regionId: undefined });
 	}
 
 	public useNds(isNds: boolean | null | undefined): GetVehiclesQuery {
-		return new GetVehiclesQuery({ ...this._parameters, isNds });
+		return new GetVehiclesQuery({ ...this.parameters, isNds });
 	}
 
 	public useMinimalPrice(minimalPrice: number | null | undefined): GetVehiclesQuery {
-		return new GetVehiclesQuery({ ...this._parameters, minimalPrice });
+		return new GetVehiclesQuery({ ...this.parameters, minimalPrice });
 	}
 
 	public useMaximalPrice(maximalPrice: number | null | undefined): GetVehiclesQuery {
-		return new GetVehiclesQuery({ ...this._parameters, maximalPrice });
+		return new GetVehiclesQuery({ ...this.parameters, maximalPrice });
 	}
 
 	public useSortFields(sortFields: string[] | null | undefined): GetVehiclesQuery {
-		return new GetVehiclesQuery({ ...this._parameters, sortFields });
+		return new GetVehiclesQuery({ ...this.parameters, sortFields });
 	}
 
 	public useSort(sort: string | null | undefined): GetVehiclesQuery {
-		return new GetVehiclesQuery({ ...this._parameters, sort });
+		return new GetVehiclesQuery({ ...this.parameters, sort });
 	}
 
 	public usePage(page: number | null | undefined): GetVehiclesQuery {
-		return new GetVehiclesQuery({ ...this._parameters, page });
+		return new GetVehiclesQuery({ ...this.parameters, page });
 	}
 
 	public usePageSize(pageSize: number | null | undefined): GetVehiclesQuery {
-		return new GetVehiclesQuery({ ...this._parameters, pageSize });
+		return new GetVehiclesQuery({ ...this.parameters, pageSize });
 	}
 
 	public useTextSearch(textSearch: string | null | undefined): GetVehiclesQuery {
-		return new GetVehiclesQuery({ ...this._parameters, textSearch });
+		return new GetVehiclesQuery({ ...this.parameters, textSearch });
 	}
 
 	public useModel(model: ModelResponse | null | undefined = undefined, modelId: string | null | undefined = undefined) {
-		if (model) return new GetVehiclesQuery({ ...this._parameters, modelId: model.Id });
-		if (modelId) return new GetVehiclesQuery({ ...this._parameters, modelId: modelId });
-		return new GetVehiclesQuery({ ...this._parameters, modelId: undefined });
+		if (model) return new GetVehiclesQuery({ ...this.parameters, modelId: model.Id });
+		if (modelId) return new GetVehiclesQuery({ ...this.parameters, modelId: modelId });
+		return new GetVehiclesQuery({ ...this.parameters, modelId: undefined });
 	}
 
 	public static default(): GetVehiclesQuery {
