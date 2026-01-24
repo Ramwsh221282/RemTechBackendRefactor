@@ -12,7 +12,7 @@ public sealed class GetVehiclesCharacteristicsQueryHandler(NpgSqlSession session
 {
 	public async Task<GetVehicleCharacteristicsQueryResponse> Handle(
 		GetVehicleCharacteristicsQuery query,
-		CancellationToken ct = new CancellationToken()
+		CancellationToken ct = default
 	)
 	{
 		CommandDefinition command = FormSqlCommand(query, ct);

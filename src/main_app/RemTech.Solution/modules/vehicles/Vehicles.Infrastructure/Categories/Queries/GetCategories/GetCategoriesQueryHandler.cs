@@ -52,23 +52,24 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsP
 		List<CategoryResponse> responses = [];
 		while (await reader.ReadAsync(ct))
 		{
-			Guid id = reader.GetGuid(reader.GetOrdinal("id"));
-			string name = reader.GetString(reader.GetOrdinal("name"));
-			CategoryResponse response = new(id, name)
-			{
-				VehiclesCount = ContainsColumn(reader, "vehicle_count")
-					? reader.GetInt32(reader.GetOrdinal("vehicle_count"))
-					: null,
-				TextSearchScore = ContainsColumn(reader, "text_search_score")
-					? reader.GetFloat(reader.GetOrdinal("text_search_score"))
-					: null,
-			};
-
-			responses.Add(response);
+			responses.Add(CreateFromReader(reader));
 		}
 
 		return responses;
 	}
+
+	private static CategoryResponse CreateFromReader(DbDataReader reader) =>
+		new()
+		{
+			Id = reader.GetGuid(reader.GetOrdinal("id")),
+			Name = reader.GetString(reader.GetOrdinal("name")),
+			VehiclesCount = ContainsColumn(reader, "vehicle_count")
+				? reader.GetInt32(reader.GetOrdinal("vehicle_count"))
+				: null,
+			TextSearchScore = ContainsColumn(reader, "text_search_score")
+				? reader.GetFloat(reader.GetOrdinal("text_search_score"))
+				: null,
+		};
 
 	private static bool ContainsColumn(DbDataReader reader, string columnName)
 	{

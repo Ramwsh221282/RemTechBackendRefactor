@@ -19,7 +19,7 @@ public class GetCategoriesQuery : IQuery
 	public string? TextSearch { get; private set; }
 
 	[JsonIgnore]
-	private Dictionary<string, string>? _includedInformationKeys_cached = null;
+	private Dictionary<string, string>? _includedInformationKeys_cached;
 
 	[JsonIgnore]
 	private Dictionary<string, string> IncludedInformationKeys =>

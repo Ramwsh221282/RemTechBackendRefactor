@@ -252,8 +252,7 @@ public sealed class SubscribedParser
 		if (!AllLinksHaveUniqueName(out string[] dupNames))
 			return Error.Conflict("Парсер содержит ссылки с одинаковым именем: " + string.Join(", ", dupNames));
 		return !AllLinksHaveUniqueUrl(out string[] dupUrls)
-			? (Result<IEnumerable<SubscribedParserLink>>)
-				Error.Conflict("Парсер содержит ссылки с одинаковым адресом: " + string.Join(", ", dupUrls))
+			? Error.Conflict("Парсер содержит ссылки с одинаковым адресом: " + string.Join(", ", dupUrls))
 			: Result.Success(Links.AsEnumerable());
 	}
 
@@ -347,8 +346,7 @@ public sealed class SubscribedParser
 		if (ContainsLinkWithName(editResult.Value))
 			return Error.Conflict($"Парсер уже содержит ссылку с именем {editResult.Value.UrlInfo.Name}.");
 		return ContainsLinkWithUrl(editResult.Value)
-			? (Result<SubscribedParserLink>)
-				Error.Conflict($"Парсер уже содержит ссылку с адресом {editResult.Value.UrlInfo.Url}.")
+			? Error.Conflict($"Парсер уже содержит ссылку с адресом {editResult.Value.UrlInfo.Url}.")
 			: editResult;
 	}
 

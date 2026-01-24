@@ -55,24 +55,27 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 		List<BrandResponse> brands = [];
 		while (await reader.ReadAsync(ct))
 		{
-			Guid id = reader.GetGuid(reader.GetOrdinal("Id"));
-			string name = reader.GetString(reader.GetOrdinal("Name"));
-			BrandResponse brand = new(id, name);
-
-			if (ReaderHasColumn(reader, "VehiclesCount"))
-				brand.VehiclesCount = reader.GetInt32(reader.GetOrdinal("VehiclesCount"));
-
-			if (ReaderHasColumn(reader, "TextSearchScore"))
-				brand.TextSearchScore = reader.GetFloat(reader.GetOrdinal("TextSearchScore"));
-
-			if (ReaderHasColumn(reader, "TotalCount"))
-				brand.TotalCount = reader.GetInt32(reader.GetOrdinal("TotalCount"));
-
-			brands.Add(brand);
+			brands.Add(CreateFromReader(reader));
 		}
 
 		return brands;
 	}
+
+	private static BrandResponse CreateFromReader(DbDataReader reader) =>
+		new()
+		{
+			Id = reader.GetGuid(reader.GetOrdinal("Id")),
+			Name = reader.GetString(reader.GetOrdinal("Name")),
+			VehiclesCount = ReaderHasColumn(reader, "VehiclesCount")
+				? reader.GetInt32(reader.GetOrdinal("VehiclesCount"))
+				: null,
+			TextSearchScore = ReaderHasColumn(reader, "TextSearchScore")
+				? reader.GetFloat(reader.GetOrdinal("TextSearchScore"))
+				: null,
+			TotalCount = ReaderHasColumn(reader, "TotalCount")
+				? reader.GetInt32(reader.GetOrdinal("TotalCount"))
+				: null,
+		};
 
 	private static string IncludeAdditionals(GetBrandsQuery query, Func<GetBrandsQuery, string>[] includes)
 	{
@@ -207,8 +210,8 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 		filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
 
 	private static bool SomeCategoryFilterProvided(GetBrandsQuery query) =>
-		!string.IsNullOrWhiteSpace(query.CategoryName) || query.CategoryId.HasValue && query.CategoryId != Guid.Empty;
+		!string.IsNullOrWhiteSpace(query.CategoryName) || (query.CategoryId.HasValue && query.CategoryId != Guid.Empty);
 
 	private static bool SomeModelFilterProvided(GetBrandsQuery query) =>
-		!string.IsNullOrWhiteSpace(query.ModelName) || query.ModelId.HasValue && query.ModelId != Guid.Empty;
+		!string.IsNullOrWhiteSpace(query.ModelName) || (query.ModelId.HasValue && query.ModelId != Guid.Empty);
 }

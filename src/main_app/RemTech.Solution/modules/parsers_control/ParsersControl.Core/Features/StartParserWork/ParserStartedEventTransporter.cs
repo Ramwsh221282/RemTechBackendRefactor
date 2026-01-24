@@ -7,6 +7,5 @@ namespace ParsersControl.Core.Features.StartParserWork;
 public sealed class ParserStartedEventTransporter(IOnParserStartedListener listener)
 	: IEventTransporter<StartParserCommand, SubscribedParser>
 {
-	public Task Transport(SubscribedParser result, CancellationToken ct = new CancellationToken()) =>
-		listener.Handle(result, ct);
+	public Task Transport(SubscribedParser result, CancellationToken ct = default) => listener.Handle(result, ct);
 }

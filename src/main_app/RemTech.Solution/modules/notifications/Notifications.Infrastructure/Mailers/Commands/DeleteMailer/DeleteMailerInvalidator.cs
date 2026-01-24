@@ -9,11 +9,7 @@ public sealed class DeleteMailerInvalidator(
 	MailerRecordCacheInvalidator recordCacheInvalidator
 ) : ICacheInvalidator<DeleteMailerCommand, Guid>
 {
-	public Task InvalidateCache(
-		DeleteMailerCommand command,
-		Guid result,
-		CancellationToken ct = new CancellationToken()
-	)
+	public Task InvalidateCache(DeleteMailerCommand command, Guid result, CancellationToken ct = default)
 	{
 		Task[] tasks = [arrayCacheInvalidator.Invalidate(ct), recordCacheInvalidator.Invalidate(result, ct)];
 

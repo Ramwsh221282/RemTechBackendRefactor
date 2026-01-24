@@ -31,19 +31,17 @@ public sealed class GetLocationsQueryHandler(
 		List<LocationsResponse> responses = [];
 		while (await reader.ReadAsync(ct))
 		{
-			LocationsResponse response = MapSingleLocationFromReader(reader);
-			responses.Add(response);
+			responses.Add(CreateFromReader(reader));
 		}
 
 		return responses;
 	}
 
-	private static LocationsResponse MapSingleLocationFromReader(DbDataReader reader)
-	{
-		Guid id = reader.GetGuid(reader.GetOrdinal("id"));
-		string name = reader.GetString(reader.GetOrdinal("name"));
-		return new LocationsResponse(id, name)
+	private static LocationsResponse CreateFromReader(DbDataReader reader) =>
+		new()
 		{
+			Id = reader.GetGuid(reader.GetOrdinal("id")),
+			Name = reader.GetString(reader.GetOrdinal("name")),
 			TextSearchScore = ReaderContainsField(reader, "TextSearchScore")
 				? reader.GetFloat(reader.GetOrdinal("TextSearchScore"))
 				: null,
@@ -51,7 +49,6 @@ public sealed class GetLocationsQueryHandler(
 				? reader.GetInt32(reader.GetOrdinal("VehiclesCount"))
 				: null,
 		};
-	}
 
 	private (DynamicParameters parameters, string sql) CreateSql(GetLocationsQuery query)
 	{

@@ -1,9 +1,9 @@
 namespace Vehicles.Infrastructure.Locations.Queries;
 
-public sealed class LocationsResponse(Guid id, string name)
+public sealed class LocationsResponse
 {
-    public Guid Id { get; } = id;
-    public string Name { get; } = name;
-    public float? TextSearchScore { get; set; }
-    public int? VehiclesCount { get; set; }
+	public required Guid Id { get; set; }
+	public required string Name { get; set; }
+	public float? TextSearchScore { get; set; }
+	public int? VehiclesCount { get; set; }
 }

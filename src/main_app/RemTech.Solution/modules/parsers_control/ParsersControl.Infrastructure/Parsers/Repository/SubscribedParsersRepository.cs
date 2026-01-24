@@ -179,7 +179,9 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			parameters.Add("@type", query.Type, DbType.String);
 		}
 
-		return filterSql.Count == 0 ? (parameters, "") : (parameters, $" WHERE {string.Join(" AND ", filterSql)}");
+		return filterSql.Count == 0
+			? (parameters, string.Empty)
+			: (parameters, $" WHERE {string.Join(" AND ", filterSql)}");
 	}
 
 	private Task Block(SubscribedParserQuery query, CancellationToken ct)

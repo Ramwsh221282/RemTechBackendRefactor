@@ -13,10 +13,7 @@ public sealed class ChangeCredentialsHandler(
 	INotificationsModuleUnitOfWork unitOfWork
 ) : ICommandHandler<ChangeCredentialsCommand, Mailer>
 {
-	public async Task<Result<Mailer>> Execute(
-		ChangeCredentialsCommand command,
-		CancellationToken ct = new CancellationToken()
-	)
+	public async Task<Result<Mailer>> Execute(ChangeCredentialsCommand command, CancellationToken ct = default)
 	{
 		Result<Mailer> mailer = await GetRequiredMailer(command, ct);
 		if (mailer.IsFailure)

@@ -6,21 +6,21 @@ import {
   trigger
 } from "./chunk-SGX7HNV4.js";
 import {
+  Ripple
+} from "./chunk-27GHGWTZ.js";
+import {
   transformToBoolean
 } from "./chunk-5H5CNZCN.js";
 import {
-  Ripple
-} from "./chunk-OONHOXE3.js";
-import {
   ChevronDownIcon,
   ChevronUpIcon
-} from "./chunk-BT44V34X.js";
+} from "./chunk-CIVGSF3R.js";
 import {
   BaseComponent
-} from "./chunk-F4D65IDH.js";
+} from "./chunk-6AOG2MZ5.js";
 import {
   BaseStyle
-} from "./chunk-N4HVL2TA.js";
+} from "./chunk-7Q4CDHL6.js";
 import {
   Header,
   PrimeTemplate,
@@ -29,7 +29,9 @@ import {
   focus,
   getAttribute,
   uuid
-} from "./chunk-ZFSYQHQG.js";
+} from "./chunk-VPX34RLM.js";
+import "./chunk-CWYBPNCF.js";
+import "./chunk-NJ25EVEJ.js";
 import {
   CommonModule,
   NgClass,
@@ -96,8 +98,6 @@ import {
 } from "./chunk-BZOV3KXR.js";
 import "./chunk-G2UQQOMX.js";
 import "./chunk-4LZAZZAO.js";
-import "./chunk-CWYBPNCF.js";
-import "./chunk-NJ25EVEJ.js";
 import "./chunk-WDMUDEB6.js";
 
 // node_modules/primeng/fesm2022/primeng-accordion.mjs

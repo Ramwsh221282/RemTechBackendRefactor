@@ -86,7 +86,7 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		CancellationToken ct = default
 	)
 	{
-		string lockClause = withLock ? "FOR UPDATE" : "";
+		string lockClause = withLock ? "FOR UPDATE" : string.Empty;
 		string sql = $"""
 			SELECT 
 			    account_id as account_id, 

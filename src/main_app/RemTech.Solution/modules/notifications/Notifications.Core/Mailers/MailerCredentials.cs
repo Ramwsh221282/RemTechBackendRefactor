@@ -61,9 +61,7 @@ public sealed partial record MailerCredentials
 		string[] parts = email.Split('@');
 		string host = parts[1];
 		string? resolved = AllowedSmtpHosts.FirstOrDefault(h => h.EndsWith(host, StringComparison.OrdinalIgnoreCase));
-		return resolved
-			?? (Result<string>)
-				Error.Validation($"Хост почты: {host} не поддерживается для настройки почтового сервиса.");
+		return resolved ?? Error.Validation($"Хост почты: {host} не поддерживается для настройки почтового сервиса.");
 	}
 
 	[GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "ru-RU")]

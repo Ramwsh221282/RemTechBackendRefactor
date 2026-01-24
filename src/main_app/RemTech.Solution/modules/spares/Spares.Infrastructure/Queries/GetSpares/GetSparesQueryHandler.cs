@@ -11,65 +11,71 @@ using RemTech.SharedKernel.NN;
 namespace Spares.Infrastructure.Queries.GetSpares;
 
 public sealed class GetSparesQueryHandler(
-    NpgSqlSession session,
-    EmbeddingsProvider embeddings,
-    IOptions<GetSparesThresholdConstants> textSearchConstants
+	NpgSqlSession session,
+	EmbeddingsProvider embeddings,
+	IOptions<GetSparesThresholdConstants> textSearchConstants
 ) : IQueryHandler<GetSparesQuery, GetSparesQueryResponse>
 {
-    private GetSparesThresholdConstants TextSearchConstants { get; } = textSearchConstants.Value;
+	private GetSparesThresholdConstants TextSearchConstants { get; } = textSearchConstants.Value;
 
-    public async Task<GetSparesQueryResponse> Handle(GetSparesQuery query, CancellationToken ct = default)
-    {
-        CommandDefinition command = CreateCommand(query);
-        await using NpgsqlConnection connection = await session.GetConnection(ct);
-        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
-        return await CreateResponse(reader, ct);
-    }
+	public async Task<GetSparesQueryResponse> Handle(GetSparesQuery query, CancellationToken ct = default)
+	{
+		CommandDefinition command = CreateCommand(query);
+		await using NpgsqlConnection connection = await session.GetConnection(ct);
+		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+		return await CreateResponse(reader, ct);
+	}
 
-    private static async Task<GetSparesQueryResponse> CreateResponse(DbDataReader reader, CancellationToken ct)
-    {
-        GetSparesQueryResponse response = new();
-        List<SpareResponse> spares = [];
-        while (await reader.ReadAsync(ct))
-        {
-            response.SetTotalCount(reader.GetInt32(reader.GetOrdinal("total_count")));
-            response.SetAveragePrice(reader.GetDouble(reader.GetOrdinal("average_price")));
-            response.SetMinimalPrice(reader.GetDouble(reader.GetOrdinal("minimal_price")));
-            response.SetMaximalPrice(reader.GetDouble(reader.GetOrdinal("maximal_price")));
-            spares.Add(
-                new SpareResponse()
-                {
-                    Id = reader.GetGuid(reader.GetOrdinal("spare_id")),
-                    Url = reader.GetString(reader.GetOrdinal("spare_url")),
-                    Price = reader.GetInt64(reader.GetOrdinal("spare_price")),
-                    Oem = reader.GetString(reader.GetOrdinal("spare_oem")),
-                    Text = reader.GetString(reader.GetOrdinal("spare_text")),
-                    Type = reader.GetString(reader.GetOrdinal("spare_type")),
-                    IsNds = reader.GetBoolean(reader.GetOrdinal("spare_is_nds")),
-                    Location = reader.GetString(reader.GetOrdinal("location")),
-                }
-            );
-        }
+	private static async Task<GetSparesQueryResponse> CreateResponse(DbDataReader reader, CancellationToken ct)
+	{
+		GetSparesQueryResponse response = new();
+		bool aggregatedInfoSet = false;
+		List<SpareResponse> spares = [];
+		while (await reader.ReadAsync(ct))
+		{
+			if (!aggregatedInfoSet)
+			{
+				response.TotalCount = reader.GetInt32(reader.GetOrdinal("total_count"));
+				response.AveragePrice = reader.GetDouble(reader.GetOrdinal("average_price"));
+				response.MinimalPrice = reader.GetDouble(reader.GetOrdinal("minimal_price"));
+				response.MaximalPrice = reader.GetDouble(reader.GetOrdinal("maximal_price"));
+				aggregatedInfoSet = true;
+			}
 
-        response.Spares = spares;
-        return response;
-    }
+			spares.Add(
+				new SpareResponse()
+				{
+					Id = reader.GetGuid(reader.GetOrdinal("spare_id")),
+					Url = reader.GetString(reader.GetOrdinal("spare_url")),
+					Price = reader.GetInt64(reader.GetOrdinal("spare_price")),
+					Oem = reader.GetString(reader.GetOrdinal("spare_oem")),
+					Text = reader.GetString(reader.GetOrdinal("spare_text")),
+					Type = reader.GetString(reader.GetOrdinal("spare_type")),
+					IsNds = reader.GetBoolean(reader.GetOrdinal("spare_is_nds")),
+					Location = reader.GetString(reader.GetOrdinal("location")),
+				}
+			);
+		}
 
-    private CommandDefinition CreateCommand(GetSparesQuery query)
-    {
-        List<string> filters = [];
-        List<string> orderBy = [];
-        List<string> pagination = [];
-        DynamicParameters parameters = new();
-        ApplyFilters(query, parameters, filters);
-        ApplyOrderBy(query, orderBy);
-        ApplyPagination(query, parameters, pagination);
+		response.Spares = spares;
+		return response;
+	}
 
-        string whereClause = filters.Count == 0 ? string.Empty : $" WHERE {string.Join(" AND ", filters)}";
-        string orderByClause = orderBy.Count == 0 ? string.Empty : $" ORDER BY {string.Join(", ", orderBy)}";
-        string paginationClause = pagination.Count == 0 ? string.Empty : $" {string.Join(" ", pagination)}";
+	private CommandDefinition CreateCommand(GetSparesQuery query)
+	{
+		List<string> filters = [];
+		List<string> orderBy = [];
+		List<string> pagination = [];
+		DynamicParameters parameters = new();
+		ApplyFilters(query, parameters, filters);
+		ApplyOrderBy(query, orderBy);
+		ApplyPagination(query, parameters, pagination);
 
-        string sql = $"""
+		string whereClause = filters.Count == 0 ? string.Empty : $" WHERE {string.Join(" AND ", filters)}";
+		string orderByClause = orderBy.Count == 0 ? string.Empty : $" ORDER BY {string.Join(", ", orderBy)}";
+		string paginationClause = pagination.Count == 0 ? string.Empty : $" {string.Join(" ", pagination)}";
+
+		string sql = $"""
 			WITH spares AS (
 			    SELECT
 			        s.id as spare_id,
@@ -93,57 +99,57 @@ public sealed class GetSparesQueryHandler(
 			JOIN vehicles_module.regions r ON s.spare_region_id = r.id;
 			""";
 
-        return new CommandDefinition(sql, parameters, transaction: session.Transaction);
-    }
+		return new CommandDefinition(sql, parameters, transaction: session.Transaction);
+	}
 
-    private void ApplyFilters(GetSparesQuery query, DynamicParameters parameters, List<string> filters)
-    {
-        if (query.RegionId.HasValue)
-        {
-            filters.Add("s.region_id=@regionId");
-            parameters.Add("@regionId", query.RegionId.Value, DbType.Guid);
-        }
+	private void ApplyFilters(GetSparesQuery query, DynamicParameters parameters, List<string> filters)
+	{
+		if (query.RegionId.HasValue)
+		{
+			filters.Add("s.region_id=@regionId");
+			parameters.Add("@regionId", query.RegionId.Value, DbType.Guid);
+		}
 
-        if (query.PriceMin.HasValue)
-        {
-            filters.Add("s.price>=@priceMin");
-            parameters.Add("@priceMin", query.PriceMin.Value, DbType.Int64);
-        }
+		if (query.PriceMin.HasValue)
+		{
+			filters.Add("s.price>=@priceMin");
+			parameters.Add("@priceMin", query.PriceMin.Value, DbType.Int64);
+		}
 
-        if (query.PriceMax.HasValue)
-        {
-            filters.Add("s.price<=@priceMax");
-            parameters.Add("@priceMax", query.PriceMax.Value, DbType.Int64);
-        }
+		if (query.PriceMax.HasValue)
+		{
+			filters.Add("s.price<=@priceMax");
+			parameters.Add("@priceMax", query.PriceMax.Value, DbType.Int64);
+		}
 
-        if (!string.IsNullOrWhiteSpace(query.TextSearch))
-            ApplyTextSearch(query.TextSearch, parameters, filters);
-        if (!string.IsNullOrWhiteSpace(query.Oem))
-            ApplyOemSearch(query.Oem, parameters, filters);
-    }
+		if (!string.IsNullOrWhiteSpace(query.TextSearch))
+			ApplyTextSearch(query.TextSearch, parameters, filters);
+		if (!string.IsNullOrWhiteSpace(query.Oem))
+			ApplyOemSearch(query.Oem, parameters, filters);
+	}
 
-    private static void ApplyPagination(GetSparesQuery query, DynamicParameters parameters, List<string> paginationSql)
-    {
-        int limit = query.PageSize;
-        int offset = (query.Page - 1) * limit;
-        paginationSql.Add("LIMIT @limit");
-        paginationSql.Add("OFFSET @offset");
-        parameters.Add("@limit", limit, DbType.Int32);
-        parameters.Add("@offset", offset, DbType.Int32);
-    }
+	private static void ApplyPagination(GetSparesQuery query, DynamicParameters parameters, List<string> paginationSql)
+	{
+		int limit = query.PageSize;
+		int offset = (query.Page - 1) * limit;
+		paginationSql.Add("LIMIT @limit");
+		paginationSql.Add("OFFSET @offset");
+		parameters.Add("@limit", limit, DbType.Int32);
+		parameters.Add("@offset", offset, DbType.Int32);
+	}
 
-    private static void ApplyOrderBy(GetSparesQuery query, List<string> orderBySql)
-    {
-        string orderMode = query.OrderMode;
-        if (orderMode == "DESC" || orderMode == "ASC")
-        {
-            orderBySql.Add($"s.price {orderMode}");
-        }
-    }
+	private static void ApplyOrderBy(GetSparesQuery query, List<string> orderBySql)
+	{
+		string orderMode = query.OrderMode;
+		if (orderMode == "DESC" || orderMode == "ASC")
+		{
+			orderBySql.Add($"s.price {orderMode}");
+		}
+	}
 
-    private void ApplyOemSearch(string oem, DynamicParameters parameters, List<string> filters)
-    {
-        const string sql = """
+	private void ApplyOemSearch(string oem, DynamicParameters parameters, List<string> filters)
+	{
+		const string sql = """
 			s.id IN (
 			WITH plain_oem_search AS (
 			 SELECT pos.id FROM spares_module.spares pos WHERE pos.oem ILIKE '%' || @oem || '%'
@@ -159,14 +165,14 @@ public sealed class GetSparesQueryHandler(
 			SELECT all_match.id from all_match)
 			""";
 
-        filters.Add(sql);
-        parameters.Add("@oem", oem, DbType.String);
-        parameters.Add("@oem_search_threshold", TextSearchConstants.TextSearchThreshold, DbType.Double);
-    }
+		filters.Add(sql);
+		parameters.Add("@oem", oem, DbType.String);
+		parameters.Add("@oem_search_threshold", TextSearchConstants.TextSearchThreshold, DbType.Double);
+	}
 
-    private void ApplyTextSearch(string text, DynamicParameters parameters, List<string> filters)
-    {
-        const string sql = """
+	private void ApplyTextSearch(string text, DynamicParameters parameters, List<string> filters)
+	{
+		const string sql = """
 			s.id IN (
 			WITH embedding_search AS (
 			    SELECT
@@ -215,12 +221,12 @@ public sealed class GetSparesQueryHandler(
 			)
 			""";
 
-        filters.Add(sql);
-        Vector embedding = new(embeddings.Generate(text));
-        parameters.Add("@embedding_search", embedding);
-        parameters.Add("@text_search_parameter", text, DbType.String);
-        parameters.Add("@embedding_search_threshold", TextSearchConstants.EmbeddingSearchThreshold, DbType.Double);
-        parameters.Add("@text_search_threshold", TextSearchConstants.TextSearchThreshold, DbType.Double);
-        parameters.Add("@hybrid_threshold", TextSearchConstants.HybridSearchThreshold, DbType.Double);
-    }
+		filters.Add(sql);
+		Vector embedding = new(embeddings.Generate(text));
+		parameters.Add("@embedding_search", embedding);
+		parameters.Add("@text_search_parameter", text, DbType.String);
+		parameters.Add("@embedding_search_threshold", TextSearchConstants.EmbeddingSearchThreshold, DbType.Double);
+		parameters.Add("@text_search_threshold", TextSearchConstants.TextSearchThreshold, DbType.Double);
+		parameters.Add("@hybrid_threshold", TextSearchConstants.HybridSearchThreshold, DbType.Double);
+	}
 }
