@@ -32,7 +32,7 @@ export class AllBrandsPageComponent {
 	readonly brandsQuery: Signal<GetBrandsQuery> = computed((): GetBrandsQuery => {
 		const page: number = this.page();
 		const text: string | null = this.text();
-		return GetBrandsQuery.default().usePage(page).usePageSize(this.pageSize).useTextSearch(text);
+		return GetBrandsQuery.default().usePage(page).usePageSize(this.pageSize).useTextSearch(text).useVehiclesCount(true);
 	});
 
 	readonly fetchBrandsOnQueryChange = effect((): void => {

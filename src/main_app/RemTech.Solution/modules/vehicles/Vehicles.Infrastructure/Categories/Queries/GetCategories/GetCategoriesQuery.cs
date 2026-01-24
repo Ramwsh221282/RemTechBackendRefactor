@@ -13,7 +13,8 @@ public class GetCategoriesQuery : IQuery
 	public Guid? Id { get; private init; }
 	public string? Name { get; private init; }
 	public IEnumerable<string>? IncludedInformation { get; private set; }
-
+	public IEnumerable<string>? OrderByFields { get; private set; }
+	public string? OrderByMode { get; private set; }
 	public int? Page { get; private set; }
 	public int? PageSize { get; private set; }
 	public string? TextSearch { get; private set; }
@@ -26,6 +27,11 @@ public class GetCategoriesQuery : IQuery
 		IncludedInformation is null
 			? []
 			: _includedInformationKeys_cached ??= IncludedInformation.ToHashSet().ToDictionary(i => i, i => i);
+
+	public GetCategoriesQuery WithOrderByFields(IEnumerable<string>? orderByFields) =>
+		Copy(this, orderByFields: orderByFields);
+
+	public GetCategoriesQuery WithOrderMode(string? orderMode) => Copy(this, orderByMode: orderMode);
 
 	public GetCategoriesQuery WithPage(int? page) => Copy(this, page: page);
 
@@ -67,7 +73,9 @@ public class GetCategoriesQuery : IQuery
 		IEnumerable<string>? includedInformation = null,
 		int? page = null,
 		int? pageSize = null,
-		string? textSearch = null
+		string? textSearch = null,
+		string? orderByMode = null,
+		IEnumerable<string>? orderByFields = null
 	) =>
 		new()
 		{
@@ -83,5 +91,7 @@ public class GetCategoriesQuery : IQuery
 			Page = page ?? origin.Page,
 			PageSize = pageSize ?? origin.PageSize,
 			TextSearch = textSearch ?? origin.TextSearch,
+			OrderByMode = orderByMode ?? origin.OrderByMode,
+			OrderByFields = orderByFields ?? origin.OrderByFields,
 		};
 }

@@ -22,6 +22,8 @@ public sealed class CategoriesController
 		[FromQuery(Name = "text-search")] string? textSearch,
 		[FromQuery(Name = "page")] int? page,
 		[FromQuery(Name = "pageSize")] int? pageSize,
+		[FromQuery(Name = "sort-fields")] IEnumerable<string>? orderByFields,
+		[FromQuery(Name = "sort-mode")] string? orderByMode,
 		[FromServices] IQueryHandler<GetCategoriesQuery, IEnumerable<CategoryResponse>> handler,
 		CancellationToken ct = default
 	)
@@ -36,7 +38,9 @@ public sealed class CategoriesController
 			.WithIncludedInformation(includedInformation)
 			.WithPage(page)
 			.WithPageSize(pageSize)
-			.WithTextSearch(textSearch);
+			.WithTextSearch(textSearch)
+			.WithOrderByFields(orderByFields)
+			.WithOrderMode(orderByMode);
 
 		IEnumerable<CategoryResponse> response = await handler.Handle(query, ct);
 		return EnvelopeFactory.Ok(response);

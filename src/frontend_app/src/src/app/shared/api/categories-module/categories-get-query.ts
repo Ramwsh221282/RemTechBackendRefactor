@@ -13,7 +13,10 @@ type GetCategoriesQueryParameters = {
 	page: number | null | undefined;
 	pageSize: number | null | undefined;
 	withVehiclesCount: boolean;
+	withTotalCategoriesCount: boolean;
 	textSearch: string | null | undefined;
+	sortFields: string[];
+	sortDirection: 'ASC' | 'DESC';
 };
 
 export class GetCategoriesQuery {
@@ -35,6 +38,13 @@ export class GetCategoriesQuery {
 			includes.push('text-search-score');
 		}
 		if (this.parameters.withVehiclesCount) includes.push('vehicles-count');
+		if (this.parameters.withTotalCategoriesCount) includes.push('total-categories-count');
+		if (this.parameters.sortDirection) params = params.append('sort-mode', this.parameters.sortDirection);
+		if (this.parameters.sortFields && this.parameters.sortFields.length > 0) {
+			for (const field of this.parameters.sortFields) {
+				params = params.append('sort-fields', field);
+			}
+		}
 		if (includes.length > 0) {
 			for (const include of includes) {
 				params = params.append('include', include);
@@ -50,6 +60,29 @@ export class GetCategoriesQuery {
 		return new GetCategoriesQuery({
 			...this.parameters,
 			id: id ?? category?.Id ?? undefined,
+		});
+	}
+
+	public useOrderByName(use: boolean): GetCategoriesQuery {
+		if (this.parameters.sortFields.includes('name') === use) return new GetCategoriesQuery({ ...this.parameters });
+		return new GetCategoriesQuery({
+			...this.parameters,
+			sortFields: ['name', ...this.parameters.sortFields],
+		});
+	}
+
+	public useOrderByVehiclesCount(use: boolean): GetCategoriesQuery {
+		if (this.parameters.sortFields.includes('name') === use) return new GetCategoriesQuery({ ...this.parameters });
+		return new GetCategoriesQuery({
+			...this.useVehiclesCount(true).parameters,
+			sortFields: ['vehicles-count', ...this.parameters.sortFields],
+		});
+	}
+
+	public useOrderByDirection(direction: 'ASC' | 'DESC'): GetCategoriesQuery {
+		return new GetCategoriesQuery({
+			...this.parameters,
+			sortDirection: direction,
 		});
 	}
 
@@ -104,6 +137,13 @@ export class GetCategoriesQuery {
 		});
 	}
 
+	public useTotalCategoriesCount(use: boolean): GetCategoriesQuery {
+		return new GetCategoriesQuery({
+			...this.parameters,
+			withTotalCategoriesCount: use,
+		});
+	}
+
 	public useTextSearch(text: string | null | undefined = undefined): GetCategoriesQuery {
 		return new GetCategoriesQuery({
 			...this.parameters,
@@ -137,6 +177,9 @@ export class GetCategoriesQuery {
 			pageSize: undefined,
 			textSearch: undefined,
 			withVehiclesCount: false,
+			withTotalCategoriesCount: false,
+			sortFields: [],
+			sortDirection: 'ASC',
 		});
 	}
 }
