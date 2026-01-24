@@ -1,6 +1,7 @@
 import { HttpParams } from '@angular/common/http';
 import { CategoryResponse } from '../categories-module/categories-responses';
 import { BrandResponse } from './brands-api.responses';
+import { StringUtils } from '../../utils/string-utils';
 
 type GetBrandsQueryParameters = {
 	id: string | null | undefined;
@@ -14,6 +15,9 @@ type GetBrandsQueryParameters = {
 	textSearch: string | null | undefined;
 	useVehiclesCount: boolean;
 	useBrandsCount: boolean;
+	withTotalBrandsCount: boolean;
+	sortDirection: 'ASC' | 'DESC';
+	sortFields: string[];
 };
 
 export class GetBrandsQuery {
@@ -31,29 +35,49 @@ export class GetBrandsQuery {
 			textSearch: undefined,
 			useBrandsCount: false,
 			useVehiclesCount: false,
+			sortDirection: 'ASC',
+			sortFields: [],
+			withTotalBrandsCount: false,
 		});
 	}
 
 	public toHttpParams(): HttpParams {
 		let params: HttpParams = new HttpParams();
 		const includes: string[] = [];
-		if (this.parameters.id) params = params.append('id', this.parameters.id);
-		if (this.parameters.name) params = params.append('name', this.parameters.name);
-		if (this.parameters.categoryId) params = params.append('categoryId', this.parameters.categoryId);
-		if (this.parameters.categoryName) params = params.append('categoryName', this.parameters.categoryName);
-		if (this.parameters.modelId) params = params.append('modelId', this.parameters.modelId);
-		if (this.parameters.modelName) params = params.append('modelName', this.parameters.modelName);
+		if (this.parameters.id && !StringUtils.isEmptyOrWhiteSpace(this.parameters.id)) params = params.append('id', this.parameters.id);
+		if (this.parameters.name && !StringUtils.isEmptyOrWhiteSpace(this.parameters.name))
+			params = params.append('name', this.parameters.name);
+		if (this.parameters.categoryId && !StringUtils.isEmptyOrWhiteSpace(this.parameters.categoryId))
+			params = params.append('categoryId', this.parameters.categoryId);
+		if (this.parameters.categoryName && !StringUtils.isEmptyOrWhiteSpace(this.parameters.categoryName))
+			params = params.append('categoryName', this.parameters.categoryName);
+		if (this.parameters.modelId && !StringUtils.isEmptyOrWhiteSpace(this.parameters.modelId))
+			params = params.append('modelId', this.parameters.modelId);
+		if (this.parameters.modelName && !StringUtils.isEmptyOrWhiteSpace(this.parameters.modelName))
+			params = params.append('modelName', this.parameters.modelName);
 		if (this.parameters.page) params = params.append('page', this.parameters.page.toString());
 		if (this.parameters.pageSize) params = params.append('pageSize', this.parameters.pageSize.toString());
 		if (this.parameters.useVehiclesCount) params = params.append('include', 'vehicles-count');
 		if (this.parameters.useBrandsCount) params = params.append('include', 'brands-count');
-		if (this.parameters.textSearch) {
+		if (this.parameters.textSearch && !StringUtils.isEmptyOrWhiteSpace(this.parameters.textSearch)) {
 			params = params.append('text-search', this.parameters.textSearch);
 			params = params.append('include', 'text-search-score');
 		}
+		if (this.parameters.withTotalBrandsCount) includes.push('total-brands-count');
+		if (this.parameters.sortDirection && !StringUtils.isEmptyOrWhiteSpace(this.parameters.sortDirection))
+			params = params.append('sort-mode', this.parameters.sortDirection);
+		if (this.parameters.sortFields && this.parameters.sortFields.length > 0) {
+			for (const field of this.parameters.sortFields) {
+				if (!StringUtils.isEmptyOrWhiteSpace(field)) {
+					params = params.append('sort-fields', field);
+				}
+			}
+		}
 		if (includes) {
 			for (const include of includes) {
-				params = params.append('include', include);
+				if (!StringUtils.isEmptyOrWhiteSpace(include)) {
+					params = params.append('include', include);
+				}
 			}
 		}
 		return params;
@@ -63,6 +87,33 @@ export class GetBrandsQuery {
 		return new GetBrandsQuery({
 			...this.parameters,
 			modelId: id ?? model?.Id ?? undefined,
+		});
+	}
+
+	public useTotalBrandsCount(use: boolean): GetBrandsQuery {
+		return new GetBrandsQuery({
+			...this.parameters,
+			withTotalBrandsCount: use,
+		});
+	}
+
+	public useSortDirection(direction: 'ASC' | 'DESC'): GetBrandsQuery {
+		return new GetBrandsQuery({ ...this.parameters, sortDirection: direction });
+	}
+
+	public useSortByName(use: boolean): GetBrandsQuery {
+		if (this.parameters.sortFields.includes('name') === use) return new GetBrandsQuery({ ...this.parameters });
+		return new GetBrandsQuery({
+			...this.parameters,
+			sortFields: ['name', ...this.parameters.sortFields],
+		});
+	}
+
+	public useSortByVehiclesCount(use: boolean): GetBrandsQuery {
+		if (this.parameters.sortFields.includes('vehicles-count') === use) return new GetBrandsQuery({ ...this.parameters });
+		return new GetBrandsQuery({
+			...this.useVehiclesCount(true).parameters,
+			sortFields: ['vehicles-count', ...this.parameters.sortFields],
 		});
 	}
 

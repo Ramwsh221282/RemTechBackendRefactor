@@ -22,6 +22,8 @@ public sealed class BrandsController
 		[FromQuery(Name = "pageSize")] int? pageSize,
 		[FromQuery(Name = "include")] IEnumerable<string>? includes,
 		[FromQuery(Name = "text-search")] string? textSearch,
+		[FromQuery(Name = "sort-fields")] IEnumerable<string>? sortFields,
+		[FromQuery(Name = "sort-mode")] string? sortMode,
 		[FromServices] IQueryHandler<GetBrandsQuery, IEnumerable<BrandResponse>> handler,
 		CancellationToken ct = default
 	)
@@ -36,9 +38,11 @@ public sealed class BrandsController
 			.WithPageSize(pageSize)
 			.WithPagination(page)
 			.WithTextSearch(textSearch)
-			.WithInclude(includes);
+			.WithInclude(includes)
+			.WithSortFields(sortFields)
+			.WithSortDirection(sortMode);
 
 		IEnumerable<BrandResponse> response = await handler.Handle(query, ct);
-		return EnvelopeFactory.Ok(response);
+		return response.Ok();
 	}
 }

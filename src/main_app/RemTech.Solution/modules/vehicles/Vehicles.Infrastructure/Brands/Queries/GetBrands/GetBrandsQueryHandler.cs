@@ -12,6 +12,8 @@ namespace Vehicles.Infrastructure.Brands.Queries.GetBrands;
 public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: IQueryHandler<GetBrandsQuery, IEnumerable<BrandResponse>>
 {
+	private const StringComparison STRING_COMPARISON = StringComparison.OrdinalIgnoreCase;
+
 	public async Task<IEnumerable<BrandResponse>> Handle(GetBrandsQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string sql) = CreateSql(query);
@@ -43,7 +45,7 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
             {CreateWhereClause(filters)}                                    
             GROUP BY b.id, b.name
             HAVING COUNT(v.id) > 0
-            {IncludeOrderBy(query, [IncludeTextSearchOrderBy])}
+            {IncludeOrderBy(query, [IncludeTextSearchOrderBy, IncludeFieldsOrderBy])}
             {IncludePagination(query)}
             """;
 
@@ -86,6 +88,45 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 	private static string IncludeTextSearchOrderBy(GetBrandsQuery query) =>
 		string.IsNullOrWhiteSpace(query.TextSearch) ? string.Empty : "b.embedding <-> @embedding ASC";
 
+	private static string IncludeFieldsOrderBy(GetBrandsQuery query)
+	{
+		if (query.SortFields is null)
+			return string.Empty;
+
+		string orderByMode =
+			string.IsNullOrWhiteSpace(query.SortMode) ? "ASC"
+			: string.Equals(query.SortMode, "ASC", STRING_COMPARISON) ? "ASC"
+			: string.Equals(query.SortMode, "DESC", STRING_COMPARISON) ? "DESC"
+			: "ASC";
+
+		string[] orderings = [.. query.SortFields];
+
+		List<string> clauses = [];
+		foreach (string clause in orderings)
+		{
+			if (string.Equals(clause, "name", STRING_COMPARISON))
+				clauses.Add($"b.name {orderByMode}");
+
+			if (
+				string.Equals(clause, "vehicles-count", STRING_COMPARISON)
+				&& query.ContainsFieldInclude("vehicles-count")
+			)
+			{
+				clauses.Add($"VehiclesCount {orderByMode}");
+			}
+
+			if (
+				string.Equals(clause, "vehicles-count", STRING_COMPARISON)
+				&& !query.ContainsFieldInclude("vehicles-count")
+			)
+			{
+				clauses.Add($"COUNT(v.id) {orderByMode}");
+			}
+		}
+
+		return clauses.Count > 0 ? string.Join(", ", clauses) : string.Empty;
+	}
+
 	private static string IncludePagination(GetBrandsQuery query) =>
 		(query.Page.HasValue && query.PageSize.HasValue)
 			? $"LIMIT {query.PageSize.Value} OFFSET {(query.Page.Value - 1) * query.PageSize.Value}"
@@ -102,7 +143,7 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 		!query.ContainsFieldInclude("vehicles-count") ? string.Empty : "COUNT(v.id) AS VehiclesCount";
 
 	private static string IncludeBrandsTotalCount(GetBrandsQuery query) =>
-		!query.ContainsFieldInclude("brands-count") ? string.Empty : "COUNT(*) OVER() AS TotalCount";
+		!query.ContainsFieldInclude("total-brands-count") ? string.Empty : "COUNT(*) OVER() AS TotalCount";
 
 	private static string IncludeVehiclesTextSearchScore(GetBrandsQuery query) =>
 		!query.ContainsFieldInclude("text-search-score") ? string.Empty : "b.embedding <-> @embedding";

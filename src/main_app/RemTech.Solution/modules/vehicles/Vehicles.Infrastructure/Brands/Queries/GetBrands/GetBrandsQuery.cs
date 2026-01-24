@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using RemTech.SharedKernel.Core.Handlers;
 
@@ -15,6 +16,8 @@ public sealed class GetBrandsQuery : IQuery
 	public int? Page { get; private init; }
 	public int? PageSize { get; private init; }
 	public string? TextSearch { get; private init; }
+	public string? SortMode { get; private init; }
+	public IEnumerable<string>? SortFields { get; private init; }
 
 	[JsonIgnore]
 	private Dictionary<string, string>? _includedInformationKeys_cached;
@@ -24,6 +27,10 @@ public sealed class GetBrandsQuery : IQuery
 		_includedInformationKeys_cached ??= Includes is null ? [] : Includes.ToHashSet().ToDictionary(i => i, i => i);
 
 	public bool ContainsFieldInclude(string include) => IncludedInformationKeys.ContainsKey(include);
+
+	public GetBrandsQuery WithSortDirection(string? sortDirection) => Copy(this, sortDirection: sortDirection);
+
+	public GetBrandsQuery WithSortFields(IEnumerable<string>? sortFields) => Copy(this, sortFields: sortFields);
 
 	public GetBrandsQuery WithInclude(IEnumerable<string>? includes) =>
 		includes?.Any() != true ? this : Copy(this, includes: includes);
@@ -63,7 +70,9 @@ public sealed class GetBrandsQuery : IQuery
 		IEnumerable<string>? includes = null,
 		int? page = null,
 		int? pageSize = null,
-		string? textSearch = null
+		string? textSearch = null,
+		string? sortDirection = null,
+		IEnumerable<string>? sortFields = null
 	) =>
 		new()
 		{
@@ -77,5 +86,9 @@ public sealed class GetBrandsQuery : IQuery
 			Page = page ?? origin.Page,
 			PageSize = pageSize ?? origin.PageSize,
 			TextSearch = textSearch ?? origin.TextSearch,
+			SortMode = sortDirection ?? origin.SortMode,
+			SortFields = sortFields ?? origin.SortFields,
 		};
+
+	public override string ToString() => JsonSerializer.Serialize(this);
 }
