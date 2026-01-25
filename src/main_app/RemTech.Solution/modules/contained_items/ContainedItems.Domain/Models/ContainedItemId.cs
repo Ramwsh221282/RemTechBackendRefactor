@@ -4,16 +4,16 @@ namespace ContainedItems.Domain.Models;
 
 public readonly record struct ContainedItemId
 {
-    public ContainedItemId() => Value = Guid.NewGuid();
+	public ContainedItemId() => Value = Guid.NewGuid();
 
-    private ContainedItemId(Guid value) => Value = value;
+	private ContainedItemId(Guid value) => Value = value;
 
-    public static ContainedItemId New() => new();
+	public Guid Value { get; }
 
-    public static Result<ContainedItemId> Create(Guid value) =>
-        value == Guid.Empty
-            ? Error.Validation("Идентификатор сохраняемого элемента не может быть пустым.")
-            : new ContainedItemId(value);
+	public static ContainedItemId New() => new();
 
-    public Guid Value { get; }
+	public static Result<ContainedItemId> Create(Guid value) =>
+		value == Guid.Empty
+			? Error.Validation("Идентификатор сохраняемого элемента не может быть пустым.")
+			: new ContainedItemId(value);
 }

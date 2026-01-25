@@ -23,12 +23,6 @@ public sealed class EditLinkUrlInfoHandler(ISubscribedParsersRepository reposito
 		return saving.IsFailure ? saving.Error : link.Value;
 	}
 
-	private Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
-	{
-		SubscribedParserQuery query = new(Id: parserId, WithLock: true);
-		return SubscribedParser.FromRepository(repository, query, ct);
-	}
-
 	private static Result<SubscribedParserLink> EditLink(
 		Result<SubscribedParser> parser,
 		Guid linkId,
@@ -43,6 +37,12 @@ public sealed class EditLinkUrlInfoHandler(ISubscribedParsersRepository reposito
 			return Result.Failure<SubscribedParserLink>(link.Error);
 		Result<SubscribedParserLink> editResult = parser.Value.EditLink(link.Value, newName, newUrl);
 		return editResult.IsFailure ? Result.Failure<SubscribedParserLink>(editResult.Error) : editResult;
+	}
+
+	private Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
+	{
+		SubscribedParserQuery query = new(Id: parserId, WithLock: true);
+		return SubscribedParser.FromRepository(repository, query, ct);
 	}
 
 	private async Task<Result> SaveChanges(

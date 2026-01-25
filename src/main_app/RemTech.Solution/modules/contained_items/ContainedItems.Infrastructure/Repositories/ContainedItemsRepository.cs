@@ -59,7 +59,7 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
 		return session.ExecuteBulk(sql, parameters);
 	}
 
-	private static (DynamicParameters parameters, string filterSql) WhereClause(ContainedItemsQuery query)
+	private static (DynamicParameters Parameters, string FilterSql) WhereClause(ContainedItemsQuery query)
 	{
 		List<string> filters = [];
 		DynamicParameters parameters = new();

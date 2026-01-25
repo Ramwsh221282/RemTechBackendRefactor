@@ -24,19 +24,6 @@ public sealed class ParserIncreaseProcessedListener(
 	private Serilog.ILogger Logger { get; } = logger.ForContext<ParserIncreaseProcessedListener>();
 	private IServiceProvider Services { get; } = services;
 	private IChannel Channel => _channel ?? throw new InvalidOperationException("Channel was not initialized.");
-
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
-
-	public Task StartConsuming(CancellationToken ct = default)
-	{
-		AsyncEventingBasicConsumer consumer = new(Channel);
-		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, false, consumer, ct);
-	}
-
-	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
-
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, @event) =>
 		{
@@ -66,6 +53,21 @@ public sealed class ParserIncreaseProcessedListener(
 			}
 		};
 
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+
+	public Task StartConsuming(CancellationToken ct = default)
+	{
+		AsyncEventingBasicConsumer consumer = new(Channel);
+		consumer.ReceivedAsync += Handler;
+		return Channel.BasicConsumeAsync(Queue, false, consumer, ct);
+	}
+
+	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
+
+	private static SetParsedAmountCommand CreateCommand(ParserIncreaseProcessedMessage message) =>
+		new(message.Id, message.Amount);
+
 	private static bool IsMessageValid(ParserIncreaseProcessedMessage message, out string error)
 	{
 		List<string> errors = [];
@@ -84,9 +86,6 @@ public sealed class ParserIncreaseProcessedListener(
 			.ServiceProvider.GetRequiredService<ICommandHandler<SetParsedAmountCommand, SubscribedParser>>()
 			.Execute(command);
 	}
-
-	private static SetParsedAmountCommand CreateCommand(ParserIncreaseProcessedMessage message) =>
-		new(message.Id, message.Amount);
 
 	private sealed class ParserIncreaseProcessedMessage
 	{

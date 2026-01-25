@@ -19,6 +19,11 @@ public sealed class ChangeScheduleCommandHandler(ISubscribedParsersRepository re
 		return saving.IsFailure ? saving.Error : parser.Value;
 	}
 
+	private static Result<Unit> SetRequiredSchedule(ChangeScheduleCommand command, Result<SubscribedParser> parser)
+	{
+		return parser.IsFailure ? (Result<Unit>)parser.Error : parser.Value.ChangeScheduleWaitDays(command.WaitDays);
+	}
+
 	private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
 	{
 		if (parser.IsFailure)
@@ -27,11 +32,6 @@ public sealed class ChangeScheduleCommandHandler(ISubscribedParsersRepository re
 			return Result.Failure(result.Error);
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();
-	}
-
-	private static Result<Unit> SetRequiredSchedule(ChangeScheduleCommand command, Result<SubscribedParser> parser)
-	{
-		return parser.IsFailure ? (Result<Unit>)parser.Error : parser.Value.ChangeScheduleWaitDays(command.WaitDays);
 	}
 
 	private Task<Result<SubscribedParser>> GetRequiredParser(ChangeScheduleCommand command, CancellationToken ct)

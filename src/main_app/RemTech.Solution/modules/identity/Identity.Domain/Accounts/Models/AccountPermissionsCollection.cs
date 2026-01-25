@@ -5,13 +5,16 @@ namespace Identity.Domain.Accounts.Models;
 
 public sealed class AccountPermissionsCollection(AccountId id, IEnumerable<Permission> permissions)
 {
+	private readonly List<Permission> _permissions = [.. permissions];
+
 	private AccountPermissionsCollection(AccountPermissionsCollection collection)
 		: this(collection.AccountId, [.. collection._permissions]) { }
 
-	private readonly List<Permission> _permissions = [.. permissions];
 	public AccountId AccountId { get; } = id;
 	public IReadOnlyList<Permission> Permissions => _permissions;
 	public int Count => _permissions.Count;
+
+	public static AccountPermissionsCollection Empty(AccountId id) => new(id, []);
 
 	public Result<Unit> Add(Permission permission)
 	{
@@ -30,8 +33,6 @@ public sealed class AccountPermissionsCollection(AccountId id, IEnumerable<Permi
 	}
 
 	public AccountPermissionsCollection Clone() => new(this);
-
-	public static AccountPermissionsCollection Empty(AccountId id) => new(id, []);
 
 	public Result<Permission> Find(Guid permissionId)
 	{

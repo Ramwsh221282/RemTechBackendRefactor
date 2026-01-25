@@ -30,7 +30,7 @@ public sealed class GetVehiclesQueryHandler(
 		return await FormResponseUsingReader(reader, ct);
 	}
 
-	private static (DynamicParameters parameters, string sql) FormSqlQuery(
+	private static (DynamicParameters Parameters, string Sql) FormSqlQuery(
 		GetVehiclesQuery query,
 		EmbeddingsProvider embeddings,
 		GetVehiclesThresholdConstants searchOptions
@@ -95,7 +95,7 @@ public sealed class GetVehiclesQueryHandler(
 			)!,
 		};
 
-	private static (DynamicParameters parameters, string vehiclesCTEQuery) FormVehiclesQuery(
+	private static (DynamicParameters Parameters, string VehiclesCTEQuery) FormVehiclesQuery(
 		GetVehiclesQueryParameters queryParameters,
 		DynamicParameters parameters,
 		EmbeddingsProvider embeddings,
@@ -186,7 +186,7 @@ public sealed class GetVehiclesQueryHandler(
 		parameters.Add("@text_search_parameter", queryParameters.TextSearch, DbType.String);
 	}
 
-	private static (DynamicParameters parameters, string paginationSql) FormPaginationSql(
+	private static (DynamicParameters Parameters, string PaginationSql) FormPaginationSql(
 		GetVehiclesQueryParameters queryParameters,
 		DynamicParameters parameters
 	)
@@ -198,7 +198,7 @@ public sealed class GetVehiclesQueryHandler(
 		return (parameters, "LIMIT @limit OFFSET @offset");
 	}
 
-	private static (DynamicParameters parameters, string vehiclesOrderBySql) FormVehiclesSortSql(
+	private static (DynamicParameters Parameters, string VehiclesOrderBySql) FormVehiclesSortSql(
 		GetVehiclesQueryParameters queryParameters,
 		DynamicParameters parameters
 	)
@@ -238,7 +238,7 @@ public sealed class GetVehiclesQueryHandler(
 		static string OrderByForReleaseYear(string mode) => mode == "ASC" ? "DESC" : "ASC";
 	}
 
-	private static (DynamicParameters parameters, string vehiclesFilterSql) FormVehiclesFilterSql(
+	private static (DynamicParameters Parameters, string VehiclesFilterSql) FormVehiclesFilterSql(
 		GetVehiclesQueryParameters queryParameters,
 		DynamicParameters parameters,
 		EmbeddingsProvider embeddings,

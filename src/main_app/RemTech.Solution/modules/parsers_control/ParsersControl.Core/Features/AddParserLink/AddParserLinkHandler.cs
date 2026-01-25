@@ -25,6 +25,19 @@ public sealed class AddParserLinkHandler(ISubscribedParsersRepository repository
 		return saving.IsFailure ? saving.Error : Result.Success(links.Value);
 	}
 
+	private static Result<IEnumerable<SubscribedParserLink>> AddLinks(
+		Result<SubscribedParser> parser,
+		IEnumerable<AddParserLinkCommandArg> args
+	)
+	{
+		if (parser.IsFailure)
+			return parser.Error;
+		IEnumerable<SubscribedParserLinkUrlInfo> infos = args.Select(arg =>
+			SubscribedParserLinkUrlInfo.Create(arg.LinkUrl, arg.LinkName).Value
+		);
+		return parser.Value.AddLinks(infos);
+	}
+
 	private async Task<Result> SaveChanges(
 		Result<IEnumerable<SubscribedParserLink>> result,
 		Result<SubscribedParser> parser,
@@ -37,19 +50,6 @@ public sealed class AddParserLinkHandler(ISubscribedParsersRepository repository
 			return Result.Failure(result.Error);
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();
-	}
-
-	private static Result<IEnumerable<SubscribedParserLink>> AddLinks(
-		Result<SubscribedParser> parser,
-		IEnumerable<AddParserLinkCommandArg> args
-	)
-	{
-		if (parser.IsFailure)
-			return parser.Error;
-		IEnumerable<SubscribedParserLinkUrlInfo> infos = args.Select(arg =>
-			SubscribedParserLinkUrlInfo.Create(arg.LinkUrl, arg.LinkName).Value
-		);
-		return parser.Value.AddLinks(infos);
 	}
 
 	private Task<Result<SubscribedParser>> GetRequiredParser(Guid id, CancellationToken ct)

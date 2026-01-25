@@ -34,6 +34,33 @@ public sealed class PendingEmailsProcessor(
 		}
 	}
 
+	private static Mailer GetRandomMailer(Mailer[] mailers)
+	{
+		int index = new Random().Next(mailers.Length);
+		return mailers[index];
+	}
+
+	private static Task<Mailer[]> GetMailers(IMailersRepository repository, CancellationToken ct)
+	{
+		MailersSpecification specification = new MailersSpecification().WithLockRequired();
+		return repository.GetMany(specification, ct);
+	}
+
+	private static Task<PendingEmailNotification[]> GetPendingEmails(
+		PendingEmailNotificationsRepository repository,
+		CancellationToken ct
+	)
+	{
+		PendingEmailNotificationsSpecification specification = new PendingEmailNotificationsSpecification()
+			.OfNotSentOnly()
+			.WithLock()
+			.WithLimit(50);
+		return repository.GetMany(specification, ct);
+	}
+
+	private static NotificationsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session) =>
+		new(new MailersChangeTracker(session), new PendingEmailsChangeTracker(session));
+
 	private async Task Execute(CancellationToken ct)
 	{
 		Logger.Information("Pending emails processor started.");
@@ -81,12 +108,6 @@ public sealed class PendingEmailsProcessor(
 		}
 	}
 
-	private static Mailer GetRandomMailer(Mailer[] mailers)
-	{
-		int index = new Random().Next(mailers.Length);
-		return mailers[index];
-	}
-
 	private async Task PublishPendingEmails(
 		Mailer mailer,
 		PendingEmailNotification[] pendingEmails,
@@ -106,25 +127,4 @@ public sealed class PendingEmailsProcessor(
 		for (int i = 0; i < mailers.Length; i++)
 			await mailers[i].DecryptCredentials(Cryptography, ct);
 	}
-
-	private static Task<Mailer[]> GetMailers(IMailersRepository repository, CancellationToken ct)
-	{
-		MailersSpecification specification = new MailersSpecification().WithLockRequired();
-		return repository.GetMany(specification, ct);
-	}
-
-	private static Task<PendingEmailNotification[]> GetPendingEmails(
-		PendingEmailNotificationsRepository repository,
-		CancellationToken ct
-	)
-	{
-		PendingEmailNotificationsSpecification specification = new PendingEmailNotificationsSpecification()
-			.OfNotSentOnly()
-			.WithLock()
-			.WithLimit(50);
-		return repository.GetMany(specification, ct);
-	}
-
-	private static NotificationsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session) =>
-		new(new MailersChangeTracker(session), new PendingEmailsChangeTracker(session));
 }

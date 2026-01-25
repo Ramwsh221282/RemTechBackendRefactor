@@ -24,19 +24,6 @@ public sealed class AddContainedItemsConsumer(
 	private IServiceProvider Services { get; } = serviceProvider;
 	private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
 	private IChannel Channel => _channel ?? throw new InvalidOperationException("Channel was not initialized");
-
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
-
-	public Task StartConsuming(CancellationToken ct = default)
-	{
-		AsyncEventingBasicConsumer consumer = new(Channel);
-		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, autoAck: false, consumer: consumer, cancellationToken: ct);
-	}
-
-	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(cancellationToken: ct);
-
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, @event) =>
 		{
@@ -72,6 +59,18 @@ public sealed class AddContainedItemsConsumer(
 				await Channel.BasicNackAsync(@event.DeliveryTag, false, false);
 			}
 		};
+
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+
+	public Task StartConsuming(CancellationToken ct = default)
+	{
+		AsyncEventingBasicConsumer consumer = new(Channel);
+		consumer.ReceivedAsync += Handler;
+		return Channel.BasicConsumeAsync(Queue, autoAck: false, consumer: consumer, cancellationToken: ct);
+	}
+
+	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(cancellationToken: ct);
 
 	private sealed class AddContainedItemsMessage
 	{

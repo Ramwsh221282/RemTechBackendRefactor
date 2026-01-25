@@ -22,6 +22,8 @@ public sealed class MailersChangeTracker(NpgSqlSession session)
 		return SaveMailerChanges(tracking, ct);
 	}
 
+	private static string WhenClause(int index) => $"WHEN m.id=@id_{index}";
+
 	private async Task SaveMailerChanges(IEnumerable<Mailer> mailers, CancellationToken ct)
 	{
 		Mailer[] mailersArray = [.. mailers];
@@ -102,6 +104,4 @@ public sealed class MailersChangeTracker(NpgSqlSession session)
 
 		return tracking;
 	}
-
-	private static string WhenClause(int index) => $"WHEN m.id=@id_{index}";
 }

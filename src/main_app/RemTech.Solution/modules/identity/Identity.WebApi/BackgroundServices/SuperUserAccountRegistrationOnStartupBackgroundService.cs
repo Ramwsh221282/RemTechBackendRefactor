@@ -20,35 +20,10 @@ public sealed class SuperUserAccountRegistrationOnStartupBackgroundService(
 		while (!await Executed(stoppingToken)) { }
 	}
 
-	private async Task<bool> Executed(CancellationToken ct)
-	{
-		try
-		{
-			await using AsyncServiceScope scope = Services.CreateAsyncScope();
-			(SuperUserCredentialsOptions options, IAccountsRepository repository, IPasswordHasher cryptography) =
-				GetDependencies(scope);
-
-			options.Validate();
-			if (await AccountExists(options, repository, ct))
-			{
-				Logger.Warning("Account already exists {Name} {Email}", options.Login, options.Email);
-				return true;
-			}
-
-			await AddAccount(options, repository, cryptography, ct);
-			return true;
-		}
-		catch (Exception e)
-		{
-			Logger.Fatal(e, "Error creating super user account");
-			return false;
-		}
-	}
-
 	private static (
-		SuperUserCredentialsOptions options,
-		IAccountsRepository repository,
-		IPasswordHasher cryptography
+		SuperUserCredentialsOptions Options,
+		IAccountsRepository Repository,
+		IPasswordHasher Cryptography
 	) GetDependencies(AsyncServiceScope scope) =>
 		(
 			scope.ServiceProvider.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value,
@@ -80,5 +55,30 @@ public sealed class SuperUserAccountRegistrationOnStartupBackgroundService(
 	{
 		AccountSpecification specification = new AccountSpecification().WithEmail(options.Email);
 		return repository.Exists(specification, ct: ct);
+	}
+
+	private async Task<bool> Executed(CancellationToken ct)
+	{
+		try
+		{
+			await using AsyncServiceScope scope = Services.CreateAsyncScope();
+			(SuperUserCredentialsOptions options, IAccountsRepository repository, IPasswordHasher cryptography) =
+				GetDependencies(scope);
+
+			options.Validate();
+			if (await AccountExists(options, repository, ct))
+			{
+				Logger.Warning("Account already exists {Name} {Email}", options.Login, options.Email);
+				return true;
+			}
+
+			await AddAccount(options, repository, cryptography, ct);
+			return true;
+		}
+		catch (Exception e)
+		{
+			Logger.Fatal(e, "Error creating super user account");
+			return false;
+		}
 	}
 }

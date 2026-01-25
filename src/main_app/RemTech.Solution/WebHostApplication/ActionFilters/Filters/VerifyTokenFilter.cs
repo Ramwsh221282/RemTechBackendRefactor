@@ -25,17 +25,6 @@ public sealed class VerifyTokenFilter(ICommandHandler<VerifyTokenCommand, Unit> 
 		await next();
 	}
 
-	private Task<Result<Unit>> VerifyToken(ActionExecutingContext context, CancellationToken ct)
-	{
-		string token = context.HttpContext.GetAccessToken([
-			httpContext => httpContext.GetAccessTokenFromHeaderOrEmpty(),
-			httpContext => httpContext.GetAccessTokenFromCookieOrEmpty(),
-		]);
-
-		VerifyTokenCommand command = new(token);
-		return handler.Execute(command, ct);
-	}
-
 	private static Task WriteResultToHttpContext(
 		ActionExecutingContext context,
 		Envelope envelope,
@@ -49,4 +38,15 @@ public sealed class VerifyTokenFilter(ICommandHandler<VerifyTokenCommand, Unit> 
 
 	private static Envelope UnauthorizedEnvelope(Result<Unit> failure) =>
 		new((int)HttpStatusCode.Unauthorized, null, failure.Error.Message);
+
+	private Task<Result<Unit>> VerifyToken(ActionExecutingContext context, CancellationToken ct)
+	{
+		string token = context.HttpContext.GetAccessToken([
+			httpContext => httpContext.GetAccessTokenFromHeaderOrEmpty(),
+			httpContext => httpContext.GetAccessTokenFromCookieOrEmpty(),
+		]);
+
+		VerifyTokenCommand command = new(token);
+		return handler.Execute(command, ct);
+	}
 }

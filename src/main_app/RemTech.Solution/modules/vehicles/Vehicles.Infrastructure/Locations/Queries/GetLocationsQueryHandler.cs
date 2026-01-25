@@ -26,63 +26,6 @@ public sealed class GetLocationsQueryHandler(
 		return await MapFromReader(reader, ct);
 	}
 
-	private static async Task<IEnumerable<LocationsResponse>> MapFromReader(DbDataReader reader, CancellationToken ct)
-	{
-		List<LocationsResponse> responses = [];
-		while (await reader.ReadAsync(ct))
-		{
-			responses.Add(CreateFromReader(reader));
-		}
-
-		return responses;
-	}
-
-	private static LocationsResponse CreateFromReader(DbDataReader reader) =>
-		new()
-		{
-			Id = reader.GetGuid(reader.GetOrdinal("id")),
-			Name = reader.GetString(reader.GetOrdinal("name")),
-			TextSearchScore = ReaderContainsField(reader, "TextSearchScore")
-				? reader.GetFloat(reader.GetOrdinal("TextSearchScore"))
-				: null,
-			VehiclesCount = ReaderContainsField(reader, "VehiclesCount")
-				? reader.GetInt32(reader.GetOrdinal("VehiclesCount"))
-				: null,
-		};
-
-	private (DynamicParameters parameters, string sql) CreateSql(GetLocationsQuery query)
-	{
-		List<string> filters = [];
-		DynamicParameters parameters = new();
-		ApplyMainQueryFilters(query, filters, parameters);
-		ApplySubQueryFilters(query, filters, parameters);
-
-		string sql = $"""
-			SELECT
-			  r.id AS Id,
-			  r.name || ' ' || r.kind as Name
-			  {AddIncludes(query, [IncludeTextSearchScore, IncludeVehiclesCount])}
-			  FROM vehicles_module.regions r
-			  INNER JOIN vehicles_module.vehicles v ON v.region_id = r.id
-			  INNER JOIN contained_items_module.contained_items ci ON ci.id = v.id
-			  {CreateWhereClause(filters)}
-			  GROUP BY r.id, r.name
-			  HAVING COUNT(v.id) > 0              
-			  {AddOrderBy(query, [OrderByTextSearchSimilarity, OrderByLocationName])}
-			  {CreateLimitClause(query)}
-			""";
-
-		Logger.Information(
-			"""
-			Generated SQL: 
-			{Sql}
-			""",
-			sql
-		);
-
-		return (parameters, sql);
-	}
-
 	private static string AddIncludes(GetLocationsQuery query, Func<GetLocationsQuery, string>[] includeSource)
 	{
 		string[] includes = [.. includeSource.Select(s => s.Invoke(query)).Where(s => !string.IsNullOrWhiteSpace(s))];
@@ -105,36 +48,7 @@ public sealed class GetLocationsQueryHandler(
 	private static string CreateLimitClause(GetLocationsQuery query) =>
 		query.Amount == null ? string.Empty : $"LIMIT {query.Amount.Value}";
 
-	private void ApplyMainQueryFilters(GetLocationsQuery query, List<string> filters, DynamicParameters parameters)
-	{
-		ApplyNotDeletedFilter(filters);
-		ApplyTextSearchFilter(query, filters, parameters);
-	}
-
 	private static void ApplyNotDeletedFilter(List<string> filters) => filters.Add("ci.deleted_at IS NULL");
-
-	private void ApplyTextSearchFilter(GetLocationsQuery query, List<string> filters, DynamicParameters parameters)
-	{
-		if (string.IsNullOrWhiteSpace(query.TextSearch))
-			return;
-
-		filters.Add(
-			"""
-			(   
-			    (r.embedding <-> @embedding) <= 0.81 
-			    OR r.name ILIKE '%' || @text_search || '%'
-			    OR r.kind ILIKE '%' || @text_search || '%'
-			    OR (r.name || ' ' || r.kind) ILIKE '%' || @text_search || '%'
-			    OR ts_rank_cd(to_tsvector('russian', r.name), plainto_tsquery('russian', @text_search)) > 0
-			    OR ts_rank_cd(to_tsvector('russian', r.kind), plainto_tsquery('russian', @text_search)) > 0
-			    OR ts_rank_cd(to_tsvector('russian', (r.name || ' ' || r.kind)), plainto_tsquery('russian', @text_search)) > 0
-			    )
-			"""
-		);
-		Vector vector = new(embeddings.Generate(query.TextSearch));
-		parameters.Add("@embedding", vector);
-		parameters.Add("@text_search", query.TextSearch, DbType.String);
-	}
 
 	private static void ApplySubQueryFilters(
 		GetLocationsQuery query,
@@ -287,5 +201,91 @@ public sealed class GetLocationsQueryHandler(
 		}
 
 		return false;
+	}
+
+	private static async Task<IEnumerable<LocationsResponse>> MapFromReader(DbDataReader reader, CancellationToken ct)
+	{
+		List<LocationsResponse> responses = [];
+		while (await reader.ReadAsync(ct))
+		{
+			responses.Add(CreateFromReader(reader));
+		}
+
+		return responses;
+	}
+
+	private static LocationsResponse CreateFromReader(DbDataReader reader) =>
+		new()
+		{
+			Id = reader.GetGuid(reader.GetOrdinal("id")),
+			Name = reader.GetString(reader.GetOrdinal("name")),
+			TextSearchScore = ReaderContainsField(reader, "TextSearchScore")
+				? reader.GetFloat(reader.GetOrdinal("TextSearchScore"))
+				: null,
+			VehiclesCount = ReaderContainsField(reader, "VehiclesCount")
+				? reader.GetInt32(reader.GetOrdinal("VehiclesCount"))
+				: null,
+		};
+
+	private (DynamicParameters Parameters, string Sql) CreateSql(GetLocationsQuery query)
+	{
+		List<string> filters = [];
+		DynamicParameters parameters = new();
+		ApplyMainQueryFilters(query, filters, parameters);
+		ApplySubQueryFilters(query, filters, parameters);
+
+		string sql = $"""
+			SELECT
+			  r.id AS Id,
+			  r.name || ' ' || r.kind as Name
+			  {AddIncludes(query, [IncludeTextSearchScore, IncludeVehiclesCount])}
+			  FROM vehicles_module.regions r
+			  INNER JOIN vehicles_module.vehicles v ON v.region_id = r.id
+			  INNER JOIN contained_items_module.contained_items ci ON ci.id = v.id
+			  {CreateWhereClause(filters)}
+			  GROUP BY r.id, r.name
+			  HAVING COUNT(v.id) > 0              
+			  {AddOrderBy(query, [OrderByTextSearchSimilarity, OrderByLocationName])}
+			  {CreateLimitClause(query)}
+			""";
+
+		Logger.Information(
+			"""
+			Generated SQL: 
+			{Sql}
+			""",
+			sql
+		);
+
+		return (parameters, sql);
+	}
+
+	private void ApplyMainQueryFilters(GetLocationsQuery query, List<string> filters, DynamicParameters parameters)
+	{
+		ApplyNotDeletedFilter(filters);
+		ApplyTextSearchFilter(query, filters, parameters);
+	}
+
+	private void ApplyTextSearchFilter(GetLocationsQuery query, List<string> filters, DynamicParameters parameters)
+	{
+		if (string.IsNullOrWhiteSpace(query.TextSearch))
+			return;
+
+		filters.Add(
+			"""
+			(   
+			    (r.embedding <-> @embedding) <= 0.81 
+			    OR r.name ILIKE '%' || @text_search || '%'
+			    OR r.kind ILIKE '%' || @text_search || '%'
+			    OR (r.name || ' ' || r.kind) ILIKE '%' || @text_search || '%'
+			    OR ts_rank_cd(to_tsvector('russian', r.name), plainto_tsquery('russian', @text_search)) > 0
+			    OR ts_rank_cd(to_tsvector('russian', r.kind), plainto_tsquery('russian', @text_search)) > 0
+			    OR ts_rank_cd(to_tsvector('russian', (r.name || ' ' || r.kind)), plainto_tsquery('russian', @text_search)) > 0
+			    )
+			"""
+		);
+		Vector vector = new(embeddings.Generate(query.TextSearch));
+		parameters.Add("@embedding", vector);
+		parameters.Add("@text_search", query.TextSearch, DbType.String);
 	}
 }

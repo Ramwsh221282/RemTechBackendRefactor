@@ -26,26 +26,6 @@ public sealed class UpdateParserLinkHandler(ISubscribedParsersRepository reposit
 		return saved.IsSuccess ? parser.Value.FindLink(command.LinkId) : saved.Error;
 	}
 
-	private async Task<Result<Unit>> SaveChanges(
-		Result<SubscribedParser> parser,
-		Result<SubscribedParserLink> link,
-		Result<ParserLinkUpdater> updater,
-		Result<SubscribedParserLink> updated,
-		CancellationToken ct
-	)
-	{
-		if (parser.IsFailure)
-			return Result.Failure<Unit>(parser.Error);
-		if (link.IsFailure)
-			return Result.Failure<Unit>(link.Error);
-		if (updater.IsFailure)
-			return Result.Failure<Unit>(updater.Error);
-		if (updated.IsFailure)
-			return Result.Failure<Unit>(updated.Error);
-		await parser.Value.SaveChanges(repository, ct);
-		return Unit.Value;
-	}
-
 	private static Result<SubscribedParserLink> UpdateLink(
 		Result<SubscribedParser> parser,
 		Result<SubscribedParserLink> link,
@@ -83,5 +63,25 @@ public sealed class UpdateParserLinkHandler(ISubscribedParsersRepository reposit
 	{
 		SubscribedParserQuery query = new SubscribedParserQuery().WithId(parserId).RequireLock();
 		return SubscribedParser.FromRepository(repository, query, ct);
+	}
+
+	private async Task<Result<Unit>> SaveChanges(
+		Result<SubscribedParser> parser,
+		Result<SubscribedParserLink> link,
+		Result<ParserLinkUpdater> updater,
+		Result<SubscribedParserLink> updated,
+		CancellationToken ct
+	)
+	{
+		if (parser.IsFailure)
+			return Result.Failure<Unit>(parser.Error);
+		if (link.IsFailure)
+			return Result.Failure<Unit>(link.Error);
+		if (updater.IsFailure)
+			return Result.Failure<Unit>(updater.Error);
+		if (updated.IsFailure)
+			return Result.Failure<Unit>(updated.Error);
+		await parser.Value.SaveChanges(repository, ct);
+		return Unit.Value;
 	}
 }

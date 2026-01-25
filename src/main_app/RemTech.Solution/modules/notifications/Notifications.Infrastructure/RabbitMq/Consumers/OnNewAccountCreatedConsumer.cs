@@ -27,26 +27,6 @@ public sealed class OnNewAccountCreatedConsumer(
 	private IServiceProvider Services { get; } = services;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<OnNewAccountCreatedConsumer>();
 	private FrontendOptions FrontendOptions { get; } = frontendOptions.Value;
-
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
-	{
-		FrontendOptions.Validate();
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
-	}
-
-	public Task StartConsuming(CancellationToken ct = default)
-	{
-		AsyncEventingBasicConsumer consumer = new(Channel);
-		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, false, consumer, ct);
-	}
-
-	public async Task Shutdown(CancellationToken ct = default)
-	{
-		await Channel.CloseAsync(ct);
-		await Channel.DisposeAsync();
-	}
-
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, @event) =>
 		{
@@ -80,6 +60,25 @@ public sealed class OnNewAccountCreatedConsumer(
 				await Channel.BasicAckAsync(@event.DeliveryTag, false);
 			}
 		};
+
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
+	{
+		FrontendOptions.Validate();
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+	}
+
+	public Task StartConsuming(CancellationToken ct = default)
+	{
+		AsyncEventingBasicConsumer consumer = new(Channel);
+		consumer.ReceivedAsync += Handler;
+		return Channel.BasicConsumeAsync(Queue, false, consumer, ct);
+	}
+
+	public async Task Shutdown(CancellationToken ct = default)
+	{
+		await Channel.CloseAsync(ct);
+		await Channel.DisposeAsync();
+	}
 
 	private Task<Result<Unit>> HandleMessage(NewAccountRegisteredOutboxMessagePayload payload)
 	{

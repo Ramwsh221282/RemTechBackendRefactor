@@ -20,7 +20,7 @@ public sealed class OnParserStartedEventListener(RabbitMqProducer producer, Seri
 		return PublishMessage(exchange, routingKey, body, ct);
 	}
 
-	private static (Guid parserId, string domain, string type, IReadOnlyList<SubscribedParserLink> links) GetParserInfo(
+	private static (Guid ParserId, string Domain, string Type, IReadOnlyList<SubscribedParserLink> Links) GetParserInfo(
 		SubscribedParser parser
 	)
 	{
@@ -31,25 +31,11 @@ public sealed class OnParserStartedEventListener(RabbitMqProducer producer, Seri
 		return (parserId, parserDomain, parserType, links);
 	}
 
-	private static (string exchange, string routingKey) FormPublishingOptions(string domain, string type)
+	private static (string Exchange, string RoutingKey) FormPublishingOptions(string domain, string type)
 	{
 		string exchange = $"{domain}.{type}";
 		string routingKey = $"{exchange}.start";
 		return (exchange, routingKey);
-	}
-
-	private sealed class StartParserMessage
-	{
-		public Guid parser_id { get; set; }
-		public required string parser_domain { get; set; }
-		public required string parser_type { get; set; }
-		public required StartParserMessageLinks[] parser_links { get; set; }
-	}
-
-	private sealed class StartParserMessageLinks
-	{
-		public required Guid id { get; set; }
-		public required string url { get; set; }
 	}
 
 	private static StartParserMessage CreatePayload(
@@ -81,5 +67,19 @@ public sealed class OnParserStartedEventListener(RabbitMqProducer producer, Seri
 			ct
 		);
 		Logger.Information("Published message to exchange {Exchange}, routing key {RoutingKey}", exchange, routingKey);
+	}
+
+	private sealed class StartParserMessage
+	{
+		public Guid parser_id { get; set; }
+		public required string parser_domain { get; set; }
+		public required string parser_type { get; set; }
+		public required StartParserMessageLinks[] parser_links { get; set; }
+	}
+
+	private sealed class StartParserMessageLinks
+	{
+		public required Guid id { get; set; }
+		public required string url { get; set; }
 	}
 }

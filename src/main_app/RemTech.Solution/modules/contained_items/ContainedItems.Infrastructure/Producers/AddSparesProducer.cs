@@ -35,6 +35,10 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 		}
 	}
 
+	public Task Publish(ContainedItem item, CancellationToken ct = default) => Publish([item], ct);
+
+	public Task PublishMany(IEnumerable<ContainedItem> items, CancellationToken ct = default) => Publish(items, ct);
+
 	private static AddSparesMessage CreateMessage(ContainedItem first, IEnumerable<ContainedItem> items) =>
 		new()
 		{
@@ -86,8 +90,4 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 		public string Title { get; set; } = string.Empty;
 		public string Type { get; set; } = string.Empty;
 	}
-
-	public Task Publish(ContainedItem item, CancellationToken ct = default) => Publish([item], ct);
-
-	public Task PublishMany(IEnumerable<ContainedItem> items, CancellationToken ct = default) => Publish(items, ct);
 }

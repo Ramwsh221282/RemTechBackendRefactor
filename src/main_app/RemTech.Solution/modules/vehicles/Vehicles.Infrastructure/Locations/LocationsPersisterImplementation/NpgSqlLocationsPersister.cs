@@ -23,6 +23,54 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
 			: (Result<Location>)CreateLocationFromSearchResult(fullResult);
 	}
 
+	private static Location CreateLocationFromSearchResult(NpgSqlSearchResult result)
+	{
+		List<string> locationParts = [];
+		Guid locationId = result.Region!.RegionId;
+		locationParts.Add(result.Region.RegionName);
+		locationParts.Add(result.Region.RegionKind);
+
+		if (result.City is not null && !string.IsNullOrWhiteSpace(result.City.CityName))
+		{
+			locationParts.Add(result.City.CityName);
+		}
+
+		string fullName = string.Join(", ", locationParts);
+		return new Location(LocationId.Create(locationId), LocationName.Create(fullName));
+	}
+
+	private static RegionSearchResult? MapRegionFromReader(IDataReader reader)
+	{
+		Guid? regionId = reader.GetNullable<Guid>("region_id");
+		if (regionId is null)
+			return null;
+
+		string regionName = reader.GetValue<string>("region_name");
+		string regionKind = reader.GetValue<string>("region_kind");
+		return new RegionSearchResult
+		{
+			RegionId = regionId.Value,
+			RegionName = regionName,
+			RegionKind = regionKind,
+		};
+	}
+
+	private static CitySearchResult? MapCityFromReader(IDataReader reader)
+	{
+		Guid? cityId = reader.GetNullable<Guid>("city_id");
+		if (cityId is null)
+			return null;
+		string? cityName = reader.GetNullableReferenceType<string>("city_name");
+		return new CitySearchResult { CityId = cityId.Value, CityName = cityName! };
+	}
+
+	private static NpgSqlSearchResult MapFullFromReader(IDataReader reader)
+	{
+		RegionSearchResult? region = MapRegionFromReader(reader);
+		CitySearchResult? city = MapCityFromReader(reader);
+		return new NpgSqlSearchResult() { Region = region, City = city };
+	}
+
 	private async Task<Result<NpgSqlSearchResult>> TrySearchFullInfo(string rawText, CancellationToken ct)
 	{
 		const string sql = """
@@ -78,54 +126,6 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
 		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
 		NpgSqlSearchResult? result = await session.QuerySingleUsingReader(command, MapFullFromReader);
 		return result is null ? Error.NotFound("Unable to resolve location") : Result.Success(result);
-	}
-
-	private static Location CreateLocationFromSearchResult(NpgSqlSearchResult result)
-	{
-		List<string> locationParts = [];
-		Guid locationId = result.Region!.RegionId;
-		locationParts.Add(result.Region.RegionName);
-		locationParts.Add(result.Region.RegionKind);
-
-		if (result.City is not null && !string.IsNullOrWhiteSpace(result.City.CityName))
-		{
-			locationParts.Add(result.City.CityName);
-		}
-
-		string fullName = string.Join(", ", locationParts);
-		return new Location(LocationId.Create(locationId), LocationName.Create(fullName));
-	}
-
-	private static RegionSearchResult? MapRegionFromReader(IDataReader reader)
-	{
-		Guid? regionId = reader.GetNullable<Guid>("region_id");
-		if (regionId is null)
-			return null;
-
-		string regionName = reader.GetValue<string>("region_name");
-		string regionKind = reader.GetValue<string>("region_kind");
-		return new RegionSearchResult
-		{
-			RegionId = regionId.Value,
-			RegionName = regionName,
-			RegionKind = regionKind,
-		};
-	}
-
-	private static CitySearchResult? MapCityFromReader(IDataReader reader)
-	{
-		Guid? cityId = reader.GetNullable<Guid>("city_id");
-		if (cityId is null)
-			return null;
-		string? cityName = reader.GetNullableReferenceType<string>("city_name");
-		return new CitySearchResult { CityId = cityId.Value, CityName = cityName! };
-	}
-
-	private static NpgSqlSearchResult MapFullFromReader(IDataReader reader)
-	{
-		RegionSearchResult? region = MapRegionFromReader(reader);
-		CitySearchResult? city = MapCityFromReader(reader);
-		return new NpgSqlSearchResult() { Region = region, City = city };
 	}
 
 	private sealed class RegionSearchResult
