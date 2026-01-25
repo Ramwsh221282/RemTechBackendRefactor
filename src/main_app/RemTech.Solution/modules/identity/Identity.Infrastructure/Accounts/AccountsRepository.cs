@@ -175,7 +175,7 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		return mappings.Count == 0 ? null : mappings.First().Value;
 	}
 
-	private static (DynamicParameters parameters, string filterSql) WhereClause(AccountSpecification specification)
+	private static (DynamicParameters Parameters, string FilterSql) WhereClause(AccountSpecification specification)
 	{
 		DynamicParameters parameters = new();
 		List<string> filters = [];
@@ -183,7 +183,7 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		if (!string.IsNullOrWhiteSpace(specification.RefreshToken))
 		{
 			parameters.Add("@token_value", specification.RefreshToken, DbType.String);
-			// filter is already included in sql string of method SearchWithRefreshToken()
+			// Filter is already included in sql string of method SearchWithRefreshToken()
 		}
 
 		if (specification.Id.HasValue)

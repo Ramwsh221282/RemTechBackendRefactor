@@ -50,7 +50,7 @@ public sealed class GetLocationsQueryHandler(
 				: null,
 		};
 
-	private (DynamicParameters parameters, string sql) CreateSql(GetLocationsQuery query)
+	private (DynamicParameters Parameters, string Sql) CreateSql(GetLocationsQuery query)
 	{
 		List<string> filters = [];
 		DynamicParameters parameters = new();

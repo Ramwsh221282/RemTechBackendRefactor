@@ -92,6 +92,7 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 				continue;
 			tracking.Add(message);
 		}
+
 		return tracking;
 	}
 

@@ -86,6 +86,7 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsP
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -120,6 +121,7 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsP
 			if (field == "vehicles-count" && !query.ContainsIncludedInformationKey("vehicles-count"))
 				orderings.Add($"COUNT(v.id) {orderByMode}");
 		}
+
 		return orderings.Count > 0 ? string.Join(", ", orderings) : string.Empty;
 	}
 

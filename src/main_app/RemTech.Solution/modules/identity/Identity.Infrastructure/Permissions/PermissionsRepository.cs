@@ -204,10 +204,11 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 				mappings.Add(id, permission);
 			}
 		}
+
 		return mappings.Count == 0 ? null : mappings.First().Value;
 	}
 
-	private static (DynamicParameters parameters, string filterSql) WhereClause(PermissionSpecification specification)
+	private static (DynamicParameters Parameters, string FilterSql) WhereClause(PermissionSpecification specification)
 	{
 		DynamicParameters parameters = new();
 		List<string> filterSql = [];

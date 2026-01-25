@@ -103,7 +103,10 @@ public sealed class AddSparesConsumer(
 		public string Type { get; set; } = string.Empty;
 	}
 
-	private static async Task<(Guid, int)> SaveSpares(IServiceProvider services, AddSparesCommand command)
+	private static async Task<(Guid CreatorId, int Added)> SaveSpares(
+		IServiceProvider services,
+		AddSparesCommand command
+	)
 	{
 		await using AsyncServiceScope scope = services.CreateAsyncScope();
 		return await scope

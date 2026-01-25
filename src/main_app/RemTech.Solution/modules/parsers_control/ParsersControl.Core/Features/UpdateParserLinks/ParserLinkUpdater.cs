@@ -32,6 +32,7 @@ public sealed class ParserLinkUpdater
 			else
 				link.Disable();
 		}
+
 		return editing;
 	}
 

@@ -98,7 +98,7 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 	private static string LockClause(MailersSpecification specification) =>
 		specification.LockRequired.HasValue && specification.LockRequired.Value ? "FOR UPDATE OF m" : string.Empty;
 
-	private static (DynamicParameters parameters, string filterSql) WhereClause(MailersSpecification specification)
+	private static (DynamicParameters Parameters, string FilterSql) WhereClause(MailersSpecification specification)
 	{
 		List<string> filters = [];
 		DynamicParameters parameters = new();

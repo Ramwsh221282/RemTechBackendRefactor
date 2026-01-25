@@ -78,7 +78,7 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleU
 	private static string LimitClause(OutboxMessageSpecification spec) =>
 		spec.Limit.HasValue ? $"LIMIT {spec.Limit.Value}" : string.Empty;
 
-	private static (DynamicParameters parameters, string filterSql) WhereClause(OutboxMessageSpecification spec)
+	private static (DynamicParameters Parameters, string FilterSql) WhereClause(OutboxMessageSpecification spec)
 	{
 		List<string> filters = [];
 		DynamicParameters parameters = new();

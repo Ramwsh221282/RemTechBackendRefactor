@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using ContainedItems.Domain.Models;
 using ContainedItems.Infrastructure.Repositories;
 using ContainedItems.Worker.Extensions;
@@ -7,7 +6,6 @@ using FluentMigrator.Runner;
 using Identity.Domain.Accounts.Models;
 using Identity.Infrastructure.Accounts;
 using Identity.WebApi.Extensions;
-using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Notifications.Core.Mailers;
 using Notifications.Infrastructure.Mailers;
@@ -164,70 +162,3 @@ public static class ModulesInjection
 
 public interface ITestCachingQueryHandler<TQuery, TResult> : IQueryHandler<TQuery, TResult>
 	where TQuery : IQuery;
-
-public sealed class TestCachingQueryHandler<TQuery, TResult>(HybridCache cache, IQueryHandler<TQuery, TResult> inner)
-	: ITestCachingQueryHandler<TQuery, TResult>
-	where TQuery : IQuery
-{
-	private static HybridCacheEntryOptions _cacheOptions =>
-		new() { Expiration = TimeSpan.FromMinutes(5), LocalCacheExpiration = TimeSpan.FromMinutes(5) };
-	private HybridCache Cache { get; } = cache;
-	private IQueryHandler<TQuery, TResult> Inner { get; } = inner;
-
-	public async Task<TResult> Handle(TQuery query, CancellationToken ct = default)
-	{
-		Stopwatch stopwatch = Stopwatch.StartNew();
-		TResult result = await ReadFromCache(query, ct);
-		stopwatch.Stop();
-		return result;
-	}
-
-	private async Task<TResult> ReadFromCache(TQuery query, CancellationToken ct)
-	{
-		string queryPayload = query.ToString();
-		string key = $"{nameof(TQuery)}_{queryPayload}";
-		return await Cache.GetOrCreateAsync(
-			key,
-			async token => await Inner.Handle(query, token),
-			options: _cacheOptions,
-			cancellationToken: ct
-		);
-	}
-}
-
-public sealed class TestLoggingQueryHandler<TQuery, TResult>(
-	Serilog.ILogger logger,
-	IQueryHandler<TQuery, TResult> inner
-) : ILoggingQueryHandler<TQuery, TResult>
-	where TQuery : IQuery
-{
-	private IQueryHandler<TQuery, TResult> Inner { get; } = inner;
-	private Serilog.ILogger Logger { get; } = logger.ForContext<TQuery>();
-
-	public async Task<TResult> Handle(TQuery query, CancellationToken ct = default)
-	{
-		Stopwatch stopwatch = Stopwatch.StartNew();
-		LogEntry(query);
-		TResult result = await Inner.Handle(query, ct);
-		LogFinish(stopwatch);
-		return result;
-	}
-
-	private void LogEntry(TQuery query) =>
-		Logger.Information(
-			"""
-			Executing query: {Query}
-			Query payload: {Payload}
-			""",
-			typeof(TQuery).Name,
-			query.ToString()
-		);
-
-	private void LogFinish(Stopwatch stopwatch) =>
-		Logger.Information(
-			"""
-			Query executed in {ElapsedMilliseconds} ms.
-			""",
-			stopwatch.ElapsedMilliseconds
-		);
-}

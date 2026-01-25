@@ -65,6 +65,7 @@ public sealed class SubscribedParser
 				return Error.Conflict($"Парсер уже содержит ссылку с адресом {link.UrlInfo.Url}.");
 			newLinks.Add(link);
 		}
+
 		Links = [.. Links, .. newLinks];
 		return newLinks;
 	}

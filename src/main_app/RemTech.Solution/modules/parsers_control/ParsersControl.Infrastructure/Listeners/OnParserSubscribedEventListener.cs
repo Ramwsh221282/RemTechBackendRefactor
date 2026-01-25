@@ -34,14 +34,14 @@ public sealed class OnParserSubscribedEventListener(RabbitMqConnectionSource rab
 		return PublishMessage(queue, exchange, routingKey, body, ct);
 	}
 
-	private static (string domain, string type) GetParserInfo(SubscribedParser parser)
+	private static (string Domain, string Type) GetParserInfo(SubscribedParser parser)
 	{
 		string parserDomain = parser.Identity.DomainName;
 		string parserType = parser.Identity.ServiceType;
 		return (parserDomain, parserType);
 	}
 
-	private static (string exchange, string queue, string routingKey) FormPublishingOptions(string domain, string type)
+	private static (string Exchange, string Queue, string RoutingKey) FormPublishingOptions(string domain, string type)
 	{
 		string exchange = $"{domain}.{type}";
 		string queue = $"{exchange}.confirmation";

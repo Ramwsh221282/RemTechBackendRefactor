@@ -20,7 +20,7 @@ public sealed class OnParserStartedEventListener(RabbitMqProducer producer, Seri
 		return PublishMessage(exchange, routingKey, body, ct);
 	}
 
-	private static (Guid parserId, string domain, string type, IReadOnlyList<SubscribedParserLink> links) GetParserInfo(
+	private static (Guid ParserId, string Domain, string Type, IReadOnlyList<SubscribedParserLink> Links) GetParserInfo(
 		SubscribedParser parser
 	)
 	{
@@ -31,7 +31,7 @@ public sealed class OnParserStartedEventListener(RabbitMqProducer producer, Seri
 		return (parserId, parserDomain, parserType, links);
 	}
 
-	private static (string exchange, string routingKey) FormPublishingOptions(string domain, string type)
+	private static (string Exchange, string RoutingKey) FormPublishingOptions(string domain, string type)
 	{
 		string exchange = $"{domain}.{type}";
 		string routingKey = $"{exchange}.start";

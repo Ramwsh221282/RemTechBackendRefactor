@@ -65,7 +65,10 @@ public sealed class AddVehicleConsumer(
 			}
 		};
 
-	private static async Task<Result<(Guid, int)>> SaveVehicles(IServiceProvider services, AddVehicleCommand command)
+	private static async Task<Result<(Guid CreatorId, int Saved)>> SaveVehicles(
+		IServiceProvider services,
+		AddVehicleCommand command
+	)
 	{
 		await using AsyncServiceScope scope = services.CreateAsyncScope();
 		return await scope
@@ -92,8 +95,7 @@ public sealed class AddVehicleConsumer(
 			IsNds: p.IsNds,
 			Address: p.Address,
 			Photos: p.Photos,
-			Characteristics: p.Characteristics.Select(c => new AddVehicleCommandCharacteristics(c.Name, c.Value))
-				.ToArray()
+			Characteristics: [.. p.Characteristics.Select(c => new AddVehicleCommandCharacteristics(c.Name, c.Value))]
 		));
 
 	private static bool IsMessageValid(AddVehicleMessage message, out string error)

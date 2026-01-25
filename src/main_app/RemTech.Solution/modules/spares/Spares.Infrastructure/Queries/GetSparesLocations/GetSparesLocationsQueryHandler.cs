@@ -44,7 +44,7 @@ public sealed class GetSparesLocationsQueryHandler(NpgSqlSession session, Embedd
 	private static SpareLocationResponse MapSingleFromReader(DbDataReader reader) =>
 		new() { Id = reader.GetGuid(reader.GetOrdinal("Id")), Name = reader.GetString(reader.GetOrdinal("Name")) };
 
-	private (DynamicParameters parameters, string sql) CreateSql(GetSparesLocationsQuery query)
+	private (DynamicParameters Parameters, string Sql) CreateSql(GetSparesLocationsQuery query)
 	{
 		DynamicParameters parameters = new();
 		string sql = $"""

@@ -52,6 +52,7 @@ public sealed class GivePermissionsHandler(
 			error = Error.NotFound(message);
 			return false;
 		}
+
 		return true;
 	}
 

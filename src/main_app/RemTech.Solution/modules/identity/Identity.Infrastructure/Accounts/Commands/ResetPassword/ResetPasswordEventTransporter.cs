@@ -4,13 +4,6 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace Identity.Infrastructure.Accounts.Commands.ResetPassword;
 
-public sealed record ResetPasswordRequiredMessage(
-	Guid AccountId,
-	string AccountEmail,
-	Guid TicketId,
-	string TicketPurpose
-);
-
 public sealed class ResetPasswordEventTransporter(RabbitMqProducer producer, Serilog.ILogger logger)
 	: IEventTransporter<ResetPasswordCommand, ResetPasswordResult>
 {

@@ -55,7 +55,7 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogge
 		}
 	}
 
-	private static (long expiresAt, long createdAt) ReadTokenLifeTime(string tokenString)
+	private static (long ExpiresAt, long CreatedAt) ReadTokenLifeTime(string tokenString)
 	{
 		JwtSecurityTokenHandler handler = new();
 		JwtSecurityToken token = handler.ReadJwtToken(tokenString);

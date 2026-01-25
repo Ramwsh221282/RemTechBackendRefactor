@@ -157,7 +157,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		return new SubscribedParser(parserId, identity, statistics, parserState, schedule);
 	}
 
-	private static (DynamicParameters parameters, string filterSql) WhereClause(SubscribedParserQuery query)
+	private static (DynamicParameters Parameters, string FilterSql) WhereClause(SubscribedParserQuery query)
 	{
 		List<string> filterSql = [];
 		DynamicParameters parameters = new();
@@ -599,6 +599,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 					continue;
 				updated.Add(parser);
 			}
+
 			return updated;
 		}
 

@@ -74,6 +74,7 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 				mappings.Add(id, ticket);
 			}
 		}
+
 		return mappings.Count == 0 ? null : mappings.First().Value;
 	}
 
@@ -86,7 +87,7 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 		return Session.Execute(command);
 	}
 
-	private static (DynamicParameters parameters, string filterSql) WhereClause(
+	private static (DynamicParameters Parameters, string FilterSql) WhereClause(
 		AccountTicketSpecification specification
 	)
 	{

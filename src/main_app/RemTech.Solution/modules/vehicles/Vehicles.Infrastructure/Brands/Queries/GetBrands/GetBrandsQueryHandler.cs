@@ -23,7 +23,7 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 		return await MapFromReader(reader, ct);
 	}
 
-	private (DynamicParameters parameters, string sql) CreateSql(GetBrandsQuery query)
+	private (DynamicParameters Parameters, string Sql) CreateSql(GetBrandsQuery query)
 	{
 		List<string> filters = [];
 		filters.Add("i.deleted_at IS NULL");

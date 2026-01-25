@@ -39,6 +39,7 @@ public sealed class GetVehiclesCharacteristicsQueryHandler(NpgSqlSession session
 				}
 			);
 		}
+
 		return response;
 	}
 
@@ -66,7 +67,7 @@ public sealed class GetVehiclesCharacteristicsQueryHandler(NpgSqlSession session
 		return new(sql, parameters, cancellationToken: ct);
 	}
 
-	private static (DynamicParameters parameters, string filterSql) FormFilters(GetVehicleCharacteristicsQuery query)
+	private static (DynamicParameters Parameters, string FilterSql) FormFilters(GetVehicleCharacteristicsQuery query)
 	{
 		DynamicParameters parameters = new();
 		List<string> filters =

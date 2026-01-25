@@ -88,7 +88,7 @@ public sealed class PendingEmailNotificationsRepository(
 		return new PendingEmailNotification(id, recipient, subject, body, wasSent);
 	}
 
-	private static (DynamicParameters parameters, string sql) WhereClause(
+	private static (DynamicParameters Parameters, string Sql) WhereClause(
 		PendingEmailNotificationsSpecification specification
 	)
 	{

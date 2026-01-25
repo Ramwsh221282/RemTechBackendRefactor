@@ -46,9 +46,9 @@ public sealed class SuperUserAccountRegistrationOnStartupBackgroundService(
 	}
 
 	private static (
-		SuperUserCredentialsOptions options,
-		IAccountsRepository repository,
-		IPasswordHasher cryptography
+		SuperUserCredentialsOptions Options,
+		IAccountsRepository Repository,
+		IPasswordHasher Cryptography
 	) GetDependencies(AsyncServiceScope scope) =>
 		(
 			scope.ServiceProvider.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value,
