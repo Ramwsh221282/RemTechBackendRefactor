@@ -1,126 +1,112 @@
-import {
-  Component,
-  DestroyRef,
-  effect,
-  inject,
-  signal,
-  WritableSignal,
-} from '@angular/core';
-import { QueryCategoriesResponse } from '../all-categories-page/types/QueryCategoriesResponse';
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-} from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, effect, inject, Signal, signal, WritableSignal } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { StringUtils } from '../../shared/utils/string-utils';
-import { QueryBrandResponse } from './types/QueryBrandResponse';
-import { AllBrandsService } from './services/AllBrandsService';
 import { Button } from 'primeng/button';
-import { NgForOf, NgIf } from '@angular/common';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
-import { PopularBrand } from '../main-page/types/PopularBrand';
 import { Router } from '@angular/router';
+import { BrandsApiService } from '../../shared/api/brands-module/brands-api.service';
+import { BrandResponse } from '../../shared/api/brands-module/brands-api.responses';
+import { catchError, EMPTY, Observable, tap } from 'rxjs';
+import { GetBrandsQuery } from '../../shared/api/brands-module/brands-get-query';
 
 @Component({
-  selector: 'app-all-brands-page',
-  imports: [
-    Button,
-    FormsModule,
-    NgForOf,
-    NgIf,
-    PaginationComponent,
-    ReactiveFormsModule,
-  ],
-  templateUrl: './all-brands-page.component.html',
-  styleUrl: './all-brands-page.component.scss',
+	selector: 'app-all-brands-page',
+	imports: [Button, FormsModule, PaginationComponent, ReactiveFormsModule],
+	templateUrl: './all-brands-page.component.html',
+	styleUrl: './all-brands-page.component.scss',
 })
 export class AllBrandsPageComponent {
-  private readonly _page: WritableSignal<number>;
-  private readonly _text: WritableSignal<string | null>;
-  private readonly _brands: WritableSignal<QueryBrandResponse[]>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly _totalCount: WritableSignal<number>;
-  public readonly searchForm: FormGroup = new FormGroup({
-    text: new FormControl(''),
-  });
+	private readonly _service: BrandsApiService = inject(BrandsApiService);
+	private readonly _router: Router = inject(Router);
 
-  constructor(
-    service: AllBrandsService,
-    private readonly _router: Router,
-  ) {
-    this._page = signal(1);
-    this._text = signal(null);
-    this._brands = signal([]);
-    this._totalCount = signal(0);
-    effect(() => {
-      const text: string | null = this._text();
-      service
-        .fetchCount(text)
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (amount: number): void => {
-            this._totalCount.set(amount);
-          },
-        });
-    });
-    effect(() => {
-      const page: number = this._page();
-      const text: string | null = this._text();
-      service
-        .fetchBrands(page, text)
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (data: QueryCategoriesResponse[]): void => {
-            this._brands.set(data);
-          },
-        });
-    });
-  }
+	readonly pageSize: number = 10;
+	readonly page: WritableSignal<number> = signal(1);
+	readonly text: WritableSignal<string | null> = signal(null);
+	readonly brands: WritableSignal<BrandResponse[]> = signal([]);
+	readonly usesSortByName: WritableSignal<boolean> = signal(true);
+	readonly usesSortByVehiclesCount: WritableSignal<boolean> = signal(false);
+	readonly sortDirection: WritableSignal<'ASC' | 'DESC'> = signal('ASC');
+	readonly totalCount: WritableSignal<number> = signal(0);
+	readonly searchForm: FormGroup = new FormGroup({
+		text: new FormControl(''),
+	});
 
-  public resetSearchForm(): void {
-    this.searchForm.reset();
-    this.submitSearch();
-  }
+	readonly brandsQuery: Signal<GetBrandsQuery> = computed((): GetBrandsQuery => {
+		return GetBrandsQuery.default()
+			.usePage(this.page())
+			.usePageSize(this.pageSize)
+			.useTextSearch(this.text())
+			.useVehiclesCount(true)
+			.useSortByName(this.usesSortByName())
+			.useSortByVehiclesCount(this.usesSortByVehiclesCount())
+			.useSortDirection(this.sortDirection())
+			.useTotalBrandsCount(true);
+	});
 
-  public textSearchFormSubmit(): void {
-    this.submitSearch();
-  }
+	readonly fetchBrandsOnQueryChange = effect((): void => {
+		const query: GetBrandsQuery = this.brandsQuery();
+		this.fetchBrands(query);
+	});
 
-  public navigateByBrand(brand: PopularBrand): void {
-    this._router.navigate(['vehicles'], {
-      queryParams: {
-        brandId: brand.id,
-        brandName: brand.name,
-        page: 1,
-      },
-    });
-  }
+	public swapSortMode(): void {
+		const current: 'ASC' | 'DESC' = this.sortDirection();
+		const next: 'ASC' | 'DESC' = current === 'ASC' ? 'DESC' : 'ASC';
+		this.sortDirection.set(next);
+	}
 
-  private submitSearch(): void {
-    const formValues = this.searchForm.value;
-    const text: string = formValues.text;
-    if (StringUtils.isEmptyOrWhiteSpace(text)) {
-      this._text.set(null);
-      return;
-    }
-    this._text.set(text);
-  }
+	public sortModeLabel(): string {
+		const current: 'ASC' | 'DESC' = this.sortDirection();
+		return current === 'ASC' ? 'Возрастание' : 'Убывание';
+	}
 
-  public get currentPage(): number {
-    return this._page();
-  }
+	public severityByUsing(uses: boolean): 'primary' | 'success' {
+		return uses ? 'success' : 'primary';
+	}
 
-  public get totalCount(): number {
-    return this._totalCount();
-  }
+	public handlePageChange(page: number): void {
+		this.page.set(page);
+	}
 
-  public changePage(page: number): void {
-    this._page.set(page);
-  }
+	public resetSearchForm(): void {
+		this.searchForm.reset();
+		this.submitSearch(null);
+	}
 
-  public get brands(): QueryBrandResponse[] {
-    return this._brands();
-  }
+	public textSearchFormSubmit(): void {
+		const input: string | null = this.readUserTextSearchInput();
+		this.submitSearch(input);
+	}
+
+	public navigateByBrand(brand: BrandResponse): void {
+		this._router.navigate(['vehicles'], {
+			queryParams: {
+				brandId: brand.Id,
+				brandName: brand.Name,
+				page: 1,
+			},
+		});
+	}
+
+	private readUserTextSearchInput(): string | null {
+		const formValues = this.searchForm.value;
+		const text: string = formValues.text;
+		return StringUtils.isEmptyOrWhiteSpace(text) ? null : text;
+	}
+
+	private submitSearch(input: string | null): void {
+		this.text.set(input);
+	}
+
+	private fetchBrands(query: GetBrandsQuery): void {
+		this._service
+			.fetchBrands(query)
+			.pipe(
+				tap((response: BrandResponse[]): void => {
+					this.brands.set(response);
+					if (response.length > 0 && response[0].TotalCount) this.totalCount.set(response[0].TotalCount);
+				}),
+				catchError((): Observable<never> => EMPTY),
+			)
+			.subscribe();
+	}
 }

@@ -1,112 +1,116 @@
-import {
-  Component,
-  DestroyRef,
-  effect,
-  inject,
-  signal,
-  WritableSignal,
-} from '@angular/core';
-import { NgForOf, NgIf } from '@angular/common';
-import { QueryCategoriesResponse } from './types/QueryCategoriesResponse';
-import { AllCategoriesService } from './services/AllCategoriesService';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, effect, inject, Signal, signal, WritableSignal } from '@angular/core';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import { Button } from 'primeng/button';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { StringUtils } from '../../shared/utils/string-utils';
 import { Router } from '@angular/router';
+import { CategoryResponse } from '../../shared/api/categories-module/categories-responses';
+import { CategoriesApiService } from '../../shared/api/categories-module/categories-api.service';
+import { catchError, EMPTY, tap } from 'rxjs';
+import { GetCategoriesQuery } from '../../shared/api/categories-module/categories-get-query';
 
 @Component({
-  selector: 'app-all-categories-page',
-  imports: [NgForOf, PaginationComponent, NgIf, Button, ReactiveFormsModule],
-  templateUrl: './all-categories-page.component.html',
-  styleUrl: './all-categories-page.component.scss',
+	selector: 'app-all-categories-page',
+	imports: [PaginationComponent, Button, ReactiveFormsModule],
+	templateUrl: './all-categories-page.component.html',
+	styleUrl: './all-categories-page.component.scss',
 })
 export class AllCategoriesPageComponent {
-  private readonly _page: WritableSignal<number>;
-  private readonly _text: WritableSignal<string | null>;
-  private readonly _categories: WritableSignal<QueryCategoriesResponse[]>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly _totalCount: WritableSignal<number>;
-  public readonly searchForm: FormGroup = new FormGroup({
-    text: new FormControl(''),
-  });
+	private readonly _service: CategoriesApiService = inject(CategoriesApiService);
+	private readonly _router: Router = inject(Router);
 
-  constructor(
-    service: AllCategoriesService,
-    private readonly _router: Router,
-  ) {
-    this._page = signal(1);
-    this._text = signal(null);
-    this._categories = signal([]);
-    this._totalCount = signal(0);
-    effect(() => {
-      const text: string | null = this._text();
-      service
-        .fetchCount(text)
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (amount: number): void => {
-            this._totalCount.set(amount);
-          },
-        });
-    });
-    effect(() => {
-      const page: number = this._page();
-      const text: string | null = this._text();
-      service
-        .fetchCategories(page, text)
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (data: QueryCategoriesResponse[]): void => {
-            this._categories.set(data);
-          },
-        });
-    });
-  }
+	readonly pageSize: number = 10;
+	readonly page: WritableSignal<number> = signal(1);
+	readonly text: WritableSignal<string | null> = signal(null);
+	readonly usesSortByName: WritableSignal<boolean> = signal(true);
+	readonly usesSortByVehiclesCount: WritableSignal<boolean> = signal(false);
+	readonly sortMode: WritableSignal<'ASC' | 'DESC'> = signal('ASC');
+	readonly categories: WritableSignal<CategoryResponse[]> = signal([]);
+	readonly totalCount: WritableSignal<number> = signal(0);
 
-  public navigateByCategory(category: QueryCategoriesResponse): void {
-    this._router.navigate(['vehicles'], {
-      queryParams: {
-        categoryId: category.id,
-        categoryName: category.name,
-        page: 1,
-      },
-    });
-  }
+	readonly categoriesQuery: Signal<GetCategoriesQuery> = computed((): GetCategoriesQuery => {
+		return GetCategoriesQuery.default()
+			.usePage(this.page())
+			.usePageSize(this.pageSize)
+			.useTextSearch(this.text())
+			.useVehiclesCount(true)
+			.useTotalCategoriesCount(true)
+			.useOrderByVehiclesCount(this.usesSortByVehiclesCount())
+			.useOrderByName(this.usesSortByName())
+			.useOrderByDirection(this.sortMode());
+	});
 
-  public resetSearchForm(): void {
-    this.searchForm.reset();
-    this.submitSearch();
-  }
+	readonly fetchCategoriesOnQueryChange = effect((): void => {
+		const query: GetCategoriesQuery = this.categoriesQuery();
+		this.fetchCategories(query);
+	});
 
-  public textSearchFormSubmit(): void {
-    this.submitSearch();
-  }
+	readonly searchForm: FormGroup = new FormGroup({
+		text: new FormControl(''),
+	});
 
-  private submitSearch(): void {
-    const formValues = this.searchForm.value;
-    const text: string = formValues.text;
-    if (StringUtils.isEmptyOrWhiteSpace(text)) {
-      this._text.set(null);
-      return;
-    }
-    this._text.set(text);
-  }
+	public navigateByCategory(category: CategoryResponse): void {
+		this._router.navigate(['vehicles'], {
+			queryParams: {
+				categoryId: category.Id,
+				categoryName: category.Name,
+				page: 1,
+			},
+		});
+	}
 
-  public get currentPage(): number {
-    return this._page();
-  }
+	public swapSortMode(): void {
+		const current: 'ASC' | 'DESC' = this.sortMode();
+		const next: 'ASC' | 'DESC' = current === 'ASC' ? 'DESC' : 'ASC';
+		this.sortMode.set(next);
+	}
 
-  public get totalCount(): number {
-    return this._totalCount();
-  }
+	public sortModeLabel(): string {
+		const current: 'ASC' | 'DESC' = this.sortMode();
+		return current === 'ASC' ? 'Возрастание' : 'Убывание';
+	}
 
-  public changePage(page: number): void {
-    this._page.set(page);
-  }
+	public severityByUsing(uses: boolean): 'primary' | 'success' {
+		return uses ? 'success' : 'primary';
+	}
 
-  public get categories(): QueryCategoriesResponse[] {
-    return this._categories();
-  }
+	public resetSearchForm(): void {
+		this.searchForm.reset();
+		this.applyUserTextSearchInput(null);
+	}
+
+	public textSearchFormSubmit(): void {
+		const input: string | null = this.readUserTextSearchInputFromForm();
+		this.applyUserTextSearchInput(input);
+	}
+
+	public changePage(page: number): void {
+		this.page.set(page);
+	}
+
+	private readUserTextSearchInputFromForm(): string | null {
+		const formValues = this.searchForm.value;
+		const text: string = formValues.text;
+		return StringUtils.isEmptyOrWhiteSpace(text) ? null : text;
+	}
+
+	private applyUserTextSearchInput(input: string | null): void {
+		this.text.set(input);
+	}
+
+	private fetchCategories(query: GetCategoriesQuery): void {
+		this._service
+			.fetchCategories(query)
+			.pipe(
+				tap((categories: CategoryResponse[]): void => {
+					this.categories.set(categories);
+					if (categories.length > 0) {
+						const totalCount: number | null | undefined = categories[0].TotalCategoriesCount;
+						if (totalCount) this.totalCount.set(totalCount);
+					}
+				}),
+				catchError(() => EMPTY),
+			)
+			.subscribe();
+	}
 }

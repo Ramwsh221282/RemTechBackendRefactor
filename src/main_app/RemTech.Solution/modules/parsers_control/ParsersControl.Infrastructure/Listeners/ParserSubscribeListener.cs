@@ -1,0 +1,122 @@
+﻿using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using ParsersControl.Core.Features.SubscribeParser;
+using ParsersControl.Core.Parsers.Models;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Infrastructure.RabbitMq;
+
+namespace ParsersControl.Infrastructure.Listeners;
+
+public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.ILogger logger) : IConsumer
+{
+	private const string Queue = "parsers.create";
+	private const string Exchange = "parsers";
+	private const string RoutingKey = Queue;
+	private Serilog.ILogger Logger { get; } = logger.ForContext<ParserSubscribeConsumer>();
+	private IChannel? _channel;
+	private IChannel Channel => _channel ?? throw new InvalidOperationException("Channel is not initialized.");
+	private AsyncEventingBasicConsumer? Consumer { get; set; }
+
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
+	{
+		CreateChannelOptions options = new(
+			publisherConfirmationsEnabled: true,
+			publisherConfirmationTrackingEnabled: true
+		);
+
+		_channel = await connection.CreateChannelAsync(options, cancellationToken: ct);
+		await DeclareExchange(_channel, ct);
+		await DeclareQueue(_channel, ct);
+		await BindQueue(_channel, ct);
+		Consumer = CreateConsumer(_channel);
+	}
+
+	public Task StartConsuming(CancellationToken ct = default)
+	{
+		if (Channel is null)
+			throw new InvalidOperationException("Channel is not initialized.");
+		return Consumer is null
+			? throw new InvalidOperationException("Consumer is not initialized.")
+			: (Task)Channel.BasicConsumeAsync(queue: Queue, autoAck: false, consumer: Consumer, cancellationToken: ct);
+	}
+
+	public async Task Shutdown(CancellationToken ct = default)
+	{
+		if (Channel is null)
+			throw new InvalidOperationException("Channel is not initialized.");
+		await Channel.DisposeAsync();
+	}
+
+	private static Task DeclareExchange(IChannel channel, CancellationToken ct) =>
+		channel.ExchangeDeclareAsync(
+			exchange: Exchange,
+			type: "topic",
+			durable: true,
+			autoDelete: false,
+			cancellationToken: ct
+		);
+
+	private static Task<QueueDeclareOk> DeclareQueue(IChannel channel, CancellationToken ct) =>
+		channel.QueueDeclareAsync(
+			queue: Queue,
+			durable: true,
+			exclusive: false,
+			autoDelete: false,
+			cancellationToken: ct
+		);
+
+	private static Task BindQueue(IChannel channel, CancellationToken ct) =>
+		channel.QueueBindAsync(queue: Queue, exchange: Exchange, routingKey: RoutingKey, cancellationToken: ct);
+
+	private AsyncEventingBasicConsumer CreateConsumer(IChannel channel)
+	{
+		AsyncEventingBasicConsumer consumer = new(channel);
+		consumer.ReceivedAsync += async (_, @event) =>
+		{
+			Logger.Information("Handling message.");
+			ulong deliveryTag = @event.DeliveryTag;
+			try
+			{
+				SubscribeParserMessage message = SubscribeParserMessage.Create(@event);
+				await using AsyncServiceScope scope = services.CreateAsyncScope();
+				SubscribeParserCommand command = new(message.parser_id, message.parser_domain, message.parser_type);
+				Result<SubscribedParser> result = await HandleCommand(command, scope);
+
+				if (result.IsFailure)
+				{
+					Logger.Error("Error at subscribing parser. {Error}", result.Error.Message);
+				}
+
+				await Channel.BasicAckAsync(deliveryTag, false);
+			}
+			catch (Exception ex)
+			{
+				Logger.Fatal(ex, "Failed to process message. DeliveryTag: {DeliveryTag}", deliveryTag);
+				await Channel.BasicNackAsync(deliveryTag, false, true);
+			}
+		};
+
+		return consumer;
+	}
+
+	private static Task<Result<SubscribedParser>> HandleCommand(
+		SubscribeParserCommand command,
+		AsyncServiceScope scope
+	) =>
+		scope
+			.ServiceProvider.GetRequiredService<ICommandHandler<SubscribeParserCommand, SubscribedParser>>()
+			.Execute(command);
+
+	private sealed class SubscribeParserMessage
+	{
+		public Guid parser_id { get; set; }
+		public string parser_domain { get; set; } = null!;
+		public string parser_type { get; set; } = null!;
+
+		public static SubscribeParserMessage Create(BasicDeliverEventArgs @event) =>
+			JsonSerializer.Deserialize<SubscribeParserMessage>(@event.Body.Span)!;
+	}
+}

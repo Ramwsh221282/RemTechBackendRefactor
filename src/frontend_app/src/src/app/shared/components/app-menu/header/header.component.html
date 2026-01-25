@@ -1,12 +1,32 @@
-<nav class="header-layout bg-primary-400 shadowed p-0.5">
-  <div class="header-logo-part">
+<nav class="header-layout bg-primary-400 shadowed p-0.5 flex justify-between">
+  <div class="header-logo-part self-start">
     <p-button
       [icon]="'pi pi-bars'"
       [fluid]="true"
-      [size]="'large'"
+      [size]="'small'"
       label="Меню"
       (onClick)="onMenuButtonClick($event)">
       <img [ngSrc]="'logos/logo1.png'" [width]="50" [height]="50" alt="logo"/>
     </p-button>
+  </div>
+  <div class="header-logo-part self-end">
+    @if (!isAuthorized) {
+      <p-button
+        [icon]="'pi pi-sign-in'"
+        [fluid]="true"
+        [size]="'small'"
+        [routerLink]="'sign-in'"
+        label="Авторизация">
+      </p-button>
+    }
+    @if (isAuthorized) {
+      <p-button
+        [icon]="'pi pi-user'"
+        [routerLink]="'user'"
+        [fluid]="true"
+        [size]="'small'"
+        label="Профиль">
+      </p-button>
+    }
   </div>
 </nav>

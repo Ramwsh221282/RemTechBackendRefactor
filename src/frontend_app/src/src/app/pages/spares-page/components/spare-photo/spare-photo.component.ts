@@ -1,11 +1,11 @@
 import { Component, Input, signal, WritableSignal } from '@angular/core';
-import { NgIf } from '@angular/common';
+
 import { Spare } from '../../types/Spare';
 import { SparesService } from '../../services/SparesService';
 
 @Component({
   selector: 'app-spare-photo',
-  imports: [NgIf],
+  imports: [],
   templateUrl: './spare-photo.component.html',
   styleUrl: './spare-photo.component.scss',
 })

@@ -1,5 +1,5 @@
 <div class="text-center mb-8">
-  <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">Парсеры техники</h1>
+  <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">Парсеры</h1>
   <p class="text-gray-600 dark:text-gray-400">Управление</p>
 </div>
 
@@ -9,9 +9,11 @@
     <nav class="p-4 space-y-1">
       <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Список парсеров</h2>
       <ul class="space-y-1">
-        <li *ngFor="let scraper of scrapers">
-          <app-parser-settings-nav-button [scraper_setter]="scraper"/>
-        </li>
+        @for (scraper of scrapers; track scraper) {
+          <li>
+            <app-parser-settings-nav-button [scraper_setter]="scraper"/>
+          </li>
+        }
       </ul>
     </nav>
   </aside>

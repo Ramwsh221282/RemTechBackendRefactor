@@ -20,6 +20,10 @@ import { Button } from 'primeng/button';
 import { Toast } from 'primeng/toast';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
+import {
+  DefaultMailerResponse,
+  MailerResponse
+} from '../../../../../shared/api/notifications-module/notifications-responses';
 
 @Component({
   selector: 'app-mailing-management-check-sender-form',
@@ -29,80 +33,46 @@ import { HttpErrorResponse } from '@angular/common/http';
   providers: [MessageService],
 })
 export class MailingManagementCheckSenderFormComponent {
-  @Output() onClose: EventEmitter<void> = new EventEmitter<void>();
-  private readonly _sender: WritableSignal<MailingSender | null>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly _service: MailingManagementService;
-  private readonly _messageService: MessageService;
-  checkSenderForm: FormGroup = new FormGroup({
-    sendTo: new FormControl(''),
-  });
-  constructor(
-    service: MailingManagementService,
-    messageService: MessageService,
-  ) {
-    this._sender = signal({ email: '', name: '' });
-    this._service = service;
-    this._messageService = messageService;
+  constructor(private readonly _messageService: MessageService) {
+    this.sender = signal(DefaultMailerResponse());
+    this.onTestMessageSendSubmitted = new EventEmitter<{ mailerId: string, recipientEmail: string }>();
   }
-  @Input({ required: true }) set sender_setter(sender: MailingSender | null) {
-    this._sender.set(sender);
+
+  @Input({ required: true }) set sender_setter(sender: MailerResponse) {
+    this.sender.set(sender);
     this.visible = !!sender;
   }
 
-  public visible: boolean = false;
+  @Output() onTestMessageSendSubmitted: EventEmitter<{ mailerId: string, recipientEmail: string }>;
+  @Output() onClose: EventEmitter<void> = new EventEmitter<void>();
 
-  public get senderEmail(): string {
-    const sender: MailingSender | null = this._sender();
-    return !!sender ? sender.email : '';
-  }
+  readonly sender: WritableSignal<MailerResponse>;
+  checkSenderForm: FormGroup = new FormGroup({
+    sendTo: new FormControl(''),
+  });
+  visible: boolean = false;
 
   public onSubmit(): void {
-    const formValues = this.checkSenderForm.value;
-    const sendTo: string = formValues.sendTo as string;
-    if (StringUtils.isEmptyOrWhiteSpace(sendTo)) {
-      MessageServiceUtils.showError(
-        this._messageService,
-        'Не указана почта куда отправить тестовое сообщение.',
-      );
-      return;
-    }
-    if (!StringUtils.isEmailValid(sendTo)) {
-      MessageServiceUtils.showError(
-        this._messageService,
-        'Формат почты некоррекнтый.',
-      );
-      return;
-    }
-    this.invokeTest(sendTo);
-  }
-
-  private invokeTest(to: string): void {
-    const sender: MailingSender | null = this.sender;
-    if (!sender) return;
-    this._service
-      .ping(sender, to)
-      .pipe(takeUntilDestroyed(this._destroyRef))
-      .subscribe({
-        next: (sended: MailingSender) => {
-          MessageServiceUtils.showInfo(
-            this._messageService,
-            `Письмо было отправлено на: ${to} от ${sended.email}.`,
-          );
-          this.checkSenderForm.reset();
-        },
-        error: (error: HttpErrorResponse): void => {
-          MessageServiceUtils.showError(this._messageService, error.message);
-        },
-      });
-  }
-
-  public get sender(): MailingSender | null {
-    return this._sender();
+    const mailer: MailerResponse = this.sender();
+    const recipient: string = this.readRecipientEmail();
+    if (this.isRecipientEmailEmpty(recipient)) return;
+    this.onTestMessageSendSubmitted.emit({ mailerId: mailer.Id, recipientEmail: recipient });
   }
 
   public closeClick(): void {
-    this._sender.set(null);
     this.onClose.emit();
+  }
+
+  private isRecipientEmailEmpty(recipient: string): boolean {
+    if (StringUtils.isEmptyOrWhiteSpace(recipient)) {
+      MessageServiceUtils.showError(this._messageService, 'Почта не указана');
+      return true;
+    }
+    return false;
+  }
+
+  private readRecipientEmail(): string {
+    const formValues = this.checkSenderForm.value;
+    return formValues.sendTo as string;
   }
 }

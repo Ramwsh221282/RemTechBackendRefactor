@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AdminAccessGuard } from '../../../shared/guards/AdminAccessGuard';
 import { RootExistsGuard } from '../../../shared/guards/RootExistsGuard';
+import {ConfirmationService, MessageService} from 'primeng/api';
 
 export const MailingManagementPageRoutes: Routes = [
   {
@@ -9,6 +10,7 @@ export const MailingManagementPageRoutes: Routes = [
       import('../mailing-management-page.component').then(
         (c) => c.MailingManagementPageComponent,
       ),
+    providers: [MessageService, ConfirmationService],
     canActivate: [RootExistsGuard, AdminAccessGuard],
     children: [
       {

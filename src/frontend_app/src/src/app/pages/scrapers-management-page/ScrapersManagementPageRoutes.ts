@@ -57,7 +57,7 @@ export const ScrapersManagementPageRoutes: Routes = [
           ).then((c) => c.ScrapersManagementSettingsPageComponent),
         children: [
           {
-            path: ':scraperName/:scraperType',
+            path: ':id',
             loadComponent: () =>
               import(
                 './components/scrapers-management-concrete-scraper-page/scrapers-management-concrete-scraper-page.component'

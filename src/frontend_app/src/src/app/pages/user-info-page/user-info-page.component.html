@@ -11,10 +11,10 @@
         <div class="flex flex-col items-center">
           <div
             class="select-none w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 text-2xl font-medium">
-            {{ userInfo.name.charAt(0).toUpperCase() }}
+            {{ account().Login.charAt(0).toUpperCase() }}
           </div>
           <h3 class="mt-4 text-xl font-medium text-gray-900 dark:text-gray-100">
-            {{ userInfo.name }}
+            {{ account().Email }}
           </h3>
         </div>
 
@@ -25,11 +25,10 @@
               <span
                 class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 sm:text-sm">
               </span>
-              <input type="text" [value]="userInfo.email" readonly
+              <input type="text" [value]="account().Email" readonly
                      class="flex-1 block w-full min-w-0 px-3 py-2 rounded-none rounded-r-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 dark:text-gray-100">
 
               <button
-                (click)="changeEmailChangeState(true)"
                 type="button"
                 class="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-r-md">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -39,32 +38,18 @@
               </button>
             </div>
           </div>
-
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email подтвержден</label>
-              <div class="ml-2 flex items-center">
-                <span
-                  [class]="userInfo.emailConfirmed ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'"
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                  {{ userInfo.emailConfirmed ? 'Да' : 'Нет' }}
-                </span>
-              </div>
-            </div>
-
-            <button *ngIf="!userInfo.emailConfirmed" type="button"
-                    (click)="changeEmailConfirmationState(true)"
-                    class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              Подтвердить email
-            </button>
-          </div>
         </div>
 
         <div class="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
           <button type="button"
-                  (click)="changePasswordState(true)"
-                  class="inline-flex justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  class="inline-flex justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  (click)="wantToChangePasswordClicked()">
             Изменить пароль
+          </button>
+          <button type="button"
+                  class="bg-red-500 inline-flex justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-red-900 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  (click)="logoutClicked()">
+            Выйти из учетной записи
           </button>
         </div>
       </div>
@@ -72,9 +57,15 @@
   </div>
 </div>
 
-<app-email-confirmation-dialog [visible_setter]="isConfirmingEmail"
-                               (onSubmitOrCancel)="changeEmailConfirmationState($event)"/>
+<!--<app-email-confirmation-dialog [visible_setter]="isConfirmingEmail"-->
+<!--                               (onSubmitOrCancel)="changeEmailConfirmationState($event)"/>-->
 
-<app-email-change-dialog [visible_setter]="isChangingEmail" (onSubmitOrCancel)="changeEmailChangeState($event)"/>
+<!--<app-email-change-dialog [visible_setter]="isChangingEmail" (onSubmitOrCancel)="changeEmailChangeState($event)"/>-->
 
-<app-password-change-dialog [visible_setter]="isChangingPassword" (onSubmitOrCancel)="changePasswordState($event)"/>
+<app-password-change-dialog
+  [visible_setter]="isChangingPassword()"
+  (passwordChangeSubmitted)="onPasswordChangeSubmit($event)"
+  (onCancel)="onPasswordChangeCanceled($event)"/>
+
+<p-toast [position]="'bottom-right'" />
+<p-confirm-dialog/>

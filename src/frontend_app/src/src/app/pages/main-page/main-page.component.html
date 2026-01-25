@@ -1,22 +1,62 @@
 <div class="max-w-6xl mx-auto p-6 space-y-8">
   <div class="text-center mb-12">
-    <h1 class="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-4">Агрегатор спецтехники и запчастей</h1>
+    <h1 class="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-4">
+      Агрегатор спецтехники и запчастей
+    </h1>
     <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">
       Поиск предложений от ведущих площадок
     </p>
   </div>
 
-  <app-contained-items-info/>
-  <app-popular-categories-block/>
-  <app-popular-brands-block/>
+  <app-contained-items-info [item_stats]="itemStats()" />
+  <app-popular-categories-block [categories_setter]="categoriesPopularity()" />
+  <app-popular-brands-block [brands_setter]="brandsPopularity()" />
 </div>
-
 
 <div class="max-w-7xl mx-auto p-0 space-y-8">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <app-fast-navigation/>
+    <app-fast-navigation
+      [spares_fetch_props]="{
+        page: sparesPaginationState(),
+        pageSize: itemsPerPage,
+        isWatching: watchingSpares(),
+        textSearch: sparesTextSearch(),
+      }"
+      [vehicles_fetch_props]="{
+        page: vehiclesPaginationState(),
+        pageSize: itemsPerPage,
+        isWatching: watchingVehicles(),
+        category: selectedCategory(),
+        brand: selectedBrand(),
+        model: selectedModel(),
+        textSearch: vehiclesTextSearch(),
+      }"
+      (vehiclesFetched)="handleVehiclesFetched($event)"
+      (sparesFetched)="handleSparesFetched($event)"
+      (watchingChanged)="handleWatchSet($event)"
+      (brandSelected)="selectedBrand.set($event)"
+      (categorySelected)="selectedCategory.set($event)"
+      (modelSelected)="selectedModel.set($event)"
+      (spareTextSearchChanged)="sparesTextSearch.set($event)"
+    />
     <div class="lg:col-span-2">
-      <app-recent-items-list/>
+      <app-recent-items-list
+        [spares_pagination_props]="{
+          page: sparesPaginationState(),
+          totalCount: totalSparesCount(),
+          pageSize: itemsPerPage,
+        }"
+        [vehicles_pagination_props]="{
+          page: vehiclesPaginationState(),
+          totalCount: totalVehiclesCount(),
+          pageSize: itemsPerPage,
+        }"
+        [vehicles_setter]="vehicles()"
+        [spares_setter]="spares()"
+        [watching_spares]="watchingSpares()"
+        [watching_vehicles]="watchingVehicles()"
+        (sparePageChanged)="handleSparesPageChange($event)"
+      />
     </div>
   </div>
 </div>

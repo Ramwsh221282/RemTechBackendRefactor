@@ -1,11 +1,3 @@
-import {
-  VehiclesCatalogueQuery,
-  VehiclesCatalogueQueryWithCharacteristics,
-  VehiclesCatalogueQueryWithLocation,
-  VehiclesCatalogueQueryWithPrice,
-  VehiclesCatalogueQueryWithSortOrder,
-} from './VehiclesCatalogueQuery';
-
 export class VehiclesCatalogueQuerySortOrder {
   private readonly _order: string | null;
 
@@ -57,7 +49,7 @@ export class VehiclesCatalogueQueryPriceSpecification {
   constructor(
     isNds: boolean | null,
     startFrom: number | null,
-    endAt: number | null,
+    endAt: number | null
   ) {
     this._isNds = isNds;
     this._startFrom = startFrom;
@@ -68,7 +60,7 @@ export class VehiclesCatalogueQueryPriceSpecification {
     return new VehiclesCatalogueQueryPriceSpecification(
       this._isNds,
       null,
-      this._endAt,
+      this._endAt
     );
   }
 
@@ -76,7 +68,7 @@ export class VehiclesCatalogueQueryPriceSpecification {
     return new VehiclesCatalogueQueryPriceSpecification(
       this._isNds,
       this._startFrom,
-      null,
+      null
     );
   }
 
@@ -85,12 +77,12 @@ export class VehiclesCatalogueQueryPriceSpecification {
   }
 
   public withStartFrom(
-    value: number,
+    value: number
   ): VehiclesCatalogueQueryPriceSpecification {
     return new VehiclesCatalogueQueryPriceSpecification(
       this._isNds,
       value,
-      this._endAt,
+      this._endAt
     );
   }
 
@@ -98,17 +90,17 @@ export class VehiclesCatalogueQueryPriceSpecification {
     return new VehiclesCatalogueQueryPriceSpecification(
       this._isNds,
       this._startFrom,
-      value,
+      value
     );
   }
 
   public withNdsSpecification(
-    isNds: boolean,
+    isNds: boolean
   ): VehiclesCatalogueQueryPriceSpecification {
     return new VehiclesCatalogueQueryPriceSpecification(
       isNds,
       this._startFrom,
-      this._endAt,
+      this._endAt
     );
   }
 
@@ -150,17 +142,17 @@ export class VehiclesCatalogueQueryCharacteristicsList {
   public removeById(id: string): VehiclesCatalogueQueryCharacteristicsList {
     const withoutItem: VehiclesCatalogueQueryCharacteristic[] =
       this._characteristics.filter(
-        (c: VehiclesCatalogueQueryCharacteristic): boolean => c.id !== id,
+        (c: VehiclesCatalogueQueryCharacteristic): boolean => c.id !== id
       );
     return new VehiclesCatalogueQueryCharacteristicsList(withoutItem);
   }
 
   public accept(
-    characteristic: VehiclesCatalogueQueryCharacteristic,
+    characteristic: VehiclesCatalogueQueryCharacteristic
   ): VehiclesCatalogueQueryCharacteristicsList {
     const id: string = characteristic.id;
     const indexOfExisting: number = this._characteristics.findIndex(
-      (item: VehiclesCatalogueQueryCharacteristic): boolean => item.id === id,
+      (item: VehiclesCatalogueQueryCharacteristic): boolean => item.id === id
     );
     if (indexOfExisting > -1) {
       this._characteristics[indexOfExisting] = characteristic;
@@ -177,7 +169,7 @@ export class VehiclesCatalogueQueryCharacteristicsList {
     if (this._characteristics.length === 0) return null;
     return {
       arguments: this._characteristics.map(
-        (c: VehiclesCatalogueQueryCharacteristic) => c.print(),
+        (c: VehiclesCatalogueQueryCharacteristic) => c.print()
       ),
     };
   }
@@ -199,7 +191,7 @@ export class VehiclesCatalogueQueryCharacteristic {
   }
 
   public addTo(
-    list: VehiclesCatalogueQueryCharacteristicsList,
+    list: VehiclesCatalogueQueryCharacteristicsList
   ): VehiclesCatalogueQueryCharacteristicsList {
     return list.accept(this);
   }

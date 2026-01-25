@@ -1,57 +1,38 @@
-import {
-  Component,
-  DestroyRef,
-  effect,
-  EventEmitter,
-  inject,
-  Output,
-  signal,
-  WritableSignal,
-} from '@angular/core';
+import { Component, EventEmitter, input, InputSignal, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CatalogueModel } from '../../types/CatalogueModel';
-import { CatalogueVehiclesService } from '../../services/CatalogueVehiclesService';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Select, SelectChangeEvent } from 'primeng/select';
-import { CatalogueRegion } from '../../types/CatalogueRegion';
+import { LocationResponse } from '../../../../shared/api/locations-module/locations.responses';
 
 @Component({
-  selector: 'app-vehicle-regions-filter-form-part',
-  imports: [FormsModule, Select],
-  templateUrl: './vehicle-regions-filter-form-part.component.html',
-  styleUrl: './vehicle-regions-filter-form-part.component.scss',
+	selector: 'app-vehicle-regions-filter-form-part',
+	imports: [FormsModule, Select],
+	templateUrl: './vehicle-regions-filter-form-part.component.html',
+	styleUrl: './vehicle-regions-filter-form-part.component.scss',
 })
 export class VehicleRegionsFilterFormPartComponent {
-  @Output() onRegionSelect: EventEmitter<string | undefined> =
-    new EventEmitter();
-  private readonly _regions: WritableSignal<CatalogueRegion[]>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  constructor(service: CatalogueVehiclesService) {
-    this._regions = signal([]);
-    effect(() => {
-      service
-        .fetchRegions()
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (data: CatalogueRegion[]): void => {
-            this._regions.set(data);
-          },
-        });
-    });
-  }
+	disabled: InputSignal<boolean> = input(false);
+	selectedLocation: InputSignal<LocationResponse | null | undefined> = input(defaultCurrentLocation());
+	locations: InputSignal<LocationResponse[]> = input(defaultLocations());
 
-  public selectedRegion: CatalogueRegion | undefined;
+	@Output() locationSelected: EventEmitter<LocationResponse | null | undefined> = new EventEmitter<LocationResponse | null | undefined>();
 
-  public get regions(): CatalogueRegion[] {
-    return this._regions();
-  }
+	public userChangesLocation($event: SelectChangeEvent): void {
+		const location: LocationResponse | null | undefined = $event.value;
+		this.locationSelected.emit(location);
+	}
 
-  public onChange($event: SelectChangeEvent): void {
-    const model: CatalogueRegion | null = $event.value as CatalogueRegion;
-    if (model) {
-      this.onRegionSelect.emit(model.id);
-      return;
-    }
-    this.onRegionSelect.emit(undefined);
-  }
+	public get placeHolderText(): string {
+		if (!this.selectedLocation) return 'Выбрать регион';
+		const location: LocationResponse | null | undefined = this.selectedLocation();
+		if (!location) return 'Выбрать регион';
+		return location.Name;
+	}
+}
+
+function defaultCurrentLocation(): LocationResponse | null | undefined {
+	return undefined;
+}
+
+function defaultLocations(): LocationResponse[] {
+	return [];
 }

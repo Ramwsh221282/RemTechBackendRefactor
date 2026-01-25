@@ -1,6 +1,8 @@
 import { Component, Input, signal, WritableSignal } from '@angular/core';
 import { Scraper } from '../../../scrapers-management-settings-page/types/Scraper';
 import { VehicleScrapersService } from '../../../scrapers-management-settings-page/services/vehicle-scrapers.service';
+import {ParserResponse} from '../../../../../../shared/api/parsers-module/parsers-responses';
+import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module/parsers-factory';
 
 @Component({
   selector: 'app-scraper-elapsed-time',
@@ -9,25 +11,25 @@ import { VehicleScrapersService } from '../../../scrapers-management-settings-pa
   styleUrl: './scraper-elapsed-time.component.scss',
 })
 export class ScraperElapsedTimeComponent {
-  @Input({ required: true }) set scraper_setter(value: Scraper) {
+  constructor() {
+    this._scraper = signal(DefaultParserResponse());
+  }
+
+  private readonly _scraper: WritableSignal<ParserResponse>;
+
+  @Input({ required: true }) set scraper_setter(value: ParserResponse) {
     this._scraper.set(value);
   }
 
-  private readonly _scraper: WritableSignal<Scraper>;
-
-  constructor() {
-    this._scraper = signal(VehicleScrapersService.defaultScraper());
-  }
-
   public get hours(): number {
-    return this._scraper().hours;
+    return this._scraper().ElapsedHours;
   }
 
   public get seconds(): number {
-    return this._scraper().seconds;
+    return this._scraper().ElapsedSeconds;
   }
 
   public get minutes(): number {
-    return this._scraper().minutes;
+    return this._scraper().ElapsedMinutes;
   }
 }

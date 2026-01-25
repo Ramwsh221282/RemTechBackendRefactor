@@ -11,13 +11,13 @@ import { VehicleScrapersService } from '../../../scrapers-management-settings-pa
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { StringUtils } from '../../../../../../shared/utils/string-utils';
-import { DatePipe, NgForOf, NgIf } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { PaginationComponent } from '../../../../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-scraper-journal-details',
-  imports: [NgForOf, NgIf, DatePipe, ReactiveFormsModule, PaginationComponent],
+  imports: [DatePipe, ReactiveFormsModule, PaginationComponent],
   templateUrl: './scraper-journal-details.component.html',
   styleUrl: './scraper-journal-details.component.scss',
 })
