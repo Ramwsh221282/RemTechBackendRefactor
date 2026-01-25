@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { VehiclesTextSearchComponent } from './components/vehicles-text-search/vehicles-text-search.component';
 import { VehiclesPriceSortComponent } from './components/vehicles-price-sort/vehicles-price-sort.component';
 import {
-	PriceSubmitEvent,
+	PriceChangeEvent,
 	VehiclePriceFilterFormPartComponent,
 } from './components/vehicle-price-filter-form-part/vehicle-price-filter-form-part.component';
 import { VehicleCategoryFilterFormPartComponent } from './components/vehicle-category-filter-form-part/vehicle-category-filter-form-part.component';
@@ -146,11 +146,13 @@ export class VehiclesPageComponent implements OnInit {
 		});
 	}
 
-	public handleUserPriceFilterInput(userPriceSubmit: PriceSubmitEvent): void {
+	public handleUserPriceFilterInput(userPriceSubmit: PriceChangeEvent): void {
 		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
 			return {
 				...state,
-				vehiclesQuery: state.vehiclesQuery.useMinimalPrice(userPriceSubmit.priceFrom).useMaximalPrice(userPriceSubmit.priceTo),
+				vehiclesQuery: state.vehiclesQuery
+					.useMinimalPrice(userPriceSubmit.minimalPrice)
+					.useMaximalPrice(userPriceSubmit.maximalPrice),
 			};
 		});
 	}

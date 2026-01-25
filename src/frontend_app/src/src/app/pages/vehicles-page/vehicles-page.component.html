@@ -15,7 +15,7 @@
 				<aside class="lg:col-span-1">
 					<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 sticky top-4">
 						<h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Фильтры</h2>
-						<app-vehicle-price-filter-form-part (onPriceChangeSubmit)="handleUserPriceFilterInput($event)" />
+						<app-vehicle-price-filter-form-part (priceChanged)="handleUserPriceFilterInput($event)" />
 						<div class="flex flex-col gap-2">
 							<app-vehicle-category-filter-form-part
 								[categories]="categories()"

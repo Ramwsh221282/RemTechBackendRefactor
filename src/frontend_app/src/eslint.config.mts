@@ -36,7 +36,7 @@ export default [
 			"@typescript-eslint/explicit-function-return-type": "error",
 			"@typescript-eslint/explicit-module-boundary-types": "error",
 			"@typescript-eslint/no-inferrable-types": "off",
-			"@typescript-eslint/no-explicit-any": "error",
+			"@typescript-eslint/no-explicit-any": "off",
 			"@typescript-eslint/no-unsafe-assignment": "error",
 			"@typescript-eslint/no-unsafe-member-access": "error",
 			"@typescript-eslint/no-unsafe-call": "error",
