@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { AppMenuService } from '../app-menu.service';
-import { NgIf, NgOptimizedImage } from '@angular/common';
+import { NgOptimizedImage } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {AuthenticationStatusService} from '../../../services/AuthenticationStatusService';
 
 @Component({
   selector: 'app-header',
-  imports: [ButtonModule, NgOptimizedImage, RouterLink, NgIf],
+  imports: [ButtonModule, NgOptimizedImage, RouterLink],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })

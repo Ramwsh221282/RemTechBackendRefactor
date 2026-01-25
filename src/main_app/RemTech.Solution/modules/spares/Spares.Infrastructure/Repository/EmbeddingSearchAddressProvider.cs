@@ -8,16 +8,18 @@ using RemTech.SharedKernel.NN;
 
 namespace Spares.Infrastructure.Repository;
 
-public sealed class EmbeddingSearchAddressProvider(NpgSqlSession session, EmbeddingsProvider embeddings) : ISpareAddressProvider
+public sealed class EmbeddingSearchAddressProvider(NpgSqlSession session, EmbeddingsProvider embeddings)
+    : ISpareAddressProvider
 {
     private const double MaxDistance = 0.3;
+
     public async Task<Result<Guid>> SearchRegionId(string address, CancellationToken ct = default)
     {
         const string sql = """
-                           SELECT id as region_id FROM vehicles_module.regions
-                           WHERE embedding <=> @embedding < @max_distance
-                           LIMIT 1;
-                           """;
+			SELECT id as region_id FROM vehicles_module.regions
+			WHERE embedding <=> @embedding < @max_distance
+			LIMIT 1;
+			""";
         DynamicParameters parameters = new();
         Vector embedding = new(embeddings.Generate(address));
         parameters.Add("@embedding", embedding);

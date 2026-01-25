@@ -6,7 +6,7 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
-import { NgForOf, NgIf } from '@angular/common';
+
 import { Spare } from './types/Spare';
 import { SparesService } from './services/SparesService';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -22,16 +22,14 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-spares-page',
   imports: [
-    NgForOf,
     SparesSearchInputComponent,
     SparePhotoComponent,
     SpareContentComponent,
     SpareTitleComponent,
     SpareDetailsComponent,
     SpareSourceComponent,
-    Paginator,
-    NgIf,
-  ],
+    Paginator
+],
   templateUrl: './spares-page.component.html',
   styleUrl: './spares-page.component.scss',
 })

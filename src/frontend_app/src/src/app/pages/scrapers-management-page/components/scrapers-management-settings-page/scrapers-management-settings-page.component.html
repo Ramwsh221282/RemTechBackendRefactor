@@ -9,9 +9,11 @@
     <nav class="p-4 space-y-1">
       <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Список парсеров</h2>
       <ul class="space-y-1">
-        <li *ngFor="let scraper of scrapers">
-          <app-parser-settings-nav-button [scraper_setter]="scraper"/>
-        </li>
+        @for (scraper of scrapers; track scraper) {
+          <li>
+            <app-parser-settings-nav-button [scraper_setter]="scraper"/>
+          </li>
+        }
       </ul>
     </nav>
   </aside>

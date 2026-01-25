@@ -4,5 +4,5 @@ namespace Vehicles.Domain.Characteristics.Contracts;
 
 public interface ICharacteristicsPersister
 {
-    Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default);
+    public Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default);
 }

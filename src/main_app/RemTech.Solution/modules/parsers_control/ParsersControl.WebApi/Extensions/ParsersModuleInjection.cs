@@ -14,10 +14,7 @@ public static class ParsersModuleInjection
 {
     extension(IServiceCollection services)
     {
-        public void InjectParsersControlModule()
-        {
-            services.AddInfrastructureLayer();
-        }
+        public void InjectParsersControlModule() => services.AddInfrastructureLayer();
 
         public void AddParsersControlModule(bool isDevelopment)
         {
@@ -61,10 +58,7 @@ public static class ParsersModuleInjection
         private void AddRepositories()
         {
             services.AddScoped<ISubscribedParsersRepository, SubscribedParsersRepository>();
-            services.AddScoped<
-                ISubscribedParsersCollectionRepository,
-                SubscribedParsersCollectionRepository
-            >();
+            services.AddScoped<ISubscribedParsersCollectionRepository, SubscribedParsersCollectionRepository>();
         }
     }
 }

@@ -14,29 +14,20 @@ public sealed record SubscribedParserLinkUrlInfo
         Name = name;
     }
 
-    public Result<SubscribedParserLinkUrlInfo> Rename(string otherName)
-    {
-        return Create(Url, otherName);
-    }
+    public Result<SubscribedParserLinkUrlInfo> Rename(string otherName) => Create(Url, otherName);
 
-    public Result<SubscribedParserLinkUrlInfo> ChangeUrl(string otherUrl)
-    {
-        return Create(otherUrl, Name);
-    }
+    public Result<SubscribedParserLinkUrlInfo> ChangeUrl(string otherUrl) => Create(otherUrl, Name);
 
-    public SubscribedParserLinkUrlInfo Copy()
-    {
-        return new SubscribedParserLinkUrlInfo(Url, Name);
-    }
-    
+    public SubscribedParserLinkUrlInfo Copy() => new(Url, Name);
+
     public static Result<SubscribedParserLinkUrlInfo> Create(string url, string name)
     {
-        if (string.IsNullOrWhiteSpace(url)) 
+        if (string.IsNullOrWhiteSpace(url))
             return Error.Validation("Ссылка на парсер не может быть пустой.");
-        if (string.IsNullOrWhiteSpace(name)) 
+        if (string.IsNullOrWhiteSpace(name))
             return Error.Validation("Название ссылки на парсер не может быть пустым.");
-        if (name.Length > MaxNameLength)
-            return Error.Validation($"Название ссылки на парсер не может быть больше {MaxNameLength} символов.");
-        return new SubscribedParserLinkUrlInfo(url, name);
+        return name.Length > MaxNameLength
+            ? (Result<SubscribedParserLinkUrlInfo>)Error.Validation($"Название ссылки на парсер не может быть больше {MaxNameLength} символов.")
+            : (Result<SubscribedParserLinkUrlInfo>)new SubscribedParserLinkUrlInfo(url, name);
     }
 }

@@ -11,10 +11,11 @@ public sealed class Vehicle(
     CategoryId category,
     LocationId location,
     ModelId model,
-    VehicleSource source, 
-    VehiclePriceInformation price, 
-    VehicleTextInformation text, 
-    VehiclePhotosGallery photos)
+    VehicleSource source,
+    VehiclePriceInformation price,
+    VehicleTextInformation text,
+    VehiclePhotosGallery photos
+)
 {
     public Vehicle(
         VehicleId id,
@@ -22,12 +23,13 @@ public sealed class Vehicle(
         Category category,
         Location location,
         Model model,
-        VehicleSource source, 
-        VehiclePriceInformation price, 
-        VehicleTextInformation text, 
-        VehiclePhotosGallery photos) 
+        VehicleSource source,
+        VehiclePriceInformation price,
+        VehicleTextInformation text,
+        VehiclePhotosGallery photos
+    )
         : this(id, brand.Id, category.Id, location.Id, model.Id, source, price, text, photos) { }
-    
+
     public VehicleId Id { get; } = id;
     public BrandId BrandId { get; } = brand;
     public CategoryId CategoryId { get; } = category;
@@ -41,10 +43,10 @@ public sealed class Vehicle(
 
     public void AddCharacteristics(IEnumerable<VehicleCharacteristicToAdd> characteristics)
     {
-        var comparer = new VehicleCharacteristicByNameComparer();
-        HashSet<VehicleCharacteristic> result = new HashSet<VehicleCharacteristic>(comparer);
+        VehicleCharacteristicByNameComparer comparer = new VehicleCharacteristicByNameComparer();
+        HashSet<VehicleCharacteristic> result = new(comparer);
         foreach (VehicleCharacteristicToAdd characteristic in characteristics)
             result.Add(new VehicleCharacteristic(this, characteristic.Characteristic, characteristic.Value));
-        Characteristics = result.ToList();
+        Characteristics = [.. result];
     }
 }

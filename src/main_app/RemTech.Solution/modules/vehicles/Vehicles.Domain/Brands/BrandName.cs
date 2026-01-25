@@ -11,13 +11,11 @@ public sealed record BrandName
     {
         Name = name;
     }
-    
+
     public static Result<BrandName> Create(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
             return Error.Validation("Название бренда не может быть пустым.");
-        if (name.Length > MaxLength)
-            return Error.Validation($"Название бренда превышает {MaxLength} символов.");
-        return new BrandName(name);
+        return name.Length > MaxLength ? (Result<BrandName>)Error.Validation($"Название бренда превышает {MaxLength} символов.") : (Result<BrandName>)new BrandName(name);
     }
 }

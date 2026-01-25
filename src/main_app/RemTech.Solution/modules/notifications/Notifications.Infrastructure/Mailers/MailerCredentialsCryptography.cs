@@ -7,7 +7,7 @@ namespace Notifications.Infrastructure.Mailers;
 public sealed class MailerCredentialsCryptography(AesCryptography cryptography) : IMailerCredentialsCryptography
 {
     private AesCryptography Cryptography { get; } = cryptography;
-    
+
     public async Task<MailerCredentials> Encrypt(MailerCredentials credentials, CancellationToken ct = default)
     {
         string encryptedPassword = await Cryptography.EncryptText(credentials.SmtpPassword, ct);
@@ -20,8 +20,6 @@ public sealed class MailerCredentialsCryptography(AesCryptography cryptography) 
         return Recreate(credentials, decryptedPassword);
     }
 
-    private static MailerCredentials Recreate(MailerCredentials credentials, string password)
-    {
-        return MailerCredentials.Create(password, credentials.Email);
-    }
+    private static MailerCredentials Recreate(MailerCredentials credentials, string password) =>
+        MailerCredentials.Create(password, credentials.Email);
 }

@@ -136,8 +136,7 @@ public sealed class ParsersController : ControllerBase
     public async Task<Envelope> UpdateParserLinks(
         [FromRoute(Name = "id")] Guid id,
         [FromBody] UpdateParserLinksRequest request,
-        [FromServices]
-            ICommandHandler<UpdateParserLinksCommand, IEnumerable<SubscribedParserLink>> handler,
+        [FromServices] ICommandHandler<UpdateParserLinksCommand, IEnumerable<SubscribedParserLink>> handler,
         CancellationToken ct
     )
     {
@@ -154,11 +153,7 @@ public sealed class ParsersController : ControllerBase
     [HttpPatch("permantly-start")]
     public async Task<Envelope> PermantlyStartManyParsers(
         [FromQuery(Name = "ids")] IEnumerable<Guid> ids,
-        [FromServices]
-            ICommandHandler<
-            PermantlyStartManyParsingCommand,
-            IEnumerable<SubscribedParser>
-        > handler,
+        [FromServices] ICommandHandler<PermantlyStartManyParsingCommand, IEnumerable<SubscribedParser>> handler,
         CancellationToken ct
     )
     {
@@ -172,11 +167,7 @@ public sealed class ParsersController : ControllerBase
     [HttpPatch("permantly-disable")]
     public async Task<Envelope> PermantlyDisableManyParsers(
         [FromQuery(Name = "ids")] IEnumerable<Guid> ids,
-        [FromServices]
-            ICommandHandler<
-            PermantlyDisableManyParsingCommand,
-            IEnumerable<SubscribedParser>
-        > handler,
+        [FromServices] ICommandHandler<PermantlyDisableManyParsingCommand, IEnumerable<SubscribedParser>> handler,
         CancellationToken ct
     )
     {
@@ -235,15 +226,11 @@ public sealed class ParsersController : ControllerBase
     public async Task<Envelope> AddLinksToParser(
         [FromRoute(Name = "id")] Guid id,
         [FromBody] AddLinksToParserRequest request,
-        [FromServices]
-            ICommandHandler<AddParserLinkCommand, IEnumerable<SubscribedParserLink>> handler,
+        [FromServices] ICommandHandler<AddParserLinkCommand, IEnumerable<SubscribedParserLink>> handler,
         CancellationToken ct
     )
     {
-        AddParserLinkCommand command = new(
-            id,
-            request.Links.Select(l => new AddParserLinkCommandArg(l.Url, l.Name))
-        );
+        AddParserLinkCommand command = new(id, request.Links.Select(l => new AddParserLinkCommandArg(l.Url, l.Name)));
         Result<IEnumerable<SubscribedParserLink>> result = await handler.Execute(command, ct);
         return result.AsTypedEnvelope(r => r.Select(ParserLinkResponse.Create));
     }

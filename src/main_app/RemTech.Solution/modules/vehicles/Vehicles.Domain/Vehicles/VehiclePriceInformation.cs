@@ -15,8 +15,8 @@ public sealed record VehiclePriceInformation
 
     public static Result<VehiclePriceInformation> Create(long value, bool isNds)
     {
-        if (value <= 0)
-            return Error.Validation("Цена техники не может быть меньше или равной нулю.");
-        return new VehiclePriceInformation(value, isNds);
+        return value <= 0
+            ? (Result<VehiclePriceInformation>)Error.Validation("Цена техники не может быть меньше или равной нулю.")
+            : (Result<VehiclePriceInformation>)new VehiclePriceInformation(value, isNds);
     }
 }

@@ -7,12 +7,13 @@ public readonly record struct MailerId
     public Guid Value { get; }
 
     public MailerId() => Value = Guid.NewGuid();
+
     private MailerId(Guid value) => Value = value;
+
     public static MailerId New() => new();
 
     public static Result<MailerId> Create(Guid value)
     {
-        if (value == Guid.Empty) return Error.Validation("Идентификатор почтового сервиса не может быть пустым.");
-        return new MailerId(value);
+        return value == Guid.Empty ? (Result<MailerId>)Error.Validation("Идентификатор почтового сервиса не может быть пустым.") : (Result<MailerId>)new MailerId(value);
     }
 }

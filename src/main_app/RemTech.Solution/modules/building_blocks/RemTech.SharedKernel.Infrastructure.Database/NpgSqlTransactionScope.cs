@@ -4,36 +4,25 @@ using RemTech.SharedKernel.Core.InfrastructureContracts;
 
 namespace RemTech.SharedKernel.Infrastructure.Database;
 
-public sealed class NpgSqlTransactionScope : ITransactionScope
+public sealed class NpgSqlTransactionScope(NpgsqlTransaction transaction) : ITransactionScope
 {
-    private NpgsqlTransaction Transaction { get; }
+	private NpgsqlTransaction Transaction { get; } = transaction;
 
-    public NpgSqlTransactionScope(NpgsqlTransaction transaction)
-    {
-        Transaction = transaction;
-    }
+	public async Task<Result> Commit(CancellationToken ct = default)
+	{
+		try
+		{
+			await Transaction.CommitAsync(ct);
+			return Result.Success();
+		}
+		catch
+		{
+			await Transaction.RollbackAsync(ct);
+			return Result.Failure(Error.Application("Ошибка транзакции."));
+		}
+	}
 
-    public async Task<Result> Commit(CancellationToken ct = default)
-    {
-        try
-        {
-            await Transaction.CommitAsync(ct);
-            return Result.Success();
-        }
-        catch
-        {
-            await Transaction.RollbackAsync(ct);
-            return Result.Failure(Error.Application("Ошибка транзакции."));
-        }
-    }
+	public void Dispose() => Transaction.Dispose();
 
-    public void Dispose()
-    {
-        Transaction.Dispose();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await Transaction.DisposeAsync();
-    }
+	public ValueTask DisposeAsync() => Transaction.DisposeAsync();
 }

@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Spares.Domain\Spares.Domain.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Spares.Domain\Spares.Domain.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="2.0.0" />
-    <PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="2.0.0" />
-    <PackageReference Include="RemTech.SharedKernel.NN" Version="2.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="2.*" />
+		<PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="2.*" />
+		<PackageReference Include="RemTech.SharedKernel.NN" Version="2.*" />
+	</ItemGroup>
 </Project>

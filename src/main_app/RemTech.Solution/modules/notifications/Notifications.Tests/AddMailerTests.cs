@@ -12,7 +12,7 @@ public sealed class AddMailerTests(IntegrationalTestsFactory factory) : IClassFi
     [InlineData("testEmail@mail.ru")]
     private async Task Add_Mailer_Success(string email)
     {
-        string password = "testPassword";
+        const string password = "testPassword";
         Result<Unit> result = await Services.AddMailer(email, password);
         Assert.True(result.IsSuccess);
     }
@@ -20,8 +20,8 @@ public sealed class AddMailerTests(IntegrationalTestsFactory factory) : IClassFi
     [Fact]
     private async Task Add_Mailer_Unsupported_SmtpHost()
     {
-        string email = "testEmail@unsupported.com";
-        string password = "testPassword";
+        const string email = "testEmail@unsupported.com";
+        const string password = "testPassword";
         Result<Unit> result = await Services.AddMailer(email, password);
         Assert.True(result.IsFailure);
     }
@@ -29,12 +29,12 @@ public sealed class AddMailerTests(IntegrationalTestsFactory factory) : IClassFi
     [Fact]
     private async Task Add_Mailer_Duplicate_Email_Failure()
     {
-        string email = "testEmail@gmail.com";
-        string password = "testPassword";
+        const string email = "testEmail@gmail.com";
+        const string password = "testPassword";
         Result<Unit> result1 = await Services.AddMailer(email, password);
         Assert.True(result1.IsSuccess);
-        
-        string otherPassword = "otherPassword@123";
+
+        const string otherPassword = "otherPassword@123";
         Result<Unit> result2 = await Services.AddMailer(email, otherPassword);
         Assert.True(result2.IsFailure);
     }

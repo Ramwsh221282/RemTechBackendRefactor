@@ -25,8 +25,11 @@ namespace WebHostApplication.Modules.identity;
 
 [ApiController]
 [Route("api/identity")]
-public sealed class IdentityController : Controller
+public sealed class IdentityController : ControllerBase
 {
+    private const string AccessTokenName = "access_token";
+    private const string RefreshTokenName = "refresh_token";
+
     private static readonly Func<HttpContext, string>[] GetAccessTokenMethods =
     [
         context => context.GetAccessTokenFromHeaderOrEmpty(),
@@ -219,39 +222,37 @@ public sealed class IdentityController : Controller
 
     private static void SetAuthHeaders(HttpContext context, AuthenticationResult result)
     {
-        context.Response.Headers.Remove("access_token");
-        context.Response.Headers.Remove("refresh_token");
-
-        context.Response.Headers.Append("access_token", result.AccessToken);
-        context.Response.Headers.Append("refresh_token", result.RefreshToken);
+        context.Response.Headers.Remove(AccessTokenName);
+        context.Response.Headers.Remove(RefreshTokenName);
+        context.Response.Headers.Append(AccessTokenName, result.AccessToken);
+        context.Response.Headers.Append(RefreshTokenName, result.RefreshToken);
     }
 
     private static void ClearAuthHeaders(HttpContext context)
     {
-        context.Response.Headers.Remove("access_token");
-        context.Response.Headers.Remove("refresh_token");
-        context.Response.Cookies.Delete("access_token");
-        context.Response.Cookies.Delete("refresh_token");
+        context.Response.Headers.Remove(AccessTokenName);
+        context.Response.Headers.Remove(RefreshTokenName);
+        context.Response.Cookies.Delete(AccessTokenName);
+        context.Response.Cookies.Delete(RefreshTokenName);
     }
 
     private static void SetAuthCookies(HttpContext context, AuthenticationResult result)
     {
-        context.Response.Cookies.Delete("access_token");
-        context.Response.Cookies.Delete("refresh_token");
+        context.Response.Cookies.Delete(AccessTokenName);
+        context.Response.Cookies.Delete(RefreshTokenName);
 
         CookieOptions options = CreateCookieOptions();
-        context.Response.Cookies.Append("access_token", result.AccessToken, options);
-        context.Response.Cookies.Append("refresh_token", result.RefreshToken, options);
+
+        context.Response.Cookies.Append(AccessTokenName, result.AccessToken, options);
+        context.Response.Cookies.Append(RefreshTokenName, result.RefreshToken, options);
     }
 
-    private static CookieOptions CreateCookieOptions()
-    {
-        return new CookieOptions()
+    private static CookieOptions CreateCookieOptions() =>
+        new()
         {
             HttpOnly = true,
             SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddDays(30),
             Secure = true,
         };
-    }
 }

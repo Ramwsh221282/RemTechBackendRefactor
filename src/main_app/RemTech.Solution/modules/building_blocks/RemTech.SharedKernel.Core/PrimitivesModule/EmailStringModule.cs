@@ -24,26 +24,16 @@ public static partial class EmailStringModule
         {
             if (IsNullOrEmpty(input))
                 return new EmailString(string.Empty, false);
-            if (!HasValidFormat(input))
-                return new EmailString(input!, false);
-            return new EmailString(input!, true);
+            return !HasValidFormat(input) ? new EmailString(input!, false) : new EmailString(input!, true);
         }
 
-        private static bool MatchesEmailRegex(string input)
-        {
-            return EmailRegex().IsMatch(input);
-        }
+        private static bool MatchesEmailRegex(string input) => EmailRegex().IsMatch(input);
 
-        private static bool IsNullOrEmpty(string? input)
-        {
-            return string.IsNullOrWhiteSpace(input);
-        }
+        private static bool IsNullOrEmpty(string? input) => string.IsNullOrWhiteSpace(input);
 
         private static bool HasValidFormat(string? input)
         {
-            if (string.IsNullOrWhiteSpace(input))
-                return false;
-            return input.Length <= 256 && MatchesEmailRegex(input);
+            return string.IsNullOrWhiteSpace(input) ? false : input.Length <= 256 && MatchesEmailRegex(input);
         }
     }
 

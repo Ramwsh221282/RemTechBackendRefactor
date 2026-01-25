@@ -5,8 +5,7 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace ParsersControl.Core.Features.PermantlyDisableManyParsing;
 
-public sealed class PermantlyDisableManyParsingValidator
-    : AbstractValidator<PermantlyStartManyParsingCommand>
+public sealed class PermantlyDisableManyParsingValidator : AbstractValidator<PermantlyStartManyParsingCommand>
 {
     public PermantlyDisableManyParsingValidator()
     {

@@ -17,7 +17,7 @@ import { AddUserDialogComponent } from './components/add-user-dialog/add-user-di
 import { UserCardComponent } from './components/user-card/user-card.component';
 import { AddUserButtonComponent } from './components/add-user-button/add-user-button.component';
 import { EditUserDialogComponent } from './components/edit-user-dialog/edit-user-dialog.component';
-import { NgIf } from '@angular/common';
+
 import { UpdateUserProfileResult } from '../sign-in-page/types/UpdateUserProfileResult';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { MessageServiceUtils } from '../../shared/utils/message-service-utils';
@@ -34,9 +34,8 @@ import { PaginationComponent } from '../../shared/components/pagination/paginati
     UserCardComponent,
     AddUserButtonComponent,
     EditUserDialogComponent,
-    NgIf,
-    PaginationComponent,
-  ],
+    PaginationComponent
+],
   templateUrl: './users-management-page.component.html',
   styleUrl: './users-management-page.component.scss',
   providers: [ConfirmationService, MessageService],

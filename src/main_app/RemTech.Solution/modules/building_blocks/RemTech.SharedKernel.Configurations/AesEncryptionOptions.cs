@@ -24,7 +24,7 @@ public class AesEncryptionOptions
         if (string.IsNullOrWhiteSpace(PlainKey))
             throw new ArgumentException("Cannot use Aes Encryption Options. Plain key was not set.");
     }
-    
+
     private static byte[] StringAs16LengthByteArray(string inputText)
     {
         Span<byte> encoded = new(Encoding.UTF8.GetBytes(inputText));

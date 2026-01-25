@@ -13,9 +13,7 @@ public sealed class AddPermissionsHandler(IPermissionsRepository repository)
     )
     {
         IEnumerable<Permission> permissions = CreatePermissions(command.Permissions);
-        IEnumerable<PermissionSpecification> specifications = CreateSpecificationsForExistanceCheck(
-            permissions
-        );
+        IEnumerable<PermissionSpecification> specifications = CreateSpecificationsForExistanceCheck(permissions);
         IEnumerable<Permission> existing = await GetExistingPermissions(specifications, ct);
 
         if (HasDuplicates(existing, out Error error))
@@ -24,7 +22,7 @@ public sealed class AddPermissionsHandler(IPermissionsRepository repository)
         return Result.Success(permissions);
     }
 
-    private bool HasDuplicates(IEnumerable<Permission> duplicates, out Error error)
+    private static bool HasDuplicates(IEnumerable<Permission> duplicates, out Error error)
     {
         error = Error.NoError();
         if (duplicates.Any())
@@ -37,22 +35,17 @@ public sealed class AddPermissionsHandler(IPermissionsRepository repository)
         return false;
     }
 
-    private IEnumerable<Permission> CreatePermissions(
-        IEnumerable<AddPermissionCommandPayload> payloads
-    ) =>
+    private static IEnumerable<Permission> CreatePermissions(IEnumerable<AddPermissionCommandPayload> payloads) =>
         payloads.Select(p =>
-            Permission.CreateNew(
-                PermissionName.Create(p.Name),
-                PermissionDescription.Create(p.Description)
-            )
+            Permission.CreateNew(PermissionName.Create(p.Name), PermissionDescription.Create(p.Description))
         );
 
-    private IEnumerable<PermissionSpecification> CreateSpecificationsForExistanceCheck(
+    private static IEnumerable<PermissionSpecification> CreateSpecificationsForExistanceCheck(
         IEnumerable<Permission> permissions
     ) => permissions.Select(p => new PermissionSpecification().WithName(p.Name.Value));
 
-    private async Task<IEnumerable<Permission>> GetExistingPermissions(
+    private Task<IEnumerable<Permission>> GetExistingPermissions(
         IEnumerable<PermissionSpecification> specifications,
         CancellationToken ct
-    ) => await repository.GetMany(specifications, ct);
+    ) => repository.GetMany(specifications, ct);
 }

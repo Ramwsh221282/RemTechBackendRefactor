@@ -11,10 +11,7 @@ namespace ParsersControl.Core.Features.SetParsedAmount;
 public sealed class SetParserAmountCommandHandler(ISubscribedParsersRepository repository)
     : ICommandHandler<SetParsedAmountCommand, SubscribedParser>
 {
-    public async Task<Result<SubscribedParser>> Execute(
-        SetParsedAmountCommand command,
-        CancellationToken ct = default
-    )
+    public async Task<Result<SubscribedParser>> Execute(SetParsedAmountCommand command, CancellationToken ct = default)
     {
         Result<SubscribedParser> parser = await GetRequiredParser(command, ct);
         Result<Unit> result = SetRequiredAmount(command, parser);
@@ -22,11 +19,7 @@ public sealed class SetParserAmountCommandHandler(ISubscribedParsersRepository r
         return saving.IsFailure ? saving.Error : parser.Value;
     }
 
-    private async Task<Result> SaveChanges(
-        Result<SubscribedParser> parser,
-        Result<Unit> result,
-        CancellationToken ct
-    )
+    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
     {
         if (parser.IsFailure)
             return Result.Failure(parser.Error);
@@ -36,22 +29,15 @@ public sealed class SetParserAmountCommandHandler(ISubscribedParsersRepository r
         return Result.Success();
     }
 
-    private async Task<Result<SubscribedParser>> GetRequiredParser(
+    private Task<Result<SubscribedParser>> GetRequiredParser(
         SetParsedAmountCommand command,
         CancellationToken ct = default
     )
     {
         SubscribedParserQuery query = new(Id: command.Id, WithLock: true);
-        return await SubscribedParser.FromRepository(repository, query, ct);
+        return SubscribedParser.FromRepository(repository, query, ct);
     }
 
-    private Result<Unit> SetRequiredAmount(
-        SetParsedAmountCommand command,
-        Result<SubscribedParser> parser
-    )
-    {
-        if (parser.IsFailure)
-            return parser.Error;
-        return parser.Value.AddParserAmount(command.Amount);
-    }
+    private static Result<Unit> SetRequiredAmount(SetParsedAmountCommand command, Result<SubscribedParser> parser) =>
+        parser.IsFailure ? parser.Error : parser.Value.AddParserAmount(command.Amount);
 }

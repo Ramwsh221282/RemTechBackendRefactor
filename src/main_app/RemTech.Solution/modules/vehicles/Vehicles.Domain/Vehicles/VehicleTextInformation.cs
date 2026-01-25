@@ -13,8 +13,8 @@ public sealed record VehicleTextInformation
 
     public static Result<VehicleTextInformation> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            return Error.Validation("Текстовая информация о технике не может быть пустой.");
-        return new VehicleTextInformation(value);
+        return string.IsNullOrWhiteSpace(value)
+            ? (Result<VehicleTextInformation>)Error.Validation("Текстовая информация о технике не может быть пустой.")
+            : (Result<VehicleTextInformation>)new VehicleTextInformation(value);
     }
 }

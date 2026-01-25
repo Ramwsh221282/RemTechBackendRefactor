@@ -1,20 +1,20 @@
 namespace RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 
 public sealed class CachingQueryHandler<TQuery, TResult>(
-    IEnumerable<IQueryExecutorWithCache<TQuery, TResult>> executors
-) : ICachingQueryHandler<TQuery, TResult>
-    where TQuery : IQuery
+	IEnumerable<IQueryExecutorWithCache<TQuery, TResult>> cachedHandlers,
+	IQueryHandler<TQuery, TResult> handler
+) : IQueryHandler<TQuery, TResult>
+	where TQuery : IQuery
 {
-    private readonly IEnumerable<IQueryExecutorWithCache<TQuery, TResult>> _executors = executors;
+	private readonly IEnumerable<IQueryExecutorWithCache<TQuery, TResult>> _executors = cachedHandlers;
 
-    public async Task<TResult> Handle(TQuery query, CancellationToken ct = default)
-    {
-        foreach (var executor in _executors)
-        {
-            TResult result = await executor.ExecuteWithCache(query, ct);
-            return result;
-        }
+	public Task<TResult> Handle(TQuery query, CancellationToken ct = default)
+	{
+		foreach (IQueryExecutorWithCache<TQuery, TResult> executor in _executors)
+		{
+			return executor.ExecuteWithCache(query, ct);
+		}
 
-        throw new Exception(); // This should never happen if at least one executor is registered
-    }
+		return handler.Handle(query, ct);
+	}
 }

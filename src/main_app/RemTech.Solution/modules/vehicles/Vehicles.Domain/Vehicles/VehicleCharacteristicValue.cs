@@ -13,8 +13,8 @@ public sealed record VehicleCharacteristicValue
 
     public static Result<VehicleCharacteristicValue> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            return Error.Validation("Значение характеристики не может быть пустым.");
-        return new VehicleCharacteristicValue(value);
+        return string.IsNullOrWhiteSpace(value)
+            ? (Result<VehicleCharacteristicValue>)Error.Validation("Значение характеристики не может быть пустым.")
+            : (Result<VehicleCharacteristicValue>)new VehicleCharacteristicValue(value);
     }
 }

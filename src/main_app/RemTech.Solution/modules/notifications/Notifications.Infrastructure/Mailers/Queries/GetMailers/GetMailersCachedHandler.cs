@@ -14,7 +14,7 @@ public sealed class GetMailersCachedHandler(
         CancellationToken ct = default
     )
     {
-        string cacheKey = "mailers_array";
+        const string cacheKey = "mailers_array";
         return await cache.GetOrCreateAsync(
             cacheKey,
             async cancellationToken => await inner.Handle(query, cancellationToken),

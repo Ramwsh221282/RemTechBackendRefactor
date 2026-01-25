@@ -10,29 +10,28 @@ using RemTech.SharedKernel.NN;
 namespace Vehicles.Infrastructure.Brands.Queries.GetBrands;
 
 public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
-    : IQueryHandler<GetBrandsQuery, IEnumerable<BrandResponse>>
+	: IQueryHandler<GetBrandsQuery, IEnumerable<BrandResponse>>
 {
-    public async Task<IEnumerable<BrandResponse>> Handle(
-        GetBrandsQuery query,
-        CancellationToken ct = default
-    )
-    {
-        (DynamicParameters parameters, string sql) = CreateSql(query);
-        CommandDefinition command = session.FormCommand(sql, parameters, ct);
-        NpgsqlConnection connection = await session.GetConnection(ct);
-        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
-        return await MapFromReader(reader, ct);
-    }
+	private const StringComparison STRING_COMPARISON = StringComparison.OrdinalIgnoreCase;
 
-    private (DynamicParameters parameters, string sql) CreateSql(GetBrandsQuery query)
-    {
-        List<string> filters = [];
-        filters.Add("i.deleted_at IS NULL");
-        DynamicParameters parameters = new();
+	public async Task<IEnumerable<BrandResponse>> Handle(GetBrandsQuery query, CancellationToken ct = default)
+	{
+		(DynamicParameters parameters, string sql) = CreateSql(query);
+		CommandDefinition command = session.FormCommand(sql, parameters, ct);
+		NpgsqlConnection connection = await session.GetConnection(ct);
+		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+		return await MapFromReader(reader, ct);
+	}
 
-        ApplyFilters(query, filters, parameters);
+	private (DynamicParameters parameters, string sql) CreateSql(GetBrandsQuery query)
+	{
+		List<string> filters = [];
+		filters.Add("i.deleted_at IS NULL");
+		DynamicParameters parameters = new();
 
-        string sql = $"""
+		ApplyFilters(query, filters, parameters);
+
+		string sql = $"""
             SELECT
             b.id as Id,
             b.name as Name
@@ -46,209 +45,214 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
             {CreateWhereClause(filters)}                                    
             GROUP BY b.id, b.name
             HAVING COUNT(v.id) > 0
-            {IncludeOrderBy(query, [IncludeTextSearchOrderBy])}
+            {IncludeOrderBy(query, [IncludeTextSearchOrderBy, IncludeFieldsOrderBy])}
             {IncludePagination(query)}
             """;
 
-        return (parameters, sql);
-    }
+		return (parameters, sql);
+	}
 
-    private static async Task<IEnumerable<BrandResponse>> MapFromReader(
-        DbDataReader reader,
-        CancellationToken ct
-    )
-    {
-        List<BrandResponse> brands = [];
-        while (await reader.ReadAsync(ct))
-        {
-            Guid id = reader.GetGuid(reader.GetOrdinal("Id"));
-            string name = reader.GetString(reader.GetOrdinal("Name"));
-            BrandResponse brand = new(id, name);
+	private static async Task<IEnumerable<BrandResponse>> MapFromReader(DbDataReader reader, CancellationToken ct)
+	{
+		List<BrandResponse> brands = [];
+		while (await reader.ReadAsync(ct))
+		{
+			brands.Add(CreateFromReader(reader));
+		}
 
-            if (ReaderHasColumn(reader, "VehiclesCount"))
-                brand.VehiclesCount = reader.GetInt32(reader.GetOrdinal("VehiclesCount"));
+		return brands;
+	}
 
-            if (ReaderHasColumn(reader, "TextSearchScore"))
-                brand.TextSearchScore = reader.GetFloat(reader.GetOrdinal("TextSearchScore"));
+	private static BrandResponse CreateFromReader(DbDataReader reader) =>
+		new()
+		{
+			Id = reader.GetGuid(reader.GetOrdinal("Id")),
+			Name = reader.GetString(reader.GetOrdinal("Name")),
+			VehiclesCount = ReaderHasColumn(reader, "VehiclesCount")
+				? reader.GetInt32(reader.GetOrdinal("VehiclesCount"))
+				: null,
+			TextSearchScore = ReaderHasColumn(reader, "TextSearchScore")
+				? reader.GetFloat(reader.GetOrdinal("TextSearchScore"))
+				: null,
+			TotalCount = ReaderHasColumn(reader, "TotalCount")
+				? reader.GetInt32(reader.GetOrdinal("TotalCount"))
+				: null,
+		};
 
-            if (ReaderHasColumn(reader, "TotalCount"))
-                brand.TotalCount = reader.GetInt32(reader.GetOrdinal("TotalCount"));
+	private static string IncludeAdditionals(GetBrandsQuery query, Func<GetBrandsQuery, string>[] includes)
+	{
+		string[] normalized = [.. includes.Select(i => i.Invoke(query)).Where(i => !string.IsNullOrWhiteSpace(i))];
+		return normalized.Length == 0 ? string.Empty : ", " + string.Join(", ", normalized);
+	}
 
-            brands.Add(brand);
-        }
+	private static string IncludeTextSearchOrderBy(GetBrandsQuery query) =>
+		string.IsNullOrWhiteSpace(query.TextSearch) ? string.Empty : "b.embedding <-> @embedding ASC";
 
-        return brands;
-    }
+	private static string IncludeFieldsOrderBy(GetBrandsQuery query)
+	{
+		if (query.SortFields is null)
+			return string.Empty;
 
-    private static string IncludeAdditionals(
-        GetBrandsQuery query,
-        Func<GetBrandsQuery, string>[] includes
-    )
-    {
-        string[] normalized =
-        [
-            .. includes.Select(i => i.Invoke(query)).Where(i => !string.IsNullOrWhiteSpace(i)),
-        ];
-        return normalized.Length == 0 ? string.Empty : ", " + string.Join(", ", normalized);
-    }
+		string orderByMode =
+			string.IsNullOrWhiteSpace(query.SortMode) ? "ASC"
+			: string.Equals(query.SortMode, "ASC", STRING_COMPARISON) ? "ASC"
+			: string.Equals(query.SortMode, "DESC", STRING_COMPARISON) ? "DESC"
+			: "ASC";
 
-    private static string IncludeTextSearchOrderBy(GetBrandsQuery query) =>
-        string.IsNullOrWhiteSpace(query.TextSearch)
-            ? string.Empty
-            : "b.embedding <-> @embedding ASC";
+		string[] orderings = [.. query.SortFields];
 
-    private static string IncludePagination(GetBrandsQuery query) =>
-        (query.Page.HasValue && query.PageSize.HasValue)
-            ? $"LIMIT {query.PageSize.Value} OFFSET {(query.Page.Value - 1) * query.PageSize.Value}"
-            : string.Empty;
+		List<string> clauses = [];
+		foreach (string clause in orderings)
+		{
+			if (string.Equals(clause, "name", STRING_COMPARISON))
+				clauses.Add($"b.name {orderByMode}");
 
-    private static string IncludeOrderBy(
-        GetBrandsQuery query,
-        Func<GetBrandsQuery, string>[] includes
-    )
-    {
-        string[] normalized =
-        [
-            .. includes.Select(i => i.Invoke(query)).Where(i => !string.IsNullOrWhiteSpace(i)),
-        ];
+			if (
+				string.Equals(clause, "vehicles-count", STRING_COMPARISON)
+				&& query.ContainsFieldInclude("vehicles-count")
+			)
+			{
+				clauses.Add($"VehiclesCount {orderByMode}");
+			}
 
-        return normalized.Length == 0 ? string.Empty : "ORDER BY " + string.Join(", ", normalized);
-    }
+			if (
+				string.Equals(clause, "vehicles-count", STRING_COMPARISON)
+				&& !query.ContainsFieldInclude("vehicles-count")
+			)
+			{
+				clauses.Add($"COUNT(v.id) {orderByMode}");
+			}
+		}
 
-    private static string IncludeVehiclesCount(GetBrandsQuery query) =>
-        !query.ContainsFieldInclude("vehicles-count")
-            ? string.Empty
-            : "COUNT(v.id) AS VehiclesCount";
+		return clauses.Count > 0 ? string.Join(", ", clauses) : string.Empty;
+	}
 
-    private static string IncludeBrandsTotalCount(GetBrandsQuery query) =>
-        !query.ContainsFieldInclude("brands-count")
-            ? string.Empty
-            : "COUNT(*) OVER() AS TotalCount";
+	private static string IncludePagination(GetBrandsQuery query) =>
+		(query.Page.HasValue && query.PageSize.HasValue)
+			? $"LIMIT {query.PageSize.Value} OFFSET {(query.Page.Value - 1) * query.PageSize.Value}"
+			: string.Empty;
 
-    private static string IncludeVehiclesTextSearchScore(GetBrandsQuery query) =>
-        !query.ContainsFieldInclude("text-search-score")
-            ? string.Empty
-            : "b.embedding <-> @embedding";
+	private static string IncludeOrderBy(GetBrandsQuery query, Func<GetBrandsQuery, string>[] includes)
+	{
+		string[] normalized = [.. includes.Select(i => i.Invoke(query)).Where(i => !string.IsNullOrWhiteSpace(i))];
 
-    private void ApplyFilters(
-        GetBrandsQuery query,
-        List<string> filters,
-        DynamicParameters parameters
-    )
-    {
-        ApplyMainQueryFilters(query, filters, parameters);
-        ApplySubQueryFilters(query, filters, parameters);
-    }
+		return normalized.Length == 0 ? string.Empty : "ORDER BY " + string.Join(", ", normalized);
+	}
 
-    private void ApplySubQueryFilters(
-        GetBrandsQuery query,
-        List<string> filters,
-        DynamicParameters parameters
-    )
-    {
-        List<string> subJoins = [];
-        List<string> subFilters = [];
+	private static string IncludeVehiclesCount(GetBrandsQuery query) =>
+		!query.ContainsFieldInclude("vehicles-count") ? string.Empty : "COUNT(v.id) AS VehiclesCount";
 
-        if (SomeCategoryFilterProvided(query))
-            subJoins.Add("INNER JOIN vehicles_module.categories ic ON ic.id = v.category_id");
+	private static string IncludeBrandsTotalCount(GetBrandsQuery query) =>
+		!query.ContainsFieldInclude("total-brands-count") ? string.Empty : "COUNT(*) OVER() AS TotalCount";
 
-        if (SomeModelFilterProvided(query))
-            subJoins.Add("INNER JOIN vehicles_module.models im ON im.id = v.model_id");
+	private static string IncludeVehiclesTextSearchScore(GetBrandsQuery query) =>
+		!query.ContainsFieldInclude("text-search-score") ? string.Empty : "b.embedding <-> @embedding";
 
-        if (query.CategoryId.HasValue && query.CategoryId != Guid.Empty)
-        {
-            subFilters.Add("ic.id = @category_id");
-            parameters.Add("category_id", query.CategoryId.Value, DbType.Guid);
-        }
+	private void ApplyFilters(GetBrandsQuery query, List<string> filters, DynamicParameters parameters)
+	{
+		ApplyMainQueryFilters(query, filters, parameters);
+		ApplySubQueryFilters(query, filters, parameters);
+	}
 
-        if (!string.IsNullOrWhiteSpace(query.CategoryName))
-        {
-            subFilters.Add("ic.name = @category_name");
-            parameters.Add("category_name", query.CategoryName, DbType.String);
-        }
+	private static void ApplySubQueryFilters(GetBrandsQuery query, List<string> filters, DynamicParameters parameters)
+	{
+		List<string> subJoins = [];
+		List<string> subFilters = [];
 
-        if (query.ModelId.HasValue && query.ModelId != Guid.Empty)
-        {
-            subFilters.Add("im.id = @model_id");
-            parameters.Add("model_id", query.ModelId.Value, DbType.Guid);
-        }
+		if (SomeCategoryFilterProvided(query))
+			subJoins.Add("INNER JOIN vehicles_module.categories ic ON ic.id = v.category_id");
 
-        if (!string.IsNullOrWhiteSpace(query.ModelName))
-        {
-            subFilters.Add("im.name = @model_name");
-            parameters.Add("model_name", query.ModelName, DbType.String);
-        }
+		if (SomeModelFilterProvided(query))
+			subJoins.Add("INNER JOIN vehicles_module.models im ON im.id = v.model_id");
 
-        if (subFilters.Count == 0)
-            return;
+		if (query.CategoryId.HasValue && query.CategoryId != Guid.Empty)
+		{
+			subFilters.Add("ic.id = @category_id");
+			parameters.Add("category_id", query.CategoryId.Value, DbType.Guid);
+		}
 
-        filters.Add(
-            $"""
-                   EXISTS (
-                SELECT 1
-                FROM vehicles_module.vehicles v
-                {string.Join(" ", subJoins)}
-                WHERE v.brand_id = b.id
-                AND {string.Join(" AND ", subFilters)}
-            )
-            """
-        );
-    }
+		if (!string.IsNullOrWhiteSpace(query.CategoryName))
+		{
+			subFilters.Add("ic.name = @category_name");
+			parameters.Add("category_name", query.CategoryName, DbType.String);
+		}
 
-    private void ApplyMainQueryFilters(
-        GetBrandsQuery query,
-        List<string> filters,
-        DynamicParameters parameters
-    )
-    {
-        if (query.Id != null && query.Id != Guid.Empty)
-        {
-            filters.Add("b.id = @brand_id");
-            parameters.Add("brand_id", query.Id, DbType.Guid);
-        }
+		if (query.ModelId.HasValue && query.ModelId != Guid.Empty)
+		{
+			subFilters.Add("im.id = @model_id");
+			parameters.Add("model_id", query.ModelId.Value, DbType.Guid);
+		}
 
-        if (!string.IsNullOrWhiteSpace(query.Name))
-        {
-            filters.Add("b.name = @brand_name");
-            parameters.Add("brand_name", query.Name, DbType.String);
-        }
+		if (!string.IsNullOrWhiteSpace(query.ModelName))
+		{
+			subFilters.Add("im.name = @model_name");
+			parameters.Add("model_name", query.ModelName, DbType.String);
+		}
 
-        if (!string.IsNullOrWhiteSpace(query.TextSearch))
-        {
-            Vector vector = new(embeddings.Generate(query.TextSearch));
-            parameters.Add("@embedding", vector);
-            parameters.Add("@text_search", query.TextSearch, DbType.String);
-            filters.Add(
-                """ 
-                (
-                b.embedding <-> @embedding <= 0.81
-                OR ts_rand_cd(to_tsvector('russian', b.name), to_tsquery('russian', @text_search)) > 0 
-                OR b.name ILIKE '%' || @text_search || '%'
-                )
-                """
-            );
-        }
-    }
+		if (subFilters.Count == 0)
+			return;
 
-    private static bool ReaderHasColumn(DbDataReader reader, string columnName)
-    {
-        for (int i = 0; i < reader.FieldCount; i++)
-        {
-            if (reader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
+		filters.Add(
+			$"""
+			       EXISTS (
+			    SELECT 1
+			    FROM vehicles_module.vehicles v
+			    {string.Join(" ", subJoins)}
+			    WHERE v.brand_id = b.id
+			    AND {string.Join(" AND ", subFilters)}
+			)
+			"""
+		);
+	}
 
-        return false;
-    }
+	private void ApplyMainQueryFilters(GetBrandsQuery query, List<string> filters, DynamicParameters parameters)
+	{
+		if (query.Id != null && query.Id != Guid.Empty)
+		{
+			filters.Add("b.id = @brand_id");
+			parameters.Add("brand_id", query.Id, DbType.Guid);
+		}
 
-    private static string CreateWhereClause(List<string> filters) =>
-        filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
+		if (!string.IsNullOrWhiteSpace(query.Name))
+		{
+			filters.Add("b.name = @brand_name");
+			parameters.Add("brand_name", query.Name, DbType.String);
+		}
 
-    private static bool SomeCategoryFilterProvided(GetBrandsQuery query) =>
-        !string.IsNullOrWhiteSpace(query.CategoryName)
-        || query.CategoryId.HasValue && query.CategoryId != Guid.Empty;
+		if (!string.IsNullOrWhiteSpace(query.TextSearch))
+		{
+			Vector vector = new(embeddings.Generate(query.TextSearch));
+			parameters.Add("@embedding", vector);
+			parameters.Add("@text_search", query.TextSearch, DbType.String);
+			filters.Add(
+				""" 
+				(
+				b.embedding <-> @embedding <= 0.81
+				OR ts_rand_cd(to_tsvector('russian', b.name), to_tsquery('russian', @text_search)) > 0 
+				OR b.name ILIKE '%' || @text_search || '%'
+				)
+				"""
+			);
+		}
+	}
 
-    private static bool SomeModelFilterProvided(GetBrandsQuery query) =>
-        !string.IsNullOrWhiteSpace(query.ModelName)
-        || query.ModelId.HasValue && query.ModelId != Guid.Empty;
+	private static bool ReaderHasColumn(DbDataReader reader, string columnName)
+	{
+		for (int i = 0; i < reader.FieldCount; i++)
+		{
+			if (reader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+				return true;
+		}
+
+		return false;
+	}
+
+	private static string CreateWhereClause(List<string> filters) =>
+		filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
+
+	private static bool SomeCategoryFilterProvided(GetBrandsQuery query) =>
+		!string.IsNullOrWhiteSpace(query.CategoryName) || (query.CategoryId.HasValue && query.CategoryId != Guid.Empty);
+
+	private static bool SomeModelFilterProvided(GetBrandsQuery query) =>
+		!string.IsNullOrWhiteSpace(query.ModelName) || (query.ModelId.HasValue && query.ModelId != Guid.Empty);
 }

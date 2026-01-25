@@ -3,16 +3,10 @@ using RemTech.SharedKernel.Web;
 
 namespace WebHostApplication.Middlewares;
 
-public sealed class ExceptionMiddleware
+public sealed class ExceptionMiddleware(RequestDelegate next, Serilog.ILogger logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly Serilog.ILogger _logger;
-
-    public ExceptionMiddleware(RequestDelegate next, Serilog.ILogger logger)
-    {
-        _next = next;
-        _logger = logger.ForContext<ExceptionMiddleware>();
-    }
+    private readonly RequestDelegate _next = next;
+    private readonly Serilog.ILogger _logger = logger.ForContext<ExceptionMiddleware>();
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -27,15 +21,11 @@ public sealed class ExceptionMiddleware
         }
     }
 
-    private async Task HandleException(HttpContext context)
+    private static Task HandleException(HttpContext context)
     {
-        Envelope envelope = new(
-            (int)HttpStatusCode.InternalServerError,
-            null,
-            "Internal server error"
-        );
+        Envelope envelope = new((int)HttpStatusCode.InternalServerError, null, "Internal server error");
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         context.Request.ContentType = "application/json";
-        await context.Response.WriteAsJsonAsync(envelope, context.RequestAborted);
+        return context.Response.WriteAsJsonAsync(envelope, context.RequestAborted);
     }
 }

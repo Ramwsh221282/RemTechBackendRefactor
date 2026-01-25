@@ -3,16 +3,10 @@
 public sealed record Unit
 {
     public static Unit Value { get; } = new();
-    
-    private Unit()
-    {
-        
-    }
 
-    public static Unit<T> UnitOf<T>(T value)
-    {
-        return  new Unit<T>(value);
-    }
+    private Unit() { }
+
+    public static Unit<T> UnitOf<T>(T value) => new(value);
 }
 
 public sealed record Unit<T>
@@ -26,7 +20,7 @@ public sealed record Unit<T>
 
     public async Task<Result<Unit>> Executed(Func<T, Task> operation)
     {
-        await  operation(_value);
+        await operation(_value);
         return Unit.Value;
     }
 }
@@ -41,9 +35,7 @@ public static class UnitModule
             return Unit.Value;
         }
 
-        public static Result<Unit> ValidationUnit(IEnumerable<string> errors)
-        {
-            return errors.Any() ? Error.Validation(errors) : Unit.Value;
-        }
+        public static Result<Unit> ValidationUnit(IEnumerable<string> errors) =>
+            errors.Any() ? Error.Validation(errors) : Unit.Value;
     }
 }

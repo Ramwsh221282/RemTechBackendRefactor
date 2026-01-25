@@ -5,7 +5,7 @@ namespace Vehicles.Domain.Vehicles;
 public sealed record VehiclePhoto
 {
     public string Path { get; }
-    
+
     private VehiclePhoto(string path)
     {
         Path = path;
@@ -13,8 +13,6 @@ public sealed record VehiclePhoto
 
     public static Result<VehiclePhoto> Create(string path)
     {
-        if (string.IsNullOrWhiteSpace(path))
-            return Error.Validation("Путь к фото техники не может быть пустым.");
-        return new VehiclePhoto(path);
+        return string.IsNullOrWhiteSpace(path) ? (Result<VehiclePhoto>)Error.Validation("Путь к фото техники не может быть пустым.") : (Result<VehiclePhoto>)new VehiclePhoto(path);
     }
 }

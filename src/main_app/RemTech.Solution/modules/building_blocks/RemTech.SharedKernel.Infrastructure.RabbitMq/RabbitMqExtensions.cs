@@ -22,7 +22,7 @@ public static class RabbitMqExtensions
         public void AddConsumersFromAssemblies(IEnumerable<Assembly> assemblies) =>
             services.Scan(x =>
                 x.FromAssemblies(assemblies)
-                    .AddClasses(classes => classes.AssignableTo(typeof(IConsumer)))
+                    .AddClasses(classes => classes.AssignableTo<IConsumer>())
                     .UsingRegistrationStrategy(RegistrationStrategy.Skip)
                     .AsSelfWithInterfaces()
                     .WithSingletonLifetime()

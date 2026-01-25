@@ -2,5 +2,5 @@
 
 public static class OutboxMessageTypes
 {
-    public const string EmailConfirmation = "email.confirmation";
+	public const string EmailConfirmation = "email.confirmation";
 }

@@ -13,10 +13,6 @@ public sealed class AccessToken
     public required string RawPermissionsString { get; set; }
     public required bool IsExpired { get; set; }
 
-    public AccessToken()
-    {
-        
-    }
-    
-    public bool ContainsPermission(string permission) => RawPermissionsString.Contains(permission);
+    public bool ContainsPermission(string permission) =>
+        RawPermissionsString.Contains(permission, StringComparison.OrdinalIgnoreCase);
 }

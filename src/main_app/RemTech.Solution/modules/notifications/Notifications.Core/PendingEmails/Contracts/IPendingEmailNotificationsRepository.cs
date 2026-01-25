@@ -2,13 +2,10 @@
 
 public interface IPendingEmailNotificationsRepository
 {
-    Task Add(PendingEmailNotification notification, CancellationToken ct = default);
-    Task<PendingEmailNotification[]> GetMany(
-        PendingEmailNotificationsSpecification spec,
-        CancellationToken ct = default
-    );
-    Task<int> Remove(
-        IEnumerable<PendingEmailNotification> notifications,
-        CancellationToken ct = default
-    );
+	public Task Add(PendingEmailNotification notification, CancellationToken ct = default);
+	public Task<PendingEmailNotification[]> GetMany(
+		PendingEmailNotificationsSpecification spec,
+		CancellationToken ct = default
+	);
+	public Task<int> Remove(IEnumerable<PendingEmailNotification> notifications, CancellationToken ct = default);
 }

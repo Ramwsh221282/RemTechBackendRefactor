@@ -10,7 +10,7 @@ public readonly record struct CategoryId
     {
         Id = Guid.NewGuid();
     }
-    
+
     private CategoryId(Guid id)
     {
         Id = id;
@@ -18,8 +18,6 @@ public readonly record struct CategoryId
 
     public static Result<CategoryId> Create(Guid id)
     {
-        if (id == Guid.Empty)
-            return Error.Validation("Идентификатор категории не может быть пустым.");
-        return new CategoryId(id);
+        return id == Guid.Empty ? (Result<CategoryId>)Error.Validation("Идентификатор категории не может быть пустым.") : (Result<CategoryId>)new CategoryId(id);
     }
 }

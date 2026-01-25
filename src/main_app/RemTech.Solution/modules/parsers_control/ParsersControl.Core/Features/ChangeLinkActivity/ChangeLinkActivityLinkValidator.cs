@@ -7,9 +7,9 @@ namespace ParsersControl.Core.Features.ChangeLinkActivity;
 
 public sealed class ChangeLinkActivityLinkValidator : AbstractValidator<ChangeLinkActivityCommand>
 {
-    public ChangeLinkActivityLinkValidator()
-    {
-        RuleFor(x => x.ParserId).MustBeValid(SubscribedParserId.Create);
-        RuleFor(x => x.LinkId).MustBeValid(SubscribedParserLinkId.From);
-    }
+	public ChangeLinkActivityLinkValidator()
+	{
+		RuleFor(x => x.ParserId).MustBeValid(SubscribedParserId.Create);
+		RuleFor(x => x.LinkId).MustBeValid(SubscribedParserLinkId.From);
+	}
 }

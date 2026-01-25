@@ -11,37 +11,37 @@ using Testcontainers.RabbitMq;
 
 namespace ParsersControl.Tests;
 
-public sealed class IntegrationalTestsFixture : WebApplicationFactory<ParsersControl.WebApi.Program>, IAsyncLifetime
+public sealed class IntegrationalTestsFixture : WebApplicationFactory<WebApi.Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
-    private readonly RabbitMqContainer _rabbitContainer = new RabbitMqBuilder().BuildRabbitMqContainer();
+	private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
+	private readonly RabbitMqContainer _rabbitContainer = new RabbitMqBuilder().BuildRabbitMqContainer();
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        base.ConfigureWebHost(builder);
+	public async Task InitializeAsync()
+	{
+		await _dbContainer.StartAsync();
+		await _rabbitContainer.StartAsync();
+		Services.ApplyModuleMigrations();
+	}
 
-        builder.ConfigureServices(s =>
-        {
-            s.AddPostgres();
-            s.RegisterLogging();
-            s.ReRegisterNpgSqlOptions(_dbContainer);
-            s.ReRegisterRabbitMqOptions(_rabbitContainer);
-            s.AddScoped<IOnParserSubscribedListener, FakeOnParserSubscribedListener>();
-            s.AddScoped<IOnParserStartedListener, FakeOnParserWorkStartedListener>();
-            s.AddTransient<FakeParserSubscribeProducer>();
-        });
-    }
+	public new async Task DisposeAsync()
+	{
+		await _dbContainer.StopAsync();
+		await _rabbitContainer.StopAsync();
+	}
 
-    public async Task InitializeAsync()
-    {
-        await _dbContainer.StartAsync();
-        await _rabbitContainer.StartAsync();
-        Services.ApplyModuleMigrations();
-    }
+	protected override void ConfigureWebHost(IWebHostBuilder builder)
+	{
+		base.ConfigureWebHost(builder);
 
-    public new async Task DisposeAsync()
-    {
-        await _dbContainer.StopAsync();
-        await _rabbitContainer.StopAsync();
-    }
+		builder.ConfigureServices(s =>
+		{
+			s.AddPostgres();
+			s.RegisterLogging();
+			s.ReRegisterNpgSqlOptions(_dbContainer);
+			s.ReRegisterRabbitMqOptions(_rabbitContainer);
+			s.AddScoped<IOnParserSubscribedListener, FakeOnParserSubscribedListener>();
+			s.AddScoped<IOnParserStartedListener, FakeOnParserWorkStartedListener>();
+			s.AddTransient<FakeParserSubscribeProducer>();
+		});
+	}
 }

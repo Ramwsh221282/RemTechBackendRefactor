@@ -10,21 +10,23 @@
     </p-button>
   </div>
   <div class="header-logo-part self-end">
-    <p-button
-      *ngIf="!isAuthorized"
-      [icon]="'pi pi-sign-in'"
-      [fluid]="true"
-      [size]="'small'"
-      [routerLink]="'sign-in'"
-      label="Авторизация">
-    </p-button>
-    <p-button
-      *ngIf="isAuthorized"
-      [icon]="'pi pi-user'"
-      [routerLink]="'user'"
-      [fluid]="true"
-      [size]="'small'"
-      label="Профиль">
-    </p-button>
+    @if (!isAuthorized) {
+      <p-button
+        [icon]="'pi pi-sign-in'"
+        [fluid]="true"
+        [size]="'small'"
+        [routerLink]="'sign-in'"
+        label="Авторизация">
+      </p-button>
+    }
+    @if (isAuthorized) {
+      <p-button
+        [icon]="'pi pi-user'"
+        [routerLink]="'user'"
+        [fluid]="true"
+        [size]="'small'"
+        label="Профиль">
+      </p-button>
+    }
   </div>
 </nav>

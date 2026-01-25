@@ -16,8 +16,8 @@ public sealed record LocationName
     {
         if (string.IsNullOrWhiteSpace(value))
             return Error.Validation("Имя локации не может быть пустым.");
-        if (value.Length > MaxLength)
-            return Error.Validation($"Имя локации не может быть больше {MaxLength} символов.");
-        return new LocationName(value);
+        return value.Length > MaxLength
+            ? (Result<LocationName>)Error.Validation($"Имя локации не может быть больше {MaxLength} символов.")
+            : (Result<LocationName>)new LocationName(value);
     }
 }

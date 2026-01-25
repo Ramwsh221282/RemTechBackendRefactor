@@ -17,7 +17,7 @@ namespace WebHostApplication.Modules.notifications;
 
 [ApiController]
 [Route("api/notifications")]
-public class NotificationsController : Controller
+public class NotificationsController : ControllerBase
 {
     [VerifyToken]
     [NotificationsManagementPermission]
@@ -25,7 +25,7 @@ public class NotificationsController : Controller
     public async Task<Envelope> GetMailers(
         [FromServices] IQueryHandler<GetMailersQuery, IEnumerable<MailerResponse>> handler,
         CancellationToken ct
-        )
+    )
     {
         GetMailersQuery query = new();
         IEnumerable<MailerResponse> result = await handler.Handle(query, ct);
@@ -39,13 +39,13 @@ public class NotificationsController : Controller
         [FromServices] ICommandHandler<DeleteMailerCommand, Guid> handler,
         [FromRoute(Name = "id")] Guid id,
         CancellationToken ct
-        )
+    )
     {
         DeleteMailerCommand command = new(id);
         Result<Guid> result = await handler.Execute(command, ct);
         return result.AsEnvelope();
     }
-    
+
     [VerifyToken]
     [NotificationsManagementPermission]
     [HttpPost("mailers/{id:guid}/test-message")]
@@ -53,13 +53,13 @@ public class NotificationsController : Controller
         [FromServices] ICommandHandler<AddPendingEmailCommand, Unit> handler,
         [FromBody] SendTestMessageRequest request,
         CancellationToken ct
-        )
+    )
     {
         AddPendingEmailCommand command = new(request.Recipient, "Тестовое сообщение", "Тестовая отправка сообщения.");
         Result<Unit> result = await handler.Execute(command, ct);
         return EnvelopedResultsExtensions.AsEnvelope(result);
     }
-    
+
     [VerifyToken]
     [NotificationsManagementPermission]
     [HttpGet("mailers/{id:guid}")]
@@ -67,13 +67,13 @@ public class NotificationsController : Controller
         [FromRoute(Name = "id")] Guid id,
         [FromServices] IQueryHandler<GetMailerQuery, MailerResponse?> handler,
         CancellationToken ct
-        )
+    )
     {
         GetMailerQuery query = new(id);
         MailerResponse? mailer = await handler.Handle(query, ct);
         return mailer.NotFoundOrOk("Не найдена конфигурация почтового сервиса.");
     }
-    
+
     [VerifyToken]
     [NotificationsManagementPermission]
     [HttpPost("mailers")]
@@ -81,7 +81,7 @@ public class NotificationsController : Controller
         [FromBody] AddMailerRequest request,
         [FromServices] ICommandHandler<AddMailerCommand, Mailer> handler,
         CancellationToken ct
-        )
+    )
     {
         AddMailerCommand command = new(request.SmtpPassword, request.Email);
         Result<Mailer> result = await handler.Execute(command, ct);
@@ -96,7 +96,7 @@ public class NotificationsController : Controller
         [FromBody] ChangeMailerRequest request,
         [FromServices] ICommandHandler<ChangeCredentialsCommand, Mailer> handler,
         CancellationToken ct
-        )
+    )
     {
         ChangeCredentialsCommand command = new(id, request.SmtpPassword, request.Email);
         Result<Mailer> result = await handler.Execute(command, ct);

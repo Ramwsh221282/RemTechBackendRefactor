@@ -25,7 +25,8 @@ public sealed class Account(
             account.Login,
             account.ActivationStatus,
             account.Permissions.Clone()
-        ) { }
+        )
+    { }
 
     private List<IDomainEvent> _events = [];
     public AccountId Id { get; private set; } = id;
@@ -46,10 +47,7 @@ public sealed class Account(
         return Result.Success(Unit.Value);
     }
 
-    public Result<AccountTicket> CreateTicket(string purpose)
-    {
-        return AccountTicket.New(this, purpose);
-    }
+    public Result<AccountTicket> CreateTicket(string purpose) => AccountTicket.New(this, purpose);
 
     public Result<Unit> AddPermissions(IEnumerable<Permission> permissions)
     {
@@ -61,9 +59,7 @@ public sealed class Account(
                 errors.Add(add.Error.Message);
         }
 
-        return errors.Count != 0
-            ? (Result<Unit>)Error.Conflict(string.Join(", ", errors))
-            : Result.Success(Unit.Value);
+        return errors.Count != 0 ? (Result<Unit>)Error.Conflict(string.Join(", ", errors)) : Result.Success(Unit.Value);
     }
 
     public Result<Unit> AddPermission(Permission permission)

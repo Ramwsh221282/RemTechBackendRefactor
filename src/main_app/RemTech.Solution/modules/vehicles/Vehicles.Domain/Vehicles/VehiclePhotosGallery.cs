@@ -5,7 +5,7 @@ namespace Vehicles.Domain.Vehicles;
 public sealed record VehiclePhotosGallery
 {
     public IReadOnlyList<VehiclePhoto> Photos { get; }
-    
+
     private VehiclePhotosGallery(IReadOnlyList<VehiclePhoto> photos)
     {
         Photos = photos;
@@ -13,8 +13,6 @@ public sealed record VehiclePhotosGallery
 
     public static Result<VehiclePhotosGallery> Create(IReadOnlyList<VehiclePhoto> photos)
     {
-        if (photos.Count == 0)
-            return Error.Validation("Фотографии техники не могут отсутствовать.");
-        return new VehiclePhotosGallery(photos);
+        return photos.Count == 0 ? (Result<VehiclePhotosGallery>)Error.Validation("Фотографии техники не могут отсутствовать.") : (Result<VehiclePhotosGallery>)new VehiclePhotosGallery(photos);
     }
 }

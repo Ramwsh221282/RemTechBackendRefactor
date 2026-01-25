@@ -33,26 +33,21 @@ public sealed class DeleteLinkFromParserHandler(ISubscribedParsersRepository rep
             return Result.Failure(parser.Error);
         if (link.IsFailure)
             return Result.Failure(link.Error);
-        await repository.Save(parser.Value);
+        await repository.Save(parser.Value, ct);
         return Result.Success();
     }
 
-    private async Task<Result<SubscribedParser>> GetRequiredParser(
-        Guid parserId,
-        CancellationToken ct
-    )
+    private Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
     {
         SubscribedParserQuery query = new(Id: parserId, WithLock: true);
-        return await SubscribedParser.FromRepository(repository, query, ct);
+        return SubscribedParser.FromRepository(repository, query, ct);
     }
 
-    private Result<SubscribedParserLink> RemoveLink(Result<SubscribedParser> parser, Guid linkId)
+    private static Result<SubscribedParserLink> RemoveLink(Result<SubscribedParser> parser, Guid linkId)
     {
         if (parser.IsFailure)
             return Result.Failure<SubscribedParserLink>(parser.Error);
         Result<SubscribedParserLink> link = parser.Value.FindLink(linkId);
-        if (link.IsFailure)
-            return Result.Failure<SubscribedParserLink>(link.Error);
-        return parser.Value.RemoveLink(link.Value);
+        return link.IsFailure ? Result.Failure<SubscribedParserLink>(link.Error) : parser.Value.RemoveLink(link.Value);
     }
 }

@@ -10,10 +10,14 @@ namespace Notifications.Infrastructure.EmailSending;
 public sealed class EmailSender(Serilog.ILogger logger)
 {
     private Serilog.ILogger Logger { get; } = logger.ForContext<EmailSender>();
-    
+
     private const int Port = 587;
-    
-    public async Task<bool> Process(Mailer mailer, PendingEmailNotification notification, CancellationToken ct = default)
+
+    public async Task<bool> Process(
+        Mailer mailer,
+        PendingEmailNotification notification,
+        CancellationToken ct = default
+    )
     {
         ImmutableString smtpHost = new(mailer.Credentials.SmtpHost);
         ImmutableString smtpPassword = new(mailer.Credentials.SmtpPassword);
@@ -35,7 +39,7 @@ public sealed class EmailSender(Serilog.ILogger logger)
             Logger.Information("Email sent successfully. Recipient: {Recipient}", notification.Recipient);
             return true;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Logger.Fatal(e, "Error sending email. Recipient: {Recipient}", notification.Recipient);
             return false;

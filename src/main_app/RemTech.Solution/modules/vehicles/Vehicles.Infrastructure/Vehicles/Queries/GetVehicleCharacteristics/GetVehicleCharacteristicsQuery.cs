@@ -10,21 +10,24 @@ public sealed class GetVehicleCharacteristicsQuery : IQuery
 
     public GetVehicleCharacteristicsQuery ForBrand(Guid? brandId)
     {
-        if (BrandId.HasValue) return this;
+        if (BrandId.HasValue)
+            return this;
         BrandId = brandId;
         return this;
     }
-    
+
     public GetVehicleCharacteristicsQuery ForCategory(Guid? categoryId)
     {
-        if (CategoryId.HasValue) return this;
+        if (CategoryId.HasValue)
+            return this;
         CategoryId = categoryId;
         return this;
     }
-    
+
     public GetVehicleCharacteristicsQuery ForModel(Guid? modelId)
     {
-        if (ModelId.HasValue) return this;
+        if (ModelId.HasValue)
+            return this;
         ModelId = modelId;
         return this;
     }

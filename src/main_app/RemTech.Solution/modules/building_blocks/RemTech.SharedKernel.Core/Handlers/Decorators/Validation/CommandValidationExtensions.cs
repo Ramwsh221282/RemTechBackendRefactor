@@ -9,9 +9,8 @@ public static class CommandValidationExtensions
     public static IRuleBuilderOptionsConditions<T, TProperty> MustBeValid<T, TProperty>(
         this IRuleBuilderInitial<T, TProperty> builder,
         Func<TProperty, Result> validation
-    )
-    {
-        return builder.Custom(
+    ) =>
+        builder.Custom(
             (validate, context) =>
             {
                 Result result = validation(validate);
@@ -22,20 +21,15 @@ public static class CommandValidationExtensions
                 }
             }
         );
-    }
 
-    public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> EachMustFollow<
-        T,
-        TProperty
-    >(
+    public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> EachMustFollow<T, TProperty>(
         this IRuleBuilderInitial<T, IEnumerable<TProperty>> builder,
         Func<TProperty, Result>[] validations
-    )
-    {
-        return builder.Custom(
+    ) =>
+        builder.Custom(
             (validate, context) =>
             {
-                var failures = new List<ValidationFailure>();
+                List<ValidationFailure> failures = [];
                 foreach (TProperty item in validate)
                 {
                     foreach (Func<TProperty, Result> validation in validations)
@@ -55,20 +49,15 @@ public static class CommandValidationExtensions
                 }
             }
         );
-    }
 
-    public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> AllMustBeValid<
-        T,
-        TProperty
-    >(
+    public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> AllMustBeValid<T, TProperty>(
         this IRuleBuilderInitial<T, IEnumerable<TProperty>> builder,
         Func<TProperty, Result> validation
-    )
-    {
-        return builder.Custom(
+    ) =>
+        builder.Custom(
             (validate, context) =>
             {
-                var failures = new List<ValidationFailure>();
+                List<ValidationFailure> failures = [];
                 foreach (TProperty item in validate)
                 {
                     Result result = validation(item);
@@ -85,5 +74,4 @@ public static class CommandValidationExtensions
                 }
             }
         );
-    }
 }

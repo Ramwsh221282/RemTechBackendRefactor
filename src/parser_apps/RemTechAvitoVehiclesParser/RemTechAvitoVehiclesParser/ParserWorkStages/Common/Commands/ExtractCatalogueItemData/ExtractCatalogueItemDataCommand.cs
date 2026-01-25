@@ -1,4 +1,5 @@
-﻿using AvitoFirewallBypass;
+﻿using System.Security.Cryptography.Xml;
+using AvitoFirewallBypass;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing;
@@ -8,11 +9,18 @@ namespace RemTechAvitoVehiclesParser.ParserWorkStages.Common.Commands.ExtractCat
 public sealed class ExtractCatalogueItemDataCommand(
     Func<Task<IPage>> pageSource,
     CataloguePageUrl pagedUrl,
-    AvitoBypassFactory bypassFactory) : IExtractCatalogueItemDataCommand
+    AvitoBypassFactory bypassFactory
+) : IExtractCatalogueItemDataCommand
 {
     public async Task<AvitoVehicle[]> Handle()
     {
-        const string javaScript = @"
+        CataloguePageUrl normalized = pagedUrl with
+        {
+            Url = pagedUrl.Url.Contains('?') ? pagedUrl.Url : pagedUrl.Url.Replace("&p=", "?p="),
+        };
+
+        const string javaScript =
+            @"
                                   () => {
                                   const photoExtractFn = (item) => {
                                     const photoListSelector = item.querySelector('div[data-marker=""item-image""]') 
@@ -49,28 +57,37 @@ public sealed class ExtractCatalogueItemDataCommand(
                                   });
                                   return data;
                                   }";
-        
+
         IPage page = await pageSource();
-        await page.PerformQuickNavigation(pagedUrl.Url);
-        if (!await bypassFactory.Create(page).Bypass()) 
+        await page.PerformQuickNavigation(normalized.Url);
+        if (!await bypassFactory.Create(page).Bypass())
             throw new InvalidOperationException("Unable to bypass Avito firewall");
-        
+
         await new AvitoImagesHoverer(page).Invoke();
         await page.ResilientWaitForSelector("div[id=\"bx_serp-item-list\"]");
-        
-        return (await page.EvaluateFunctionAsync<JsonConvertedCatalogueItemData[]>(javaScript))
+
+        return
+        [
+            .. (await page.EvaluateFunctionAsync<JsonConvertedCatalogueItemData[]>(javaScript))
                 .Where(d => d.AllPropertiesSet())
-                .Select(d => AvitoVehicle.New().Transform(d, 
-                    map => AvitoVehicle.RepresentedByCatalogueItem(
-                        map,
-                        idMap: itemData => itemData.Id!,
-                        urlMap: itemData => itemData.Url!,
-                        priceMap: itemData => long.Parse(itemData.Price!),
-                        isNdsMap: itemData => itemData.IsNds,
-                        addressMap: itemData => itemData.Address!,
-                        photosMap: itemData => itemData.Photos!
-                    )))
-                .ToArray();
+                .Select(d =>
+                    AvitoVehicle
+                        .New()
+                        .Transform(
+                            d,
+                            map =>
+                                AvitoVehicle.RepresentedByCatalogueItem(
+                                    map,
+                                    idMap: itemData => itemData.Id!,
+                                    urlMap: itemData => itemData.Url!,
+                                    priceMap: itemData => long.Parse(itemData.Price!),
+                                    isNdsMap: itemData => itemData.IsNds,
+                                    addressMap: itemData => itemData.Address!,
+                                    photosMap: itemData => itemData.Photos!
+                                )
+                        )
+                ),
+        ];
     }
 
     private sealed class JsonConvertedCatalogueItemData
@@ -81,6 +98,8 @@ public sealed class ExtractCatalogueItemDataCommand(
         public string? Id { get; set; }
         public string? Address { get; set; }
         public string[]? Photos { get; set; }
-        public bool AllPropertiesSet() => Url != null && Price != null && Id != null && Address != null && Photos != null;
+
+        public bool AllPropertiesSet() =>
+            Url != null && Price != null && Id != null && Address != null && Photos != null;
     }
 }

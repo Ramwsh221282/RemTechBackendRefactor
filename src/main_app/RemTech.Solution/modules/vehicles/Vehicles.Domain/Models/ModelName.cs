@@ -16,8 +16,6 @@ public sealed record ModelName
     {
         if (string.IsNullOrWhiteSpace(value))
             return Error.Validation("Имя модели не может быть пустым.");
-        if (value.Length > MaxLength)
-            return Error.Validation($"Имя модели не может быть больше {MaxLength} символов.");
-        return new ModelName(value);
+        return value.Length > MaxLength ? (Result<ModelName>)Error.Validation($"Имя модели не может быть больше {MaxLength} символов.") : (Result<ModelName>)new ModelName(value);
     }
 }

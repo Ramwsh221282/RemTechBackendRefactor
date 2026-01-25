@@ -11,10 +11,6 @@ public sealed record AccountLogin
         Value = value;
     }
 
-    public static Result<AccountLogin> Create(string value)
-    {
-        return string.IsNullOrWhiteSpace(value)
-            ? Error.Validation("Логин не может быть пустым.")
-            : new AccountLogin(value);
-    }
+    public static Result<AccountLogin> Create(string value) =>
+        string.IsNullOrWhiteSpace(value) ? Error.Validation("Логин не может быть пустым.") : new AccountLogin(value);
 }

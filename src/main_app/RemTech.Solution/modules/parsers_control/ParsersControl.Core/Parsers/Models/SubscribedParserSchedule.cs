@@ -17,11 +17,7 @@ public readonly record struct SubscribedParserSchedule
         WaitDays = null;
     }
 
-    private SubscribedParserSchedule(
-        DateTime? startedAt, 
-        DateTime? finishedAt,
-        DateTime? nextRun,
-        int? waitDays)
+    private SubscribedParserSchedule(DateTime? startedAt, DateTime? finishedAt, DateTime? nextRun, int? waitDays)
     {
         StartedAt = startedAt;
         FinishedAt = finishedAt;
@@ -29,27 +25,19 @@ public readonly record struct SubscribedParserSchedule
         WaitDays = waitDays;
     }
 
-    public Result<SubscribedParserSchedule> WithStartedAt(DateTime startedAt)
-    {
-        return Create(startedAt, FinishedAt, NextRun, WaitDays);
-    }
+    public Result<SubscribedParserSchedule> WithStartedAt(DateTime startedAt) =>
+        Create(startedAt, FinishedAt, NextRun, WaitDays);
 
-    public SubscribedParserSchedule WithNextRun(DateTime nextRun)
-    {
-        return Create(StartedAt, FinishedAt, nextRun, WaitDays);
-    }
-    
+    public SubscribedParserSchedule WithNextRun(DateTime nextRun) => Create(StartedAt, FinishedAt, nextRun, WaitDays);
+
     public Result<SubscribedParserSchedule> WithFinishedAt(DateTime finishedAt)
     {
         Result<SubscribedParserSchedule> result = Create(StartedAt, finishedAt, NextRun, WaitDays);
-        if (result.IsFailure) return result.Error;
-        return result.Value.AdjustNextRun();
+        return result.IsFailure ? (Result<SubscribedParserSchedule>)result.Error : (Result<SubscribedParserSchedule>)result.Value.AdjustNextRun();
     }
 
-    public Result<SubscribedParserSchedule> WithWaitDays(int waitDays)
-    {
-        return Create(StartedAt, FinishedAt, NextRun, waitDays);
-    }
+    public Result<SubscribedParserSchedule> WithWaitDays(int waitDays) =>
+        Create(StartedAt, FinishedAt, NextRun, waitDays);
 
     private SubscribedParserSchedule AdjustNextRun()
     {
@@ -58,24 +46,22 @@ public readonly record struct SubscribedParserSchedule
         DateTime newNextRun = FinishedAt.Value.AddDays(WaitDays.Value);
         return Create(StartedAt, FinishedAt, newNextRun, WaitDays);
     }
-    
-    public static SubscribedParserSchedule New()
-    {
-        return new() { WaitDays = 1 };
-    }
+
+    public static SubscribedParserSchedule New() => new() { WaitDays = 1 };
 
     public static Result<SubscribedParserSchedule> Create(
         DateTime? startedAt,
         DateTime? finishedAt,
         DateTime? nextRun,
-        int? waitDays)
+        int? waitDays
+    )
     {
         if (waitDays != null)
         {
             if (waitDays.Value < 1 || waitDays.Value > MaxWaitDaysAmount)
                 return Error.Validation($"Дни ожидания не могут быть менее 1 или более {MaxWaitDaysAmount}");
         }
-        
-        return new SubscribedParserSchedule(startedAt, finishedAt, nextRun, waitDays);        
+
+        return new SubscribedParserSchedule(startedAt, finishedAt, nextRun, waitDays);
     }
 }

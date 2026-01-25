@@ -15,10 +15,8 @@ public sealed class NewAccountRegisteredProducer(RabbitMqProducer producer, Seri
     private RabbitMqProducer Producer { get; } = producer;
     private Serilog.ILogger Logger { get; } = logger.ForContext<NewAccountRegisteredProducer>();
 
-    public bool CanPublish(IdentityOutboxMessage message)
-    {
-        return message.Type == AccountOutboxMessageTypes.NewAccountCreated;
-    }
+    public bool CanPublish(IdentityOutboxMessage message) =>
+        message.Type == AccountOutboxMessageTypes.NewAccountCreated;
 
     public async Task Publish(IdentityOutboxMessage message, CancellationToken ct = default)
     {
@@ -29,6 +27,6 @@ public sealed class NewAccountRegisteredProducer(RabbitMqProducer producer, Seri
         Logger.Information("Published account registration message for {Email}", payload.Email);
     }
 
-    private NewAccountRegisteredOutboxMessagePayload GetPayload(IdentityOutboxMessage message) =>
+    private static NewAccountRegisteredOutboxMessagePayload GetPayload(IdentityOutboxMessage message) =>
         JsonSerializer.Deserialize<NewAccountRegisteredOutboxMessagePayload>(message.Payload)!;
 }

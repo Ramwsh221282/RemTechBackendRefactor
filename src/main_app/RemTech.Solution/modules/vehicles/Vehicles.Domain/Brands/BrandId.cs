@@ -10,16 +10,14 @@ public readonly record struct BrandId
     {
         Id = Guid.NewGuid();
     }
-    
+
     private BrandId(Guid id)
     {
         Id = id;
     }
-    
+
     public static Result<BrandId> Create(Guid id)
     {
-        if (id == Guid.Empty)
-            return Error.Validation("Идентификатор бренда не может быть пустым.");
-        return new BrandId(id);
+        return id == Guid.Empty ? (Result<BrandId>)Error.Validation("Идентификатор бренда не может быть пустым.") : (Result<BrandId>)new BrandId(id);
     }
 }

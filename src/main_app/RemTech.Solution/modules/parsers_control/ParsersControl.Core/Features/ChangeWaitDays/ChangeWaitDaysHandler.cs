@@ -11,10 +11,7 @@ namespace ParsersControl.Core.Features.ChangeWaitDays;
 public sealed class ChangeWaitDaysHandler(ISubscribedParsersRepository repository)
     : ICommandHandler<ChangeWaitDaysCommand, SubscribedParser>
 {
-    public async Task<Result<SubscribedParser>> Execute(
-        ChangeWaitDaysCommand command,
-        CancellationToken ct = default
-    )
+    public async Task<Result<SubscribedParser>> Execute(ChangeWaitDaysCommand command, CancellationToken ct = default)
     {
         Result<SubscribedParser> parser = await GetRequiredParser(command.Id, ct);
         Result<Unit> result = SetRequiredWaitDays(command.WaitDays, parser);
@@ -36,16 +33,14 @@ public sealed class ChangeWaitDaysHandler(ISubscribedParsersRepository repositor
         return Unit.Value;
     }
 
-    private async Task<Result<SubscribedParser>> GetRequiredParser(Guid id, CancellationToken ct)
+    private Task<Result<SubscribedParser>> GetRequiredParser(Guid id, CancellationToken ct)
     {
         SubscribedParserQuery query = new SubscribedParserQuery().WithId(id).RequireLock();
-        return await SubscribedParser.FromRepository(repository, query, ct);
+        return SubscribedParser.FromRepository(repository, query, ct);
     }
 
-    private Result<Unit> SetRequiredWaitDays(int days, Result<SubscribedParser> parser)
+    private static Result<Unit> SetRequiredWaitDays(int days, Result<SubscribedParser> parser)
     {
-        if (parser.IsFailure)
-            return parser.Error;
-        return parser.Value.ChangeScheduleWaitDays(days);
+        return parser.IsFailure ? (Result<Unit>)parser.Error : parser.Value.ChangeScheduleWaitDays(days);
     }
 }

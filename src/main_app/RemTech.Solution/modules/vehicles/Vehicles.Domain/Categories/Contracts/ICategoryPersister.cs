@@ -4,5 +4,5 @@ namespace Vehicles.Domain.Categories.Contracts;
 
 public interface ICategoryPersister
 {
-    Task<Result<Category>> Save(Category category, CancellationToken ct = default);
+    public Task<Result<Category>> Save(Category category, CancellationToken ct = default);
 }

@@ -13,7 +13,7 @@ public sealed class ShouldHaveAddItemsToFavoritesPermissionFilter(IJwtTokenManag
             await context.HttpContext.WriteForbiddenResult();
             return;
         }
-        
+
         await next();
     }
 }

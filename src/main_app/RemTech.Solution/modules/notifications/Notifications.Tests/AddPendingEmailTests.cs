@@ -5,15 +5,15 @@ namespace Notifications.Tests;
 public sealed class AddPendingEmailTests(IntegrationalTestsFactory factory) : IClassFixture<IntegrationalTestsFactory>
 {
     private IServiceProvider Services { get; } = factory.Services;
-    
+
     [Fact]
     private async Task Add_Pending_Email_Success_Ensure_Created()
     {
         await Task.Delay(TimeSpan.FromSeconds(10));
         Guid accountId = Guid.NewGuid();
         Guid ticketId = Guid.NewGuid();
-        string email = "testEmail@mail.com";
-        string login = "Test user login";
+        const string email = "testEmail@mail.com";
+        const string login = "Test user login";
         await Services.PublishOnNewAccountCreated(accountId, ticketId, email, login);
         await Task.Delay(TimeSpan.FromSeconds(10));
         PendingEmailNotification[] pendingEmails = await Services.GetPendingEmailNotifications();

@@ -8,11 +8,11 @@ public sealed class AddPendingEmailValidator : AbstractValidator<AddPendingEmail
     public AddPendingEmailValidator()
     {
         RuleFor(x => new
-            {
-                x.Recipient,
-                x.Subject,
-                x.Body,
-            })
+        {
+            x.Recipient,
+            x.Subject,
+            x.Body,
+        })
             .MustBeValid(o => PendingEmailNotification.CreateNew(o.Recipient, o.Subject, o.Body));
     }
 }

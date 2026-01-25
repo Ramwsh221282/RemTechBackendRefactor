@@ -17,16 +17,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessageServiceUtils } from '../../../../shared/utils/message-service-utils';
 import { MailingManagementSendersStatusListComponent } from './mailing-management-senders-status-list/mailing-management-senders-status-list.component';
-import { NgIf } from '@angular/common';
+
 
 @Component({
   selector: 'app-mailing-management-settings-child-page',
   imports: [
     MailingManagementCreateSenderFormComponent,
     MailingManagementCheckSenderFormComponent,
-    MailingManagementSendersStatusListComponent,
-    NgIf,
-  ],
+    MailingManagementSendersStatusListComponent
+],
   templateUrl: './mailing-management-settings-child-page.component.html',
   styleUrl: './mailing-management-settings-child-page.component.scss',
 })

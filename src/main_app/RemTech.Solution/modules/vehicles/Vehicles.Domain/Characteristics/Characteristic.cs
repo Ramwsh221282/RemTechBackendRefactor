@@ -7,7 +7,7 @@ public sealed class Characteristic(CharacteristicId id, CharacteristicName name)
 {
     public CharacteristicId Id { get; } = id;
     public CharacteristicName Name { get; } = name;
-    
+
     public Task<Result<Characteristic>> SaveBy(IPersister persister, CancellationToken ct = default) =>
         persister.Save(this, ct);
 }

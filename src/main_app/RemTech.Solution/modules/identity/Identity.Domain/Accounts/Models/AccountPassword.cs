@@ -12,23 +12,12 @@ public sealed record AccountPassword
 
     public static Result<AccountPassword> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            return Error.Validation("Пароль не может быть пустым.");
-        return new AccountPassword(value);
+        return string.IsNullOrWhiteSpace(value) ? (Result<AccountPassword>)Error.Validation("Пароль не может быть пустым.") : (Result<AccountPassword>)new AccountPassword(value);
     }
 
-    public AccountPassword HashBy(IPasswordHasher hasher)
-    {
-        return hasher.Hash(this);
-    }
+    public AccountPassword HashBy(IPasswordHasher hasher) => hasher.Hash(this);
 
-    public bool Verify(string input, IPasswordHasher hasher)
-    {
-        return hasher.Verify(input, this);
-    }
+    public bool Verify(string input, IPasswordHasher hasher) => hasher.Verify(input, this);
 
-    public Result<Unit> Satisfies(IAccountPasswordRequirement requirement)
-    {
-        return requirement.Satisfies(this);
-    }
+    public Result<Unit> Satisfies(IAccountPasswordRequirement requirement) => requirement.Satisfies(this);
 }

@@ -4,5 +4,5 @@ namespace Spares.Domain.Contracts;
 
 public interface ISparesRepository
 {
-    Task<int> AddMany(IEnumerable<Spare> spares, CancellationToken ct = default);
+    public Task<int> AddMany(IEnumerable<Spare> spares, CancellationToken ct = default);
 }

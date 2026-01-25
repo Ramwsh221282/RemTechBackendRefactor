@@ -11,10 +11,6 @@ public sealed record SpareType
         Value = value;
     }
 
-    public static Result<SpareType> Create(string value)
-    {
-        return string.IsNullOrWhiteSpace(value)
-            ? Error.Validation("Тип запчасти не может быть пустым")
-            : new SpareType(value);
-    }
+    public static Result<SpareType> Create(string value) =>
+        string.IsNullOrWhiteSpace(value) ? Error.Validation("Тип запчасти не может быть пустым") : new SpareType(value);
 }

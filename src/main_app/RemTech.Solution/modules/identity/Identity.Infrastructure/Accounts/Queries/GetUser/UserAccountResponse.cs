@@ -10,14 +10,12 @@ public sealed record UserAccountResponse(
     IEnumerable<UserAccountPermissionResponse> Permissions
 )
 {
-    public static UserAccountResponse Create(Account account)
-    {
-        return new UserAccountResponse(
+    public static UserAccountResponse Create(Account account) =>
+        new(
             account.Id.Value,
             account.Login.Value,
             account.Email.Value,
             account.ActivationStatus.Value,
             account.PermissionsList.Select(p => UserAccountPermissionResponse.Create(p))
         );
-    }
 }

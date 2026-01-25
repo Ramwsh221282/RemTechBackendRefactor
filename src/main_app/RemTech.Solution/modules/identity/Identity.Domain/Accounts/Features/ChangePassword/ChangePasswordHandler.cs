@@ -19,10 +19,7 @@ public sealed class ChangePasswordHandler(
     IAccountsModuleUnitOfWork unitOfWork
 ) : ICommandHandler<ChangePasswordCommand, Unit>
 {
-    public async Task<Result<Unit>> Execute(
-        ChangePasswordCommand command,
-        CancellationToken ct = default
-    )
+    public async Task<Result<Unit>> Execute(ChangePasswordCommand command, CancellationToken ct = default)
     {
         Result<Account> account = await GetRequiredAccount(command, ct);
         Result<Unit> verification = VerifyCurrentPassword(account, command.CurrentPassword);
@@ -36,9 +33,7 @@ public sealed class ChangePasswordHandler(
 
     private Result<Unit> VerifyCurrentPassword(Result<Account> account, string currentPassword)
     {
-        if (account.IsFailure)
-            return account.Error;
-        return account.Value.VerifyPassword(currentPassword, hasher);
+        return account.IsFailure ? (Result<Unit>)account.Error : account.Value.VerifyPassword(currentPassword, hasher);
     }
 
     private async Task<Result<Unit>> SaveChanges(
@@ -69,16 +64,8 @@ public sealed class ChangePasswordHandler(
             return account.Error;
         if (change.IsFailure)
             return change.Error;
-        Result<AccessToken> accessToken = await accessTokens.Get(
-            command.AccessToken,
-            withLock: true,
-            ct
-        );
-        Result<RefreshToken> refreshToken = await refreshTokens.Get(
-            command.RefreshToken,
-            withLock: true,
-            ct
-        );
+        Result<AccessToken> accessToken = await accessTokens.Find(command.AccessToken, withLock: true, ct);
+        Result<RefreshToken> refreshToken = await refreshTokens.Find(command.RefreshToken, withLock: true, ct);
         if (accessToken.IsSuccess)
             await accessTokens.Remove(accessToken.Value, ct);
         if (refreshToken.IsSuccess)
@@ -94,14 +81,9 @@ public sealed class ChangePasswordHandler(
         return account.Value.ChangePassword(password, hasher, passwordRequirements);
     }
 
-    private async Task<Result<Account>> GetRequiredAccount(
-        ChangePasswordCommand command,
-        CancellationToken ct
-    )
+    private Task<Result<Account>> GetRequiredAccount(ChangePasswordCommand command, CancellationToken ct)
     {
-        AccountSpecification specification = new AccountSpecification()
-            .WithId(command.Id)
-            .WithLock();
-        return await accounts.Get(specification, ct);
+        AccountSpecification specification = new AccountSpecification().WithId(command.Id).WithLock();
+        return accounts.Find(specification, ct);
     }
 }

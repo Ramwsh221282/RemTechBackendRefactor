@@ -14,10 +14,7 @@ public sealed class ConfirmTicketHandler(
     IAccountsModuleUnitOfWork unitOfWork
 ) : ICommandHandler<ConfirmTicketCommand, Account>
 {
-    public async Task<Result<Account>> Execute(
-        ConfirmTicketCommand command,
-        CancellationToken ct = default
-    )
+    public async Task<Result<Account>> Execute(ConfirmTicketCommand command, CancellationToken ct = default)
     {
         Result<Account> account = await GetRequiredAccount(command, ct);
         if (account.IsFailure)
@@ -57,27 +54,19 @@ public sealed class ConfirmTicketHandler(
         return Unit.Value;
     }
 
-    private async Task<Result<Account>> GetRequiredAccount(
-        ConfirmTicketCommand command,
-        CancellationToken ct
-    )
+    private Task<Result<Account>> GetRequiredAccount(ConfirmTicketCommand command, CancellationToken ct)
     {
-        AccountSpecification specification = new AccountSpecification()
-            .WithId(command.AccountId)
-            .WithLock();
-        return await accounts.Get(specification, ct);
+        AccountSpecification specification = new AccountSpecification().WithId(command.AccountId).WithLock();
+        return accounts.Find(specification, ct);
     }
 
-    private async Task<Result<AccountTicket>> GetRequiredAccountTicket(
-        ConfirmTicketCommand command,
-        CancellationToken ct
-    )
+    private Task<Result<AccountTicket>> GetRequiredAccountTicket(ConfirmTicketCommand command, CancellationToken ct)
     {
         AccountTicketSpecification specification = new AccountTicketSpecification()
             .WithAccountId(command.AccountId)
             .WithTicketId(command.TicketId)
             .NotFinished()
             .WithLockRequired();
-        return await accountTickets.Get(specification, ct);
+        return accountTickets.Find(specification, ct);
     }
 }

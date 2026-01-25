@@ -7,9 +7,8 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 namespace ParsersControl.Core.Features.PermantlyStartManyParsing;
 
 [TransactionalHandler]
-public sealed class PermantlyStartManyParsingHandler(
-    ISubscribedParsersCollectionRepository repository
-) : ICommandHandler<PermantlyStartManyParsingCommand, IEnumerable<SubscribedParser>>
+public sealed class PermantlyStartManyParsingHandler(ISubscribedParsersCollectionRepository repository)
+    : ICommandHandler<PermantlyStartManyParsingCommand, IEnumerable<SubscribedParser>>
 {
     public async Task<Result<IEnumerable<SubscribedParser>>> Execute(
         PermantlyStartManyParsingCommand command,
@@ -36,10 +35,8 @@ public sealed class PermantlyStartManyParsingHandler(
         return saving;
     }
 
-    private static Result<Unit> PermanentlyStartParsers(Result<SubscribedParsersCollection> parsers)
-    {
-        return parsers.IsFailure ? parsers.Error : parsers.Value.PermanentlyEnableAll();
-    }
+    private static Result<Unit> PermanentlyStartParsers(Result<SubscribedParsersCollection> parsers) =>
+        parsers.IsFailure ? parsers.Error : parsers.Value.PermanentlyEnableAll();
 
     private async Task<Result<SubscribedParsersCollection>> GetParsers(
         IEnumerable<Guid> identifiers,

@@ -9,7 +9,7 @@ public sealed class RabbitMqConnectionSource(Serilog.ILogger logger, IOptions<Ra
     private IConnection? Connection { get; set; }
     private RabbitMqOptions Options { get; } = options.Value;
     private SemaphoreSlim Semaphore { get; } = new(1);
-    
+
     private Serilog.ILogger Logger { get; } = logger.ForContext<RabbitMqConnectionSource>();
 
     public ValueTask<IConnection> GetConnection(CancellationToken ct = default)
@@ -21,7 +21,7 @@ public sealed class RabbitMqConnectionSource(Serilog.ILogger logger, IOptions<Ra
             Logger.Information("Connection is initialized and open. Returning existing instance.");
             return new ValueTask<IConnection>(Connection);
         }
-        
+
         async ValueTask<IConnection> Create(CancellationToken ct)
         {
             Logger.Information("Creating connection. Blocking until semaphore is available.");
@@ -35,7 +35,7 @@ public sealed class RabbitMqConnectionSource(Serilog.ILogger logger, IOptions<Ra
                     Port = Options.Port,
                     UserName = Options.Username,
                 };
-            
+
                 IConnection connection = await factory.CreateConnectionAsync(cancellationToken: ct);
                 Connection = connection;
                 Logger.Information("Connection created and stored.");

@@ -13,7 +13,7 @@ public sealed class ShouldHaveIdentityManagementPermissionFilter(IJwtTokenManage
             await context.HttpContext.WriteForbiddenResult();
             return;
         }
-        
+
         await next();
     }
 }

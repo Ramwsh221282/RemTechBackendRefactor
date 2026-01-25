@@ -4,5 +4,5 @@ namespace Spares.Infrastructure.Repository;
 
 public interface ISpareAddressProvider
 {
-    Task<Result<Guid>> SearchRegionId(string address, CancellationToken ct = default);
+    public Task<Result<Guid>> SearchRegionId(string address, CancellationToken ct = default);
 }

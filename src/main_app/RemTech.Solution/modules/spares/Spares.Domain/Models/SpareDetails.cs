@@ -6,4 +6,5 @@ public sealed record SpareDetails(
     SparePrice Price,
     SpareType Type,
     SpareAddress Address,
-    SparePhotoCollection Photos);
+    SparePhotoCollection Photos
+);

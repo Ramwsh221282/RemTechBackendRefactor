@@ -17,14 +17,11 @@ public sealed class ParserResponseModel
     public required DateTime? NextRun { get; init; }
     public required DateTime? FinishedAt { get; init; }
 
-    public static IEnumerable<ParserResponseModel> ConvertFrom(IEnumerable<SubscribedParser> parsers)
-    {
-        return parsers.Select(ConvertFrom).ToArray();
-    }
-    
-    public static ParserResponseModel ConvertFrom(SubscribedParser parser)
-    {
-        return new ParserResponseModel()
+    public static IEnumerable<ParserResponseModel> ConvertFrom(IEnumerable<SubscribedParser> parsers) =>
+        parsers.Select(ConvertFrom).ToArray();
+
+    public static ParserResponseModel ConvertFrom(SubscribedParser parser) =>
+        new()
         {
             Id = parser.Id.Value,
             Type = parser.Identity.ServiceType,
@@ -37,7 +34,6 @@ public sealed class ParserResponseModel
             ElapsedSeconds = parser.Statistics.WorkTime.Seconds,
             WaitDays = parser.Schedule.WaitDays,
             NextRun = parser.Schedule.NextRun,
-            FinishedAt = parser.Schedule.FinishedAt
+            FinishedAt = parser.Schedule.FinishedAt,
         };
-    }
 }

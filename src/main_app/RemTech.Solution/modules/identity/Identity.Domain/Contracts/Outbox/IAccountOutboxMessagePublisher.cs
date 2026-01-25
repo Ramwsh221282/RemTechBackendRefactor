@@ -2,6 +2,6 @@
 
 public interface IAccountOutboxMessagePublisher
 {
-    bool CanPublish(IdentityOutboxMessage message);
-    Task Publish(IdentityOutboxMessage message, CancellationToken ct = default);
+    public bool CanPublish(IdentityOutboxMessage message);
+    public Task Publish(IdentityOutboxMessage message, CancellationToken ct = default);
 }

@@ -15,8 +15,10 @@
         (onSenderRemoveClicked)="onSenderRemoveSubmit($event)"
         (onSenderPingClicked)="acceptSenderToPing($event)"
         [mailers]="mailers()"
-      />
+        />
+      </div>
     </div>
   </div>
-</div>
-<app-mailing-management-check-sender-form *ngIf="mailerToPing()" [sender_setter]="mailerToPing()!" (onTestMessageSendSubmitted)="onTestMessageSendSubmit($event)" (onClose)="closePingDialog()" />
+  @if (mailerToPing()) {
+    <app-mailing-management-check-sender-form [sender_setter]="mailerToPing()!" (onTestMessageSendSubmitted)="onTestMessageSendSubmit($event)" (onClose)="closePingDialog()" />
+  }

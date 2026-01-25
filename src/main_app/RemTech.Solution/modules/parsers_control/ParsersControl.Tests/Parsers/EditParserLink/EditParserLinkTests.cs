@@ -14,16 +14,25 @@ public sealed class EditParserLinkTests(IntegrationalTestsFixture fixture) : ICl
     [Fact]
     private async Task Edit_Parser_Link_Success()
     {
-        string type = "Some type";
-        string domain = "Some domain";
+        const string type = "Some type";
+        const string domain = "Some domain";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
-        Result<IEnumerable<SubscribedParserLink>> linkResultBeforeStartWork = await Services.AddLink(id, "Test url", "Test name");
+        Result<IEnumerable<SubscribedParserLink>> linkResultBeforeStartWork = await Services.AddLink(
+            id,
+            "Test url",
+            "Test name"
+        );
         Assert.True(linkResultBeforeStartWork.IsSuccess);
         Result activatingLink = await Services.MakeLinkActive(id, linkResultBeforeStartWork.Value.First().Id.Value);
         Assert.True(activatingLink.IsSuccess);
-        Result<SubscribedParserLink> editResult = await EditLink(id, linkResultBeforeStartWork.Value.First().Id.Value, "New name", "New url");
+        Result<SubscribedParserLink> editResult = await EditLink(
+            id,
+            linkResultBeforeStartWork.Value.First().Id.Value,
+            "New name",
+            "New url"
+        );
         Assert.True(editResult.IsSuccess);
         Result<SubscribedParser> parser = await Services.GetParser(id);
         Assert.True(parser.IsSuccess);
@@ -32,7 +41,7 @@ public sealed class EditParserLinkTests(IntegrationalTestsFixture fixture) : ICl
         Assert.Equal("New name", link.Value.UrlInfo.Name);
         Assert.Equal("New url", link.Value.UrlInfo.Url);
     }
-    
+
     private async Task<Result<SubscribedParserLink>> EditLink(Guid parserId, Guid linkId, string newName, string newUrl)
     {
         await using AsyncServiceScope scope = Services.CreateAsyncScope();

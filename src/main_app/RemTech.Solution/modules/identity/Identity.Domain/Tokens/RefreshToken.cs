@@ -18,24 +18,17 @@ public sealed class RefreshToken(Guid accountId, string tokenValue, long expires
 
     public bool IsExpired(IJwtTokenManager tokenManager)
     {
-        long createdAt = tokenManager.GenerateRefreshToken(AccountId).CreatedAt;
-        return IsExpired(createdAt);
+        long created = tokenManager.GenerateRefreshToken(AccountId).CreatedAt;
+        return IsExpired(created);
     }
-    
-    public bool IsExpired(long currentUnixTime)
-    {
-        return currentUnixTime > ExpiresAt;
-    }
-    
+
+    public bool IsExpired(long currentUnixTime) => currentUnixTime > ExpiresAt;
+
     private static string GenerateRandomString()
     {
-        var randomBytes = new byte[32];
+        byte[] randomBytes = new byte[32];
         using RandomNumberGenerator rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomBytes);
-        return Convert
-            .ToBase64String(randomBytes)
-            .Replace('+', '-')
-            .Replace('/', '_')
-            .TrimEnd('=');
+        return Convert.ToBase64String(randomBytes).Replace('+', '-').Replace('/', '_').TrimEnd('=');
     }
 }

@@ -15,7 +15,8 @@ public sealed record ParserResponse(
     int ElapsedHours,
     int ElapsedSeconds,
     int ElapsedMinutes,
-    IEnumerable<ParserLinkResponse> Links)
+    IEnumerable<ParserLinkResponse> Links
+)
 {
     public static ParserResponse Create(SubscribedParser parser) =>
         new(
@@ -31,5 +32,6 @@ public sealed record ParserResponse(
             parser.Statistics.WorkTime.Hours,
             parser.Statistics.WorkTime.Minutes,
             parser.Statistics.WorkTime.Seconds,
-            parser.Links.Select(ParserLinkResponse.Create));
+            parser.Links.Select(ParserLinkResponse.Create)
+        );
 }

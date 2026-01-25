@@ -1,18 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\modules\contained_items\ContainedItems.Worker\ContainedItems.Worker.csproj" />
-    <ProjectReference Include="..\modules\identity\Identity.WebApi\Identity.WebApi.csproj" />
-    <ProjectReference Include="..\modules\notifications\Notifications.WebApi\Notifications.WebApi.csproj" />
-    <ProjectReference Include="..\modules\parsers_control\ParsersControl.WebApi\ParsersControl.WebApi.csproj" />
-    <ProjectReference Include="..\modules\spares\Spares.WebApi\Spares.WebApi.csproj" />
-    <ProjectReference Include="..\modules\vehicles\Vehicles.WebApi\Vehicles.WebApi.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="RemTech.SharedKernel.Web" Version="2.0.0" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\modules\contained_items\ContainedItems.Worker\ContainedItems.Worker.csproj" />
+		<ProjectReference Include="..\modules\identity\Identity.WebApi\Identity.WebApi.csproj" />
+		<ProjectReference Include="..\modules\notifications\Notifications.WebApi\Notifications.WebApi.csproj" />
+		<ProjectReference Include="..\modules\parsers_control\ParsersControl.WebApi\ParsersControl.WebApi.csproj" />
+		<ProjectReference Include="..\modules\spares\Spares.WebApi\Spares.WebApi.csproj" />
+		<ProjectReference Include="..\modules\vehicles\Vehicles.WebApi\Vehicles.WebApi.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="RemTech.SharedKernel.Web" Version="2.*" />
+	</ItemGroup>
 </Project>

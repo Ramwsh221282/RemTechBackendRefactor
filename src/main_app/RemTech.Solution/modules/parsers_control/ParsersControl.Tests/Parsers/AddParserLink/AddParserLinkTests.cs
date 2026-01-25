@@ -11,14 +11,18 @@ public sealed class AddParserLinkTests(IntegrationalTestsFixture fixture) : ICla
     [Fact]
     private async Task Add_New_Parser_Link_When_Parser_Working_Failure()
     {
-        string domain = "Some domain";
-        string type = "Some type";
+        const string domain = "Some domain";
+        const string type = "Some type";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
         Result<SubscribedParser> enableResult = await Services.EnableParser(id);
         Assert.True(enableResult.IsSuccess);
-        Result<IEnumerable<SubscribedParserLink>> linkResultBeforeStartWork = await Services.AddLink(id, "Test url", "Test name");
+        Result<IEnumerable<SubscribedParserLink>> linkResultBeforeStartWork = await Services.AddLink(
+            id,
+            "Test url",
+            "Test name"
+        );
         Assert.True(linkResultBeforeStartWork.IsSuccess);
         Result activatingLink = await Services.MakeLinkActive(id, linkResultBeforeStartWork.Value.First().Id.Value);
         Assert.True(activatingLink.IsSuccess);
@@ -31,36 +35,44 @@ public sealed class AddParserLinkTests(IntegrationalTestsFixture fixture) : ICla
     [Fact]
     private async Task Add_New_Parser_Link_Duplicate_Link_Name_Failure()
     {
-        string domain = "Some domain";
-        string type = "Some type";
+        const string domain = "Some domain";
+        const string type = "Some type";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
         Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(id, "Some url", "Some name");
         Assert.True(linkResult.IsSuccess);
-        Result<IEnumerable<SubscribedParserLink>> duplicateLinkResult = await Services.AddLink(id, "Some other url", "Some name");
+        Result<IEnumerable<SubscribedParserLink>> duplicateLinkResult = await Services.AddLink(
+            id,
+            "Some other url",
+            "Some name"
+        );
         Assert.True(duplicateLinkResult.IsFailure);
     }
-    
+
     [Fact]
     private async Task Add_New_Parser_Link_Duplicate_Link_Url_Failure()
     {
-        string domain = "Some domain";
-        string type = "Some type";
+        const string domain = "Some domain";
+        const string type = "Some type";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
         Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(id, "Some url", "Some name");
         Assert.True(linkResult.IsSuccess);
-        Result<IEnumerable<SubscribedParserLink>> duplicateLinkResult = await Services.AddLink(id, "Some url", "Some other name");
+        Result<IEnumerable<SubscribedParserLink>> duplicateLinkResult = await Services.AddLink(
+            id,
+            "Some url",
+            "Some other name"
+        );
         Assert.True(duplicateLinkResult.IsFailure);
     }
-    
+
     [Fact]
     private async Task Add_New_Parser_Link_Success()
     {
-        string domain = "Some domain";
-        string type = "Some type";
+        const string domain = "Some domain";
+        const string type = "Some type";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);

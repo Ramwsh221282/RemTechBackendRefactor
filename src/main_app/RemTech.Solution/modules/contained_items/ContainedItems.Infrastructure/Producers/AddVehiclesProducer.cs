@@ -11,7 +11,7 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
     private const string RoutingKey = "vehicles.add";
     private RabbitMqProducer Producer { get; } = producer;
     private Serilog.ILogger Logger { get; } = logger.ForContext<AddVehiclesProducer>();
-    
+
     public async Task Publish(ContainedItem item, CancellationToken ct = default)
     {
         Logger.Information("Publishing {Id}", item.Id);
@@ -23,23 +23,27 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
 
     public async Task PublishMany(IEnumerable<ContainedItem> items, CancellationToken ct = default)
     {
-        if (!items.Any())
+        ContainedItem[] itemArray = [.. items];
+        if (itemArray.Length == 0)
         {
             Logger.Information("No items to publish");
             return;
         }
 
         RabbitMqPublishOptions options = new() { Persistent = true };
-        IEnumerable<IGrouping<Guid, ContainedItem>> grouped = items.GroupBy(i => i.CreatorInfo.CreatorId);
-        foreach (IGrouping<Guid, ContainedItem> group in grouped)
+        foreach (IGrouping<Guid, ContainedItem> group in itemArray.GroupBy(i => i.CreatorInfo.CreatorId))
         {
             ContainedItem first = group.First();
             AddVehicleMessage message = CreateMessage(first, group);
             await Producer.PublishDirectAsync(message, Exchange, RoutingKey, options, ct: ct);
-            Logger.Information("Published {CreatorType} {CreatorDomain}", first.CreatorInfo.Type, first.CreatorInfo.Domain);
+            Logger.Information(
+                "Published {CreatorType} {CreatorDomain}",
+                first.CreatorInfo.Type,
+                first.CreatorInfo.Domain
+            );
         }
     }
-    
+
     private AddVehicleMessage CreateMessage(ContainedItem first, IEnumerable<ContainedItem> items)
     {
         Guid creatorId = first.CreatorInfo.CreatorId;
@@ -53,19 +57,19 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
             Payload = items.Select(CreatePayload),
         };
     }
-    
+
     private AddVehicleMessagePayload CreatePayload(ContainedItem item)
     {
         using JsonDocument document = JsonDocument.Parse(item.Info.Content);
-        
+
         List<AddVehicleCharacteristic> characteristics = [];
-        foreach (var ctx in document.RootElement.GetProperty("characteristics").EnumerateArray())
+        foreach (JsonElement ctx in document.RootElement.GetProperty("characteristics").EnumerateArray())
         {
             string name = ctx.GetProperty("name").GetString()!;
             string value = ctx.GetProperty("value").GetString()!;
             characteristics.Add(new AddVehicleCharacteristic { Name = name, Value = value });
         }
-        
+
         AddVehicleMessagePayload payload = new()
         {
             Id = item.Id.Value,
@@ -77,7 +81,7 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
             Address = document.RootElement.GetProperty("address").GetString()!,
             Photos = document.RootElement.GetProperty("photos").EnumerateArray().Select(p => p.GetString()!).ToArray(),
         };
-        
+
         return payload;
     }
 
@@ -88,7 +92,7 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
         public required string CreatorType { get; set; }
         public required IEnumerable<AddVehicleMessagePayload> Payload { get; set; }
     }
-    
+
     private sealed class AddVehicleMessagePayload
     {
         public required Guid Id { get; set; }
@@ -100,7 +104,7 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
         public required string[] Photos { get; set; }
         public required IEnumerable<AddVehicleCharacteristic> Characteristics { get; set; }
     }
-    
+
     private sealed class AddVehicleCharacteristic
     {
         public required string Name { get; set; }

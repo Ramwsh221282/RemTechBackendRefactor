@@ -1,243 +1,326 @@
-import {
-  Component,
-  DestroyRef,
-  effect,
-  inject,
-  signal,
-  WritableSignal,
-} from '@angular/core';
-import { CatalogueVehicle } from './types/CatalogueVehicle';
-import { QueryPipeLineParamsFactory } from './queries/QueryParamsPipeline/QueryPipeLineParamsFactory';
-import { CatalogueVehiclesService } from './services/CatalogueVehiclesService';
-import { ActivatedRoute } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TextSearchPart } from './queries/QueryParamsPipeline/TextSearchPart';
-import { BrandIdPart } from './queries/QueryParamsPipeline/BrandIdPart';
-import { CategoryIdPart } from './queries/QueryParamsPipeline/CategoryIdPart';
-import { PaginationPart } from './queries/QueryParamsPipeline/PaginationPart';
+import { Component, effect, EffectRef, inject, OnInit, signal, WritableSignal } from '@angular/core';
+import { ActivatedRoute, ParamMap } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { NgForOf, NgIf } from '@angular/common';
 import { VehiclesTextSearchComponent } from './components/vehicles-text-search/vehicles-text-search.component';
 import { VehiclesPriceSortComponent } from './components/vehicles-price-sort/vehicles-price-sort.component';
 import {
-  PriceSubmitEvent,
-  VehiclePriceFilterFormPartComponent,
+	PriceChangeEvent,
+	VehiclePriceFilterFormPartComponent,
 } from './components/vehicle-price-filter-form-part/vehicle-price-filter-form-part.component';
 import { VehicleCategoryFilterFormPartComponent } from './components/vehicle-category-filter-form-part/vehicle-category-filter-form-part.component';
 import { VehicleBrandFilterFormPartComponent } from './components/vehicle-brand-filter-form-part/vehicle-brand-filter-form-part.component';
 import { VehicleModelFilterFormPartComponent } from './components/vehicle-model-filter-form-part/vehicle-model-filter-form-part.component';
 import { VehicleRegionsFilterFormPartComponent } from './components/vehicle-regions-filter-form-part/vehicle-regions-filter-form-part.component';
 import { VehicleCardComponent } from './components/vehicle-card/vehicle-card.component';
-import { LocationIdPart } from './queries/QueryParamsPipeline/LocationIdPart';
-import { ModelIdPart } from './queries/QueryParamsPipeline/ModelIdPart';
-import { SortModePart } from './queries/QueryParamsPipeline/SortModePart';
-import { PriceFilterPart } from './queries/QueryParamsPipeline/PriceFilterPart';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
+import { VehiclesApiService } from '../../shared/api/vehicles-module/vehicles-api.service';
+import { CategoryResponse } from '../../shared/api/categories-module/categories-responses';
+import { BrandResponse } from '../../shared/api/brands-module/brands-api.responses';
+import { ModelResponse } from '../../shared/api/models-module/models-responses';
+import { catchError, EMPTY, forkJoin, Observable, tap } from 'rxjs';
+import { GetVehiclesQueryResponse } from '../../shared/api/vehicles-module/vehicles-api.responses';
+import { LocationsApiService } from '../../shared/api/locations-module/locations-api.service';
+import { LocationResponse } from '../../shared/api/locations-module/locations.responses';
+import { CategoriesApiService } from '../../shared/api/categories-module/categories-api.service';
+import { BrandsApiService } from '../../shared/api/brands-module/brands-api.service';
+import { ModelsApiService } from '../../shared/api/models-module/models-api.service';
+import { GetCategoriesQuery } from '../../shared/api/categories-module/categories-get-query';
+import { GetBrandsQuery } from '../../shared/api/brands-module/brands-get-query';
+import { GetVehiclesQuery, mapStringToSortDirection, SortDirection } from '../../shared/api/vehicles-module/vehicles-get-query';
+import { GetLocationsQuery } from '../../shared/api/locations-module/locations-get-query';
+import { GetModelsQuery } from '../../shared/api/models-module/models-get-query';
+import { Title } from '@angular/platform-browser';
 
+// TODO: add loading indicators (loading spinner etc) on text search input and on price change inputs.
+// TODO: add move to vehicle page on vehicle card ('Подробнее') click.
+// TODO: fix adaptive design for medium and small screen sizes at filter selects.
 @Component({
-  selector: 'app-vehicles-page',
-  imports: [
-    FormsModule,
-    NgForOf,
-    VehiclesTextSearchComponent,
-    VehiclesPriceSortComponent,
-    VehiclePriceFilterFormPartComponent,
-    VehicleCategoryFilterFormPartComponent,
-    VehicleBrandFilterFormPartComponent,
-    VehicleModelFilterFormPartComponent,
-    VehicleRegionsFilterFormPartComponent,
-    VehicleCardComponent,
-    NgIf,
-    PaginationComponent,
-  ],
-  templateUrl: './vehicles-page.component.html',
-  styleUrl: './vehicles-page.component.scss',
+	selector: 'app-vehicles-page',
+	imports: [
+		FormsModule,
+		VehiclesTextSearchComponent,
+		VehiclesPriceSortComponent,
+		VehiclePriceFilterFormPartComponent,
+		VehicleCategoryFilterFormPartComponent,
+		VehicleBrandFilterFormPartComponent,
+		VehicleModelFilterFormPartComponent,
+		VehicleRegionsFilterFormPartComponent,
+		VehicleCardComponent,
+		PaginationComponent,
+	],
+	templateUrl: './vehicles-page.component.html',
+	styleUrl: './vehicles-page.component.scss',
 })
-export class VehiclesPageComponent {
-  private readonly _currentCategoryId: WritableSignal<string | undefined> =
-    signal(undefined);
-  private readonly _currentBrandId: WritableSignal<string | undefined> =
-    signal(undefined);
-  private readonly _currentModelId: WritableSignal<string | undefined> =
-    signal(undefined);
-  private readonly _brandIdPart: WritableSignal<BrandIdPart>;
-  private readonly _categoryIdPart: WritableSignal<CategoryIdPart>;
-  private readonly _locationIdPart: WritableSignal<LocationIdPart>;
-  private readonly _modelIdPart: WritableSignal<ModelIdPart>;
-  private readonly _paginationPart: WritableSignal<PaginationPart>;
-  private readonly _sortModePart: WritableSignal<SortModePart>;
-  private readonly _textSearchPart: WritableSignal<TextSearchPart>;
-  private readonly _vehicles: WritableSignal<CatalogueVehicle[]>;
-  private readonly _priceFilterPart: WritableSignal<PriceFilterPart>;
-  private readonly _totalAmount: WritableSignal<number>;
-  private readonly _destroyRef: DestroyRef = inject(DestroyRef);
-  constructor(
-    service: CatalogueVehiclesService,
-    activatedRoute: ActivatedRoute
-  ) {
-    this._priceFilterPart = signal(new PriceFilterPart(null, null));
-    this._vehicles = signal([]);
-    this._brandIdPart = signal(new BrandIdPart(undefined));
-    this._categoryIdPart = signal(new CategoryIdPart(undefined));
-    this._locationIdPart = signal(new LocationIdPart(undefined));
-    this._modelIdPart = signal(new ModelIdPart(undefined));
-    this._paginationPart = signal(new PaginationPart(1));
-    this._sortModePart = signal(new SortModePart(undefined));
-    this._textSearchPart = signal(new TextSearchPart(undefined));
-    this._totalAmount = signal(0);
-    effect(() => {
-      activatedRoute.queryParams
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (params: any): void => {
-            const brandId: string | undefined = params['brandId'];
-            const categoryId: string | undefined = params['categoryId'];
-            const textSearch: string | undefined = params['textSearch'];
-            const modelId: string | undefined = params['modelId'];
-            const page: number | undefined = params['page'];
-            this._currentCategoryId.set(categoryId);
-            this._currentModelId.set(modelId);
-            this._currentBrandId.set(brandId);
-            this._modelIdPart.set(new ModelIdPart(modelId));
-            this._brandIdPart.set(new BrandIdPart(brandId));
-            this._categoryIdPart.set(new CategoryIdPart(categoryId));
-            this._textSearchPart.set(new TextSearchPart(textSearch));
-            this._paginationPart.set(
-              new PaginationPart(page === undefined ? 1 : page)
-            );
-          },
-        });
-    });
-    effect(() => {
-      const brandIdPart = this._brandIdPart();
-      const categoryIdPart = this._categoryIdPart();
-      const modelIdPart = this._modelIdPart();
-      const regionIdPart = this._locationIdPart();
-      const paginationPart = this._paginationPart();
-      const sortPart = this._sortModePart();
-      const textSearchPart = this._textSearchPart();
-      const priceFilterPart = this._priceFilterPart();
-      const factory = new QueryPipeLineParamsFactory([])
-        .with(brandIdPart)
-        .with(categoryIdPart)
-        .with(modelIdPart)
-        .with(regionIdPart)
-        .with(paginationPart)
-        .with(sortPart)
-        .with(textSearchPart)
-        .with(priceFilterPart);
+export class VehiclesPageComponent implements OnInit {
+	private readonly _title: Title = inject(Title);
+	private readonly _activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+	private readonly _locationsService: LocationsApiService = inject(LocationsApiService);
+	private readonly _categoriesService: CategoriesApiService = inject(CategoriesApiService);
+	private readonly _brandsService: BrandsApiService = inject(BrandsApiService);
+	private readonly _modelsService: ModelsApiService = inject(ModelsApiService);
+	private readonly _vehiclesService: VehiclesApiService = inject(VehiclesApiService);
 
-      service
-        .fetch(factory)
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (data: CatalogueVehicle[]): void => {
-            this._vehicles.set(data);
-          },
-        });
-    });
-    effect(() => {
-      const brandIdPart = this._brandIdPart();
-      const categoryIdPart = this._categoryIdPart();
-      const modelIdPart = this._modelIdPart();
-      const regionIdPart = this._locationIdPart();
-      const textSearchPart = this._textSearchPart();
-      const priceFilterPart = this._priceFilterPart();
-      const factory = new QueryPipeLineParamsFactory([])
-        .with(brandIdPart)
-        .with(categoryIdPart)
-        .with(modelIdPart)
-        .with(regionIdPart)
-        .with(textSearchPart)
-        .with(priceFilterPart);
+	readonly vehiclesPageSize: number = 30;
+	readonly locations: WritableSignal<LocationResponse[]> = signal([]);
+	readonly vehicles: WritableSignal<GetVehiclesQueryResponse> = signal(defaultVehiclesQueryResponse());
+	readonly categories: WritableSignal<CategoryResponse[]> = signal([]);
+	readonly brands: WritableSignal<BrandResponse[]> = signal([]);
+	readonly models: WritableSignal<ModelResponse[]> = signal([]);
+	readonly statisticsInfo: WritableSignal<AggregatedStatisticsInfo> = signal(defaultAggregatedStatisticsInfo());
+	readonly selectFilterParameters: WritableSignal<VehiclesCatalogueFilterSeletions> = signal(defaultCatalogueFilterSelections());
+	readonly queries: WritableSignal<GroupedVehicleCatalogueQueries> = signal(defaultVehicleCatalogueQueries());
+	readonly currentPage: WritableSignal<number> = signal(1);
 
-      service
-        .count(factory)
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (data: number): void => {
-            this._totalAmount.set(data);
-          },
-        });
-    });
-  }
+	readonly refreshCatalogueDataOnQueryChange: EffectRef = effect((): void => {
+		const queries: GroupedVehicleCatalogueQueries = this.queries();
+		const brandsFetch: Observable<BrandResponse[]> = this._brandsService.fetchBrands(queries.brandQuery);
+		const modelsFetch: Observable<ModelResponse[]> = this._modelsService.fetchModels(queries.modelQuery);
+		const regionsFetch: Observable<LocationResponse[]> = this._locationsService.fetchLocations(queries.locationsQuery);
+		const vehiclesFetch: Observable<GetVehiclesQueryResponse> = this._vehiclesService.fetchVehicles(queries.vehiclesQuery);
+		forkJoin([brandsFetch, modelsFetch, regionsFetch, vehiclesFetch])
+			.pipe(
+				tap((response: [BrandResponse[], ModelResponse[], LocationResponse[], GetVehiclesQueryResponse]) => {
+					const brands: BrandResponse[] = response[0];
+					const models: ModelResponse[] = response[1];
+					const locations: LocationResponse[] = response[2];
+					const vehiclesResponse: GetVehiclesQueryResponse = response[3];
+					this.brands.set(brands);
+					this.models.set(models);
+					this.models.set(models);
+					this.locations.set(locations);
+					this.vehicles.set(vehiclesResponse);
+				}),
+				catchError(() => EMPTY),
+			)
+			.subscribe();
+	});
 
-  public get currentPage(): number {
-    return this._paginationPart().page;
-  }
+	public ngOnInit(): void {
+		this.initializePageTitle();
+		this.readParametersFromActivatedRoute(this._activatedRoute);
+		this.queries.update((state: GroupedVehicleCatalogueQueries) => {
+			return { ...state, vehiclesQuery: state.vehiclesQuery.usePageSize(this.vehiclesPageSize) };
+		});
+		this.fetchVehiclesCategoryBrandModelsOptions();
+	}
 
-  public get totalAmount(): number {
-    return this._totalAmount();
-  }
+	public handleUserPriceFilterInput(userPriceSubmit: PriceChangeEvent): void {
+		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+			return {
+				...state,
+				vehiclesQuery: state.vehiclesQuery
+					.useMinimalPrice(userPriceSubmit.minimalPrice)
+					.useMaximalPrice(userPriceSubmit.maximalPrice),
+			};
+		});
+	}
 
-  public get vehicles(): CatalogueVehicle[] {
-    return this._vehicles();
-  }
+	public handleUserVehiclesTextSearchSubmit(userInput: string | undefined): void {
+		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+			return {
+				...state,
+				vehiclesQuery: state.vehiclesQuery.useTextSearch(userInput),
+			};
+		});
+	}
 
-  public acceptTextSearch($event: string | undefined): void {
-    const part: TextSearchPart = new TextSearchPart($event);
-    this._textSearchPart.set(part);
-    this.resetPage();
-  }
+	public handleUserVehiclePriceSortModeChange(sortMode: string | undefined): void {
+		const direction: SortDirection = mapStringToSortDirection(sortMode);
 
-  public acceptSortMode($event: string | undefined): void {
-    const part: SortModePart = new SortModePart($event);
-    this._sortModePart.set(part);
-  }
+		if (direction === 'NONE') {
+			this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+				return { ...state, vehiclesQuery: state.vehiclesQuery.usePriceSort(false) };
+			});
+		}
 
-  public acceptCategory($event: string | undefined): void {
-    const part: CategoryIdPart = new CategoryIdPart($event);
-    this._categoryIdPart.set(part);
-    this.resetPage();
-  }
+		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+			return { ...state, vehiclesQuery: state.vehiclesQuery.usePriceSort(true).useSortDirection(direction) };
+		});
+	}
 
-  public acceptModel($event: string | undefined): void {
-    const part: ModelIdPart = new ModelIdPart($event);
-    this._modelIdPart.set(part);
-    this.resetPage();
-  }
+	public handleUserCategorySelect(category: CategoryResponse | null | undefined): void {
+		this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
+			return { ...state, category, brand: undefined, model: undefined, location: undefined };
+		});
 
-  public acceptRegion($event: string | undefined): void {
-    const part: LocationIdPart = new LocationIdPart($event);
-    this._locationIdPart.set(part);
-    this.resetPage();
-  }
+		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+			return {
+				...state,
+				brandQuery: state.brandQuery.useCategoryId(category?.Id, category),
+				modelQuery: GetModelsQuery.default().useCategoryId(category?.Id, category),
+				locationsQuery: defaultLocationsQuery().useCategoryId(category?.Id, category),
+				vehiclesQuery: state.vehiclesQuery.useCategory(category, category?.Id).useBrand(null).useModel(null).useLocation(null),
+			};
+		});
+	}
 
-  public acceptPrice($event: PriceSubmitEvent): void {
-    const part: PriceFilterPart = new PriceFilterPart(
-      $event.priceFrom,
-      $event.priceTo
-    );
-    this._priceFilterPart.set(part);
-    this.resetPage();
-  }
+	public handleUserBrandSelect(brand: BrandResponse | null | undefined): void {
+		this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
+			return { ...state, brand, model: undefined };
+		});
+		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+			return {
+				...state,
+				vehiclesQuery: state.vehiclesQuery.useBrand(brand).useModel(null),
+				modelQuery: state.modelQuery.useBrandId(brand?.Id).useBrandName(brand?.Name),
+				locationsQuery: state.locationsQuery.useBrandId(brand?.Id, brand).useModelId(null).useModelName(null),
+			};
+		});
+	}
 
-  public changePage($event: number): void {
-    const part: PaginationPart = new PaginationPart($event);
-    this._paginationPart.set(part);
-    window.scroll(0, 0);
-  }
+	public handleUserModelSelect(model: ModelResponse | null | undefined): void {
+		this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
+			return { ...state, model };
+		});
+		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+			return {
+				...state,
+				locationsQuery: state.locationsQuery.useModelId(model?.Id, model),
+				vehiclesQuery: state.vehiclesQuery.useModel(model),
+			};
+		});
+	}
 
-  public acceptBrand($event: string | undefined): void {
-    const part: BrandIdPart = new BrandIdPart($event);
-    this._brandIdPart.set(part);
-    this.resetPage();
-  }
+	public handleUserLocationSelect(location: LocationResponse | null | undefined): void {
+		this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
+			return { ...state, location };
+		});
+		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+			return {
+				...state,
+				vehiclesQuery: state.vehiclesQuery.useLocation(location, location?.Id),
+			};
+		});
+	}
 
-  public get currentCategoryId(): string | undefined {
-    return this._currentCategoryId();
-  }
+	public changePage(page: number): void {
+		this.currentPage.set(page);
+		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+			return { ...state, vehiclesQuery: state.vehiclesQuery.usePage(page) };
+		});
+	}
 
-  public get currentBrandId(): string | undefined {
-    return this._currentBrandId();
-  }
+	private initializePageTitle(): void {
+		this._title.setTitle('Техника');
+	}
 
-  public get currentModelId(): string | undefined {
-    return this._currentModelId();
-  }
+	private fetchVehiclesCategoryBrandModelsOptions(): void {
+		const category: CategoryResponse | null | undefined = this.selectFilterParameters().category;
+		const brand: BrandResponse | null | undefined = this.selectFilterParameters().brand;
+		const categoryFetch: Observable<CategoryResponse[]> = this._categoriesService.fetchCategories(GetCategoriesQuery.default());
+		const brandFetch: Observable<BrandResponse[]> = this._brandsService.fetchBrands(
+			GetBrandsQuery.default().useCategoryId(category?.Id),
+		);
+		const modelFetch: Observable<ModelResponse[]> = this._modelsService.fetchModels(
+			GetModelsQuery.default().useCategoryId(category?.Id).useBrandId(brand?.Id),
+		);
+		forkJoin([categoryFetch, brandFetch, modelFetch])
+			.pipe(
+				tap((response: [CategoryResponse[], BrandResponse[], ModelResponse[]]) => {
+					this.categories.set(response[0]);
+					this.brands.set(response[1]);
+					this.models.set(response[2]);
+				}),
+			)
+			.subscribe();
+	}
 
-  private resetPage(): void {
-    const part: PaginationPart = new PaginationPart(1);
-    this._paginationPart.set(part);
-  }
+	private readParametersFromActivatedRoute(route: ActivatedRoute): void {
+		route.queryParamMap.subscribe((params: ParamMap): void => {
+			const categoryInfo: CategoryResponse | null | undefined = extractCategoryFromQueryParams(params);
+			const brandInfo: BrandResponse | null | undefined = extractBrandFromQueryParams(params);
+			const page: number | null | undefined = extractPageFromQueryParams(params);
+			if (page) this.currentPage.set(page);
+			this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
+				return { ...state, brand: brandInfo, category: categoryInfo };
+			});
+			this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+				return {
+					...state,
+					vehiclesQuery: state.vehiclesQuery
+						.usePageSize(this.vehiclesPageSize)
+						.usePage(page ?? 1)
+						.useCategory(categoryInfo, categoryInfo?.Id)
+						.useBrand(brandInfo, brandInfo?.Id),
+				};
+			});
+		});
+	}
+}
+
+type GroupedVehicleCatalogueQueries = {
+	brandQuery: GetBrandsQuery;
+	modelQuery: GetModelsQuery;
+	vehiclesQuery: GetVehiclesQuery;
+	locationsQuery: GetLocationsQuery;
+};
+
+function defaultVehicleCatalogueQueries(): GroupedVehicleCatalogueQueries {
+	return {
+		brandQuery: GetBrandsQuery.default(),
+		modelQuery: GetModelsQuery.default(),
+		vehiclesQuery: defaultVehiclesQuery(),
+		locationsQuery: defaultLocationsQuery(),
+	};
+}
+
+type AggregatedStatisticsInfo = {
+	totalVehiclesCount: number;
+	averagePrice: number;
+	minimalPrice: number;
+	maximalPrice: number;
+};
+
+function defaultAggregatedStatisticsInfo(): AggregatedStatisticsInfo {
+	return {
+		totalVehiclesCount: 0,
+		averagePrice: 0,
+		minimalPrice: 0,
+		maximalPrice: 0,
+	};
+}
+
+function defaultVehiclesQuery(): GetVehiclesQuery {
+	return GetVehiclesQuery.default().usePageSize(30).usePage(1);
+}
+
+function defaultLocationsQuery(): GetLocationsQuery {
+	return GetLocationsQuery.default().useAmount(20);
+}
+
+function defaultCatalogueFilterSelections(): VehiclesCatalogueFilterSeletions {
+	return { brand: undefined, category: undefined, model: undefined, location: undefined };
+}
+
+function defaultVehiclesQueryResponse(): GetVehiclesQueryResponse {
+	return { Vehicles: [], TotalCount: 0, AveragePrice: 0, MaximalPrice: 0, MinimalPrice: 0 };
+}
+
+type VehiclesCatalogueFilterSeletions = {
+	category: CategoryResponse | null | undefined;
+	brand: BrandResponse | null | undefined;
+	model: ModelResponse | null | undefined;
+	location: LocationResponse | null | undefined;
+};
+
+function extractCategoryFromQueryParams(params: ParamMap): CategoryResponse | null | undefined {
+	const id: string | null | undefined = params.get('categoryId');
+	const name: string | null | undefined = params.get('categoryName');
+	if (!id || !name) return null;
+	return { Id: id, Name: name };
+}
+
+function extractPageFromQueryParams(params: ParamMap): number | null | undefined {
+	const pageStr: string | null | undefined = params.get('page');
+	if (!pageStr) return null;
+	const pageNum: number = Number(pageStr);
+	if (Number.isNaN(pageNum) || pageNum < 1) return null;
+	return pageNum;
+}
+
+function extractBrandFromQueryParams(params: ParamMap): BrandResponse | null | undefined {
+	const brandId: string | null | undefined = params.get('brandId');
+	const brandName: string | null | undefined = params.get('brandName');
+	if (!brandId || !brandName) return null;
+	return { Id: brandId, Name: brandName };
 }

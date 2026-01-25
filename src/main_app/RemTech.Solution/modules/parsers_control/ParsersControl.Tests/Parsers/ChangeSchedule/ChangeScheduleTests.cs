@@ -10,12 +10,12 @@ namespace ParsersControl.Tests.Parsers.ChangeSchedule;
 public sealed class ChangeScheduleTests(IntegrationalTestsFixture fixture) : IClassFixture<IntegrationalTestsFixture>
 {
     private IServiceProvider Services { get; } = fixture.Services;
-    
+
     [Fact]
     public async Task Change_Schedule_Success()
     {
-        string type = "Some Type";
-        string domain = "Some Domain";
+        const string type = "Some Type";
+        const string domain = "Some Domain";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
@@ -28,14 +28,18 @@ public sealed class ChangeScheduleTests(IntegrationalTestsFixture fixture) : ICl
     [Fact]
     public async Task Change_Schedule_When_Working_Failure()
     {
-        string type = "Some Type";
-        string domain = "Some Domain";
+        const string type = "Some Type";
+        const string domain = "Some Domain";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
         Result<SubscribedParser> enabled = await Services.EnableParser(id);
         Assert.True(enabled.IsSuccess);
-        Result<IEnumerable<SubscribedParserLink>> linkResultBeforeStartWork = await Services.AddLink(id, "Test url", "Test name");
+        Result<IEnumerable<SubscribedParserLink>> linkResultBeforeStartWork = await Services.AddLink(
+            id,
+            "Test url",
+            "Test name"
+        );
         Assert.True(linkResultBeforeStartWork.IsSuccess);
         Result activatingLink = await Services.MakeLinkActive(id, linkResultBeforeStartWork.Value.First().Id.Value);
         Assert.True(activatingLink.IsSuccess);
@@ -49,8 +53,9 @@ public sealed class ChangeScheduleTests(IntegrationalTestsFixture fixture) : ICl
     {
         ChangeScheduleCommand command = new(id, 1, DateTime.Now.AddDays(1));
         await using AsyncServiceScope scope = Services.CreateAsyncScope();
-        ICommandHandler<ChangeScheduleCommand, SubscribedParser> handler =
-            scope.ServiceProvider.GetRequiredService<ICommandHandler<ChangeScheduleCommand, SubscribedParser>>();
+        ICommandHandler<ChangeScheduleCommand, SubscribedParser> handler = scope.ServiceProvider.GetRequiredService<
+            ICommandHandler<ChangeScheduleCommand, SubscribedParser>
+        >();
         Result<SubscribedParser> changed = await handler.Execute(command);
         return changed;
     }

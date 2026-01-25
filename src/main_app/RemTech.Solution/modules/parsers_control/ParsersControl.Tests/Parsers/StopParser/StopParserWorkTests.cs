@@ -10,8 +10,8 @@ public sealed class StopParserWorkTests(IntegrationalTestsFixture fixture) : ICl
     [Fact]
     private async Task Stop_Parser_Work_From_Working_State_Failure()
     {
-        string domain = "Some Domain";
-        string type = "Some Type";
+        const string domain = "Some Domain";
+        const string type = "Some Type";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
@@ -22,12 +22,12 @@ public sealed class StopParserWorkTests(IntegrationalTestsFixture fixture) : ICl
         Result<SubscribedParser> disabled = await Services.DisableParser(id);
         Assert.True(disabled.IsSuccess);
     }
-    
+
     [Fact]
     private async Task Stop_Parser_Work_After_Creation_With_Disabled_State_Failure()
     {
-        string domain = "Some Domain";
-        string type = "Some Type";
+        const string domain = "Some Domain";
+        const string type = "Some Type";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
@@ -38,8 +38,8 @@ public sealed class StopParserWorkTests(IntegrationalTestsFixture fixture) : ICl
     [Fact]
     private async Task Stop_Parser_Work_At_Sleeping_State_Failure()
     {
-        string domain = "Some Domain";
-        string type = "Some Type";
+        const string domain = "Some Domain";
+        const string type = "Some Type";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);

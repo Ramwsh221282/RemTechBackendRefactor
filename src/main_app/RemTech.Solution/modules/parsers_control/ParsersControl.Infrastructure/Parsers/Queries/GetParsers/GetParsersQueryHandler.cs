@@ -9,10 +9,7 @@ public sealed class GetParsersQueryHandler(ISubscribedParsersCollectionRepositor
 {
     private ISubscribedParsersCollectionRepository Repository { get; } = repository;
 
-    public async Task<IEnumerable<ParserResponse>> Handle(
-        GetParsersQuery query,
-        CancellationToken ct = default
-    )
+    public async Task<IEnumerable<ParserResponse>> Handle(GetParsersQuery query, CancellationToken ct = default)
     {
         SubscribedParsersCollectionQuery emptyQuery = new();
         SubscribedParsersCollection parsers = await Repository.Get(emptyQuery, ct);

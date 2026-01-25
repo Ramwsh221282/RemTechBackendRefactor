@@ -20,10 +20,7 @@ public static class NotificationsModuleInjection
 {
     extension(IServiceCollection services)
     {
-        public void InjectNotificationsModule()
-        {
-            services.AddInfrastructureLayer();
-        }
+        public void InjectNotificationsModule() => services.AddInfrastructureLayer();
 
         public void AddNotificationsModule(bool isDevelopment)
         {
@@ -63,18 +60,12 @@ public static class NotificationsModuleInjection
             services.AddScoped<MailerRecordCacheInvalidator>();
         }
 
-        private void AddBackgroundServices()
-        {
-            services.AddHostedService<PendingEmailsProcessor>();
-        }
+        private void AddBackgroundServices() => services.AddHostedService<PendingEmailsProcessor>();
 
         private void AddPersistence()
         {
             services.AddScoped<IMailersRepository, MailersRepository>();
-            services.AddScoped<
-                IPendingEmailNotificationsRepository,
-                PendingEmailNotificationsRepository
-            >();
+            services.AddScoped<IPendingEmailNotificationsRepository, PendingEmailNotificationsRepository>();
             services.AddScoped<MailersChangeTracker>();
             services.AddScoped<PendingEmailsChangeTracker>();
             services.AddScoped<INotificationsModuleUnitOfWork, NotificationsModuleUnitOfWork>();

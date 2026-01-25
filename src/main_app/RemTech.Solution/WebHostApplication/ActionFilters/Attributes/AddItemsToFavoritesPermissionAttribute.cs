@@ -5,7 +5,6 @@ namespace WebHostApplication.ActionFilters.Attributes;
 
 public sealed class AddItemsToFavoritesPermissionAttribute : TypeFilterAttribute
 {
-    public AddItemsToFavoritesPermissionAttribute() : base(typeof(ShouldHaveAddItemsToFavoritesPermissionFilter))
-    {
-    }
+    public AddItemsToFavoritesPermissionAttribute()
+        : base(typeof(ShouldHaveAddItemsToFavoritesPermissionFilter)) { }
 }

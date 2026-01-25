@@ -8,13 +8,11 @@ public sealed class ItemPublishStrategyFactory(AddSparesProducer addSpares, AddV
     private AddSparesProducer Spares { get; } = addSpares;
     private AddVehiclesProducer Vehicles { get; } = addVehicles;
 
-    public IItemPublishingStrategy Resolve(string itemType)
-    {
-        return itemType switch
+    public IItemPublishingStrategy Resolve(string itemType) =>
+        itemType switch
         {
             "Запчасти" => Spares,
             "Техника" => Vehicles,
-            _ => throw new UnreachableException("Unknown item type: " + itemType)
+            _ => throw new UnreachableException("Unknown item type: " + itemType),
         };
-    }
 }

@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, Output, signal, WritableSignal,} from '@angular/core';
-import { NgClass, NgForOf, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Toast } from 'primeng/toast';
 import { ConfirmDialog } from 'primeng/confirmdialog';
@@ -8,7 +8,7 @@ import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module
 
 @Component({
   selector: 'app-scraper-links-list',
-  imports: [NgForOf, NgIf, Toast, ConfirmDialog, NgClass],
+  imports: [Toast, ConfirmDialog, NgClass],
   templateUrl: './scraper-links-list.component.html',
   styleUrl: './scraper-links-list.component.scss',
   providers: [MessageService, ConfirmationService],

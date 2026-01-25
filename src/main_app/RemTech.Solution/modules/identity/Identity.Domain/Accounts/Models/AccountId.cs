@@ -12,10 +12,8 @@ public readonly record struct AccountId
 
     public static AccountId New() => new(Guid.NewGuid());
 
-    public static Result<AccountId> Create(Guid value)
-    {
-        return value == Guid.Empty
+    public static Result<AccountId> Create(Guid value) =>
+        value == Guid.Empty
             ? Error.Validation("Идентификатор учетной записи не может быть пустым.")
             : new AccountId(value);
-    }
 }

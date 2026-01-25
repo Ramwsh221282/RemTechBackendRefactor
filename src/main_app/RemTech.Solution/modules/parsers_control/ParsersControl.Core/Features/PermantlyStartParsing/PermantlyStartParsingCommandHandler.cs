@@ -22,11 +22,7 @@ public sealed class PermantlyStartParsingCommandHandler(ISubscribedParsersReposi
         return saving.IsFailure ? saving.Error : parser.Value;
     }
 
-    private async Task<Result> SaveChanges(
-        Result<SubscribedParser> parser,
-        Result<Unit> result,
-        CancellationToken ct
-    )
+    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
     {
         if (parser.IsFailure)
             return Result.Failure(parser.Error);
@@ -37,17 +33,12 @@ public sealed class PermantlyStartParsingCommandHandler(ISubscribedParsersReposi
         return Result.Success();
     }
 
-    private async Task<Result<SubscribedParser>> GetRequiredParser(
-        Guid parserId,
-        CancellationToken ct
-    )
+    private Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
     {
         SubscribedParserQuery query = new(Id: parserId, WithLock: true);
-        return await SubscribedParser.FromRepository(repository, query, ct);
+        return SubscribedParser.FromRepository(repository, query, ct);
     }
 
-    private Result<Unit> StartParser(Result<SubscribedParser> parser)
-    {
-        return parser.IsFailure ? (Result<Unit>)parser.Error : parser.Value.PermantlyEnable();
-    }
+    private static Result<Unit> StartParser(Result<SubscribedParser> parser) =>
+        parser.IsFailure ? parser.Error : parser.Value.PermantlyEnable();
 }

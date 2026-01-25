@@ -29,10 +29,7 @@ public static class VehiclesModuleInjection
 {
     extension(IServiceCollection services)
     {
-        public void InjectVehiclesModule()
-        {
-            services.RegisterInfrastructureLayerDependencies();
-        }
+        public void InjectVehiclesModule() => services.RegisterInfrastructureLayerDependencies();
 
         public void RegisterVehiclesModule(bool isDevelopment)
         {
@@ -47,15 +44,10 @@ public static class VehiclesModuleInjection
             services.RegisterProducers();
         }
 
-        private void RegisterMigrations(Assembly assembly)
-        {
-            services.AddMigrations([assembly]);
-        }
+        private void RegisterMigrations(Assembly assembly) => services.AddMigrations([assembly]);
 
-        private void RegisterProducers()
-        {
+        private void RegisterProducers() =>
             services.AddSingleton<IOnVehiclesAddedEventPublisher, OnVehiclesAddedProducer>();
-        }
 
         private void RegisterPersisters()
         {
@@ -69,10 +61,7 @@ public static class VehiclesModuleInjection
             services.AddScoped<IPersister, NpgSqlPersister>();
         }
 
-        private void RegisterBackgroundServices()
-        {
-            services.AddHostedService<VehicleEmbeddingsUpdaterService>();
-        }
+        private void RegisterBackgroundServices() => services.AddHostedService<VehicleEmbeddingsUpdaterService>();
 
         private void RegisterSharedInfrastructure(bool isDevelopment)
         {

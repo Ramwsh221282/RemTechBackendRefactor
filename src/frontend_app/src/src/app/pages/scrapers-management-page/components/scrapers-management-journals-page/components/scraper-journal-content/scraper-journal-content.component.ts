@@ -11,7 +11,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ScraperJournalResponse } from '../../types/ScraperJournalResponse';
 import { VehicleScrapersService } from '../../../scrapers-management-settings-page/services/vehicle-scrapers.service';
 import { StringUtils } from '../../../../../../shared/utils/string-utils';
-import { DatePipe, NgClass, NgForOf, NgIf } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 import { PaginationComponent } from '../../../../../../shared/components/pagination/pagination.component';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { MessageServiceUtils } from '../../../../../../shared/utils/message-service-utils';
@@ -22,14 +22,12 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 @Component({
   selector: 'app-scraper-journal-content',
   imports: [
-    NgForOf,
     NgClass,
-    NgIf,
     DatePipe,
     PaginationComponent,
     Toast,
-    ConfirmDialog,
-  ],
+    ConfirmDialog
+],
   templateUrl: './scraper-journal-content.component.html',
   styleUrl: './scraper-journal-content.component.scss',
   providers: [MessageService, ConfirmationService],

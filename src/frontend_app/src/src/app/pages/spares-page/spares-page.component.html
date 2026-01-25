@@ -6,19 +6,23 @@
     <app-spares-search-input (onTextSearchSubmit)="acceptTextSearch($event)"/>
   </div>
   <div class="space-y-4">
-    <div *ngFor="let spare of spares"
-         class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition duration-200">
-      <div class="flex flex-col md:flex-row md:items-start gap-4">
-        <app-spare-photo [spare_setter]="spare"/>
-        <app-spare-content [spare_setter]="spare">
-          <app-spare-title [spare_setter]="spare"/>
-          <app-spare-details [spare_setter]="spare"/>
-          <app-spare-source [spare_setter]="spare"/>
-        </app-spare-content>
+    @for (spare of spares; track spare) {
+      <div
+        class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition duration-200">
+        <div class="flex flex-col md:flex-row md:items-start gap-4">
+          <app-spare-photo [spare_setter]="spare"/>
+          <app-spare-content [spare_setter]="spare">
+            <app-spare-title [spare_setter]="spare"/>
+            <app-spare-details [spare_setter]="spare"/>
+            <app-spare-source [spare_setter]="spare"/>
+          </app-spare-content>
+        </div>
       </div>
-    </div>
-    <p-paginator *ngIf="totalCount > 50" [rows]="50" [totalRecords]="totalCount"
-                 (onPageChange)="acceptPageChange($event)"/>
+    }
+    @if (totalCount > 50) {
+      <p-paginator [rows]="50" [totalRecords]="totalCount"
+        (onPageChange)="acceptPageChange($event)"/>
+    }
   </div>
 
 </div>

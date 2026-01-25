@@ -4,8 +4,7 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace ParsersControl.Core.Features.PermantlyStartManyParsing;
 
-public sealed class PermantlyStartManyParsingValidator
-    : AbstractValidator<PermantlyStartManyParsingCommand>
+public sealed class PermantlyStartManyParsingValidator : AbstractValidator<PermantlyStartManyParsingCommand>
 {
     public PermantlyStartManyParsingValidator()
     {

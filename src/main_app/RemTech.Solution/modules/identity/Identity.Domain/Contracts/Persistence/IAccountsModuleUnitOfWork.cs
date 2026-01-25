@@ -7,16 +7,16 @@ namespace Identity.Domain.Contracts.Persistence;
 
 public interface IAccountsModuleUnitOfWork
 {
-    Task Save(IEnumerable<Account> account, CancellationToken ct = default);
-    Task Save(Account account, CancellationToken ct = default);
-    Task Save(IEnumerable<Permission> permissions, CancellationToken ct = default);
-    Task Save(Permission permission, CancellationToken ct = default);
-    Task Save(IEnumerable<AccountTicket> tickets, CancellationToken ct = default);
-    Task Save(AccountTicket ticket, CancellationToken ct = default);
-    Task Save(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct = default);
-    Task Save(IdentityOutboxMessage message, CancellationToken ct = default);
-    void Track(IEnumerable<Account> accounts);
-    void Track(IEnumerable<AccountTicket> tickets);
-    void Track(IEnumerable<Permission> permissions);
-    void Track(IEnumerable<IdentityOutboxMessage> messages);
+	public Task Save(IEnumerable<Account> accounts, CancellationToken ct = default);
+	public Task Save(Account account, CancellationToken ct = default);
+	public Task Save(IEnumerable<Permission> permissions, CancellationToken ct = default);
+	public Task Save(Permission permission, CancellationToken ct = default);
+	public Task Save(IEnumerable<AccountTicket> tickets, CancellationToken ct = default);
+	public Task Save(AccountTicket ticket, CancellationToken ct = default);
+	public Task Save(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct = default);
+	public Task Save(IdentityOutboxMessage message, CancellationToken ct = default);
+	public void Track(IEnumerable<Account> accounts);
+	public void Track(IEnumerable<AccountTicket> tickets);
+	public void Track(IEnumerable<Permission> permissions);
+	public void Track(IEnumerable<IdentityOutboxMessage> messages);
 }

@@ -7,12 +7,15 @@ public sealed record AccountResponse(
     string Login,
     string Email,
     bool IsActivated,
-    IEnumerable<AccountPermissionsResponse> Permissions)
+    IEnumerable<AccountPermissionsResponse> Permissions
+)
 {
     public static AccountResponse ConvertFrom(Account account) =>
-        new(account.Id.Value,
+        new(
+            account.Id.Value,
             account.Login.Value,
             account.Email.Value,
             account.ActivationStatus.Value,
-            account.PermissionsList.Select(p => AccountPermissionsResponse.ConvertFrom(p)));
+            account.PermissionsList.Select(AccountPermissionsResponse.ConvertFrom)
+        );
 }

@@ -6,12 +6,12 @@ namespace ParsersControl.Tests.Parsers.StartParser;
 public sealed class StartParserTests(IntegrationalTestsFixture fixture) : IClassFixture<IntegrationalTestsFixture>
 {
     private IServiceProvider Services { get; } = fixture.Services;
-    
+
     [Fact]
     public async Task Start_After_Disabled_Success()
     {
-        string type = "Some Type";
-        string domain = "Some Domain";
+        const string type = "Some Type";
+        const string domain = "Some Domain";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
@@ -24,8 +24,8 @@ public sealed class StartParserTests(IntegrationalTestsFixture fixture) : IClass
     [Fact]
     public async Task Start_Parser_Disabled_Failure()
     {
-        string type = "Some Type";
-        string domain = "Some Domain";
+        const string type = "Some Type";
+        const string domain = "Some Domain";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);

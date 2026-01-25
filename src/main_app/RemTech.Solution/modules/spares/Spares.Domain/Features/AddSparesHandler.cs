@@ -7,23 +7,17 @@ using Spares.Domain.Models;
 namespace Spares.Domain.Features;
 
 [TransactionalHandler]
-public sealed class AddSparesHandler(ISparesRepository repository)
-    : ICommandHandler<AddSparesCommand, (Guid, int)>
+public sealed class AddSparesHandler(ISparesRepository repository) : ICommandHandler<AddSparesCommand, (Guid, int)>
 {
-    public async Task<Result<(Guid, int)>> Execute(
-        AddSparesCommand command,
-        CancellationToken ct = default
-    )
+    public async Task<Result<(Guid, int)>> Execute(AddSparesCommand command, CancellationToken ct = default)
     {
         Guid creatorId = command.Creator.CreatorId;
         Result<Spare[]> spares = CreateSpares(command.Spares);
-        int addedCount = await repository.AddMany(spares.Value);
+        int addedCount = await repository.AddMany(spares.Value, ct);
         return (creatorId, addedCount);
     }
 
-    public static Spare[] CreateSpares(IEnumerable<AddSpareCommandPayload> spareInfo)
-    {
-        return
+    public static Spare[] CreateSpares(IEnumerable<AddSpareCommandPayload> spareInfo) =>
         [
             .. spareInfo
                 .Select(info =>
@@ -42,5 +36,4 @@ public sealed class AddSparesHandler(ISparesRepository repository)
                 .Where(r => r.IsSuccess)
                 .Select(s => s.Value),
         ];
-    }
 }

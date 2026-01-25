@@ -6,12 +6,9 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace Notifications.Infrastructure.Mailers.Queries.GetMailer;
 
-public sealed class GetMailerHandler(IMailersRepository repository)
-    : IQueryHandler<GetMailerQuery, MailerResponse?>
+public sealed class GetMailerHandler(IMailersRepository repository) : IQueryHandler<GetMailerQuery, MailerResponse?>
 {
-    public async Task<MailerResponse?> Handle(
-        GetMailerQuery query,
-        CancellationToken ct = default)
+    public async Task<MailerResponse?> Handle(GetMailerQuery query, CancellationToken ct = default)
     {
         MailersSpecification spec = new MailersSpecification().WithId(query.Id);
         Result<Mailer> mailer = await repository.Get(spec, ct);

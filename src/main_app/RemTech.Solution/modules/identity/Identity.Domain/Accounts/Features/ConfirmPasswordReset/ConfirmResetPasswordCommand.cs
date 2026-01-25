@@ -1,4 +1,3 @@
-using FluentValidation;
 using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts.Cryptography;
 using Identity.Domain.Contracts.Persistence;
@@ -7,22 +6,10 @@ using Identity.Domain.Tickets;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
-using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace Identity.Domain.Accounts.Features.ConfirmPasswordReset;
 
-public sealed record ConfirmResetPasswordCommand(Guid AccountId, Guid TicketId, string NewPassword)
-    : ICommand;
-
-public sealed class ConfirmResetPasswordValidator : AbstractValidator<ConfirmResetPasswordCommand>
-{
-    public ConfirmResetPasswordValidator()
-    {
-        RuleFor(x => x.AccountId).MustBeValid(AccountId.Create);
-        RuleFor(x => x.TicketId).MustBeValid(AccountId.Create);
-        RuleFor(x => x.NewPassword).MustBeValid(AccountPassword.Create);
-    }
-}
+public sealed record ConfirmResetPasswordCommand(Guid AccountId, Guid TicketId, string NewPassword) : ICommand;
 
 [TransactionalHandler]
 public sealed class ConfirmResetPasswordHandler(
@@ -34,10 +21,7 @@ public sealed class ConfirmResetPasswordHandler(
     IAccountsModuleUnitOfWork unitOfWork
 ) : ICommandHandler<ConfirmResetPasswordCommand, Unit>
 {
-    public async Task<Result<Unit>> Execute(
-        ConfirmResetPasswordCommand command,
-        CancellationToken ct = default
-    )
+    public async Task<Result<Unit>> Execute(ConfirmResetPasswordCommand command, CancellationToken ct = default)
     {
         Result<Account> account = await GetAccount(command, ct);
         if (account.IsFailure)
@@ -53,10 +37,7 @@ public sealed class ConfirmResetPasswordHandler(
         return saving.IsFailure ? saving.Error : await Logout(command, ct);
     }
 
-    public async Task<Result<Unit>> Logout(
-        ConfirmResetPasswordCommand command,
-        CancellationToken ct
-    )
+    public async Task<Result<Unit>> Logout(ConfirmResetPasswordCommand command, CancellationToken ct)
     {
         await tokens.Delete(command.AccountId, ct);
         return Unit.Value;
@@ -96,16 +77,11 @@ public sealed class ConfirmResetPasswordHandler(
         return account.Value.ChangePassword(password, hasher, requirements);
     }
 
-    public async Task<Result<Account>> GetAccount(
-        ConfirmResetPasswordCommand command,
-        CancellationToken ct
-    ) => await accounts.Get(new AccountSpecification().WithId(command.AccountId).WithLock(), ct);
+    public Task<Result<Account>> GetAccount(ConfirmResetPasswordCommand command, CancellationToken ct) =>
+        accounts.Find(new AccountSpecification().WithId(command.AccountId).WithLock(), ct);
 
-    public async Task<Result<AccountTicket>> GetTicket(
-        ConfirmResetPasswordCommand command,
-        CancellationToken ct
-    ) =>
-        await tickets.Get(
+    public Task<Result<AccountTicket>> GetTicket(ConfirmResetPasswordCommand command, CancellationToken ct) =>
+        tickets.Find(
             new AccountTicketSpecification()
                 .WithTicketId(command.TicketId)
                 .WithAccountId(command.AccountId)

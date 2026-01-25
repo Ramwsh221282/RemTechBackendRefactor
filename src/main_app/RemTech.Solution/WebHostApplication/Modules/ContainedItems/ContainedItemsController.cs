@@ -23,8 +23,7 @@ public sealed class ContainedItemsController
 
     [HttpGet("main-page/last-added")]
     public async Task<Envelope> GetLastAddedItems(
-        [FromServices]
-            IQueryHandler<GetMainPageLastAddedItemsQuery, MainPageLastAddedItemsResponse> handler,
+        [FromServices] IQueryHandler<GetMainPageLastAddedItemsQuery, MainPageLastAddedItemsResponse> handler,
         CancellationToken ct = default
     )
     {

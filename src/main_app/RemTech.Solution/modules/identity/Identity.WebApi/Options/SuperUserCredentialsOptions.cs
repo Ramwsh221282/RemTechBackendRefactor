@@ -18,8 +18,8 @@ public sealed class SuperUserCredentialsOptions
             throw new InvalidOperationException("Super user password is empty.");
     }
 
-    public static void AddFromAppsettings(IServiceCollection services, string section = nameof(SuperUserCredentialsOptions))
-    {
-        services.AddOptions<IOptions<SuperUserCredentialsOptions>>().BindConfiguration(section);
-    }
+    public static void AddFromAppsettings(
+        IServiceCollection services,
+        string section = nameof(SuperUserCredentialsOptions)
+    ) => services.AddOptions<IOptions<SuperUserCredentialsOptions>>().BindConfiguration(section);
 }

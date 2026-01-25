@@ -3,7 +3,7 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddNotificationsModule(builder.Environment.IsDevelopment());
-    
+
 WebApplication app = builder.Build();
 app.Services.ApplyModuleMigrations();
 

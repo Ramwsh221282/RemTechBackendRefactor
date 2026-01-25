@@ -14,16 +14,13 @@ public sealed record ParsingWorkTime
     {
         TotalElapsedSeconds = totalElapsedSeconds;
     }
-    
-    public static ParsingWorkTime New()
-    {
-        return new ParsingWorkTime(InitialValue);
-    }
-    
+
+    public static ParsingWorkTime New() => new(InitialValue);
+
     public static Result<ParsingWorkTime> FromTotalElapsedSeconds(long totalElapsedSeconds)
     {
-        if (totalElapsedSeconds < InitialValue) 
-            return Error.Validation("Общее время работы парсера не может быть отрицательным.");
-        return new ParsingWorkTime(totalElapsedSeconds);        
+        return totalElapsedSeconds < InitialValue
+            ? (Result<ParsingWorkTime>)Error.Validation("Общее время работы парсера не может быть отрицательным.")
+            : (Result<ParsingWorkTime>)new ParsingWorkTime(totalElapsedSeconds);
     }
 }

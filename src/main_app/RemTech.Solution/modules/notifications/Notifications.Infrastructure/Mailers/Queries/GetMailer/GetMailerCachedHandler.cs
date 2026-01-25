@@ -5,15 +5,10 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 
 namespace Notifications.Infrastructure.Mailers.Queries.GetMailer;
 
-public sealed class GetMailerCachedHandler(
-    HybridCache cache,
-    IQueryHandler<GetMailerQuery, MailerResponse?> inner
-) : IQueryExecutorWithCache<GetMailerQuery, MailerResponse?>
+public sealed class GetMailerCachedHandler(HybridCache cache, IQueryHandler<GetMailerQuery, MailerResponse?> inner)
+    : IQueryExecutorWithCache<GetMailerQuery, MailerResponse?>
 {
-    public async Task<MailerResponse?> ExecuteWithCache(
-        GetMailerQuery query,
-        CancellationToken ct = default
-    )
+    public async Task<MailerResponse?> ExecuteWithCache(GetMailerQuery query, CancellationToken ct = default)
     {
         string key = $"mailer_instance_{query.Id}";
 

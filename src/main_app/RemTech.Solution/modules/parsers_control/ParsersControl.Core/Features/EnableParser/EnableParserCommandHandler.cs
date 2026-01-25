@@ -11,10 +11,7 @@ namespace ParsersControl.Core.Features.EnableParser;
 public sealed class EnableParserCommandHandler(ISubscribedParsersRepository repository)
     : ICommandHandler<EnableParserCommand, SubscribedParser>
 {
-    public async Task<Result<SubscribedParser>> Execute(
-        EnableParserCommand command,
-        CancellationToken ct = default
-    )
+    public async Task<Result<SubscribedParser>> Execute(EnableParserCommand command, CancellationToken ct = default)
     {
         Result<SubscribedParser> parser = await GetRequiredParser(command, ct);
         Result<Unit> enabled = Enable(parser);
@@ -22,33 +19,24 @@ public sealed class EnableParserCommandHandler(ISubscribedParsersRepository repo
         return saving.IsFailure ? saving.Error : parser.Value;
     }
 
-    private async Task<Result> SaveChanges(
-        Result<SubscribedParser> parser,
-        Result<Unit> enabling,
-        CancellationToken ct
-    )
+    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> enabling, CancellationToken ct)
     {
         if (enabling.IsFailure)
             return Result.Failure(enabling.Error);
         if (parser.IsFailure)
             return Result.Failure(parser.Error);
-        await repository.Save(parser.Value);
+        await repository.Save(parser.Value, ct);
         return Result.Success();
     }
 
-    private Result<Unit> Enable(Result<SubscribedParser> parser)
+    private static Result<Unit> Enable(Result<SubscribedParser> parser)
     {
-        if (parser.IsFailure)
-            return parser.Error;
-        return parser.Value.Enable();
+        return parser.IsFailure ? (Result<Unit>)parser.Error : parser.Value.Enable();
     }
 
-    private async Task<Result<SubscribedParser>> GetRequiredParser(
-        EnableParserCommand command,
-        CancellationToken ct
-    )
+    private Task<Result<SubscribedParser>> GetRequiredParser(EnableParserCommand command, CancellationToken ct)
     {
         SubscribedParserQuery query = new(Id: command.Id, WithLock: true);
-        return await SubscribedParser.FromRepository(repository, query, ct);
+        return SubscribedParser.FromRepository(repository, query, ct);
     }
 }

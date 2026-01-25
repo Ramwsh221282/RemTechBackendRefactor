@@ -18,7 +18,9 @@ public static class AppsettingsConfigurationInjection
             services.AddOptions<FrontendOptions>().BindConfiguration(nameof(FrontendOptions));
             services.AddOptions<NpgSqlOptions>().BindConfiguration(nameof(NpgSqlOptions));
             services.AddOptions<RabbitMqOptions>().BindConfiguration(nameof(RabbitMqOptions));
-            services.AddOptions<GetVehiclesThresholdConstants>().BindConfiguration(nameof(GetVehiclesThresholdConstants));
+            services
+                .AddOptions<GetVehiclesThresholdConstants>()
+                .BindConfiguration(nameof(GetVehiclesThresholdConstants));
             services.AddOptions<GetSparesThresholdConstants>().BindConfiguration(nameof(GetSparesThresholdConstants));
             services.AddOptions<SuperUserCredentialsOptions>().BindConfiguration(nameof(SuperUserCredentialsOptions));
             services.AddOptions<BcryptWorkFactorOptions>().BindConfiguration(nameof(BcryptWorkFactorOptions));

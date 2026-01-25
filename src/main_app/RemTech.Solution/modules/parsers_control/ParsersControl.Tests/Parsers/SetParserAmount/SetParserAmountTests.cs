@@ -9,12 +9,12 @@ namespace ParsersControl.Tests.Parsers.SetParserAmount;
 public sealed class SetParserAmountTests(IntegrationalTestsFixture fixture) : IClassFixture<IntegrationalTestsFixture>
 {
     private IServiceProvider Services { get; } = fixture.Services;
-    
+
     [Fact]
     public async Task Set_Parser_Amount_Success()
     {
-        string type = "Some Type";
-        string domain = "Some Domain";
+        const string type = "Some Type";
+        const string domain = "Some Domain";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
@@ -29,8 +29,8 @@ public sealed class SetParserAmountTests(IntegrationalTestsFixture fixture) : IC
     [Fact]
     private async Task Set_Parser_Amount_When_Not_Working_Failure()
     {
-        string type = "Some Type";
-        string domain = "Some Domain";
+        const string type = "Some Type";
+        const string domain = "Some Domain";
         Guid id = Guid.NewGuid();
         Result<SubscribedParser> result = await Services.InvokeSubscription(domain, type, id);
         Assert.True(result.IsSuccess);
@@ -39,13 +39,14 @@ public sealed class SetParserAmountTests(IntegrationalTestsFixture fixture) : IC
         Result<SubscribedParser> changed = await SetParserAmount(id, 10);
         Assert.False(changed.IsSuccess);
     }
-    
+
     private async Task<Result<SubscribedParser>> SetParserAmount(Guid id, int amount)
     {
         SetParsedAmountCommand command = new(id, amount);
         await using AsyncServiceScope scope = Services.CreateAsyncScope();
-        ICommandHandler<SetParsedAmountCommand, SubscribedParser> handler =
-            scope.ServiceProvider.GetRequiredService<ICommandHandler<SetParsedAmountCommand, SubscribedParser>>();
+        ICommandHandler<SetParsedAmountCommand, SubscribedParser> handler = scope.ServiceProvider.GetRequiredService<
+            ICommandHandler<SetParsedAmountCommand, SubscribedParser>
+        >();
         Result<SubscribedParser> changed = await handler.Execute(command);
         return changed;
     }

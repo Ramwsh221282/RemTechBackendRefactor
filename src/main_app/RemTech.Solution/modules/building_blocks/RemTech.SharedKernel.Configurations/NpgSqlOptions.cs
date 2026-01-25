@@ -19,7 +19,7 @@ public sealed class NpgSqlOptions
         const string template = "Host={0};Port={1};Database={2};Username={3};Password={4};";
         return string.Format(template, Host, Port, Database, Username, Password);
     }
-    
+
     private void ValidateOptions()
     {
         if (string.IsNullOrWhiteSpace(Host))

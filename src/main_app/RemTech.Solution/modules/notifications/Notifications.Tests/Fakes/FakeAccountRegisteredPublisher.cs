@@ -6,7 +6,7 @@ public sealed class FakeAccountRegisteredPublisher(RabbitMqProducer producer, Se
 {
     private const string Exchange = "identity";
     private const string RoutingKey = "account.new";
-    
+
     private RabbitMqProducer Producer { get; } = producer;
     private Serilog.ILogger Logger { get; } = logger.ForContext<FakeAccountRegisteredPublisher>();
 
@@ -17,7 +17,7 @@ public sealed class FakeAccountRegisteredPublisher(RabbitMqProducer producer, Se
         await Producer.PublishDirectAsync(payload, Exchange, RoutingKey, options, CancellationToken.None);
         Logger.Information("Published account registration message for {Email}", email);
     }
-    
+
     private sealed record NewAccountRegisteredOutboxMessagePayload(
         Guid AccountId,
         Guid TicketId,

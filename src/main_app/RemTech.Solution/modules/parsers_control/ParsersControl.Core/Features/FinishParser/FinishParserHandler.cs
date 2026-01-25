@@ -11,10 +11,7 @@ namespace ParsersControl.Core.Features.FinishParser;
 public sealed class FinishParserHandler(ISubscribedParsersRepository repository)
     : ICommandHandler<FinishParserCommand, SubscribedParser>
 {
-    public async Task<Result<SubscribedParser>> Execute(
-        FinishParserCommand command,
-        CancellationToken ct = default
-    )
+    public async Task<Result<SubscribedParser>> Execute(FinishParserCommand command, CancellationToken ct = default)
     {
         Result<SubscribedParser> parser = await GetRequiredParser(command.Id, ct);
         Result<Unit> result = FinishParser(parser, command.TotalElapsedSeconds);
@@ -22,11 +19,7 @@ public sealed class FinishParserHandler(ISubscribedParsersRepository repository)
         return saving.IsFailure ? saving.Error : parser.Value;
     }
 
-    private async Task<Result> SaveChanges(
-        Result<SubscribedParser> parser,
-        Result<Unit> result,
-        CancellationToken ct
-    )
+    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
     {
         if (parser.IsFailure)
             return Result.Failure(parser.Error);
@@ -36,19 +29,14 @@ public sealed class FinishParserHandler(ISubscribedParsersRepository repository)
         return Result.Success();
     }
 
-    private async Task<Result<SubscribedParser>> GetRequiredParser(
-        Guid parserId,
-        CancellationToken ct
-    )
+    private Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
     {
         SubscribedParserQuery query = new(Id: parserId, WithLock: true);
-        return await SubscribedParser.FromRepository(repository, query, ct);
+        return SubscribedParser.FromRepository(repository, query, ct);
     }
 
-    private Result<Unit> FinishParser(Result<SubscribedParser> parser, long totalElapsedSeconds)
+    private static Result<Unit> FinishParser(Result<SubscribedParser> parser, long totalElapsedSeconds)
     {
-        if (parser.IsFailure)
-            return parser.Error;
-        return parser.Value.FinishWork(totalElapsedSeconds);
+        return parser.IsFailure ? (Result<Unit>)parser.Error : parser.Value.FinishWork(totalElapsedSeconds);
     }
 }

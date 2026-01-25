@@ -10,10 +10,7 @@ public sealed class GetUserQueryHandler(IAccountsRepository accounts)
 {
     private IAccountsRepository Accounts { get; } = accounts;
 
-    public async Task<UserAccountResponse?> Handle(
-        GetUserQuery query,
-        CancellationToken ct = default
-    ) =>
+    public async Task<UserAccountResponse?> Handle(GetUserQuery query, CancellationToken ct = default) =>
         query switch
         {
             GetUserByIdQuery byId => await SearchById(byId, ct),
@@ -21,18 +18,11 @@ public sealed class GetUserQueryHandler(IAccountsRepository accounts)
             _ => null,
         };
 
-    private async Task<UserAccountResponse?> SearchById(
-        GetUserByRefreshTokenQuery query,
-        CancellationToken ct
-    ) =>
-        CreateResponse(
-            await Accounts.Get(new AccountSpecification().WithRefreshToken(query.RefreshToken), ct)
-        );
+    private async Task<UserAccountResponse?> SearchById(GetUserByRefreshTokenQuery query, CancellationToken ct) =>
+        CreateResponse(await Accounts.Find(new AccountSpecification().WithRefreshToken(query.RefreshToken), ct));
 
-    private async Task<UserAccountResponse?> SearchById(
-        GetUserByIdQuery query,
-        CancellationToken ct
-    ) => CreateResponse(await Accounts.Get(new AccountSpecification().WithId(query.AccountId), ct));
+    private async Task<UserAccountResponse?> SearchById(GetUserByIdQuery query, CancellationToken ct) =>
+        CreateResponse(await Accounts.Find(new AccountSpecification().WithId(query.AccountId), ct));
 
     private static UserAccountResponse? CreateResponse(Result<Account> result) =>
         result.IsFailure ? null : UserAccountResponse.Create(result.Value);

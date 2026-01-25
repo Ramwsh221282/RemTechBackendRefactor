@@ -11,24 +11,15 @@ namespace ParsersControl.Core.Features.StopParserWork;
 public sealed class StopParserWorkHandler(ISubscribedParsersRepository repository)
     : ICommandHandler<StopParserWorkCommand, SubscribedParser>
 {
-    public async Task<Result<SubscribedParser>> Execute(
-        StopParserWorkCommand command,
-        CancellationToken ct = default
-    )
+    public async Task<Result<SubscribedParser>> Execute(StopParserWorkCommand command, CancellationToken ct = default)
     {
         Result<SubscribedParser> parser = await GetRequiredParser(command, ct);
         Result<Unit> finished = FinishWork(parser);
         Result saving = await SaveChanges(parser, finished, ct);
-        return saving.IsFailure
-            ? (Result<SubscribedParser>)saving.Error
-            : (Result<SubscribedParser>)parser.Value;
+        return saving.IsFailure ? (Result<SubscribedParser>)saving.Error : (Result<SubscribedParser>)parser.Value;
     }
 
-    private async Task<Result> SaveChanges(
-        Result<SubscribedParser> parser,
-        Result<Unit> finished,
-        CancellationToken ct
-    )
+    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> finished, CancellationToken ct)
     {
         if (finished.IsFailure)
             return Result.Failure(finished.Error);
@@ -38,17 +29,15 @@ public sealed class StopParserWorkHandler(ISubscribedParsersRepository repositor
         return Result.Success();
     }
 
-    private Result<Unit> FinishWork(Result<SubscribedParser> parser)
-    {
-        return parser.IsFailure ? (Result<Unit>)parser.Error : parser.Value.FinishWork();
-    }
+    private static Result<Unit> FinishWork(Result<SubscribedParser> parser) =>
+        parser.IsFailure ? parser.Error : parser.Value.FinishWork();
 
-    private async Task<Result<SubscribedParser>> GetRequiredParser(
+    private Task<Result<SubscribedParser>> GetRequiredParser(
         StopParserWorkCommand command,
         CancellationToken ct = default
     )
     {
         SubscribedParserQuery query = new(Id: command.Id, WithLock: true);
-        return await SubscribedParser.FromRepository(repository, query, ct);
+        return SubscribedParser.FromRepository(repository, query, ct);
     }
 }

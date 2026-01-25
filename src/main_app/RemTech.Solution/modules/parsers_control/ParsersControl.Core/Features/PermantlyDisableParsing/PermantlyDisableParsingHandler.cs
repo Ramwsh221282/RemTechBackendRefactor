@@ -22,11 +22,7 @@ public sealed class PermantlyDisableParsingHandler(ISubscribedParsersRepository 
         return saving.IsFailure ? saving.Error : parser.Value;
     }
 
-    private async Task<Result> SaveChanges(
-        Result<SubscribedParser> parser,
-        Result<Unit> result,
-        CancellationToken ct
-    )
+    private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
     {
         if (parser.IsFailure)
             return Result.Failure(parser.Error);
@@ -46,9 +42,9 @@ public sealed class PermantlyDisableParsingHandler(ISubscribedParsersRepository 
         return Unit.Value;
     }
 
-    private async Task<Result<SubscribedParser>> GetRequiredParser(Guid id, CancellationToken ct)
+    private Task<Result<SubscribedParser>> GetRequiredParser(Guid id, CancellationToken ct)
     {
         SubscribedParserQuery query = new(Id: id, WithLock: true);
-        return await SubscribedParser.FromRepository(repository, query, ct);
+        return SubscribedParser.FromRepository(repository, query, ct);
     }
 }

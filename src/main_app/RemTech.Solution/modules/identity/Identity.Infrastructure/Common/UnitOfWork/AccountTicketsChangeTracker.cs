@@ -12,13 +12,15 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 
     public void StartTracking(IEnumerable<AccountTicket> tickets)
     {
-        foreach (AccountTicket ticket in tickets) _tracking.TryAdd(ticket.TicketId, ticket.Clone());
+        foreach (AccountTicket ticket in tickets)
+            _tracking.TryAdd(ticket.TicketId, ticket.Clone());
     }
 
     public async Task SaveChanges(IEnumerable<AccountTicket> tickets, CancellationToken ct)
     {
         IEnumerable<AccountTicket> tracking = GetTrackingTickets(tickets);
-        if (!tracking.Any()) return;
+        if (!tracking.Any())
+            return;
         await SaveTicketChanges(tracking, ct);
     }
 
@@ -26,23 +28,30 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
     {
         List<string> updateSet = [];
         DynamicParameters parameters = new();
+        AccountTicket[] ticketsArray = [.. tickets];
 
-        if (tickets.Any(t => t.Finished != _tracking[t.TicketId].Finished))
+        if (ticketsArray.Any(t => t.Finished != _tracking[t.TicketId].Finished))
         {
-            string clause = string.Join(" ", tickets.Select((t, i) =>
-            {
-                string paramName = $"@finished_{i}";
-                parameters.Add(paramName, t.Finished, DbType.Boolean);
-                return $"{WhenClause(i)} THEN {paramName}";
-            }));
+            string clause = string.Join(
+                " ",
+                ticketsArray.Select(
+                    (t, i) =>
+                    {
+                        string paramName = $"@finished_{i}";
+                        parameters.Add(paramName, t.Finished, DbType.Boolean);
+                        return $"{WhenClause(i)} THEN {paramName}";
+                    }
+                )
+            );
             updateSet.Add($"finished = CASE {clause} ELSE finished END");
         }
 
-        if (updateSet.Count == 0) return;
-        
+        if (updateSet.Count == 0)
+            return;
+
         List<Guid> ids = [];
         int index = 0;
-        foreach (AccountTicket ticket in tickets)
+        foreach (AccountTicket ticket in ticketsArray)
         {
             Guid id = ticket.TicketId;
             string paramName = $"@ticket_id_{index}";
@@ -50,20 +59,20 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
             ids.Add(id);
             index++;
         }
-        
+
         parameters.Add("@ids", ids.ToArray());
-        
+
         string updateSql = $"""
-                           UPDATE identity_module.tickets ac
-                           SET {string.Join(", ", updateSet)}
-                           WHERE ac.id = ANY (@ids)
-                           """;
-        
+			UPDATE identity_module.tickets ac
+			SET {string.Join(", ", updateSet)}
+			WHERE ac.id = ANY (@ids)
+			""";
+
         CommandDefinition command = Session.FormCommand(updateSql, parameters, ct);
         await Session.Execute(command);
     }
 
-    private IEnumerable<AccountTicket> GetTrackingTickets(IEnumerable<AccountTicket> tickets)
+    private List<AccountTicket> GetTrackingTickets(IEnumerable<AccountTicket> tickets)
     {
         List<AccountTicket> tracking = [];
         foreach (AccountTicket ticket in tickets)
@@ -74,8 +83,5 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
         return tracking;
     }
 
-    private string WhenClause(int index)
-    {
-        return $"WHEN ac.id = @ticket_id_{index}";
-    }
+    private static string WhenClause(int index) => $"WHEN ac.id = @ticket_id_{index}";
 }

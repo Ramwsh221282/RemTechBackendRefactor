@@ -22,13 +22,21 @@ public sealed class NpgSqlPersister(
     ILocationsPersister locationsPersister,
     IVehiclesPersister vehiclesPersister,
     IVehiclesListPersister vehiclesListPersister
-    ) : IPersister
+) : IPersister
 {
     public Task<Result<Brand>> Save(Brand brand, CancellationToken ct = default) => brandPersister.Save(brand, ct);
+
     public Task<Result<Model>> Save(Model model, CancellationToken ct = default) => modelPersister.Save(model, ct);
-    public Task<Result<Location>> Save(Location location, CancellationToken ct = default) => locationsPersister.Save(location, ct);
-    public Task<Result<Category>> Save(Category category, CancellationToken ct = default) => categoryPersister.Save(category, ct);
-    public Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default) => characteristicPersister.Save(characteristic, ct);
+
+    public Task<Result<Location>> Save(Location location, CancellationToken ct = default) =>
+        locationsPersister.Save(location, ct);
+
+    public Task<Result<Category>> Save(Category category, CancellationToken ct = default) =>
+        categoryPersister.Save(category, ct);
+
+    public Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default) =>
+        characteristicPersister.Save(characteristic, ct);
+
     public async Task<Result<VehiclePersistInfo>> Save(VehiclePersistInfo info, CancellationToken ct = default)
     {
         Result<Unit> result = await vehiclesPersister.Persist(info, ct);

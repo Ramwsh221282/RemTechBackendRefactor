@@ -13,7 +13,7 @@ public sealed class ShouldHaveNotificationsManagementPermissionFilter(IJwtTokenM
             await context.HttpContext.WriteForbiddenResult();
             return;
         }
-        
+
         await next();
     }
 }

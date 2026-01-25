@@ -7,10 +7,8 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Common.BackgroundServices;
 
-public sealed class AccountsModuleOutboxCleaner(
-    Serilog.ILogger logger,
-    NpgSqlConnectionFactory connectionFactory
-) : BackgroundService
+public sealed class AccountsModuleOutboxCleaner(Serilog.ILogger logger, NpgSqlConnectionFactory connectionFactory)
+    : BackgroundService
 {
     private Serilog.ILogger Logger { get; } = logger.ForContext<AccountsModuleOutboxCleaner>();
 
@@ -44,22 +42,14 @@ public sealed class AccountsModuleOutboxCleaner(
         }
     }
 
-    private static async Task<int> RemoveSentMessages(
-        NpgSqlSession session,
-        CancellationToken ct = default
-    )
+    private static async Task<int> RemoveSentMessages(NpgSqlSession session, CancellationToken ct = default)
     {
         const string sql = """
-            DELETE FROM identity_module.outbox
-            WHERE sent is not NULL
-            """;
+			DELETE FROM identity_module.outbox
+			WHERE sent is not NULL
+			""";
 
-        CommandDefinition command = new(
-            sql,
-            cancellationToken: ct,
-            transaction: session.Transaction
-        );
-
+        CommandDefinition command = new(sql, transaction: session.Transaction, cancellationToken: ct);
         NpgsqlConnection connection = await session.GetConnection(ct: ct);
         return await connection.ExecuteAsync(command);
     }

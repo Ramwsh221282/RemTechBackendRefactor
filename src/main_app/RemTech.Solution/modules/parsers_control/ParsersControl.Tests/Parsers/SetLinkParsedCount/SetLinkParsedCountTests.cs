@@ -4,21 +4,26 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace ParsersControl.Tests.Parsers.SetLinkParsedCount;
 
-public sealed class SetLinkParsedCountTests(IntegrationalTestsFixture fixture) : IClassFixture<IntegrationalTestsFixture>
+public sealed class SetLinkParsedCountTests(IntegrationalTestsFixture fixture)
+    : IClassFixture<IntegrationalTestsFixture>
 {
     private IServiceProvider Services { get; } = fixture.Services;
 
     [Fact]
     private async Task Set_Link_Parsed_Count_Success()
     {
-        string domain = "Some domain";
-        string type = "Some type";
+        const string domain = "Some domain";
+        const string type = "Some type";
         Guid parserId = Guid.NewGuid();
 
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(
+            parserId,
+            "https://example.com",
+            "Test Link"
+        );
         Assert.True(linkResult.IsSuccess);
         Guid linkId = linkResult.Value.First().Id.Value;
 
@@ -28,8 +33,12 @@ public sealed class SetLinkParsedCountTests(IntegrationalTestsFixture fixture) :
         Result<SubscribedParser> startResult = await Services.StartParser(parserId);
         Assert.True(startResult.IsSuccess);
 
-        int parsedAmount = 100;
-        Result<SubscribedParserLink> setParsedCountResult = await Services.SetLinkParsedAmount(parserId, linkId, parsedAmount);
+        const int parsedAmount = 100;
+        Result<SubscribedParserLink> setParsedCountResult = await Services.SetLinkParsedAmount(
+            parserId,
+            linkId,
+            parsedAmount
+        );
 
         Assert.True(setParsedCountResult.IsSuccess);
         Assert.Equal(parsedAmount, setParsedCountResult.Value.Statistics.ParsedCount.Value);
@@ -44,14 +53,18 @@ public sealed class SetLinkParsedCountTests(IntegrationalTestsFixture fixture) :
     [Fact]
     private async Task Set_Link_Parsed_Count_Multiple_Times_Success()
     {
-        string domain = "Some domain";
-        string type = "Some type";
+        const string domain = "Some domain";
+        const string type = "Some type";
         Guid parserId = Guid.NewGuid();
 
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(
+            parserId,
+            "https://example.com",
+            "Test Link"
+        );
         Assert.True(linkResult.IsSuccess);
         Guid linkId = linkResult.Value.First().Id.Value;
 
@@ -83,14 +96,18 @@ public sealed class SetLinkParsedCountTests(IntegrationalTestsFixture fixture) :
     [Fact]
     private async Task Set_Link_Parsed_Count_When_Parser_Not_Working_Failure()
     {
-        string domain = "Some domain";
-        string type = "Some type";
+        const string domain = "Some domain";
+        const string type = "Some type";
         Guid parserId = Guid.NewGuid();
 
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(
+            parserId,
+            "https://example.com",
+            "Test Link"
+        );
         Assert.True(linkResult.IsSuccess);
         Guid linkId = linkResult.Value.First().Id.Value;
 
@@ -102,8 +119,8 @@ public sealed class SetLinkParsedCountTests(IntegrationalTestsFixture fixture) :
     [Fact]
     private async Task Set_Link_Parsed_Count_With_Invalid_Link_Id_Failure()
     {
-        string domain = "Some domain";
-        string type = "Some type";
+        const string domain = "Some domain";
+        const string type = "Some type";
         Guid parserId = Guid.NewGuid();
 
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
@@ -116,7 +133,11 @@ public sealed class SetLinkParsedCountTests(IntegrationalTestsFixture fixture) :
         Assert.True(startResult.IsSuccess);
 
         Guid invalidLinkId = Guid.NewGuid();
-        Result<SubscribedParserLink> setParsedCountResult = await Services.SetLinkParsedAmount(parserId, invalidLinkId, 100);
+        Result<SubscribedParserLink> setParsedCountResult = await Services.SetLinkParsedAmount(
+            parserId,
+            invalidLinkId,
+            100
+        );
 
         Assert.True(setParsedCountResult.IsFailure);
     }
@@ -127,7 +148,11 @@ public sealed class SetLinkParsedCountTests(IntegrationalTestsFixture fixture) :
         Guid invalidParserId = Guid.NewGuid();
         Guid linkId = Guid.NewGuid();
 
-        Result<SubscribedParserLink> setParsedCountResult = await Services.SetLinkParsedAmount(invalidParserId, linkId, 100);
+        Result<SubscribedParserLink> setParsedCountResult = await Services.SetLinkParsedAmount(
+            invalidParserId,
+            linkId,
+            100
+        );
 
         Assert.True(setParsedCountResult.IsFailure);
     }
@@ -135,14 +160,18 @@ public sealed class SetLinkParsedCountTests(IntegrationalTestsFixture fixture) :
     [Fact]
     private async Task Set_Link_Parsed_Count_After_Parser_Stopped_Failure()
     {
-        string domain = "Some domain";
-        string type = "Some type";
+        const string domain = "Some domain";
+        const string type = "Some type";
         Guid parserId = Guid.NewGuid();
 
         Result<SubscribedParser> subscribeResult = await Services.InvokeSubscription(domain, type, parserId);
         Assert.True(subscribeResult.IsSuccess);
 
-        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(parserId, "https://example.com", "Test Link");
+        Result<IEnumerable<SubscribedParserLink>> linkResult = await Services.AddLink(
+            parserId,
+            "https://example.com",
+            "Test Link"
+        );
         Assert.True(linkResult.IsSuccess);
         Guid linkId = linkResult.Value.First().Id.Value;
 

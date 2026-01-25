@@ -5,12 +5,12 @@ import {
   AccordionHeader,
   AccordionPanel,
 } from 'primeng/accordion';
-import { NgIf } from '@angular/common';
+
 import { StyleClass } from 'primeng/styleclass';
 
 @Component({
   selector: 'app-mailing-management-doc-accordion-entry',
-  imports: [AccordionContent, AccordionHeader, NgIf, AccordionPanel],
+  imports: [AccordionContent, AccordionHeader, AccordionPanel],
   templateUrl: './mailing-management-doc-accordion-entry.component.html',
   styleUrl: './mailing-management-doc-accordion-entry.component.scss',
 })
