@@ -6,6 +6,9 @@ using SwaggerThemes;
 using WebHostApplication.Injection;
 using WebHostApplication.Middlewares;
 
+// TODO: Add rate limiters.
+// TODO: Add response compression.
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.RegisterApplicationModules();
 if (builder.Environment.IsDevelopment())

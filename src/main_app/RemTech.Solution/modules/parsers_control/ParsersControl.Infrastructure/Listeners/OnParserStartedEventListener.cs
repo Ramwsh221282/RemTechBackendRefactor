@@ -46,7 +46,7 @@ public sealed class OnParserStartedEventListener(RabbitMqProducer producer, Seri
 		public required StartParserMessageLinks[] parser_links { get; set; }
 	}
 
-	public sealed class StartParserMessageLinks
+	private sealed class StartParserMessageLinks
 	{
 		public required Guid id { get; set; }
 		public required string url { get; set; }

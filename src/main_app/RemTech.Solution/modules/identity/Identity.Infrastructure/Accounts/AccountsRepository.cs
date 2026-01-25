@@ -38,6 +38,11 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		return Session.QuerySingleRow<bool>(command);
 	}
 
+	async Task<Result<Account>> IAccountsRepository.Find(AccountSpecification specification, CancellationToken ct) =>
+		string.IsNullOrWhiteSpace(specification.RefreshToken)
+			? await Get(specification, ct)
+			: await SearchWithRefreshTokenFilter(specification, ct);
+
 	private async Task<Result<Account>> SearchWithRefreshTokenFilter(
 		AccountSpecification specification,
 		CancellationToken ct
@@ -243,9 +248,4 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 			login = account.Login.Value,
 			activation_status = account.ActivationStatus.Value,
 		};
-
-	async Task<Result<Account>> IAccountsRepository.Find(AccountSpecification specification, CancellationToken ct) =>
-		string.IsNullOrWhiteSpace(specification.RefreshToken)
-			? await Get(specification, ct)
-			: await SearchWithRefreshTokenFilter(specification, ct);
 }

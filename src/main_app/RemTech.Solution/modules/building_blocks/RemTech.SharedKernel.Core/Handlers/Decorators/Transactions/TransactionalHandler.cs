@@ -14,12 +14,11 @@ public sealed class TransactionalHandler<TCommand, TResult>(
 ) : ITransactionalCommandHandler<TCommand, TResult>
 	where TCommand : ICommand
 {
+	private static readonly ConcurrentDictionary<Type, bool> _transactionalAttributeCache = new();
 	private IEnumerable<IEventTransporter<TCommand, TResult>> Transporters { get; } = transporters;
 	private ICommandHandler<TCommand, TResult> Inner { get; } = inner;
 	private ITransactionSource TransactionSource { get; } = transactionSource;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<TransactionalHandler<TCommand, TResult>>();
-
-	private static readonly ConcurrentDictionary<Type, bool> TransactionalAttributeCache = new();
 
 	public async Task<Result<TResult>> Execute(TCommand command, CancellationToken ct = default)
 	{
@@ -68,7 +67,7 @@ public sealed class TransactionalHandler<TCommand, TResult>(
 			return false;
 
 		Type rootType = instance.GetType();
-		return TransactionalAttributeCache.GetOrAdd(
+		return _transactionalAttributeCache.GetOrAdd(
 			rootType,
 			static t =>
 			{

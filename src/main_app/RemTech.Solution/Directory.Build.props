@@ -32,6 +32,7 @@
 	</ItemGroup>
 
 	<PropertyGroup>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>

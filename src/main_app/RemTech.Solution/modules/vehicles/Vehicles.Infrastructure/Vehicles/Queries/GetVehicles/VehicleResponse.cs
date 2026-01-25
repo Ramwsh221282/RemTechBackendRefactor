@@ -16,6 +16,6 @@ public sealed class VehicleResponse
 	public required bool IsNds { get; set; }
 	public required string Text { get; set; }
 	public required int? ReleaseYear { get; set; }
-	public required string[] Photos { get; set; }
-	public required VehicleCharacteristicsResponse[] Characteristics { get; set; }
+	public required IReadOnlyList<string> Photos { get; set; }
+	public required IReadOnlyList<VehicleCharacteristicsResponse> Characteristics { get; set; }
 }

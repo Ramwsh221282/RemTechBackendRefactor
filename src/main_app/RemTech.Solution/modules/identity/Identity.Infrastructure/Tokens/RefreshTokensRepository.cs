@@ -113,15 +113,6 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		return Session.Execute(command);
 	}
 
-	private static RefreshToken Map(IDataReader reader)
-	{
-		Guid accountId = reader.GetGuid(reader.GetOrdinal("account_id"));
-		string tokenValue = reader.GetString(reader.GetOrdinal("token_value"));
-		long expiresAt = reader.GetInt64(reader.GetOrdinal("expires_at"));
-		long createdAt = reader.GetInt64(reader.GetOrdinal("created_at"));
-		return new RefreshToken(accountId, tokenValue, expiresAt, createdAt);
-	}
-
 	public Task Delete(Guid AccountId, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -131,5 +122,14 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		object parameters = new { account_id = AccountId };
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
 		return Session.Execute(command);
+	}
+
+	private static RefreshToken Map(IDataReader reader)
+	{
+		Guid accountId = reader.GetGuid(reader.GetOrdinal("account_id"));
+		string tokenValue = reader.GetString(reader.GetOrdinal("token_value"));
+		long expiresAt = reader.GetInt64(reader.GetOrdinal("expires_at"));
+		long createdAt = reader.GetInt64(reader.GetOrdinal("created_at"));
+		return new RefreshToken(accountId, tokenValue, expiresAt, createdAt);
 	}
 }

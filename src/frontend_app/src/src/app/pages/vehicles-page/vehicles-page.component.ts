@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit, signal, WritableSignal } from '@angular/core';
+import { Component, effect, EffectRef, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { VehiclesTextSearchComponent } from './components/vehicles-text-search/vehicles-text-search.component';
@@ -17,7 +17,7 @@ import { VehiclesApiService } from '../../shared/api/vehicles-module/vehicles-ap
 import { CategoryResponse } from '../../shared/api/categories-module/categories-responses';
 import { BrandResponse } from '../../shared/api/brands-module/brands-api.responses';
 import { ModelResponse } from '../../shared/api/models-module/models-responses';
-import { catchError, EMPTY, forkJoin, Observable, tap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, Observable, of, tap } from 'rxjs';
 import { GetVehiclesQueryResponse } from '../../shared/api/vehicles-module/vehicles-api.responses';
 import { LocationsApiService } from '../../shared/api/locations-module/locations-api.service';
 import { LocationResponse } from '../../shared/api/locations-module/locations.responses';
@@ -67,7 +67,7 @@ export class VehiclesPageComponent implements OnInit {
 	readonly selectFilterParameters: WritableSignal<VehiclesCatalogueFilterSeletions> = signal(defaultCatalogueFilterSelections());
 	readonly queries: WritableSignal<GroupedVehicleCatalogueQueries> = signal(defaultVehicleCatalogueQueries());
 
-	readonly refreshCatalogueDataOnQueryChange = effect(() => {
+	readonly refreshCatalogueDataOnQueryChange: EffectRef = effect((): void => {
 		const queries: GroupedVehicleCatalogueQueries = this.queries();
 		const brandsFetch: Observable<BrandResponse[]> = this._brandsService.fetchBrands(queries.brandQuery);
 		const modelsFetch: Observable<ModelResponse[]> = this._modelsService.fetchModels(queries.modelQuery);
@@ -94,7 +94,7 @@ export class VehiclesPageComponent implements OnInit {
 	public ngOnInit(): void {
 		this.initializePageTitle();
 		this.readParametersFromActivatedRoute(this._activatedRoute);
-		this.queries.update((state) => {
+		this.queries.update((state: GroupedVehicleCatalogueQueries) => {
 			return { ...state, vehiclesQuery: state.vehiclesQuery.usePageSize(this.vehiclesPageSize) };
 		});
 		this.fetchVehiclesCategoryBrandModelsOptions();
@@ -159,18 +159,6 @@ export class VehiclesPageComponent implements OnInit {
 
 	public handleUserVehiclePriceSortModeChange(sortMode: string | undefined): void {}
 
-	public handleUserLocationSelect(location: LocationResponse | null | undefined): void {
-		this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
-			return { ...state, location };
-		});
-		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
-			return {
-				...state,
-				vehiclesQuery: state.vehiclesQuery.useLocation(location, location?.Id),
-			};
-		});
-	}
-
 	public handleUserCategorySelect(category: CategoryResponse | null | undefined): void {
 		this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
 			return { ...state, category, brand: undefined, model: undefined, location: undefined };
@@ -191,7 +179,6 @@ export class VehiclesPageComponent implements OnInit {
 		this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
 			return { ...state, brand, model: undefined };
 		});
-
 		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
 			return {
 				...state,
@@ -211,6 +198,18 @@ export class VehiclesPageComponent implements OnInit {
 				...state,
 				locationsQuery: state.locationsQuery.useModelId(model?.Id, model),
 				vehiclesQuery: state.vehiclesQuery.useModel(model),
+			};
+		});
+	}
+
+	public handleUserLocationSelect(location: LocationResponse | null | undefined): void {
+		this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
+			return { ...state, location };
+		});
+		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+			return {
+				...state,
+				vehiclesQuery: state.vehiclesQuery.useLocation(location, location?.Id),
 			};
 		});
 	}
@@ -239,30 +238,30 @@ type AggregatedStatisticsInfo = {
 	maximalPrice: number;
 };
 
-const defaultAggregatedStatisticsInfo: () => AggregatedStatisticsInfo = () => {
+function defaultAggregatedStatisticsInfo(): AggregatedStatisticsInfo {
 	return {
 		totalVehiclesCount: 0,
 		averagePrice: 0,
 		minimalPrice: 0,
 		maximalPrice: 0,
 	};
-};
+}
 
-const defaultVehiclesQuery: () => GetVehiclesQuery = () => {
+function defaultVehiclesQuery(): GetVehiclesQuery {
 	return GetVehiclesQuery.default().usePageSize(30).usePage(1);
-};
+}
 
-const defaultLocationsQuery: () => GetLocationsQuery = () => {
+function defaultLocationsQuery(): GetLocationsQuery {
 	return GetLocationsQuery.default().useAmount(20);
-};
+}
 
-const defaultCatalogueFilterSelections: () => VehiclesCatalogueFilterSeletions = () => {
+function defaultCatalogueFilterSelections(): VehiclesCatalogueFilterSeletions {
 	return { brand: undefined, category: undefined, model: undefined, location: undefined };
-};
+}
 
-const defaultVehiclesQueryResponse: () => GetVehiclesQueryResponse = () => {
+function defaultVehiclesQueryResponse(): GetVehiclesQueryResponse {
 	return { Vehicles: [], TotalCount: 0, AveragePrice: 0, MaximalPrice: 0, MinimalPrice: 0 };
-};
+}
 
 type VehiclesCatalogueFilterSeletions = {
 	category: CategoryResponse | null | undefined;
@@ -271,26 +270,24 @@ type VehiclesCatalogueFilterSeletions = {
 	location: LocationResponse | null | undefined;
 };
 
-const extractCategoryFromQueryParams: (params: ParamMap) => CategoryResponse | null | undefined = (
-	params: ParamMap,
-): CategoryResponse | null => {
+function extractCategoryFromQueryParams(params: ParamMap): CategoryResponse | null | undefined {
 	const id: string | null | undefined = params.get('categoryId');
 	const name: string | null | undefined = params.get('categoryName');
 	if (!id || !name) return null;
 	return { Id: id, Name: name };
-};
+}
 
-const extractPageFromQueryParams: (params: ParamMap) => number | null | undefined = (params: ParamMap): number | null => {
+function extractPageFromQueryParams(params: ParamMap): number | null | undefined {
 	const pageStr: string | null | undefined = params.get('page');
 	if (!pageStr) return null;
 	const pageNum: number = Number(pageStr);
 	if (Number.isNaN(pageNum) || pageNum < 1) return null;
 	return pageNum;
-};
+}
 
-const extractBrandFromQueryParams: (params: ParamMap) => BrandResponse | null | undefined = (params: ParamMap): BrandResponse | null => {
+function extractBrandFromQueryParams(params: ParamMap): BrandResponse | null | undefined {
 	const brandId: string | null | undefined = params.get('brandId');
 	const brandName: string | null | undefined = params.get('brandName');
 	if (!brandId || !brandName) return null;
 	return { Id: brandId, Name: brandName };
-};
+}

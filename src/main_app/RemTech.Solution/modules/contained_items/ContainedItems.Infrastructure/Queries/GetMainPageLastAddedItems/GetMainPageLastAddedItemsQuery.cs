@@ -16,23 +16,23 @@ public sealed record MainPageLastAddedItem(SpareData? Spare, VehicleData? Vehicl
 public sealed record SpareData(Guid Id, string Title);
 
 public sealed record VehicleData(
-    Guid Id,
-    string Title,
-    IEnumerable<string> Photos,
-    IEnumerable<VehicleDataCharacteristic> Characteristics
+	Guid Id,
+	string Title,
+	IEnumerable<string> Photos,
+	IEnumerable<VehicleDataCharacteristic> Characteristics
 );
 
 public sealed record VehicleDataCharacteristic(string Characteristic, string Value);
 
 public sealed class GetMainPageLastAddedItemsQueryHandler(NpgSqlSession session)
-    : IQueryHandler<GetMainPageLastAddedItemsQuery, MainPageLastAddedItemsResponse>
+	: IQueryHandler<GetMainPageLastAddedItemsQuery, MainPageLastAddedItemsResponse>
 {
-    public async Task<MainPageLastAddedItemsResponse> Handle(
-        GetMainPageLastAddedItemsQuery query,
-        CancellationToken ct = default
-    )
-    {
-        const string sql = """
+	public async Task<MainPageLastAddedItemsResponse> Handle(
+		GetMainPageLastAddedItemsQuery query,
+		CancellationToken ct = default
+	)
+	{
+		const string sql = """
 			    WITH vehicle_items AS (
 			    SELECT
 			        jsonb_build_object(
@@ -86,71 +86,71 @@ public sealed class GetMainPageLastAddedItemsQueryHandler(NpgSqlSession session)
 			OFFSET 1           
 			""";
 
-        CommandDefinition command = new(sql, cancellationToken: ct);
-        NpgsqlConnection connection = await session.GetConnection(ct);
-        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
-        return await MapToResponse(reader, ct);
-    }
+		CommandDefinition command = new(sql, cancellationToken: ct);
+		NpgsqlConnection connection = await session.GetConnection(ct);
+		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+		return await MapToResponse(reader, ct);
+	}
 
-    private static async Task<MainPageLastAddedItemsResponse> MapToResponse(DbDataReader reader, CancellationToken ct)
-    {
-        List<MainPageLastAddedItem> items = new(50);
-        while (await reader.ReadAsync(ct))
-        {
-            int vehicleDataPosition = reader.GetOrdinal("vehicle");
-            int spareDataPosition = reader.GetOrdinal("spare");
+	public static MainPageLastAddedItem CreateAsSpare(SpareData spare) => new(spare, null);
 
-            if (!await reader.IsDBNullAsync(vehicleDataPosition, ct))
-                ParseAndAddVehicleItem(reader.GetString(vehicleDataPosition), items);
+	public static MainPageLastAddedItem CreateAsVehicle(VehicleData vehicle) => new(null, vehicle);
 
-            if (!await reader.IsDBNullAsync(spareDataPosition, ct))
-                ParseAndAddSpareItem(reader.GetString(spareDataPosition), items);
-        }
+	private static async Task<MainPageLastAddedItemsResponse> MapToResponse(DbDataReader reader, CancellationToken ct)
+	{
+		List<MainPageLastAddedItem> items = new(50);
+		while (await reader.ReadAsync(ct))
+		{
+			int vehicleDataPosition = reader.GetOrdinal("vehicle");
+			int spareDataPosition = reader.GetOrdinal("spare");
 
-        return new MainPageLastAddedItemsResponse(items);
-    }
+			if (!await reader.IsDBNullAsync(vehicleDataPosition, ct))
+				ParseAndAddVehicleItem(reader.GetString(vehicleDataPosition), items);
 
-    private static void ParseAndAddSpareItem(string spareDataJson, List<MainPageLastAddedItem> collection)
-    {
-        if (string.IsNullOrWhiteSpace(spareDataJson))
-            return;
+			if (!await reader.IsDBNullAsync(spareDataPosition, ct))
+				ParseAndAddSpareItem(reader.GetString(spareDataPosition), items);
+		}
 
-        using JsonDocument doc = JsonDocument.Parse(spareDataJson);
-        Guid id = doc.RootElement.GetProperty("id").GetGuid();
-        string? title = doc.RootElement.GetProperty("title").GetString();
-        if (!string.IsNullOrWhiteSpace(title))
-            collection.Add(CreateAsSpare(new SpareData(id, title)));
-    }
+		return new MainPageLastAddedItemsResponse(items);
+	}
 
-    private static void ParseAndAddVehicleItem(string vehicleDataJson, List<MainPageLastAddedItem> collection)
-    {
-        if (string.IsNullOrWhiteSpace(vehicleDataJson))
-            return;
+	private static void ParseAndAddSpareItem(string spareDataJson, List<MainPageLastAddedItem> collection)
+	{
+		if (string.IsNullOrWhiteSpace(spareDataJson))
+			return;
 
-        using JsonDocument doc = JsonDocument.Parse(vehicleDataJson);
-        Guid id = doc.RootElement.GetProperty("id").GetGuid();
-        string? title = doc.RootElement.GetProperty("title").GetString();
-        if (string.IsNullOrWhiteSpace(title))
-            return;
-        string[]? photos = JsonSerializer.Deserialize<string[]>(doc.RootElement.GetProperty("photos"));
-        photos ??= [];
-        List<VehicleDataCharacteristic> characteristics = [];
+		using JsonDocument doc = JsonDocument.Parse(spareDataJson);
+		Guid id = doc.RootElement.GetProperty("id").GetGuid();
+		string? title = doc.RootElement.GetProperty("title").GetString();
+		if (!string.IsNullOrWhiteSpace(title))
+			collection.Add(CreateAsSpare(new SpareData(id, title)));
+	}
 
-        foreach (JsonElement element in doc.RootElement.GetProperty("characteristics").EnumerateArray())
-        {
-            string value = element.GetProperty("value").GetString() ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(value))
-                continue;
-            string characteristic = element.GetProperty("characteristic").GetString() ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(characteristic))
-                continue;
-            characteristics.Add(new VehicleDataCharacteristic(characteristic, value));
-        }
+	private static void ParseAndAddVehicleItem(string vehicleDataJson, List<MainPageLastAddedItem> collection)
+	{
+		if (string.IsNullOrWhiteSpace(vehicleDataJson))
+			return;
 
-        collection.Add(CreateAsVehicle(new VehicleData(id, title, photos, characteristics)));
-    }
+		using JsonDocument doc = JsonDocument.Parse(vehicleDataJson);
+		Guid id = doc.RootElement.GetProperty("id").GetGuid();
+		string? title = doc.RootElement.GetProperty("title").GetString();
+		if (string.IsNullOrWhiteSpace(title))
+			return;
+		string[]? photos = JsonSerializer.Deserialize<string[]>(doc.RootElement.GetProperty("photos"));
+		photos ??= [];
+		List<VehicleDataCharacteristic> characteristics = [];
 
-    public static MainPageLastAddedItem CreateAsSpare(SpareData spare) => new(spare, null);
+		foreach (JsonElement element in doc.RootElement.GetProperty("characteristics").EnumerateArray())
+		{
+			string value = element.GetProperty("value").GetString() ?? string.Empty;
+			if (string.IsNullOrWhiteSpace(value))
+				continue;
+			string characteristic = element.GetProperty("characteristic").GetString() ?? string.Empty;
+			if (string.IsNullOrWhiteSpace(characteristic))
+				continue;
+			characteristics.Add(new VehicleDataCharacteristic(characteristic, value));
+		}
 
-    public static MainPageLastAddedItem CreateAsVehicle(VehicleData vehicle) => new(null, vehicle);
+		collection.Add(CreateAsVehicle(new VehicleData(id, title, photos, characteristics)));
+	}
 }

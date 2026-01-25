@@ -59,6 +59,8 @@ public sealed class GetBrandsQuery : IQuery
 	public GetBrandsQuery ForModelName(string? modelName) =>
 		string.IsNullOrWhiteSpace(modelName) ? this : Copy(this, modelName: modelName);
 
+	public override string ToString() => JsonSerializer.Serialize(this);
+
 	private static GetBrandsQuery Copy(
 		GetBrandsQuery origin,
 		Guid? id = null,
@@ -89,6 +91,4 @@ public sealed class GetBrandsQuery : IQuery
 			SortMode = sortDirection ?? origin.SortMode,
 			SortFields = sortFields ?? origin.SortFields,
 		};
-
-	public override string ToString() => JsonSerializer.Serialize(this);
 }

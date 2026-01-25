@@ -28,6 +28,8 @@ public class GetModelsQuery : IQuery
 	public GetModelsQuery ForCategoryName(string? categoryName) =>
 		string.IsNullOrWhiteSpace(categoryName) ? this : Copy(this, categoryName: categoryName);
 
+	public override string ToString() => JsonSerializer.Serialize(this);
+
 	private static GetModelsQuery Copy(
 		GetModelsQuery origin,
 		Guid? brandId = null,
@@ -46,6 +48,4 @@ public class GetModelsQuery : IQuery
 			Id = id ?? origin.Id,
 			Name = name ?? origin.Name,
 		};
-
-	public override string ToString() => JsonSerializer.Serialize(this);
 }

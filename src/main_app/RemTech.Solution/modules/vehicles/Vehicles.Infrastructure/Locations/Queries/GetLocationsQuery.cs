@@ -61,6 +61,10 @@ public sealed class GetLocationsQuery : IQuery
 	public bool ContainsModelFilter() =>
 		(ModelId != null && ModelId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(ModelName);
 
+	public static GetLocationsQuery Create() => new() { Amount = 20 };
+
+	public override string ToString() => JsonSerializer.Serialize(this);
+
 	private static GetLocationsQuery Copy(
 		GetLocationsQuery original,
 		int? amount = null,
@@ -89,8 +93,4 @@ public sealed class GetLocationsQuery : IQuery
 			Includes = includes is null ? original.Includes : [.. includes],
 			UseOrderByName = orderByName ?? original.UseOrderByName,
 		};
-
-	public static GetLocationsQuery Create() => new() { Amount = 20 };
-
-	public override string ToString() => JsonSerializer.Serialize(this);
 }

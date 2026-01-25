@@ -8,16 +8,6 @@ namespace ParsersControl.Core.Parsers.Models;
 
 public sealed class SubscribedParser
 {
-	private SubscribedParser(SubscribedParser parser)
-		: this(
-			parser.Id,
-			parser.Identity,
-			parser.Statistics,
-			parser.State,
-			parser.Schedule,
-			[.. parser.Links.Select(SubscribedParserLink.CreateCopy)]
-		) { }
-
 	public SubscribedParser(SubscribedParser parser, IEnumerable<SubscribedParserLink> links)
 		: this(parser.Id, parser.Identity, parser.Statistics, parser.State, parser.Schedule, [.. links]) { }
 
@@ -38,6 +28,16 @@ public sealed class SubscribedParser
 		SubscribedParserState state,
 		SubscribedParserSchedule schedule
 	) => (Id, Identity, Statistics, State, Schedule, Links) = (id, identity, statistics, state, schedule, []);
+
+	private SubscribedParser(SubscribedParser parser)
+		: this(
+			parser.Id,
+			parser.Identity,
+			parser.Statistics,
+			parser.State,
+			parser.Schedule,
+			[.. parser.Links.Select(SubscribedParserLink.CreateCopy)]
+		) { }
 
 	public IReadOnlyList<SubscribedParserLink> Links { get; private set; }
 	public SubscribedParserId Id { get; }

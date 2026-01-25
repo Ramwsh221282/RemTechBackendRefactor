@@ -135,7 +135,7 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
 		public required string RegionKind { get; init; }
 	}
 
-	public sealed class CitySearchResult
+	private sealed class CitySearchResult
 	{
 		public required Guid CityId { get; init; }
 		public required string CityName { get; init; }
