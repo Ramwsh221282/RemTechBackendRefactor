@@ -23,19 +23,6 @@ public sealed class AddSparesConsumer(
 	private Serilog.ILogger Logger { get; } = logger.ForContext<AddSparesConsumer>();
 	private IServiceProvider Services { get; } = services;
 	private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
-
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
-
-	public Task StartConsuming(CancellationToken ct = default)
-	{
-		AsyncEventingBasicConsumer consumer = new(Channel);
-		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, autoAck: false, consumer: consumer, cancellationToken: ct);
-	}
-
-	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
-
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, @event) =>
 		{
@@ -63,6 +50,52 @@ public sealed class AddSparesConsumer(
 				await Channel.BasicAckAsync(@event.DeliveryTag, false);
 			}
 		};
+
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+
+	public Task StartConsuming(CancellationToken ct = default)
+	{
+		AsyncEventingBasicConsumer consumer = new(Channel);
+		consumer.ReceivedAsync += Handler;
+		return Channel.BasicConsumeAsync(Queue, autoAck: false, consumer: consumer, cancellationToken: ct);
+	}
+
+	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
+
+	private static async Task<(Guid CreatorId, int Added)> SaveSpares(
+		IServiceProvider services,
+		AddSparesCommand command
+	)
+	{
+		await using AsyncServiceScope scope = services.CreateAsyncScope();
+		return await scope
+			.ServiceProvider.GetRequiredService<ICommandHandler<AddSparesCommand, (Guid, int)>>()
+			.Execute(command);
+	}
+
+	private static AddSparesCommand CreateCommandFrom(AddSparesMessage message)
+	{
+		AddSparesCreatorPayload creator = CreateCreatorPayload(message);
+		IEnumerable<AddSpareCommandPayload> spares = message.Payload.Select(ConvertToAddSpareCommandCreatorInfo);
+		return new AddSparesCommand(creator, spares);
+	}
+
+	private static AddSparesCreatorPayload CreateCreatorPayload(AddSparesMessage message) =>
+		new(CreatorId: message.CreatorId, CreatorDomain: message.CreatorDomain, CreatorType: message.CreatorType);
+
+	private static AddSpareCommandPayload ConvertToAddSpareCommandCreatorInfo(AddSpareMessagePayload payload) =>
+		new(
+			ContainedItemId: payload.ContainedItemId,
+			Source: payload.Url,
+			Oem: payload.Oem,
+			Title: payload.Title,
+			Price: payload.Price,
+			IsNds: payload.IsNds,
+			Address: payload.Address,
+			Type: payload.Type,
+			PhotoPaths: payload.Photos
+		);
 
 	private static bool IsMessageValid(AddSparesMessage message, out string error)
 	{
@@ -102,38 +135,4 @@ public sealed class AddSparesConsumer(
 		public string Title { get; set; } = string.Empty;
 		public string Type { get; set; } = string.Empty;
 	}
-
-	private static async Task<(Guid CreatorId, int Added)> SaveSpares(
-		IServiceProvider services,
-		AddSparesCommand command
-	)
-	{
-		await using AsyncServiceScope scope = services.CreateAsyncScope();
-		return await scope
-			.ServiceProvider.GetRequiredService<ICommandHandler<AddSparesCommand, (Guid, int)>>()
-			.Execute(command);
-	}
-
-	private static AddSparesCommand CreateCommandFrom(AddSparesMessage message)
-	{
-		AddSparesCreatorPayload creator = CreateCreatorPayload(message);
-		IEnumerable<AddSpareCommandPayload> spares = message.Payload.Select(ConvertToAddSpareCommandCreatorInfo);
-		return new AddSparesCommand(creator, spares);
-	}
-
-	private static AddSparesCreatorPayload CreateCreatorPayload(AddSparesMessage message) =>
-		new(CreatorId: message.CreatorId, CreatorDomain: message.CreatorDomain, CreatorType: message.CreatorType);
-
-	private static AddSpareCommandPayload ConvertToAddSpareCommandCreatorInfo(AddSpareMessagePayload payload) =>
-		new(
-			ContainedItemId: payload.ContainedItemId,
-			Source: payload.Url,
-			Oem: payload.Oem,
-			Title: payload.Title,
-			Price: payload.Price,
-			IsNds: payload.IsNds,
-			Address: payload.Address,
-			Type: payload.Type,
-			PhotoPaths: payload.Photos
-		);
 }

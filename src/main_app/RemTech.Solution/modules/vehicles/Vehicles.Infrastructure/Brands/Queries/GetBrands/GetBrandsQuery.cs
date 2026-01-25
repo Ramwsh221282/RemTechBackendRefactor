@@ -6,6 +6,8 @@ namespace Vehicles.Infrastructure.Brands.Queries.GetBrands;
 
 public sealed class GetBrandsQuery : IQuery
 {
+	[JsonIgnore]
+	private Dictionary<string, string>? _includedInformationKeys_cached;
 	public Guid? CategoryId { get; private init; }
 	public string? CategoryName { get; private init; }
 	public Guid? ModelId { get; private init; }
@@ -18,9 +20,6 @@ public sealed class GetBrandsQuery : IQuery
 	public string? TextSearch { get; private init; }
 	public string? SortMode { get; private init; }
 	public IEnumerable<string>? SortFields { get; private init; }
-
-	[JsonIgnore]
-	private Dictionary<string, string>? _includedInformationKeys_cached;
 
 	[JsonIgnore]
 	private Dictionary<string, string> IncludedInformationKeys =>

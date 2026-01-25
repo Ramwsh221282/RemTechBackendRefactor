@@ -21,6 +21,9 @@ public sealed class PermantlyDisableManyParsingHandler(ISubscribedParsersCollect
 		return saving.IsFailure ? saving.Error : Result.Success(parsers.Value.Read());
 	}
 
+	private static Result<Unit> PermantlyDisableParsers(Result<SubscribedParsersCollection> parsers) =>
+		parsers.IsFailure ? (Result<Unit>)parsers.Error : parsers.Value.PermanentlyDisableAll();
+
 	private async Task<Result<Unit>> SaveChanges(
 		Result<Unit> enabling,
 		Result<SubscribedParsersCollection> parsers,
@@ -34,9 +37,6 @@ public sealed class PermantlyDisableManyParsingHandler(ISubscribedParsersCollect
 		Result<Unit> saving = await repository.SaveChanges(parsers.Value, ct);
 		return saving;
 	}
-
-	private static Result<Unit> PermantlyDisableParsers(Result<SubscribedParsersCollection> parsers) =>
-		parsers.IsFailure ? (Result<Unit>)parsers.Error : parsers.Value.PermanentlyDisableAll();
 
 	private async Task<Result<SubscribedParsersCollection>> GetParsers(
 		IEnumerable<Guid> identifiers,

@@ -43,6 +43,48 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 			? await Get(specification, ct)
 			: await SearchWithRefreshTokenFilter(specification, ct);
 
+	private static object GetParameters(Account account) =>
+		new
+		{
+			id = account.Id.Value,
+			email = account.Email.Value,
+			password = account.Password.Value,
+			login = account.Login.Value,
+			activation_status = account.ActivationStatus.Value,
+		};
+
+	private static (DynamicParameters Parameters, string FilterSql) WhereClause(AccountSpecification specification)
+	{
+		DynamicParameters parameters = new();
+		List<string> filters = [];
+
+		if (!string.IsNullOrWhiteSpace(specification.RefreshToken))
+		{
+			parameters.Add("@token_value", specification.RefreshToken, DbType.String);
+			// Filter is already included in sql string of method SearchWithRefreshToken()
+		}
+
+		if (specification.Id.HasValue)
+		{
+			parameters.Add("@accountId", specification.Id.Value, DbType.Guid);
+			filters.Add("a.id=@accountId");
+		}
+
+		if (!string.IsNullOrWhiteSpace(specification.Login))
+		{
+			parameters.Add("@login", specification.Login, DbType.String);
+			filters.Add("a.login=@login");
+		}
+
+		if (!string.IsNullOrWhiteSpace(specification.Email))
+		{
+			parameters.Add("@email", specification.Email, DbType.String);
+			filters.Add("a.email=@email");
+		}
+
+		return (parameters, filters.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filters)}");
+	}
+
 	private async Task<Result<Account>> SearchWithRefreshTokenFilter(
 		AccountSpecification specification,
 		CancellationToken ct
@@ -175,38 +217,6 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		return mappings.Count == 0 ? null : mappings.First().Value;
 	}
 
-	private static (DynamicParameters Parameters, string FilterSql) WhereClause(AccountSpecification specification)
-	{
-		DynamicParameters parameters = new();
-		List<string> filters = [];
-
-		if (!string.IsNullOrWhiteSpace(specification.RefreshToken))
-		{
-			parameters.Add("@token_value", specification.RefreshToken, DbType.String);
-			// Filter is already included in sql string of method SearchWithRefreshToken()
-		}
-
-		if (specification.Id.HasValue)
-		{
-			parameters.Add("@accountId", specification.Id.Value, DbType.Guid);
-			filters.Add("a.id=@accountId");
-		}
-
-		if (!string.IsNullOrWhiteSpace(specification.Login))
-		{
-			parameters.Add("@login", specification.Login, DbType.String);
-			filters.Add("a.login=@login");
-		}
-
-		if (!string.IsNullOrWhiteSpace(specification.Email))
-		{
-			parameters.Add("@email", specification.Email, DbType.String);
-			filters.Add("a.email=@email");
-		}
-
-		return (parameters, filters.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filters)}");
-	}
-
 	private async Task BlockEntity(Account account, CancellationToken ct)
 	{
 		await BlockAccount(account, ct);
@@ -238,14 +248,4 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		CommandDefinition command = new(sql, parameters, transaction: Session.Transaction, cancellationToken: ct);
 		return Session.Execute(command);
 	}
-
-	private static object GetParameters(Account account) =>
-		new
-		{
-			id = account.Id.Value,
-			email = account.Email.Value,
-			password = account.Password.Value,
-			login = account.Login.Value,
-			activation_status = account.ActivationStatus.Value,
-		};
 }

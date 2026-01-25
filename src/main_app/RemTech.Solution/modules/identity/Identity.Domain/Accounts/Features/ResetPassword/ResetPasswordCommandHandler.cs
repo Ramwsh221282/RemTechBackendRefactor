@@ -22,15 +22,6 @@ public sealed class ResetPasswordCommandHandler(IAccountsRepository accounts, IA
 		return ResetPasswordResult.From(account.Value, ticket.Value);
 	}
 
-	private async Task<Result<Account>> ResolveAccount(ResetPasswordCommand command, CancellationToken ct)
-	{
-		if (!string.IsNullOrWhiteSpace(command.Email))
-			return await FindAccountByEmail(command.Email, ct);
-		return !string.IsNullOrWhiteSpace(command.Login)
-			? await FindAccountByLogin(command.Login, ct)
-			: (Result<Account>)Error.Validation("Не предоставлен ни Email, ни логин для сброса пароля.");
-	}
-
 	private static Result<AccountTicket> CreateResetPasswordTicket(Result<Account> account, Result<Unit> canReset)
 	{
 		if (account.IsFailure)
@@ -38,6 +29,20 @@ public sealed class ResetPasswordCommandHandler(IAccountsRepository accounts, IA
 		return canReset.IsFailure
 			? (Result<AccountTicket>)canReset.Error
 			: account.Value.CreateTicket(AccountTicketPurposes.ResetPassword);
+	}
+
+	private static Result<Unit> CanResetPassword(Result<Account> account)
+	{
+		return account.IsFailure ? (Result<Unit>)account.Error : account.Value.CanResetPassword();
+	}
+
+	private async Task<Result<Account>> ResolveAccount(ResetPasswordCommand command, CancellationToken ct)
+	{
+		if (!string.IsNullOrWhiteSpace(command.Email))
+			return await FindAccountByEmail(command.Email, ct);
+		return !string.IsNullOrWhiteSpace(command.Login)
+			? await FindAccountByLogin(command.Login, ct)
+			: (Result<Account>)Error.Validation("Не предоставлен ни Email, ни логин для сброса пароля.");
 	}
 
 	private Task<Result<Account>> FindAccountByEmail(string email, CancellationToken ct)
@@ -50,10 +55,5 @@ public sealed class ResetPasswordCommandHandler(IAccountsRepository accounts, IA
 	{
 		AccountSpecification spec = new AccountSpecification().WithLogin(login).WithLock();
 		return accounts.Find(spec, ct);
-	}
-
-	private static Result<Unit> CanResetPassword(Result<Account> account)
-	{
-		return account.IsFailure ? (Result<Unit>)account.Error : account.Value.CanResetPassword();
 	}
 }

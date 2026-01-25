@@ -5,17 +5,23 @@ namespace ParsersControl.Core.Features.UpdateParserLinks;
 
 public sealed class ParserLinkUpdater
 {
-	public SubscribedParserLinkId Id { get; }
-	public bool? Activity { get; }
-	public string? Name { get; }
-	public string? Url { get; }
-
 	private ParserLinkUpdater(SubscribedParserLinkId id, bool? activity, string? name, string? url)
 	{
 		Id = id;
 		Activity = activity;
 		Name = name;
 		Url = url;
+	}
+
+	public SubscribedParserLinkId Id { get; }
+	public bool? Activity { get; }
+	public string? Name { get; }
+	public string? Url { get; }
+
+	public static Result<ParserLinkUpdater> Create(Guid id, bool? activity, string? name, string? url)
+	{
+		Result<SubscribedParserLinkId> idResult = SubscribedParserLinkId.From(id);
+		return idResult.IsFailure ? idResult.Error : new ParserLinkUpdater(idResult.Value, activity, name, url);
 	}
 
 	public bool UpdateBelongsTo(SubscribedParserLink link) => Id == link.Id;
@@ -34,11 +40,5 @@ public sealed class ParserLinkUpdater
 		}
 
 		return editing;
-	}
-
-	public static Result<ParserLinkUpdater> Create(Guid id, bool? activity, string? name, string? url)
-	{
-		Result<SubscribedParserLinkId> idResult = SubscribedParserLinkId.From(id);
-		return idResult.IsFailure ? idResult.Error : new ParserLinkUpdater(idResult.Value, activity, name, url);
 	}
 }

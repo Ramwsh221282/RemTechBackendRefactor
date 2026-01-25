@@ -159,6 +159,3 @@ public static class ModulesInjection
 			typeof(VehicleEmbeddingsUpdaterService).Assembly,
 		];
 }
-
-public interface ITestCachingQueryHandler<TQuery, TResult> : IQueryHandler<TQuery, TResult>
-	where TQuery : IQuery;

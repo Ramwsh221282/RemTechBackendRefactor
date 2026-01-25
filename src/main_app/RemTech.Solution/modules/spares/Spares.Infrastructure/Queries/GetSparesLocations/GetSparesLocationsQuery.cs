@@ -11,11 +11,11 @@ public sealed class GetSparesLocationsQuery : IQuery
 	public string? TextSearch { get; private init; }
 	public int? Amount { get; private init; }
 
+	public static GetSparesLocationsQuery Create() => new();
+
 	public GetSparesLocationsQuery WithTextSearch(string? text) => Copy(this, textSearch: text);
 
 	public GetSparesLocationsQuery WithAmount(int? amount) => Copy(this, amount: amount);
-
-	public static GetSparesLocationsQuery Create() => new();
 
 	public override string ToString() => JsonSerializer.Serialize(this);
 

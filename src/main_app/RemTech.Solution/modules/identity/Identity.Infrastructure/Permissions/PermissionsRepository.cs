@@ -147,6 +147,26 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		return permissions;
 	}
 
+	private static (DynamicParameters Parameters, string FilterSql) WhereClause(PermissionSpecification specification)
+	{
+		DynamicParameters parameters = new();
+		List<string> filterSql = [];
+
+		if (specification.Id.HasValue)
+		{
+			parameters.Add("@permissionId", specification.Id.Value, DbType.Guid);
+			filterSql.Add("id=@permissionId");
+		}
+
+		if (!string.IsNullOrWhiteSpace(specification.Name))
+		{
+			parameters.Add("@name", specification.Name, DbType.String);
+			filterSql.Add("name=@name");
+		}
+
+		return (parameters, filterSql.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filterSql)}");
+	}
+
 	private Task BlockPermission(Permission permission, CancellationToken ct = default)
 	{
 		const string sql = "SELECT id FROM identity_module.permissions WHERE id = @permissionId FOR UPDATE";
@@ -206,25 +226,5 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		}
 
 		return mappings.Count == 0 ? null : mappings.First().Value;
-	}
-
-	private static (DynamicParameters Parameters, string FilterSql) WhereClause(PermissionSpecification specification)
-	{
-		DynamicParameters parameters = new();
-		List<string> filterSql = [];
-
-		if (specification.Id.HasValue)
-		{
-			parameters.Add("@permissionId", specification.Id.Value, DbType.Guid);
-			filterSql.Add("id=@permissionId");
-		}
-
-		if (!string.IsNullOrWhiteSpace(specification.Name))
-		{
-			parameters.Add("@name", specification.Name, DbType.String);
-			filterSql.Add("name=@name");
-		}
-
-		return (parameters, filterSql.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filterSql)}");
 	}
 }

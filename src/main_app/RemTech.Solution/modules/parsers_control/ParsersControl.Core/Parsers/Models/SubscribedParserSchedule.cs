@@ -5,10 +5,6 @@ namespace ParsersControl.Core.Parsers.Models;
 public readonly record struct SubscribedParserSchedule
 {
 	private const int MaxWaitDaysAmount = 7;
-	public DateTime? StartedAt { get; private init; }
-	public DateTime? FinishedAt { get; private init; }
-	public DateTime? NextRun { get; private init; }
-	public int? WaitDays { get; private init; }
 
 	public SubscribedParserSchedule()
 	{
@@ -24,6 +20,11 @@ public readonly record struct SubscribedParserSchedule
 		NextRun = nextRun;
 		WaitDays = waitDays;
 	}
+
+	public DateTime? StartedAt { get; private init; }
+	public DateTime? FinishedAt { get; private init; }
+	public DateTime? NextRun { get; private init; }
+	public int? WaitDays { get; private init; }
 
 	public Result<SubscribedParserSchedule> WithStartedAt(DateTime startedAt) =>
 		Create(startedAt, FinishedAt, NextRun, WaitDays);

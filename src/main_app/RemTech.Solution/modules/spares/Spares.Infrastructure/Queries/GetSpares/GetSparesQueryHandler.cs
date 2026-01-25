@@ -26,6 +26,25 @@ public sealed class GetSparesQueryHandler(
 		return await CreateResponse(reader, ct);
 	}
 
+	private static void ApplyPagination(GetSparesQuery query, DynamicParameters parameters, List<string> paginationSql)
+	{
+		int limit = query.PageSize;
+		int offset = (query.Page - 1) * limit;
+		paginationSql.Add("LIMIT @limit");
+		paginationSql.Add("OFFSET @offset");
+		parameters.Add("@limit", limit, DbType.Int32);
+		parameters.Add("@offset", offset, DbType.Int32);
+	}
+
+	private static void ApplyOrderBy(GetSparesQuery query, List<string> orderBySql)
+	{
+		string orderMode = query.OrderMode;
+		if (orderMode == "DESC" || orderMode == "ASC")
+		{
+			orderBySql.Add($"s.price {orderMode}");
+		}
+	}
+
 	private static async Task<GetSparesQueryResponse> CreateResponse(DbDataReader reader, CancellationToken ct)
 	{
 		GetSparesQueryResponse response = new();
@@ -128,25 +147,6 @@ public sealed class GetSparesQueryHandler(
 			ApplyTextSearch(query.TextSearch, parameters, filters);
 		if (!string.IsNullOrWhiteSpace(query.Oem))
 			ApplyOemSearch(query.Oem, parameters, filters);
-	}
-
-	private static void ApplyPagination(GetSparesQuery query, DynamicParameters parameters, List<string> paginationSql)
-	{
-		int limit = query.PageSize;
-		int offset = (query.Page - 1) * limit;
-		paginationSql.Add("LIMIT @limit");
-		paginationSql.Add("OFFSET @offset");
-		parameters.Add("@limit", limit, DbType.Int32);
-		parameters.Add("@offset", offset, DbType.Int32);
-	}
-
-	private static void ApplyOrderBy(GetSparesQuery query, List<string> orderBySql)
-	{
-		string orderMode = query.OrderMode;
-		if (orderMode == "DESC" || orderMode == "ASC")
-		{
-			orderBySql.Add($"s.price {orderMode}");
-		}
 	}
 
 	private void ApplyOemSearch(string oem, DynamicParameters parameters, List<string> filters)

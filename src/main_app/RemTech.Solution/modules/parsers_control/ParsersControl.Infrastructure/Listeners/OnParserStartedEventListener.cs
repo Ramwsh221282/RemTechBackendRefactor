@@ -38,20 +38,6 @@ public sealed class OnParserStartedEventListener(RabbitMqProducer producer, Seri
 		return (exchange, routingKey);
 	}
 
-	private sealed class StartParserMessage
-	{
-		public Guid parser_id { get; set; }
-		public required string parser_domain { get; set; }
-		public required string parser_type { get; set; }
-		public required StartParserMessageLinks[] parser_links { get; set; }
-	}
-
-	private sealed class StartParserMessageLinks
-	{
-		public required Guid id { get; set; }
-		public required string url { get; set; }
-	}
-
 	private static StartParserMessage CreatePayload(
 		Guid parserId,
 		string domain,
@@ -81,5 +67,19 @@ public sealed class OnParserStartedEventListener(RabbitMqProducer producer, Seri
 			ct
 		);
 		Logger.Information("Published message to exchange {Exchange}, routing key {RoutingKey}", exchange, routingKey);
+	}
+
+	private sealed class StartParserMessage
+	{
+		public Guid parser_id { get; set; }
+		public required string parser_domain { get; set; }
+		public required string parser_type { get; set; }
+		public required StartParserMessageLinks[] parser_links { get; set; }
+	}
+
+	private sealed class StartParserMessageLinks
+	{
+		public required Guid id { get; set; }
+		public required string url { get; set; }
 	}
 }

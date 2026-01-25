@@ -61,17 +61,6 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleU
 		return messages;
 	}
 
-	private IdentityOutboxMessage Map(IDataReader reader)
-	{
-		Guid id = reader.GetValue<Guid>("id");
-		string type = reader.GetValue<string>("type");
-		int retryCount = reader.GetValue<int>("retry_count");
-		DateTime created = reader.GetValue<DateTime>("created");
-		DateTime? sent = reader.GetNullable<DateTime>("sent");
-		string payloadJson = reader.GetValue<string>("payload");
-		return new IdentityOutboxMessage(id, type, retryCount, created, sent, payloadJson);
-	}
-
 	private static string LockClause(OutboxMessageSpecification spec) =>
 		spec.WithLock == true ? "FOR UPDATE" : string.Empty;
 
@@ -118,5 +107,16 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleU
 		}
 
 		return (parameters, filters.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filters)}");
+	}
+
+	private IdentityOutboxMessage Map(IDataReader reader)
+	{
+		Guid id = reader.GetValue<Guid>("id");
+		string type = reader.GetValue<string>("type");
+		int retryCount = reader.GetValue<int>("retry_count");
+		DateTime created = reader.GetValue<DateTime>("created");
+		DateTime? sent = reader.GetNullable<DateTime>("sent");
+		string payloadJson = reader.GetValue<string>("payload");
+		return new IdentityOutboxMessage(id, type, retryCount, created, sent, payloadJson);
 	}
 }

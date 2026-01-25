@@ -23,6 +23,20 @@ public sealed class SetLinkWorkingTimeHandler(ISubscribedParsersRepository repos
 		return saving.IsFailure ? saving.Error : link.Value;
 	}
 
+	private static Result<SubscribedParserLink> SetLinkWorkTime(
+		Result<SubscribedParser> parser,
+		Guid linkId,
+		long totalElapsedSeconds
+	)
+	{
+		if (parser.IsFailure)
+			return Result.Failure<SubscribedParserLink>(parser.Error);
+		Result<SubscribedParserLink> link = parser.Value.FindLink(linkId);
+		return link.IsFailure
+			? Result.Failure<SubscribedParserLink>(link.Error)
+			: parser.Value.AddLinkWorkTime(link.Value, totalElapsedSeconds);
+	}
+
 	private Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
 	{
 		SubscribedParserQuery query = new(Id: parserId, WithLock: true);
@@ -41,19 +55,5 @@ public sealed class SetLinkWorkingTimeHandler(ISubscribedParsersRepository repos
 			return Result.Failure(link.Error);
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();
-	}
-
-	private static Result<SubscribedParserLink> SetLinkWorkTime(
-		Result<SubscribedParser> parser,
-		Guid linkId,
-		long totalElapsedSeconds
-	)
-	{
-		if (parser.IsFailure)
-			return Result.Failure<SubscribedParserLink>(parser.Error);
-		Result<SubscribedParserLink> link = parser.Value.FindLink(linkId);
-		return link.IsFailure
-			? Result.Failure<SubscribedParserLink>(link.Error)
-			: parser.Value.AddLinkWorkTime(link.Value, totalElapsedSeconds);
 	}
 }

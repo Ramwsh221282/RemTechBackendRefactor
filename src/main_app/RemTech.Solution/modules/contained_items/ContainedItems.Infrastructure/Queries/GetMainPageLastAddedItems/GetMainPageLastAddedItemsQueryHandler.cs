@@ -10,6 +10,10 @@ namespace ContainedItems.Infrastructure.Queries.GetMainPageLastAddedItems;
 public sealed class GetMainPageLastAddedItemsQueryHandler(NpgSqlSession session)
 	: IQueryHandler<GetMainPageLastAddedItemsQuery, MainPageLastAddedItemsResponse>
 {
+	public static MainPageLastAddedItem CreateAsSpare(SpareData spare) => new(spare, null);
+
+	public static MainPageLastAddedItem CreateAsVehicle(VehicleData vehicle) => new(null, vehicle);
+
 	public async Task<MainPageLastAddedItemsResponse> Handle(
 		GetMainPageLastAddedItemsQuery query,
 		CancellationToken ct = default
@@ -74,10 +78,6 @@ public sealed class GetMainPageLastAddedItemsQueryHandler(NpgSqlSession session)
 		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
 		return await MapToResponse(reader, ct);
 	}
-
-	public static MainPageLastAddedItem CreateAsSpare(SpareData spare) => new(spare, null);
-
-	public static MainPageLastAddedItem CreateAsVehicle(VehicleData vehicle) => new(null, vehicle);
 
 	private static async Task<MainPageLastAddedItemsResponse> MapToResponse(DbDataReader reader, CancellationToken ct)
 	{

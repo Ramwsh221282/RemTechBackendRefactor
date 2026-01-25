@@ -7,8 +7,8 @@ namespace Identity.Infrastructure.Common.UnitOfWork;
 
 public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 {
-	private NpgSqlSession Session { get; } = session;
 	private readonly Dictionary<Guid, AccountTicket> _tracking = [];
+	private NpgSqlSession Session { get; } = session;
 
 	public void StartTracking(IEnumerable<AccountTicket> tickets)
 	{
@@ -23,6 +23,8 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 			return;
 		await SaveTicketChanges(tracking, ct);
 	}
+
+	private static string WhenClause(int index) => $"WHEN ac.id = @ticket_id_{index}";
 
 	private async Task SaveTicketChanges(IEnumerable<AccountTicket> tickets, CancellationToken ct = default)
 	{
@@ -83,6 +85,4 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 
 		return tracking;
 	}
-
-	private static string WhenClause(int index) => $"WHEN ac.id = @ticket_id_{index}";
 }

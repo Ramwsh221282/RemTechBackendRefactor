@@ -4,17 +4,18 @@ namespace ContainedItems.Domain.Models;
 
 public sealed record ServiceItemId
 {
-    private ServiceItemId(string value) => Value = value;
+	private const int MaxLength = 255;
 
-    public static Result<ServiceItemId> Create(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return Error.Validation("Идентификатор сохраняемого элемента не может быть пустым.");
-        return value.Length > MaxLength
-            ? (Result<ServiceItemId>)Error.Validation($"Идентификатор сохраняемого элемента не может превышать {MaxLength} символов.")
-            : (Result<ServiceItemId>)new ServiceItemId(value);
-    }
+	private ServiceItemId(string value) => Value = value;
 
-    private const int MaxLength = 255;
-    public string Value { get; }
+	public string Value { get; }
+
+	public static Result<ServiceItemId> Create(string value)
+	{
+		if (string.IsNullOrWhiteSpace(value))
+			return Error.Validation("Идентификатор сохраняемого элемента не может быть пустым.");
+		return value.Length > MaxLength
+			? Error.Validation($"Идентификатор сохраняемого элемента не может превышать {MaxLength} символов.")
+			: new ServiceItemId(value);
+	}
 }

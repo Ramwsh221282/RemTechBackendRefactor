@@ -17,6 +17,14 @@ public sealed class Dev_ChangeEmailHandler(IAccountsRepository repository, IAcco
 		return await SaveChanges(account, result, ct);
 	}
 
+	private static Result<Unit> ChangeEmail(Dev_ChangeEmailCommand command, Result<Account> account)
+	{
+		if (account.IsFailure)
+			return account.Error;
+		account.Value.ChangeEmail(AccountEmail.Create(command.NewEmail));
+		return Unit.Value;
+	}
+
 	private async Task<Result<Unit>> SaveChanges(Result<Account> account, Result<Unit> change, CancellationToken ct)
 	{
 		async Task<Result<Unit>> Saving()
@@ -35,14 +43,6 @@ public sealed class Dev_ChangeEmailHandler(IAccountsRepository repository, IAcco
 			{ account.IsFailure: true, change.IsFailure: true } => ErrorClause(account, change),
 			_ => await Saving(),
 		};
-	}
-
-	private static Result<Unit> ChangeEmail(Dev_ChangeEmailCommand command, Result<Account> account)
-	{
-		if (account.IsFailure)
-			return account.Error;
-		account.Value.ChangeEmail(AccountEmail.Create(command.NewEmail));
-		return Unit.Value;
 	}
 
 	private async Task<Result<Account>> ResolveAccount(Dev_ChangeEmailCommand command, CancellationToken ct) =>

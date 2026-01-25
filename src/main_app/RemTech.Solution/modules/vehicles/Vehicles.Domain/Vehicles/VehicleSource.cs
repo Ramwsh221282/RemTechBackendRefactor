@@ -4,12 +4,12 @@ namespace Vehicles.Domain.Vehicles;
 
 public sealed record VehicleSource
 {
-	public string Value { get; }
-
 	private VehicleSource(string value)
 	{
 		Value = value;
 	}
+
+	public string Value { get; }
 
 	public static Result<VehicleSource> Create(string value)
 	{

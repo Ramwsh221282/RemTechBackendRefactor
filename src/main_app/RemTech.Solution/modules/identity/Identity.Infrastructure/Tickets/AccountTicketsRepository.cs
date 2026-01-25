@@ -56,37 +56,6 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 		return Result.Success(ticket);
 	}
 
-	private async Task<AccountTicket?> GetSingle(CommandDefinition command, CancellationToken ct)
-	{
-		Dictionary<Guid, AccountTicket> mappings = [];
-		NpgsqlConnection connection = await Session.GetConnection(ct);
-		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
-
-		while (await reader.ReadAsync(ct))
-		{
-			Guid id = reader.GetValue<Guid>("ticket_id");
-			if (!mappings.TryGetValue(id, out AccountTicket? ticket))
-			{
-				Guid creatorId = reader.GetValue<Guid>("creator_id");
-				bool finished = reader.GetValue<bool>("finished");
-				string purpose = reader.GetValue<string>("purpose");
-				ticket = new AccountTicket(AccountId.Create(creatorId), id, finished, purpose);
-				mappings.Add(id, ticket);
-			}
-		}
-
-		return mappings.Count == 0 ? null : mappings.First().Value;
-	}
-
-	private Task BlockTicket(AccountTicket ticket, CancellationToken ct = default)
-	{
-		const string sql = "SELECT id FROM identity_module.tickets WHERE id = @ticketId FOR UPDATE";
-		DynamicParameters parameters = new();
-		parameters.Add("@ticketId", ticket.TicketId, DbType.Guid);
-		CommandDefinition command = new(sql, parameters, transaction: Session.Transaction, cancellationToken: ct);
-		return Session.Execute(command);
-	}
-
 	private static (DynamicParameters Parameters, string FilterSql) WhereClause(
 		AccountTicketSpecification specification
 	)
@@ -131,4 +100,35 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 			finished = ticket.Finished,
 			purpose = ticket.Purpose,
 		};
+
+	private async Task<AccountTicket?> GetSingle(CommandDefinition command, CancellationToken ct)
+	{
+		Dictionary<Guid, AccountTicket> mappings = [];
+		NpgsqlConnection connection = await Session.GetConnection(ct);
+		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+
+		while (await reader.ReadAsync(ct))
+		{
+			Guid id = reader.GetValue<Guid>("ticket_id");
+			if (!mappings.TryGetValue(id, out AccountTicket? ticket))
+			{
+				Guid creatorId = reader.GetValue<Guid>("creator_id");
+				bool finished = reader.GetValue<bool>("finished");
+				string purpose = reader.GetValue<string>("purpose");
+				ticket = new AccountTicket(AccountId.Create(creatorId), id, finished, purpose);
+				mappings.Add(id, ticket);
+			}
+		}
+
+		return mappings.Count == 0 ? null : mappings.First().Value;
+	}
+
+	private Task BlockTicket(AccountTicket ticket, CancellationToken ct = default)
+	{
+		const string sql = "SELECT id FROM identity_module.tickets WHERE id = @ticketId FOR UPDATE";
+		DynamicParameters parameters = new();
+		parameters.Add("@ticketId", ticket.TicketId, DbType.Guid);
+		CommandDefinition command = new(sql, parameters, transaction: Session.Transaction, cancellationToken: ct);
+		return Session.Execute(command);
+	}
 }

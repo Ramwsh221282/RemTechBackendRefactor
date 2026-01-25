@@ -37,6 +37,13 @@ public sealed class RegisterAccountHandler(
 		return Unit.Value;
 	}
 
+	private static Account CreateAccount(AccountPassword password, RegisterAccountCommand command)
+	{
+		AccountEmail email = AccountEmail.Create(command.Email);
+		AccountLogin login = AccountLogin.Create(command.Login);
+		return Account.New(email, login, password);
+	}
+
 	private static IdentityOutboxMessage CreateOutboxMessage(AccountTicket ticket, Account account)
 	{
 		NewAccountRegisteredOutboxMessagePayload payload = new(
@@ -63,13 +70,6 @@ public sealed class RegisterAccountHandler(
 			return emailCheck.Error;
 		Result<Unit> loginCheck = await CheckAccountLoginDuplicate(command.Login, ct);
 		return loginCheck.IsFailure ? (Result<Unit>)loginCheck.Error : (Result<Unit>)Unit.Value;
-	}
-
-	private static Account CreateAccount(AccountPassword password, RegisterAccountCommand command)
-	{
-		AccountEmail email = AccountEmail.Create(command.Email);
-		AccountLogin login = AccountLogin.Create(command.Login);
-		return Account.New(email, login, password);
 	}
 
 	private async Task<Result<Unit>> CheckAccountEmailDuplicate(string email, CancellationToken ct)

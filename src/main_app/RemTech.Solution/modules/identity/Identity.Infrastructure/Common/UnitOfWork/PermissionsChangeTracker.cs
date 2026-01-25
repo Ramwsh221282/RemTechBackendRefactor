@@ -7,8 +7,8 @@ namespace Identity.Infrastructure.Common.UnitOfWork;
 
 public sealed class PermissionsChangeTracker(NpgSqlSession session)
 {
-	private NpgSqlSession Session { get; } = session;
 	private readonly Dictionary<Guid, Permission> _tracking = [];
+	private NpgSqlSession Session { get; } = session;
 
 	public async Task SaveChanges(IEnumerable<Permission> permissions, CancellationToken ct)
 	{
@@ -23,6 +23,8 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
 		foreach (Permission permission in permissions)
 			_tracking.TryAdd(permission.Id.Value, permission.Clone());
 	}
+
+	private static string WhenClause(int index) => $"WHEN p.id = @permission_id_{index}";
 
 	private async Task SavePermissionChanges(IEnumerable<Permission> permissions, CancellationToken ct)
 	{
@@ -98,6 +100,4 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
 
 		return tracking;
 	}
-
-	private static string WhenClause(int index) => $"WHEN p.id = @permission_id_{index}";
 }

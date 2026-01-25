@@ -27,6 +27,32 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 		await SaveAccountChanges(tracking, ct);
 	}
 
+	private static string WhenById(int index) => $"WHEN a.id = @id_{index}";
+
+	private static (AccountId AccountId, IEnumerable<Permission> Permissions) GetRemovedPermissions(
+		Account account,
+		Account original
+	) =>
+		(
+			account.Id,
+			original.Permissions.Permissions.ExceptBy(
+				account.Permissions.Permissions.Select(p => p.Id.Value),
+				p => p.Id.Value
+			)
+		);
+
+	private static (AccountId AccountId, IEnumerable<Permission> Permissions) GetAddedPermissions(
+		Account account,
+		Account original
+	) =>
+		(
+			account.Id,
+			account.Permissions.Permissions.ExceptBy(
+				original.Permissions.Permissions.Select(p => p.Id.Value),
+				p => p.Id.Value
+			)
+		);
+
 	private async Task SavePermissionChanges(IEnumerable<Account> tracking, CancellationToken ct)
 	{
 		foreach (Account account in tracking)
@@ -78,30 +104,6 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 		CommandDefinition command = new(sql, parameters, transaction: Session.Transaction, cancellationToken: ct);
 		await Session.Execute(command);
 	}
-
-	private static (AccountId AccountId, IEnumerable<Permission> Permissions) GetRemovedPermissions(
-		Account account,
-		Account original
-	) =>
-		(
-			account.Id,
-			original.Permissions.Permissions.ExceptBy(
-				account.Permissions.Permissions.Select(p => p.Id.Value),
-				p => p.Id.Value
-			)
-		);
-
-	private static (AccountId AccountId, IEnumerable<Permission> Permissions) GetAddedPermissions(
-		Account account,
-		Account original
-	) =>
-		(
-			account.Id,
-			account.Permissions.Permissions.ExceptBy(
-				original.Permissions.Permissions.Select(p => p.Id.Value),
-				p => p.Id.Value
-			)
-		);
 
 	private async Task SaveAccountChanges(IEnumerable<Account> tracking, CancellationToken ct)
 	{
@@ -191,8 +193,6 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 		CommandDefinition command = Session.FormCommand(updateSql, parameters, ct);
 		await Session.Execute(command);
 	}
-
-	private static string WhenById(int index) => $"WHEN a.id = @id_{index}";
 
 	private List<Account> GetTrackingAccounts(IEnumerable<Account> accounts)
 	{

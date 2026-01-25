@@ -4,12 +4,12 @@ namespace Spares.Domain.Models;
 
 public sealed record SpareTextInfo
 {
-    public string Value { get; }
+	private SpareTextInfo(string value) => Value = value;
 
-    private SpareTextInfo(string value) => Value = value;
+	public string Value { get; }
 
-    public static Result<SpareTextInfo> Create(string value) =>
-        string.IsNullOrWhiteSpace(value)
-            ? Error.Validation("Описание запчасти не может быть пустым.")
-            : Result.Success(new SpareTextInfo(value));
+	public static Result<SpareTextInfo> Create(string value) =>
+		string.IsNullOrWhiteSpace(value)
+			? Error.Validation("Описание запчасти не может быть пустым.")
+			: Result.Success(new SpareTextInfo(value));
 }

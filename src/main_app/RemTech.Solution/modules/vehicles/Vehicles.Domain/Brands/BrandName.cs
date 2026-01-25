@@ -4,18 +4,21 @@ namespace Vehicles.Domain.Brands;
 
 public sealed record BrandName
 {
-    private const int MaxLength = 128;
-    public string Name { get; }
+	private const int MaxLength = 128;
 
-    private BrandName(string name)
-    {
-        Name = name;
-    }
+	private BrandName(string name)
+	{
+		Name = name;
+	}
 
-    public static Result<BrandName> Create(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            return Error.Validation("Название бренда не может быть пустым.");
-        return name.Length > MaxLength ? (Result<BrandName>)Error.Validation($"Название бренда превышает {MaxLength} символов.") : (Result<BrandName>)new BrandName(name);
-    }
+	public string Name { get; }
+
+	public static Result<BrandName> Create(string name)
+	{
+		if (string.IsNullOrWhiteSpace(name))
+			return Error.Validation("Название бренда не может быть пустым.");
+		return name.Length > MaxLength
+			? Error.Validation($"Название бренда превышает {MaxLength} символов.")
+			: new BrandName(name);
+	}
 }

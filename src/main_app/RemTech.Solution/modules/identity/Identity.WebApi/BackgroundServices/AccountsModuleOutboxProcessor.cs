@@ -26,6 +26,19 @@ public sealed class AccountsModuleOutboxProcessor(
 		}
 	}
 
+	private static AccountsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session) =>
+		new(
+			new AccountsChangeTracker(session),
+			new AccountTicketsChangeTracker(session),
+			new PermissionsChangeTracker(session),
+			new IdentityOutboxMessageChangeTracker(session)
+		);
+
+	private static Task<IdentityOutboxMessage[]> GetMessages(
+		IAccountModuleOutbox outbox,
+		CancellationToken ct = default
+	) => outbox.GetMany(new OutboxMessageSpecification().OfLimit(50).OfNotSentOnly().OfWithLock(), ct);
+
 	private async Task Execute(CancellationToken ct)
 	{
 		await using NpgSqlSession session = new(ConnectionFactory);
@@ -61,19 +74,6 @@ public sealed class AccountsModuleOutboxProcessor(
 			Logger.Fatal(e, "Error processing outbox messages.");
 		}
 	}
-
-	private static AccountsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session) =>
-		new(
-			new AccountsChangeTracker(session),
-			new AccountTicketsChangeTracker(session),
-			new PermissionsChangeTracker(session),
-			new IdentityOutboxMessageChangeTracker(session)
-		);
-
-	private static Task<IdentityOutboxMessage[]> GetMessages(
-		IAccountModuleOutbox outbox,
-		CancellationToken ct = default
-	) => outbox.GetMany(new OutboxMessageSpecification().OfLimit(50).OfNotSentOnly().OfWithLock(), ct);
 
 	private async Task PublishMessages(IdentityOutboxMessage[] messages, CancellationToken ct = default)
 	{

@@ -23,6 +23,19 @@ public sealed class SetLinkParsedAmountHandler(ISubscribedParsersRepository repo
 		return result.IsFailure ? result.Error : link.Value;
 	}
 
+	private static Result<SubscribedParserLink> SetLinkParsedAmount(
+		Result<SubscribedParser> parser,
+		Guid linkId,
+		int amount
+	)
+	{
+		if (parser.IsFailure)
+			return parser.Error;
+
+		Result<SubscribedParserLink> link = parser.Value.FindLink(linkId);
+		return link.IsFailure ? link.Error : parser.Value.AddLinkParsedAmount(link.Value, amount);
+	}
+
 	private async Task<Result> SaveChanges(
 		Result<SubscribedParser> parser,
 		Result<SubscribedParserLink> link,
@@ -35,19 +48,6 @@ public sealed class SetLinkParsedAmountHandler(ISubscribedParsersRepository repo
 			return Result.Failure(link.Error);
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();
-	}
-
-	private static Result<SubscribedParserLink> SetLinkParsedAmount(
-		Result<SubscribedParser> parser,
-		Guid linkId,
-		int amount
-	)
-	{
-		if (parser.IsFailure)
-			return parser.Error;
-
-		Result<SubscribedParserLink> link = parser.Value.FindLink(linkId);
-		return link.IsFailure ? link.Error : parser.Value.AddLinkParsedAmount(link.Value, amount);
 	}
 
 	private Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)

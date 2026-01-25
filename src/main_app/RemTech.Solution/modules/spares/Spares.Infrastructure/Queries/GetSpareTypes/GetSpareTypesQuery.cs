@@ -9,11 +9,11 @@ public sealed class GetSpareTypesQuery : IQuery
 	public string? TextSearch { get; private init; }
 	public int? Amount { get; private init; }
 
+	public static GetSpareTypesQuery Create() => new();
+
 	public GetSpareTypesQuery WithTextSearch(string? text) => Clone(this, textSearch: text);
 
 	public GetSpareTypesQuery WithAmount(int? amount) => Clone(this, amount: amount);
-
-	public static GetSpareTypesQuery Create() => new();
 
 	private static GetSpareTypesQuery Clone(GetSpareTypesQuery origin, string? textSearch = null, int? amount = null) =>
 		new()

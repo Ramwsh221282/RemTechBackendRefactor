@@ -22,6 +22,8 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 		return SaveOutboxMessageChanges(tracking, ct);
 	}
 
+	private static string WhenClause(int index) => $"WHEN m.id = @id_{index}";
+
 	private async Task SaveOutboxMessageChanges(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct)
 	{
 		IdentityOutboxMessage[] messagesArray = [.. messages];
@@ -95,6 +97,4 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 
 		return tracking;
 	}
-
-	private static string WhenClause(int index) => $"WHEN m.id = @id_{index}";
 }

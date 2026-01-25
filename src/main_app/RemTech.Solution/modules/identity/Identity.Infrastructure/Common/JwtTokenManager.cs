@@ -66,6 +66,23 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogge
 		);
 	}
 
+	private static string CreateRefreshToken(int days = 7)
+	{
+		JwtSecurityToken token = new(notBefore: DateTime.UtcNow, expires: DateTime.UtcNow.AddDays(days));
+		return new JwtSecurityTokenHandler().WriteToken(token);
+	}
+
+	private static ClaimsIdentity CreateClaims(Account account)
+	{
+		List<Claim> claims = [];
+		claims.Add(new Claim(ClaimTypes.Name, account.Login.Value));
+		claims.Add(new Claim(ClaimTypes.Email, account.Email.Value));
+		claims.Add(new Claim("id", account.Id.Value.ToString()));
+		claims.Add(new Claim("tid", Guid.NewGuid().ToString()));
+		claims.Add(new Claim("permissions", string.Join(",", account.PermissionsList.Select(p => p.Name.Value))));
+		return new ClaimsIdentity(claims);
+	}
+
 	private static AccessToken CreateStructuredAccessToken(string tokenString)
 	{
 		JwtSecurityTokenHandler handler = new();
@@ -116,12 +133,6 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogge
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
 
-	private static string CreateRefreshToken(int days = 7)
-	{
-		JwtSecurityToken token = new(notBefore: DateTime.UtcNow, expires: DateTime.UtcNow.AddDays(days));
-		return new JwtSecurityTokenHandler().WriteToken(token);
-	}
-
 	private SecurityTokenDescriptor CreateTokenDescriptor(Account account) =>
 		new()
 		{
@@ -134,16 +145,5 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogge
 	{
 		SymmetricSecurityKey key = new(Encoding.ASCII.GetBytes(Options.SecretKey));
 		return new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-	}
-
-	private static ClaimsIdentity CreateClaims(Account account)
-	{
-		List<Claim> claims = [];
-		claims.Add(new Claim(ClaimTypes.Name, account.Login.Value));
-		claims.Add(new Claim(ClaimTypes.Email, account.Email.Value));
-		claims.Add(new Claim("id", account.Id.Value.ToString()));
-		claims.Add(new Claim("tid", Guid.NewGuid().ToString()));
-		claims.Add(new Claim("permissions", string.Join(",", account.PermissionsList.Select(p => p.Name.Value))));
-		return new ClaimsIdentity(claims);
 	}
 }

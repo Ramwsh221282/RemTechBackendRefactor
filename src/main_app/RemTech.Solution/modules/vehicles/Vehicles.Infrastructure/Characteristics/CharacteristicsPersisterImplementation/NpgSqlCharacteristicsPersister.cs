@@ -50,27 +50,6 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 		return characteristic;
 	}
 
-	private static DynamicParameters BuildParameters(Characteristic characteristic, Vector vector)
-	{
-		DynamicParameters parameters = new();
-		parameters.Add("@name", characteristic.Name.Value, DbType.String);
-		parameters.Add("@input_embedding", vector);
-		parameters.Add("@max_distance", MaxDistance, DbType.Double);
-		return parameters;
-	}
-
-	private Task SaveAsNewCharacteristic(Characteristic characteristic, Vector vector, CancellationToken ct)
-	{
-		const string sql =
-			"INSERT INTO vehicles_module.characteristics (id, name, embedding) VALUES (@id, @name, @input_embedding) ON CONFLICT (name) DO NOTHING";
-		DynamicParameters parameters = new();
-		parameters.Add("@id", characteristic.Id.Value, DbType.Guid);
-		parameters.Add("@name", characteristic.Name.Value, DbType.String);
-		parameters.Add("@input_embedding", vector);
-		CommandDefinition command = session.FormCommand(sql, parameters, ct);
-		return session.Execute(command);
-	}
-
 	private static bool HasFromEmbeddingSearch(NpgSqlSearchResult result) =>
 		result.EmbeddingId.HasValue && result.EmbeddingName is not null;
 
@@ -104,6 +83,27 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 			EmbeddingId = embeddingId,
 			EmbeddingName = embeddingName,
 		};
+	}
+
+	private static DynamicParameters BuildParameters(Characteristic characteristic, Vector vector)
+	{
+		DynamicParameters parameters = new();
+		parameters.Add("@name", characteristic.Name.Value, DbType.String);
+		parameters.Add("@input_embedding", vector);
+		parameters.Add("@max_distance", MaxDistance, DbType.Double);
+		return parameters;
+	}
+
+	private Task SaveAsNewCharacteristic(Characteristic characteristic, Vector vector, CancellationToken ct)
+	{
+		const string sql =
+			"INSERT INTO vehicles_module.characteristics (id, name, embedding) VALUES (@id, @name, @input_embedding) ON CONFLICT (name) DO NOTHING";
+		DynamicParameters parameters = new();
+		parameters.Add("@id", characteristic.Id.Value, DbType.Guid);
+		parameters.Add("@name", characteristic.Name.Value, DbType.String);
+		parameters.Add("@input_embedding", vector);
+		CommandDefinition command = session.FormCommand(sql, parameters, ct);
+		return session.Execute(command);
 	}
 
 	private sealed class NpgSqlSearchResult

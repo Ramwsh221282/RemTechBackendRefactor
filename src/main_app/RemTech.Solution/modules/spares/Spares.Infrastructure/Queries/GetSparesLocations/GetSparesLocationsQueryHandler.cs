@@ -41,25 +41,6 @@ public sealed class GetSparesLocationsQueryHandler(NpgSqlSession session, Embedd
 		return spares.AsReadOnly();
 	}
 
-	private static SpareLocationResponse MapSingleFromReader(DbDataReader reader) =>
-		new() { Id = reader.GetGuid(reader.GetOrdinal("Id")), Name = reader.GetString(reader.GetOrdinal("Name")) };
-
-	private (DynamicParameters Parameters, string Sql) CreateSql(GetSparesLocationsQuery query)
-	{
-		DynamicParameters parameters = new();
-		string sql = $"""
-			SELECT 
-			    r.id as Id,
-			    (r.name || ' ' || r.kind) as Name                        
-			FROM vehicles_module.regions r
-			    INNER JOIN spares_module.spares s ON s.region_id = r.id
-			    INNER JOIN contained_items_module.contained_items ci ON s.id = ci.id AND ci.deleted_at IS NULL
-			    {ApplyFilters(query, parameters, [UseTextSearchFilter])}
-			    {ApplyOrderBy(query, parameters, [UseEmbeddingsSearchOrderBy])}
-			""";
-		return (parameters, sql);
-	}
-
 	private static string ApplyFilters(
 		GetSparesLocationsQuery query,
 		DynamicParameters parameters,
@@ -86,6 +67,28 @@ public sealed class GetSparesLocationsQueryHandler(NpgSqlSession session, Embedd
 		return !appliers.Any() ? string.Empty : " ORDER BY " + string.Join(" AND ", appliers);
 	}
 
+	private static string UseEmbeddingsSearchOrderBy(GetSparesLocationsQuery query, DynamicParameters parameters) =>
+		string.IsNullOrWhiteSpace(query.TextSearch) ? string.Empty : "r.embedding <=> @embedding_search ASC";
+
+	private static SpareLocationResponse MapSingleFromReader(DbDataReader reader) =>
+		new() { Id = reader.GetGuid(reader.GetOrdinal("Id")), Name = reader.GetString(reader.GetOrdinal("Name")) };
+
+	private (DynamicParameters Parameters, string Sql) CreateSql(GetSparesLocationsQuery query)
+	{
+		DynamicParameters parameters = new();
+		string sql = $"""
+			SELECT 
+			    r.id as Id,
+			    (r.name || ' ' || r.kind) as Name                        
+			FROM vehicles_module.regions r
+			    INNER JOIN spares_module.spares s ON s.region_id = r.id
+			    INNER JOIN contained_items_module.contained_items ci ON s.id = ci.id AND ci.deleted_at IS NULL
+			    {ApplyFilters(query, parameters, [UseTextSearchFilter])}
+			    {ApplyOrderBy(query, parameters, [UseEmbeddingsSearchOrderBy])}
+			""";
+		return (parameters, sql);
+	}
+
 	private string UseTextSearchFilter(GetSparesLocationsQuery query, DynamicParameters parameters)
 	{
 		if (string.IsNullOrWhiteSpace(query.TextSearch))
@@ -104,7 +107,4 @@ public sealed class GetSparesLocationsQueryHandler(NpgSqlSession session, Embedd
 			)
 			""";
 	}
-
-	private static string UseEmbeddingsSearchOrderBy(GetSparesLocationsQuery query, DynamicParameters parameters) =>
-		string.IsNullOrWhiteSpace(query.TextSearch) ? string.Empty : "r.embedding <=> @embedding_search ASC";
 }

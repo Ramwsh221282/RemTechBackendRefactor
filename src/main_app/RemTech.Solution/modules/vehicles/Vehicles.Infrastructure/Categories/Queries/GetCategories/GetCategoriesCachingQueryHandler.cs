@@ -14,6 +14,8 @@ public sealed class GetCategoriesCachingQueryHandler(
 		CancellationToken ct = default
 	) => ReadFromCache(query, CreateCacheKey(query), ct);
 
+	private static string CreateCacheKey(GetCategoriesQuery query) => $"{nameof(GetCategoriesQuery)}_{query}";
+
 	private async Task<IEnumerable<CategoryResponse>> ReadFromCache(
 		GetCategoriesQuery query,
 		string key,
@@ -24,6 +26,4 @@ public sealed class GetCategoriesCachingQueryHandler(
 			async cancellationToken => await inner.Handle(query, cancellationToken),
 			cancellationToken: ct
 		);
-
-	private static string CreateCacheKey(GetCategoriesQuery query) => $"{nameof(GetCategoriesQuery)}_{query}";
 }
