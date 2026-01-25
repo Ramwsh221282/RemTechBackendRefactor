@@ -17,7 +17,7 @@ import { VehiclesApiService } from '../../shared/api/vehicles-module/vehicles-ap
 import { CategoryResponse } from '../../shared/api/categories-module/categories-responses';
 import { BrandResponse } from '../../shared/api/brands-module/brands-api.responses';
 import { ModelResponse } from '../../shared/api/models-module/models-responses';
-import { catchError, EMPTY, forkJoin, Observable, of, tap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, Observable, tap } from 'rxjs';
 import { GetVehiclesQueryResponse } from '../../shared/api/vehicles-module/vehicles-api.responses';
 import { LocationsApiService } from '../../shared/api/locations-module/locations-api.service';
 import { LocationResponse } from '../../shared/api/locations-module/locations.responses';
@@ -26,7 +26,7 @@ import { BrandsApiService } from '../../shared/api/brands-module/brands-api.serv
 import { ModelsApiService } from '../../shared/api/models-module/models-api.service';
 import { GetCategoriesQuery } from '../../shared/api/categories-module/categories-get-query';
 import { GetBrandsQuery } from '../../shared/api/brands-module/brands-get-query';
-import { GetVehiclesQuery } from '../../shared/api/vehicles-module/vehicles-get-query';
+import { GetVehiclesQuery, mapStringToSortDirection, SortDirection } from '../../shared/api/vehicles-module/vehicles-get-query';
 import { GetLocationsQuery } from '../../shared/api/locations-module/locations-get-query';
 import { GetModelsQuery } from '../../shared/api/models-module/models-get-query';
 import { Title } from '@angular/platform-browser';
@@ -157,9 +157,28 @@ export class VehiclesPageComponent implements OnInit {
 		});
 	}
 
-	public handleUserVehiclesTextSearchSubmit(userInput: string | undefined): void {}
+	public handleUserVehiclesTextSearchSubmit(userInput: string | undefined): void {
+		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+			return {
+				...state,
+				vehiclesQuery: state.vehiclesQuery.useTextSearch(userInput),
+			};
+		});
+	}
 
-	public handleUserVehiclePriceSortModeChange(sortMode: string | undefined): void {}
+	public handleUserVehiclePriceSortModeChange(sortMode: string | undefined): void {
+		const direction: SortDirection = mapStringToSortDirection(sortMode);
+
+		if (direction === 'NONE') {
+			this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+				return { ...state, vehiclesQuery: state.vehiclesQuery.usePriceSort(false) };
+			});
+		}
+
+		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+			return { ...state, vehiclesQuery: state.vehiclesQuery.usePriceSort(true).useSortDirection(direction) };
+		});
+	}
 
 	public handleUserCategorySelect(category: CategoryResponse | null | undefined): void {
 		this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
