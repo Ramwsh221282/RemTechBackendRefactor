@@ -31,6 +31,9 @@ import { GetLocationsQuery } from '../../shared/api/locations-module/locations-g
 import { GetModelsQuery } from '../../shared/api/models-module/models-get-query';
 import { Title } from '@angular/platform-browser';
 
+// TODO: add loading indicators (loading spinner etc) on text search input and on price change inputs.
+// TODO: add move to vehicle page on vehicle card ('Подробнее') click.
+// TODO: fix adaptive design for medium and small screen sizes at filter selects.
 @Component({
 	selector: 'app-vehicles-page',
 	imports: [
