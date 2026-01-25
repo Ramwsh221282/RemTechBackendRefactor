@@ -26,24 +26,6 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
 	private FrontendOptions FrontendOptions { get; } = frontend.Value;
 	private IServiceProvider Services { get; } = services;
 	private IChannel Channel => _channel ?? throw new ArgumentException("Channel not initialized");
-
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
-
-	public async Task Shutdown(CancellationToken ct = default)
-	{
-		if (Channel.IsClosed)
-			return;
-		await Channel.CloseAsync(cancellationToken: ct);
-	}
-
-	public Task StartConsuming(CancellationToken ct = default)
-	{
-		AsyncEventingBasicConsumer consumer = new(Channel);
-		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, autoAck: false, consumer, ct);
-	}
-
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, ea) =>
 		{
@@ -78,6 +60,23 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
 				await Channel.BasicAckAsync(ea.DeliveryTag, false);
 			}
 		};
+
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+
+	public async Task Shutdown(CancellationToken ct = default)
+	{
+		if (Channel.IsClosed)
+			return;
+		await Channel.CloseAsync(cancellationToken: ct);
+	}
+
+	public Task StartConsuming(CancellationToken ct = default)
+	{
+		AsyncEventingBasicConsumer consumer = new(Channel);
+		consumer.ReceivedAsync += Handler;
+		return Channel.BasicConsumeAsync(Queue, autoAck: false, consumer, ct);
+	}
 
 	private Task<Result<Unit>> HandleMessage(ResetPasswordRequiredMessage message, string confirmationUrl)
 	{

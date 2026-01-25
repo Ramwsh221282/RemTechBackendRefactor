@@ -27,6 +27,15 @@ public sealed class ChangeLinkActivityCommandHandler(ISubscribedParsersRepositor
 		return saving.IsFailure ? saving.Error : link;
 	}
 
+	private static Result<SubscribedParserLink> ChangeLinkActivity(
+		Result<SubscribedParser> parser,
+		Guid linkId,
+		bool isActive
+	) =>
+		parser.IsFailure
+			? Result.Failure<SubscribedParserLink>(parser.Error)
+			: parser.Value.ChangeLinkActivity(parser.Value.FindLink(linkId), isActive);
+
 	private async Task<Result> SaveChanges(
 		Result<SubscribedParser> parser,
 		Result<SubscribedParserLink> result,
@@ -40,15 +49,6 @@ public sealed class ChangeLinkActivityCommandHandler(ISubscribedParsersRepositor
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();
 	}
-
-	private static Result<SubscribedParserLink> ChangeLinkActivity(
-		Result<SubscribedParser> parser,
-		Guid linkId,
-		bool isActive
-	) =>
-		parser.IsFailure
-			? Result.Failure<SubscribedParserLink>(parser.Error)
-			: parser.Value.ChangeLinkActivity(parser.Value.FindLink(linkId), isActive);
 
 	private Task<Result<SubscribedParser>> GetRequiredParser(Guid parserId, CancellationToken ct)
 	{

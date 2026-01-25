@@ -1,0 +1,3 @@
+namespace ContainedItems.Infrastructure.Queries.GetMainPageLastAddedItems;
+
+public sealed record MainPageLastAddedItemsResponse(IEnumerable<MainPageLastAddedItem> Items);

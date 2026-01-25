@@ -6,6 +6,8 @@ namespace Vehicles.Infrastructure.Categories.Queries.GetCategories;
 
 public class GetCategoriesQuery : IQuery
 {
+	[JsonIgnore]
+	private Dictionary<string, string>? _includedInformationKeys_cached;
 	public Guid? BrandId { get; private init; }
 	public string? BrandName { get; private init; }
 	public Guid? ModelId { get; private init; }
@@ -18,9 +20,6 @@ public class GetCategoriesQuery : IQuery
 	public int? Page { get; private set; }
 	public int? PageSize { get; private set; }
 	public string? TextSearch { get; private set; }
-
-	[JsonIgnore]
-	private Dictionary<string, string>? _includedInformationKeys_cached;
 
 	[JsonIgnore]
 	private Dictionary<string, string> IncludedInformationKeys =>

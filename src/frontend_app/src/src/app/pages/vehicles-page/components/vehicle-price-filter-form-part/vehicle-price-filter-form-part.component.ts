@@ -1,6 +1,22 @@
-import { Component, Directive, EventEmitter, HostListener, OnDestroy, Output, Renderer2 } from '@angular/core';
+import {
+	Component,
+	Directive,
+	effect,
+	EffectRef,
+	EventEmitter,
+	HostListener,
+	input,
+	InputSignal,
+	OnDestroy,
+	Output,
+	Renderer2,
+	signal,
+	WritableSignal,
+} from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { UserInputDebouncer } from '../../../../shared/utils/user-input-debouncer';
+import { SortDirection } from '../../../../shared/api/vehicles-module/vehicles-get-query';
+import { Button } from 'primeng/button';
 
 @Directive({
 	selector: '[appFormatPrice]',
@@ -56,17 +72,45 @@ export interface PriceChangeEvent {
 	maximalPrice: number | null;
 }
 
+export interface PriceSortChangeEvent {
+	mode: SortDirection;
+}
+
 @Component({
 	selector: 'app-vehicle-price-filter-form-part',
-	imports: [FormatPriceDirective, DecimalPipe],
+	imports: [FormatPriceDirective, DecimalPipe, Button],
 	templateUrl: './vehicle-price-filter-form-part.component.html',
 	styleUrl: './vehicle-price-filter-form-part.component.scss',
 })
 export class VehiclePriceFilterFormPartComponent implements OnDestroy {
+	showSubmitButton: InputSignal<boolean> = input(false);
+	showResetButton: InputSignal<boolean> = input(false);
+	showSorting: InputSignal<boolean> = input(false);
 	@Output() priceChanged: EventEmitter<PriceChangeEvent> = new EventEmitter<PriceChangeEvent>();
+	@Output() sortModeChanged: EventEmitter<PriceSortChangeEvent> = new EventEmitter<PriceSortChangeEvent>();
+	readonly sortMode: WritableSignal<'ASC' | 'DESC' | 'NONE'> = signal('NONE');
 	public priceFrom: number | null = null;
 	public priceTo: number | null = null;
 	private priceChangeDebounce$: UserInputDebouncer = new UserInputDebouncer(1000, this.submit.bind(this));
+
+	readonly onSortModeChangeEffect: EffectRef = effect((): void => {
+		const mode: 'ASC' | 'DESC' | 'NONE' = this.sortMode();
+		this.sortModeChanged.emit({ mode });
+	});
+
+	public activateMode(mode: 'ASC' | 'DESC' | 'NONE'): void {
+		this.sortMode.set(mode);
+	}
+
+	sortModeOf(mode: string): boolean {
+		const currentMode: 'ASC' | 'DESC' | 'NONE' = this.sortMode();
+		return currentMode === mode;
+	}
+
+	public resolveSeverity(flag: boolean): 'success' | 'primary' {
+		if (flag) return 'success';
+		return 'primary';
+	}
 
 	onPriceFromChange(event: Event): void {
 		const value: string = (event.target as HTMLInputElement).value.replace(/\D/g, '');

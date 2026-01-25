@@ -6,6 +6,9 @@ namespace Vehicles.Infrastructure.Locations.Queries;
 
 public sealed class GetLocationsQuery : IQuery
 {
+	[JsonIgnore]
+	private Dictionary<string, string>? _includedInformationKeys_cached;
+
 	// private constructor. Use static methods for creation.
 	private GetLocationsQuery() { }
 
@@ -22,11 +25,10 @@ public sealed class GetLocationsQuery : IQuery
 	public bool? UseOrderByName { get; private init; }
 
 	[JsonIgnore]
-	private Dictionary<string, string>? _includedInformationKeys_cached;
-
-	[JsonIgnore]
 	private Dictionary<string, string> IncludedInformationKeys =>
 		_includedInformationKeys_cached ??= Includes is null ? [] : Includes.ToHashSet().ToDictionary(i => i, i => i);
+
+	public static GetLocationsQuery Create() => new() { Amount = 20 };
 
 	public GetLocationsQuery WithId(Guid? id) => Copy(this, id: id);
 
@@ -60,8 +62,6 @@ public sealed class GetLocationsQuery : IQuery
 
 	public bool ContainsModelFilter() =>
 		(ModelId != null && ModelId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(ModelName);
-
-	public static GetLocationsQuery Create() => new() { Amount = 20 };
 
 	public override string ToString() => JsonSerializer.Serialize(this);
 

@@ -46,6 +46,30 @@ public sealed class SubscribedParser
 	public SubscribedParserState State { get; private set; }
 	public SubscribedParserSchedule Schedule { get; private set; }
 
+	public static async Task<Result<SubscribedParser>> CreateNew(
+		SubscribedParserId id,
+		SubscribedParserIdentity identity,
+		ISubscribedParsersRepository repository,
+		CancellationToken ct = default
+	)
+	{
+		if (await repository.Exists(identity, ct: ct))
+		{
+			return Error.Conflict(
+				$"Парсер для домена {identity.DomainName} и типа {identity.ServiceType} уже существует."
+			);
+		}
+
+		ParsingStatistics statistics = ParsingStatistics.New();
+		SubscribedParserState state = SubscribedParserState.Disabled;
+		SubscribedParserSchedule schedule = SubscribedParserSchedule.New();
+		SubscribedParser parser = new(id, identity, statistics, state, schedule);
+		await repository.Add(parser, ct: ct);
+		return parser;
+	}
+
+	public static SubscribedParser CreateCopy(SubscribedParser parser) => new(parser);
+
 	public Result<IEnumerable<SubscribedParserLink>> AddLinks(IEnumerable<SubscribedParserLinkUrlInfo> urlInfos)
 	{
 		if (State.IsWorking())
@@ -65,6 +89,7 @@ public sealed class SubscribedParser
 				return Error.Conflict($"Парсер уже содержит ссылку с адресом {link.UrlInfo.Url}.");
 			newLinks.Add(link);
 		}
+
 		Links = [.. Links, .. newLinks];
 		return newLinks;
 	}
@@ -375,30 +400,6 @@ public sealed class SubscribedParser
 		Schedule = updated.Value;
 		return Unit.Value;
 	}
-
-	public static async Task<Result<SubscribedParser>> CreateNew(
-		SubscribedParserId id,
-		SubscribedParserIdentity identity,
-		ISubscribedParsersRepository repository,
-		CancellationToken ct = default
-	)
-	{
-		if (await repository.Exists(identity, ct: ct))
-		{
-			return Error.Conflict(
-				$"Парсер для домена {identity.DomainName} и типа {identity.ServiceType} уже существует."
-			);
-		}
-
-		ParsingStatistics statistics = ParsingStatistics.New();
-		SubscribedParserState state = SubscribedParserState.Disabled;
-		SubscribedParserSchedule schedule = SubscribedParserSchedule.New();
-		SubscribedParser parser = new(id, identity, statistics, state, schedule);
-		await repository.Add(parser, ct: ct);
-		return parser;
-	}
-
-	public static SubscribedParser CreateCopy(SubscribedParser parser) => new(parser);
 
 	private bool BelongsToParser(SubscribedParserLink link) => link.ParserId == Id;
 

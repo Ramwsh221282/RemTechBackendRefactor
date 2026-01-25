@@ -4,22 +4,22 @@ namespace Identity.Domain.Permissions;
 
 public readonly record struct PermissionId
 {
-    public Guid Value { get; }
+	public PermissionId()
+	{
+		Value = Guid.NewGuid();
+	}
 
-    public PermissionId()
-    {
-        Value = Guid.NewGuid();
-    }
+	private PermissionId(Guid value)
+	{
+		Value = value;
+	}
 
-    private PermissionId(Guid value)
-    {
-        Value = value;
-    }
+	public Guid Value { get; }
 
-    public static PermissionId New() => new(Guid.NewGuid());
+	public static PermissionId New() => new(Guid.NewGuid());
 
-    public static Result<PermissionId> Create(Guid value) =>
-        value == Guid.Empty
-            ? Error.Validation("Идентификатор разрешения не может быть пустым.")
-            : new PermissionId(value);
+	public static Result<PermissionId> Create(Guid value) =>
+		value == Guid.Empty
+			? Error.Validation("Идентификатор разрешения не может быть пустым.")
+			: new PermissionId(value);
 }

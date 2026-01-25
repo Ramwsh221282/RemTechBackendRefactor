@@ -13,6 +13,17 @@ public sealed class GetSparesQuery : IQuery
 	public int PageSize { get; private set; } = 50;
 	public string OrderMode { get; private set; } = "NONE";
 	public string? Oem { get; private set; }
+	public string? Type { get; private set; }
+
+	public GetSparesQuery ForType(string? type)
+	{
+		if (!string.IsNullOrWhiteSpace(Type))
+			return this;
+		if (string.IsNullOrWhiteSpace(type))
+			return this;
+		Type = type;
+		return this;
+	}
 
 	public GetSparesQuery ForRegion(Guid? regionId)
 	{

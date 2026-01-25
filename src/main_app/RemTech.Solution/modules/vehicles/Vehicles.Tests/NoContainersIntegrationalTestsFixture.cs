@@ -9,26 +9,22 @@ namespace Vehicles.Tests;
 
 public sealed class NoContainersIntegrationalTestsFixture : WebApplicationFactory<Vehicles.WebApi.Program>
 {
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        base.ConfigureWebHost(builder);
-        builder.ConfigureServices(ReconfigureEmbeddingModelPath);
-    }
+	protected override void ConfigureWebHost(IWebHostBuilder builder)
+	{
+		base.ConfigureWebHost(builder);
+		builder.ConfigureServices(ReconfigureEmbeddingModelPath);
+	}
 
-    private void ReconfigureEmbeddingModelPath(IServiceCollection services)
-    {
-        services.RemoveAll<IConfigureOptions<EmbeddingsProviderOptions>>();
-        services.RemoveAll<IOptions<EmbeddingsProviderOptions>>();
-        string basePath = AppDomain.CurrentDomain.BaseDirectory;
-        string onnxFolder = Path.Combine(basePath, "onnx");
-        string tokenizerPath = Path.Combine(onnxFolder, "tokenizer.onnx");
-        string modelPath = Path.Combine(onnxFolder, "model.onnx");
-        EmbeddingsProviderOptions options = new()
-        {
-            TokenizerPath = tokenizerPath,
-            ModelPath = modelPath
-        };
-        IOptions<EmbeddingsProviderOptions> ioptions = Options.Create(options);
-        services.AddSingleton(ioptions);
-    }
+	private void ReconfigureEmbeddingModelPath(IServiceCollection services)
+	{
+		services.RemoveAll<IConfigureOptions<EmbeddingsProviderOptions>>();
+		services.RemoveAll<IOptions<EmbeddingsProviderOptions>>();
+		string basePath = AppDomain.CurrentDomain.BaseDirectory;
+		string onnxFolder = Path.Combine(basePath, "onnx");
+		string tokenizerPath = Path.Combine(onnxFolder, "tokenizer.onnx");
+		string modelPath = Path.Combine(onnxFolder, "model.onnx");
+		EmbeddingsProviderOptions options = new() { TokenizerPath = tokenizerPath, ModelPath = modelPath };
+		IOptions<EmbeddingsProviderOptions> ioptions = Options.Create(options);
+		services.AddSingleton(ioptions);
+	}
 }

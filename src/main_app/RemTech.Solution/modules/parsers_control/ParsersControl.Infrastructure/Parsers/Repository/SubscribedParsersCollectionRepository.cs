@@ -132,7 +132,7 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 		);
 	}
 
-	private static (DynamicParameters parameters, string filterSql) FilterClause(SubscribedParsersCollectionQuery query)
+	private static (DynamicParameters Parameters, string FilterSql) FilterClause(SubscribedParsersCollectionQuery query)
 	{
 		DynamicParameters parameters = new();
 		List<string> filters = [];

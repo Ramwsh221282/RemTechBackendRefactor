@@ -16,6 +16,7 @@ public sealed class PasswordRequirement : IAccountPasswordRequirement
 			if (validation.IsFailure)
 				errors.Add(validation.Error.Message);
 		}
+
 		return errors.Count == 0 ? Unit.Value : Error.Validation(string.Join(", ", errors));
 	}
 

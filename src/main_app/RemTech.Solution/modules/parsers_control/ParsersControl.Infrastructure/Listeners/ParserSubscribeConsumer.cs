@@ -15,8 +15,8 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 	private const string Queue = "parsers.create";
 	private const string Exchange = "parsers";
 	private const string RoutingKey = Queue;
-	private Serilog.ILogger Logger { get; } = logger.ForContext<ParserSubscribeConsumer>();
 	private IChannel? _channel;
+	private Serilog.ILogger Logger { get; } = logger.ForContext<ParserSubscribeConsumer>();
 	private IChannel Channel => _channel ?? throw new InvalidOperationException("Channel is not initialized.");
 	private AsyncEventingBasicConsumer? Consumer { get; set; }
 
@@ -68,6 +68,14 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 			cancellationToken: ct
 		);
 
+	private static Task<Result<SubscribedParser>> HandleCommand(
+		SubscribeParserCommand command,
+		AsyncServiceScope scope
+	) =>
+		scope
+			.ServiceProvider.GetRequiredService<ICommandHandler<SubscribeParserCommand, SubscribedParser>>()
+			.Execute(command);
+
 	private static Task BindQueue(IChannel channel, CancellationToken ct) =>
 		channel.QueueBindAsync(queue: Queue, exchange: Exchange, routingKey: RoutingKey, cancellationToken: ct);
 
@@ -101,14 +109,6 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 
 		return consumer;
 	}
-
-	private static Task<Result<SubscribedParser>> HandleCommand(
-		SubscribeParserCommand command,
-		AsyncServiceScope scope
-	) =>
-		scope
-			.ServiceProvider.GetRequiredService<ICommandHandler<SubscribeParserCommand, SubscribedParser>>()
-			.Execute(command);
 
 	private sealed class SubscribeParserMessage
 	{

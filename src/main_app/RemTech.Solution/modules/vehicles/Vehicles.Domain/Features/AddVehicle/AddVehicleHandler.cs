@@ -144,6 +144,7 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 			VehicleCharacteristicValue value = VehicleCharacteristicValue.Create(characteristic.Value);
 			result.Add(ctx, value);
 		}
+
 		return result;
 	}
 
@@ -162,6 +163,7 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 				continue;
 			result.Add(ctx, kvp.Value);
 		}
+
 		return result;
 	}
 

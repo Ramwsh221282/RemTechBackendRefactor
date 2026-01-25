@@ -22,6 +22,8 @@ public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
 		return SavePendingEmailNotificationChanges(tracking, ct);
 	}
 
+	private static string WhenClause(int i) => $"WHEN p.id = @id_{i}";
+
 	private async Task SavePendingEmailNotificationChanges(
 		IEnumerable<PendingEmailNotification> notifications,
 		CancellationToken ct
@@ -74,8 +76,6 @@ public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
 		await Session.Execute(command);
 	}
-
-	private static string WhenClause(int i) => $"WHEN p.id = @id_{i}";
 
 	private List<PendingEmailNotification> GetTrackingNotifications(IEnumerable<PendingEmailNotification> notifications)
 	{

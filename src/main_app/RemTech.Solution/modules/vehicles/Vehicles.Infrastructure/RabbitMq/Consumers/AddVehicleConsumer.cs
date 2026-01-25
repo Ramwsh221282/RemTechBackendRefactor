@@ -24,19 +24,6 @@ public sealed class AddVehicleConsumer(
 	private IServiceProvider Services { get; } = services;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<AddVehicleConsumer>();
 	private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
-
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
-
-	public Task StartConsuming(CancellationToken ct = default)
-	{
-		AsyncEventingBasicConsumer consumer = new(Channel);
-		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, false, consumer, ct);
-	}
-
-	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
-
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, @event) =>
 		{
@@ -65,7 +52,22 @@ public sealed class AddVehicleConsumer(
 			}
 		};
 
-	private static async Task<Result<(Guid, int)>> SaveVehicles(IServiceProvider services, AddVehicleCommand command)
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+
+	public Task StartConsuming(CancellationToken ct = default)
+	{
+		AsyncEventingBasicConsumer consumer = new(Channel);
+		consumer.ReceivedAsync += Handler;
+		return Channel.BasicConsumeAsync(Queue, false, consumer, ct);
+	}
+
+	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
+
+	private static async Task<Result<(Guid CreatorId, int Saved)>> SaveVehicles(
+		IServiceProvider services,
+		AddVehicleCommand command
+	)
 	{
 		await using AsyncServiceScope scope = services.CreateAsyncScope();
 		return await scope
@@ -92,8 +94,7 @@ public sealed class AddVehicleConsumer(
 			IsNds: p.IsNds,
 			Address: p.Address,
 			Photos: p.Photos,
-			Characteristics: p.Characteristics.Select(c => new AddVehicleCommandCharacteristics(c.Name, c.Value))
-				.ToArray()
+			Characteristics: [.. p.Characteristics.Select(c => new AddVehicleCommandCharacteristics(c.Name, c.Value))]
 		));
 
 	private static bool IsMessageValid(AddVehicleMessage message, out string error)

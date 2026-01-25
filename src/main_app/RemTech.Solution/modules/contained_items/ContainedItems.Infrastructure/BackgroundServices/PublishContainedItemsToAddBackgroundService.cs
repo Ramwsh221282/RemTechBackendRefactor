@@ -25,36 +25,6 @@ public sealed class PublishContainedItemsToAddBackgroundService(
 		}
 	}
 
-	private async Task InvokePublishing(CancellationToken ct)
-	{
-		Logger.Information("Invoking publishing");
-		await using NpgSqlSession session = new(connectionFactory);
-		NpgSqlTransactionSource source = new(session);
-		ITransactionScope transaction = await source.BeginTransaction(ct);
-
-		try
-		{
-			IEnumerable<ContainedItem> items = await GetPendingContainedItems(session, ct);
-			if (!items.Any())
-				return;
-			await PublishItems(items, factory, ct);
-			await MarkItemsSaved(session, items, ct);
-			Result committing = await transaction.Commit(ct);
-			if (committing.IsFailure)
-				Logger.Fatal(committing.Error, "Error committing transaction.");
-			else
-				Logger.Information("Committed transaction");
-		}
-		catch (Exception e)
-		{
-			Logger.Fatal(e, "Error publishing add spares message.");
-		}
-		finally
-		{
-			await transaction.DisposeAsync();
-		}
-	}
-
 	private static async Task PublishItems(
 		IEnumerable<ContainedItem> items,
 		ItemPublishStrategyFactory factory,
@@ -86,5 +56,35 @@ public sealed class PublishContainedItemsToAddBackgroundService(
 		foreach (ContainedItem item in items)
 			item.MarkSaved();
 		return repository.UpdateMany(items, ct);
+	}
+
+	private async Task InvokePublishing(CancellationToken ct)
+	{
+		Logger.Information("Invoking publishing");
+		await using NpgSqlSession session = new(connectionFactory);
+		NpgSqlTransactionSource source = new(session);
+		ITransactionScope transaction = await source.BeginTransaction(ct);
+
+		try
+		{
+			IEnumerable<ContainedItem> items = await GetPendingContainedItems(session, ct);
+			if (!items.Any())
+				return;
+			await PublishItems(items, factory, ct);
+			await MarkItemsSaved(session, items, ct);
+			Result committing = await transaction.Commit(ct);
+			if (committing.IsFailure)
+				Logger.Fatal(committing.Error, "Error committing transaction.");
+			else
+				Logger.Information("Committed transaction");
+		}
+		catch (Exception e)
+		{
+			Logger.Fatal(e, "Error publishing add spares message.");
+		}
+		finally
+		{
+			await transaction.DisposeAsync();
+		}
 	}
 }

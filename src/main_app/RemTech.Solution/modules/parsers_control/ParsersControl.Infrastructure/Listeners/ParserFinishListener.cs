@@ -24,18 +24,6 @@ public sealed class ParserFinishListener(
 	private Serilog.ILogger Logger { get; } = logger.ForContext<ParserFinishListener>();
 	private IChannel Channel => _channel ?? throw new InvalidOperationException("Channel is not initialized.");
 
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(rabbitMq, Exchange, Queue, RoutingKey, ct);
-
-	public Task StartConsuming(CancellationToken ct = default)
-	{
-		AsyncEventingBasicConsumer consumer = new(Channel);
-		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, false, consumer, cancellationToken: ct);
-	}
-
-	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
-
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, ea) =>
 		{
@@ -67,6 +55,18 @@ public sealed class ParserFinishListener(
 				await Channel.BasicNackAsync(ea.DeliveryTag, false, false);
 			}
 		};
+
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+		_channel = await TopicConsumerInitialization.InitializeChannel(rabbitMq, Exchange, Queue, RoutingKey, ct);
+
+	public Task StartConsuming(CancellationToken ct = default)
+	{
+		AsyncEventingBasicConsumer consumer = new(Channel);
+		consumer.ReceivedAsync += Handler;
+		return Channel.BasicConsumeAsync(Queue, false, consumer, cancellationToken: ct);
+	}
+
+	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
 
 	private sealed class ParserFinishMessage
 	{

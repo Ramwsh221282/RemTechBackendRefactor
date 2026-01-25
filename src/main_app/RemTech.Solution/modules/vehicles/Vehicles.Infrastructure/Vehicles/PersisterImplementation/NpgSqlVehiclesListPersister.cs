@@ -19,6 +19,50 @@ public sealed class NpgSqlVehiclesListPersister(NpgSqlSession session) : IVehicl
 		return saved;
 	}
 
+	private static IEnumerable<VehiclePersistInfo> FilterFromExisting(
+		IEnumerable<VehiclePersistInfo> infos,
+		IEnumerable<Guid> existing
+	) => infos.Where(i => !existing.Contains(i.Vehicle.Id.Value));
+
+	private static async Task PersistCharacteristics(
+		NpgSqlSession session,
+		IEnumerable<VehiclePersistInfo> insertedVehicles,
+		CancellationToken ct
+	)
+	{
+		const string sql = """
+			INSERT INTO vehicles_module.vehicle_characteristics (vehicle_id, characteristic_id, value, name)
+			VALUES (@vehicle_id, @characteristic_id, @value, @name)
+			""";
+
+		var parameters = insertedVehicles
+			.SelectMany(i => i.Vehicle.Characteristics)
+			.Select(c => new
+			{
+				vehicle_id = c.VehicleId.Value,
+				characteristic_id = c.CharacteristicId.Value,
+				value = c.Value.Value,
+				name = c.Name.Value,
+			});
+
+		NpgsqlConnection connection = await session.GetConnection(ct);
+		await connection.ExecuteAsync(sql, parameters, transaction: session.Transaction);
+	}
+
+	private async Task<IEnumerable<Guid>> GetExistingIdentifiers(
+		IEnumerable<VehiclePersistInfo> infos,
+		CancellationToken ct
+	)
+	{
+		const string sql = "SELECT id FROM vehicles_module.vehicles WHERE id = ANY(@ids)";
+		Guid[] ids = infos.Select(i => i.Vehicle.Id.Value).ToArray();
+		DynamicParameters parameters = new();
+		parameters.Add("@ids", ids);
+		CommandDefinition command = session.FormCommand(sql, parameters, ct);
+		NpgsqlConnection connection = await session.GetConnection(ct);
+		return await connection.QueryAsync<Guid>(command);
+	}
+
 	private async Task<int> SaveVehicles(IEnumerable<VehiclePersistInfo> infos, CancellationToken ct)
 	{
 		const string sql = """
@@ -47,49 +91,5 @@ public sealed class NpgSqlVehiclesListPersister(NpgSqlSession session) : IVehicl
 
 		NpgsqlConnection connection = await session.GetConnection(ct);
 		return await connection.ExecuteAsync(sql, parameters, transaction: session.Transaction);
-	}
-
-	private static IEnumerable<VehiclePersistInfo> FilterFromExisting(
-		IEnumerable<VehiclePersistInfo> infos,
-		IEnumerable<Guid> existing
-	) => infos.Where(i => !existing.Contains(i.Vehicle.Id.Value));
-
-	private async Task<IEnumerable<Guid>> GetExistingIdentifiers(
-		IEnumerable<VehiclePersistInfo> infos,
-		CancellationToken ct
-	)
-	{
-		const string sql = "SELECT id FROM vehicles_module.vehicles WHERE id = ANY(@ids)";
-		Guid[] ids = infos.Select(i => i.Vehicle.Id.Value).ToArray();
-		DynamicParameters parameters = new();
-		parameters.Add("@ids", ids);
-		CommandDefinition command = session.FormCommand(sql, parameters, ct);
-		NpgsqlConnection connection = await session.GetConnection(ct);
-		return await connection.QueryAsync<Guid>(command);
-	}
-
-	private static async Task PersistCharacteristics(
-		NpgSqlSession session,
-		IEnumerable<VehiclePersistInfo> insertedVehicles,
-		CancellationToken ct
-	)
-	{
-		const string sql = """
-			INSERT INTO vehicles_module.vehicle_characteristics (vehicle_id, characteristic_id, value, name)
-			VALUES (@vehicle_id, @characteristic_id, @value, @name)
-			""";
-
-		var parameters = insertedVehicles
-			.SelectMany(i => i.Vehicle.Characteristics)
-			.Select(c => new
-			{
-				vehicle_id = c.VehicleId.Value,
-				characteristic_id = c.CharacteristicId.Value,
-				value = c.Value.Value,
-				name = c.Name.Value,
-			});
-
-		NpgsqlConnection connection = await session.GetConnection(ct);
-		await connection.ExecuteAsync(sql, parameters, transaction: session.Transaction);
 	}
 }

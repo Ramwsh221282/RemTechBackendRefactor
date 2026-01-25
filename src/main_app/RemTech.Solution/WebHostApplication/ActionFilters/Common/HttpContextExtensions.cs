@@ -29,6 +29,7 @@ public static class HttpContextExtensions
 					break;
 				}
 			}
+
 			return accessToken;
 		}
 
@@ -44,6 +45,7 @@ public static class HttpContextExtensions
 					break;
 				}
 			}
+
 			return refreshToken;
 		}
 

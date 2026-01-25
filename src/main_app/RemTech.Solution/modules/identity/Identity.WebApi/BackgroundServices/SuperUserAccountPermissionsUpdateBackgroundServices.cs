@@ -26,46 +26,6 @@ public sealed class SuperUserAccountPermissionsUpdateBackgroundServices(
 		}
 	}
 
-	private async Task Execute(CancellationToken ct)
-	{
-		try
-		{
-			await using AsyncServiceScope scope = Services.CreateAsyncScope();
-			SuperUserCredentialsOptions options = GetOptions(scope);
-			Result<Account> account = await GetSuperUserAccount(scope, ct);
-			if (account.IsFailure)
-			{
-				Logger.Warning("Super user account {Login} {Email} not found", options.Login, options.Email);
-				return;
-			}
-
-			IEnumerable<Permission> permissions = [.. await GetAllPermissions(scope, ct)];
-			Permission[] permissionsToAdd = GetPermissionsToAdd(account.Value, permissions);
-			if (permissionsToAdd.Length == 0)
-			{
-				Logger.Debug(
-					"Super user account {Login} {Email} already has all permissions",
-					options.Login,
-					options.Email
-				);
-				return;
-			}
-
-			Result result = await UpdateSuperUserAccountPermissions(scope, account.Value, permissionsToAdd, ct);
-			if (result.IsFailure)
-			{
-				Logger.Fatal(result.Error, "Error updating super user account permissions");
-				return;
-			}
-
-			Logger.Information("Account permissions updated successfully.");
-		}
-		catch (Exception e)
-		{
-			Logger.Fatal(e, "Error updating super user account permissions.");
-		}
-	}
-
 	private static async Task<Result> UpdateSuperUserAccountPermissions(
 		AsyncServiceScope scope,
 		Account account,
@@ -106,5 +66,45 @@ public sealed class SuperUserAccountPermissionsUpdateBackgroundServices(
 		IAccountsRepository accountsRepository = scope.ServiceProvider.GetRequiredService<IAccountsRepository>();
 		AccountSpecification specification = new AccountSpecification().WithLogin(GetOptions(scope).Login);
 		return accountsRepository.Find(specification, ct);
+	}
+
+	private async Task Execute(CancellationToken ct)
+	{
+		try
+		{
+			await using AsyncServiceScope scope = Services.CreateAsyncScope();
+			SuperUserCredentialsOptions options = GetOptions(scope);
+			Result<Account> account = await GetSuperUserAccount(scope, ct);
+			if (account.IsFailure)
+			{
+				Logger.Warning("Super user account {Login} {Email} not found", options.Login, options.Email);
+				return;
+			}
+
+			IEnumerable<Permission> permissions = [.. await GetAllPermissions(scope, ct)];
+			Permission[] permissionsToAdd = GetPermissionsToAdd(account.Value, permissions);
+			if (permissionsToAdd.Length == 0)
+			{
+				Logger.Debug(
+					"Super user account {Login} {Email} already has all permissions",
+					options.Login,
+					options.Email
+				);
+				return;
+			}
+
+			Result result = await UpdateSuperUserAccountPermissions(scope, account.Value, permissionsToAdd, ct);
+			if (result.IsFailure)
+			{
+				Logger.Fatal(result.Error, "Error updating super user account permissions");
+				return;
+			}
+
+			Logger.Information("Account permissions updated successfully.");
+		}
+		catch (Exception e)
+		{
+			Logger.Fatal(e, "Error updating super user account permissions.");
+		}
 	}
 }

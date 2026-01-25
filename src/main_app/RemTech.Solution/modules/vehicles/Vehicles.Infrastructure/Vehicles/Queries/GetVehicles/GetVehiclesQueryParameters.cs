@@ -38,18 +38,23 @@ public sealed class GetVehiclesQueryParameters
 		return this;
 	}
 
-	public GetVehiclesQueryParameters ForCharacteristics<T>(IEnumerable<T>? source, Func<T, (Guid, string)> converter)
+	public GetVehiclesQueryParameters ForCharacteristics<T>(
+		IEnumerable<T>? source,
+		Func<T, (Guid Id, string Name)> converter
+	)
 	{
 		if (Characteristics is not null)
 			return this;
 		if (source is null)
 			return this;
 		Dictionary<Guid, string> characteristics = [];
+
 		foreach (T entry in source)
 		{
 			(Guid ctxId, string ctxName) = converter(entry);
 			characteristics.TryAdd(ctxId, ctxName);
 		}
+
 		Characteristics = characteristics;
 		return this;
 	}

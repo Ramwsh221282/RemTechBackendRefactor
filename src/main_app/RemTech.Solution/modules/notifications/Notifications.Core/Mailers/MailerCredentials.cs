@@ -6,12 +6,8 @@ namespace Notifications.Core.Mailers;
 
 public sealed partial record MailerCredentials
 {
-	private static readonly string[] AllowedSmtpHosts = ["smtp.yandex.ru", "smtp.mail.ru", "smtp.gmail.com"];
-	private static readonly Regex EmailRegex = RegexExpression();
-
-	public string SmtpPassword { get; }
-	public string SmtpHost { get; }
-	public string Email { get; }
+	private static readonly string[] _allowedSmtpHosts = ["smtp.yandex.ru", "smtp.mail.ru", "smtp.gmail.com"];
+	private static readonly Regex _emailRegex = RegexExpression();
 
 	private MailerCredentials(string smtpPassword, string smtpHost, string email)
 	{
@@ -20,15 +16,9 @@ public sealed partial record MailerCredentials
 		Email = email;
 	}
 
-	public Task<MailerCredentials> Encrypt(
-		IMailerCredentialsCryptography cryptography,
-		CancellationToken ct = default
-	) => cryptography.Encrypt(this, ct);
-
-	public Task<MailerCredentials> Decrypt(
-		IMailerCredentialsCryptography cryptography,
-		CancellationToken ct = default
-	) => cryptography.Decrypt(this, ct);
+	public string SmtpPassword { get; }
+	public string SmtpHost { get; }
+	public string Email { get; }
 
 	public static Result<MailerCredentials> Create(string smtpPassword, string email)
 	{
@@ -44,10 +34,23 @@ public sealed partial record MailerCredentials
 			: new MailerCredentials(smtpPassword, resolvedSmtpHost.Value, email);
 	}
 
+	public Task<MailerCredentials> Encrypt(
+		IMailerCredentialsCryptography cryptography,
+		CancellationToken ct = default
+	) => cryptography.Encrypt(this, ct);
+
+	public Task<MailerCredentials> Decrypt(
+		IMailerCredentialsCryptography cryptography,
+		CancellationToken ct = default
+	) => cryptography.Decrypt(this, ct);
+
+	[GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "ru-RU")]
+	private static partial Regex RegexExpression();
+
 	private static bool HasValidEmailFormat(string email, out Error error)
 	{
 		error = Error.NoError();
-		if (!EmailRegex.IsMatch(email))
+		if (!_emailRegex.IsMatch(email))
 		{
 			error = Error.InvalidFormat("Некорректный формат почты.");
 			return false;
@@ -60,10 +63,7 @@ public sealed partial record MailerCredentials
 	{
 		string[] parts = email.Split('@');
 		string host = parts[1];
-		string? resolved = AllowedSmtpHosts.FirstOrDefault(h => h.EndsWith(host, StringComparison.OrdinalIgnoreCase));
+		string? resolved = _allowedSmtpHosts.FirstOrDefault(h => h.EndsWith(host, StringComparison.OrdinalIgnoreCase));
 		return resolved ?? Error.Validation($"Хост почты: {host} не поддерживается для настройки почтового сервиса.");
 	}
-
-	[GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "ru-RU")]
-	private static partial Regex RegexExpression();
 }

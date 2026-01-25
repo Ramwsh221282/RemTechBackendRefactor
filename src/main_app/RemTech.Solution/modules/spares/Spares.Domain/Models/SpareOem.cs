@@ -4,12 +4,12 @@ namespace Spares.Domain.Models;
 
 public sealed record SpareOem
 {
-    public string Value { get; }
+	private SpareOem(string value) => Value = value;
 
-    private SpareOem(string value) => Value = value;
+	public string Value { get; }
 
-    public static Result<SpareOem> Create(string value) =>
-        string.IsNullOrWhiteSpace(value)
-            ? Error.Validation("OEM-номер запчасти не может быть пустым.")
-            : Result.Success(new SpareOem(value));
+	public static Result<SpareOem> Create(string value) =>
+		string.IsNullOrWhiteSpace(value)
+			? Error.Validation("OEM-номер запчасти не может быть пустым.")
+			: Result.Success(new SpareOem(value));
 }

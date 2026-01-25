@@ -1,24 +1,12 @@
-import { Component, Input, signal, WritableSignal } from '@angular/core';
-import { Spare } from '../../types/Spare';
-import { SparesService } from '../../services/SparesService';
+import { Component, input, InputSignal } from '@angular/core';
 
 @Component({
-  selector: 'app-spare-title',
-  imports: [],
-  templateUrl: './spare-title.component.html',
-  styleUrl: './spare-title.component.scss',
+	selector: 'app-spare-title',
+	imports: [],
+	templateUrl: './spare-title.component.html',
+	styleUrl: './spare-title.component.scss',
 })
 export class SpareTitleComponent {
-  @Input({ required: true }) set spare_setter(value: Spare) {
-    this._spare.set(value);
-  }
-
-  private readonly _spare: WritableSignal<Spare>;
-  constructor() {
-    this._spare = signal(SparesService.default());
-  }
-
-  public get spare(): Spare {
-    return this._spare();
-  }
+	title: InputSignal<string> = input('');
+	description: InputSignal<string> = input('');
 }

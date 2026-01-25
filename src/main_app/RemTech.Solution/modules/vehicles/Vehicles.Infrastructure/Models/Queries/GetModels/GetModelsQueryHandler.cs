@@ -15,7 +15,7 @@ public sealed class GetModelsQueryHandler(NpgSqlSession session)
 		return session.QueryMultipleRows<ModelResponse>(command);
 	}
 
-	private static (DynamicParameters parameters, string filterSql) CreateSql(GetModelsQuery query)
+	private static (DynamicParameters Parameters, string FilterSql) CreateSql(GetModelsQuery query)
 	{
 		DynamicParameters parameters = new();
 		List<string> filterSql = [];
@@ -103,9 +103,9 @@ public sealed class GetModelsQueryHandler(NpgSqlSession session)
 		filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
 
 	private static bool HasSomeCategoryFilter(GetModelsQuery query) =>
-		query.CategoryId != null && query.CategoryId.Value != Guid.Empty
+		(query.CategoryId != null && query.CategoryId.Value != Guid.Empty)
 		|| !string.IsNullOrWhiteSpace(query.CategoryName);
 
 	private static bool HasSomeBrandFilter(GetModelsQuery query) =>
-		query.BrandId != null && query.BrandId.Value != Guid.Empty || !string.IsNullOrWhiteSpace(query.BrandName);
+		(query.BrandId != null && query.BrandId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(query.BrandName);
 }
