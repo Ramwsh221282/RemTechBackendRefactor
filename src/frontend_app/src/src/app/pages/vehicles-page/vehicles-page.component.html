@@ -67,14 +67,14 @@
 							</article>
 						}
 					</div>
-					<!-- @if (totalAmount() > itemsPerPage) {
-						   <app-pagination
-								(pageChanged)="changePage($event)"
-								[current_page]="vehiclesQuery().Page ?? 1"
-								[total_count]="totalAmount()"
-								[page_size]="vehiclesQuery().PageSize ?? itemsPerPage"
-							/>
-					   } -->
+					@if (vehicles().TotalCount > vehiclesPageSize) {
+						<app-pagination
+							(pageChanged)="changePage($event)"
+							[current_page]="currentPage()"
+							[total_count]="vehicles().TotalCount"
+							[page_size]="vehiclesPageSize"
+						/>
+					}
 				</div>
 			</div>
 		</div>

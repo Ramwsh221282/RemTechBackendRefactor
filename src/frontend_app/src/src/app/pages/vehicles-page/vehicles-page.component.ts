@@ -66,6 +66,7 @@ export class VehiclesPageComponent implements OnInit {
 	readonly statisticsInfo: WritableSignal<AggregatedStatisticsInfo> = signal(defaultAggregatedStatisticsInfo());
 	readonly selectFilterParameters: WritableSignal<VehiclesCatalogueFilterSeletions> = signal(defaultCatalogueFilterSelections());
 	readonly queries: WritableSignal<GroupedVehicleCatalogueQueries> = signal(defaultVehicleCatalogueQueries());
+	readonly currentPage: WritableSignal<number> = signal(1);
 
 	readonly refreshCatalogueDataOnQueryChange: EffectRef = effect((): void => {
 		const queries: GroupedVehicleCatalogueQueries = this.queries();
@@ -98,52 +99,6 @@ export class VehiclesPageComponent implements OnInit {
 			return { ...state, vehiclesQuery: state.vehiclesQuery.usePageSize(this.vehiclesPageSize) };
 		});
 		this.fetchVehiclesCategoryBrandModelsOptions();
-	}
-
-	private initializePageTitle(): void {
-		this._title.setTitle('Техника');
-	}
-
-	private fetchVehiclesCategoryBrandModelsOptions(): void {
-		const category: CategoryResponse | null | undefined = this.selectFilterParameters().category;
-		const brand: BrandResponse | null | undefined = this.selectFilterParameters().brand;
-		const categoryFetch: Observable<CategoryResponse[]> = this._categoriesService.fetchCategories(GetCategoriesQuery.default());
-		const brandFetch: Observable<BrandResponse[]> = this._brandsService.fetchBrands(
-			GetBrandsQuery.default().useCategoryId(category?.Id),
-		);
-		const modelFetch: Observable<ModelResponse[]> = this._modelsService.fetchModels(
-			GetModelsQuery.default().useCategoryId(category?.Id).useBrandId(brand?.Id),
-		);
-		forkJoin([categoryFetch, brandFetch, modelFetch])
-			.pipe(
-				tap((response: [CategoryResponse[], BrandResponse[], ModelResponse[]]) => {
-					this.categories.set(response[0]);
-					this.brands.set(response[1]);
-					this.models.set(response[2]);
-				}),
-			)
-			.subscribe();
-	}
-
-	private readParametersFromActivatedRoute(route: ActivatedRoute): void {
-		route.queryParamMap.subscribe((params: ParamMap): void => {
-			const categoryInfo: CategoryResponse | null | undefined = extractCategoryFromQueryParams(params);
-			const brandInfo: BrandResponse | null | undefined = extractBrandFromQueryParams(params);
-			const page: number | null | undefined = extractPageFromQueryParams(params);
-			this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
-				return { ...state, brand: brandInfo, category: categoryInfo };
-			});
-			this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
-				return {
-					...state,
-					vehiclesQuery: state.vehiclesQuery
-						.usePageSize(this.vehiclesPageSize)
-						.usePage(page ?? 1)
-						.useCategory(categoryInfo, categoryInfo?.Id)
-						.useBrand(brandInfo, brandInfo?.Id),
-				};
-			});
-		});
 	}
 
 	public handleUserPriceFilterInput(userPriceSubmit: PriceChangeEvent): void {
@@ -232,6 +187,60 @@ export class VehiclesPageComponent implements OnInit {
 				...state,
 				vehiclesQuery: state.vehiclesQuery.useLocation(location, location?.Id),
 			};
+		});
+	}
+
+	public changePage(page: number): void {
+		this.currentPage.set(page);
+		this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+			return { ...state, vehiclesQuery: state.vehiclesQuery.usePage(page) };
+		});
+	}
+
+	private initializePageTitle(): void {
+		this._title.setTitle('Техника');
+	}
+
+	private fetchVehiclesCategoryBrandModelsOptions(): void {
+		const category: CategoryResponse | null | undefined = this.selectFilterParameters().category;
+		const brand: BrandResponse | null | undefined = this.selectFilterParameters().brand;
+		const categoryFetch: Observable<CategoryResponse[]> = this._categoriesService.fetchCategories(GetCategoriesQuery.default());
+		const brandFetch: Observable<BrandResponse[]> = this._brandsService.fetchBrands(
+			GetBrandsQuery.default().useCategoryId(category?.Id),
+		);
+		const modelFetch: Observable<ModelResponse[]> = this._modelsService.fetchModels(
+			GetModelsQuery.default().useCategoryId(category?.Id).useBrandId(brand?.Id),
+		);
+		forkJoin([categoryFetch, brandFetch, modelFetch])
+			.pipe(
+				tap((response: [CategoryResponse[], BrandResponse[], ModelResponse[]]) => {
+					this.categories.set(response[0]);
+					this.brands.set(response[1]);
+					this.models.set(response[2]);
+				}),
+			)
+			.subscribe();
+	}
+
+	private readParametersFromActivatedRoute(route: ActivatedRoute): void {
+		route.queryParamMap.subscribe((params: ParamMap): void => {
+			const categoryInfo: CategoryResponse | null | undefined = extractCategoryFromQueryParams(params);
+			const brandInfo: BrandResponse | null | undefined = extractBrandFromQueryParams(params);
+			const page: number | null | undefined = extractPageFromQueryParams(params);
+			if (page) this.currentPage.set(page);
+			this.selectFilterParameters.update((state: VehiclesCatalogueFilterSeletions): VehiclesCatalogueFilterSeletions => {
+				return { ...state, brand: brandInfo, category: categoryInfo };
+			});
+			this.queries.update((state: GroupedVehicleCatalogueQueries): GroupedVehicleCatalogueQueries => {
+				return {
+					...state,
+					vehiclesQuery: state.vehiclesQuery
+						.usePageSize(this.vehiclesPageSize)
+						.usePage(page ?? 1)
+						.useCategory(categoryInfo, categoryInfo?.Id)
+						.useBrand(brandInfo, brandInfo?.Id),
+				};
+			});
 		});
 	}
 }

@@ -151,61 +151,39 @@ public sealed class GetVehiclesQueryHandler(
 	{
 		if (string.IsNullOrWhiteSpace(queryParameters.TextSearch))
 			return;
+
 		const string sql = """
 			v.id IN (
 			WITH embedding_search AS (
-			    SELECT
-			        id,
-			        text,
-			        (esv.embedding <=> @embedding_search) AS distance
+			    SELECT id, esv.embedding <-> @embedding_search as distance
 			    FROM vehicles_module.vehicles esv
-			    WHERE esv.embedding <=> @embedding_search <= @embedding_search_threshold
-			    ORDER BY distance
-			    LIMIT 50
+			    WHERE esv.embedding <-> @embedding_search <= 0.8
+			    ORDER BY distance			    
 			),
-			    keyword_search AS (
-			    SELECT
-			    id,
-			    text,
-			    ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @text_search_parameter)) as ts_rank
+			keyword_search AS (
+			    SELECT id			    
 			    FROM vehicles_module.vehicles ksv
-			    WHERE ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @text_search_parameter)) > @text_search_threshold
-			    ORDER BY ts_rank DESC
-			    LIMIT 50
-			    ),
-			    merged as (
-			        SELECT
-			            COALESCE(e.id, k.id) as id,
-			            COALESCE(e.text, k.text) as text,
-			            e.distance,
-			            k.ts_rank
+			    WHERE ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @text_search_parameter)) > 0),
+			ilike_search AS (
+				SELECT id
+				FROM vehicles_module.vehicles ilv
+				WHERE ilv.text ILIKE '%' || @text_search_parameter || '%'
+			),
+			merged AS (
+			        SELECT COALESCE(e.id, k.id, i.id) as id			            
 			        FROM embedding_search e
 			        FULL OUTER JOIN keyword_search k ON e.id = k.id
-			    ),
-			    scored AS (
-			        SELECT
-			            id,
-			            text,
-			            distance,
-			            ts_rank,
-			        (
-			            COALESCE(1.0 - distance, 0.0) * 0.6 +
-			            COALESCE(ts_rank, 0.0) * 0.4
-			            ) as hybrid_score
-			        FROM merged
-			    )
+					FULL OUTER JOIN ilike_search i ON COALESCE(e.id, k.id) = i.id
+			    )				
 			SELECT id
-			FROM scored
-			WHERE hybrid_score > @hybrid_threshold
+			FROM merged			
 			)
 			""";
+
 		filterSql.Add(sql);
 		Vector embedding = new(provider.Generate(queryParameters.TextSearch));
 		parameters.Add("@embedding_search", embedding);
-		parameters.Add("@embedding_search_threshold", searchOptions.EmbeddingSearchThreshold, DbType.Double);
 		parameters.Add("@text_search_parameter", queryParameters.TextSearch, DbType.String);
-		parameters.Add("@text_search_threshold", searchOptions.TextSearchThreshold, DbType.Double);
-		parameters.Add("@hybrid_threshold", searchOptions.HybridSearchThreshold, DbType.Double);
 	}
 
 	private static (DynamicParameters parameters, string paginationSql) FormPaginationSql(
@@ -217,7 +195,7 @@ public sealed class GetVehiclesQueryHandler(
 		int offset = (queryParameters.Page - 1) * limit;
 		parameters.Add("@limit", limit, DbType.Int32);
 		parameters.Add("@offset", offset, DbType.Int32);
-		return (parameters, $"LIMIT @limit OFFSET @offset");
+		return (parameters, "LIMIT @limit OFFSET @offset");
 	}
 
 	private static (DynamicParameters parameters, string vehiclesOrderBySql) FormVehiclesSortSql(

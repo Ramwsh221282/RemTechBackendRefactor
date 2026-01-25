@@ -14,8 +14,8 @@ export class VehicleCardComponent {
 	private readonly _router: Router = inject(Router);
 	vehicle: InputSignal<VehicleResponse> = input(DefaultVehicleResponse());
 
-	openInNewTab() {
-		const url = this._router
+	openInNewTab(): void {
+		const url: string = this._router
 			.createUrlTree(['/vehicle'], {
 				queryParams: { vehicleId: this.vehicle().VehicleId },
 			})
