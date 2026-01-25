@@ -21,6 +21,7 @@ public sealed class SparesController
 		[FromQuery(Name = "page-size")] int? pageSize,
 		[FromQuery(Name = "sort-mode")] string? sortMode,
 		[FromQuery(Name = "oem")] string? oem,
+		[FromQuery(Name = "type")] string? type,
 		[FromServices] IQueryHandler<GetSparesQuery, GetSparesQueryResponse> handler,
 		CancellationToken ct
 	)
@@ -33,7 +34,8 @@ public sealed class SparesController
 			.WithTextSearch(textSearch)
 			.WithPage(page)
 			.WithPageSize(pageSize)
-			.WithOrderMode(sortMode);
+			.WithOrderMode(sortMode)
+			.ForType(type);
 		GetSparesQueryResponse result = await handler.Handle(query, ct);
 		return EnvelopedResultsExtensions.AsEnvelope(result);
 	}

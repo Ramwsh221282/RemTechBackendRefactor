@@ -1,0 +1,15 @@
+<p-select
+	[options]="locations()"
+	[optionLabel]="'Name'"
+	[filterBy]="'Name'"
+	[placeholder]="'Выбрать локацию'"
+	[filter]="true"
+	[showClear]="true"
+	[fluid]="true"
+	[filterPlaceholder]="'Поиск по названию'"
+	[emptyMessage]="'Локации не найдены'"
+	[emptyFilterMessage]="'Совпадений не найдено'"
+	(onChange)="handleLocationSelected($event)"
+	[loading]="isLoading()"
+	(onClear)="handleLocationCleared()"
+/>

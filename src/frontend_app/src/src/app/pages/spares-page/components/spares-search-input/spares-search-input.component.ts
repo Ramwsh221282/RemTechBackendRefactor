@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { StringUtils } from '../../../../shared/utils/string-utils';
+import { Component, effect, EffectRef, EventEmitter, input, InputSignal, Output, signal, WritableSignal } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
+import { UserInputDebouncer } from '../../../../shared/utils/user-input-debouncer';
+import { StringUtils } from '../../../../shared/utils/string-utils';
 
 @Component({
 	selector: 'app-spares-search-input',
@@ -10,28 +11,31 @@ import { Button } from 'primeng/button';
 	styleUrl: './spares-search-input.component.scss',
 })
 export class SparesSearchInputComponent {
+	showSubmitButton: InputSignal<boolean> = input(false);
+	showResetButton: InputSignal<boolean> = input(false);
 	@Output() onTextSearchSubmit: EventEmitter<string | null> = new EventEmitter<string | null>();
-	public readonly textSearchForm: FormGroup = new FormGroup({
-		text: new FormControl(''),
+	private readonly _debouncer: UserInputDebouncer = new UserInputDebouncer(1000, this.search.bind(this));
+	readonly inputValue: WritableSignal<string> = signal('');
+
+	readonly onInputChangeEffect: EffectRef = effect((): void => {
+		this._debouncer.trigger();
 	});
 
-	public onSubmit(): void {
-		this.search();
+	public handleInputChange($event: Event): void {
+		const input: HTMLInputElement = $event.target as HTMLInputElement;
+		this.inputValue.set(input.value);
+		this._debouncer.trigger();
 	}
 
 	public onReset(): void {
-		this.textSearchForm.reset();
-		this.onTextSearchSubmit.emit(null);
+		this.inputValue.set('');
+		this._debouncer.trigger();
 	}
 
 	public search(): void {
-		console.log('submitted');
-		const formValues = this.textSearchForm.value;
-		const input: string = formValues.text;
-		if (StringUtils.isEmptyOrWhiteSpace(input)) {
-			this.onTextSearchSubmit.emit(null);
-			return;
-		}
+		const input: string | null = this.inputValue();
+		if (!input) this.onTextSearchSubmit.emit(null);
+		if (StringUtils.isEmptyOrWhiteSpace(input)) this.onTextSearchSubmit.emit(null);
 		this.onTextSearchSubmit.emit(input);
 	}
 }

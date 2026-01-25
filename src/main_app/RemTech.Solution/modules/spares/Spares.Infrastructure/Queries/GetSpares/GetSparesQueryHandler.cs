@@ -125,6 +125,12 @@ public sealed class GetSparesQueryHandler(
 
 	private void ApplyFilters(GetSparesQuery query, DynamicParameters parameters, List<string> filters)
 	{
+		if (!string.IsNullOrWhiteSpace(query.Type))
+		{
+			filters.Add("s.type=@spare_type");
+			parameters.Add("@spare_type", query.Type, DbType.String);
+		}
+
 		if (query.RegionId.HasValue)
 		{
 			filters.Add("s.region_id=@regionId");
@@ -193,9 +199,7 @@ public sealed class GetSparesQueryHandler(
 			    WHERE ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @text_search_parameter)) >= 0 OR ksv.text ILIKE '%' || @text_search_parameter || '%'			    
 			),
 			merged as (
-			        SELECT
-			            COALESCE(e.id, k.id) as id,
-			            COALESCE(e.text, k.text) as text			            
+			        SELECT COALESCE(e.id, k.id) as id			            
 			        FROM embedding_search e
 			        FULL OUTER JOIN keyword_search k ON e.id = k.id
 			    )			    

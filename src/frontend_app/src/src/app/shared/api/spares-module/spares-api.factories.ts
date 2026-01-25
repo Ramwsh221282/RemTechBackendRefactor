@@ -34,6 +34,7 @@ export function DefaultGetSpareParameters(): GetSparesQueryParameters {
 		TextSearch: '',
 		OrderMode: null,
 		Oem: null,
+		Type: null,
 	};
 }
 

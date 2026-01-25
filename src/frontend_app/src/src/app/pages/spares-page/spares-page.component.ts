@@ -16,11 +16,16 @@ import {
 	SpareTypeResponse,
 } from '../../shared/api/spares-module/spares-api.responses';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
-import { GetSpareLocationsQuery, GetSparesQueryParameters, GetSpareTypesQuery } from '../../shared/api/spares-module/spares-api.requests';
+import { GetSparesQueryParameters } from '../../shared/api/spares-module/spares-api.requests';
 import { DefaultGetSpareParameters } from '../../shared/api/spares-module/spares-api.factories';
-import { VehiclePriceFilterFormPartComponent } from '../vehicles-page/components/vehicle-price-filter-form-part/vehicle-price-filter-form-part.component';
-import { VehicleRegionsFilterFormPartComponent } from '../vehicles-page/components/vehicle-regions-filter-form-part/vehicle-regions-filter-form-part.component';
-import { catchError, EMPTY, forkJoin, Observable, tap } from 'rxjs';
+import {
+	PriceChangeEvent,
+	PriceSortChangeEvent,
+	VehiclePriceFilterFormPartComponent,
+} from '../vehicles-page/components/vehicle-price-filter-form-part/vehicle-price-filter-form-part.component';
+import { catchError, EMPTY, tap } from 'rxjs';
+import { SpareTypesSelectComponent } from './components/spare-types-select/spare-types-select.component';
+import { SpareLocationsSelectComponent } from './components/spare-locations-select/spare-locations-select.component';
 
 type AggregatedStatistics = {
 	totalCount: number;
@@ -58,7 +63,8 @@ function mapSparesResponseToStatistics(response: GetSparesQueryResponse): Aggreg
 		Paginator,
 		PaginationComponent,
 		VehiclePriceFilterFormPartComponent,
-		VehicleRegionsFilterFormPartComponent,
+		SpareTypesSelectComponent,
+		SpareLocationsSelectComponent,
 	],
 	templateUrl: './spares-page.component.html',
 	styleUrl: './spares-page.component.scss',
@@ -71,12 +77,30 @@ export class SparesPageComponent implements OnInit {
 	readonly spares: WritableSignal<SpareResponse[]> = signal<SpareResponse[]>([]);
 	readonly locations: WritableSignal<SpareLocationResponse[]> = signal<SpareLocationResponse[]>([]);
 	readonly statistics: WritableSignal<AggregatedStatistics> = signal<AggregatedStatistics>(defaultStatistics());
-	readonly query: WritableSignal<GetSparesQueryParameters> = signal<GetSparesQueryParameters>(defaultQuery());
 	readonly spareTypes: WritableSignal<SpareTypeResponse[]> = signal<SpareTypeResponse[]>([]);
+	readonly currentLocation: WritableSignal<SpareLocationResponse | null | undefined> = signal<SpareLocationResponse | null | undefined>(
+		null,
+	);
+	readonly currentSpareType: WritableSignal<SpareTypeResponse | null | undefined> = signal<SpareTypeResponse | null | undefined>(null);
+	readonly query: WritableSignal<GetSparesQueryParameters> = signal<GetSparesQueryParameters>(defaultQuery());
 
 	readonly onSparesQueryChange: EffectRef = effect((): void => {
 		const query: GetSparesQueryParameters = this.query();
 		this.fetchSpares(query);
+	});
+
+	readonly onCurrentLocationChange: EffectRef = effect((): void => {
+		const location: SpareLocationResponse | null | undefined = this.currentLocation();
+		this.query.update((current: GetSparesQueryParameters): GetSparesQueryParameters => {
+			return { ...current, RegionId: location?.Id };
+		});
+	});
+
+	readonly onCurrentSpareTypeChange: EffectRef = effect((): void => {
+		const spareType: SpareTypeResponse | null | undefined = this.currentSpareType();
+		this.query.update((current: GetSparesQueryParameters): GetSparesQueryParameters => {
+			return { ...current, Type: spareType?.Value };
+		});
 	});
 
 	public ngOnInit(): void {
@@ -95,34 +119,39 @@ export class SparesPageComponent implements OnInit {
 		});
 	}
 
+	public handlePriceRangeFilterChange($event: PriceChangeEvent): void {
+		this.query.update((current: GetSparesQueryParameters): GetSparesQueryParameters => {
+			return { ...current, MaximalPrice: $event.maximalPrice, MinimalPrice: $event.minimalPrice };
+		});
+	}
+
+	public handleSortModeChange($event: PriceSortChangeEvent): void {
+		this.query.update((current: GetSparesQueryParameters): GetSparesQueryParameters => {
+			return { ...current, OrderMode: $event.mode };
+		});
+	}
+
 	private fetchSpares(query: GetSparesQueryParameters): void {
-		this._sparesApiService.fetchSpares(query).pipe(
-			tap((response: GetSparesQueryResponse) => {
-				this.spares.set(response.Spares);
-				const statistics: AggregatedStatistics = mapSparesResponseToStatistics(response);
-				this.statistics.set(statistics);
-			}),
-		);
+		this._sparesApiService
+			.fetchSpares(query)
+			.pipe(
+				tap((response: GetSparesQueryResponse) => {
+					this.spares.set(response.Spares);
+					const statistics: AggregatedStatistics = mapSparesResponseToStatistics(response);
+					this.statistics.set(statistics);
+				}),
+			)
+			.subscribe();
 	}
 
 	private fetchInitialData(): void {
-		const locationsFetch$: Observable<SpareLocationResponse[]> = this._sparesApiService.fetchSpareLocations(
-			GetSpareLocationsQuery.create(),
-		);
-		const spareTypesFetch$: Observable<SpareTypeResponse[]> = this._sparesApiService.fetchSpareTypes(GetSpareTypesQuery.create());
-		const sparesFetch$: Observable<GetSparesQueryResponse> = this._sparesApiService.fetchSpares(this.query());
-
-		forkJoin([sparesFetch$, locationsFetch$, spareTypesFetch$])
+		this._sparesApiService
+			.fetchSpares(this.query())
 			.pipe(
-				tap((response: [GetSparesQueryResponse, SpareLocationResponse[], SpareTypeResponse[]]) => {
-					const spareTypes: SpareTypeResponse[] = response[2];
-					const sparesResponse: GetSparesQueryResponse = response[0];
-					const locations: SpareLocationResponse[] = response[1];
-					const statistics: AggregatedStatistics = mapSparesResponseToStatistics(sparesResponse);
-					this.locations.set(locations);
-					this.spares.set(sparesResponse.Spares);
+				tap((response: GetSparesQueryResponse): void => {
+					const statistics: AggregatedStatistics = mapSparesResponseToStatistics(response);
 					this.statistics.set(statistics);
-					this.spareTypes.set(spareTypes);
+					this.spares.set(response.Spares);
 				}),
 				catchError(() => EMPTY),
 			)

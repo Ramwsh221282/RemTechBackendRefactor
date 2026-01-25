@@ -10,6 +10,7 @@ export type GetSparesQueryParameters = {
 	PageSize?: number | null | undefined;
 	OrderMode?: string | null | undefined;
 	Oem?: string | null | undefined;
+	Type: string | null | undefined;
 };
 
 type GetSpareLocationsQueryParameters = {
@@ -88,5 +89,6 @@ export function ConvertSparesQueryToHttpParams(query: GetSparesQueryParameters):
 	if (query.PageSize) params = params.append('page-size', query.PageSize.toString());
 	if (query.OrderMode) params = params.append('sort-mode', query.OrderMode);
 	if (query.Oem) params = params.append('oem', query.Oem);
+	if (query.Type) params = params.append('type', query.Type);
 	return params;
 }

@@ -5,7 +5,9 @@ import { finalize, map, Observable, shareReplay } from 'rxjs';
 import { GetSparesQueryResponse, SpareLocationResponse, SpareTypeResponse } from './spares-api.responses';
 import { TypedEnvelope } from '../envelope';
 import {
+	ConvertSpareLocationsQueryToHttpParams,
 	ConvertSparesQueryToHttpParams,
+	ConvertSpareTypesQueryToHttpParams,
 	GetSpareLocationsQuery,
 	GetSparesQueryParameters,
 	GetSpareTypesQuery,
@@ -36,7 +38,7 @@ export class SparesApiService {
 
 	private invokeSpareTypesFetching(query: GetSpareTypesQuery): Observable<SpareTypeResponse[]> {
 		if (this.fetchingSpareTypes$) return this.fetchingSpareTypes$;
-		const params: HttpParams = ConvertSparesQueryToHttpParams(query.params);
+		const params: HttpParams = ConvertSpareTypesQueryToHttpParams(query);
 		const requestUrl: string = `${this._apiUrl}/types`;
 		this.fetchingSpareTypes$ = this._httpClient.get<TypedEnvelope<SpareTypeResponse[]>>(requestUrl, { params }).pipe(
 			map((envelope: TypedEnvelope<SpareTypeResponse[]>): SpareTypeResponse[] => (envelope.body ? envelope.body : [])),
@@ -48,7 +50,7 @@ export class SparesApiService {
 
 	private invokeFetchingSpareLocations(query: GetSpareLocationsQuery): Observable<SpareLocationResponse[]> {
 		if (this.fetchingSpareLocations$) return this.fetchingSpareLocations$;
-		const params: HttpParams = ConvertSparesQueryToHttpParams(query.params);
+		const params: HttpParams = ConvertSpareLocationsQueryToHttpParams(query);
 		const requestUrl: string = `${this._apiUrl}/locations`;
 		this.fetchingSpareLocations$ = this._httpClient.get<TypedEnvelope<SpareLocationResponse[]>>(requestUrl, { params }).pipe(
 			map((envelope: TypedEnvelope<SpareLocationResponse[]>): SpareLocationResponse[] => (envelope.body ? envelope.body : [])),

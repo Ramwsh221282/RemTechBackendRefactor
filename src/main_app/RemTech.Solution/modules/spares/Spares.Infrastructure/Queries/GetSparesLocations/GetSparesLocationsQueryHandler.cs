@@ -77,7 +77,7 @@ public sealed class GetSparesLocationsQueryHandler(NpgSqlSession session, Embedd
 	{
 		DynamicParameters parameters = new();
 		string sql = $"""
-			SELECT 
+			SELECT DISTINCT				
 			    r.id as Id,
 			    (r.name || ' ' || r.kind) as Name                        
 			FROM vehicles_module.regions r
