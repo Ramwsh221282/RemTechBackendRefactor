@@ -1,25 +1,15 @@
-import { Component, Input, signal, WritableSignal } from '@angular/core';
-
-import { Spare } from '../../types/Spare';
-import { SparesService } from '../../services/SparesService';
+import { Component, input, InputSignal } from '@angular/core';
 
 @Component({
-  selector: 'app-spare-photo',
-  imports: [],
-  templateUrl: './spare-photo.component.html',
-  styleUrl: './spare-photo.component.scss',
+	selector: 'app-spare-photo',
+	imports: [],
+	templateUrl: './spare-photo.component.html',
+	styleUrl: './spare-photo.component.scss',
 })
 export class SparePhotoComponent {
-  @Input({ required: true }) set spare_setter(value: Spare) {
-    this._spare.set(value);
-  }
+	photos: InputSignal<string[]> = input(defaultSparePhotos());
+}
 
-  private readonly _spare: WritableSignal<Spare>;
-  constructor() {
-    this._spare = signal(SparesService.default());
-  }
-
-  public get spare(): Spare {
-    return this._spare();
-  }
+function defaultSparePhotos(): string[] {
+	return [];
 }

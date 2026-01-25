@@ -96,7 +96,9 @@ public sealed class GetSparesQueryHandler(
 			    {paginationClause}
 			)
 			SELECT s.*, (r.name || ' ' || r.kind) as location FROM spares s
-			JOIN vehicles_module.regions r ON s.spare_region_id = r.id;
+			JOIN vehicles_module.regions r ON s.spare_region_id = r.id
+			JOIN contained_items_module.contained_items ci ON s.spare_id = ci.id
+			WHERE ci.deleted_at IS NULL			
 			""";
 
 		return new CommandDefinition(sql, parameters, transaction: session.Transaction);
@@ -176,48 +178,29 @@ public sealed class GetSparesQueryHandler(
 			s.id IN (
 			WITH embedding_search AS (
 			    SELECT
-			        id,
-			        text,
-			        (esv.embedding <=> @embedding_search) AS distance
+			        id,			        
+			        (esv.embedding <-> @embedding_search) AS distance
 			    FROM spares_module.spares esv
-			    WHERE esv.embedding <=> @embedding_search <= @embedding_search_threshold
-			    ORDER BY distance
-			    LIMIT 50
+			    WHERE esv.embedding <-> @embedding_search <= 0.8
+			    ORDER BY distance			    
 			),
-			    keyword_search AS (
-			    SELECT
+			keyword_search AS (
+				SELECT
 			    id,
 			    text,
 			    ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @text_search_parameter)) as ts_rank
 			    FROM spares_module.spares ksv
-			    WHERE ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @text_search_parameter)) >= @text_search_threshold
-			    ORDER BY ts_rank DESC
-			    LIMIT 50
-			    ),
-			    merged as (
+			    WHERE ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @text_search_parameter)) >= 0 OR ksv.text ILIKE '%' || @text_search_parameter || '%'			    
+			),
+			merged as (
 			        SELECT
 			            COALESCE(e.id, k.id) as id,
-			            COALESCE(e.text, k.text) as text,
-			            e.distance,
-			            k.ts_rank
+			            COALESCE(e.text, k.text) as text			            
 			        FROM embedding_search e
 			        FULL OUTER JOIN keyword_search k ON e.id = k.id
-			    ),
-			    scored AS (
-			        SELECT
-			            id,
-			            text,
-			            distance,
-			            ts_rank,
-			        (
-			            COALESCE(1.0 - distance, 0.0) * 0.6 +
-			            COALESCE(ts_rank, 0.0) * 0.4
-			            ) as hybrid_score
-			        FROM merged
-			    )
+			    )			    
 			SELECT id
-			FROM scored
-			WHERE hybrid_score >= @hybrid_threshold
+			FROM merged			
 			)
 			""";
 
@@ -225,8 +208,5 @@ public sealed class GetSparesQueryHandler(
 		Vector embedding = new(embeddings.Generate(text));
 		parameters.Add("@embedding_search", embedding);
 		parameters.Add("@text_search_parameter", text, DbType.String);
-		parameters.Add("@embedding_search_threshold", TextSearchConstants.EmbeddingSearchThreshold, DbType.Double);
-		parameters.Add("@text_search_threshold", TextSearchConstants.TextSearchThreshold, DbType.Double);
-		parameters.Add("@hybrid_threshold", TextSearchConstants.HybridSearchThreshold, DbType.Double);
 	}
 }

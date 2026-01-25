@@ -1,25 +1,15 @@
-import { Component, Input, signal, WritableSignal } from '@angular/core';
-import { Spare } from '../../types/Spare';
-import { SparesService } from '../../services/SparesService';
+import { Component, input, InputSignal } from '@angular/core';
 import { DecimalPipe, NgClass } from '@angular/common';
 
 @Component({
-  selector: 'app-spare-details',
-  imports: [DecimalPipe, NgClass],
-  templateUrl: './spare-details.component.html',
-  styleUrl: './spare-details.component.scss',
+	selector: 'app-spare-details',
+	imports: [DecimalPipe, NgClass],
+	templateUrl: './spare-details.component.html',
+	styleUrl: './spare-details.component.scss',
 })
 export class SpareDetailsComponent {
-  @Input({ required: true }) set spare_setter(value: Spare) {
-    this._spare.set(value);
-  }
-
-  private readonly _spare: WritableSignal<Spare>;
-  constructor() {
-    this._spare = signal(SparesService.default());
-  }
-
-  public get spare(): Spare {
-    return this._spare();
-  }
+	location: InputSignal<string> = input('');
+	price: InputSignal<number> = input(0);
+	isNds: InputSignal<boolean> = input(false);
+	oem: InputSignal<string> = input('');
 }
