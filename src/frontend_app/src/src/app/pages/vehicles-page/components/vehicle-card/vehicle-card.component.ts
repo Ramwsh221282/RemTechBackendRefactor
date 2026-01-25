@@ -1,12 +1,12 @@
 import { Component, inject, input, InputSignal } from '@angular/core';
-import { DecimalPipe, NgForOf, NgIf } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { VehicleResponse } from '../../../../shared/api/vehicles-module/vehicles-api.responses';
 import { DefaultVehicleResponse } from '../../../../shared/api/vehicles-module/vehicles-api.factories';
 
 @Component({
 	selector: 'app-vehicle-card',
-	imports: [DecimalPipe, NgForOf, NgIf],
+	imports: [DecimalPipe],
 	templateUrl: './vehicle-card.component.html',
 	styleUrl: './vehicle-card.component.scss',
 })

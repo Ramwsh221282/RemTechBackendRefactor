@@ -6,7 +6,7 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
-import { NgForOf } from '@angular/common';
+
 import { ParserSettingsNavButtonComponent } from '../scrapers-management-settings-page/components/parser-settings-nav-button/parser-settings-nav-button.component';
 import { RouterOutlet } from '@angular/router';
 import { Scraper } from '../scrapers-management-settings-page/types/Scraper';
@@ -17,10 +17,9 @@ import { ScraperJournalNavButtonComponent } from './components/scraper-journal-n
 @Component({
   selector: 'app-scrapers-management-journals-page',
   imports: [
-    NgForOf,    
     RouterOutlet,
-    ScraperJournalNavButtonComponent,
-  ],
+    ScraperJournalNavButtonComponent
+],
   templateUrl: './scrapers-management-journals-page.component.html',
   styleUrl: './scrapers-management-journals-page.component.scss',
 })

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { NgIf, NgOptimizedImage } from '@angular/common';
+import { NgOptimizedImage } from '@angular/common';
 import { Drawer } from 'primeng/drawer';
 import { RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
@@ -8,7 +8,7 @@ import { PermissionsStatusService } from '../../../services/PermissionsStatus.se
 
 @Component({
   selector: 'app-sidebar',
-  imports: [ButtonModule, NgOptimizedImage, Drawer, RouterLink, NgIf],
+  imports: [ButtonModule, NgOptimizedImage, Drawer, RouterLink],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
   animations: [],

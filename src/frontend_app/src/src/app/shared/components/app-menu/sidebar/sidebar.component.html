@@ -2,15 +2,15 @@
   <ng-template #headless>
     <div class="flex flex-col h-full">
       <div class="flex items-center justify-between px-6 pt-4 shrink-0">
-                <span class="inline-flex items-center gap-2">
-                    <span class="font-semibold text-2xl text-primary">
-                                <img [ngSrc]="'logos/logo1.png'" [width]="50" [height]="50" alt="logo"/>
-                    </span>
-                </span>
+        <span class="inline-flex items-center gap-2">
+          <span class="font-semibold text-2xl text-primary">
+            <img [ngSrc]="'logos/logo1.png'" [width]="50" [height]="50" alt="logo"/>
+          </span>
+        </span>
         <span>
-                    <p-button type="button" (click)="closeClick()" icon="pi pi-times" rounded="true"
-                              outlined="true" styleClass="h-8 w-8"></p-button>
-                </span>
+          <p-button type="button" (click)="closeClick()" icon="pi pi-times" rounded="true"
+          outlined="true" styleClass="h-8 w-8"></p-button>
+        </span>
       </div>
       <div class="overflow-y-auto">
         <ul class="list-none p-4 m-0">
@@ -23,77 +23,81 @@
               leaveToClass="hidden"
               leaveActiveClass="animate-slideup"
               class="p-4 flex items-center justify-between text-surface-600 dark:text-surface-200 p-ripple"
-            >
+              >
               <span class="font-medium">Меню</span>
             </div>
             <ul class="list-none p-0 m-0 overflow-hidden">
               <li>
                 <a pRipple
-                   [routerLink]="''"
-                   class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
+                  [routerLink]="''"
+                  class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
                   <i class="pi pi-home mr-2"></i>
                   <span class="font-medium">Главная</span>
                 </a>
               </li>
               <li>
                 <a pRipple
-                   [routerLink]="'vehicles'"
-                   class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
+                  [routerLink]="'vehicles'"
+                  class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
                   <i class="pi pi-truck mr-2"></i>
                   <span class="font-medium">Техника</span>
                 </a>
               </li>
               <li>
                 <a pRipple
-                   [routerLink]="'spares'"
-                   class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
+                  [routerLink]="'spares'"
+                  class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
                   <i class="pi pi-wrench mr-2"></i>
                   <span class="font-medium">Запчасти</span>
                 </a>
               </li>
               <li>
-                <a
-                  pRipple
-                  *ngIf="permissionsService.contains('notifications.management') ||
-                   permissionsService.contains('parser.management') ||
-                   permissionsService.contains('identity.management') ||
-                   permissionsService.contains('access.telemetry')"
-                  pStyleClass="@next"
-                  enterFromClass="hidden"
-                  enterActiveClass="animate-slidedown"
-                  leaveToClass="hidden"
-                  leaveActiveClass="animate-slideup"
-                  class="flex items-center p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple"
-                >
-                  <span class="font-medium">Управление</span>
-                </a>
+                @if (permissionsService.contains('notifications.management') ||
+                  permissionsService.contains('parser.management') ||
+                  permissionsService.contains('identity.management') ||
+                  permissionsService.contains('access.telemetry')) {
+                  <a
+                    pRipple
+                    pStyleClass="@next"
+                    enterFromClass="hidden"
+                    enterActiveClass="animate-slidedown"
+                    leaveToClass="hidden"
+                    leaveActiveClass="animate-slideup"
+                    class="flex items-center p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple"
+                    >
+                    <span class="font-medium">Управление</span>
+                  </a>
+                }
               </li>
               <li>
-                <a pRipple
-                   *ngIf="permissionsService.contains('parser.management')"
-                   [routerLink]="'scrapers'"
-                   class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
-                  <i class="pi pi-warehouse mr-2"></i>
-                  <span class="font-medium">Управление парсерами</span>
-                </a>
+                @if (permissionsService.contains('parser.management')) {
+                  <a pRipple
+                    [routerLink]="'scrapers'"
+                    class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
+                    <i class="pi pi-warehouse mr-2"></i>
+                    <span class="font-medium">Управление парсерами</span>
+                  </a>
+                }
               </li>
               <li>
-                <a pRipple
-                   *ngIf="permissionsService.contains('notifications.management')"
-                   [routerLink]="'mailing-management/greeting'"
-                   class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
-                  <i class="pi pi-at mr-2"></i>
-                  <span class="font-medium">Управление почтой сервиса</span>
-                </a>
+                @if (permissionsService.contains('notifications.management')) {
+                  <a pRipple
+                    [routerLink]="'mailing-management/greeting'"
+                    class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
+                    <i class="pi pi-at mr-2"></i>
+                    <span class="font-medium">Управление почтой сервиса</span>
+                  </a>
+                }
               </li>
               <li>
-                <a pRipple
-                   *ngIf="permissionsService.contains('identity.management')"
-                   [routerLink]="'users-management'"
-                   class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
-                  <i class="pi pi-users mr-2"></i>
-                  <span class="font-medium">Управление пользователями</span>
-                </a>
+                @if (permissionsService.contains('identity.management')) {
+                  <a pRipple
+                    [routerLink]="'users-management'"
+                    class="flex items-center cursor-pointer p-4 rounded-border text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 duration-150 transition-colors p-ripple">
+                    <i class="pi pi-users mr-2"></i>
+                    <span class="font-medium">Управление пользователями</span>
+                  </a>
+                }
               </li>
             </ul>
           </li>

@@ -11,7 +11,7 @@ import { CatalogueVehicle } from '../vehicles-page/types/CatalogueVehicle';
 import { CatalogueVehiclesService } from '../vehicles-page/services/CatalogueVehiclesService';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DecimalPipe, NgForOf, NgIf } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { UsersService } from '../sign-in-page/services/UsersService';
 import { CookieService } from 'ngx-cookie-service';
 import { TokensService } from '../../shared/services/TokensService';
@@ -31,7 +31,7 @@ import {
 
 @Component({
   selector: 'app-concrete-vehicle-page',
-  imports: [NgForOf, DecimalPipe, NgIf],
+  imports: [DecimalPipe],
   templateUrl: './concrete-vehicle-page.component.html',
   styleUrl: './concrete-vehicle-page.component.scss',
 })

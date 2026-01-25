@@ -2,7 +2,7 @@ import { Component, DestroyRef, effect, EventEmitter, inject, Output, signal, Wr
 import {ActivatedRoute, Params} from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
-import { NgIf } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { ScraperLastRunInfoComponent } from './components/scraper-last-run-info/scraper-last-run-info.component';
 import { ScraperNextRunInfoComponent } from './components/scraper-next-run-info/scraper-next-run-info.component';
@@ -41,12 +41,11 @@ import {ConfirmDialog} from 'primeng/confirmdialog';
     ScraperDeactivateButtonComponent,
     ScraperAddLinkDialogComponent,
     ScraperEditLinkDialogComponent,
-    NgIf,
     Toast,
     ScraperHeaderComponent,
     ScraperLastRunStartedComponent,
-    ConfirmDialog,
-  ],
+    ConfirmDialog
+],
   templateUrl: './scrapers-management-concrete-scraper-page.component.html',
   styleUrl: './scrapers-management-concrete-scraper-page.component.scss',
   providers: [MessageService, ConfirmationService],
