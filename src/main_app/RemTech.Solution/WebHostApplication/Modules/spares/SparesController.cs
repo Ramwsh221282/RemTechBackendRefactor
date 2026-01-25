@@ -3,6 +3,7 @@ using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using Spares.Infrastructure.Queries.GetSpares;
 using Spares.Infrastructure.Queries.GetSparesLocations;
+using Spares.Infrastructure.Queries.GetSpareTypes;
 
 namespace WebHostApplication.Modules.spares;
 
@@ -46,6 +47,19 @@ public sealed class SparesController
 	{
 		GetSparesLocationsQuery query = GetSparesLocationsQuery.Create().WithTextSearch(textSearch);
 		IEnumerable<SpareLocationResponse> result = await handler.Handle(query, ct);
+		return EnvelopedResultsExtensions.AsEnvelope(result);
+	}
+
+	[HttpGet("types")]
+	public async Task<Envelope> GetSpareTypes(
+		[FromQuery(Name = "text-search")] string? textSearch,
+		[FromQuery(Name = "amount")] int? amount,
+		[FromServices] IQueryHandler<GetSpareTypesQuery, IEnumerable<SpareTypeResponse>> handler,
+		CancellationToken ct
+	)
+	{
+		GetSpareTypesQuery query = GetSpareTypesQuery.Create().WithTextSearch(textSearch).WithAmount(amount);
+		IEnumerable<SpareTypeResponse> result = await handler.Handle(query, ct);
 		return EnvelopedResultsExtensions.AsEnvelope(result);
 	}
 }

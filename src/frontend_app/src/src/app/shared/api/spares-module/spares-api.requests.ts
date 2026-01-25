@@ -17,6 +17,11 @@ type GetSpareLocationsQueryParameters = {
 	Amount: number | null | undefined;
 };
 
+type GetSpareTypesQueryParameters = {
+	TextSearch: string | null | undefined;
+	Amount: number | null | undefined;
+};
+
 export class GetSpareLocationsQuery {
 	private constructor(readonly params: GetSpareLocationsQueryParameters) {}
 
@@ -35,6 +40,34 @@ export class GetSpareLocationsQuery {
 	public static create(): GetSpareLocationsQuery {
 		return new GetSpareLocationsQuery({ TextSearch: null, Amount: null });
 	}
+}
+
+export class GetSpareTypesQuery {
+	private constructor(readonly params: GetSpareTypesQueryParameters) {}
+
+	public static create(): GetSpareTypesQuery {
+		return new GetSpareTypesQuery({ TextSearch: null, Amount: null });
+	}
+
+	public useTextSearch(textSearch: string | null | undefined): GetSpareTypesQuery {
+		if (!textSearch) return new GetSpareTypesQuery({ ...this.params, TextSearch: undefined });
+		if (StringUtils.isEmptyOrWhiteSpace(textSearch)) return new GetSpareTypesQuery({ ...this.params, TextSearch: undefined });
+		return new GetSpareTypesQuery({ ...this.params, TextSearch: textSearch.trim() });
+	}
+
+	public useAmount(amount: number | null | undefined): GetSpareTypesQuery {
+		if (!amount) return new GetSpareTypesQuery({ ...this.params, Amount: undefined });
+		if (amount <= 0) return new GetSpareTypesQuery({ ...this.params, Amount: undefined });
+		return new GetSpareTypesQuery({ ...this.params, Amount: amount });
+	}
+}
+
+export function ConvertSpareTypesQueryToHttpParams(query: GetSpareTypesQuery): HttpParams {
+	let queryParams: GetSpareTypesQueryParameters = query.params;
+	let params: HttpParams = new HttpParams();
+	if (queryParams.TextSearch) params = params.append('text-search', queryParams.TextSearch);
+	if (queryParams.Amount) params = params.append('amount', queryParams.Amount.toString());
+	return params;
 }
 
 export function ConvertSpareLocationsQueryToHttpParams(query: GetSpareLocationsQuery): HttpParams {

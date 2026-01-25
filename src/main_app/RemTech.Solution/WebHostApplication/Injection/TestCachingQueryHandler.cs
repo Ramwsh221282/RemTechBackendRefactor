@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Extensions.Caching.Hybrid;
 using RemTech.SharedKernel.Core.Handlers;
 
@@ -22,10 +24,19 @@ public sealed class TestCachingQueryHandler<TQuery, TResult>(HybridCache cache, 
 		return result;
 	}
 
+	private static string ToSha256Hash(string input)
+	{
+		byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+		StringBuilder sb = new(bytes.Length * 2);
+		foreach (byte b in bytes)
+			sb.Append(b.ToString("x2"));
+		return sb.ToString();
+	}
+
 	private async Task<TResult> ReadFromCache(TQuery query, CancellationToken ct)
 	{
-		string queryPayload = query.ToString();
-		string key = $"{nameof(TQuery)}_{queryPayload}";
+		string hashedPayload = ToSha256Hash(query.ToString());
+		string key = $"{typeof(TQuery).Name}:{hashedPayload}";
 		return await Cache.GetOrCreateAsync(
 			key,
 			async token => await Inner.Handle(query, token),

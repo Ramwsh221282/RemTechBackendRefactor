@@ -2,9 +2,14 @@ import { inject, Injectable } from '@angular/core';
 import { apiUrl } from '../api-endpoint';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { finalize, map, Observable, shareReplay } from 'rxjs';
-import { GetSparesQueryResponse, SpareLocationResponse } from './spares-api.responses';
+import { GetSparesQueryResponse, SpareLocationResponse, SpareTypeResponse } from './spares-api.responses';
 import { TypedEnvelope } from '../envelope';
-import { ConvertSparesQueryToHttpParams, GetSpareLocationsQuery, GetSparesQueryParameters } from './spares-api.requests';
+import {
+	ConvertSparesQueryToHttpParams,
+	GetSpareLocationsQuery,
+	GetSparesQueryParameters,
+	GetSpareTypesQuery,
+} from './spares-api.requests';
 import { DefaultGetSparesQueryResponse } from './spares-api.factories';
 
 @Injectable({
@@ -15,6 +20,7 @@ export class SparesApiService {
 	private readonly _httpClient: HttpClient = inject(HttpClient);
 	private fetchingSpares$: Observable<GetSparesQueryResponse> | undefined;
 	private fetchingSpareLocations$: Observable<SpareLocationResponse[]> | undefined;
+	private fetchingSpareTypes$: Observable<SpareTypeResponse[]> | undefined;
 
 	public fetchSpares(query: GetSparesQueryParameters): Observable<GetSparesQueryResponse> {
 		return this.invokeFetchingSpares(query);
@@ -22,6 +28,22 @@ export class SparesApiService {
 
 	public fetchSpareLocations(query: GetSpareLocationsQuery): Observable<SpareLocationResponse[]> {
 		return this.invokeFetchingSpareLocations(query);
+	}
+
+	public fetchSpareTypes(query: GetSpareTypesQuery): Observable<SpareTypeResponse[]> {
+		return this.invokeSpareTypesFetching(query);
+	}
+
+	private invokeSpareTypesFetching(query: GetSpareTypesQuery): Observable<SpareTypeResponse[]> {
+		if (this.fetchingSpareTypes$) return this.fetchingSpareTypes$;
+		const params: HttpParams = ConvertSparesQueryToHttpParams(query.params);
+		const requestUrl: string = `${this._apiUrl}/types`;
+		this.fetchingSpareTypes$ = this._httpClient.get<TypedEnvelope<SpareTypeResponse[]>>(requestUrl, { params }).pipe(
+			map((envelope: TypedEnvelope<SpareTypeResponse[]>): SpareTypeResponse[] => (envelope.body ? envelope.body : [])),
+			finalize(() => (this.fetchingSpareTypes$ = undefined)),
+			shareReplay({ refCount: true, bufferSize: 1 }),
+		);
+		return this.fetchingSpareTypes$;
 	}
 
 	private invokeFetchingSpareLocations(query: GetSpareLocationsQuery): Observable<SpareLocationResponse[]> {

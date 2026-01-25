@@ -9,9 +9,14 @@ import { SpareSourceComponent } from './components/spare-source/spare-source.com
 import { Paginator } from 'primeng/paginator';
 import { ActivatedRoute } from '@angular/router';
 import { SparesApiService } from '../../shared/api/spares-module/spares-api.service';
-import { GetSparesQueryResponse, SpareLocationResponse, SpareResponse } from '../../shared/api/spares-module/spares-api.responses';
+import {
+	GetSparesQueryResponse,
+	SpareLocationResponse,
+	SpareResponse,
+	SpareTypeResponse,
+} from '../../shared/api/spares-module/spares-api.responses';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
-import { GetSpareLocationsQuery, GetSparesQueryParameters } from '../../shared/api/spares-module/spares-api.requests';
+import { GetSpareLocationsQuery, GetSparesQueryParameters, GetSpareTypesQuery } from '../../shared/api/spares-module/spares-api.requests';
 import { DefaultGetSpareParameters } from '../../shared/api/spares-module/spares-api.factories';
 import { VehiclePriceFilterFormPartComponent } from '../vehicles-page/components/vehicle-price-filter-form-part/vehicle-price-filter-form-part.component';
 import { VehicleRegionsFilterFormPartComponent } from '../vehicles-page/components/vehicle-regions-filter-form-part/vehicle-regions-filter-form-part.component';
@@ -67,6 +72,7 @@ export class SparesPageComponent implements OnInit {
 	readonly locations: WritableSignal<SpareLocationResponse[]> = signal<SpareLocationResponse[]>([]);
 	readonly statistics: WritableSignal<AggregatedStatistics> = signal<AggregatedStatistics>(defaultStatistics());
 	readonly query: WritableSignal<GetSparesQueryParameters> = signal<GetSparesQueryParameters>(defaultQuery());
+	readonly spareTypes: WritableSignal<SpareTypeResponse[]> = signal<SpareTypeResponse[]>([]);
 
 	readonly onSparesQueryChange: EffectRef = effect((): void => {
 		const query: GetSparesQueryParameters = this.query();
@@ -103,18 +109,20 @@ export class SparesPageComponent implements OnInit {
 		const locationsFetch$: Observable<SpareLocationResponse[]> = this._sparesApiService.fetchSpareLocations(
 			GetSpareLocationsQuery.create(),
 		);
-
+		const spareTypesFetch$: Observable<SpareTypeResponse[]> = this._sparesApiService.fetchSpareTypes(GetSpareTypesQuery.create());
 		const sparesFetch$: Observable<GetSparesQueryResponse> = this._sparesApiService.fetchSpares(this.query());
 
-		forkJoin([sparesFetch$, locationsFetch$])
+		forkJoin([sparesFetch$, locationsFetch$, spareTypesFetch$])
 			.pipe(
-				tap((response: [GetSparesQueryResponse, SpareLocationResponse[]]) => {
+				tap((response: [GetSparesQueryResponse, SpareLocationResponse[], SpareTypeResponse[]]) => {
+					const spareTypes: SpareTypeResponse[] = response[2];
 					const sparesResponse: GetSparesQueryResponse = response[0];
 					const locations: SpareLocationResponse[] = response[1];
 					const statistics: AggregatedStatistics = mapSparesResponseToStatistics(sparesResponse);
 					this.locations.set(locations);
 					this.spares.set(sparesResponse.Spares);
 					this.statistics.set(statistics);
+					this.spareTypes.set(spareTypes);
 				}),
 				catchError(() => EMPTY),
 			)

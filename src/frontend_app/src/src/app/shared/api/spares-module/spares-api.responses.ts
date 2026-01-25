@@ -19,4 +19,10 @@ export type GetSparesQueryResponse = {
 	Spares: SpareResponse[];
 };
 
+export type SpareTypeResponse = {
+	Value: SpareTypeName;
+};
+
+export type SpareTypeName = string;
+
 export type SpareLocationResponse = LocationResponse;
