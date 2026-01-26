@@ -34,6 +34,7 @@ public sealed class ValidatingHandler<TCommand, TResult>(
 				errors.Add(failure.ErrorMessage);
 			return true;
 		}
+
 		return false;
 	}
 }

@@ -9,11 +9,11 @@ public sealed class AggregatedConsumersHostedService(
 	RabbitMqConnectionSource connectionSource
 ) : BackgroundService
 {
+	private IConnection? _connection;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<AggregatedConsumersHostedService>();
 	private IEnumerable<IConsumer> Consumers { get; } = consumers;
 	private RabbitMqConnectionSource ConnectionSource { get; } = connectionSource;
 
-	private IConnection? _connection;
 	private IConnection Connection =>
 		_connection ?? throw new InvalidOperationException("Connection is not initialized.");
 

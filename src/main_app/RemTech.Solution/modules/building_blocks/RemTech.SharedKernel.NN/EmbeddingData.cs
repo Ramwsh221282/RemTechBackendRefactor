@@ -55,6 +55,7 @@ internal readonly ref struct EmbeddingData
 		{
 			result[i] = pairs[i].token;
 		}
+
 		return result;
 	}
 

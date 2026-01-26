@@ -22,11 +22,6 @@ public class Result
 		return Failure(error);
 	}
 
-	public Result<T> Map<T>(Func<T> onSuccess)
-	{
-		return IsSuccess ? Success(onSuccess()) : Failure<T>(Error);
-	}
-
 	public static Result Success() => new();
 
 	public static Result<T> Success<T>(T value) => new(value);
@@ -34,6 +29,11 @@ public class Result
 	public static Result<T> Failure<T>(Error error) => new(error);
 
 	public static Result Failure(Error error) => new(error);
+
+	public Result<T> Map<T>(Func<T> onSuccess)
+	{
+		return IsSuccess ? Success(onSuccess()) : Failure<T>(Error);
+	}
 }
 
 public class Result<T> : Result

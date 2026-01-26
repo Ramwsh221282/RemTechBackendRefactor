@@ -7,6 +7,11 @@ namespace RemTech.SharedKernel.NN;
 
 public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> options)
 {
+	~EmbeddingsProvider()
+	{
+		Dispose(false);
+	}
+
 	private Lazy<InferenceSession> TokenizerSessionLazy { get; } = new(MakeTokenizerSession(options.Value));
 	private Lazy<InferenceSession> ModelSessionLazy { get; } = new(MakeModelSession(options.Value));
 
@@ -132,14 +137,6 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 		return result;
 	}
 
-	private EmbeddingData TokenizeSingle(string text)
-	{
-		DenseTensor<string> stringTensor = new([1]);
-		stringTensor[0] = text;
-		NamedOnnxValue[] tokenizerInputs = [NamedOnnxValue.CreateFromTensor("inputs", stringTensor)];
-		return EmbeddingData.Create(tokenizerInputs, Tokenizer);
-	}
-
 	private static ReadOnlyMemory<float> GetEmbeddings(
 		IReadOnlyList<NamedOnnxValue> modelInputs,
 		InferenceSession modelSession
@@ -156,24 +153,6 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 		return modelResults[1].AsTensor<float>().ToArray();
 	}
 
-	private void Dispose(bool disposing)
-	{
-		if (!Disposed)
-		{
-			if (disposing)
-			{
-				TokenizerSessionLazy.Value.Dispose();
-				ModelSessionLazy.Value.Dispose();
-			}
-			Disposed = true;
-		}
-	}
-
-	~EmbeddingsProvider()
-	{
-		Dispose(false);
-	}
-
 	private static InferenceSession MakeTokenizerSession(EmbeddingsProviderOptions options)
 	{
 		options.Validate();
@@ -187,5 +166,27 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 		options.Validate();
 		SessionOptions modelOptions = new() { GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL };
 		return new InferenceSession(options.ModelPath, modelOptions);
+	}
+
+	private EmbeddingData TokenizeSingle(string text)
+	{
+		DenseTensor<string> stringTensor = new([1]);
+		stringTensor[0] = text;
+		NamedOnnxValue[] tokenizerInputs = [NamedOnnxValue.CreateFromTensor("inputs", stringTensor)];
+		return EmbeddingData.Create(tokenizerInputs, Tokenizer);
+	}
+
+	private void Dispose(bool disposing)
+	{
+		if (!Disposed)
+		{
+			if (disposing)
+			{
+				TokenizerSessionLazy.Value.Dispose();
+				ModelSessionLazy.Value.Dispose();
+			}
+
+			Disposed = true;
+		}
 	}
 }

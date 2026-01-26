@@ -51,16 +51,6 @@ public sealed class TransactionalHandler<TCommand, TResult>(
 		}
 	}
 
-	private async Task PublishEvents(TResult result, CancellationToken ct)
-	{
-		if (!Transporters.Any())
-			return;
-		foreach (IEventTransporter<TCommand, TResult> transporter in Transporters)
-		{
-			await transporter.Transport(result, ct);
-		}
-	}
-
 	private static bool HasTransactionalAttribute(object? instance)
 	{
 		if (instance is null)
@@ -110,5 +100,15 @@ public sealed class TransactionalHandler<TCommand, TResult>(
 		}
 
 		return false;
+	}
+
+	private async Task PublishEvents(TResult result, CancellationToken ct)
+	{
+		if (!Transporters.Any())
+			return;
+		foreach (IEventTransporter<TCommand, TResult> transporter in Transporters)
+		{
+			await transporter.Transport(result, ct);
+		}
 	}
 }

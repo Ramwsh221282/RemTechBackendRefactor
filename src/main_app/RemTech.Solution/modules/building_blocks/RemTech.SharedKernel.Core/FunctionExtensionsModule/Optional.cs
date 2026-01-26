@@ -12,10 +12,6 @@ public class Optional
 	public bool HasValue { get; }
 	public bool NoValue => !HasValue;
 
-	public U Map<U>(Func<U> onHasValue, Func<U> onNoneValue) => HasValue ? onHasValue() : onNoneValue();
-
-	public U Map<U>(U onHasValue, U onNoneValue) => HasValue ? onHasValue : onNoneValue;
-
 	public static Optional<T> Some<T>(T value) => new(value);
 
 	public static Optional<T> FromNullable<T>(T? value) => value is null ? None<T>() : Some(value);
@@ -38,6 +34,10 @@ public class Optional
 		IEnumerable<Optional> optionals = fields.Select(f => (Optional)f.GetValue(@object)!);
 		return AllValuesExist(optionals);
 	}
+
+	public U Map<U>(Func<U> onHasValue, Func<U> onNoneValue) => HasValue ? onHasValue() : onNoneValue();
+
+	public U Map<U>(U onHasValue, U onNoneValue) => HasValue ? onHasValue : onNoneValue;
 }
 
 public sealed class Optional<T> : Optional
@@ -64,6 +64,10 @@ public sealed class Optional<T> : Optional
 		return Some(value);
 	}
 
+	public static Optional<T> Some(T value) => new(value);
+
+	public static Optional<T> None() => new();
+
 	public void ExecuteOnValue(Action action)
 	{
 		if (HasValue)
@@ -87,8 +91,4 @@ public sealed class Optional<T> : Optional
 		if (HasValue)
 			await action(Value);
 	}
-
-	public static Optional<T> Some(T value) => new(value);
-
-	public static Optional<T> None() => new();
 }

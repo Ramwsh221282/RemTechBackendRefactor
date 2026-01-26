@@ -2,7 +2,6 @@
 using System.Data.Common;
 using System.Text.Json;
 using Dapper;
-using Microsoft.Extensions.Options;
 using Npgsql;
 using Pgvector;
 using RemTech.SharedKernel.Core.Handlers;
@@ -11,19 +10,15 @@ using RemTech.SharedKernel.NN;
 
 namespace Vehicles.Infrastructure.Vehicles.Queries.GetVehicles;
 
-public sealed class GetVehiclesQueryHandler(
-	NpgSqlSession session,
-	EmbeddingsProvider embeddings,
-	IOptions<GetVehiclesThresholdConstants> textSearchOptions
-) : IQueryHandler<GetVehiclesQuery, GetVehiclesQueryResponse>
+public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
+	: IQueryHandler<GetVehiclesQuery, GetVehiclesQueryResponse>
 {
-	private GetVehiclesThresholdConstants SearchOptions { get; } = textSearchOptions.Value;
 	private NpgSqlSession Session { get; } = session;
 	private EmbeddingsProvider Embeddings { get; } = embeddings;
 
 	public async Task<GetVehiclesQueryResponse> Handle(GetVehiclesQuery query, CancellationToken ct = default)
 	{
-		(DynamicParameters parameters, string sql) = FormSqlQuery(query, Embeddings, SearchOptions);
+		(DynamicParameters parameters, string sql) = FormSqlQuery(query, Embeddings);
 		CommandDefinition command = new(sql, parameters, cancellationToken: ct);
 		await using NpgsqlConnection connection = await Session.GetConnection(ct);
 		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
@@ -32,12 +27,11 @@ public sealed class GetVehiclesQueryHandler(
 
 	private static (DynamicParameters Parameters, string Sql) FormSqlQuery(
 		GetVehiclesQuery query,
-		EmbeddingsProvider embeddings,
-		GetVehiclesThresholdConstants searchOptions
+		EmbeddingsProvider embeddings
 	)
 	{
 		DynamicParameters parameters = new();
-		(parameters, string filterSql) = FormVehiclesQuery(query.Parameters, parameters, embeddings, searchOptions);
+		(parameters, string filterSql) = FormVehiclesQuery(query.Parameters, parameters, embeddings);
 
 		string sql = $"""
 			WITH vehicles AS (
@@ -98,11 +92,10 @@ public sealed class GetVehiclesQueryHandler(
 	private static (DynamicParameters Parameters, string VehiclesCTEQuery) FormVehiclesQuery(
 		GetVehiclesQueryParameters queryParameters,
 		DynamicParameters parameters,
-		EmbeddingsProvider embeddings,
-		GetVehiclesThresholdConstants searchOptions
+		EmbeddingsProvider embeddings
 	)
 	{
-		(parameters, string filterSql) = FormVehiclesFilterSql(queryParameters, parameters, embeddings, searchOptions);
+		(parameters, string filterSql) = FormVehiclesFilterSql(queryParameters, parameters, embeddings);
 		(parameters, string orderBySql) = FormVehiclesSortSql(queryParameters, parameters);
 		(parameters, string paginationSql) = FormPaginationSql(queryParameters, parameters);
 		string sql = $"""
@@ -145,8 +138,7 @@ public sealed class GetVehiclesQueryHandler(
 		GetVehiclesQueryParameters queryParameters,
 		List<string> filterSql,
 		EmbeddingsProvider provider,
-		DynamicParameters parameters,
-		GetVehiclesThresholdConstants searchOptions
+		DynamicParameters parameters
 	)
 	{
 		if (string.IsNullOrWhiteSpace(queryParameters.TextSearch))
@@ -241,14 +233,13 @@ public sealed class GetVehiclesQueryHandler(
 	private static (DynamicParameters Parameters, string VehiclesFilterSql) FormVehiclesFilterSql(
 		GetVehiclesQueryParameters queryParameters,
 		DynamicParameters parameters,
-		EmbeddingsProvider embeddings,
-		GetVehiclesThresholdConstants searchOptions
+		EmbeddingsProvider embeddings
 	)
 	{
 		List<string> filters = [];
 		ApplyVehicleFilters(queryParameters, filters, parameters);
 		ApplyCharacteristicsFilter(queryParameters, parameters, filters);
-		ApplySemanticSearchFilter(queryParameters, filters, embeddings, parameters, searchOptions);
+		ApplySemanticSearchFilter(queryParameters, filters, embeddings, parameters);
 		return filters.Count == 0
 			? (parameters, string.Empty)
 			: (parameters, $" WHERE {string.Join(" AND ", filters)}");

@@ -18,7 +18,6 @@ dotnet_diagnostic.CA1054.severity = none # Разрешить string парам�
 dotnet_diagnostic.CA1515.severity = none # Не требовать xml-комментарии для свойств
 dotnet_diagnostic.CA1724.severity = none # Разрешить совпадение имен типов с пространствами имён
 dotnet_diagnostic.CA1707.severity = none # Разрешить подчеркивания в именах
-dotnet_diagnostic.CA1708.severity = none # Разрешить PascalCase для имен параметров
 dotnet_diagnostic.CA1040.severity = none # Разрешить пустые интерфейсы
 dotnet_diagnostic.CA1008.severity = error # Запретить enum без 0 значения
 dotnet_diagnostic.CA1012.severity = error # Запретить конструкторы в абстрактных типах
@@ -34,6 +33,7 @@ dotnet_diagnostic.CA1721.severity = error
 dotnet_diagnostic.CA1724.severity = error
 dotnet_diagnostic.CA1725.severity = error
 dotnet_diagnostic.CA1805.severity = error
+dotnet_diagnostic.CS1591.severity = error
 dotnet_diagnostic.CA1823.severity = error
 dotnet_diagnostic.CA1829.severity = error
 dotnet_diagnostic.CA1831.severity = error
@@ -67,7 +67,6 @@ dotnet_diagnostic.CS8600.severity = none # Не предупреждать о п
 dotnet_diagnostic.CS9003.severity = none # Для строк """ """ 
 dotnet_diagnostic.RCS1194.severity = none # Реализация исключений
 dotnet_diagnostic.RCS1129.severity = error # Неиспользуемый параметр метода
-dotnet_diagnostic.CA1802.severity = none # Не требовать readonly для полей
 dotnet_diagnostic.CA1721.severity = none # Разрешить совпадение имен с типами BCL
 dotnet_diagnostic.CS8714.severity = none # Не предупреждать о generic-ограничениях с nullable
 dotnet_diagnostic.CS8795.severity = none # Не предупреждать о nullability в partial классах
@@ -108,6 +107,7 @@ dotnet_diagnostic.CA2016.severity = error
 dotnet_diagnostic.CA2000.severity = none   # Не забывать освобождать IDisposable
 dotnet_diagnostic.IDISP001.severity = error # (анализатор IDisposable)
 dotnet_diagnostic.CA1814.severity = error # Использовать массивы вместо List<T> там, где возможно
+dotnet_diagnostic.CA1708.severity = none
 dotnet_diagnostic.CA1835.severity = error # Использовать MemoryExtensions для Span/Memory
 dotnet_diagnostic.CA1836.severity = error # Использовать SequenceEqual для сравнения коллекций
 dotnet_diagnostic.CA1845.severity = error # Использовать коллекции без аллокаций (например, ValueList)
@@ -126,7 +126,6 @@ dotnet_diagnostic.CA1822.severity = error # Метод не использует
 dotnet_diagnostic.CS8602.severity = error # Возможное обращение к объекту, равному null (NullReferenceException)
 dotnet_diagnostic.CS8604.severity = none # fix null
 dotnet_diagnostic.CS8618.severity = error # Неинициализированное не-nullable свойство/поле
-dotnet_diagnostic.ERP022.severity = none # Кастомное правило (описание зависит от проекта)
 dotnet_diagnostic.CS4014.severity = error # Неожиданно неожидаемый await для асинхронного вызова
 dotnet_diagnostic.CA1308.severity = error # Не использовать ToLower(), использовать ToLowerInvariant()
 dotnet_diagnostic.CA1309.severity = error # Использовать StringComparison при сравнении строк
@@ -422,10 +421,11 @@ dotnet_diagnostic.sa1309.severity = none
 dotnet_diagnostic.SA1101.severity = none
 dotnet_diagnostic.SA1137.severity = none
 dotnet_diagnostic.SA1112.severity = none
-dotnet_diagnostic.SA1600.severity = none
+dotnet_diagnostic.SA1600.severity = error
 dotnet_diagnostic.SA1503.severity = none
 dotnet_diagnostic.SA1206.severity = none
 dotnet_diagnostic.SA1313.severity = none
+dotnet_diagnostic.SA1314.severity = none
 dotnet_diagnostic.SA1010.severity = none
 dotnet_diagnostic.SA1601.severity = none
 dotnet_diagnostic.SA1106.severity = none
@@ -437,7 +437,6 @@ dotnet_diagnostic.SA1009.severity = none
 dotnet_diagnostic.SA1011.severity = none
 dotnet_diagnostic.SA1101.severity = none
 dotnet_diagnostic.SA1633.severity = none
-dotnet_diagnostic.SA1602.severity = none
 dotnet_diagnostic.SA1623.severity = none
 dotnet_diagnostic.SA1118.severity = none
 dotnet_diagnostic.eSA1128.severity = none
@@ -454,14 +453,15 @@ dotnet_diagnostic.SA1505.severity = none
 dotnet_diagnostic.SA1518.severity = none
 dotnet_diagnostic.SA1300.severity = none
 dotnet_diagnostic.SA1316.severity = none
-dotnet_diagnostic.SA1200.severity = none
-dotnet_diagnostic.SA1201.severity = error
+dotnet_diagnostic.SA1201.severity = none
 dotnet_diagnostic.SA1202.severity = error
 dotnet_diagnostic.SA1203.severity = error
 dotnet_diagnostic.SA1205.severity = error
 dotnet_diagnostic.SA1207.severity = error
 dotnet_diagnostic.SA1212.severity = error
 dotnet_diagnostic.SA1214.severity = error
+dotnet_diagnostic.IDE0008.severity = error
+dotnet_diagnostic.SA1642.severity = none
 dotnet_diagnostic.SA1215.severity = error
 dotnet_diagnostic.SA1028.severity = none
 dotnet_diagnostic.SA1507.severity = none
@@ -477,5 +477,137 @@ dotnet_diagnostic.RCS1206.severity = suggestion
 dotnet_diagnostic.RCS1132.severity = none
 dotnet_diagnostic.RCS1213.severity = suggestion
 
+# Избегайте 'async void' (приводит к падению процесса)
+dotnet_diagnostic.AsyncFixer01.severity = error
+# Не используйте Task.Run внутри других Task.Run (избыточность)
+dotnet_diagnostic.AsyncFixer02.severity = error
+# Избегайте блокирующих вызовов (.Wait() или .Result)
+dotnet_diagnostic.AsyncFixer03.severity = error
+
+# Подозрительное сравнение объектов (возможная логическая ошибка)
+dotnet_diagnostic.EPC11.severity = error
+# Использование Side-Effects в условиях (затрудняет отладку)
+dotnet_diagnostic.EPC14.severity = error
+# Некорректная обработка исключений (проглатывание stack trace)
+dotnet_diagnostic.ERP021.severity = error
+
+# Делайте члены static, если они не обращаются к данным экземпляра (быстрее вызов)
+dotnet_diagnostic.CA1822.severity = error
+# Избегайте пустых выделений массивов (используйте Array.Empty<T>)
+dotnet_diagnostic.CA1825.severity = error
+# Используйте Length/Count вместо Any() для коллекций, где это возможно (быстрее)
+dotnet_diagnostic.CA1827.severity = error
+# Избегайте лишних проверок на приведение типов (as + null check лучше чем is + cast)
+dotnet_diagnostic.CA1820.severity = error
+
+# Удалять неиспользуемые параметры (уменьшает потребление стека)
+dotnet_diagnostic.RCS1163.severity = error
+# Оптимизировать вызовы LINQ (например, .Where().Any() -> .Any())
+dotnet_diagnostic.RCS1077.severity = error
+# Избегать двойного вызова методов получения данных
+dotnet_diagnostic.RCS1049.severity = error
+
+# Запретить var для локальных переменных
+dotnet_style_require_var_for_local_variables = false:error
+
+dotnet_style_require_var_when_type_is_apparent = false:error
+dotnet_style_require_var_when_type_is_not_apparent = false:error
+dotnet_style_require_var_for_built_in_types = false:error
+
+# Порядок использования using (систематизация кода)
+dotnet_diagnostic.SA1200.severity = error
+# Запрет пустых строк в начале методов
+dotnet_diagnostic.SA1507.severity = error
+
+dotnet_diagnostic.CS8601.severity = error
+dotnet_diagnostic.CS8602.severity = error
+dotnet_diagnostic.CS8603.severity = error
+
 # Отключаем или меняем уровень серьезности предупреждения SA1310, чтобы не конфликтовало с новыми правилами.
 dotnet_diagnostic.SA1310.severity = none
+
+# AsyncFixer:
+dotnet_diagnostic.AsyncFixer02.severity = error
+dotnet_diagnostic.AsyncFixer03.severity = error
+dotnet_diagnostic.AsyncFixer04.severity = error
+dotnet_diagnostic.AsyncFixer05.severity = error
+
+# Error prone settings
+dotnet_diagnostic.EPC13.severity = error
+dotnet_diagnostic.EPC14.severity = error
+dotnet_diagnostic.EPC15.severity = error
+dotnet_diagnostic.EPC16.severity = error
+dotnet_diagnostic.ERP022.severity = none
+
+# RCS (Roslyn code analyzers) settings
+dotnet_diagnostic.SA1602.severity = error
+dotnet_diagnostic.RZ3600.severity = none
+dotnet_diagnostic.RCS1005.severity = suggestion
+dotnet_diagnostic.RCS1015.severity = error
+dotnet_diagnostic.RCS1021.severity = suggestion
+dotnet_diagnostic.RCS1058.severity = suggestion
+dotnet_diagnostic.RCS1077.severity = error
+dotnet_diagnostic.RCS1084.severity = suggestion
+dotnet_diagnostic.RCS1097.severity = suggestion
+dotnet_diagnostic.RCS1118.severity = suggestion
+dotnet_diagnostic.RCS1128.severity = suggestion
+dotnet_diagnostic.RCS1132.severity = error
+dotnet_diagnostic.RCS1141.severity = suggestion
+dotnet_diagnostic.RCS1140.severity = suggestion
+dotnet_diagnostic.RCS1138.severity = suggestion
+dotnet_diagnostic.RCS1163.severity = error
+dotnet_diagnostic.RCS1179.severity = error
+dotnet_diagnostic.RCS1188.severity = suggestion
+dotnet_diagnostic.RCS1186.severity = suggestion
+dotnet_diagnostic.RCS1192.severity = suggestion
+dotnet_diagnostic.RCS1190.severity = suggestion
+dotnet_diagnostic.RCS1197.severity = suggestion
+dotnet_diagnostic.RCS1207.severity = suggestion
+dotnet_diagnostic.RCS1220.severity = suggestion
+dotnet_diagnostic.RCS1224.severity = suggestion
+dotnet_diagnostic.RCS1225.severity = suggestion
+dotnet_diagnostic.RCS1228.severity = error
+dotnet_diagnostic.RCS1241.severity = none
+dotnet_diagnostic.RCS1243.severity = error
+dotnet_diagnostic.RCS1244.severity = suggestion
+dotnet_diagnostic.RCS1246.severity = suggestion
+dotnet_diagnostic.RCS1247.severity = error
+dotnet_diagnostic.RCS1248.severity = suggestion
+dotnet_diagnostic.RCS1249.severity = warning
+dotnet_diagnostic.RCS1250.severity = suggestion
+
+dotnet_code_quality.enable_all_analyzers = true
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_constructors = false:suggestion
+csharp_style_expression_bodied_operators = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_expression_bodied_indexers = true:suggestion
+csharp_style_expression_bodied_accessors = true:suggestion
+csharp_style_expression_bodied_lambdas = true:suggestion
+csharp_style_expression_bodied_local_functions = when_on_single_line:suggestion
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+csharp_style_prefer_switch_expression = true:suggestion
+csharp_style_prefer_pattern_matching = true:suggestion
+csharp_style_prefer_not_pattern = true:suggestion
+csharp_style_prefer_extended_property_pattern = true:suggestion
+csharp_style_throw_expression = true:suggestion
+csharp_style_conditional_delegate_call = true:warning
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_style_prefer_method_group_conversion = true:suggestion
+csharp_style_prefer_top_level_statements = true:suggestion
+csharp_style_prefer_primary_constructors = true:suggestion
+dotnet_style_prefer_auto_properties = true:suggestion
+dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
+dotnet_style_prefer_conditional_expression_over_return = false:suggestion
+dotnet_style_prefer_inferred_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
+dotnet_style_prefer_compound_assignment = true:suggestion
+dotnet_style_prefer_simplified_interpolation = true:suggestion
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
