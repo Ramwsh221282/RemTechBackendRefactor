@@ -190,7 +190,7 @@ services:
       context: .
       dockerfile: DockerfileFrontend
     ports:
-      - "80:80"
+      - "7000:7000"
     environment:
       - DISABLE_IPV6=1
     depends_on:
