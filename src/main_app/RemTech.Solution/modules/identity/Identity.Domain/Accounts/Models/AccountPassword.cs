@@ -9,7 +9,10 @@ namespace Identity.Domain.Accounts.Models;
 /// </summary>
 public sealed record AccountPassword
 {
-	private AccountPassword(string value) => Value = value;
+	private AccountPassword(string value)
+	{
+		Value = value;
+	}
 
 	/// <summary>
 	/// Значение пароля аккаунта.

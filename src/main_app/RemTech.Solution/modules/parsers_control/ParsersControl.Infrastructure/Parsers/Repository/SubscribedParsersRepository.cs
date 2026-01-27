@@ -10,10 +10,20 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace ParsersControl.Infrastructure.Parsers.Repository;
 
+/// <summary>
+/// Репозиторий подписанных парсеров.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
 public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscribedParsersRepository
 {
 	private readonly ChangeTracker _tracker = new(session);
 
+	/// <summary>
+	/// Проверяет существование подписанного парсера по его идентификатору.
+	/// </summary>
+	/// <param name="identity">Идентификатор подписанного парсера.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Значение, указывающее, существует ли подписанный парсер с указанным идентификатором.</returns>
 	public Task<bool> Exists(SubscribedParserIdentity identity, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -26,6 +36,12 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		return session.QuerySingleRow<bool>(command);
 	}
 
+	/// <summary>
+	/// Добавляет новый подписанный парсер в репозиторий.
+	/// </summary>
+	/// <param name="parser">Подписанный парсер для добавления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию добавления.</returns>
 	public Task Add(SubscribedParser parser, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -51,11 +67,29 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		return session.Execute(command);
 	}
 
+	/// <summary>
+	/// Сохраняет изменения в подписанных парсерах.
+	/// </summary>
+	/// <param name="parsers">Коллекция подписанных парсеров для сохранения изменений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
 	public Task Save(IEnumerable<SubscribedParser> parsers, CancellationToken ct = default) =>
 		_tracker.SaveChanges(parsers, ct);
 
+	/// <summary>
+	/// Сохраняет изменения в подписанном парсере.
+	/// </summary>
+	/// <param name="parser">Подписанный парсер для сохранения изменений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
 	public Task Save(SubscribedParser parser, CancellationToken ct = default) => _tracker.SaveChanges([parser], ct);
 
+	/// <summary>
+	/// Получает подписанный парсер на основе заданного запроса.
+	/// </summary>
+	/// <param name="query">Запрос для получения подписанного парсера.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции получения подписанного парсера.</returns>
 	public async Task<Result<SubscribedParser>> Get(SubscribedParserQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(query);

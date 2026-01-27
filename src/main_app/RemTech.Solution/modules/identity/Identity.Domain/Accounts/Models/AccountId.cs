@@ -10,9 +10,15 @@ public readonly record struct AccountId
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="AccountId"/> со значением по умолчанию (новый GUID).
 	/// </summary>
-	public AccountId() => Value = Guid.NewGuid();
+	public AccountId()
+	{
+		Value = Guid.NewGuid();
+	}
 
-	private AccountId(Guid value) => Value = value;
+	private AccountId(Guid value)
+	{
+		Value = value;
+	}
 
 	/// <summary>
 	/// Значение идентификатора аккаунта.

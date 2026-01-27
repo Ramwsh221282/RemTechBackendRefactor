@@ -5,11 +5,23 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.CacheInvalidate;
 
 namespace ParsersControl.Infrastructure.Parsers.Commands.UpdateParserLinks;
 
+/// <summary>
+/// Инвалидатор кэша для команды обновления ссылок парсера.
+/// </summary>
+/// <param name="arrayInvalidator">Экземпляр инвалидатора кэша для массива парсеров.</param>
+/// <param name="recordInvalidator">Экземпляр инвалидатора кэша для записи парсера.</param>
 public sealed class UpdateParserLinksCacheInvalidator(
 	CachedParserArrayInvalidator arrayInvalidator,
 	ParserCacheRecordInvalidator recordInvalidator
 ) : ICacheInvalidator<UpdateParserLinksCommand, IEnumerable<SubscribedParserLink>>
 {
+	/// <summary>
+	/// 	Инвалидирует кэш после выполнения команды обновления ссылок парсера.
+	/// </summary>
+	/// <param name="command">Команда обновления ссылок парсера.</param>
+	/// <param name="result">Результат выполнения команды - коллекция подписанных ссылок парсера.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию инвалидирования кэша.</returns>
 	public Task InvalidateCache(
 		UpdateParserLinksCommand command,
 		IEnumerable<SubscribedParserLink> result,

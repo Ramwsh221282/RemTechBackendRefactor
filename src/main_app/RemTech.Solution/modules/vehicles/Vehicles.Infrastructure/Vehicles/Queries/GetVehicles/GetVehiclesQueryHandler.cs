@@ -10,12 +10,23 @@ using RemTech.SharedKernel.NN;
 
 namespace Vehicles.Infrastructure.Vehicles.Queries.GetVehicles;
 
+/// <summary>
+/// Обработчик запроса на получение транспортных средств.
+/// </summary>
+/// <param name="session">Сессия для работы с базой данных PostgreSQL.</param>
+/// <param name="embeddings">Провайдер для работы с векторными представлениями.</param>
 public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: IQueryHandler<GetVehiclesQuery, GetVehiclesQueryResponse>
 {
 	private NpgSqlSession Session { get; } = session;
 	private EmbeddingsProvider Embeddings { get; } = embeddings;
 
+	/// <summary>
+	/// Обрабатывает запрос на получение транспортных средств.
+	/// </summary>
+	/// <param name="query">Запрос на получение транспортных средств.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Ответ с транспортными средствами.</returns>
 	public async Task<GetVehiclesQueryResponse> Handle(GetVehiclesQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string sql) = FormSqlQuery(query, Embeddings);

@@ -63,11 +63,7 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 	/// <summary>
 	/// Освобождает ресурсы, используемые провайдером встраиваний.
 	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		// GC.SuppressFinalize(this);
-	}
+	public void Dispose() => Dispose(true);
 
 	/// <summary>
 	/// Генерирует пакет встраиваний для заданного списка текстов.
@@ -80,7 +76,9 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 	{
 		ArgumentNullException.ThrowIfNull(texts);
 		if (texts.Count == 0)
+		{
 			return [];
+		}
 
 		int batchSize = texts.Count;
 		int[][] tokenArrays = new int[batchSize][];
@@ -94,7 +92,9 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 			int len = embeddingData.Length;
 			lengths[i] = len;
 			if (len > maxLen)
+			{
 				maxLen = len;
+			}
 
 			int[] sortedTokens = new int[len];
 			embeddingData.CopySortedTokensTo(sortedTokens);
@@ -143,7 +143,9 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 		int hiddenDim = outputTensor.Dimensions[1];
 
 		if (outBatch != batchSize)
+		{
 			throw new InvalidOperationException($"Model output batch size {outBatch} != input batch size {batchSize}");
+		}
 
 		ReadOnlyMemory<float>[] result = new ReadOnlyMemory<float>[batchSize];
 
@@ -151,7 +153,9 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 		{
 			float[] arr = new float[hiddenDim];
 			for (int h = 0; h < hiddenDim; h++)
+			{
 				arr[h] = outputTensor[b, h];
+			}
 
 			result[b] = arr;
 		}

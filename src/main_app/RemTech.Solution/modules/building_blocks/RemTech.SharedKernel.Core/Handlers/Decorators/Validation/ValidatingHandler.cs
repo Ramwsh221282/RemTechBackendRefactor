@@ -32,7 +32,9 @@ public sealed class ValidatingHandler<TCommand, TResult>(
 		{
 			ValidationResult result = await validator.ValidateAsync(command, cancellation: ct);
 			if (ValidatingHandler<TCommand, TResult>.HasErrors(result, out List<string> errors))
+			{
 				return Error.Validation(string.Join(", ", errors));
+			}
 		}
 
 		return await Handler.Execute(command, ct: ct);
@@ -44,7 +46,10 @@ public sealed class ValidatingHandler<TCommand, TResult>(
 		if (!result.IsValid)
 		{
 			foreach (ValidationFailure failure in result.Errors)
+			{
 				errors.Add(failure.ErrorMessage);
+			}
+
 			return true;
 		}
 

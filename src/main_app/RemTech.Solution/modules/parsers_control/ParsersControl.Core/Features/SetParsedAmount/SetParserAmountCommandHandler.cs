@@ -7,10 +7,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.SetParsedAmount;
 
+/// <summary>
+/// Обработчик команды установки количества распарсенных элементов.
+/// </summary>
+/// <param name="repository">Репозиторий для работы с подписанными парсерами.</param>
 [TransactionalHandler]
 public sealed class SetParserAmountCommandHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<SetParsedAmountCommand, SubscribedParser>
 {
+	/// <summary>
+	/// Выполняет команду установки количества распарсенных элементов.
+	/// </summary>
+	/// <param name="command">Команда установки количества распарсенных элементов.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с обновленным парсером.</returns>
 	public async Task<Result<SubscribedParser>> Execute(SetParsedAmountCommand command, CancellationToken ct = default)
 	{
 		Result<SubscribedParser> parser = await GetRequiredParser(command, ct);
@@ -25,9 +35,15 @@ public sealed class SetParserAmountCommandHandler(ISubscribedParsersRepository r
 	private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
 	{
 		if (parser.IsFailure)
+		{
 			return Result.Failure(parser.Error);
+		}
+
 		if (result.IsFailure)
+		{
 			return Result.Failure(result.Error);
+		}
+
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();
 	}

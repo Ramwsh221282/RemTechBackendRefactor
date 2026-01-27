@@ -36,6 +36,9 @@ using Vehicles.WebApi.Extensions;
 
 namespace WebHostApplication.Injection;
 
+/// <summary>
+/// Регистрация модулей приложения.
+/// </summary>
 public static class ModulesInjection
 {
 	extension(IServiceCollection services)

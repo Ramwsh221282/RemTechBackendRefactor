@@ -46,5 +46,8 @@ app.Run();
 
 namespace WebHostApplication
 {
+	/// <summary>
+	/// Главная точка входа для приложения WebHostApplication.
+	/// </summary>
 	public partial class Program { }
 }

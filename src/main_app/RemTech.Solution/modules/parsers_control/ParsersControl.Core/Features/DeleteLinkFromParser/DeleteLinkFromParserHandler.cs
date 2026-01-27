@@ -8,10 +8,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.DeleteLinkFromParser;
 
+/// <summary>
+/// Обработчик команды удаления ссылки из парсера.
+/// </summary>
+/// <param name="repository">Репозиторий подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class DeleteLinkFromParserHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<DeleteLinkFromParserCommand, SubscribedParserLink>
 {
+	/// <summary>
+	/// Выполняет команду удаления ссылки из парсера.
+	/// </summary>
+	/// <param name="command">Команда удаления ссылки из парсера.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с удалённой ссылкой.</returns>
 	public async Task<Result<SubscribedParserLink>> Execute(
 		DeleteLinkFromParserCommand command,
 		CancellationToken ct = default

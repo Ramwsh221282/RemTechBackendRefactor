@@ -8,7 +8,10 @@ public readonly record struct AccountActivationStatus
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="AccountActivationStatus"/> со значением по умолчанию (неактивирован).
 	/// </summary>
-	public AccountActivationStatus() => Value = false;
+	public AccountActivationStatus()
+	{
+		Value = false;
+	}
 
 	/// <summary>
 	/// Значение статуса активации аккаунта.

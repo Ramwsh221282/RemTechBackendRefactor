@@ -8,5 +8,5 @@ public static class OutboxMessageTypes
 	/// <summary>
 	/// Сообщение для подтверждения электронной почты.
 	/// </summary>
-	public const string EmailConfirmation = "email.confirmation";
+	public const string EMAIL_CONFIRMATION = "email.confirmation";
 }

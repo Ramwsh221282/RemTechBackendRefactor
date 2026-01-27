@@ -65,7 +65,14 @@ public sealed class PendingEmailNotification(Guid id, string recipient, string s
 		return Result.Success(new PendingEmailNotification(Guid.NewGuid(), recipient, subject, body, false));
 	}
 
+	/// <summary>
+	/// Отмечает уведомление как отправленное.
+	/// </summary>
 	public void MarkSent() => WasSent = true;
 
+	/// <summary>
+	/// Создает копию уведомления.
+	/// </summary>
+	/// <returns>Копия уведомления.</returns>
 	public PendingEmailNotification Copy() => new(this);
 }

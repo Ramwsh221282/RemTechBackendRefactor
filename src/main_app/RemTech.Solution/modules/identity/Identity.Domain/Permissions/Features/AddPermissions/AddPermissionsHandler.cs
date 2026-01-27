@@ -4,9 +4,19 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace Identity.Domain.Permissions.Features.AddPermissions;
 
+/// <summary>
+/// Обработчик команды добавления разрешений.
+/// </summary>
+/// <param name="repository">Репозиторий для работы с разрешениями.</param>
 public sealed class AddPermissionsHandler(IPermissionsRepository repository)
 	: ICommandHandler<AddPermissionsCommand, IEnumerable<Permission>>
 {
+	/// <summary>
+	/// Выполняет команду добавления разрешений.
+	/// </summary>
+	/// <param name="command">Команда добавления разрешений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с коллекцией добавленных разрешений.</returns>
 	public async Task<Result<IEnumerable<Permission>>> Execute(
 		AddPermissionsCommand command,
 		CancellationToken ct = default

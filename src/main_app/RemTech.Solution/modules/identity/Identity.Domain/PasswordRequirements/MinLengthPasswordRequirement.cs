@@ -8,7 +8,7 @@ namespace Identity.Domain.PasswordRequirements;
 /// </summary>
 public sealed class MinLengthPasswordRequirement : IAccountPasswordRequirement
 {
-	private const int Length = 8;
+	private const int LENGTH = 8;
 
 	/// <summary>
 	/// Проверяет, соответствует ли пароль минимальной длине.
@@ -16,7 +16,7 @@ public sealed class MinLengthPasswordRequirement : IAccountPasswordRequirement
 	/// <param name="password">Пароль для проверки.</param>
 	/// <returns>Результат проверки требования к паролю.</returns>
 	public Result<Unit> Satisfies(AccountPassword password) =>
-		password.Value.Length < Length
-			? Error.Validation($"Пароль должен быть длиннее {Length} символов.")
+		password.Value.Length < LENGTH
+			? Error.Validation($"Пароль должен быть длиннее {LENGTH} символов.")
 			: Unit.Value;
 }

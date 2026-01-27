@@ -7,9 +7,12 @@ namespace ContainedItems.Domain.Models;
 /// </summary>
 public sealed record ServiceItemId
 {
-	private const int MaxLength = 255;
+	private const int MAX_LENGTH = 255;
 
-	private ServiceItemId(string value) => Value = value;
+	private ServiceItemId(string value)
+	{
+		Value = value;
+	}
 
 	/// <summary>
 	/// Значение идентификатора элемента сервиса.
@@ -25,8 +28,8 @@ public sealed record ServiceItemId
 	{
 		if (string.IsNullOrWhiteSpace(value))
 			return Error.Validation("Идентификатор сохраняемого элемента не может быть пустым.");
-		return value.Length > MaxLength
-			? Error.Validation($"Идентификатор сохраняемого элемента не может превышать {MaxLength} символов.")
+		return value.Length > MAX_LENGTH
+			? Error.Validation($"Идентификатор сохраняемого элемента не может превышать {MAX_LENGTH} символов.")
 			: new ServiceItemId(value);
 	}
 }

@@ -29,7 +29,9 @@ public sealed class UniqueSequence<T>
 		foreach (T item in items)
 		{
 			if (!set.Add(item))
+			{
 				return Error.Validation("Коллекция не уникальна.");
+			}
 		}
 
 		return new UniqueSequence<T>(set);
@@ -68,8 +70,12 @@ public sealed class UniqueSequence<T>
 		foreach (T item in items)
 		{
 			TSource? key = keySelector(item);
-			if (!seenKeys.Add(key))
-				return Error.Validation("Коллекция не уникальна.");
+			{
+				if (!seenKeys.Add(key))
+				{
+					return Error.Validation("Коллекция не уникальна.");
+				}
+			}
 
 			result.Add(item);
 		}

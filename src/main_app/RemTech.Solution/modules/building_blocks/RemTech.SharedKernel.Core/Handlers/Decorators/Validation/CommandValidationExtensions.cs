@@ -65,7 +65,9 @@ public static class CommandValidationExtensions
 				if (failures.Count > 0)
 				{
 					foreach (ValidationFailure failure in failures)
+					{
 						context.AddFailure(failure);
+					}
 				}
 			}
 		);
@@ -99,7 +101,9 @@ public static class CommandValidationExtensions
 				if (failures.Count > 0)
 				{
 					foreach (ValidationFailure failure in failures)
+					{
 						context.AddFailure(failure);
+					}
 				}
 			}
 		);

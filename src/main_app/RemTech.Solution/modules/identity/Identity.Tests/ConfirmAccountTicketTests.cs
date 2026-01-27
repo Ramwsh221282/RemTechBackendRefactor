@@ -31,7 +31,7 @@ public sealed class ConfirmAccountTicketTests : IClassFixture<IntegrationalTests
 		Result<Unit> result = await Services.InvokeAccountRegistration(command);
 		Assert.True(result.IsSuccess);
 		Result<AccountTicket> ticketResult = await Services.GetTicketOfPurpose(
-			AccountTicketPurposes.EmailConfirmationRequired
+			AccountTicketPurposes.EMAIL_CONFIRMATION_REQUIRED
 		);
 		Assert.True(ticketResult.IsSuccess);
 		Result<Unit> confirmationResult = await Services.ConfirmAccountTicket(
@@ -51,7 +51,7 @@ public sealed class ConfirmAccountTicketTests : IClassFixture<IntegrationalTests
 		Result<Unit> result = await Services.InvokeAccountRegistration(command);
 		Assert.True(result.IsSuccess);
 		Result<AccountTicket> ticketResult = await Services.GetTicketOfPurpose(
-			AccountTicketPurposes.EmailConfirmationRequired
+			AccountTicketPurposes.EMAIL_CONFIRMATION_REQUIRED
 		);
 		Assert.True(ticketResult.IsSuccess);
 		Result<Unit> confirmationResult = await Services.ConfirmAccountTicket(
@@ -61,7 +61,7 @@ public sealed class ConfirmAccountTicketTests : IClassFixture<IntegrationalTests
 		Assert.True(confirmationResult.IsSuccess);
 
 		Result<AccountTicket> confirmedTicket = await Services.GetTicketOfPurpose(
-			AccountTicketPurposes.EmailConfirmationRequired
+			AccountTicketPurposes.EMAIL_CONFIRMATION_REQUIRED
 		);
 		Assert.True(ticketResult.IsSuccess);
 		Assert.True(confirmedTicket.Value.Finished);
@@ -84,7 +84,7 @@ public sealed class ConfirmAccountTicketTests : IClassFixture<IntegrationalTests
 		Result<Unit> result1 = await Services.InvokeAccountRegistration(command1);
 		Assert.True(result1.IsSuccess);
 		Result<AccountTicket> ticketResult = await Services.GetTicketOfPurpose(
-			AccountTicketPurposes.EmailConfirmationRequired
+			AccountTicketPurposes.EMAIL_CONFIRMATION_REQUIRED
 		);
 		Assert.True(ticketResult.IsSuccess);
 		Result<Unit> result2 = await Services.InvokeAccountRegistration(command2);

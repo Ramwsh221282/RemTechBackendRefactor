@@ -6,6 +6,76 @@ tab_width = 4
 max_line_length = 120
 use_tabs = false
 
+# C# files
+[*.cs]
+# Использование discard для ненужных результатов
+dotnet_diagnostic.RCS1158.severity = suggestion
+dotnet_diagnostic.RCS1165.severity = none # чтобы сравнивать типы у generic
+# Использовать expression-bodied members, где возможно (методы, свойства)
+dotnet_diagnostic.RCS1090.severity = suggestion
+# Использовать null-coalescing assignment (??=)
+dotnet_diagnostic.RCS1201.severity = suggestion
+# Использовать pattern matching
+dotnet_diagnostic.RCS1161.severity = suggestion
+dotnet_diagnostic.SA1643.severity = none
+dotnet_diagnostic.SA1625.severity = none
+# Использовать switch-выражения вместо switch-case
+dotnet_diagnostic.RCS1230.severity = suggestion
+# Использовать tuple вместо класса-обёртки, где подходит
+dotnet_diagnostic.RCS1180.severity = suggestion
+dotnet_diagnostic.RCS1238.severity = suggestion
+# Использовать статические локальные функции, если возможно
+dotnet_diagnostic.RCS1189.severity = suggestion
+# Использовать локальные функции, где возможно
+dotnet_diagnostic.RCS1170.severity = suggestion
+dotnet_diagnostic.RCS1181.severity = suggestion
+dotnet_diagnostic.RCS1146.severity = suggestion
+# Использовать инициализаторы свойств/коллекций
+dotnet_diagnostic.RCS1215.severity = suggestion
+# Использовать индексаторы, where possible
+dotnet_diagnostic.RCS1216.severity = suggestion
+# Использовать современный using-directives (file-scoped)
+dotnet_diagnostic.RCS1227.severity = suggestion
+# Использовать target-typed new
+dotnet_diagnostic.RCS1239.severity = suggestion
+# Прочие современные советы (по Roslynator):
+dotnet_diagnostic.RCS1153.severity = suggestion # Use string interpolation
+dotnet_diagnostic.IDE0075.severity = suggestion # Use string interpolation
+dotnet_diagnostic.IDE0090.severity = suggestion # Use string interpolation
+dotnet_diagnostic.SA1119.severity = suggestion # Use string interpolation
+dotnet_diagnostic.IDE0047.severity = suggestion # Use string interpolation
+dotnet_diagnostic.IDE1104.severity = suggestion # Use string interpolation
+dotnet_diagnostic.IDE0270.severity = suggestion # Use string interpolation
+dotnet_diagnostic.IDE0305.severity = suggestion # Use string interpolation
+dotnet_diagnostic.IDE0370.severity = suggestion # Use string interpolation
+dotnet_diagnostic.RCS1163.severity = suggestion # Use nameof operator
+dotnet_diagnostic.RCS1196.severity = suggestion # Use nameof operator
+dotnet_diagnostic.RCS0053.severity = suggestion # Use nameof operator
+dotnet_diagnostic.RCS1017.severity = suggestion # Use auto-property, where possible
+dotnet_diagnostic.RCS1008.severity = suggestion # Use block body, where preferred (вам нужно решить: block или expression)
+dotnet_diagnostic.RCS1085.severity = suggestion
+
+dotnet_diagnostic.IDE0055.severity = none # игнорировать форматирование (форматер все сделает)
+dotnet_diagnostic.SYSLIB1045.severity = suggestion
+dotnet_diagnostic.IDE0022.severity = suggestion
+dotnet_diagnostic.IDE0032.severity = none
+dotnet_diagnostic.IDE0030.severity = suggestion
+dotnet_diagnostic.RCS1199.severity = suggestion
+dotnet_diagnostic.RCS1043.severity = none
+dotnet_diagnostic.RCS1168.severity = suggestion
+dotnet_diagnostic.RCS1251.severity = none
+dotnet_diagnostic.RCS1104.severity = suggestion
+dotnet_diagnostic.RCS1124.severity = suggestion
+dotnet_diagnostic.RCS1138.severity = none
+dotnet_diagnostic.IDE0053.severity = suggestion
+dotnet_diagnostic.IDE0001.severity = suggestion
+dotnet_diagnostic.IDE0017.severity = suggestion
+dotnet_diagnostic.IDE0290.severity = suggestion
+dotnet_diagnostic.IDE0078.severity = suggestion
+dotnet_diagnostic.IDE0200.severity = suggestion
+dotnet_diagnostic.IDE0058.severity = none # игнорировать ошибку если не используем результат возвраата
+dotnet_diagnostic.IDE0051.severity = suggestion # игнорировать ошибку если не используем результат возвраата
+dotnet_diagnostic.IDE0011.severity = none # игнорировать ошибку, чтобы можно было делать иф в 1 строку
 dotnet_diagnostic.CA1016.severity = none # Не требовать наличие атрибута AssemblyVersion
 dotnet_diagnostic.CA2007.severity = none # Не требовать использования ConfigureAwait при await
 dotnet_diagnostic.CA1031.severity = none # Разрешить пустой catch без обработки исключения
@@ -83,26 +153,19 @@ trim_trailing_whitespace = true # Удалять пробелы в конце с
 insert_final_newline = true # Добавлять пустую строку в конце файла
 dotnet_separate_import_directive_groups = true:suggestion # Группировать using-директивы по смыслу
 dotnet_sort_system_directives_first = true:error # Сначала using System, затем остальные
-
 csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion # Предпочитать pattern matching вместо is + cast
 csharp_style_expression_bodied_methods = true:suggestion # Предпочитать методы с выражением-результатом (=>)
 csharp_style_expression_bodied_properties = true:suggestion # Предпочитать свойства с выражением-результатом (=>)
-
 dotnet_naming_rule.classes_should_be_pascal_case.severity = error # Классы должны быть в PascalCase
 dotnet_naming_rule.local_variables_should_be_camel_case.severity = error # Локальные переменные должны быть в camelCase
-
 dotnet_style_require_accessibility_modifiers = always:error
-
 # Строгие правила для async/await
 dotnet_diagnostic.VSTHRD200.severity = error # Не блокировать асинхронный код
 dotnet_diagnostic.CA2012.severity = error # Не использовать ValueTask напрямую
-
 # Обязательное использование IReadOnlyCollection/IReadOnlyList для публичных коллекций
 dotnet_diagnostic.CA1002.severity = warning
-
 # Обязательное использование CancellationToken в асинхронных методах
 dotnet_diagnostic.CA2016.severity = error
-
 # Безопасность и минимизация аллокаций
 dotnet_diagnostic.CA2000.severity = none   # Не забывать освобождать IDisposable
 dotnet_diagnostic.IDISP001.severity = error # (анализатор IDisposable)
@@ -131,7 +194,6 @@ dotnet_diagnostic.CA1308.severity = error # Не использовать ToLowe
 dotnet_diagnostic.CA1309.severity = error # Использовать StringComparison при сравнении строк
 dotnet_diagnostic.CA1065.severity = error # Не выбрасывать NotImplementedException/NotSupportedException в конструкторах
 dotnet_diagnostic.CA1062.severity = none # Не требовать проверку аргументов на null
-
 # Microsoft .NET properties
 csharp_new_line_before_members_in_object_initializers = false # Не добавлять новую строку перед членами в инициализаторах объектов
 csharp_preferred_modifier_order = public, private, protected, internal, file, new, static, abstract, virtual, sealed, readonly, override, extern, unsafe, volatile, async, required:suggestion # Предпочтительный порядок модификаторов
@@ -149,7 +211,6 @@ dotnet_style_qualification_for_field = false:suggestion # Не использо�
 dotnet_style_qualification_for_method = false:suggestion # Не использовать this. для методов
 dotnet_style_qualification_for_property = false:suggestion # Не использовать this. для свойств
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion # Требовать модификаторы доступа для не-интерфейсных членов
-
 # ReSharper properties
 resharper_autodetect_indent_settings = true # Автоматически определять настройки отступов
 resharper_csharp_insert_final_newline = false # Не добавлять пустую строку в конце C# файлов
@@ -165,7 +226,6 @@ resharper_use_indent_from_vs = false # Не использовать настр�
 resharper_vb_insert_final_newline = false # Не добавлять пустую строку в конце VB файлов
 resharper_xmldoc_insert_final_newline = false # Не добавлять пустую строку в конце XML-документации
 resharper_xml_insert_final_newline = false # Не добавлять пустую строку в конце XML файлов
-
 # ReSharper inspection severities
 resharper_arrange_redundant_parentheses_highlighting = hint # Подсветка лишних скобок
 resharper_arrange_this_qualifier_highlighting = hint # Подсветка избыточного/отсутствующего this
@@ -190,13 +250,9 @@ resharper_suggest_var_or_type_simple_types_highlighting = hint # Подсказ�
 resharper_web_config_module_not_resolved_highlighting = warning # Не найден модуль в web.config
 resharper_web_config_type_not_resolved_highlighting = warning # Не найден тип в web.config
 resharper_web_config_wrong_module_highlighting = warning # Неверный модуль в web.config
-
-
 # Code quality analyzers
 dotnet_analyzer_diagnostic.category-security.severity = error # Все предупреждения по безопасности — ошибка
 dotnet_code_quality.ca1802.api_surface = private, internal # Применять CA1802 только к private/internal
-
-
 # name all constant fields using PascalCase
 dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = suggestion # Предупреждение, если константа не в PascalCase
 dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols = constant_fields # Применять к символам constant_fields
@@ -204,8 +260,6 @@ dotnet_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_sty
 dotnet_naming_symbols.constant_fields.applicable_kinds = field # Применять к полям
 dotnet_naming_symbols.constant_fields.required_modifiers = const # Только для const
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case # PascalCase стиль
-
-
 # static fields should have s_ prefix
 dotnet_naming_rule.static_fields_should_have_prefix.severity = suggestion # Предупреждение, если статическое поле без префикса s_
 dotnet_naming_rule.static_fields_should_have_prefix.symbols = static_fields # Применять к символам static_fields
@@ -215,8 +269,6 @@ dotnet_naming_symbols.static_fields.required_modifiers = static # Только �
 dotnet_naming_symbols.static_fields.applicable_accessibilities = private, internal, private_protected # Для приватных/внутренних
 dotnet_naming_style.static_prefix_style.required_prefix = s_ # Префикс s_
 dotnet_naming_style.static_prefix_style.capitalization = camel_case # Стиль camelCase
-
-
 # internal and private fields should be _camelCase
 dotnet_naming_rule.camel_case_for_private_internal_fields.severity = suggestion # Предупреждение, если приватное/внутреннее поле не _camelCase
 dotnet_naming_rule.camel_case_for_private_internal_fields.symbols = private_internal_fields # Применять к символам private_internal_fields
@@ -225,12 +277,9 @@ dotnet_naming_symbols.private_internal_fields.applicable_kinds = field # При�
 dotnet_naming_symbols.private_internal_fields.applicable_accessibilities = private, internal # Для приватных/внутренних
 dotnet_naming_style.camel_case_underscore_style.required_prefix = _ # Префикс _
 dotnet_naming_style.camel_case_underscore_style.capitalization = camel_case # Стиль camelCase
-
-
 # Code quality
 dotnet_style_readonly_field = true:suggestion # Предпочитать readonly для полей
 dotnet_code_quality_unused_parameters = non_public:suggestion # Предупреждать о неиспользуемых не-публичных параметрах
-
 # Expression-level preferences
 dotnet_style_object_initializer = true:suggestion # Предпочитать инициализацию объектов через { ... }
 dotnet_style_collection_initializer = true:suggestion # Предпочитать инициализацию коллекций через { ... }
@@ -245,10 +294,8 @@ dotnet_style_prefer_conditional_expression_over_assignment = true # Предпо
 dotnet_style_prefer_conditional_expression_over_return = true # Предпочитать тернарный оператор ?: вместо if-else при возврате значения
 dotnet_style_prefer_expression_bodied_methods = when_on_single_line:suggestion
 dotnet_style_prefer_expression_bodied_properties = when_on_single_line:suggestion
-
-# C# files
-[*.cs]
 # New line preferences
+dotnet_analyzer_diagnostic.severity = error
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
 csharp_new_line_before_catch = true
@@ -256,7 +303,6 @@ csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_between_query_expression_clauses = true
-
 # Indentation preferences
 csharp_indent_block_contents = true
 csharp_indent_braces = false
@@ -264,10 +310,8 @@ csharp_indent_case_contents = true
 csharp_indent_case_contents_when_block = true
 csharp_indent_switch_labels = true
 csharp_indent_labels = one_less_than_current
-
 # Modifier preferences
 csharp_preferred_modifier_order = public, private, protected, internal, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, volatile, async:suggestion
-
 # Code style defaults
 csharp_using_directive_placement = outside_namespace:error # using-директивы вне пространства имён
 csharp_prefer_braces = true # Всегда использовать фигурные скобки для if/for/while и т.д.
@@ -276,7 +320,6 @@ csharp_preserve_single_line_statements = false # Не сохранять одн�
 csharp_prefer_static_local_function = true:suggestion # Предпочитать static для локальных функций
 csharp_prefer_simple_using_statement = false:none # Не использовать сокращённый using (C# 8)
 csharp_style_prefer_switch_expression = true:suggestion # Предпочитать switch-выражения вместо switch-блоков
-
 # Expression-bodied members
 csharp_style_expression_bodied_methods = true # Предпочитать методы с выражением-результатом (=>)
 csharp_style_expression_bodied_constructors = true # Предпочитать конструкторы с выражением-результатом
@@ -286,24 +329,19 @@ csharp_style_expression_bodied_indexers = true # Предпочитать инд
 csharp_style_expression_bodied_accessors = true # Предпочитать аксессоры с выражением-результатом
 csharp_style_expression_bodied_lambdas = true # Предпочитать лямбда-выражения с выражением-результатом
 csharp_style_expression_bodied_local_functions = true # Предпочитать локальные функции с выражением-результатом
-
 # Pattern matching
 csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion # Предпочитать pattern matching вместо is + cast
 csharp_style_pattern_matching_over_as_with_null_check = true:suggestion # Предпочитать pattern matching вместо as + null check
 csharp_style_inlined_variable_declaration = true:suggestion # Предпочитать объявление переменной прямо в pattern matching
-
 # Expression-level preferences
 csharp_prefer_simple_default_expression = true:suggestion # Предпочитать default(T) вместо new T() для значимых типов
-
 # Null checking preferences
 csharp_style_throw_expression = true:suggestion # Использовать throw-выражения (например, ?? throw)
 csharp_style_conditional_delegate_call = true:suggestion # Использовать ?. для вызова делегатов
-
 # Other features
 csharp_style_prefer_index_operator = false:none # Не использовать индексатор ^ и ..
 csharp_style_prefer_range_operator = false:none # Не использовать range-оператор ..
 csharp_style_pattern_local_over_anonymous_function = false:none # Не использовать локальные функции вместо анонимных
-
 # Space preferences
 csharp_space_after_cast = false # Нет пробела после приведения типа: (int)x
 csharp_space_after_colon_in_inheritance_clause = true # Пробел после двоеточия в наследовании: class A : B
@@ -326,92 +364,72 @@ csharp_space_between_method_declaration_name_and_open_parenthesis = false # Не
 csharp_space_between_method_declaration_parameter_list_parentheses = false # Нет пробела внутри скобок параметров объявления метода
 csharp_space_between_parentheses = false # Нет пробелов внутри любых скобок
 csharp_space_between_square_brackets = false # Нет пробелов внутри квадратных скобок
-
 # Types: use keywords instead of BCL types, and permit var only when the type is clear
 csharp_style_var_for_built_in_types = false:suggestion # Не использовать var для встроенных типов (int, string и т.д.)
 csharp_style_var_when_type_is_apparent = false:none # Не использовать var, даже если тип очевиден из правой части
 csharp_style_var_elsewhere = false:suggestion # Не использовать var в остальных случаях (требовать явное указание типа)
-
 # Xml project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]
 indent_size = 2
-
 # Xml build files
 [*.builds]
 indent_size = 2
-
 # Xml files
 [*.{xml,stylecop,resx,ruleset}]
 indent_size = 2
-
 # Xml config files
 [*.{props,targets,config,nuspec}]
 indent_size = 2
-
 # Shell scripts
 [*.sh]
 end_of_line = lf
-
 [*.{cmd, bat}]
 end_of_line = crlf
-
 [{*.har,*.jsb2,*.jsb3,*.json,*.jsonc,*.postman_collection,*.postman_collection.json,*.postman_environment,*.postman_environment.json,.babelrc,.eslintrc,.prettierrc,.stylelintrc,.ws-context,bowerrc,jest.config}]
 indent_style = space
 indent_size = 2
-
 [{*.yaml,*.yml}]
 indent_style = space
 indent_size = 2
-
 [*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,c++m,cc,ccm,cginc,compute,cp,cpp,cppm,cs,cshtml,cu,cuh,cxx,cxxm,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,mxx,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,uxml,vb,xaml,xamlx,xoml,xsd}]
 indent_style = space
 indent_size = 4
 tab_width = 4
-
 # Определяем символы для публичных констант
 dotnet_naming_symbols.public_constants.applicable_kinds = field
 dotnet_naming_symbols.public_constants.applicable_accessibilities = public
 dotnet_naming_symbols.public_constants.required_modifiers = const
-
 # Задаём стиль именования:
 #   - all_upper: все символы в верхнем регистре
 #   - word_separator = _: использовать подчеркивание для разделения слов
 dotnet_naming_style.public_constants_style.capitalization = all_upper
 dotnet_naming_style.public_constants_style.word_separator = _
-
 # Применяем стиль к символам:
 dotnet_naming_rule.public_constants_rule.symbols = public_constants
 dotnet_naming_rule.public_constants_rule.style = public_constants_style
 dotnet_naming_rule.public_constants_rule.severity = suggestion
-
 # Настройка правил именования для приватных статических полей
 dotnet_naming_rule.private_static_fields_should_have_underscore.symbols = private_static_fields
 dotnet_naming_rule.private_static_fields_should_have_underscore.style = underscore_prefix_style
 dotnet_naming_rule.private_static_fields_should_have_underscore.severity = suggestion
-
 dotnet_naming_symbols.private_static_fields.applicable_kinds = field
 dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
 dotnet_naming_symbols.private_static_fields.required_modifiers = static
-
 dotnet_naming_style.underscore_prefix_style.capitalization = camel_case
 dotnet_naming_style.underscore_prefix_style.required_prefix = _
-
 # Определяем символы для приватных констант
 dotnet_naming_symbols.private_constants.applicable_kinds = field
 dotnet_naming_symbols.private_constants.applicable_accessibilities = private
 dotnet_naming_symbols.private_constants.required_modifiers = const
-
 # Задаём стиль именования:
 #   - all_upper: все символы в верхнем регистре
 #   - word_separator = _: использовать подчеркивание для разделения слов
 dotnet_naming_style.private_constants_style.capitalization = all_upper
 dotnet_naming_style.private_constants_style.word_separator = _
-
 # Применяем стиль к символам:
 dotnet_naming_rule.private_constants_rule.symbols = private_constants
 dotnet_naming_rule.private_constants_rule.style = private_constants_style
 dotnet_naming_rule.private_constants_rule.severity = suggestion
-
 #STYLE COP ANALYZERS
 dotnet_diagnostic.SA0001.severity = none
 dotnet_diagnostic.SA1500.severity = none
@@ -468,7 +486,6 @@ dotnet_diagnostic.SA1028.severity = none
 dotnet_diagnostic.SA1507.severity = none
 dotnet_diagnostic.IDE0002.severity = suggestion
 dotnet_diagnostic.IDE0005.severity = error
-
 dotnet_diagnostic.RCS1213.severity = suggestion
 dotnet_diagnostic.RCS1036.severity = suggestion
 dotnet_diagnostic.RCS1037.severity = suggestion
@@ -477,21 +494,18 @@ dotnet_diagnostic.RCS1016.severity = suggestion
 dotnet_diagnostic.RCS1206.severity = suggestion
 dotnet_diagnostic.RCS1132.severity = none
 dotnet_diagnostic.RCS1213.severity = suggestion
-
 # Избегайте 'async void' (приводит к падению процесса)
 dotnet_diagnostic.AsyncFixer01.severity = error
 # Не используйте Task.Run внутри других Task.Run (избыточность)
 dotnet_diagnostic.AsyncFixer02.severity = error
 # Избегайте блокирующих вызовов (.Wait() или .Result)
 dotnet_diagnostic.AsyncFixer03.severity = error
-
 # Подозрительное сравнение объектов (возможная логическая ошибка)
 dotnet_diagnostic.EPC11.severity = error
 # Использование Side-Effects в условиях (затрудняет отладку)
 dotnet_diagnostic.EPC14.severity = error
 # Некорректная обработка исключений (проглатывание stack trace)
 dotnet_diagnostic.ERP021.severity = error
-
 # Делайте члены static, если они не обращаются к данным экземпляра (быстрее вызов)
 dotnet_diagnostic.CA1822.severity = error
 # Избегайте пустых выделений массивов (используйте Array.Empty<T>)
@@ -500,46 +514,37 @@ dotnet_diagnostic.CA1825.severity = error
 dotnet_diagnostic.CA1827.severity = error
 # Избегайте лишних проверок на приведение типов (as + null check лучше чем is + cast)
 dotnet_diagnostic.CA1820.severity = error
-
 # Удалять неиспользуемые параметры (уменьшает потребление стека)
 dotnet_diagnostic.RCS1163.severity = error
 # Оптимизировать вызовы LINQ (например, .Where().Any() -> .Any())
 dotnet_diagnostic.RCS1077.severity = error
 # Избегать двойного вызова методов получения данных
 dotnet_diagnostic.RCS1049.severity = error
-
 # Запретить var для локальных переменных
 dotnet_style_require_var_for_local_variables = false:error
-
 dotnet_style_require_var_when_type_is_apparent = false:error
 dotnet_style_require_var_when_type_is_not_apparent = false:error
 dotnet_style_require_var_for_built_in_types = false:error
-
 # Порядок использования using (систематизация кода)
 dotnet_diagnostic.SA1200.severity = error
 # Запрет пустых строк в начале методов
 dotnet_diagnostic.SA1507.severity = error
-
 dotnet_diagnostic.CS8601.severity = error
 dotnet_diagnostic.CS8602.severity = error
 dotnet_diagnostic.CS8603.severity = error
-
 # Отключаем или меняем уровень серьезности предупреждения SA1310, чтобы не конфликтовало с новыми правилами.
 dotnet_diagnostic.SA1310.severity = none
-
 # AsyncFixer:
 dotnet_diagnostic.AsyncFixer02.severity = error
 dotnet_diagnostic.AsyncFixer03.severity = error
 dotnet_diagnostic.AsyncFixer04.severity = error
 dotnet_diagnostic.AsyncFixer05.severity = error
-
 # Error prone settings
 dotnet_diagnostic.EPC13.severity = error
 dotnet_diagnostic.EPC14.severity = error
 dotnet_diagnostic.EPC15.severity = error
 dotnet_diagnostic.EPC16.severity = error
 dotnet_diagnostic.ERP022.severity = none
-
 # RCS (Roslyn code analyzers) settings
 dotnet_diagnostic.SA1602.severity = error
 dotnet_diagnostic.RZ3600.severity = none
@@ -576,7 +581,6 @@ dotnet_diagnostic.RCS1247.severity = error
 dotnet_diagnostic.RCS1248.severity = suggestion
 dotnet_diagnostic.RCS1249.severity = warning
 dotnet_diagnostic.RCS1250.severity = suggestion
-
 dotnet_code_quality.enable_all_analyzers = true
 csharp_style_expression_bodied_methods = when_on_single_line:suggestion
 csharp_style_expression_bodied_constructors = false:suggestion

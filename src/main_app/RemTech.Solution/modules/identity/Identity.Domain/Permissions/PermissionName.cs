@@ -7,7 +7,7 @@ namespace Identity.Domain.Permissions;
 /// </summary>
 public sealed record PermissionName
 {
-	private const int MaxLength = 256;
+	private const int MAX_LENGTH = 256;
 
 	private PermissionName(string value)
 	{
@@ -28,7 +28,7 @@ public sealed record PermissionName
 	{
 		if (string.IsNullOrWhiteSpace(value))
 			return Error.Validation("Название разрешения не может быть пустым.");
-		return value.Length > MaxLength
+		return value.Length > MAX_LENGTH
 			? Error.Validation("Название разрешения не может быть длиннее 128 символов.")
 			: new PermissionName(value);
 	}

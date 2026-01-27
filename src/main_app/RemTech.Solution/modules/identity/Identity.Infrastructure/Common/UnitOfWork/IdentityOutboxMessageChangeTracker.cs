@@ -5,17 +5,31 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Common.UnitOfWork;
 
+/// <summary>
+/// Трекер изменений исходящих сообщений.
+/// </summary>
+/// <param name="session">Сессия базы данных для выполнения операций.</param>
 public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 {
 	private Dictionary<Guid, IdentityOutboxMessage> Tracking { get; } = [];
 	private NpgSqlSession Session { get; } = session;
 
+	/// <summary>
+	/// Начинает отслеживание изменений для коллекции исходящих сообщений.
+	/// </summary>
+	/// <param name="messages">Коллекция исходящих сообщений для отслеживания изменений.</param>
 	public void Track(IEnumerable<IdentityOutboxMessage> messages)
 	{
 		foreach (IdentityOutboxMessage message in messages)
 			Tracking.TryAdd(message.Id, message.Clone());
 	}
 
+	/// <summary>
+	/// Сохраняет изменения для коллекции исходящих сообщений.
+	/// </summary>
+	/// <param name="messages">Коллекция исходящих сообщений для сохранения изменений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
 	public Task Save(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct = default)
 	{
 		IEnumerable<IdentityOutboxMessage> tracking = GetTrackingMessages(messages);

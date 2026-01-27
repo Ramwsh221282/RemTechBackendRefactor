@@ -13,7 +13,7 @@ public sealed record AesCryptography(IOptions<AesEncryptionOptions> Options)
 	/// <summary>
 	/// Длина байтов для IV.
 	/// </summary>
-	private const int BytesLength = 16;
+	private const int BYTES_LENGTH = 16;
 
 	/// <summary>
 	/// Шифрует текст с использованием AES.
@@ -51,13 +51,13 @@ public sealed record AesCryptography(IOptions<AesEncryptionOptions> Options)
 	public async Task<string> DecryptText(string text, CancellationToken ct)
 	{
 		byte[] base64Text = Convert.FromBase64String(text);
-		byte[] iv = new byte[BytesLength];
-		Array.Copy(base64Text, iv, BytesLength);
+		byte[] iv = new byte[BYTES_LENGTH];
+		Array.Copy(base64Text, iv, BYTES_LENGTH);
 		using Aes aes = Aes.Create();
 		aes.Key = Options.Value.KeyAsBytes();
 		aes.IV = iv;
 		using ICryptoTransform transform = aes.CreateDecryptor(aes.Key, aes.IV);
-		await using MemoryStream ms = new(base64Text, BytesLength, base64Text.Length - BytesLength);
+		await using MemoryStream ms = new(base64Text, BYTES_LENGTH, base64Text.Length - BYTES_LENGTH);
 		await using CryptoStream cs = new(ms, transform, CryptoStreamMode.Read);
 		using StreamReader sr = new(cs);
 		return await sr.ReadToEndAsync(ct);

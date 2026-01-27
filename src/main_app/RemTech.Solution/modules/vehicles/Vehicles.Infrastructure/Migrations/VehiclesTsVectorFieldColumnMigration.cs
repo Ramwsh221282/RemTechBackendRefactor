@@ -2,9 +2,15 @@
 
 namespace Vehicles.Infrastructure.Migrations;
 
+/// <summary>
+/// Миграция для добавления столбца ts_vector_field в таблицу транспортных средств.
+/// </summary>
 [Migration(1767277993)]
 public sealed class VehiclesTsVectorFieldColumnMigration : Migration
 {
+	/// <summary>
+	/// Выполняет миграцию, добавляя столбец ts_vector_field в таблицу транспортных средств.
+	/// </summary>
 	public override void Up()
 	{
 		Execute.Sql(
@@ -20,6 +26,9 @@ public sealed class VehiclesTsVectorFieldColumnMigration : Migration
 		);
 	}
 
+	/// <summary>
+	/// Откатывает миграцию, удаляя столбец ts_vector_field из таблицы транспортных средств.
+	/// </summary>
 	public override void Down()
 	{
 		Execute.Sql(

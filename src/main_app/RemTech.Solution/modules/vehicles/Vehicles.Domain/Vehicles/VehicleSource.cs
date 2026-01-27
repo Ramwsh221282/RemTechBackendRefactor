@@ -2,6 +2,9 @@
 
 namespace Vehicles.Domain.Vehicles;
 
+/// <summary>
+/// Источник транспортного средства.
+/// </summary>
 public sealed record VehicleSource
 {
 	private VehicleSource(string value)
@@ -9,8 +12,16 @@ public sealed record VehicleSource
 		Value = value;
 	}
 
+	/// <summary>
+	/// Источник транспортного средства.
+	/// </summary>
 	public string Value { get; }
 
+	/// <summary>
+	/// Создаёт источник транспортного средства.
+	/// </summary>
+	/// <param name="value">Источник транспортного средства.</param>
+	/// <returns>Результат создания источника транспортного средства.</returns>
 	public static Result<VehicleSource> Create(string value)
 	{
 		return string.IsNullOrWhiteSpace(value)

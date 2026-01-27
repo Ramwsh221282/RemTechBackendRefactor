@@ -8,5 +8,5 @@ public static class AccountOutboxMessageTypes
 	/// <summary>
 	/// Новое сообщение о создании аккаунта.
 	/// </summary>
-	public const string NewAccountCreated = "new-account-registered";
+	public const string NEW_ACCOUNT_CREATED = "new-account-registered";
 }

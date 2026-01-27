@@ -7,10 +7,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.ChangeWaitDays;
 
+/// <summary>
+/// Обработчик команды изменения количества дней ожидания между запусками парсера.
+/// </summary>
+/// <param name="repository">Репозиторий для работы с подписанными парсерами.</param>
 [TransactionalHandler]
 public sealed class ChangeWaitDaysHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<ChangeWaitDaysCommand, SubscribedParser>
 {
+	/// <summary>
+	/// Изменяет количество дней ожидания между запусками парсера.
+	/// </summary>
+	/// <param name="command">Команда для выполнения.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат выполнения команды с подписанным парсером.</returns>
 	public async Task<Result<SubscribedParser>> Execute(ChangeWaitDaysCommand command, CancellationToken ct = default)
 	{
 		Result<SubscribedParser> parser = await GetRequiredParser(command.Id, ct);
@@ -19,10 +29,8 @@ public sealed class ChangeWaitDaysHandler(ISubscribedParsersRepository repositor
 		return saving.IsSuccess ? parser.Value : saving.Error;
 	}
 
-	private static Result<Unit> SetRequiredWaitDays(int days, Result<SubscribedParser> parser)
-	{
-		return parser.IsFailure ? (Result<Unit>)parser.Error : parser.Value.ChangeScheduleWaitDays(days);
-	}
+	private static Result<Unit> SetRequiredWaitDays(int days, Result<SubscribedParser> parser) =>
+		parser.IsFailure ? parser.Error : parser.Value.ChangeScheduleWaitDays(days);
 
 	private async Task<Result<Unit>> SaveChanges(
 		Result<SubscribedParser> parser,

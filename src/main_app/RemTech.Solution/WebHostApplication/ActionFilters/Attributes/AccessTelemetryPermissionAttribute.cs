@@ -3,8 +3,14 @@ using WebHostApplication.ActionFilters.Filters;
 
 namespace WebHostApplication.ActionFilters.Attributes;
 
+/// <summary>
+/// Атрибут для проверки наличия разрешения на доступ к телеметрии.
+/// </summary>
 public sealed class AccessTelemetryPermissionAttribute : TypeFilterAttribute
 {
-    public AccessTelemetryPermissionAttribute()
-        : base(typeof(ShouldHaveAccessTelemetryPermissionFilter)) { }
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="AccessTelemetryPermissionAttribute"/>.
+	/// </summary>
+	public AccessTelemetryPermissionAttribute()
+		: base(typeof(ShouldHaveAccessTelemetryPermissionFilter)) { }
 }

@@ -8,10 +8,10 @@ public static class AccountTicketPurposes
 	/// <summary>
 	/// Требуется подтверждение электронной почты.
 	/// </summary>
-	public const string EmailConfirmationRequired = "email-confirmation-required";
+	public const string EMAIL_CONFIRMATION_REQUIRED = "email-confirmation-required";
 
 	/// <summary>
 	/// Сброс пароля.
 	/// </summary>
-	public const string ResetPassword = "reset-password";
+	public const string RESET_PASSWORD = "reset-password";
 }

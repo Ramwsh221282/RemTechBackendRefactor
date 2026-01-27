@@ -11,7 +11,7 @@ public sealed class PgVectorMigration : Migration
 	/// <summary>
 	/// Версия миграции.
 	/// </summary>
-	public const long Version = 20251201010100;
+	public const long VERSION = 20251201010100;
 
 	/// <summary>
 	/// Применяет миграцию, создавая расширение PgVector, если оно еще не существует.

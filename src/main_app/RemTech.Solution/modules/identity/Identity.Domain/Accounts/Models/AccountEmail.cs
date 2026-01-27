@@ -8,14 +8,17 @@ namespace Identity.Domain.Accounts.Models;
 /// </summary>
 public sealed record AccountEmail
 {
-	private static readonly Regex EmailRegex = new(
+	private static readonly Regex _emailRegex = new(
 		@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
 		RegexOptions.Compiled
 	);
 
-	private const int MaxEmailLength = 256;
+	private const int MAX_EMAIL_LENGTH = 256;
 
-	private AccountEmail(string value) => Value = value;
+	private AccountEmail(string value)
+	{
+		Value = value;
+	}
 
 	/// <summary>
 	/// Значение электронной почты аккаунта.
@@ -31,9 +34,9 @@ public sealed record AccountEmail
 	{
 		if (string.IsNullOrWhiteSpace(value))
 			return Error.Validation("Email не может быть пустым.");
-		if (value.Length > MaxEmailLength)
-			return Error.Validation($"Email не может быть длиннее {MaxEmailLength} символов.");
-		return !EmailRegex.IsMatch(value)
+		if (value.Length > MAX_EMAIL_LENGTH)
+			return Error.Validation($"Email не может быть длиннее {MAX_EMAIL_LENGTH} символов.");
+		return !_emailRegex.IsMatch(value)
 			? (Result<AccountEmail>)Error.InvalidFormat($"Email: {value} некоррекнтого формата.")
 			: (Result<AccountEmail>)new AccountEmail(value);
 	}

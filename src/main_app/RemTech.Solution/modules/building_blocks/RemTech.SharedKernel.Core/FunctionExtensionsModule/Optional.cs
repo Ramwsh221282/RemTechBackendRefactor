@@ -157,7 +157,9 @@ public sealed class Optional<T> : Optional
 	public void ExecuteOnValue(Action action)
 	{
 		if (HasValue)
+		{
 			action();
+		}
 	}
 
 	/// <summary>
@@ -167,7 +169,9 @@ public sealed class Optional<T> : Optional
 	public void ExecuteOnValue(Action<T> action)
 	{
 		if (HasValue)
+		{
 			action(Value);
+		}
 	}
 
 	/// <summary>
@@ -178,7 +182,9 @@ public sealed class Optional<T> : Optional
 	public async Task ExecuteOnValueAsync(Func<Task> action)
 	{
 		if (HasValue)
+		{
 			await action();
+		}
 	}
 
 	/// <summary>
@@ -189,6 +195,8 @@ public sealed class Optional<T> : Optional
 	public async Task ExecuteOnValueAsync(Func<T, Task> action)
 	{
 		if (HasValue)
+		{
 			await action(Value);
+		}
 	}
 }

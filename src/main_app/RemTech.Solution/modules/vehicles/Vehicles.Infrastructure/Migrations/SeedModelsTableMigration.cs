@@ -2,9 +2,15 @@
 
 namespace Vehicles.Infrastructure.Migrations;
 
+/// <summary>
+/// Миграция для начального заполнения таблицы моделей.
+/// </summary>
 [Migration(1767096761)]
 public sealed class SeedModelsTableMigration : Migration
 {
+	/// <summary>
+	/// Выполняет миграцию, заполняя таблицу моделей начальными данными.
+	/// </summary>
 	public override void Up()
 	{
 		Execute.EmbeddedScript("Vehicles.Infrastructure.Models.SeedingImplementation.0002.models_seeding_1.sql");
@@ -14,5 +20,8 @@ public sealed class SeedModelsTableMigration : Migration
 		Execute.EmbeddedScript("Vehicles.Infrastructure.Models.SeedingImplementation.0006.models_seeding_5.sql");
 	}
 
+	/// <summary>
+	/// Откатывает миграцию. В данном случае откат не выполняется.
+	/// </summary>
 	public override void Down() { }
 }

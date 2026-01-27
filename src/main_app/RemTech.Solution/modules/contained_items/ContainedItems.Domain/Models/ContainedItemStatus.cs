@@ -19,7 +19,10 @@ public sealed class ContainedItemStatus
 
 	private static readonly ContainedItemStatus[] _all = [PendingToSave, Saved];
 
-	private ContainedItemStatus(string value) => Value = value;
+	private ContainedItemStatus(string value)
+	{
+		Value = value;
+	}
 
 	/// <summary>
 	/// Значение статуса содержащегося элемента.

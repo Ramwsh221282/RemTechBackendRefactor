@@ -12,5 +12,8 @@ public sealed class Dev_ChangePasswordValidator : AbstractValidator<Dev_ChangePa
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="Dev_ChangePasswordValidator"/>.
 	/// </summary>
-	public Dev_ChangePasswordValidator() => RuleFor(x => x.NewPassword).MustBeValid(AccountPassword.Create);
+	public Dev_ChangePasswordValidator()
+	{
+		RuleFor(x => x.NewPassword).MustBeValid(AccountPassword.Create);
+	}
 }

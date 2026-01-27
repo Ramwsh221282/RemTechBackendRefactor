@@ -10,9 +10,15 @@ public readonly record struct MailerId
 	/// <summary>
 	/// Создает новый идентификатор почтовой рассылки.
 	/// </summary>
-	public MailerId() => Value = Guid.NewGuid();
+	public MailerId()
+	{
+		Value = Guid.NewGuid();
+	}
 
-	private MailerId(Guid value) => Value = value;
+	private MailerId(Guid value)
+	{
+		Value = value;
+	}
 
 	/// <summary>
 	/// Значение идентификатора почтовой рассылки.

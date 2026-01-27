@@ -7,9 +7,19 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Vehicles.Infrastructure.Vehicles.Queries.GetVehicleCharacteristics;
 
+/// <summary>
+/// Обработчик запроса на получение характеристик транспортных средств по фильтрам.
+/// </summary>
+/// <param name="session">Сессия для работы с базой данных.</param>
 public sealed class GetVehiclesCharacteristicsQueryHandler(NpgSqlSession session)
 	: IQueryHandler<GetVehicleCharacteristicsQuery, GetVehicleCharacteristicsQueryResponse>
 {
+	/// <summary>
+	/// Обрабатывает запрос на получение характеристик транспортных средств по фильтрам.
+	/// </summary>
+	/// <param name="query">Запрос с фильтрами для получения характеристик.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Ответ с характеристиками транспортных средств.</returns>
 	public async Task<GetVehicleCharacteristicsQueryResponse> Handle(
 		GetVehicleCharacteristicsQuery query,
 		CancellationToken ct = default

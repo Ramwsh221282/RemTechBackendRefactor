@@ -39,7 +39,7 @@ public sealed class ResetPasswordCommandHandler(IAccountsRepository accounts, IA
 			return account.Error;
 		return canReset.IsFailure
 			? (Result<AccountTicket>)canReset.Error
-			: account.Value.CreateTicket(AccountTicketPurposes.ResetPassword);
+			: account.Value.CreateTicket(AccountTicketPurposes.RESET_PASSWORD);
 	}
 
 	private static Result<Unit> CanResetPassword(Result<Account> account)

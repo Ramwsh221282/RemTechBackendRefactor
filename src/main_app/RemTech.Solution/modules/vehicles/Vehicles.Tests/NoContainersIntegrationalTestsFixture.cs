@@ -7,8 +7,15 @@ using RemTech.SharedKernel.Configurations;
 
 namespace Vehicles.Tests;
 
+/// <summary>
+/// Фикстура для интеграционных тестов без использования контейнеров.
+/// </summary>
 public sealed class NoContainersIntegrationalTestsFixture : WebApplicationFactory<Vehicles.WebApi.Program>
 {
+	/// <summary>
+	/// Настраивает веб-хост для использования пользовательских настроек в тестах.
+	/// </summary>
+	/// <param name="builder">Веб-хост билдер для настройки.</param>
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
 		base.ConfigureWebHost(builder);

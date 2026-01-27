@@ -42,7 +42,7 @@ public sealed class RegisterAccountHandler(
 
 		AccountPassword encrypted = password.Value.HashBy(hasher);
 		Account account = CreateAccount(encrypted, command);
-		AccountTicket ticket = AccountTicket.New(account.Id.Value, AccountTicketPurposes.EmailConfirmationRequired);
+		AccountTicket ticket = AccountTicket.New(account.Id.Value, AccountTicketPurposes.EMAIL_CONFIRMATION_REQUIRED);
 		IdentityOutboxMessage message = CreateOutboxMessage(ticket, account);
 
 		await accounts.Add(account, ct);
@@ -67,7 +67,7 @@ public sealed class RegisterAccountHandler(
 			account.Login.Value
 		);
 
-		return IdentityOutboxMessage.CreateNew(AccountOutboxMessageTypes.NewAccountCreated, payload);
+		return IdentityOutboxMessage.CreateNew(AccountOutboxMessageTypes.NEW_ACCOUNT_CREATED, payload);
 	}
 
 	private Result<AccountPassword> ApprovePassword(RegisterAccountCommand command)

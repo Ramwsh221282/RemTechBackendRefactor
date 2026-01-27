@@ -11,7 +11,7 @@ public interface IMailerCredentialsCryptography
 	/// <param name="credentials">Учетные данные почтовой рассылки для шифрования.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Задача, представляющая асинхронную операцию шифрования.</returns>
-	public Task<MailerCredentials> Encrypt(MailerCredentials credentials, CancellationToken ct = default);
+	Task<MailerCredentials> Encrypt(MailerCredentials credentials, CancellationToken ct = default);
 
 	/// <summary>
 	/// Дешифрует учетные данные почтовой рассылки.
@@ -19,5 +19,5 @@ public interface IMailerCredentialsCryptography
 	/// <param name="credentials">Учетные данные почтовой рассылки для дешифрования.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Задача, представляющая асинхронную операцию дешифрования.</returns>
-	public Task<MailerCredentials> Decrypt(MailerCredentials credentials, CancellationToken ct = default);
+	Task<MailerCredentials> Decrypt(MailerCredentials credentials, CancellationToken ct = default);
 }

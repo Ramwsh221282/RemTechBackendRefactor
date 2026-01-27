@@ -2,6 +2,9 @@
 
 namespace Vehicles.Domain.Vehicles;
 
+/// <summary>
+/// Фото транспортного средства.
+/// </summary>
 public sealed record VehiclePhoto
 {
 	private VehiclePhoto(string path)
@@ -9,8 +12,17 @@ public sealed record VehiclePhoto
 		Path = path;
 	}
 
+	/// <summary>
+	/// Путь к фото техники.
+	/// </summary>
 	public string Path { get; }
 
+	/// <summary>
+	/// Создаёт фото транспортного средства.
+	/// </summary>
+	/// <param name="path">Путь к фото транспортного средства.</param>
+	/// <returns>Результат создания фото транспортного средства.</returns>
+	///
 	public static Result<VehiclePhoto> Create(string path)
 	{
 		return string.IsNullOrWhiteSpace(path)

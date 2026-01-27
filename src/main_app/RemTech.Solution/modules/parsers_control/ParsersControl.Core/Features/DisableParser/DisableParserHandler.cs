@@ -7,10 +7,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.DisableParser;
 
+/// <summary>
+/// Обработчик команды отключения парсера.
+/// </summary>
+/// <param name="repository">Репозиторий подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class DisableParserHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<DisableParserCommand, SubscribedParser>
 {
+	/// <summary>
+	/// Выполняет команду отключения парсера.
+	/// </summary>
+	/// <param name="command">Команда отключения парсера.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с отключённым парсером.</returns>
 	public async Task<Result<SubscribedParser>> Execute(DisableParserCommand command, CancellationToken ct = default)
 	{
 		Result<SubscribedParser> parser = await GetRequiredParser(command.Id, ct);

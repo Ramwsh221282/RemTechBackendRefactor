@@ -4,11 +4,22 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 
 namespace Vehicles.Infrastructure.Categories.Queries.GetCategories;
 
+/// <summary>
+/// Обработчик запроса получения категорий с кэшированием.
+/// </summary>
+/// <param name="cache">Кэш для хранения результатов запросов.</param>
+/// <param name="inner">Внутренний обработчик запроса без кэширования.</param>
 public sealed class GetCategoriesCachingQueryHandler(
 	HybridCache cache,
 	IQueryHandler<GetCategoriesQuery, IEnumerable<CategoryResponse>> inner
 ) : IQueryExecutorWithCache<GetCategoriesQuery, IEnumerable<CategoryResponse>>
 {
+	/// <summary>
+	/// Выполняет запрос получения категорий с использованием кэша.
+	/// </summary>
+	/// <param name="query">Запрос на получение категорий.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Коллекция ответов с информацией о категориях.</returns>
 	public Task<IEnumerable<CategoryResponse>> ExecuteWithCache(
 		GetCategoriesQuery query,
 		CancellationToken ct = default

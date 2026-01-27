@@ -3,8 +3,14 @@ using WebHostApplication.ActionFilters.Filters;
 
 namespace WebHostApplication.ActionFilters.Attributes;
 
+/// <summary>
+/// Атрибут для проверки наличия разрешения на просмотр источников элементов наблюдения.
+/// </summary>
 public sealed class WatchItemSourcesPermissionAttribute : TypeFilterAttribute
 {
-    public WatchItemSourcesPermissionAttribute()
-        : base(typeof(ShouldHaveWatchItemSourcesPermissionFilter)) { }
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="WatchItemSourcesPermissionAttribute"/>.
+	/// </summary>
+	public WatchItemSourcesPermissionAttribute()
+		: base(typeof(ShouldHaveWatchItemSourcesPermissionFilter)) { }
 }

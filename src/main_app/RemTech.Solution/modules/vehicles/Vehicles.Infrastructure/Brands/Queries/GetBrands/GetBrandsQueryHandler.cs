@@ -9,11 +9,22 @@ using RemTech.SharedKernel.NN;
 
 namespace Vehicles.Infrastructure.Brands.Queries.GetBrands;
 
+/// <summary>
+/// Обработчик запроса на получение брендов.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
+/// <param name="embeddings">Провайдер эмбеддингов для обработки текстового поиска.</param>
 public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: IQueryHandler<GetBrandsQuery, IEnumerable<BrandResponse>>
 {
 	private const StringComparison STRING_COMPARISON = StringComparison.OrdinalIgnoreCase;
 
+	/// <summary>
+	/// Обрабатывает запрос на получение брендов.
+	/// </summary>
+	/// <param name="query">Запрос на получение брендов.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Коллекция ответов с информацией о брендах.</returns>
 	public async Task<IEnumerable<BrandResponse>> Handle(GetBrandsQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string sql) = CreateSql(query);

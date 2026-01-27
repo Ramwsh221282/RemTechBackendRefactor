@@ -12,8 +12,8 @@ namespace ContainedItems.Infrastructure.Producers;
 /// <param name="logger">Логгер для записи информации и ошибок.</param>
 public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger logger) : IItemPublishingStrategy
 {
-	private const string Exchange = "spares";
-	private const string RoutingKey = "spares.add";
+	private const string EXCHANGE = "spares";
+	private const string ROUTING_KEY = "spares.add";
 	private RabbitMqProducer Producer { get; } = producer;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<AddSparesProducer>();
 
@@ -37,7 +37,7 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 		{
 			ContainedItem first = entry.First();
 			AddSparesMessage message = CreateMessage(first, entry);
-			await Producer.PublishDirectAsync(message, Exchange, RoutingKey, options, ct: ct);
+			await Producer.PublishDirectAsync(message, EXCHANGE, ROUTING_KEY, options, ct: ct);
 			Logger.Information(
 				"Published {CreatorType} {CreatorDomain}",
 				first.CreatorInfo.Type,

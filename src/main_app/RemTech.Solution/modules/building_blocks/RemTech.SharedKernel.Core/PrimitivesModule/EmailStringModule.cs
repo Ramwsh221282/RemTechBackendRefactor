@@ -17,7 +17,10 @@ public static partial class EmailStringModule
 		public static EmailString Create(string? input)
 		{
 			if (IsNullOrEmpty(input))
+			{
 				return new EmailString(string.Empty, false);
+			}
+
 			return !HasValidFormat(input) ? new EmailString(input, false) : new EmailString(input, true);
 		}
 
@@ -41,7 +44,7 @@ public static partial class EmailStringModule
 		/// <param name="input">Входная строка электронной почты.</param>
 		/// <returns>True, если строка имеет допустимый формат электронной почты; иначе false.</returns>
 		private static bool HasValidFormat(string? input) =>
-			string.IsNullOrWhiteSpace(input) ? false : input.Length <= 256 && MatchesEmailRegex(input);
+			!string.IsNullOrWhiteSpace(input) && input.Length <= 256 && MatchesEmailRegex(input);
 	}
 
 	[GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]

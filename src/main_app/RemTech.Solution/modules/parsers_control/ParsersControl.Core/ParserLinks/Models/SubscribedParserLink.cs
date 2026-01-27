@@ -4,31 +4,85 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace ParsersControl.Core.ParserLinks.Models;
 
+/// <summary>
+/// Ссылка на подписанный парсер.
+/// </summary>
 public sealed class SubscribedParserLink
 {
-	public SubscribedParserLink(SubscribedParserLink link)
-		: this(link.ParserId, link.Id, link.UrlInfo, link.Statistics, link.Active) { }
-
-	private SubscribedParserLink(
+	/// <summary>
+	/// Создаёт новую ссылку на парсер.
+	/// </summary>
+	/// <param name="parserId">Идентификатор парсера.</param>
+	/// <param name="id">Идентификатор ссылки.</param>
+	/// <param name="urlInfo">Информация о ссылке.</param>
+	/// <param name="statistics">Статистика парсинга.</param>
+	/// <param name="active">Признак активности.</param>
+	public SubscribedParserLink(
 		SubscribedParserId parserId,
 		SubscribedParserLinkId id,
 		SubscribedParserLinkUrlInfo urlInfo,
 		ParsingStatistics statistics,
 		bool active
-	) => (ParserId, Id, UrlInfo, Active, Statistics) = (parserId, id, urlInfo, active, statistics);
+	)
+	{
+		ParserId = parserId;
+		Id = id;
+		UrlInfo = urlInfo;
+		Statistics = statistics;
+		Active = active;
+	}
 
-	private SubscribedParserLink(SubscribedParser parser, SubscribedParserLinkUrlInfo urlInfo)
-		: this(parser.Id, SubscribedParserLinkId.New(), urlInfo, ParsingStatistics.New(), false) { }
+	/// <summary>
+	/// Идентификатор парсера.
+	/// </summary>
+	public SubscribedParserId ParserId { get; }
 
-	public SubscribedParserId ParserId { get; private set; }
-	public SubscribedParserLinkId Id { get; private set; }
+	/// <summary>
+	/// Идентификатор ссылки.
+	/// </summary>
+	public SubscribedParserLinkId Id { get; }
+
+	/// <summary>
+	/// Информация о ссылке.
+	/// </summary>
 	public SubscribedParserLinkUrlInfo UrlInfo { get; private set; }
+
+	/// <summary>
+	/// Статистика парсинга.
+	/// </summary>
 	public ParsingStatistics Statistics { get; private set; }
+
+	/// <summary>
+	/// Признак активности ссылки.
+	/// </summary>
 	public bool Active { get; private set; }
 
-	public static SubscribedParserLink New(SubscribedParser parser, SubscribedParserLinkUrlInfo urlInfo) =>
-		new(parser, urlInfo);
+	/// <summary>
+	/// Создаёт новую ссылку на парсер.
+	/// </summary>
+	/// <param name="parser">Экземпляр парсера.</param>
+	/// <param name="urlInfo">Информация о ссылке.</param>
+	/// <returns>Ссылка на парсер.</returns>
+	public static SubscribedParserLink New(SubscribedParser parser, SubscribedParserLinkUrlInfo urlInfo)
+	{
+		return new SubscribedParserLink(
+			parser.Id,
+			SubscribedParserLinkId.New(),
+			urlInfo,
+			ParsingStatistics.New(),
+			false
+		);
+	}
 
+	/// <summary>
+	/// Создаёт ссылку на парсер с заданными параметрами.
+	/// </summary>
+	/// <param name="parserId">Идентификатор парсера.</param>
+	/// <param name="id">Идентификатор ссылки.</param>
+	/// <param name="urlInfo">Информация о ссылке.</param>
+	/// <param name="statistics">Статистика парсинга.</param>
+	/// <param name="active">Признак активности.</param>
+	/// <returns>Ссылка на парсер.</returns>
 	public static SubscribedParserLink Create(
 		SubscribedParserId parserId,
 		SubscribedParserLinkId id,
@@ -37,10 +91,24 @@ public sealed class SubscribedParserLink
 		bool active
 	) => new(parserId, id, urlInfo, statistics, active);
 
-	public static SubscribedParserLink CreateCopy(SubscribedParserLink link) => new(link);
+	/// <summary>
+	/// Создаёт копию ссылки на парсер.
+	/// </summary>
+	/// <param name="link">Ссылка для копирования.</param>
+	/// <returns>Копия ссылки.</returns>
+	public static SubscribedParserLink CreateCopy(SubscribedParserLink link) =>
+		new(link.ParserId, link.Id, link.UrlInfo, link.Statistics, link.Active);
 
+	/// <summary>
+	/// Сбросить время работы парсера.
+	/// </summary>
 	public void ResetWorkTime() => Statistics = Statistics.ResetWorkTime();
 
+	/// <summary>
+	/// Добавить количество обработанных элементов.
+	/// </summary>
+	/// <param name="count">Количество элементов.</param>
+	/// <returns>Результат операции.</returns>
 	public Result AddParsedCount(int count)
 	{
 		Result<ParsingStatistics> updated = Statistics.IncreaseParsedCount(count);
@@ -50,6 +118,11 @@ public sealed class SubscribedParserLink
 		return Result.Success();
 	}
 
+	/// <summary>
+	/// Добавить время работы парсера.
+	/// </summary>
+	/// <param name="totalElapsedSeconds">Время в секундах.</param>
+	/// <returns>Результат операции.</returns>
 	public Result AddWorkTime(long totalElapsedSeconds)
 	{
 		Result<ParsingStatistics> updated = Statistics.AddWorkTime(totalElapsedSeconds);
@@ -59,6 +132,9 @@ public sealed class SubscribedParserLink
 		return Result.Success();
 	}
 
+	/// <summary>
+	/// Включить ссылку.
+	/// </summary>
 	public void Enable()
 	{
 		if (Active)
@@ -66,6 +142,9 @@ public sealed class SubscribedParserLink
 		Active = true;
 	}
 
+	/// <summary>
+	/// Отключить ссылку.
+	/// </summary>
 	public void Disable()
 	{
 		if (!Active)
@@ -73,6 +152,12 @@ public sealed class SubscribedParserLink
 		Active = false;
 	}
 
+	/// <summary>
+	/// Редактировать ссылку (имя или url).
+	/// </summary>
+	/// <param name="otherName">Новое имя.</param>
+	/// <param name="otherUrl">Новый url.</param>
+	/// <returns>Результат редактирования.</returns>
 	public Result<SubscribedParserLink> Edit(string? otherName, string? otherUrl)
 	{
 		Result<SubscribedParserLinkUrlInfo> copy = UrlInfo.Copy();

@@ -135,7 +135,9 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	private static async Task ProcessPendingRecords(IDatabase database, ActionRecord[] snapshot, ILogger logger)
 	{
 		if (snapshot.Length == 0)
+		{
 			return;
+		}
 
 		RedisValue[] recordsToPublish = new RedisValue[snapshot.Length];
 		for (int index = 0; index < snapshot.Length; index++)
@@ -162,7 +164,9 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 		while (await timer.WaitForNextTickAsync(ct))
 		{
 			if (IsProcessing)
+			{
 				continue;
+			}
 
 			IsProcessing = true;
 			ActionRecord[] snapshot = MakeRecordsSnapshot(_recordsQueue);

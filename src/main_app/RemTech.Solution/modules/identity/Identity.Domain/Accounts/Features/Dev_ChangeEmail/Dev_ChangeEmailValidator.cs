@@ -12,5 +12,8 @@ public sealed class Dev_ChangeEmailValidator : AbstractValidator<Dev_ChangeEmail
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="Dev_ChangeEmailValidator"/>.
 	/// </summary>
-	public Dev_ChangeEmailValidator() => RuleFor(x => x.NewEmail).MustBeValid(AccountEmail.Create);
+	public Dev_ChangeEmailValidator()
+	{
+		RuleFor(x => x.NewEmail).MustBeValid(AccountEmail.Create);
+	}
 }

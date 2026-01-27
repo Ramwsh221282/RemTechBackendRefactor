@@ -5,17 +5,38 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Notifications.Infrastructure.PendingEmails;
 
+/// <summary>
+/// Трекер изменений отложенных писем.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
 public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
 {
+	/// <summary>
+	/// Сессия базы данных PostgreSQL.
+	/// </summary>
 	public NpgSqlSession Session { get; } = session;
+
+	/// <summary>
+	/// Отслеживаемые отложенные письма.
+	/// </summary>
 	public Dictionary<Guid, PendingEmailNotification> Tracking { get; } = [];
 
+	/// <summary>
+	/// Начинает отслеживание изменений для множества отложенных писем.
+	/// </summary>
+	/// <param name="notifications">Множество отложенных писем для отслеживания.</param>
 	public void Track(IEnumerable<PendingEmailNotification> notifications)
 	{
 		foreach (PendingEmailNotification notification in notifications)
 			Tracking.TryAdd(notification.Id, notification.Copy());
 	}
 
+	/// <summary>
+	/// Сохраняет изменения для множества отложенных писем.
+	/// </summary>
+	/// <param name="notifications">Множество отложенных писем для сохранения изменений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
 	public Task Save(IEnumerable<PendingEmailNotification> notifications, CancellationToken ct = default)
 	{
 		IEnumerable<PendingEmailNotification> tracking = GetTrackingNotifications(notifications);

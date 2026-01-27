@@ -38,18 +38,24 @@ public sealed class TransactionalHandler<TCommand, TResult>(
 	public async Task<Result<TResult>> Execute(TCommand command, CancellationToken ct = default)
 	{
 		if (!HasTransactionalAttribute(Inner))
+		{
 			return await Inner.Execute(command, ct);
+		}
 
 		ITransactionScope scope = await TransactionSource.BeginTransaction(ct);
 		try
 		{
 			Result<TResult> result = await Inner.Execute(command, ct);
 			if (result.IsFailure)
+			{
 				return result.Error;
+			}
 
 			Result commit = await scope.Commit(ct);
 			if (commit.IsFailure)
+			{
 				return commit.Error;
+			}
 
 			await PublishEvents(result, ct); // publishing in external services. E.G: rabbit mq or in memory message bus.
 			return result;
@@ -69,7 +75,9 @@ public sealed class TransactionalHandler<TCommand, TResult>(
 	private static bool HasTransactionalAttribute(object? instance)
 	{
 		if (instance is null)
+		{
 			return false;
+		}
 
 		Type rootType = instance.GetType();
 		return _transactionalAttributeCache.GetOrAdd(
@@ -85,33 +93,51 @@ public sealed class TransactionalHandler<TCommand, TResult>(
 	private static bool HasTransactionalAttributeForTypeRecursive(Type type, ISet<Type> visited)
 	{
 		if (!visited.Add(type))
+		{
 			return false;
+		}
+
 		if (type.GetCustomAttribute<TransactionalHandlerAttribute>() != null)
+		{
 			return true;
+		}
 
 		const BindingFlags flags =
 			BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
+
 		foreach (FieldInfo field in type.GetFields(flags))
 		{
 			Type fieldType = field.FieldType;
+
 			if (fieldType.GetCustomAttribute<TransactionalHandlerAttribute>() != null)
+			{
 				return true;
+			}
+
 			if (HasTransactionalAttributeForTypeRecursive(fieldType, visited))
+			{
 				return true;
+			}
 		}
 
 		foreach (PropertyInfo prop in type.GetProperties(flags))
 		{
 			if (prop.GetIndexParameters().Length > 0)
+			{
 				continue;
+			}
 
 			Type propType = prop.PropertyType;
 
 			if (propType.GetCustomAttribute<TransactionalHandlerAttribute>() != null)
+			{
 				return true;
+			}
 
 			if (HasTransactionalAttributeForTypeRecursive(propType, visited))
+			{
 				return true;
+			}
 		}
 
 		return false;
@@ -120,7 +146,10 @@ public sealed class TransactionalHandler<TCommand, TResult>(
 	private async Task PublishEvents(TResult result, CancellationToken ct)
 	{
 		if (!Transporters.Any())
+		{
 			return;
+		}
+
 		foreach (IEventTransporter<TCommand, TResult> transporter in Transporters)
 		{
 			await transporter.Transport(result, ct);

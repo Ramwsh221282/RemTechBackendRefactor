@@ -7,8 +7,20 @@ namespace WebHostApplication.Modules.vehicles;
 
 [ApiController]
 [Route("api/characteristics")]
+/// <summary>
+/// Контроллер для работы с характеристиками транспортных средств.
+/// </summary>
 public sealed class CharacteristicsController
 {
+	/// <summary>
+	/// Получить характеристики транспортных средств по фильтрам.
+	/// </summary>
+	/// <param name="brandId">Идентификатор бренда</param>
+	/// <param name="categoryId">Идентификатор категории</param>
+	/// <param name="modelId">Идентификатор модели</param>
+	/// <param name="handler">Обработчик запроса</param>
+	/// <param name="ct">Токен отмены</param>
+	/// <returns>Характеристики транспортных средств</returns>
 	[HttpGet]
 	public async Task<Envelope> GetVehicleCharacteristics(
 		[FromQuery(Name = "brand")] Guid? brandId,

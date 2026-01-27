@@ -4,11 +4,22 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 
 namespace Vehicles.Infrastructure.Models.Queries.GetModels;
 
+/// <summary>
+/// Обработчик запроса получения моделей с кэшированием.
+/// </summary>
+/// <param name="cache">Кэш для хранения результатов запроса.</param>
+/// <param name="inner">Внутренний обработчик запроса.</param>
 public sealed class GetModelsCachedQueryHandler(
 	HybridCache cache,
 	IQueryHandler<GetModelsQuery, IEnumerable<ModelResponse>> inner
 ) : IQueryExecutorWithCache<GetModelsQuery, IEnumerable<ModelResponse>>
 {
+	/// <summary>
+	/// Выполняет запрос получения моделей с использованием кэша.
+	/// </summary>
+	/// <param name="query">Запрос на получение моделей.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения запроса - коллекция моделей.</returns>
 	public Task<IEnumerable<ModelResponse>> ExecuteWithCache(GetModelsQuery query, CancellationToken ct = default) =>
 		ReadFromCache(query, CreateCacheKey(query), ct);
 

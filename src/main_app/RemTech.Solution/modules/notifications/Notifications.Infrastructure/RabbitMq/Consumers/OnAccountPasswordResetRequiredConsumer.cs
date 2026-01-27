@@ -10,15 +10,21 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace Notifications.Infrastructure.RabbitMq.Consumers;
 
+/// <summary>
+/// Потребитель сообщений о необходимости сброса пароля учетной записи.
+/// </summary>
+/// <param name="rabbitMq">Источник подключения к RabbitMQ.</param>
+/// <param name="frontend">Настройки фронтенда.</param>
+/// <param name="services">Поставщик сервисов.</param>
 public sealed class OnAccountPasswordResetRequiredConsumer(
 	RabbitMqConnectionSource rabbitMq,
 	IOptions<FrontendOptions> frontend,
 	IServiceProvider services
 ) : IConsumer
 {
-	private const string Exchange = "accounts";
-	private const string RoutingKey = "reset-password";
-	private const string Queue = RoutingKey;
+	private const string EXCHANGE = "accounts";
+	private const string ROUTING_KEY = "reset-password";
+	private const string QUEUE = ROUTING_KEY;
 
 	private IChannel? _channel;
 	private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
@@ -61,9 +67,20 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
 			}
 		};
 
+	/// <summary>
+	/// Инициализирует канал для потребления сообщений.
+	/// </summary>
+	/// <param name="connection">Подключение к RabbitMQ.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию инициализации канала.</returns>
 	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
 
+	/// <summary>
+	/// Завершает работу потребителя.
+	/// </summary>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию завершения работы потребителя.</returns>
 	public async Task Shutdown(CancellationToken ct = default)
 	{
 		if (Channel.IsClosed)
@@ -71,11 +88,16 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
 		await Channel.CloseAsync(cancellationToken: ct);
 	}
 
+	/// <summary>
+	/// Начинает потребление сообщений.
+	/// </summary>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию начала потребления сообщений.</returns>
 	public Task StartConsuming(CancellationToken ct = default)
 	{
 		AsyncEventingBasicConsumer consumer = new(Channel);
 		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, autoAck: false, consumer, ct);
+		return Channel.BasicConsumeAsync(QUEUE, autoAck: false, consumer, ct);
 	}
 
 	private Task<Result<Unit>> HandleMessage(ResetPasswordRequiredMessage message, string confirmationUrl)

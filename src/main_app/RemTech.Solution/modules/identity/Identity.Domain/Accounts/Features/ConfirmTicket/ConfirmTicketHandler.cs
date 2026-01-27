@@ -50,7 +50,7 @@ public sealed class ConfirmTicketHandler(
 		if (confirmation.IsFailure)
 			return confirmation.Error;
 
-		if (ticket.Purpose == AccountTicketPurposes.EmailConfirmationRequired)
+		if (ticket.Purpose == AccountTicketPurposes.EMAIL_CONFIRMATION_REQUIRED)
 		{
 			Result<Unit> activation = account.Activate();
 			if (activation.IsFailure)

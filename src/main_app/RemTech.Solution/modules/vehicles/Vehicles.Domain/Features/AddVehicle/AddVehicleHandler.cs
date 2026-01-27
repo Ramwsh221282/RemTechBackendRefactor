@@ -12,9 +12,19 @@ using Vehicles.Domain.Vehicles.Contracts;
 
 namespace Vehicles.Domain.Features.AddVehicle;
 
+/// <summary>
+/// Обработчик команды добавления транспортного средства.
+/// </summary>
+/// <param name="persister">Персистер для сохранения данных.</param>
 [TransactionalHandler]
 public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<AddVehicleCommand, (Guid, int)>
 {
+	/// <summary>
+	/// Выполняет обработку команды добавления транспортного средства.
+	/// </summary>
+	/// <param name="command">Команда добавления транспортного средства.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды, содержащий идентификатор создателя и количество добавленных транспортных средств.</returns>
 	public async Task<Result<(Guid, int)>> Execute(AddVehicleCommand command, CancellationToken ct = default)
 	{
 		List<VehiclePersistInfo> vehiclesToSave = [];

@@ -28,10 +28,15 @@ public sealed class CacheInvalidatingHandler<TCommand, TResult>(
 	{
 		Result<TResult> result = await Inner.Execute(command, ct);
 		if (result.IsFailure)
+		{
 			return result.Error;
+		}
 
 		foreach (ICacheInvalidator<TCommand, TResult> invalidator in Invalidators)
+		{
 			await invalidator.InvalidateCache(command, result.Value, ct);
+		}
+
 		return result;
 	}
 }

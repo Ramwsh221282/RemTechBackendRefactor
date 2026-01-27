@@ -10,9 +10,15 @@ public readonly record struct ContainedItemId
 	/// <summary>
 	/// Инициализирует новый экземпляр <see cref="ContainedItemId"/> с новым уникальным значением.
 	/// </summary>
-	public ContainedItemId() => Value = Guid.NewGuid();
+	public ContainedItemId()
+	{
+		Value = Guid.NewGuid();
+	}
 
-	private ContainedItemId(Guid value) => Value = value;
+	private ContainedItemId(Guid value)
+	{
+		Value = value;
+	}
 
 	/// <summary>
 	/// Значение идентификатора содержащегося элемента.

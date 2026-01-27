@@ -14,8 +14,8 @@ namespace Identity.Infrastructure.RabbitMq.Producers;
 public sealed class NewAccountRegisteredProducer(RabbitMqProducer producer, Serilog.ILogger logger)
 	: IAccountOutboxMessagePublisher
 {
-	private const string Exchange = "identity";
-	private const string RoutingKey = "account.new";
+	private const string EXCHANGE = "identity";
+	private const string ROUTING_KEY = "account.new";
 
 	private RabbitMqProducer Producer { get; } = producer;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<NewAccountRegisteredProducer>();
@@ -26,7 +26,7 @@ public sealed class NewAccountRegisteredProducer(RabbitMqProducer producer, Seri
 	/// <param name="message">Сообщение для проверки.</param>
 	/// <returns>True, если сообщение может быть опубликовано, иначе false.</returns>
 	public bool CanPublish(IdentityOutboxMessage message) =>
-		message.Type == AccountOutboxMessageTypes.NewAccountCreated;
+		message.Type == AccountOutboxMessageTypes.NEW_ACCOUNT_CREATED;
 
 	/// <summary>
 	/// Публикует сообщение о регистрации нового аккаунта в RabbitMQ.
@@ -38,7 +38,7 @@ public sealed class NewAccountRegisteredProducer(RabbitMqProducer producer, Seri
 	{
 		NewAccountRegisteredOutboxMessagePayload payload = GetPayload(message);
 		RabbitMqPublishOptions options = new() { Persistent = true };
-		await Producer.PublishDirectAsync(payload, Exchange, RoutingKey, options, ct);
+		await Producer.PublishDirectAsync(payload, EXCHANGE, ROUTING_KEY, options, ct);
 		message.MarkSent();
 		Logger.Information("Published account registration message for {Email}", payload.Email);
 	}

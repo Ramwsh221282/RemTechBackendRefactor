@@ -54,7 +54,9 @@ public static class SmartEnumerationImplementations
 		foreach (TEnum member in families.Cast<TEnum>())
 		{
 			if (matcher(from, member))
+			{
 				return member;
+			}
 		}
 
 		return Result.Failure<TEnum>(Error.Application($"Unable to find family: {typeof(TEnum).FullName}."));

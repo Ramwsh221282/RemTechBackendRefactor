@@ -9,6 +9,12 @@ using RemTech.SharedKernel.NN;
 
 namespace Vehicles.Infrastructure.Locations.Queries;
 
+/// <summary>
+/// Обработчик запроса на получение локаций.
+/// </summary>
+/// <param name="session">Сессия для работы с базой данных PostgreSQL.</param>
+/// <param name="embeddings">Провайдер для работы с векторными представлениями.</param>
+/// <param name="logger">Логгер для записи логов.</param>
 public sealed class GetLocationsQueryHandler(
 	NpgSqlSession session,
 	EmbeddingsProvider embeddings,
@@ -17,6 +23,12 @@ public sealed class GetLocationsQueryHandler(
 {
 	private Serilog.ILogger Logger { get; } = logger.ForContext<GetLocationsQuery>();
 
+	/// <summary>
+	/// Обрабатывает запрос на получение локаций.
+	/// </summary>
+	/// <param name="query">Запрос на получение локаций.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Список ответов с информацией о локациях.</returns>
 	public async Task<IEnumerable<LocationsResponse>> Handle(GetLocationsQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string sql) = CreateSql(query);

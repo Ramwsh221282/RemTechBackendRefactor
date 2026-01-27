@@ -7,6 +7,14 @@ using RemTech.SharedKernel.Core.Handlers;
 namespace WebHostApplication.Injection;
 
 // TODO move to shared kernel core.
+
+/// <summary>
+/// Обработчик запросов с кэшированием для использования в тестах.
+/// </summary>
+/// <typeparam name="TQuery">Тип запроса.</typeparam>
+/// <typeparam name="TResult">Тип результата.</typeparam>
+/// <param name="cache">Кэш для хранения результатов.</param>
+/// <param name="inner">Внутренний обработчик запросов.</param>
 public sealed class TestCachingQueryHandler<TQuery, TResult>(HybridCache cache, IQueryHandler<TQuery, TResult> inner)
 	: ITestCachingQueryHandler<TQuery, TResult>
 	where TQuery : IQuery
@@ -16,6 +24,12 @@ public sealed class TestCachingQueryHandler<TQuery, TResult>(HybridCache cache, 
 	private HybridCache Cache { get; } = cache;
 	private IQueryHandler<TQuery, TResult> Inner { get; } = inner;
 
+	/// <summary>
+	/// Обрабатывает запрос с использованием кэширования.
+	/// </summary>
+	/// <param name="query">Запрос для обработки.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат обработки запроса.</returns>
 	public async Task<TResult> Handle(TQuery query, CancellationToken ct = default)
 	{
 		Stopwatch stopwatch = Stopwatch.StartNew();

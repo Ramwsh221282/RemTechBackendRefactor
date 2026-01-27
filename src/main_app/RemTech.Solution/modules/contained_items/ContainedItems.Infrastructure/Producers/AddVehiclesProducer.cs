@@ -12,8 +12,8 @@ namespace ContainedItems.Infrastructure.Producers;
 /// <param name="logger">Логгер для записи информации и ошибок.</param>
 public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogger logger) : IItemPublishingStrategy
 {
-	private const string Exchange = "vehicles";
-	private const string RoutingKey = "vehicles.add";
+	private const string EXCHANGE = "vehicles";
+	private const string ROUTING_KEY = "vehicles.add";
 	private RabbitMqProducer Producer { get; } = producer;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<AddVehiclesProducer>();
 
@@ -28,7 +28,7 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
 		Logger.Information("Publishing {Id}", item.Id);
 		AddVehicleMessagePayload message = CreatePayload(item);
 		RabbitMqPublishOptions options = new() { Persistent = true };
-		await Producer.PublishDirectAsync(message, Exchange, RoutingKey, options, ct: ct);
+		await Producer.PublishDirectAsync(message, EXCHANGE, ROUTING_KEY, options, ct: ct);
 		Logger.Information("Published {Id}", item.Id);
 	}
 
@@ -52,7 +52,7 @@ public sealed class AddVehiclesProducer(RabbitMqProducer producer, Serilog.ILogg
 		{
 			ContainedItem first = group.First();
 			AddVehicleMessage message = CreateMessage(first, group);
-			await Producer.PublishDirectAsync(message, Exchange, RoutingKey, options, ct: ct);
+			await Producer.PublishDirectAsync(message, EXCHANGE, ROUTING_KEY, options, ct: ct);
 			Logger.Information(
 				"Published {CreatorType} {CreatorDomain}",
 				first.CreatorInfo.Type,

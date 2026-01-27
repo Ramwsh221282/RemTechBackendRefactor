@@ -37,7 +37,7 @@ public sealed class AccountRegistrationTests(IntegrationalTestsFactory factory)
 		Result<Unit> result = await Services.InvokeAccountRegistration(command);
 		Assert.True(result.IsSuccess);
 		Result<AccountTicket> ticketResult = await Services.GetTicketOfPurpose(
-			AccountTicketPurposes.EmailConfirmationRequired
+			AccountTicketPurposes.EMAIL_CONFIRMATION_REQUIRED
 		);
 		Assert.True(ticketResult.IsSuccess);
 	}
@@ -65,11 +65,11 @@ public sealed class AccountRegistrationTests(IntegrationalTestsFactory factory)
 		Result<Unit> result = await Services.InvokeAccountRegistration(command);
 		Assert.True(result.IsSuccess);
 		IdentityOutboxMessage[] messages = await Services.GetOutboxMessagesOfType(
-			AccountOutboxMessageTypes.NewAccountCreated
+			AccountOutboxMessageTypes.NEW_ACCOUNT_CREATED
 		);
 		Assert.NotEmpty(messages);
 		IdentityOutboxMessage? message = messages.FirstOrDefault(m =>
-			m.Type == AccountOutboxMessageTypes.NewAccountCreated
+			m.Type == AccountOutboxMessageTypes.NEW_ACCOUNT_CREATED
 		);
 		Assert.NotNull(message);
 	}

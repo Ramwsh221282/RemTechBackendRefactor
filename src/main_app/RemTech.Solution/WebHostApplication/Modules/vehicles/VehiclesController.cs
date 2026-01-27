@@ -7,8 +7,30 @@ namespace WebHostApplication.Modules.vehicles;
 
 [ApiController]
 [Route("api/vehicles")]
+/// <summary>
+/// Контроллер для работы с транспортными средствами.
+/// </summary>
 public sealed class VehiclesController
 {
+	/// <summary>
+	/// Получить список транспортных средств с фильтрацией и пагинацией.
+	/// </summary>
+	/// <param name="brandId">Идентификатор бренда</param>
+	/// <param name="categoryId">Идентификатор категории</param>
+	/// <param name="regionId">Идентификатор региона</param>
+	/// <param name="modelId">Идентификатор модели</param>
+	/// <param name="isNds">Признак НДС</param>
+	/// <param name="minimalPrice">Минимальная цена</param>
+	/// <param name="maximalPrice">Максимальная цена</param>
+	/// <param name="sort">Поле сортировки</param>
+	/// <param name="sortFields">Поля сортировки</param>
+	/// <param name="page">Номер страницы</param>
+	/// <param name="pageSize">Размер страницы</param>
+	/// <param name="textSearch">Текстовый поиск</param>
+	/// <param name="characteristics">Характеристики</param>
+	/// <param name="handler">Обработчик запроса</param>
+	/// <param name="ct">Токен отмены</param>
+	/// <returns>Список транспортных средств</returns>
 	[HttpGet]
 	public async Task<Envelope> GetVehicles(
 		[FromQuery(Name = "brand")] Guid? brandId,

@@ -5,6 +5,9 @@ using RemTech.SharedKernel.Web;
 
 namespace WebHostApplication.ActionFilters.Common;
 
+/// <summary>
+/// Расширения для <see cref="HttpContext"/>.
+/// </summary>
 public static class HttpContextExtensions
 {
 	extension(HttpContext context)

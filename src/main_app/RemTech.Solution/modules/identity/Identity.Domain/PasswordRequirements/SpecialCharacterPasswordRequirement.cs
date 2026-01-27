@@ -11,7 +11,7 @@ public sealed class SpecialCharacterPasswordRequirement : IAccountPasswordRequir
 	/// <summary>
 	/// Проверяет, содержит ли пароль хотя бы один спецсимвол.
 	/// </summary>
-	private static readonly char[] SpecialChars = "!@#$%^&*()_+-=[]{};:'\",.<>/?\\|`~".ToCharArray();
+	private static readonly char[] _specialChars = "!@#$%^&*()_+-=[]{};:'\",.<>/?\\|`~".ToCharArray();
 
 	/// <summary>
 	/// Проверяет, содержит ли пароль хотя бы один спецсимвол.
@@ -20,7 +20,7 @@ public sealed class SpecialCharacterPasswordRequirement : IAccountPasswordRequir
 	/// <returns>Результат проверки требования к паролю.</returns>
 	public Result<Unit> Satisfies(AccountPassword password)
 	{
-		return !password.Value.Any(c => SpecialChars.Contains(c))
+		return !password.Value.Any(c => _specialChars.Contains(c))
 			? (Result<Unit>)Error.Validation("Пароль должен содержать хотя бы один спецсимвол.")
 			: (Result<Unit>)Unit.Value;
 	}

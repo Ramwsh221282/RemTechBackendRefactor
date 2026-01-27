@@ -7,10 +7,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.StopParserWork;
 
+/// <summary>
+/// Обработчик команды остановки работы парсера.
+/// </summary>
+/// <param name="repository">Репозиторий подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class StopParserWorkHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<StopParserWorkCommand, SubscribedParser>
 {
+	/// <summary>
+	/// Выполняет команду остановки работы парсера.
+	/// </summary>
+	/// <param name="command">Команда остановки работы парсера.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с обновленным парсером.</returns>
 	public async Task<Result<SubscribedParser>> Execute(StopParserWorkCommand command, CancellationToken ct = default)
 	{
 		Result<SubscribedParser> parser = await GetRequiredParser(command, ct);

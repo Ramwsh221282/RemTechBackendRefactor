@@ -13,5 +13,5 @@ public interface IAccountPasswordRequirement
 	/// </summary>
 	/// <param name="password">Пароль для проверки.</param>
 	/// <returns>Результат проверки требования к паролю.</returns>
-	public Result<Unit> Satisfies(AccountPassword password);
+	Result<Unit> Satisfies(AccountPassword password);
 }

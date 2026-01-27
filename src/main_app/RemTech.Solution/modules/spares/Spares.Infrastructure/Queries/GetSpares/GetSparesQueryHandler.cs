@@ -10,6 +10,12 @@ using RemTech.SharedKernel.NN;
 
 namespace Spares.Infrastructure.Queries.GetSpares;
 
+/// <summary>
+/// Обработчик запроса на получение запчастей.
+/// </summary>
+/// <param name="session">Сессия базы данных для выполнения запросов.</param>
+/// <param name="embeddings">Провайдер эмбеддингов для обработки текстового поиска.</param>
+/// <param name="textSearchConstants">Константы пороговых значений для текстового поиска.</param>
 public sealed class GetSparesQueryHandler(
 	NpgSqlSession session,
 	EmbeddingsProvider embeddings,
@@ -18,6 +24,12 @@ public sealed class GetSparesQueryHandler(
 {
 	private GetSparesThresholdConstants TextSearchConstants { get; } = textSearchConstants.Value;
 
+	/// <summary>
+	/// Обрабатывает запрос на получение запчастей.
+	/// </summary>
+	/// <param name="query">Запрос на получение запчастей.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Ответ с результатами запроса на получение запчастей.</returns>
 	public async Task<GetSparesQueryResponse> Handle(GetSparesQuery query, CancellationToken ct = default)
 	{
 		CommandDefinition command = CreateCommand(query);

@@ -17,9 +17,9 @@ public sealed class FakeOnUserAccountRegisteredConsumer(RabbitMqConnectionSource
 	/// Количество полученных сообщений.
 	/// </summary>
 	public static int Received;
-	private const string Exchange = "identity";
-	private const string Queue = "account.new";
-	private const string RoutingKey = "account.new";
+	private const string EXCHANGE = "identity";
+	private const string QUEUE = "account.new";
+	private const string ROUTING_KEY = "account.new";
 
 	private IChannel? _channel;
 	private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
@@ -41,7 +41,7 @@ public sealed class FakeOnUserAccountRegisteredConsumer(RabbitMqConnectionSource
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Инициализация канала для потребления сообщений.</returns>
 	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
 
 	/// <summary>
 	/// Начинает потребление сообщений.
@@ -52,7 +52,7 @@ public sealed class FakeOnUserAccountRegisteredConsumer(RabbitMqConnectionSource
 	{
 		AsyncEventingBasicConsumer consumer = new(Channel);
 		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, false, consumer, ct);
+		return Channel.BasicConsumeAsync(QUEUE, false, consumer, ct);
 	}
 
 	/// <summary>
