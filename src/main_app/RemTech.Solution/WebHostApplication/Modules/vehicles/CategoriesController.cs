@@ -6,11 +6,11 @@ using WebHostApplication.Common.Envelope;
 
 namespace WebHostApplication.Modules.vehicles;
 
-[ApiController]
-[Route("api/categories")]
 /// <summary>
 /// Контроллер для работы с категориями транспортных средств.
 /// </summary>
+[ApiController]
+[Route("api/categories")]
 public sealed class CategoriesController
 {
 	/// <summary>

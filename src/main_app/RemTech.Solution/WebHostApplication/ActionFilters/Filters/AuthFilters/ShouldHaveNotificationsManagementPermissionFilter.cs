@@ -2,13 +2,13 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using WebHostApplication.ActionFilters.Common;
 
-namespace WebHostApplication.ActionFilters.Filters;
+namespace WebHostApplication.ActionFilters.Filters.AuthFilters;
 
 /// <summary>
-/// Фильтр для проверки наличия разрешения на доступ к телеметрии.
+/// Фильтр для проверки наличия разрешения на управление уведомлениями.
 /// </summary>
 /// <param name="manager"> Менеджер для работы с JWT токенами. </param>
-public sealed class ShouldHaveAccessTelemetryPermissionFilter(IJwtTokenManager manager) : IAsyncActionFilter
+public sealed class ShouldHaveNotificationsManagementPermissionFilter(IJwtTokenManager manager) : IAsyncActionFilter
 {
 	/// <summary>
 	/// Вызывается перед выполнением действия контроллера.
@@ -18,7 +18,7 @@ public sealed class ShouldHaveAccessTelemetryPermissionFilter(IJwtTokenManager m
 	/// <returns> Задача, представляющая асинхронную операцию. </returns>
 	public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
 	{
-		if (!context.HttpContext.HasPermission("access.telemetry", manager))
+		if (!context.HttpContext.HasPermission("notifications.management", manager))
 		{
 			await context.HttpContext.WriteForbiddenResult();
 			return;

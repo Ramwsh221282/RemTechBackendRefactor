@@ -5,11 +5,11 @@ using Vehicles.Infrastructure.Vehicles.Queries.GetVehicleCharacteristics;
 
 namespace WebHostApplication.Modules.vehicles;
 
-[ApiController]
-[Route("api/characteristics")]
 /// <summary>
 /// Контроллер для работы с характеристиками транспортных средств.
 /// </summary>
+[ApiController]
+[Route("api/characteristics")]
 public sealed class CharacteristicsController
 {
 	/// <summary>

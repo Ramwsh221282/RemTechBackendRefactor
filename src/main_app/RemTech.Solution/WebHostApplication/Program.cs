@@ -3,6 +3,7 @@ using System.Text.Unicode;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Web;
 using SwaggerThemes;
+using WebHostApplication.ActionFilters.Filters.TelemetryFilters;
 using WebHostApplication.Injection;
 using WebHostApplication.Middlewares;
 
@@ -31,6 +32,9 @@ builder.Services.AddCors(options =>
 	);
 });
 
+// TODO: move to dependency injection method such as inject shared dependencies.
+builder.Services.AddSingleton<TelemetryRecordInvokerIdSearcher>();
+
 WebApplication app = builder.Build();
 app.Services.ApplyModuleMigrations();
 
@@ -38,9 +42,11 @@ app.UseHttpsRedirection();
 app.UseCors("frontend");
 app.MapControllers();
 app.UseSwagger();
+
 app.UseSwaggerUI(Theme.UniversalDark);
 
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<TelemetryRecordWritingMiddleware>();
 
 app.Run();
 

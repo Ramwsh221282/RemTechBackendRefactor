@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using WebHostApplication.ActionFilters.Common;
 
-namespace WebHostApplication.ActionFilters.Filters;
+namespace WebHostApplication.ActionFilters.Filters.AuthFilters;
 
 /// <summary>
 /// Фильтр для проверки наличия разрешения на управление парсерами.

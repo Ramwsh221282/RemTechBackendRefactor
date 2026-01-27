@@ -7,6 +7,7 @@ using RemTech.SharedKernel.Core.Handlers;
 namespace WebHostApplication.Injection;
 
 // TODO move to shared kernel core.
+// TODO: создать атрибут, который будет решать нужно ли облагать основной обработчик кеширующим декоратором (как в TransactionalHandlerDecorator). Поскольку не все запросы должны быть кешированными.
 
 /// <summary>
 /// Обработчик запросов с кэшированием для использования в тестах.

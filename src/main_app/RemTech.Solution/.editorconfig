@@ -8,9 +8,46 @@ use_tabs = false
 
 # C# files
 [*.cs]
+
+# Требовать проверки на null для аргументов публичных методов
+dotnet_diagnostic.CA1062.severity = error
+
+# Дереференс потенциально-nullable переменных (C# nullable reference types!)
+dotnet_diagnostic.CS8602.severity = error
+
+# Имя файла должно совпадать с именем основного типа
+dotnet_diagnostic.SA1649.severity = none # File name must match first type name
+
+# Стиль usings — внутри/вне namespace (лучше file-scoped, если C# 10+)
+dotnet_diagnostic.SA1200.severity = warning       # Using directives must be placed correctly
+dotnet_diagnostic.SA1210.severity = warning       # Using directives must be ordered alphabetically by namespace
+
+# Размещение членов — порядок: поля, свойства, методы, события, конструкторы и пр.
+dotnet_diagnostic.SA1201.severity = warning       # Elements must appear in the correct order
+dotnet_diagnostic.SA1202.severity = warning       # Elements must be ordered by access
+dotnet_diagnostic.SA1204.severity = warning       # Static elements must appear before instance elements
+dotnet_diagnostic.SA1206.severity = warning       # Declaration keywords must follow order: static, readonly, etc.
+
+# Не использовать вложенные классы без необходимости
+dotnet_diagnostic.RCS1093.severity = warning      # Remove nested class
+
+# Не должно быть нескольких partial-типов в одном файле
+dotnet_diagnostic.SA1401.severity = warning       # Fields must be private (structural rule in StyleCop)
+dotnet_diagnostic.SA1502.severity = warning       # Element must not be on a single line
+
+# Порядок модификаторов (public, static, readonly ...)
+dotnet_diagnostic.SA1137.severity = warning
+
+# Обязательная пустая строка между разными секциями
+dotnet_diagnostic.SA1516.severity = warning
+
+# Прочее по структуре:
+dotnet_diagnostic.SA1401.severity = warning         # Fields must be private
+dotnet_diagnostic.SA1501.severity = warning         # Statement must not be on a single line
 # Использование discard для ненужных результатов
 dotnet_diagnostic.RCS1158.severity = suggestion
 dotnet_diagnostic.RCS1165.severity = none # чтобы сравнивать типы у generic
+dotnet_diagnostic.RCS0063.severity = none
 # Использовать expression-bodied members, где возможно (методы, свойства)
 dotnet_diagnostic.RCS1090.severity = suggestion
 # Использовать null-coalescing assignment (??=)
@@ -42,13 +79,17 @@ dotnet_diagnostic.RCS1239.severity = suggestion
 dotnet_diagnostic.RCS1153.severity = suggestion # Use string interpolation
 dotnet_diagnostic.IDE0075.severity = suggestion # Use string interpolation
 dotnet_diagnostic.IDE0090.severity = suggestion # Use string interpolation
+dotnet_diagnostic.IDE0052.severity = none # Use string interpolation
+dotnet_diagnostic.IDE0059.severity = suggestion # Use string interpolation
 dotnet_diagnostic.SA1119.severity = suggestion # Use string interpolation
+dotnet_diagnostic.SA1629.severity = none # Use string interpolation
 dotnet_diagnostic.IDE0047.severity = suggestion # Use string interpolation
 dotnet_diagnostic.IDE1104.severity = suggestion # Use string interpolation
 dotnet_diagnostic.IDE0270.severity = suggestion # Use string interpolation
 dotnet_diagnostic.IDE0305.severity = suggestion # Use string interpolation
 dotnet_diagnostic.IDE0370.severity = suggestion # Use string interpolation
 dotnet_diagnostic.RCS1163.severity = suggestion # Use nameof operator
+dotnet_diagnostic.RCS1205.severity = suggestion # Use nameof operator
 dotnet_diagnostic.RCS1196.severity = suggestion # Use nameof operator
 dotnet_diagnostic.RCS0053.severity = suggestion # Use nameof operator
 dotnet_diagnostic.RCS1017.severity = suggestion # Use auto-property, where possible
@@ -487,8 +528,8 @@ dotnet_diagnostic.SA1507.severity = none
 dotnet_diagnostic.IDE0002.severity = suggestion
 dotnet_diagnostic.IDE0005.severity = error
 dotnet_diagnostic.RCS1213.severity = suggestion
-dotnet_diagnostic.RCS1036.severity = suggestion
-dotnet_diagnostic.RCS1037.severity = suggestion
+dotnet_diagnostic.RCS1036.severity = none
+dotnet_diagnostic.RCS1037.severity = none
 dotnet_diagnostic.RCS1212.severity = suggestion
 dotnet_diagnostic.RCS1016.severity = suggestion
 dotnet_diagnostic.RCS1206.severity = suggestion

@@ -284,7 +284,7 @@ public sealed class ParsersController : ControllerBase
 	/// <returns>Обертка с результатом операции.</returns>
 	[VerifyToken]
 	[ParserManagementPermission]
-	[HttpPost("{id:guid}/disabled")]
+	[HttpPatch("{id:guid}/disabled")]
 	public async Task<Envelope> DisableParser(
 		[FromRoute(Name = "id")] Guid id,
 		[FromServices] ICommandHandler<DisableParserCommand, SubscribedParser> handler,
