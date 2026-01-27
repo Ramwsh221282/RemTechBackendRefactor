@@ -5,6 +5,7 @@ using RemTech.SharedKernel.Infrastructure.Redis;
 using Serilog;
 using StackExchange.Redis;
 using Telemetry.Core.ActionRecords;
+using Telemetry.Core.ActionRecords.ValueObjects;
 
 namespace Telemetry.Infrastructure;
 
@@ -33,7 +34,8 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	}
 
 	private ILogger Logger { get; }
-	private bool IsProcessing { get; set; }
+
+	// private bool IsProcessing { get; set; }
 	private IDatabase? _database { get; set; }
 	private CachingOptions Options { get; }
 
@@ -110,16 +112,18 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 		_runningPeriodicallyWritingTask.Wait();
 	}
 
+	// TODO: FIX ISSUE WITH JSON DESERIALIZATION.
 	private static ActionRecord[] RedisValuesToActionRecords(RedisValue[] values) =>
 		Array.ConvertAll(values, RedisValueToActionRecord);
 
-	private static RedisValue ActionRecordToRedisValue(ActionRecord record) => JsonSerializer.Serialize(record);
+	private static RedisValue ActionRecordToRedisValue(ActionRecord record) =>
+		JsonSerializer.Serialize(RedisStoredActionRecord.FromActionRecord(record));
 
 	private static RedisValue[] ActionRecordsToRedisValues(IEnumerable<ActionRecord> records) =>
 		[.. records.Select(ActionRecordToRedisValue)];
 
 	private static ActionRecord RedisValueToActionRecord(RedisValue value) =>
-		JsonSerializer.Deserialize<ActionRecord>(value.ToString())!;
+		JsonSerializer.Deserialize<RedisStoredActionRecord>(value.ToString())!.ToActionRecord();
 
 	private static ActionRecord[] MakeRecordsSnapshot(ConcurrentQueue<ActionRecord> recordsQueue)
 	{
@@ -142,7 +146,8 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 		RedisValue[] recordsToPublish = new RedisValue[snapshot.Length];
 		for (int index = 0; index < snapshot.Length; index++)
 		{
-			recordsToPublish[index] = JsonSerializer.Serialize(snapshot[index]);
+			RedisStoredActionRecord toStore = RedisStoredActionRecord.FromActionRecord(snapshot[index]);
+			recordsToPublish[index] = JsonSerializer.Serialize(toStore);
 		}
 
 		logger.Information("Writing {Count} telemetry action records to Redis.", snapshot.Length);
@@ -150,7 +155,7 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 		try
 		{
 			await database.ListLeftPushAsync(ACTION_RECORDS_ARRAY_KEY, recordsToPublish, CommandFlags.FireAndForget);
-			logger.Information("Successfully wrote {Count} telemetry action records to Redis.", snapshot.Length);
+			logger.Information("Successfully saved {Count} telemetry action records to Redis.", snapshot.Length);
 		}
 		catch (Exception ex)
 		{
@@ -160,19 +165,12 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 
 	private async Task RunPeriodicProcessingAsync(CancellationToken ct)
 	{
-		PeriodicTimer timer = new(TimeSpan.FromSeconds(60));
+		PeriodicTimer timer = new(TimeSpan.FromSeconds(5));
 		while (await timer.WaitForNextTickAsync(ct))
 		{
-			if (IsProcessing)
-			{
-				continue;
-			}
-
-			IsProcessing = true;
 			ActionRecord[] snapshot = MakeRecordsSnapshot(_recordsQueue);
 			IDatabase database = await ReadDatabase();
 			await ProcessPendingRecords(database, snapshot, Logger);
-			IsProcessing = false;
 		}
 	}
 
@@ -183,5 +181,44 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	{
 		ConnectionMultiplexer multiplexer = await ReadMultiplexer();
 		return _database ??= multiplexer.GetDatabase();
+	}
+
+	private sealed class RedisStoredActionRecord
+	{
+		public required Guid Id { get; set; }
+		public required Guid? InvokerId { get; set; }
+		public required string? Error { get; set; }
+		public required string Severity { get; set; }
+		public required string Name { get; set; }
+		public DateTime OccuredDateTime { get; set; }
+		public string? PayloadJson { get; set; }
+
+		public static RedisStoredActionRecord FromActionRecord(ActionRecord record)
+		{
+			return new RedisStoredActionRecord
+			{
+				Id = record.Id.Value,
+				InvokerId = record.InvokerId?.Value,
+				Error = record.Error?.Value,
+				Severity = record.Severity.Value,
+				Name = record.Name.Value,
+				OccuredDateTime = record.OccuredDateTime.Value,
+				PayloadJson = record.PayloadJson?.Value,
+			};
+		}
+
+		public ActionRecord ToActionRecord()
+		{
+			return new ActionRecord
+			{
+				Id = ActionRecordId.Create(Id).Value,
+				InvokerId = InvokerId.HasValue ? ActionRecordInvokerId.Create(InvokerId.Value).Value : null,
+				Error = ActionRecordError.FromNullableString(Error),
+				Severity = ActionRecordSeverity.Create(Severity).Value,
+				Name = ActionRecordName.Create(Name),
+				OccuredDateTime = ActionRecordOccuredDateTime.Create(OccuredDateTime).Value,
+				PayloadJson = PayloadJson != null ? ActionRecordPayloadJson.Create(PayloadJson).Value : null,
+			};
+		}
 	}
 }

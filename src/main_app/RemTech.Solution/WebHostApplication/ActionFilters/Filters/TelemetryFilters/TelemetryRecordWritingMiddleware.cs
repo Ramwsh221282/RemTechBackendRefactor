@@ -1,21 +1,25 @@
 using System.Text;
 using System.Text.Json;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Web;
 using Telemetry.Core.ActionRecords;
 using Telemetry.Core.ActionRecords.ValueObjects;
+using Telemetry.Infrastructure;
 using WebHostApplication.ActionFilters.Common;
 
 namespace WebHostApplication.ActionFilters.Filters.TelemetryFilters;
+
+// TODO: вынести в папку с middleware, и удалить текущую папку с текущим неймпспейсом.
 
 /// <summary>
 /// Middleware для записи действий телеметрии.
 /// </summary>
 /// <param name="idSearcher">Искатель идентификатора пользователя.</param>
+/// <param name="actionRecords">Хранилище записей действий телеметрии.</param>
 /// <param name="logger">Логгер для записи информации.</param>
 /// <param name="next">Делегат для следующего действия в конвейере.</param>
 public sealed class TelemetryRecordWritingMiddleware(
 	TelemetryRecordInvokerIdSearcher idSearcher,
+	RedisTelemetryActionsStorage actionRecords,
 	Serilog.ILogger logger,
 	RequestDelegate next
 )
@@ -50,8 +54,8 @@ public sealed class TelemetryRecordWritingMiddleware(
 			error = ActionRecordError.FromNullableString(errorText);
 		}
 
-		ActionRecord action = ActionRecord.CreateNew(invokerId, name, payload, severity, error?.Value);
-		PrintActionRecordInformation(action);
+		ActionRecord action = ActionRecord.CreateNew(invokerId, name, payload, severity, error);
+		actionRecords.WriteRecord(action);
 	}
 
 	private static void ResetBufferToBeginning(Stream stream) => stream.Seek(0, SeekOrigin.Begin);
@@ -99,27 +103,6 @@ public sealed class TelemetryRecordWritingMiddleware(
 			>= 500 => ActionRecordSeverity.Warning(),
 			_ => ActionRecordSeverity.Info(),
 		};
-	}
-
-	private void PrintActionRecordInformation(ActionRecord action)
-	{
-		Logger.Information(
-			""" 
-			Создана запись действия телеметрии:
-			Идентификатор вызывающего объекта: {InvokerId}
-			Имя действия: {Name}
-			Уровень серьезности: {Severity}
-			Данные действия (JSON): {PayloadJson}
-			Дата и время возникновения действия: {OccuredDateTime}
-			Ошибка: {Error}
-			""",
-			action.InvokerId is null ? "Аноним" : action.InvokerId.Value.Value,
-			action.Name.Value,
-			action.Severity.Value,
-			action.PayloadJson is null ? "Отсутствуют" : action.PayloadJson.Value,
-			action.OccuredDateTime.Value,
-			action.Error is null ? "Отсутствует" : action.Error.Value
-		);
 	}
 
 	// TODO: system errors do not have envelope, so give to payload infromation about system error.
