@@ -40,14 +40,16 @@ public sealed class TelemetryRecordWritingMiddleware(
 		Optional<Guid> invokerId = idSearcher.TryReadInvokerIdToken(context);
 		ActionRecordSeverity severity = await InvokeAndReturnSeverity(context);
 		ActionRecordError? error = null;
+
+		ResetBufferToBeginning(buffer);
+		await CopyClonedStreamToResponse(buffer, bodyClone, context, ct);
+
 		if (severity.Equals(ActionRecordSeverity.Error()))
 		{
 			string errorText = await TryReadBusinessLogicErrorMessage(buffer, ct);
 			error = ActionRecordError.FromNullableString(errorText);
 		}
 
-		ResetBufferToBeginning(buffer);
-		await CopyClonedStreamToResponse(buffer, bodyClone, context, ct);
 		ActionRecord action = ActionRecord.CreateNew(invokerId, name, payload, severity, error?.Value);
 		PrintActionRecordInformation(action);
 	}
@@ -78,11 +80,12 @@ public sealed class TelemetryRecordWritingMiddleware(
 	)
 	{
 		ResetBufferToBeginning(bufferFromResponse);
-		using StreamReader reader = new(bufferFromResponse, Encoding.UTF8);
+		using StreamReader reader = new(bufferFromResponse, Encoding.UTF8, leaveOpen: true);
 		string message = await reader.ReadToEndAsync(ct);
 		ResetBufferToBeginning(bufferFromResponse);
 		using JsonDocument document = JsonDocument.Parse(message);
-		JsonElement messageField = document.RootElement.GetProperty("message");
+		if (!document.RootElement.TryGetProperty("message", out JsonElement messageField))
+			return string.Empty;
 		return (messageField.ValueKind == JsonValueKind.Null) ? string.Empty : messageField.GetString() ?? string.Empty;
 	}
 
