@@ -4,10 +4,22 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace RemTech.SharedKernel.Core.PrimitivesModule.SmartEnumerations;
 
+/// <summary>
+/// Реализации умных перечислений.
+/// </summary>
 public static class SmartEnumerationImplementations
 {
 	private static readonly ConcurrentDictionary<Type, object[]> _families = new();
 
+	/// <summary>
+	/// Проверяет существование элемента умного перечисления.
+	/// </summary>
+	/// <typeparam name="TFrom">Тип исходного значения.</typeparam>
+	/// <typeparam name="TEnum">Тип умного перечисления.</typeparam>
+	/// <param name="from">Исходное значение для поиска.</param>
+	/// <param name="matchFn">Функция сопоставления.</param>
+	/// <param name="result">Найденный элемент умного перечисления.</param>
+	/// <returns>True, если элемент найден; иначе false.</returns>
 	public static bool Exists<TFrom, TEnum>(TFrom from, Func<TFrom, TEnum, bool> matchFn, out TEnum result)
 		where TEnum : class
 	{
@@ -63,6 +75,10 @@ public static class SmartEnumerationImplementations
 	}
 }
 
+/// <summary>
+/// Атрибут для обозначения класса как декларатора умного перечисления.
+/// </summary>
+/// <typeparam name="TEnum">Тип умного перечисления.</typeparam>
 [AttributeUsage(AttributeTargets.Class)]
 public sealed class SmartEnumerationAttribute<TEnum> : Attribute
 	where TEnum : class;

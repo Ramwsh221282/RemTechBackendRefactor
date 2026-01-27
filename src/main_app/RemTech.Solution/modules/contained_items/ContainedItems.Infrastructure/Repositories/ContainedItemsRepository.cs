@@ -7,8 +7,18 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace ContainedItems.Infrastructure.Repositories;
 
+/// <summary>
+/// Репозиторий для работы с содержащимися элементами.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
 public sealed class ContainedItemsRepository(NpgSqlSession session) : IContainedItemsRepository
 {
+	/// <summary>
+	/// Выполняет запрос для получения содержащихся элементов.
+	/// </summary>
+	/// <param name="query">Параметры запроса для фильтрации содержащихся элементов.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Массив содержащихся элементов, соответствующих параметрам запроса.</returns>
 	public Task<ContainedItem[]> Query(ContainedItemsQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(query);
@@ -34,6 +44,12 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
 		return session.QueryMultipleUsingReader(command, MapFromReader);
 	}
 
+	/// <summary>
+	/// Добавляет множество содержащихся элементов в репозиторий.
+	/// </summary>
+	/// <param name="items">Коллекция содержащихся элементов для добавления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Количество добавленных элементов.</returns>
 	public Task<int> AddMany(IEnumerable<ContainedItem> items, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -47,6 +63,12 @@ public sealed class ContainedItemsRepository(NpgSqlSession session) : IContained
 		return session.ExecuteBulkWithAffectedCount(sql, parameters);
 	}
 
+	/// <summary>
+	/// Обновляет множество содержащихся элементов в репозитории.
+	/// </summary>
+	/// <param name="items">Коллекция содержащихся элементов для обновления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию обновления.</returns>
 	public Task UpdateMany(IEnumerable<ContainedItem> items, CancellationToken ct = default)
 	{
 		const string sql = """

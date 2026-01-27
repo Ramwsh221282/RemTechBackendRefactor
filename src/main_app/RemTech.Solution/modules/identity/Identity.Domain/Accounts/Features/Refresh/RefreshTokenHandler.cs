@@ -9,6 +9,13 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace Identity.Domain.Accounts.Features.Refresh;
 
+/// <summary>
+/// Обработчик команды для обновления токенов пользователя.
+/// </summary>
+/// <param name="accessTokens">Репозиторий токенов доступа.</param>
+/// <param name="refreshTokens">Репозиторий токенов обновления.</param>
+/// <param name="accounts">Репозиторий аккаунтов.</param>
+/// <param name="tokenManager">Менеджер JWT токенов.</param>
 [TransactionalHandler]
 public sealed class RefreshTokenHandler(
 	IAccessTokensRepository accessTokens,
@@ -17,6 +24,12 @@ public sealed class RefreshTokenHandler(
 	IJwtTokenManager tokenManager
 ) : ICommandHandler<RefreshTokenCommand, AuthenticationResult>
 {
+	/// <summary>
+	/// Выполняет обновление токенов пользователя по команде.
+	/// </summary>
+	/// <param name="command">Команда обновления токенов пользователя.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды.</returns>
 	public async Task<Result<AuthenticationResult>> Execute(RefreshTokenCommand command, CancellationToken ct = default)
 	{
 		Result<RefreshToken> refreshToken = await refreshTokens.Find(command.RefreshToken, withLock: true, ct);

@@ -7,6 +7,12 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace Identity.Domain.Accounts.Features.ConfirmTicket;
 
+/// <summary>
+/// Обработчик команды подтверждения тикета пользователя.
+/// </summary>
+/// <param name="accounts">Репозиторий аккаунтов.</param>
+/// <param name="accountTickets">Репозиторий тикетов аккаунтов.</param>
+/// <param name="unitOfWork">Единица работы для аккаунтов.</param>
 [TransactionalHandler]
 public sealed class ConfirmTicketHandler(
 	IAccountsRepository accounts,
@@ -14,6 +20,12 @@ public sealed class ConfirmTicketHandler(
 	IAccountsModuleUnitOfWork unitOfWork
 ) : ICommandHandler<ConfirmTicketCommand, Account>
 {
+	/// <summary>
+	/// Выполняет подтверждение тикета пользователя по команде.
+	/// </summary>
+	/// <param name="command">Команда подтверждения тикета пользователя.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды.</returns>
 	public async Task<Result<Account>> Execute(ConfirmTicketCommand command, CancellationToken ct = default)
 	{
 		Result<Account> account = await GetRequiredAccount(command, ct);

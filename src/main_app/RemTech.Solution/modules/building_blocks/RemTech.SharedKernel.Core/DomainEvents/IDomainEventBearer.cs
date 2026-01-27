@@ -1,6 +1,12 @@
 ﻿namespace RemTech.SharedKernel.Core.DomainEvents;
 
+/// <summary>
+/// Интерфейс носителя доменных событий.
+/// </summary>
 public interface IDomainEventBearer
 {
-    public IReadOnlyList<IDomainEvent> Events { get; }
+	/// <summary>
+	/// Коллекция доменных событий.
+	/// </summary>
+	IReadOnlyList<IDomainEvent> Events { get; }
 }

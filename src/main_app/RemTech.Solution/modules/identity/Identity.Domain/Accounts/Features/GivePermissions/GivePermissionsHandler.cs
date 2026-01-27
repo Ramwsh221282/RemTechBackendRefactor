@@ -7,6 +7,12 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace Identity.Domain.Accounts.Features.GivePermissions;
 
+/// <summary>
+/// Обработчик команды для выдачи разрешений пользователю.
+/// </summary>
+/// <param name="accounts">Репозиторий аккаунтов.</param>
+/// <param name="permissions">Репозиторий разрешений.</param>
+/// <param name="unitOfWork">Единица работы для аккаунтов.</param>
 [TransactionalHandler]
 public sealed class GivePermissionsHandler(
 	IAccountsRepository accounts,
@@ -18,6 +24,12 @@ public sealed class GivePermissionsHandler(
 	private IPermissionsRepository Permissions { get; } = permissions;
 	private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
 
+	/// <summary>
+	/// Выполняет выдачу разрешений пользователю по команде.
+	/// </summary>
+	/// <param name="command">Команда выдачи разрешений пользователю.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды.</returns>
 	public async Task<Result<Account>> Execute(GivePermissionsCommand command, CancellationToken ct = default)
 	{
 		Result<Account> account = await GetRequiredAccount(command, ct);

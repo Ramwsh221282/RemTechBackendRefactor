@@ -3,10 +3,18 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Domain.PasswordRequirements;
 
+/// <summary>
+/// Требование к паролю: наличие хотя бы одной строчной буквы.
+/// </summary>
 public sealed class LowercasePasswordRequirement : IAccountPasswordRequirement
 {
-    public Result<Unit> Satisfies(AccountPassword password) =>
-        !password.Value.Any(char.IsLower)
-            ? Error.Validation("Пароль должен содержать хотя бы одну строчную букву.")
-            : Unit.Value;
+	/// <summary>
+	/// Проверяет, содержит ли пароль хотя бы одну строчную букву.
+	/// </summary>
+	/// <param name="password">Пароль для проверки.</param>
+	/// <returns>Результат проверки требования к паролю.</returns>
+	public Result<Unit> Satisfies(AccountPassword password) =>
+		!password.Value.Any(char.IsLower)
+			? Error.Validation("Пароль должен содержать хотя бы одну строчную букву.")
+			: Unit.Value;
 }

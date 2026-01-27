@@ -18,6 +18,9 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace Identity.Tests;
 
+/// <summary>
+/// Расширения для тестирования модуля Identity.
+/// </summary>
 public static class IdentityModuleTestExtensions
 {
 	extension(IServiceProvider services)

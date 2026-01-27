@@ -7,13 +7,33 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace ContainedItems.Infrastructure.Queries.GetMainPageLastAddedItems;
 
+/// <summary>
+/// Обработчик запроса для получения последних добавленных элементов на главную страницу.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
 public sealed class GetMainPageLastAddedItemsQueryHandler(NpgSqlSession session)
 	: IQueryHandler<GetMainPageLastAddedItemsQuery, MainPageLastAddedItemsResponse>
 {
+	/// <summary>
+	/// Создает элемент содержащегося элемента как запчасть.
+	/// </summary>
+	/// <param name="spare">Данные запчасти.</param>
+	/// <returns>Элемент содержащегося элемента, представляющий запчасть.</returns>
 	public static MainPageLastAddedItem CreateAsSpare(SpareData spare) => new(spare, null);
 
+	/// <summary>
+	/// Создает элемент содержащегося элемента как технику.
+	/// </summary>
+	/// <param name="vehicle">Данные техники.</param>
+	/// <returns>Элемент содержащегося элемента, представляющий технику.</returns>
 	public static MainPageLastAddedItem CreateAsVehicle(VehicleData vehicle) => new(null, vehicle);
 
+	/// <summary>
+	/// Обрабатывает запрос для получения последних добавленных элементов на главную страницу.
+	/// </summary>
+	/// <param name="query">Запрос для получения последних добавленных элементов на главную страницу.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Ответ с последними добавленными элементами на главную страницу.</returns>
 	public async Task<MainPageLastAddedItemsResponse> Handle(
 		GetMainPageLastAddedItemsQuery query,
 		CancellationToken ct = default

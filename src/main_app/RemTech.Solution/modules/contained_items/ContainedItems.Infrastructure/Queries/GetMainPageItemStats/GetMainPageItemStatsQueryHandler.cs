@@ -7,9 +7,19 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace ContainedItems.Infrastructure.Queries.GetMainPageItemStats;
 
+/// <summary>
+/// Обработчик запроса для получения статистики основных страниц.
+/// </summary>
+/// <param name="session">Сессия для работы с базой данных PostgreSQL.</param>
 public sealed class GetMainPageItemStatsQueryHandler(NpgSqlSession session)
 	: IQueryHandler<GetMainPageItemStatsQuery, MainPageItemStatsResponse>
 {
+	/// <summary>
+	/// Обрабатывает запрос для получения статистики основных страниц.
+	/// </summary>
+	/// <param name="query">Запрос для получения статистики основных страниц.</param>
+	/// <param name="ct">Токен отмены для прерывания операции.</param>
+	/// <returns>Ответ с данными статистики основных страниц.</returns>
 	public async Task<MainPageItemStatsResponse> Handle(GetMainPageItemStatsQuery query, CancellationToken ct = default)
 	{
 		const string sql = """

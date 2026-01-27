@@ -4,6 +4,11 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace Identity.Infrastructure.Accounts.Commands.ResetPassword;
 
+/// <summary>
+/// Транспортировщик событий для команды сброса пароля.
+/// </summary>
+/// <param name="producer">Производитель сообщений RabbitMQ.</param>
+/// <param name="logger">Логгер для записи информации.</param>
 public sealed class ResetPasswordEventTransporter(RabbitMqProducer producer, Serilog.ILogger logger)
 	: IEventTransporter<ResetPasswordCommand, ResetPasswordResult>
 {
@@ -11,6 +16,12 @@ public sealed class ResetPasswordEventTransporter(RabbitMqProducer producer, Ser
 	private Serilog.ILogger Logger { get; } = logger.ForContext<ResetPasswordCommand>();
 	private RabbitMqProducer Producer { get; } = producer;
 
+	/// <summary>
+	/// Транспортирует событие сброса пароля.
+	/// </summary>
+	/// <param name="result">Результат выполнения команды сброса пароля.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	public async Task Transport(ResetPasswordResult result, CancellationToken ct = default)
 	{
 		ResetPasswordRequiredMessage message = MapToMessage(result);

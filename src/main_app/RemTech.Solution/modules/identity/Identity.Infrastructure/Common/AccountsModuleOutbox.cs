@@ -6,6 +6,11 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Common;
 
+/// <summary>
+/// Реализация шаблона Outbox для модуля аккаунтов.
+/// </summary>
+/// <param name="session">Сессия для работы с базой данных.</param>
+/// <param name="unitOfWork">Единица работы для модуля аккаунтов.</param>
 public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleUnitOfWork unitOfWork)
 	: IAccountModuleOutbox
 {
@@ -13,6 +18,12 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleU
 
 	private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
 
+	/// <summary>
+	/// Добавляет сообщение в таблицу outbox модуля аккаунтов.
+	/// </summary>
+	/// <param name="message">Сообщение для добавления в outbox.</param>
+	/// <param name="ct">Токен отмены для операции добавления.</param>
+	/// <returns>Задача, представляющая асинхронную операцию добавления сообщения.</returns>
 	public Task Add(IdentityOutboxMessage message, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -37,6 +48,12 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleU
 		return Session.Execute(command);
 	}
 
+	/// <summary>
+	/// Получает сообщения из таблицы outbox модуля аккаунтов по спецификации.
+	/// </summary>
+	/// <param name="spec">Спецификация для фильтрации сообщений.</param>
+	/// <param name="ct">Токен отмены для операции получения сообщений.</param>
+	/// <returns>Массив сообщений, соответствующих спецификации.</returns>
 	public async Task<IdentityOutboxMessage[]> GetMany(OutboxMessageSpecification spec, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(spec);

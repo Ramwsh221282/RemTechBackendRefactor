@@ -3,18 +3,30 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Domain.Accounts.Models;
 
+/// <summary>
+/// Электронная почта аккаунта.
+/// </summary>
 public sealed record AccountEmail
 {
 	private static readonly Regex EmailRegex = new(
 		@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
 		RegexOptions.Compiled
 	);
+
 	private const int MaxEmailLength = 256;
 
 	private AccountEmail(string value) => Value = value;
 
+	/// <summary>
+	/// Значение электронной почты аккаунта.
+	/// </summary>
 	public string Value { get; }
 
+	/// <summary>
+	/// Создает экземпляр <see cref="AccountEmail"/> с валидацией.
+	/// </summary>
+	/// <param name="value">Значение электронной почты для создания.</param>
+	/// <returns>Результат создания экземпляра <see cref="AccountEmail"/>.</returns>
 	public static Result<AccountEmail> Create(string value)
 	{
 		if (string.IsNullOrWhiteSpace(value))

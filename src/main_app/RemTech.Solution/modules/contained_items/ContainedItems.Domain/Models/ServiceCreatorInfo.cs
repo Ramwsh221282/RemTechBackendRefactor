@@ -2,6 +2,9 @@
 
 namespace ContainedItems.Domain.Models;
 
+/// <summary>
+/// Информация о создателе сервиса.
+/// </summary>
 public sealed record ServiceCreatorInfo
 {
 	private const int MaxLength = 128;
@@ -13,10 +16,28 @@ public sealed record ServiceCreatorInfo
 		Domain = domain;
 	}
 
+	/// <summary>
+	/// Идентификатор создателя сервиса.
+	/// </summary>
 	public Guid CreatorId { get; }
+
+	/// <summary>
+	/// Тип сервиса.
+	/// </summary>
 	public string Type { get; }
+
+	/// <summary>
+	/// Домен сервиса.
+	/// </summary>
 	public string Domain { get; }
 
+	/// <summary>
+	/// Создает информацию о создателе сервиса.
+	/// </summary>
+	/// <param name="creatorId">Идентификатор создателя сервиса.</param>
+	/// <param name="type">Тип сервиса.</param>
+	/// <param name="domain">Домен сервиса.</param>
+	/// <returns>Результат создания информации о создателе сервиса.</returns>
 	public static Result<ServiceCreatorInfo> Create(Guid creatorId, string type, string domain)
 	{
 		if (creatorId == Guid.Empty)

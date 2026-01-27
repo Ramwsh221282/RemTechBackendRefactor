@@ -2,6 +2,9 @@
 
 namespace RemTech.SharedKernel.Configurations;
 
+/// <summary>
+/// Расширения для регистрации EmbeddingsProviderOptions в контейнере служб.
+/// </summary>
 public static class EmbeddingsProviderExtensions
 {
 	extension(IServiceCollection services)

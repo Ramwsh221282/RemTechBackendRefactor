@@ -1,5 +1,8 @@
 namespace RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
+/// <summary>
+/// Расширения для работы с уникальными последовательностями.
+/// </summary>
 public static class UniqueSequenceExtensions
 {
 	extension<T>(IEnumerable<T> items)

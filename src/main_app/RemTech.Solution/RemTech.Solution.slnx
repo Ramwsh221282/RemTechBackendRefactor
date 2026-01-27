@@ -49,6 +49,7 @@
   <Folder Name="/modules/telemetry/">
     <Project Path="modules/telemetry/Telemetry.Core/Telemetry.Core.csproj"/>
     <Project Path="modules/telemetry/Telemetry.Infrastructure/Telemetry.Infrastructure.csproj"/>
+    <Project Path="modules/telemetry/Telemetry.WebApi/Telemetry.WebApi.csproj"/>
   </Folder>
   <Project Path="WebHostApplication/WebHostApplication.csproj"/>
 </Solution>

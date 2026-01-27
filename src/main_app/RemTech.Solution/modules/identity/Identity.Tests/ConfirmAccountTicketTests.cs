@@ -5,8 +5,15 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Tests;
 
+/// <summary>
+/// Тесты для подтверждения тикета аккаунта.
+/// </summary>
 public sealed class ConfirmAccountTicketTests : IClassFixture<IntegrationalTestsFactory>
 {
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="ConfirmAccountTicketTests"/>.
+	/// </summary>
+	/// <param name="factory">Фабрика для создания интеграционных тестов.</param>
 	public ConfirmAccountTicketTests(IntegrationalTestsFactory factory)
 	{
 		Services = factory.Services;

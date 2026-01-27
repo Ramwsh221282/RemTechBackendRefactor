@@ -5,6 +5,11 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace ContainedItems.Infrastructure.Producers;
 
+/// <summary>
+/// Производитель для добавления запчастей.
+/// </summary>
+/// <param name="producer">Производитель RabbitMQ для отправки сообщений.</param>
+/// <param name="logger">Логгер для записи информации и ошибок.</param>
 public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger logger) : IItemPublishingStrategy
 {
 	private const string Exchange = "spares";
@@ -12,6 +17,12 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 	private RabbitMqProducer Producer { get; } = producer;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<AddSparesProducer>();
 
+	/// <summary>
+	/// Публикует содержащиеся элементы.
+	/// </summary>
+	/// <param name="items">Список содержащихся элементов для публикации.</param>
+	/// <param name="ct">Токен отмены для прерывания операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию публикации.</returns>
 	public async Task Publish(IEnumerable<ContainedItem> items, CancellationToken ct = default)
 	{
 		ContainedItem[] itemArray = [.. items];
@@ -35,8 +46,20 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 		}
 	}
 
+	/// <summary>
+	/// Публикует содержащийся элемент.
+	/// </summary>
+	/// <param name="item">Содержащийся элемент для публикации.</param>
+	/// <param name="ct">Токен отмены для прерывания операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию публикации.</returns>
 	public Task Publish(ContainedItem item, CancellationToken ct = default) => Publish([item], ct);
 
+	/// <summary>
+	/// Публикует множество содержащихся элементов.
+	/// </summary>
+	/// <param name="items">Список содержащихся элементов для публикации.</param>
+	/// <param name="ct">Токен отмены для прерывания операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию публикации.</returns>
 	public Task PublishMany(IEnumerable<ContainedItem> items, CancellationToken ct = default) => Publish(items, ct);
 
 	private static AddSparesMessage CreateMessage(ContainedItem first, IEnumerable<ContainedItem> items) =>

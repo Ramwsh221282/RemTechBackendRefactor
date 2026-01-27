@@ -4,8 +4,19 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
+/// <summary>
+/// Расширения для валидации команд.
+/// </summary>
 public static class CommandValidationExtensions
 {
+	/// <summary>
+	/// Проверяет, что значение является допустимым согласно предоставленной функции валидации.
+	/// </summary>
+	/// <typeparam name="T">Тип объекта, содержащего свойство для валидации.</typeparam>
+	/// <typeparam name="TProperty">Тип свойства для валидации.</typeparam>
+	/// <param name="builder">Построитель правил валидации.</param>
+	/// <param name="validation">Функция валидации, возвращающая результат.</param>
+	/// <returns>Опции построителя правил с условиями.</returns>
 	public static IRuleBuilderOptionsConditions<T, TProperty> MustBeValid<T, TProperty>(
 		this IRuleBuilderInitial<T, TProperty> builder,
 		Func<TProperty, Result> validation
@@ -22,6 +33,14 @@ public static class CommandValidationExtensions
 			}
 		);
 
+	/// <summary>
+	/// Проверяет, что каждый элемент в коллекции соответствует всем предоставленным функциям валидации.
+	/// </summary>
+	/// <typeparam name="T">Тип объекта, содержащего коллекцию для валидации.</typeparam>
+	/// <typeparam name="TProperty">Тип элемента коллекции для валидации.</typeparam>
+	/// <param name="builder">Построитель правил валидации.</param>
+	/// <param name="validations">Массив функций валидации для каждого элемента коллекции.</param>
+	/// <returns>Опции построителя правил с условиями.</returns>
 	public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> EachMustFollow<T, TProperty>(
 		this IRuleBuilderInitial<T, IEnumerable<TProperty>> builder,
 		Func<TProperty, Result>[] validations
@@ -51,6 +70,14 @@ public static class CommandValidationExtensions
 			}
 		);
 
+	/// <summary>
+	/// Проверяет, что все элементы в коллекции являются допустимыми согласно предоставленной функции валидации.
+	/// </summary>
+	/// <typeparam name="T">Тип объекта, содержащего коллекцию для валидации.</typeparam>
+	/// <typeparam name="TProperty">Тип элемента коллекции для валидации.</typeparam>
+	/// <param name="builder">Построитель правил валидации.</param>
+	/// <param name="validation">Функция валидации для каждого элемента коллекции.</param>
+	/// <returns>Опции построителя правил с условиями.</returns>
 	public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> AllMustBeValid<T, TProperty>(
 		this IRuleBuilderInitial<T, IEnumerable<TProperty>> builder,
 		Func<TProperty, Result> validation

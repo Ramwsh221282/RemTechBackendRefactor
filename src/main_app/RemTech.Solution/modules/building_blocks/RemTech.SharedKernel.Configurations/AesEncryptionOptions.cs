@@ -2,16 +2,30 @@
 
 namespace RemTech.SharedKernel.Configurations;
 
+/// <summary>
+/// Конфигурация для AES шифрования.
+/// </summary>
 public class AesEncryptionOptions
 {
+	/// <summary>
+	/// Значение ключа шифрования в открытом виде.
+	/// </summary>
 	public string PlainKey { get; set; } = string.Empty;
 
+	/// <summary>
+	/// Получить ключ шифрования в виде массива байт длиной 16.
+	/// </summary>
+	/// <returns>Массив байт длиной 16, представляющий ключ шифрования.</returns>
 	public byte[] KeyAsBytes()
 	{
 		ValidatePlainKey();
 		return StringAs16LengthByteArray(PlainKey);
 	}
 
+	/// <summary>
+	/// Получить вектор инициализации (IV) в виде массива байт длиной 16.
+	/// </summary>
+	/// <returns>Массив байт длиной 16, представляющий вектор инициализации (IV).</returns>
 	public byte[] IV4AsBytes()
 	{
 		ValidatePlainKey();

@@ -3,12 +3,24 @@ using Microsoft.ML.OnnxRuntime.Tensors;
 
 namespace RemTech.SharedKernel.NN;
 
+/// <summary>
+/// Данные для встраивания, полученные из токенизатора.
+/// </summary>
 internal readonly ref struct EmbeddingData
 {
+	/// <summary>
+	/// Длина токенов.
+	/// </summary>
 	public int Length => Tokens.Length;
 	private ReadOnlySpan<int> Tokens { get; init; }
 	private ReadOnlySpan<int> Indices { get; init; }
 
+	/// <summary>
+	/// Создает экземпляр EmbeddingData из входных данных токенизатора и сессии токенизатора.
+	/// </summary>
+	/// <param name="tokenizerInputs">Входные данные токенизатора.</param>
+	/// <param name="tokenizerSession">Сессия токенизатора.</param>
+	/// <returns>Экземпляр EmbeddingData.</returns>
 	public static EmbeddingData Create(NamedOnnxValue[] tokenizerInputs, InferenceSession tokenizerSession)
 	{
 		using IDisposableReadOnlyCollection<DisposableNamedOnnxValue>? tokenizerResults = tokenizerSession.Run(
@@ -22,6 +34,11 @@ internal readonly ref struct EmbeddingData
 		return new EmbeddingData { Tokens = tokens, Indices = indices };
 	}
 
+	/// <summary>
+	/// Копирует отсортированные токены в указанный диапазон назначения.
+	/// </summary>
+	/// <param name="destination">Диапазон назначения для копирования токенов.</param>
+	/// <exception cref="ArgumentException">Выбрасывается, если размер диапазона назначения меньше длины токенов.</exception>
 	public void CopySortedTokensTo(Span<int> destination)
 	{
 		if (destination.Length < Tokens.Length)
@@ -41,6 +58,10 @@ internal readonly ref struct EmbeddingData
 			destination[i] = Tokens[pos[i]];
 	}
 
+	/// <summary>
+	/// Возвращает отсортированные пары токенов и индексов.
+	/// </summary>
+	/// <returns>Отсортированные пары токенов и индексов.</returns>
 	public ReadOnlySpan<int> TokenPairs()
 	{
 		(int token, int index)[] pairs = new (int token, int index)[Tokens.Length];

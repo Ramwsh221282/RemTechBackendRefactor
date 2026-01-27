@@ -3,7 +3,15 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Domain.PasswordRequirements;
 
+/// <summary>
+/// Интерфейс требования к паролю аккаунта.
+/// </summary>
 public interface IAccountPasswordRequirement
 {
-    public Result<Unit> Satisfies(AccountPassword password);
+	/// <summary>
+	/// Проверяет, удовлетворяет ли пароль требованию.
+	/// </summary>
+	/// <param name="password">Пароль для проверки.</param>
+	/// <returns>Результат проверки требования к паролю.</returns>
+	public Result<Unit> Satisfies(AccountPassword password);
 }

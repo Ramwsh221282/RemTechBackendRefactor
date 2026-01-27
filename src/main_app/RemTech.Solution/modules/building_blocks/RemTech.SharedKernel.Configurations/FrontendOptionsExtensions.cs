@@ -2,6 +2,9 @@
 
 namespace RemTech.SharedKernel.Configurations;
 
+/// <summary>
+/// Расширения для регистрации FrontendOptions в контейнере служб.
+/// </summary>
 public static class FrontendOptionsExtensions
 {
 	extension(IServiceCollection services)

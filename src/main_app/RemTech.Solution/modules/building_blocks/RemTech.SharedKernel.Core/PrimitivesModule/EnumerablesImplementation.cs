@@ -2,6 +2,9 @@
 
 namespace RemTech.SharedKernel.Core.PrimitivesModule;
 
+/// <summary>
+/// Реализации для перечисляемых типов.
+/// </summary>
 public static class EnumerablesImplementation
 {
 	extension<T>(IEnumerable<T> enumerable)

@@ -5,63 +5,64 @@ using Microsoft.Extensions.Options;
 
 namespace RemTech.SharedKernel.Infrastructure.Redis;
 
+/// <summary>
+/// Расширения для регистрации гибридного кэша в контейнере служб.
+/// </summary>
 public static class CacheInjection
 {
-    extension(IServiceCollection services)
-    {
-        public void RegisterHybridCache(IConfigurationManager configuration)
-        {
-            CachingOptions? cacheOptions = configuration.GetSection(nameof(CachingOptions)).Get<CachingOptions>();
-            if (cacheOptions is null)
-            {
-                throw new InvalidOperationException(
-                    "CachingOptions was not registered. Please register it using before calling AddHybridCache()."
-                );
-            }
+	extension(IServiceCollection services)
+	{
+		public void RegisterHybridCache(IConfigurationManager configuration)
+		{
+			CachingOptions? cacheOptions =
+				configuration.GetSection(nameof(CachingOptions)).Get<CachingOptions>()
+				?? throw new InvalidOperationException(
+					"CachingOptions was not registered. Please register it using before calling AddHybridCache()."
+				);
 
-            cacheOptions.Validate();
-            RegisterCachingOptions(services, cacheOptions);
-        }
+			cacheOptions.Validate();
+			RegisterCachingOptions(services, cacheOptions);
+		}
 
-        public void RegisterHybridCache()
-        {
-            CachingOptions? cacheOptions = GetCachingOptions(services);
-            if (cacheOptions is null)
-            {
-                throw new InvalidOperationException(
-                    "CachingOptions was not registered. Please register it using before calling AddHybridCache()."
-                );
-            }
+		public void RegisterHybridCache()
+		{
+			CachingOptions? cacheOptions = GetCachingOptions(services);
+			if (cacheOptions is null)
+			{
+				throw new InvalidOperationException(
+					"CachingOptions was not registered. Please register it using before calling AddHybridCache()."
+				);
+			}
 
-            RegisterCachingOptions(services, cacheOptions);
-        }
-    }
+			RegisterCachingOptions(services, cacheOptions);
+		}
+	}
 
-    private static CachingOptions? GetCachingOptions(IServiceCollection services)
-    {
-        ServiceDescriptor? descriptor = services.FirstOrDefault(s =>
-            s.ImplementationInstance != null
-            && s.ImplementationInstance.GetType() == typeof(OptionsWrapper<CachingOptions>)
-        );
+	private static CachingOptions? GetCachingOptions(IServiceCollection services)
+	{
+		ServiceDescriptor? descriptor = services.FirstOrDefault(s =>
+			s.ImplementationInstance != null
+			&& s.ImplementationInstance.GetType() == typeof(OptionsWrapper<CachingOptions>)
+		);
 
-        return descriptor is null ? null : ((OptionsWrapper<CachingOptions>)descriptor.ImplementationInstance!).Value;
-    }
+		return descriptor is null ? null : ((OptionsWrapper<CachingOptions>)descriptor.ImplementationInstance!).Value;
+	}
 
-    private static void RegisterCachingOptions(IServiceCollection services, CachingOptions cacheOptions)
-    {
-        cacheOptions.Validate();
-        services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = cacheOptions.RedisConnectionString;
-        });
+	private static void RegisterCachingOptions(IServiceCollection services, CachingOptions cacheOptions)
+	{
+		cacheOptions.Validate();
+		services.AddStackExchangeRedisCache(options =>
+		{
+			options.Configuration = cacheOptions.RedisConnectionString;
+		});
 
-        services.AddHybridCache(options =>
-        {
-            options.DefaultEntryOptions = new HybridCacheEntryOptions()
-            {
-                LocalCacheExpiration = TimeSpan.FromMinutes(cacheOptions.LocalCacheExpirationMinutes),
-                Expiration = TimeSpan.FromMinutes(cacheOptions.CacheExpirationMinutes),
-            };
-        });
-    }
+		services.AddHybridCache(options =>
+		{
+			options.DefaultEntryOptions = new HybridCacheEntryOptions()
+			{
+				LocalCacheExpiration = TimeSpan.FromMinutes(cacheOptions.LocalCacheExpirationMinutes),
+				Expiration = TimeSpan.FromMinutes(cacheOptions.CacheExpirationMinutes),
+			};
+		});
+	}
 }

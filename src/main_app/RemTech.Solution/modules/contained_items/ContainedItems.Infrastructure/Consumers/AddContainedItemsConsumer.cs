@@ -9,6 +9,12 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace ContainedItems.Infrastructure.Consumers;
 
+/// <summary>
+/// Потребитель для добавления содержащихся элементов.
+/// </summary>
+/// <param name="rabbitMq">Источник подключения к RabbitMQ.</param>
+/// <param name="logger">Логгер для записи информации и ошибок.</param>
+/// <param name="serviceProvider">Поставщик сервисов для разрешения зависимостей.</param>
 public sealed class AddContainedItemsConsumer(
 	RabbitMqConnectionSource rabbitMq,
 	Serilog.ILogger logger,
@@ -60,9 +66,20 @@ public sealed class AddContainedItemsConsumer(
 			}
 		};
 
+	/// <summary>
+	/// Инициализирует канал для потребления сообщений.
+	/// </summary>
+	/// <param name="connection">Подключение к RabbitMQ.</param>
+	/// <param name="ct">Токен отмены для прерывания операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию инициализации канала.</returns>
 	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
 		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
 
+	/// <summary>
+	/// Запускает потребление сообщений.
+	/// </summary>
+	/// <param name="ct">Токен отмены для прерывания операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию запуска потребления сообщений.</returns>
 	public Task StartConsuming(CancellationToken ct = default)
 	{
 		AsyncEventingBasicConsumer consumer = new(Channel);
@@ -70,6 +87,11 @@ public sealed class AddContainedItemsConsumer(
 		return Channel.BasicConsumeAsync(Queue, autoAck: false, consumer: consumer, cancellationToken: ct);
 	}
 
+	/// <summary>
+	/// Останавливает потребление сообщений и закрывает канал.
+	/// </summary>
+	/// <param name="ct">Токен отмены для прерывания операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию остановки потребления сообщений и закрытия канала.</returns>
 	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(cancellationToken: ct);
 
 	private sealed class AddContainedItemsMessage

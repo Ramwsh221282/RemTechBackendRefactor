@@ -2,6 +2,9 @@
 
 namespace RemTech.SharedKernel.Configurations;
 
+/// <summary>
+/// Расширения для регистрации AesEncryptionOptions в контейнере служб.
+/// </summary>
 public static class AesEncryptionOptionsExtensions
 {
 	extension(IServiceCollection services)

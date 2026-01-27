@@ -8,25 +8,24 @@ using Telemetry.Core.ActionRecords;
 
 namespace Telemetry.Infrastructure;
 
-// TODO: реализовать отправку логов сюда
-// TODO: реализовать чтение логово отсюда, чтобы записывать в бд.
-
 /// <summary>
 /// Запись действий телеметрии в Redis.
 /// </summary>
-public sealed class RedisTelemetryActionsWriter : IDisposable, IAsyncDisposable
+public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 {
+	private const string ACTION_RECORDS_ARRAY_KEY = "Telemetry:ActionRecords";
 	private readonly ConcurrentQueue<ActionRecord> _recordsQueue = [];
 	private ConnectionMultiplexer? _multiplexer { get; set; }
 	private readonly CancellationTokenSource _timerCts = new();
 	private readonly Task _runningPeriodicallyWritingTask;
+	private readonly SemaphoreSlim _semaphore = new(1, 1);
 
 	/// <summary>
-	/// Создает новый экземпляр <see cref="RedisTelemetryActionsWriter"/>.
+	/// Создает новый экземпляр <see cref="RedisTelemetryActionsStorage"/>.
 	/// </summary>
 	/// <param name="options">Опции кэширования.</param>
 	/// <param name="logger">Логгер для записи логов.</param>
-	public RedisTelemetryActionsWriter(IOptions<CachingOptions> options, ILogger logger)
+	public RedisTelemetryActionsStorage(IOptions<CachingOptions> options, ILogger logger)
 	{
 		Logger = logger;
 		Options = options.Value;
@@ -43,6 +42,54 @@ public sealed class RedisTelemetryActionsWriter : IDisposable, IAsyncDisposable
 	/// </summary>
 	/// <param name="record">Запись действия для записи.</param>
 	public void WriteRecord(ActionRecord record) => _recordsQueue.Enqueue(record);
+
+	/// <summary>
+	/// Читает ожидающие записи действий в транзакции.
+	/// </summary>
+	/// <param name="token">Токен отмены операции.</param>
+	/// <returns>Транзакция с ожидающими записями действий.</returns>
+	public async Task<TelemetryActionRecordsTransaction> ReadPendingRecordsTransaction(CancellationToken token)
+	{
+		await _semaphore.WaitAsync(cancellationToken: token);
+		IDatabase database = await ReadDatabase();
+		long length = await database.ListLengthAsync(ACTION_RECORDS_ARRAY_KEY);
+		RedisValue[] records = await database.ListRangeAsync(ACTION_RECORDS_ARRAY_KEY, 0, length - 1);
+		ITransaction transaction = database.CreateTransaction();
+		ActionRecord[] result = RedisValuesToActionRecords(records);
+		_semaphore.Release();
+		return new(transaction, result);
+	}
+
+	/// <summary>
+	/// Удаляет записи действий из Redis в транзакции.
+	/// </summary>
+	/// <param name="transaction">Транзакция с записями действий для удаления.</param>
+	/// <returns>Завершение задачи удаления записей действий.</returns>
+	public async Task RemoveRecords(TelemetryActionRecordsTransaction transaction)
+	{
+		await _semaphore.WaitAsync();
+		(ITransaction tran, IReadOnlyList<ActionRecord> records) = transaction;
+		foreach (ActionRecord record in records)
+		{
+			await tran.ListRemoveAsync(ACTION_RECORDS_ARRAY_KEY, ActionRecordToRedisValue(record), 1);
+		}
+
+		try
+		{
+			await tran.ExecuteAsync();
+			Logger.Information("Successfully removed {Count} telemetry action records from Redis.", records.Count);
+		}
+		catch (Exception ex)
+		{
+			Logger.Error(ex, "Failed to remove telemetry action records from Redis.");
+			foreach (ActionRecord record in records)
+			{
+				WriteRecord(record);
+			}
+		}
+
+		_semaphore.Release();
+	}
 
 	/// <summary>
 	/// Асинхронно освобождает ресурсы.
@@ -62,6 +109,17 @@ public sealed class RedisTelemetryActionsWriter : IDisposable, IAsyncDisposable
 		_timerCts.Cancel();
 		_runningPeriodicallyWritingTask.Wait();
 	}
+
+	private static ActionRecord[] RedisValuesToActionRecords(RedisValue[] values) =>
+		Array.ConvertAll(values, RedisValueToActionRecord);
+
+	private static RedisValue ActionRecordToRedisValue(ActionRecord record) => JsonSerializer.Serialize(record);
+
+	private static RedisValue[] ActionRecordsToRedisValues(IEnumerable<ActionRecord> records) =>
+		[.. records.Select(ActionRecordToRedisValue)];
+
+	private static ActionRecord RedisValueToActionRecord(RedisValue value) =>
+		JsonSerializer.Deserialize<ActionRecord>(value.ToString())!;
 
 	private static ActionRecord[] MakeRecordsSnapshot(ConcurrentQueue<ActionRecord> recordsQueue)
 	{
@@ -89,7 +147,7 @@ public sealed class RedisTelemetryActionsWriter : IDisposable, IAsyncDisposable
 
 		try
 		{
-			await database.ListLeftPushAsync("Telemetry:ActionRecords", recordsToPublish, CommandFlags.FireAndForget);
+			await database.ListLeftPushAsync(ACTION_RECORDS_ARRAY_KEY, recordsToPublish, CommandFlags.FireAndForget);
 			logger.Information("Successfully wrote {Count} telemetry action records to Redis.", snapshot.Length);
 		}
 		catch (Exception ex)

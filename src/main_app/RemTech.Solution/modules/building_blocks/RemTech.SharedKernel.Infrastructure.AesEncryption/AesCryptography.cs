@@ -4,10 +4,23 @@ using RemTech.SharedKernel.Configurations;
 
 namespace RemTech.SharedKernel.Infrastructure.AesEncryption;
 
+/// <summary>
+/// Криптография AES.
+/// </summary>
+/// <param name="Options">Настройки для AES шифрования.</param>
 public sealed record AesCryptography(IOptions<AesEncryptionOptions> Options)
 {
+	/// <summary>
+	/// Длина байтов для IV.
+	/// </summary>
 	private const int BytesLength = 16;
 
+	/// <summary>
+	/// Шифрует текст с использованием AES.
+	/// </summary>
+	/// <param name="text">Текст для шифрования.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Зашифрованный текст в формате Base64.</returns>
 	public async Task<string> EncryptText(string text, CancellationToken ct)
 	{
 		using Aes aes = Aes.Create();
@@ -29,6 +42,12 @@ public sealed record AesCryptography(IOptions<AesEncryptionOptions> Options)
 		return Convert.ToBase64String(bytesAfterEncryption);
 	}
 
+	/// <summary>
+	/// Дешифрует текст с использованием AES.
+	/// </summary>
+	/// <param name="text">Зашифрованный текст в формате Base64.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Дешифрованный текст.</returns>
 	public async Task<string> DecryptText(string text, CancellationToken ct)
 	{
 		byte[] base64Text = Convert.FromBase64String(text);

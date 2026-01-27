@@ -5,8 +5,15 @@ using RemTech.SharedKernel.Configurations;
 
 namespace RemTech.SharedKernel.NN;
 
+/// <summary>
+/// Провайдер для генерации встраиваний с использованием моделей ONNX.
+/// </summary>
+/// <param name="options">Опции для настройки провайдера встраиваний.</param>
 public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> options)
 {
+	/// <summary>
+	/// Финализатор для очистки ресурсов.
+	/// </summary>
 	~EmbeddingsProvider()
 	{
 		Dispose(false);
@@ -19,6 +26,11 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 	private InferenceSession Model => ModelSessionLazy.Value;
 	private bool Disposed { get; set; }
 
+	/// <summary>
+	///  Генерирует встраивание для заданного текста.
+	/// </summary>
+	/// <param name="text">Входной текст для генерации встраивания.</param>
+	/// <returns>Встраивание в виде массива чисел с плавающей точкой.</returns>
 	public ReadOnlyMemory<float> Generate(string text)
 	{
 		DenseTensor<string> stringTensor = new([1]);
@@ -48,12 +60,22 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 		return GetEmbeddings(modelInputs, Model);
 	}
 
+	/// <summary>
+	/// Освобождает ресурсы, используемые провайдером встраиваний.
+	/// </summary>
 	public void Dispose()
 	{
 		Dispose(true);
 		// GC.SuppressFinalize(this);
 	}
 
+	/// <summary>
+	/// Генерирует пакет встраиваний для заданного списка текстов.
+	/// </summary>
+	/// <param name="texts">Список входных текстов для генерации встраиваний.</param>
+	/// <returns>Список встраиваний, соответствующих каждому входному тексту.</returns>
+	/// <exception cref="NotSupportedException">Если не 2D выход [batch, hiddenDim].</exception>
+	/// <exception cref="InvalidOperationException">Если размер батча выхода модели не совпадает с размером входного батча.</exception>
 	public IReadOnlyList<ReadOnlyMemory<float>> GenerateBatch(IReadOnlyList<string> texts)
 	{
 		ArgumentNullException.ThrowIfNull(texts);

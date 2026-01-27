@@ -3,6 +3,9 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace RemTech.SharedKernel.Web;
 
+/// <summary>
+/// Расширения для преобразования результатов в оболочки HTTP-ответов.
+/// </summary>
 public static class EnvelopedResultsExtensions
 {
 	extension(Result result)
@@ -20,6 +23,12 @@ public static class EnvelopedResultsExtensions
 
 		private string? ResolveMessage() => result.IsFailure ? result.Error.Message : null;
 
+		/// <summary>
+		/// Определяет HTTP статус код на основе типа ошибки.
+		/// </summary>
+		/// <param name="error">Ошибка для определения соответствующего HTTP статус кода.</param>
+		/// <returns>Соответствующий HTTP статус код.</returns>
+		/// <exception cref="InvalidOperationException">Если ошибка не может быть сопоставлена с HTTP статус кодом.</exception>
 		private static HttpStatusCode ResolveStatusCodeByError(Error error) =>
 			error switch
 			{
@@ -86,6 +95,13 @@ public static class EnvelopedResultsExtensions
 		}
 	}
 
+	/// <summary>
+	/// Преобразует результат в оболочку HTTP-ответа.
+	/// </summary>
+	/// <typeparam name="T">Тип результата.</typeparam>
+	/// <param name="result">Результат для преобразования.</param>
+	/// <param name="onSuccess">Функция для обработки успешного результата.</param>
+	/// <returns>Оболочка HTTP-ответа.</returns>
 	public static Envelope AsEnvelope<T>(this Result<T> result, Func<T> onSuccess)
 	{
 		T? body = result.IsFailure ? default : onSuccess();
@@ -94,6 +110,12 @@ public static class EnvelopedResultsExtensions
 		return new Envelope(code, body, message);
 	}
 
+	/// <summary>
+	/// Преобразует результат в оболочку HTTP-ответа.
+	/// </summary>
+	/// <typeparam name="T">Тип результата.</typeparam>
+	/// <param name="result">Результат для преобразования.</param>
+	/// <returns>Оболочка HTTP-ответа.</returns>
 	public static Envelope AsEnvelope<T>(T result)
 	{
 		object? body = result;
@@ -102,6 +124,14 @@ public static class EnvelopedResultsExtensions
 		return new Envelope(code, body, message);
 	}
 
+	/// <summary>
+	/// Преобразует результат в оболочку HTTP-ответа с использованием функции преобразования.
+	/// </summary>
+	/// <typeparam name="T">Тип исходного результата.</typeparam>
+	/// <typeparam name="U">Тип результата после преобразования.</typeparam>
+	/// <param name="result">Исходный результат для преобразования.</param>
+	/// <param name="converter">Функция преобразования результата.</param>
+	/// <returns>Оболочка HTTP-ответа.</returns>
 	public static Envelope AsEnvelope<T, U>(T result, Func<T, U> converter)
 	{
 		U body = converter(result);

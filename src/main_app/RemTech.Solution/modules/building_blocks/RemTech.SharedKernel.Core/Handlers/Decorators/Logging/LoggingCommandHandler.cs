@@ -3,6 +3,13 @@ using Serilog;
 
 namespace RemTech.SharedKernel.Core.Handlers.Decorators.Logging;
 
+/// <summary>
+/// Декоратор логирующего обработчика команд.
+/// </summary>
+/// <typeparam name="TCommand">Команда.</typeparam>
+/// <typeparam name="TResult">Результат.</typeparam>
+/// <param name="logger">Логгер.</param>
+/// <param name="handler">Обработчик команды.</param>
 public sealed class LoggingCommandHandler<TCommand, TResult>(ILogger logger, ICommandHandler<TCommand, TResult> handler)
 	: ILoggingCommandHandler<TCommand, TResult>
 	where TCommand : ICommand
@@ -10,6 +17,12 @@ public sealed class LoggingCommandHandler<TCommand, TResult>(ILogger logger, ICo
 	private ILogger Logger { get; } = logger.ForContext<TCommand>();
 	private string CommandName { get; } = typeof(TCommand).Name;
 
+	/// <summary>
+	/// Выполняет команду с логированием входа и выхода.
+	/// </summary>
+	/// <param name="command">Команда для выполнения.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат выполнения команды.</returns>
 	public async Task<Result<TResult>> Execute(TCommand command, CancellationToken ct = default)
 	{
 		LogCommandEntered(command);

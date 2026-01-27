@@ -6,6 +6,15 @@ using RemTech.SharedKernel.Core.InfrastructureContracts;
 
 namespace RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
+/// <summary>
+/// Декоратор транзакционного обработчика команд.
+/// </summary>
+/// <typeparam name="TCommand">Команда.</typeparam>
+/// <typeparam name="TResult">Результат.</typeparam>
+/// <param name="logger">Логгер.</param>
+/// <param name="transporters">Транспортёры событий.</param>
+/// <param name="inner">Внутренний обработчик команды.</param>
+/// <param name="transactionSource">Источник транзакций.</param>
 public sealed class TransactionalHandler<TCommand, TResult>(
 	Serilog.ILogger logger,
 	IEnumerable<IEventTransporter<TCommand, TResult>> transporters,
@@ -20,6 +29,12 @@ public sealed class TransactionalHandler<TCommand, TResult>(
 	private ITransactionSource TransactionSource { get; } = transactionSource;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<TransactionalHandler<TCommand, TResult>>();
 
+	/// <summary>
+	/// Выполняет команду в транзакции, если применимо.
+	/// </summary>
+	/// <param name="command">Команда для выполнения.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат выполнения команды.</returns>
 	public async Task<Result<TResult>> Execute(TCommand command, CancellationToken ct = default)
 	{
 		if (!HasTransactionalAttribute(Inner))

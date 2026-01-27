@@ -7,10 +7,21 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace Identity.Domain.Accounts.Features.ResetPassword;
 
+/// <summary>
+/// Обработчик команды для сброса пароля пользователя.
+/// </summary>
+/// <param name="accounts">Репозиторий аккаунтов.</param>
+/// <param name="tickets">Репозиторий тикетов аккаунтов.</param>
 [TransactionalHandler]
 public sealed class ResetPasswordCommandHandler(IAccountsRepository accounts, IAccountTicketsRepository tickets)
 	: ICommandHandler<ResetPasswordCommand, ResetPasswordResult>
 {
+	/// <summary>
+	/// Выполняет сброс пароля пользователя по команде.
+	/// </summary>
+	/// <param name="command">Команда сброса пароля.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды.</returns>
 	public async Task<Result<ResetPasswordResult>> Execute(ResetPasswordCommand command, CancellationToken ct = default)
 	{
 		Result<Account> account = await ResolveAccount(command, ct);

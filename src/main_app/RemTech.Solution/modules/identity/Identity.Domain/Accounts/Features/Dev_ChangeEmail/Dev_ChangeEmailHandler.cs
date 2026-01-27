@@ -6,10 +6,21 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace Identity.Domain.Accounts.Features.Dev_ChangeEmail;
 
+/// <summary>
+/// Обработчик команды изменения email пользователя в режиме разработки.
+/// </summary>
+/// <param name="repository">Репозиторий аккаунтов.</param>
+/// <param name="unitOfWork">Единица работы для аккаунтов.</param>
 [TransactionalHandler]
 public sealed class Dev_ChangeEmailHandler(IAccountsRepository repository, IAccountsModuleUnitOfWork unitOfWork)
 	: ICommandHandler<Dev_ChangeEmailCommand, Unit>
 {
+	/// <summary>
+	/// Выполняет изменение email пользователя по команде.
+	/// </summary>
+	/// <param name="command">Команда изменения email пользователя.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды.</returns>
 	public async Task<Result<Unit>> Execute(Dev_ChangeEmailCommand command, CancellationToken ct = default)
 	{
 		Result<Account> account = await ResolveAccount(command, ct);

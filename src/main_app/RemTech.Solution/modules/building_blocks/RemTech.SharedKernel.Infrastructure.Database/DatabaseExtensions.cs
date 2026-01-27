@@ -10,6 +10,9 @@ using RemTech.SharedKernel.Core.InfrastructureContracts;
 
 namespace RemTech.SharedKernel.Infrastructure.Database;
 
+/// <summary>
+/// Расширения для регистрации компонентов базы данных в контейнере служб.
+/// </summary>
 public static class DatabaseExtensions
 {
 	extension(IServiceCollection services)

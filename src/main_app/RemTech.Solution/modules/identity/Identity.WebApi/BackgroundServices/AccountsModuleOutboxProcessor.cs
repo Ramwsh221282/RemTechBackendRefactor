@@ -7,6 +7,12 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.WebApi.BackgroundServices;
 
+/// <summary>
+/// Фоновый сервис для обработки исходящих сообщений модуля аккаунтов.
+/// </summary>
+/// <param name="publishers">Публикаторы сообщений исходящей очереди модуля аккаунтов.</param>
+/// <param name="connectionFactory">Фабрика для создания соединений с базой данных PostgreSQL.</param>
+/// <param name="logger">Логгер для записи логов.</param>
 public sealed class AccountsModuleOutboxProcessor(
 	IEnumerable<IAccountOutboxMessagePublisher> publishers,
 	NpgSqlConnectionFactory connectionFactory,
@@ -17,6 +23,11 @@ public sealed class AccountsModuleOutboxProcessor(
 	private Serilog.ILogger Logger { get; } = logger.ForContext<AccountsModuleOutboxProcessor>();
 	private NpgSqlConnectionFactory ConnectionFactory { get; } = connectionFactory;
 
+	/// <summary>
+	/// Выполняет асинхронную обработку сообщений исходящей очереди модуля аккаунтов.
+	/// </summary>
+	/// <param name="stoppingToken">Токен отмены для остановки выполнения.</param>
+	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		while (!stoppingToken.IsCancellationRequested)
