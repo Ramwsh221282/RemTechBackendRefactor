@@ -11,6 +11,9 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace Notifications.Tests;
 
+/// <summary>
+/// Расширения для интеграционных тестов модуля уведомлений.
+/// </summary>
 public static class NotificationsModuleTestsExtensions
 {
 	extension(IServiceProvider sp)

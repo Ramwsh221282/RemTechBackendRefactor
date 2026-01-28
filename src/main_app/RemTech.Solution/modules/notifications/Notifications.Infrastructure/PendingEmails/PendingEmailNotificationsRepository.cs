@@ -8,6 +8,11 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Notifications.Infrastructure.PendingEmails;
 
+/// <summary>
+/// Репозиторий отложенных писем.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
+/// <param name="changeTracker">Трекер изменений модуля уведомлений.</param>
 public sealed class PendingEmailNotificationsRepository(
 	NpgSqlSession session,
 	INotificationsModuleUnitOfWork changeTracker
@@ -16,6 +21,12 @@ public sealed class PendingEmailNotificationsRepository(
 	private NpgSqlSession Session { get; } = session;
 	private INotificationsModuleUnitOfWork ChangeTracker { get; } = changeTracker;
 
+	/// <summary>
+	/// Добавляет отложенное письмо в репозиторий.
+	/// </summary>
+	/// <param name="notification">Отложенное письмо для добавления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию добавления.</returns>
 	public Task Add(PendingEmailNotification notification, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -38,6 +49,12 @@ public sealed class PendingEmailNotificationsRepository(
 		return Session.Execute(command);
 	}
 
+	/// <summary>
+	/// Получает множество отложенных писем по спецификации.
+	/// </summary>
+	/// <param name="spec">Спецификация для фильтрации отложенных писем.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Массив отложенных писем, соответствующих спецификации.</returns>
 	public async Task<PendingEmailNotification[]> GetMany(
 		PendingEmailNotificationsSpecification spec,
 		CancellationToken ct = default
@@ -65,6 +82,12 @@ public sealed class PendingEmailNotificationsRepository(
 		return notifications;
 	}
 
+	/// <summary>
+	/// Удаляет множество отложенных писем из репозитория.
+	/// </summary>
+	/// <param name="notifications">Множество отложенных писем для удаления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Количество удаленных отложенных писем.</returns>
 	public async Task<int> Remove(IEnumerable<PendingEmailNotification> notifications, CancellationToken ct = default)
 	{
 		PendingEmailNotification[] array = [.. notifications];

@@ -11,6 +11,8 @@
 		<ProjectReference Include="..\modules\parsers_control\ParsersControl.WebApi\ParsersControl.WebApi.csproj" />
 		<ProjectReference Include="..\modules\spares\Spares.WebApi\Spares.WebApi.csproj" />
 		<ProjectReference Include="..\modules\vehicles\Vehicles.WebApi\Vehicles.WebApi.csproj" />
+		<ProjectReference Include="..\modules\telemetry\Telemetry.Infrastructure\Telemetry.Infrastructure.csproj" />
+		<ProjectReference Include="..\modules\telemetry\Telemetry.Core\Telemetry.Core.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="RemTech.SharedKernel.Web" Version="2.*" />

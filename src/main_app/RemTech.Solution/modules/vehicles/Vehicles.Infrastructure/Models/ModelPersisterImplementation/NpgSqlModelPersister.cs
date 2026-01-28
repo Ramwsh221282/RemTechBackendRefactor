@@ -9,10 +9,21 @@ using Vehicles.Domain.Models.Contracts;
 
 namespace Vehicles.Infrastructure.Models.ModelPersisterImplementation;
 
+/// <summary>
+/// Реализация персистера моделей на основе NpgSql и векторных представлений.
+/// </summary>
+/// <param name="session">Сессия для работы с базой данных NpgSql.</param>
+/// <param name="embeddings">Провайдер векторных представлений.</param>
 public sealed class NpgSqlModelPersister(NpgSqlSession session, EmbeddingsProvider embeddings) : IModelsPersister
 {
-	private const double MaxDistance = 0.6;
+	private const double MAX_DISTANCE = 0.6;
 
+	/// <summary>
+	/// Сохраняет модель в базе данных.
+	/// </summary>
+	/// <param name="model">Модель для сохранения.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат операции сохранения модели.</returns>
 	public async Task<Result<Model>> Save(Model model, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -56,7 +67,7 @@ public sealed class NpgSqlModelPersister(NpgSqlSession session, EmbeddingsProvid
 		DynamicParameters parameters = new();
 		parameters.Add("@name", model.Name.Value, DbType.String);
 		parameters.Add("@input_embedding", vector);
-		parameters.Add("@max_distance", MaxDistance, DbType.Double);
+		parameters.Add("@max_distance", MAX_DISTANCE, DbType.Double);
 		return parameters;
 	}
 

@@ -1,6 +1,12 @@
 ﻿namespace Identity.Domain.Contracts.Outbox;
 
+/// <summary>
+/// Типы сообщений исходящей очереди.
+/// </summary>
 public static class OutboxMessageTypes
 {
-	public const string EmailConfirmation = "email.confirmation";
+	/// <summary>
+	/// Сообщение для подтверждения электронной почты.
+	/// </summary>
+	public const string EMAIL_CONFIRMATION = "email.confirmation";
 }

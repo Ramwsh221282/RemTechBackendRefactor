@@ -14,52 +14,67 @@ using Testcontainers.RabbitMq;
 
 namespace Notifications.Tests;
 
+/// <summary>
+/// Фабрика для интеграционных тестов модуля уведомлений.
+/// </summary>
 public sealed class IntegrationalTestsFactory : WebApplicationFactory<Notifications.WebApi.Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
-    private readonly RabbitMqContainer _rabbitMq = new RabbitMqBuilder().BuildRabbitMqContainer();
+	private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
+	private readonly RabbitMqContainer _rabbitMq = new RabbitMqBuilder().BuildRabbitMqContainer();
 
-    public async Task InitializeAsync()
-    {
-        await _dbContainer.StartAsync();
-        await _rabbitMq.StartAsync();
-        Services.ApplyModuleMigrations();
-    }
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="IntegrationalTestsFactory"/>.
+	/// </summary>
+	/// <returns>Задача, представляющая асинхронную операцию инициализации.</returns>
+	public async Task InitializeAsync()
+	{
+		await _dbContainer.StartAsync();
+		await _rabbitMq.StartAsync();
+		Services.ApplyModuleMigrations();
+	}
 
-    public new async Task DisposeAsync()
-    {
-        await _dbContainer.StopAsync();
-        await _dbContainer.DisposeAsync();
-        await _rabbitMq.StopAsync();
-        await _rabbitMq.DisposeAsync();
-    }
+	/// <summary>
+	/// Завершает работу фабрики интеграционных тестов.
+	/// </summary>
+	/// <returns>Задача, представляющая асинхронную операцию завершения работы.</returns>
+	public new async Task DisposeAsync()
+	{
+		await _dbContainer.StopAsync();
+		await _dbContainer.DisposeAsync();
+		await _rabbitMq.StopAsync();
+		await _rabbitMq.DisposeAsync();
+	}
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        base.ConfigureWebHost(builder);
-        builder.ConfigureServices(s =>
-        {
-            s.ReRegisterAppsettingsJsonConfiguration();
-            s.ReRegisterRabbitMqOptions(_rabbitMq);
-            s.ReRegisterNpgSqlOptions(_dbContainer);
-            ReconfigureAesCryptography(s);
-            ReRegisterConsumers(s);
-            s.AddSingleton<FakeAccountRegisteredPublisher>();
-        });
-    }
+	/// <summary>
+	/// Конфигурирует веб-хост для интеграционных тестов.
+	/// </summary>
+	/// <param name="builder">Веб-хост билдер.</param>
+	protected override void ConfigureWebHost(IWebHostBuilder builder)
+	{
+		base.ConfigureWebHost(builder);
+		builder.ConfigureServices(s =>
+		{
+			s.ReRegisterAppsettingsJsonConfiguration();
+			s.ReRegisterRabbitMqOptions(_rabbitMq);
+			s.ReRegisterNpgSqlOptions(_dbContainer);
+			ReconfigureAesCryptography(s);
+			ReRegisterConsumers(s);
+			s.AddSingleton<FakeAccountRegisteredPublisher>();
+		});
+	}
 
-    private static void ReRegisterConsumers(IServiceCollection services)
-    {
-        services.RemoveAll<IConsumer>();
-        services.ReRegisterBackgroundService<AggregatedConsumersHostedService>();
-        services.AddConsumersFromAssemblies([typeof(OnNewAccountCreatedConsumer).Assembly]);
-        services.AddAggregatedConsumersBackgroundService();
-    }
+	private static void ReRegisterConsumers(IServiceCollection services)
+	{
+		services.RemoveAll<IConsumer>();
+		services.ReRegisterBackgroundService<AggregatedConsumersHostedService>();
+		services.AddConsumersFromAssemblies([typeof(OnNewAccountCreatedConsumer).Assembly]);
+		services.AddAggregatedConsumersBackgroundService();
+	}
 
-    private static void ReconfigureAesCryptography(IServiceCollection services)
-    {
-        services.RemoveAll<IConfigureOptions<AesEncryptionOptions>>();
-        services.RemoveAll<IOptions<AesEncryptionOptions>>();
-        services.AddOptions<AesEncryptionOptions>().BindConfiguration(nameof(AesEncryptionOptions));
-    }
+	private static void ReconfigureAesCryptography(IServiceCollection services)
+	{
+		services.RemoveAll<IConfigureOptions<AesEncryptionOptions>>();
+		services.RemoveAll<IOptions<AesEncryptionOptions>>();
+		services.AddOptions<AesEncryptionOptions>().BindConfiguration(nameof(AesEncryptionOptions));
+	}
 }

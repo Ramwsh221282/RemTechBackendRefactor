@@ -7,10 +7,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.FinishParser;
 
+/// <summary>
+/// Обработчик команды <see cref="FinishParserCommand"/>.
+/// </summary>
+/// <param name="repository">Репозиторий для работы с подписанными парсерами.</param>
 [TransactionalHandler]
 public sealed class FinishParserHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<FinishParserCommand, SubscribedParser>
 {
+	/// <summary>
+	/// Выполнение команды завершения работы парсера.
+	/// </summary>
+	/// <param name="command">Команда для выполнения.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат выполнения команды с подписанным парсером.</returns>
 	public async Task<Result<SubscribedParser>> Execute(FinishParserCommand command, CancellationToken ct = default)
 	{
 		Result<SubscribedParser> parser = await GetRequiredParser(command.Id, ct);
@@ -19,10 +29,8 @@ public sealed class FinishParserHandler(ISubscribedParsersRepository repository)
 		return saving.IsFailure ? saving.Error : parser.Value;
 	}
 
-	private static Result<Unit> FinishParser(Result<SubscribedParser> parser, long totalElapsedSeconds)
-	{
-		return parser.IsFailure ? (Result<Unit>)parser.Error : parser.Value.FinishWork(totalElapsedSeconds);
-	}
+	private static Result<Unit> FinishParser(Result<SubscribedParser> parser, long totalElapsedSeconds) =>
+		parser.IsFailure ? parser.Error : parser.Value.FinishWork(totalElapsedSeconds);
 
 	private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
 	{

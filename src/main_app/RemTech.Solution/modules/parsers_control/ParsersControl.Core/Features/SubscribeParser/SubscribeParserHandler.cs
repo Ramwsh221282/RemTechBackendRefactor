@@ -6,12 +6,23 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.SubscribeParser;
 
+/// <summary>
+/// Обработчик команды подписки на парсер.
+/// </summary>
+/// <param name="repository">Репозиторий подписанных парсеров.</param>
+/// <param name="listener">Слушатель событий подписки на парсер.</param>
 [TransactionalHandler]
 public sealed class SubscribeParserHandler(
 	ISubscribedParsersRepository repository,
 	IOnParserSubscribedListener listener
 ) : ICommandHandler<SubscribeParserCommand, SubscribedParser>
 {
+	/// <summary>
+	/// Выполняет команду подписки на парсер.
+	/// </summary>
+	/// <param name="command">Команда подписки на парсер.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с новым подписанным парсером.</returns>
 	public async Task<Result<SubscribedParser>> Execute(SubscribeParserCommand command, CancellationToken ct = default)
 	{
 		Result<SubscribedParser> result = await ProcessParserSubscription(command, ct);

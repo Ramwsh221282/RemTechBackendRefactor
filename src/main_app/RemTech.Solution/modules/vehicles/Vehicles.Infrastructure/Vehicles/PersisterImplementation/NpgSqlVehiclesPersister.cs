@@ -12,8 +12,19 @@ using Vehicles.Domain.Vehicles.Contracts;
 
 namespace Vehicles.Infrastructure.Vehicles.PersisterImplementation;
 
+/// <summary>
+/// Реализация персистера транспортных средств для PostgreSQL.
+/// </summary>
+/// <param name="session">Сессия для работы с базой данных PostgreSQL.</param>
+/// <param name="embeddings">Провайдер для генерации векторных представлений текста.</param>
 public sealed class NpgSqlVehiclesPersister(NpgSqlSession session, EmbeddingsProvider embeddings) : IVehiclesPersister
 {
+	/// <summary>
+	/// Сохраняет транспортное средство в базе данных.
+	/// </summary>
+	/// <param name="info">Информация о транспортном средстве для сохранения.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции сохранения.</returns>
 	public async Task<Result<Unit>> Persist(VehiclePersistInfo info, CancellationToken ct = default)
 	{
 		const string sql = """

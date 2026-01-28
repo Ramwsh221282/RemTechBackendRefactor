@@ -5,11 +5,22 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace ParsersControl.Infrastructure.Listeners;
 
+/// <summary>
+/// Обработчик события начала парсера.
+/// </summary>
+/// <param name="producer">Производитель сообщений RabbitMQ.</param>
+/// <param name="logger">Логгер для записи информации.</param>
 public sealed class OnParserStartedEventListener(RabbitMqProducer producer, Serilog.ILogger logger)
 	: IOnParserStartedListener
 {
 	private Serilog.ILogger Logger { get; } = logger.ForContext<IOnParserStartedListener>();
 
+	/// <summary>
+	/// Обрабатывает событие начала парсера.
+	/// </summary>
+	/// <param name="parser">Подписанный парсер, для которого произошло событие начала.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию обработки события.</returns>
 	public Task Handle(SubscribedParser parser, CancellationToken ct = default)
 	{
 		Logger.Information("Handling on parser started event.");

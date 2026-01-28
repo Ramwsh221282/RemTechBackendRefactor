@@ -10,15 +10,21 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace ParsersControl.Infrastructure.Listeners;
 
+/// <summary>
+/// Обработчик события завершения парсера.
+/// </summary>
+/// <param name="serviceProvider">Поставщик сервисов для создания областей обслуживания.</param>
+/// <param name="rabbitMq">Источник подключения к RabbitMQ.</param>
+/// <param name="logger">Логгер для записи информации.</param>
 public sealed class ParserFinishListener(
 	IServiceProvider serviceProvider,
 	RabbitMqConnectionSource rabbitMq,
 	Serilog.ILogger logger
 ) : IConsumer
 {
-	private const string Exchange = "parsers";
-	private const string Queue = "parsers.finish";
-	private const string RoutingKey = Queue;
+	private const string EXCHANGE = "parsers";
+	private const string QUEUE = "parsers.finish";
+	private const string ROUTING_KEY = QUEUE;
 
 	private IChannel? _channel;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<ParserFinishListener>();
@@ -27,7 +33,7 @@ public sealed class ParserFinishListener(
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, ea) =>
 		{
-			Logger.Information("Received message. {Queue} {Exchange} {RoutingKey}", Queue, Exchange, RoutingKey);
+			Logger.Information("Received message. {Queue} {Exchange} {RoutingKey}", QUEUE, EXCHANGE, ROUTING_KEY);
 			try
 			{
 				await using AsyncServiceScope scope = serviceProvider.CreateAsyncScope();
@@ -48,24 +54,40 @@ public sealed class ParserFinishListener(
 				Logger.Error(
 					e,
 					"Error processing message. {Queue} {Exchange} {RoutingKey}",
-					Queue,
-					Exchange,
-					RoutingKey
+					QUEUE,
+					EXCHANGE,
+					ROUTING_KEY
 				);
 				await Channel.BasicNackAsync(ea.DeliveryTag, false, false);
 			}
 		};
 
+	/// <summary>
+	/// Инициализирует канал для прослушивания сообщений.
+	/// </summary>
+	/// <param name="connection">Подключение к RabbitMQ.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию инициализации канала.</returns>
 	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(rabbitMq, Exchange, Queue, RoutingKey, ct);
+		_channel = await TopicConsumerInitialization.InitializeChannel(rabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
 
+	/// <summary>
+	/// Начинает прослушивание сообщений.
+	/// </summary>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию начала прослушивания сообщений.</returns>
 	public Task StartConsuming(CancellationToken ct = default)
 	{
 		AsyncEventingBasicConsumer consumer = new(Channel);
 		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, false, consumer, cancellationToken: ct);
+		return Channel.BasicConsumeAsync(QUEUE, false, consumer, cancellationToken: ct);
 	}
 
+	/// <summary>
+	/// Останавливает прослушивание сообщений и закрывает канал.
+	/// </summary>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию остановки прослушивания сообщений.</returns>
 	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
 
 	private sealed class ParserFinishMessage

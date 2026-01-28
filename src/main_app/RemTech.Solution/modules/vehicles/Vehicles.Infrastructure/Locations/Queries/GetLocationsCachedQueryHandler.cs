@@ -4,11 +4,22 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 
 namespace Vehicles.Infrastructure.Locations.Queries;
 
+/// <summary>
+/// Обработчик запроса получения локаций с кэшированием.
+/// </summary>
+/// <param name="cache">Кэш для хранения результатов запроса.</param>
+/// <param name="handler">Обработчик запроса получения локаций.</param>
 public sealed class GetLocationsCachedQueryHandler(
 	HybridCache cache,
 	IQueryHandler<GetLocationsQuery, IEnumerable<LocationsResponse>> handler
 ) : IQueryExecutorWithCache<GetLocationsQuery, IEnumerable<LocationsResponse>>
 {
+	/// <summary>
+	/// Выполняет запрос получения локаций с использованием кэша.
+	/// </summary>
+	/// <param name="query">Запрос получения локаций.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения запроса с кэшированием.</returns>
 	public Task<IEnumerable<LocationsResponse>> ExecuteWithCache(
 		GetLocationsQuery query,
 		CancellationToken ct = default

@@ -7,10 +7,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.StartParserWork;
 
+/// <summary>
+/// Обработчик команды запуска парсера.
+/// </summary>
+/// <param name="repository">Репозиторий подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class StartParserCommandHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<StartParserCommand, SubscribedParser>
 {
+	/// <summary>
+	/// Выполняет команду запуска парсера.
+	/// </summary>
+	/// <param name="command">Команда запуска парсера.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с обновленным парсером.</returns>
 	public async Task<Result<SubscribedParser>> Execute(StartParserCommand command, CancellationToken ct = default)
 	{
 		Result<SubscribedParser> parser = await GetRequiredParser(command, ct);
@@ -31,9 +41,14 @@ public sealed class StartParserCommandHandler(ISubscribedParsersRepository repos
 	private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> starting, CancellationToken ct)
 	{
 		if (starting.IsFailure)
+		{
 			return Result.Failure(starting.Error);
+		}
+
 		if (parser.IsFailure)
+		{
 			return Result.Failure(parser.Error);
+		}
 
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();

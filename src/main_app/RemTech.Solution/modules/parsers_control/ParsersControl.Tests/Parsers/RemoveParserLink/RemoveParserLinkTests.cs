@@ -4,6 +4,10 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace ParsersControl.Tests.Parsers.RemoveParserLink;
 
+/// <summary>
+///   Тесты для удаления ссылки на парсер.
+/// </summary>
+/// <param name="fixture">Фикстура для интеграционных тестов.</param>
 public sealed class RemoveParserLinkTests(IntegrationalTestsFixture fixture) : IClassFixture<IntegrationalTestsFixture>
 {
 	private IServiceProvider Services { get; } = fixture.Services;

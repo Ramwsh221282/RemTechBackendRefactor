@@ -2,12 +2,18 @@
 
 namespace Identity.Infrastructure.Accounts.Migrations;
 
+/// <summary>
+/// Миграция для создания таблицы разрешений аккаунтов.
+/// </summary>
 [Migration(1767457500)]
 public sealed class AccountPermissionsMigration : Migration
 {
-    public override void Up() =>
-        Execute.Sql(
-            """
+	/// <summary>
+	/// Выполняет миграцию вверх (создание таблицы разрешений аккаунтов).
+	/// </summary>
+	public override void Up() =>
+		Execute.Sql(
+			"""
 			CREATE TABLE IF NOT EXISTS identity_module.account_permissions (
 			    account_id UUID NOT NULL,
 			    permission_id UUID NOT NULL,
@@ -16,7 +22,10 @@ public sealed class AccountPermissionsMigration : Migration
 			    FOREIGN KEY (permission_id) REFERENCES identity_module.permissions (id)
 			);
 			"""
-        );
+		);
 
-    public override void Down() => Execute.Sql("DROP TABLE IF EXISTS identity_module.account_permissions;");
+	/// <summary>
+	/// Выполняет миграцию вниз (удаление таблицы разрешений аккаунтов).
+	/// </summary>
+	public override void Down() => Execute.Sql("DROP TABLE IF EXISTS identity_module.account_permissions;");
 }

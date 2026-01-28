@@ -7,11 +7,22 @@ using RemTech.SharedKernel.Core.PrimitivesModule.Immutable;
 
 namespace Notifications.Infrastructure.EmailSending;
 
+/// <summary>
+/// Отправщик email-уведомлений.
+/// </summary>
+/// <param name="logger">Логгер для записи информации и ошибок.</param>
 public sealed class EmailSender(Serilog.ILogger logger)
 {
-	private const int Port = 587;
+	private const int PORT = 587;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<EmailSender>();
 
+	/// <summary>
+	/// 	Обрабатывает и отправляет email-уведомление.
+	/// </summary>
+	/// <param name="mailer">Объект, содержащий настройки и учетные данные для отправки email.</param>
+	/// <param name="notification">Объект, содержащий информацию о уведомлении для отправки.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Возвращает true, если отправка прошла успешно, иначе false.</returns>
 	public async Task<bool> Process(
 		Mailer mailer,
 		PendingEmailNotification notification,
@@ -31,7 +42,7 @@ public sealed class EmailSender(Serilog.ILogger logger)
 		try
 		{
 			client.AuthenticationMechanisms.Add("XOAUTH2");
-			await client.ConnectAsync(smtpHost.Read(), Port, SecureSocketOptions.StartTls, ct);
+			await client.ConnectAsync(smtpHost.Read(), PORT, SecureSocketOptions.StartTls, ct);
 			await client.AuthenticateAsync(senderEmail.Read(), smtpPassword.Read(), ct);
 			await client.SendAsync(mimeMessage, ct);
 			await client.DisconnectAsync(true, ct);

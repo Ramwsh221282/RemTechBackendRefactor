@@ -7,10 +7,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.EnableParser;
 
+/// <summary>
+/// Обработчик команды <see cref="EnableParserCommand"/>.
+/// </summary>
+/// <param name="repository">Репозиторий для работы с подписанными парсерами.</param>
 [TransactionalHandler]
 public sealed class EnableParserCommandHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<EnableParserCommand, SubscribedParser>
 {
+	/// <summary>
+	/// Выполнение команды включения парсера.
+	/// </summary>
+	/// <param name="command">Команда для выполнения.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат выполнения команды с подписанным парсером.</returns>
 	public async Task<Result<SubscribedParser>> Execute(EnableParserCommand command, CancellationToken ct = default)
 	{
 		Result<SubscribedParser> parser = await GetRequiredParser(command, ct);
@@ -19,10 +29,8 @@ public sealed class EnableParserCommandHandler(ISubscribedParsersRepository repo
 		return saving.IsFailure ? saving.Error : parser.Value;
 	}
 
-	private static Result<Unit> Enable(Result<SubscribedParser> parser)
-	{
-		return parser.IsFailure ? (Result<Unit>)parser.Error : parser.Value.Enable();
-	}
+	private static Result<Unit> Enable(Result<SubscribedParser> parser) =>
+		parser.IsFailure ? parser.Error : parser.Value.Enable();
 
 	private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> enabling, CancellationToken ct)
 	{

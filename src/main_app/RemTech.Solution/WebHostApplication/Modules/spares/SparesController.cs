@@ -7,10 +7,28 @@ using Spares.Infrastructure.Queries.GetSpareTypes;
 
 namespace WebHostApplication.Modules.spares;
 
+/// <summary>
+/// Контроллер для работы с запчастями.
+/// </summary>
 [ApiController]
 [Route("api/spares")]
 public sealed class SparesController
 {
+	/// <summary>
+	/// Получить список запчастей по фильтрам.
+	/// </summary>
+	/// <param name="regionId">Идентификатор региона.</param>
+	/// <param name="priceMin">Минимальная цена.</param>
+	/// <param name="priceMax">Максимальная цена.</param>
+	/// <param name="textSearch">Текст для поиска.</param>
+	/// <param name="page">Номер страницы.</param>
+	/// <param name="pageSize">Размер страницы.</param>
+	/// <param name="sortMode">Режим сортировки.</param>
+	/// <param name="oem">OEM код.</param>
+	/// <param name="type">Тип запчасти.</param>
+	/// <param name="handler">Обработчик запроса.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Обертка с результатом операции.</returns>
 	[HttpGet]
 	public async Task<Envelope> GetSpares(
 		[FromQuery(Name = "region-id")] Guid? regionId,
@@ -40,6 +58,13 @@ public sealed class SparesController
 		return EnvelopedResultsExtensions.AsEnvelope(result);
 	}
 
+	/// <summary>
+	/// Получить список локаций запчастей по фильтрам.
+	/// </summary>
+	/// <param name="textSearch">Текст для поиска.</param>
+	/// <param name="handler">Обработчик запроса.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Обертка с результатом операции.</returns>
 	[HttpGet("locations")]
 	public async Task<Envelope> GetSparesLocations(
 		[FromQuery(Name = "text-search")] string? textSearch,
@@ -52,6 +77,14 @@ public sealed class SparesController
 		return EnvelopedResultsExtensions.AsEnvelope(result);
 	}
 
+	/// <summary>
+	/// Получить список типов запчастей.
+	/// </summary>
+	/// <param name="textSearch">Текст для поиска.</param>
+	/// <param name="amount">Количество типов запчастей для получения.</param>
+	/// <param name="handler">Обработчик запроса.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Обертка с результатом операции.</returns>
 	[HttpGet("types")]
 	public async Task<Envelope> GetSpareTypes(
 		[FromQuery(Name = "text-search")] string? textSearch,

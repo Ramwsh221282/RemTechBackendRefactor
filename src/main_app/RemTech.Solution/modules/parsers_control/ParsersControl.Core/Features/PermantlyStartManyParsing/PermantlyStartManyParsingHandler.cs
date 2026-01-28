@@ -6,10 +6,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.PermantlyStartManyParsing;
 
+/// <summary>
+/// Обработчик команды постоянного запуска множества парсеров.
+/// </summary>
+/// <param name="repository">Репозиторий коллекции подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class PermantlyStartManyParsingHandler(ISubscribedParsersCollectionRepository repository)
 	: ICommandHandler<PermantlyStartManyParsingCommand, IEnumerable<SubscribedParser>>
 {
+	/// <summary>
+	///   Выполняет команду постоянного запуска множества парсеров.
+	/// </summary>
+	/// <param name="command">Команда постоянного запуска множества парсеров.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с запущенными парсерами.</returns>
 	public async Task<Result<IEnumerable<SubscribedParser>>> Execute(
 		PermantlyStartManyParsingCommand command,
 		CancellationToken ct = default

@@ -7,17 +7,31 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Common.UnitOfWork;
 
+/// <summary>
+/// Трекер изменений аккаунтов.
+/// </summary>
+/// <param name="session">Сессия базы данных.</param>
 public sealed class AccountsChangeTracker(NpgSqlSession session)
 {
 	private NpgSqlSession Session { get; } = session;
 	private Dictionary<Guid, Account> Accounts { get; } = [];
 
+	/// <summary>
+	/// Начинает отслеживание изменений для коллекции аккаунтов.
+	/// </summary>
+	/// <param name="accounts">Коллекция аккаунтов для отслеживания.</param>
 	public void StartTracking(IEnumerable<Account> accounts)
 	{
 		foreach (Account account in accounts)
 			Accounts.TryAdd(account.Id.Value, account.Copy());
 	}
 
+	/// <summary>
+	/// Сохраняет изменения для коллекции аккаунтов.
+	/// </summary>
+	/// <param name="accounts">Коллекция аккаунтов для сохранения изменений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
 	public async Task SaveChanges(IEnumerable<Account> accounts, CancellationToken ct)
 	{
 		IEnumerable<Account> tracking = GetTrackingAccounts(accounts);

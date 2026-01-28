@@ -9,6 +9,14 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace Identity.Domain.Accounts.Features.Authenticate;
 
+/// <summary>
+/// Обработчик команды аутентификации пользователя.
+/// </summary>
+/// <param name="accounts">Репозиторий аккаунтов.</param>
+/// <param name="tokenManager">Менеджер JWT токенов.</param>
+/// <param name="hasher">Хешер паролей.</param>
+/// <param name="accessTokens">Репозиторий для доступа токенов.</param>
+/// <param name="refreshTokens">Репозиторий для обновления токенов.</param>
 [TransactionalHandler]
 public sealed class AuthenticateHandler(
 	IAccountsRepository accounts,
@@ -18,6 +26,12 @@ public sealed class AuthenticateHandler(
 	IRefreshTokensRepository refreshTokens
 ) : ICommandHandler<AuthenticateCommand, AuthenticationResult>
 {
+	/// <summary>
+	/// Выполняет аутентификацию пользователя по команде.
+	/// </summary>
+	/// <param name="command">Команда аутентификации.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат аутентификации.</returns>
 	public async Task<Result<AuthenticationResult>> Execute(AuthenticateCommand command, CancellationToken ct = default)
 	{
 		Result<Account> account = await GetRequiredAccount(command, ct);

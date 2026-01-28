@@ -14,35 +14,87 @@ using Vehicles.Domain.Vehicles.Contracts;
 
 namespace Vehicles.Infrastructure.CommonImplementations;
 
+/// <summary>
+/// Реализация персистера для PostgreSQL.
+/// </summary>
+/// <param name="brandPersister">Персистер для работы с брендами.</param>
+/// <param name="modelPersister">Персистер для работы с моделями.</param>
+/// <param name="categoryPersister">Персистер для работы с категориями.</param>
+/// <param name="characteristicPersister">Персистер для работы с характеристиками.</param>
+/// <param name="locationsPersister">Персистер для работы с локациями.</param>
+/// <param name="vehiclesPersister">Персистер для работы с транспортными средствами.</param>
+/// <param name="vehiclesListPersister">Персистер для работы с списком транспортных средств.</param>
 public sealed class NpgSqlPersister(
-    IBrandPersister brandPersister,
-    IModelsPersister modelPersister,
-    ICategoryPersister categoryPersister,
-    ICharacteristicsPersister characteristicPersister,
-    ILocationsPersister locationsPersister,
-    IVehiclesPersister vehiclesPersister,
-    IVehiclesListPersister vehiclesListPersister
+	IBrandPersister brandPersister,
+	IModelsPersister modelPersister,
+	ICategoryPersister categoryPersister,
+	ICharacteristicsPersister characteristicPersister,
+	ILocationsPersister locationsPersister,
+	IVehiclesPersister vehiclesPersister,
+	IVehiclesListPersister vehiclesListPersister
 ) : IPersister
 {
-    public Task<Result<Brand>> Save(Brand brand, CancellationToken ct = default) => brandPersister.Save(brand, ct);
+	/// <summary>
+	/// Сохраняет бренд.
+	/// </summary>
+	/// <param name="brand">Бренд для сохранения.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции сохранения бренда.</returns>
+	public Task<Result<Brand>> Save(Brand brand, CancellationToken ct = default) => brandPersister.Save(brand, ct);
 
-    public Task<Result<Model>> Save(Model model, CancellationToken ct = default) => modelPersister.Save(model, ct);
+	/// <summary>
+	/// Сохраняет модель.
+	/// </summary>
+	/// <param name="model">Модель для сохранения.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции сохранения модели.</returns>
+	public Task<Result<Model>> Save(Model model, CancellationToken ct = default) => modelPersister.Save(model, ct);
 
-    public Task<Result<Location>> Save(Location location, CancellationToken ct = default) =>
-        locationsPersister.Save(location, ct);
+	/// <summary>
+	/// Сохраняет локацию.
+	/// </summary>
+	/// <param name="location">Локация для сохранения.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции сохранения локации.</returns>
+	public Task<Result<Location>> Save(Location location, CancellationToken ct = default) =>
+		locationsPersister.Save(location, ct);
 
-    public Task<Result<Category>> Save(Category category, CancellationToken ct = default) =>
-        categoryPersister.Save(category, ct);
+	/// <summary>
+	/// Сохраняет категорию.
+	/// </summary>
+	/// <param name="category">Категория для сохранения.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции сохранения категории.</returns>
+	public Task<Result<Category>> Save(Category category, CancellationToken ct = default) =>
+		categoryPersister.Save(category, ct);
 
-    public Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default) =>
-        characteristicPersister.Save(characteristic, ct);
+	/// <summary>
+	/// Сохраняет характеристику.
+	/// </summary>
+	/// <param name="characteristic">Характеристика для сохранения.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции сохранения характеристики.</returns>
+	public Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default) =>
+		characteristicPersister.Save(characteristic, ct);
 
-    public async Task<Result<VehiclePersistInfo>> Save(VehiclePersistInfo info, CancellationToken ct = default)
-    {
-        Result<Unit> result = await vehiclesPersister.Persist(info, ct);
-        return result.IsSuccess ? info : result.Error;
-    }
+	/// <summary>
+	/// Сохраняет информацию о транспортном средстве.
+	/// </summary>
+	/// <param name="info">Информация о транспортном средстве для сохранения.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции сохранения информации о транспортном средстве.</returns>
+	public async Task<Result<VehiclePersistInfo>> Save(VehiclePersistInfo info, CancellationToken ct = default)
+	{
+		Result<Unit> result = await vehiclesPersister.Persist(info, ct);
+		return result.IsSuccess ? info : result.Error;
+	}
 
-    public Task<int> Save(IEnumerable<VehiclePersistInfo> infos, CancellationToken ct = default) =>
-        vehiclesListPersister.Persist(infos, ct);
+	/// <summary>
+	/// Сохраняет несколько транспортных средств.
+	/// </summary>
+	/// <param name="infos">Список информации о транспортных средствах для сохранения.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции сохранения нескольких транспортных средств.</returns>
+	public Task<int> Save(IEnumerable<VehiclePersistInfo> infos, CancellationToken ct = default) =>
+		vehiclesListPersister.Persist(infos, ct);
 }

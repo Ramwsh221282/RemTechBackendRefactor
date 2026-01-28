@@ -9,9 +9,20 @@ using RemTech.SharedKernel.NN;
 
 namespace Vehicles.Infrastructure.Categories.Queries.GetCategories;
 
+/// <summary>
+/// Обработчик запроса на получение категорий транспортных средств.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
+/// <param name="embeddings">Провайдер эмбеддингов для обработки запросов с использованием нейронных сетей.</param>
 public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: IQueryHandler<GetCategoriesQuery, IEnumerable<CategoryResponse>>
 {
+	/// <summary>
+	/// Обрабатывает запрос на получение категорий транспортных средств.
+	/// </summary>
+	/// <param name="query">Запрос на получение категорий транспортных средств.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Коллекция ответов с информацией о категориях транспортных средств.</returns>
 	public async Task<IEnumerable<CategoryResponse>> Handle(GetCategoriesQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string sql) = CreateSql(query);

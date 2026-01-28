@@ -6,10 +6,23 @@ using WebHostApplication.Common.Envelope;
 
 namespace WebHostApplication.Modules.vehicles;
 
+/// <summary>
+/// Контроллер для работы с моделями транспортных средств.
+/// </summary>
 [ApiController]
 [Route("api/models")]
 public sealed class ModelsController
 {
+	/// <summary>
+	/// Получить список моделей по фильтрам.
+	/// </summary>
+	/// <param name="brandId">Идентификатор бренда</param>
+	/// <param name="brandName">Название бренда</param>
+	/// <param name="categoryId">Идентификатор категории</param>
+	/// <param name="categoryName">Название категории</param>
+	/// <param name="handler">Обработчик запроса</param>
+	/// <param name="ct">Токен отмены</param>
+	/// <returns>Список моделей</returns>
 	[HttpGet]
 	public async Task<Envelope> GetModels(
 		[FromQuery(Name = "brandId")] Guid? brandId,

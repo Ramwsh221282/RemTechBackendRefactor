@@ -10,6 +10,12 @@ using RemTech.SharedKernel.NN;
 
 namespace Vehicles.Infrastructure.BackgroundServices;
 
+/// <summary>
+/// Сервис обновления эмбеддингов транспортных средств.
+/// </summary>
+/// <param name="npgSql">Фабрика подключения к базе данных PostgreSQL.</param>
+/// <param name="logger">Логгер для записи информации и ошибок.</param>
+/// <param name="provider">Провайдер для генерации эмбеддингов.</param>
 public sealed class VehicleEmbeddingsUpdaterService(
 	NpgSqlConnectionFactory npgSql,
 	Serilog.ILogger logger,
@@ -20,6 +26,11 @@ public sealed class VehicleEmbeddingsUpdaterService(
 	private EmbeddingsProvider Provider { get; } = provider;
 	private NpgSqlConnectionFactory NpgSql { get; } = npgSql;
 
+	/// <summary>
+	/// Запускает фоновую задачу для обновления эмбеддингов транспортных средств.
+	/// </summary>
+	/// <param name="stoppingToken">Токен отмены для остановки фоновой задачи.</param>
+	/// <returns>Задача, представляющая выполнение фоновой операции.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		while (!stoppingToken.IsCancellationRequested)

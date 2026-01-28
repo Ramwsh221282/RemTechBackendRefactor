@@ -7,10 +7,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.PermantlyStartParsing;
 
+/// <summary>
+/// Обработчик команды постоянного запуска парсера.
+/// </summary>
+/// <param name="repository">Репозиторий подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class PermantlyStartParsingCommandHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<PermantlyStartParsingCommand, SubscribedParser>
 {
+	/// <summary>
+	///  Выполняет команду постоянного запуска парсера.
+	/// </summary>
+	/// <param name="command">Команда постоянного запуска парсера.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с запущенным парсером.</returns>
 	public async Task<Result<SubscribedParser>> Execute(
 		PermantlyStartParsingCommand command,
 		CancellationToken ct = default

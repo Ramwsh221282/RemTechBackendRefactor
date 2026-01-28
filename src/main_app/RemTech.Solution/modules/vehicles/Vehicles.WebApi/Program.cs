@@ -16,5 +16,5 @@ app.Run();
 
 namespace Vehicles.WebApi
 {
-    public partial class Program { }
+	public partial class Program { }
 }

@@ -24,6 +24,9 @@ using RemTech.SharedKernel.Infrastructure.Redis;
 
 namespace Identity.WebApi.Extensions;
 
+/// <summary>
+/// Расширения для внедрения зависимостей модуля Identity.
+/// </summary>
 public static class IdentityModuleInjection
 {
 	extension(IServiceCollection services)

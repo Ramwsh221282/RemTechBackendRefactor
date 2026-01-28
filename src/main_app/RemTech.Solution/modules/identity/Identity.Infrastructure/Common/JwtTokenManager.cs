@@ -10,6 +10,11 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Infrastructure.Common;
 
+/// <summary>
+/// Менеджер JWT токенов.
+/// </summary>
+/// <param name="options">Настройки JWT.</param>
+/// <param name="logger">Логгер.</param>
 public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogger logger) : IJwtTokenManager
 {
 	private TokenValidationParameters? _validationParameters;
@@ -17,12 +22,22 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogge
 
 	private Serilog.ILogger Logger { get; } = logger.ForContext<JwtTokenManager>();
 
+	/// <summary>
+	/// Генерирует JWT access токен для указанного аккаунта.
+	/// </summary>
+	/// <param name="account">Аккаунт, для которого генерируется токен.</param>
+	/// <returns>Access token.</returns>
 	public AccessToken GenerateToken(Account account)
 	{
 		string token = CreateToken(CreateTokenDescriptor(account));
 		return CreateStructuredAccessToken(token);
 	}
 
+	/// <summary>
+	/// Генерирует refresh токен для указанного аккаунта.
+	/// </summary>
+	/// <param name="accountId">Идентификатор аккаунта, для которого генерируется refresh токен.</param>
+	/// <returns>Refresh token.</returns>
 	public RefreshToken GenerateRefreshToken(Guid accountId)
 	{
 		string token = CreateRefreshToken();
@@ -30,8 +45,18 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogge
 		return RefreshToken.CreateNew(accountId, expiresAt, createdAt);
 	}
 
+	/// <summary>
+	/// Читает и структурирует access токен из строки.
+	/// </summary>
+	/// <param name="tokenString">Строка access токена.</param>
+	/// <returns>Структурированный access токен.</returns>
 	public AccessToken ReadToken(string tokenString) => CreateStructuredAccessToken(tokenString);
 
+	/// <summary>
+	/// Проверяет валидность JWT токена.
+	/// </summary>
+	/// <param name="jwtToken">Строка JWT токена.</param>
+	/// <returns>Результат проверки валидности токена.</returns>
 	public async Task<Result<TokenValidationResult>> GetValidToken(string jwtToken)
 	{
 		try

@@ -9,11 +9,22 @@ using Vehicles.Domain.Characteristics.Contracts;
 
 namespace Vehicles.Infrastructure.Characteristics.CharacteristicsPersisterImplementation;
 
+/// <summary>
+/// Реализация персистера характеристик на основе NpgSql и векторных представлений.
+/// </summary>
+/// <param name="session">Сессия для работы с базой данных NpgSql.</param>
+/// <param name="embeddings">Провайдер векторных представлений.</param>
 public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: ICharacteristicsPersister
 {
-	private const double MaxDistance = 0.6;
+	private const double MAX_DISTANCE = 0.6;
 
+	/// <summary>
+	/// Сохраняет характеристику в базе данных.
+	/// </summary>
+	/// <param name="characteristic">Характеристика для сохранения.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат операции сохранения характеристики.</returns>
 	public async Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -41,7 +52,8 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 		Vector vector = new(embeddings.Generate(characteristic.Name.Value));
 		DynamicParameters parameters = BuildParameters(characteristic, vector);
 		CommandDefinition command = session.FormCommand(sql, parameters, ct);
-		NpgSqlSearchResult result = (await session.QuerySingleUsingReader(command, MapFromReader))!;
+
+		NpgSqlSearchResult result = await session.QuerySingleUsingReader(command, MapFromReader);
 		if (HasFromExactSearch(result))
 			return MapToCharacteristicFromExactSearch(result);
 		if (HasFromEmbeddingSearch(result))
@@ -90,7 +102,7 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 		DynamicParameters parameters = new();
 		parameters.Add("@name", characteristic.Name.Value, DbType.String);
 		parameters.Add("@input_embedding", vector);
-		parameters.Add("@max_distance", MaxDistance, DbType.Double);
+		parameters.Add("@max_distance", MAX_DISTANCE, DbType.Double);
 		return parameters;
 	}
 

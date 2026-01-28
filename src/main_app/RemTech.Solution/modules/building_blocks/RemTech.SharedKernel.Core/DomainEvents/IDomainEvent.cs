@@ -2,7 +2,16 @@
 
 namespace RemTech.SharedKernel.Core.DomainEvents;
 
+/// <summary>
+/// Интерфейс доменного события.
+/// </summary>
 public interface IDomainEvent
 {
-    public Task PublishTo(IDomainEventHandler handler, CancellationToken ct = default);
+	/// <summary>
+	/// Публикация доменного события указанному обработчику.
+	/// </summary>
+	/// <param name="handler">Обработчик доменного события.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию.</returns>
+	Task PublishTo(IDomainEventHandler handler, CancellationToken ct = default);
 }

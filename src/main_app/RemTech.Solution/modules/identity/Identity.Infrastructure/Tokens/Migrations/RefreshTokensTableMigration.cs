@@ -2,12 +2,18 @@
 
 namespace Identity.Infrastructure.Tokens.Migrations;
 
+/// <summary>
+/// Миграция для создания таблицы refresh_tokens модуля identity.
+/// </summary>
 [Migration(1767695842)]
 public sealed class RefreshTokensTableMigration : Migration
 {
-    public override void Up() =>
-        Execute.Sql(
-            """
+	/// <summary>
+	/// Применяет миграцию, создавая таблицу refresh_tokens модуля identity.
+	/// </summary>
+	public override void Up() =>
+		Execute.Sql(
+			"""
 			CREATE TABLE IF NOT EXISTS identity_module.refresh_tokens 
 			(
 			    account_id UUID NOT NULL primary key,
@@ -16,7 +22,10 @@ public sealed class RefreshTokensTableMigration : Migration
 			    created_at BIGINT NOT NULL
 			);
 			"""
-        );
+		);
 
-    public override void Down() => Execute.Sql("DROP TABLE IF EXISTS identity_module.refresh_tokens;");
+	/// <summary>
+	/// Откатывает миграцию, удаляя таблицу refresh_tokens модуля identity.
+	/// </summary>
+	public override void Down() => Execute.Sql("DROP TABLE IF EXISTS identity_module.refresh_tokens;");
 }

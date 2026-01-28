@@ -5,8 +5,20 @@ using RemTech.SharedKernel.Configurations;
 
 namespace RemTech.SharedKernel.NN;
 
+/// <summary>
+/// Провайдер для генерации встраиваний с использованием моделей ONNX.
+/// </summary>
+/// <param name="options">Опции для настройки провайдера встраиваний.</param>
 public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> options)
 {
+	/// <summary>
+	/// Финализатор для очистки ресурсов.
+	/// </summary>
+	~EmbeddingsProvider()
+	{
+		Dispose(false);
+	}
+
 	private Lazy<InferenceSession> TokenizerSessionLazy { get; } = new(MakeTokenizerSession(options.Value));
 	private Lazy<InferenceSession> ModelSessionLazy { get; } = new(MakeModelSession(options.Value));
 
@@ -14,6 +26,11 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 	private InferenceSession Model => ModelSessionLazy.Value;
 	private bool Disposed { get; set; }
 
+	/// <summary>
+	///  Генерирует встраивание для заданного текста.
+	/// </summary>
+	/// <param name="text">Входной текст для генерации встраивания.</param>
+	/// <returns>Встраивание в виде массива чисел с плавающей точкой.</returns>
 	public ReadOnlyMemory<float> Generate(string text)
 	{
 		DenseTensor<string> stringTensor = new([1]);
@@ -43,17 +60,25 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 		return GetEmbeddings(modelInputs, Model);
 	}
 
-	public void Dispose()
-	{
-		Dispose(true);
-		// GC.SuppressFinalize(this);
-	}
+	/// <summary>
+	/// Освобождает ресурсы, используемые провайдером встраиваний.
+	/// </summary>
+	public void Dispose() => Dispose(true);
 
+	/// <summary>
+	/// Генерирует пакет встраиваний для заданного списка текстов.
+	/// </summary>
+	/// <param name="texts">Список входных текстов для генерации встраиваний.</param>
+	/// <returns>Список встраиваний, соответствующих каждому входному тексту.</returns>
+	/// <exception cref="NotSupportedException">Если не 2D выход [batch, hiddenDim].</exception>
+	/// <exception cref="InvalidOperationException">Если размер батча выхода модели не совпадает с размером входного батча.</exception>
 	public IReadOnlyList<ReadOnlyMemory<float>> GenerateBatch(IReadOnlyList<string> texts)
 	{
 		ArgumentNullException.ThrowIfNull(texts);
 		if (texts.Count == 0)
+		{
 			return [];
+		}
 
 		int batchSize = texts.Count;
 		int[][] tokenArrays = new int[batchSize][];
@@ -67,7 +92,9 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 			int len = embeddingData.Length;
 			lengths[i] = len;
 			if (len > maxLen)
+			{
 				maxLen = len;
+			}
 
 			int[] sortedTokens = new int[len];
 			embeddingData.CopySortedTokensTo(sortedTokens);
@@ -116,7 +143,9 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 		int hiddenDim = outputTensor.Dimensions[1];
 
 		if (outBatch != batchSize)
+		{
 			throw new InvalidOperationException($"Model output batch size {outBatch} != input batch size {batchSize}");
+		}
 
 		ReadOnlyMemory<float>[] result = new ReadOnlyMemory<float>[batchSize];
 
@@ -124,20 +153,14 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 		{
 			float[] arr = new float[hiddenDim];
 			for (int h = 0; h < hiddenDim; h++)
+			{
 				arr[h] = outputTensor[b, h];
+			}
 
 			result[b] = arr;
 		}
 
 		return result;
-	}
-
-	private EmbeddingData TokenizeSingle(string text)
-	{
-		DenseTensor<string> stringTensor = new([1]);
-		stringTensor[0] = text;
-		NamedOnnxValue[] tokenizerInputs = [NamedOnnxValue.CreateFromTensor("inputs", stringTensor)];
-		return EmbeddingData.Create(tokenizerInputs, Tokenizer);
 	}
 
 	private static ReadOnlyMemory<float> GetEmbeddings(
@@ -156,24 +179,6 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 		return modelResults[1].AsTensor<float>().ToArray();
 	}
 
-	private void Dispose(bool disposing)
-	{
-		if (!Disposed)
-		{
-			if (disposing)
-			{
-				TokenizerSessionLazy.Value.Dispose();
-				ModelSessionLazy.Value.Dispose();
-			}
-			Disposed = true;
-		}
-	}
-
-	~EmbeddingsProvider()
-	{
-		Dispose(false);
-	}
-
 	private static InferenceSession MakeTokenizerSession(EmbeddingsProviderOptions options)
 	{
 		options.Validate();
@@ -187,5 +192,27 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 		options.Validate();
 		SessionOptions modelOptions = new() { GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL };
 		return new InferenceSession(options.ModelPath, modelOptions);
+	}
+
+	private EmbeddingData TokenizeSingle(string text)
+	{
+		DenseTensor<string> stringTensor = new([1]);
+		stringTensor[0] = text;
+		NamedOnnxValue[] tokenizerInputs = [NamedOnnxValue.CreateFromTensor("inputs", stringTensor)];
+		return EmbeddingData.Create(tokenizerInputs, Tokenizer);
+	}
+
+	private void Dispose(bool disposing)
+	{
+		if (!Disposed)
+		{
+			if (disposing)
+			{
+				TokenizerSessionLazy.Value.Dispose();
+				ModelSessionLazy.Value.Dispose();
+			}
+
+			Disposed = true;
+		}
 	}
 }

@@ -7,11 +7,22 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace ParsersControl.Infrastructure.Listeners;
 
+/// <summary>
+/// Обработчик события подписки парсера.
+/// </summary>
+/// <param name="rabbitMq">Источник подключения к RabbitMQ.</param>
+/// <param name="logger">Логгер для записи информации.</param>
 public sealed class OnParserSubscribedEventListener(RabbitMqConnectionSource rabbitMq, Serilog.ILogger logger)
 	: IOnParserSubscribedListener
 {
 	private Serilog.ILogger Logger { get; } = logger.ForContext<IOnParserSubscribedListener>();
 
+	/// <summary>
+	/// Обрабатывает событие подписки парсера.
+	/// </summary>
+	/// <param name="parser">Подписанный парсер, для которого произошло событие подписки.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию обработки события.</returns>
 	public Task Handle(SubscribedParser parser, CancellationToken ct = default)
 	{
 		(string domain, string type) = GetParserInfo(parser);

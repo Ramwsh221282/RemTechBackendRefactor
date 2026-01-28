@@ -2,9 +2,15 @@
 
 namespace Identity.Infrastructure.Tokens.Migrations;
 
+/// <summary>
+/// Миграция для создания таблицы access_tokens модуля identity.
+/// </summary>
 [Migration(1767696579)]
 public sealed class AccessTokensTableMigration : Migration
 {
+	/// <summary>
+	/// Применяет миграцию, создавая таблицу access_tokens модуля identity.
+	/// </summary>
 	public override void Up() =>
 		Execute.Sql(
 			"""
@@ -23,5 +29,8 @@ public sealed class AccessTokensTableMigration : Migration
 			"""
 		);
 
+	/// <summary>
+	/// Откатывает миграцию, удаляя таблицу access_tokens модуля identity.
+	/// </summary>
 	public override void Down() => Execute.Sql("DROP TABLE IF EXISTS identity_module.access_tokens;");
 }

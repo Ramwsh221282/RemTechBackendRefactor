@@ -7,11 +7,21 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Common.BackgroundServices;
 
+/// <summary>
+/// Фоновая служба для очистки отправленных сообщений из таблицы outbox модуля аккаунтов.
+/// </summary>
+/// <param name="logger">Логгер для записи информации и ошибок.</param>
+/// <param name="connectionFactory">Фабрика для создания подключений к базе данных.</param>
 public sealed class AccountsModuleOutboxCleaner(Serilog.ILogger logger, NpgSqlConnectionFactory connectionFactory)
 	: BackgroundService
 {
 	private Serilog.ILogger Logger { get; } = logger.ForContext<AccountsModuleOutboxCleaner>();
 
+	/// <summary>
+	/// Фабрика для создания подключений к базе данных.
+	/// </summary>
+	/// <param name="stoppingToken">Токен отмены для остановки фоновой службы.</param>
+	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		while (!stoppingToken.IsCancellationRequested)

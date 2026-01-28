@@ -2,4 +2,7 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace ContainedItems.Infrastructure.Queries.GetMainPageLastAddedItems;
 
-public sealed record GetMainPageLastAddedItemsQuery() : IQuery;
+/// <summary>
+/// Запрос для получения последних добавленных элементов на главную страницу.
+/// </summary>
+public sealed record GetMainPageLastAddedItemsQuery : IQuery;

@@ -10,15 +10,21 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace ParsersControl.Infrastructure.Listeners;
 
+/// <summary>
+/// Слушатель увеличения количества обработанных элементов парсером.
+/// </summary>
+/// <param name="rabbitMq">Источник подключения к RabbitMQ.</param>
+/// <param name="logger">Логгер для записи информации и ошибок.</param>
+/// <param name="services">Провайдер сервисов для разрешения зависимостей.</param>
 public sealed class ParserIncreaseProcessedListener(
 	RabbitMqConnectionSource rabbitMq,
 	Serilog.ILogger logger,
 	IServiceProvider services
 ) : IConsumer
 {
-	private const string Exchange = "parsers";
-	private const string Queue = "parsers.increase_processed";
-	private const string RoutingKey = "parsers.increase_processed";
+	private const string EXCHANGE = "parsers";
+	private const string QUEUE = "parsers.increase_processed";
+	private const string ROUTING_KEY = "parsers.increase_processed";
 	private IChannel? _channel;
 	private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<ParserIncreaseProcessedListener>();
@@ -53,16 +59,32 @@ public sealed class ParserIncreaseProcessedListener(
 			}
 		};
 
+	/// <summary>
+	/// Инициализирует канал для прослушивания сообщений.
+	/// </summary>
+	/// <param name="connection">Подключение к RabbitMQ.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Инициализация канала.</returns>
 	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
 
+	/// <summary>
+	/// Начинает прослушивание сообщений.
+	/// </summary>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача прослушивания сообщений.</returns>
 	public Task StartConsuming(CancellationToken ct = default)
 	{
 		AsyncEventingBasicConsumer consumer = new(Channel);
 		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, false, consumer, ct);
+		return Channel.BasicConsumeAsync(QUEUE, false, consumer, ct);
 	}
 
+	/// <summary>
+	/// Останавливает прослушивание сообщений.
+	/// </summary>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача остановки прослушивания сообщений.</returns>
 	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
 
 	private static SetParsedAmountCommand CreateCommand(ParserIncreaseProcessedMessage message) =>

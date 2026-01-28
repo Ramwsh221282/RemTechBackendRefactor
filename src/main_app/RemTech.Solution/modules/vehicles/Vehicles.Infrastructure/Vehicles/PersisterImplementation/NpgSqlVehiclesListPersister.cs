@@ -6,8 +6,18 @@ using Vehicles.Domain.Vehicles.Contracts;
 
 namespace Vehicles.Infrastructure.Vehicles.PersisterImplementation;
 
+/// <summary>
+/// Реализация персистера списка транспортных средств для PostgreSQL.
+/// </summary>
+/// <param name="session">Сессия для работы с базой данных PostgreSQL.</param>
 public sealed class NpgSqlVehiclesListPersister(NpgSqlSession session) : IVehiclesListPersister
 {
+	/// <summary>
+	/// Сохраняет список транспортных средств в базе данных.
+	/// </summary>
+	/// <param name="infos">Список информации о транспортных средствах для сохранения.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Количество сохраненных транспортных средств.</returns>
 	public async Task<int> Persist(IEnumerable<VehiclePersistInfo> infos, CancellationToken ct = default)
 	{
 		IEnumerable<Guid> existing = await GetExistingIdentifiers(infos, ct);

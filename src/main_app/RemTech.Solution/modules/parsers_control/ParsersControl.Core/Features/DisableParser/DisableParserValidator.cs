@@ -4,10 +4,16 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace ParsersControl.Core.Features.DisableParser;
 
+/// <summary>
+/// Валидатор команды отключения парсера.
+/// </summary>
 public sealed class DisableParserValidator : AbstractValidator<DisableParserCommand>
 {
-    public DisableParserValidator()
-    {
-        RuleFor(c => c.Id).MustBeValid(SubscribedParserId.Create);
-    }
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="DisableParserValidator"/>.
+	/// </summary>
+	public DisableParserValidator()
+	{
+		RuleFor(c => c.Id).MustBeValid(SubscribedParserId.Create);
+	}
 }

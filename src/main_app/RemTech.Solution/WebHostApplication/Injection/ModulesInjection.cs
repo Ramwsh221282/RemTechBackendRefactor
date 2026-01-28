@@ -29,6 +29,8 @@ using Scrutor;
 using Spares.Domain.Models;
 using Spares.Infrastructure.Repository;
 using Spares.WebApi.Extensions;
+using Telemetry.Core.ActionRecords;
+using Telemetry.Infrastructure;
 using Vehicles.Domain.Vehicles;
 using Vehicles.Infrastructure.BackgroundServices;
 using Vehicles.Infrastructure.Vehicles.PersisterImplementation;
@@ -36,6 +38,9 @@ using Vehicles.WebApi.Extensions;
 
 namespace WebHostApplication.Injection;
 
+/// <summary>
+/// Регистрация модулей приложения.
+/// </summary>
 public static class ModulesInjection
 {
 	extension(IServiceCollection services)
@@ -157,5 +162,8 @@ public static class ModulesInjection
 			typeof(SubscribedParser).Assembly,
 			typeof(SubscribedParsersRepository).Assembly,
 			typeof(VehicleEmbeddingsUpdaterService).Assembly,
+			// telemetry module
+			typeof(ActionRecord).Assembly,
+			typeof(ActionRecordsTableMigration).Assembly,
 		];
 }

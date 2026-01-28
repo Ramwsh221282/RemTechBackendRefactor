@@ -2,12 +2,18 @@
 
 namespace Notifications.Infrastructure.PendingEmails.Migrations;
 
+/// <summary>
+/// Миграция для создания таблицы отложенных писем.
+/// </summary>
 [Migration(1767617300)]
 public sealed class PendingEmailTableMigration : Migration
 {
-    public override void Up() =>
-        Execute.Sql(
-            """
+	/// <summary>
+	/// Выполняет миграцию вверх, создавая таблицу отложенных писем.
+	/// </summary>
+	public override void Up() =>
+		Execute.Sql(
+			"""
 			CREATE TABLE IF NOT EXISTS notifications_module.pending_emails
 			(
 			    id uuid primary key,
@@ -17,7 +23,10 @@ public sealed class PendingEmailTableMigration : Migration
 			    was_sent boolean not null
 			)
 			"""
-        );
+		);
 
-    public override void Down() => Execute.Sql("DROP TABLE IF EXISTS notifications_module.pending_emails");
+	/// <summary>
+	/// Выполняет миграцию вниз, удаляя таблицу отложенных писем.
+	/// </summary>
+	public override void Down() => Execute.Sql("DROP TABLE IF EXISTS notifications_module.pending_emails");
 }

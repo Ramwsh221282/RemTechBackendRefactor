@@ -10,16 +10,27 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace ParsersControl.Infrastructure.Listeners;
 
+/// <summary>
+/// Обработчик подписки парсера.
+/// </summary>
+/// <param name="services">Поставщик сервисов для создания областей обслуживания.</param>
+/// <param name="logger">Логгер для записи информации.</param>
 public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.ILogger logger) : IConsumer
 {
-	private const string Queue = "parsers.create";
-	private const string Exchange = "parsers";
-	private const string RoutingKey = Queue;
+	private const string QUEUE = "parsers.create";
+	private const string EXCHANGE = "parsers";
+	private const string ROUTING_KEY = QUEUE;
 	private IChannel? _channel;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<ParserSubscribeConsumer>();
 	private IChannel Channel => _channel ?? throw new InvalidOperationException("Channel is not initialized.");
 	private AsyncEventingBasicConsumer? Consumer { get; set; }
 
+	/// <summary>
+	/// Инициализирует канал для прослушивания сообщений.
+	/// </summary>
+	/// <param name="connection">Подключение к RabbitMQ.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию инициализации канала.</returns>
 	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
 	{
 		CreateChannelOptions options = new(
@@ -34,15 +45,27 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 		Consumer = CreateConsumer(_channel);
 	}
 
+	/// <summary>
+	/// Начинает прослушивание сообщений.
+	/// </summary>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию начала прослушивания сообщений.</returns>
+	/// <exception cref="InvalidOperationException">Выбрасывается, если канал или потребитель не инициализированы.</exception>
 	public Task StartConsuming(CancellationToken ct = default)
 	{
 		if (Channel is null)
 			throw new InvalidOperationException("Channel is not initialized.");
 		return Consumer is null
 			? throw new InvalidOperationException("Consumer is not initialized.")
-			: (Task)Channel.BasicConsumeAsync(queue: Queue, autoAck: false, consumer: Consumer, cancellationToken: ct);
+			: (Task)Channel.BasicConsumeAsync(queue: QUEUE, autoAck: false, consumer: Consumer, cancellationToken: ct);
 	}
 
+	/// <summary>
+	/// Останавливает прослушивание сообщений и закрывает канал.
+	/// </summary>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию остановки прослушивания сообщений.</returns>
+	/// <exception cref="InvalidOperationException">Выбрасывается, если канал не инициализирован.</exception>
 	public async Task Shutdown(CancellationToken ct = default)
 	{
 		if (Channel is null)
@@ -52,7 +75,7 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 
 	private static Task DeclareExchange(IChannel channel, CancellationToken ct) =>
 		channel.ExchangeDeclareAsync(
-			exchange: Exchange,
+			exchange: EXCHANGE,
 			type: "topic",
 			durable: true,
 			autoDelete: false,
@@ -61,7 +84,7 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 
 	private static Task<QueueDeclareOk> DeclareQueue(IChannel channel, CancellationToken ct) =>
 		channel.QueueDeclareAsync(
-			queue: Queue,
+			queue: QUEUE,
 			durable: true,
 			exclusive: false,
 			autoDelete: false,
@@ -77,7 +100,7 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 			.Execute(command);
 
 	private static Task BindQueue(IChannel channel, CancellationToken ct) =>
-		channel.QueueBindAsync(queue: Queue, exchange: Exchange, routingKey: RoutingKey, cancellationToken: ct);
+		channel.QueueBindAsync(queue: QUEUE, exchange: EXCHANGE, routingKey: ROUTING_KEY, cancellationToken: ct);
 
 	private AsyncEventingBasicConsumer CreateConsumer(IChannel channel)
 	{

@@ -7,10 +7,20 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Tokens;
 
+/// <summary>
+/// Репозиторий для управления токенами доступа.
+/// </summary>
+/// <param name="session">Сессия для взаимодействия с базой данных PostgreSQL.</param>
 public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessTokensRepository
 {
 	private NpgSqlSession Session { get; } = session;
 
+	/// <summary>
+	/// Добавляет токен доступа в репозиторий.
+	/// </summary>
+	/// <param name="token">Токен доступа для добавления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию добавления токена.</returns>
 	public Task Add(AccessToken token, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -38,6 +48,13 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		return Session.Execute(command);
 	}
 
+	/// <summary>
+	/// Находит токен доступа по его идентификатору.
+	/// </summary>
+	/// <param name="tokenId">Идентификатор токена доступа.</param>
+	/// <param name="withLock">Флаг, указывающий, следует ли блокировать запись для обновления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции, содержащий найденный токен доступа или ошибку.</returns>
 	public async Task<Result<AccessToken>> Find(Guid tokenId, bool withLock = false, CancellationToken ct = default)
 	{
 		string sql = $"""
@@ -64,6 +81,13 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 			: (Result<AccessToken>)token;
 	}
 
+	/// <summary>
+	/// Находит токен доступа по его значению.
+	/// </summary>
+	/// <param name="accessToken">Значение токена доступа.</param>
+	/// <param name="withLock">Флаг, указывающий, следует ли блокировать запись для обновления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции, содержащий найденный токен доступа или ошибку.</returns>
 	public async Task<Result<AccessToken>> Find(
 		string accessToken,
 		bool withLock = false,
@@ -94,6 +118,12 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 			: (Result<AccessToken>)token;
 	}
 
+	/// <summary>
+	/// Обновляет статус истечения срока действия токена доступа.
+	/// </summary>
+	/// <param name="rawToken">Значение токена доступа.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	public Task UpdateTokenExpired(string rawToken, CancellationToken ct = default)
 	{
 		const string sql = "UPDATE identity_module.access_tokens SET is_expired = TRUE WHERE raw_token = @raw_token";
@@ -102,6 +132,13 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		return Session.Execute(command);
 	}
 
+	/// <summary>
+	/// Находит истекшие токены доступа.
+	/// </summary>
+	/// <param name="maxCount">Максимальное количество токенов для поиска.</param>
+	/// <param name="withLock">Флаг, указывающий, следует ли блокировать записи для обновления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Коллекция найденных истекших токенов доступа.</returns>
 	public async Task<IEnumerable<AccessToken>> FindExpired(
 		int maxCount = 50,
 		bool withLock = false,
@@ -131,6 +168,12 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		return await Session.QueryMultipleUsingReader(command, Map);
 	}
 
+	/// <summary>
+	/// Удаляет заданные токены доступа из репозитория.
+	/// </summary>
+	/// <param name="tokens">Коллекция токенов доступа для удаления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	public async Task Remove(IEnumerable<AccessToken> tokens, CancellationToken ct = default)
 	{
 		AccessToken[] tokensArray = [.. tokens];
@@ -146,6 +189,12 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		await Session.Execute(command);
 	}
 
+	/// <summary>
+	/// Удаляет заданный токен доступа из репозитория.
+	/// </summary>
+	/// <param name="token">Токен доступа для удаления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	public Task Remove(AccessToken token, CancellationToken ct = default)
 	{
 		const string sql = "DELETE FROM identity_module.access_tokens WHERE token_id = @token_id";

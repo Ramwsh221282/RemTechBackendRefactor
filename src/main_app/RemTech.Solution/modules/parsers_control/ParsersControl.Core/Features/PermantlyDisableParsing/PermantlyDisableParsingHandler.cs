@@ -7,10 +7,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.PermantlyDisableParsing;
 
+/// <summary>
+/// Обработчик команды постоянного отключения парсера.
+/// </summary>
+/// <param name="repository">Репозиторий подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class PermantlyDisableParsingHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<PermantlyDisableParsingCommand, SubscribedParser>
 {
+	/// <summary>
+	/// Выполняет команду постоянного отключения парсера.
+	/// </summary>
+	/// <param name="command">Команда постоянного отключения парсера.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с отключенным парсером.</returns>
 	public async Task<Result<SubscribedParser>> Execute(
 		PermantlyDisableParsingCommand command,
 		CancellationToken ct = default

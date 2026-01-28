@@ -10,6 +10,11 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Accounts;
 
+/// <summary>
+/// Репозиторий аккаунтов.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
+/// <param name="unitOfWork">Единица работы для модуля аккаунтов.</param>
 public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUnitOfWork unitOfWork)
 	: IAccountsRepository
 {
@@ -17,6 +22,12 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 
 	private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
 
+	/// <summary>
+	/// Добавляет новый аккаунт в репозиторий.
+	/// </summary>
+	/// <param name="account">Аккаунт для добавления.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	public Task Add(Account account, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -30,6 +41,12 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		return Session.Execute(command);
 	}
 
+	/// <summary>
+	/// Проверяет существование аккаунта по заданной спецификации.
+	/// </summary>
+	/// <param name="specification">Спецификация для фильтрации аккаунтов.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию с результатом проверки существования аккаунта.</returns>
 	public Task<bool> Exists(AccountSpecification specification, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(specification);
@@ -38,6 +55,12 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		return Session.QuerySingleRow<bool>(command);
 	}
 
+	/// <summary>
+	/// Находит аккаунт по заданной спецификации.
+	/// </summary>
+	/// <param name="specification">Спецификация для фильтрации аккаунтов.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию с результатом поиска аккаунта.</returns>
 	async Task<Result<Account>> IAccountsRepository.Find(AccountSpecification specification, CancellationToken ct) =>
 		string.IsNullOrWhiteSpace(specification.RefreshToken)
 			? await Get(specification, ct)

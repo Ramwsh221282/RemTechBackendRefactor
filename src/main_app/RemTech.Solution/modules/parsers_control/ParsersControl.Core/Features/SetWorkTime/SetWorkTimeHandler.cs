@@ -7,10 +7,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.SetWorkTime;
 
+/// <summary>
+/// Обработчик команды установки рабочего времени парсера.
+/// </summary>
+/// <param name="repository">Репозиторий подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class SetWorkTimeHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<SetWorkTimeCommand, SubscribedParser>
 {
+	/// <summary>
+	/// Выполняет установку рабочего времени парсера.
+	/// </summary>
+	/// <param name="command">Команда установки рабочего времени.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с обновленным парсером.</returns>
 	public async Task<Result<SubscribedParser>> Execute(SetWorkTimeCommand command, CancellationToken ct = default)
 	{
 		Result<SubscribedParser> parser = await GetRequiredParser(command, ct);
@@ -25,9 +35,14 @@ public sealed class SetWorkTimeHandler(ISubscribedParsersRepository repository)
 	private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
 	{
 		if (parser.IsFailure)
+		{
 			return Result.Failure(parser.Error);
+		}
+
 		if (result.IsFailure)
+		{
 			return Result.Failure(result.Error);
+		}
 
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();

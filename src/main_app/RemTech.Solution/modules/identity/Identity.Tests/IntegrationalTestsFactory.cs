@@ -17,12 +17,19 @@ using Testcontainers.Redis;
 
 namespace Identity.Tests;
 
+/// <summary>
+/// Фабрика для создания интеграционных тестов.
+/// </summary>
 public sealed class IntegrationalTestsFactory : WebApplicationFactory<Identity.WebApi.Program>, IAsyncLifetime
 {
 	private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
 	private readonly RabbitMqContainer _rabbitMqContainer = new RabbitMqBuilder().BuildRabbitMqContainer();
 	private readonly RedisContainer _redisContainer = new RedisBuilder().BuildRedisContainer();
 
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="IntegrationalTestsFactory"/>.
+	/// </summary>
+	/// <returns>Инициализация фабрики для интеграционных тестов.</returns>
 	public async Task InitializeAsync()
 	{
 		await _dbContainer.StartAsync();
@@ -31,6 +38,10 @@ public sealed class IntegrationalTestsFactory : WebApplicationFactory<Identity.W
 		Services.ApplyModuleMigrations();
 	}
 
+	/// <summary>
+	/// Освобождает ресурсы, используемые фабрикой.
+	/// </summary>
+	/// <returns>Освобождение ресурсов фабрики для интеграционных тестов.</returns>
 	public new async Task DisposeAsync()
 	{
 		await _dbContainer.StopAsync();
@@ -41,6 +52,10 @@ public sealed class IntegrationalTestsFactory : WebApplicationFactory<Identity.W
 		await _redisContainer.DisposeAsync();
 	}
 
+	/// <summary>
+	/// Конфигурирует веб-хост для тестирования.
+	/// </summary>
+	/// <param name="builder">Веб-хост билдер.</param>
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
 		base.ConfigureWebHost(builder);

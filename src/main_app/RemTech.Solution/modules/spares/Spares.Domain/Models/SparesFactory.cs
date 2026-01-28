@@ -2,8 +2,24 @@
 
 namespace Spares.Domain.Models;
 
+/// <summary>
+/// Фабрика для создания экземпляров запчастей.
+/// </summary>
 public static class SparesFactory
 {
+	/// <summary>
+	/// Создаёт экземпляр запчасти на основе переданных параметров.
+	/// </summary>
+	/// <param name="containedItemId">Идентификатор вложенного элемента.</param>
+	/// <param name="source">Источник информации о запчасти.</param>
+	/// <param name="oem">OEM-номер запчасти.</param>
+	/// <param name="title">Описание запчасти.</param>
+	/// <param name="price">Цена запчасти.</param>
+	/// <param name="isNds">Признак наличия НДС.</param>
+	/// <param name="type">Тип запчасти.</param>
+	/// <param name="address">Адрес хранения запчасти.</param>
+	/// <param name="photoPaths">Коллекция фото запчасти.</param>
+	/// <returns>Результат создания запчасти.</returns>
 	public static Result<Spare> Create(
 		Guid containedItemId,
 		string source,

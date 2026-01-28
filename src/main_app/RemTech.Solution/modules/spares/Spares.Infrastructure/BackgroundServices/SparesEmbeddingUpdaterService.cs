@@ -10,6 +10,12 @@ using RemTech.SharedKernel.NN;
 
 namespace Spares.Infrastructure.BackgroundServices;
 
+/// <summary>
+/// Сервис обновления эмбеддингов запчастей.
+/// </summary>
+/// <param name="logger">Логгер для записи информации и ошибок.</param>
+/// <param name="embeddings">Провайдер эмбеддингов.</param>
+/// <param name="npgSql">Фабрика подключения к базе данных PostgreSQL.</param>
 public sealed class SparesEmbeddingUpdaterService(
 	Serilog.ILogger logger,
 	EmbeddingsProvider embeddings,
@@ -20,6 +26,11 @@ public sealed class SparesEmbeddingUpdaterService(
 	private EmbeddingsProvider Embeddings { get; } = embeddings;
 	private NpgSqlConnectionFactory NpgSql { get; } = npgSql;
 
+	/// <summary>
+	/// Основной цикл сервиса.
+	/// </summary>
+	/// <param name="stoppingToken">Токен отмены для остановки сервиса.</param>
+	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		while (!stoppingToken.IsCancellationRequested)
