@@ -19,22 +19,7 @@
 		"importHelpers": true,
 		"target": "ES2022",
 		"module": "ES2022",
-		"typeRoots": [
-			"node_modules/@types",
-			"node_modules/@angular",
-			"node_modules/@primeng",
-			"node_modules/@primeng/",
-			"node_modules/primeng/",
-			"node_modules/primeng",
-			"node_modules/@angular-devkit/",
-			"node_modules/@angular/common/http",
-			"node_modules/@angular/common",
-			"node_modules",
-			"./node_modules/@typescript-eslint/",
-			"./node_modules/@eslint/",
-			"./node_modules/*",
-			"./node_modules/"
-		]
+		"typeRoots": ["node_modules/@types"]
 	},
 	"angularCompilerOptions": {
 		"enableI18nLegacyMessageIdFormat": false,
