@@ -25,7 +25,7 @@ public sealed class ActionRecordsPersistingBackgroundProcess(
 		while (!stoppingToken.IsCancellationRequested)
 		{
 			await ProcessActionRecordsAsync(stoppingToken);
-			await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+			await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
 		}
 	}
 

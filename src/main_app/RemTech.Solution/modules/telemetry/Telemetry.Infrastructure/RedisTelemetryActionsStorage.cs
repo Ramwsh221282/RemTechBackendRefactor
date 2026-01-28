@@ -34,8 +34,6 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	}
 
 	private ILogger Logger { get; }
-
-	// private bool IsProcessing { get; set; }
 	private IDatabase? _database { get; set; }
 	private CachingOptions Options { get; }
 
@@ -55,9 +53,11 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 		await _semaphore.WaitAsync(cancellationToken: token);
 		IDatabase database = await ReadDatabase();
 		long length = await database.ListLengthAsync(ACTION_RECORDS_ARRAY_KEY);
+
 		RedisValue[] records = await database.ListRangeAsync(ACTION_RECORDS_ARRAY_KEY, 0, length - 1);
+		ActionRecord[] result = [.. records.Select(RedisValueToActionRecord)];
+
 		ITransaction transaction = database.CreateTransaction();
-		ActionRecord[] result = RedisValuesToActionRecords(records);
 		_semaphore.Release();
 		return new(transaction, result);
 	}
@@ -71,26 +71,27 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	{
 		await _semaphore.WaitAsync();
 		(ITransaction tran, IReadOnlyList<ActionRecord> records) = transaction;
+		List<Task> tasks = [];
 		foreach (ActionRecord record in records)
 		{
-			await tran.ListRemoveAsync(ACTION_RECORDS_ARRAY_KEY, ActionRecordToRedisValue(record), 1);
+			tasks.Add(tran.ListRemoveAsync(ACTION_RECORDS_ARRAY_KEY, ActionRecordToRedisValue(record)));
 		}
+
+		tasks.Add(tran.ExecuteAsync());
 
 		try
 		{
-			await tran.ExecuteAsync();
+			await Task.WhenAll(tasks).ConfigureAwait(false);
 			Logger.Information("Successfully removed {Count} telemetry action records from Redis.", records.Count);
 		}
 		catch (Exception ex)
 		{
-			Logger.Error(ex, "Failed to remove telemetry action records from Redis.");
-			foreach (ActionRecord record in records)
-			{
-				WriteRecord(record);
-			}
+			Logger.Fatal(ex, "Failed to remove telemetry action records from Redis.");
 		}
-
-		_semaphore.Release();
+		finally
+		{
+			_semaphore.Release();
+		}
 	}
 
 	/// <summary>
@@ -113,17 +114,17 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	}
 
 	// TODO: FIX ISSUE WITH JSON DESERIALIZATION.
-	private static ActionRecord[] RedisValuesToActionRecords(RedisValue[] values) =>
-		Array.ConvertAll(values, RedisValueToActionRecord);
+	private static ActionRecord RedisValueToActionRecord(RedisValue value)
+	{
+		RedisStoredActionRecord stored = JsonSerializer.Deserialize<RedisStoredActionRecord>(value.ToString())!;
+		return stored.ToActionRecord();
+	}
 
-	private static RedisValue ActionRecordToRedisValue(ActionRecord record) =>
-		JsonSerializer.Serialize(RedisStoredActionRecord.FromActionRecord(record));
-
-	private static RedisValue[] ActionRecordsToRedisValues(IEnumerable<ActionRecord> records) =>
-		[.. records.Select(ActionRecordToRedisValue)];
-
-	private static ActionRecord RedisValueToActionRecord(RedisValue value) =>
-		JsonSerializer.Deserialize<RedisStoredActionRecord>(value.ToString())!.ToActionRecord();
+	private static RedisValue ActionRecordToRedisValue(ActionRecord record)
+	{
+		RedisStoredActionRecord toStore = RedisStoredActionRecord.FromActionRecord(record);
+		return JsonSerializer.Serialize(toStore);
+	}
 
 	private static ActionRecord[] MakeRecordsSnapshot(ConcurrentQueue<ActionRecord> recordsQueue)
 	{

@@ -17,7 +17,8 @@ public sealed class IntegrationalTestsFixture : WebApplicationFactory<WebApi.Pro
 	private readonly RabbitMqContainer _rabbitContainer = new RabbitMqBuilder().BuildRabbitMqContainer();
 
 	public async Task InitializeAsync()
-	{
+    {
+
 		await _dbContainer.StartAsync();
 		await _rabbitContainer.StartAsync();
 		Services.ApplyModuleMigrations();
