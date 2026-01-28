@@ -1,13 +1,47 @@
 ﻿namespace Spares.Infrastructure.Queries.GetSpares;
 
+/// <summary>
+/// Ответ с информацией о запчасти.
+/// </summary>
 public sealed class SpareResponse
 {
-    public required Guid Id { get; set; }
-    public required string Url { get; set; }
-    public required long Price { get; set; }
-    public required string Oem { get; set; }
-    public required string Text { get; set; }
-    public required string Type { get; set; }
-    public required bool IsNds { get; set; }
-    public required string Location { get; set; }
+	/// <summary>
+	/// Идентификатор запчасти.
+	/// </summary>
+	public required Guid Id { get; set; }
+
+	/// <summary>
+	/// URL запчасти.
+	/// </summary>
+	public required string Url { get; set; }
+
+	/// <summary>
+	/// Цена запчасти.
+	/// </summary>
+	public required long Price { get; set; }
+
+	/// <summary>
+	/// OEM запчасти.
+	/// </summary>
+	public required string Oem { get; set; }
+
+	/// <summary>
+	/// Описание запчасти.
+	/// </summary>
+	public required string Text { get; set; }
+
+	/// <summary>
+	/// Тип запчасти.
+	/// </summary>
+	public required string Type { get; set; }
+
+	/// <summary>
+	/// Фотографии запчасти.
+	/// </summary>
+	public required bool IsNds { get; set; }
+
+	/// <summary>
+	///     Адрес запчасти.
+	/// </summary>
+	public required string Location { get; set; }
 }

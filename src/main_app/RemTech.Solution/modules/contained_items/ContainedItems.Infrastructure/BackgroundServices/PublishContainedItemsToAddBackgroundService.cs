@@ -8,6 +8,12 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace ContainedItems.Infrastructure.BackgroundServices;
 
+/// <summary>
+/// Фоновая служба публикации содержащихся элементов для добавления.
+/// </summary>
+/// <param name="logger">Логгер для записи информации и ошибок.</param>
+/// <param name="connectionFactory">Фабрика для создания подключений к базе данных.</param>
+/// <param name="factory">Фабрика стратегий публикации содержащихся элементов.</param>
 public sealed class PublishContainedItemsToAddBackgroundService(
 	Serilog.ILogger logger,
 	NpgSqlConnectionFactory connectionFactory,
@@ -16,6 +22,11 @@ public sealed class PublishContainedItemsToAddBackgroundService(
 {
 	private Serilog.ILogger Logger { get; } = logger.ForContext<PublishContainedItemsToAddBackgroundService>();
 
+	/// <summary>
+	/// Основной метод выполнения фоновой службы.
+	/// </summary>
+	/// <param name="stoppingToken">Токен отмены для остановки фоновой службы.</param>
+	/// <returns>Задача, представляющая асинхронную операцию выполнения фоновой службы.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		while (!stoppingToken.IsCancellationRequested)

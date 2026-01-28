@@ -10,6 +10,13 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace Notifications.Infrastructure.RabbitMq.Consumers;
 
+/// <summary>
+/// Потребитель сообщений о создании новой учетной записи.
+/// </summary>
+/// <param name="rabbitMq">Источник подключения к RabbitMQ.</param>
+/// <param name="services">Поставщик сервисов.</param>
+/// <param name="logger">Логгер для записи событий.</param>
+/// <param name="frontendOptions">Настройки фронтенда.</param>
 public sealed class OnNewAccountCreatedConsumer(
 	RabbitMqConnectionSource rabbitMq,
 	IServiceProvider services,
@@ -17,9 +24,9 @@ public sealed class OnNewAccountCreatedConsumer(
 	IOptions<FrontendOptions> frontendOptions
 ) : IConsumer
 {
-	private const string Exchange = "identity";
-	private const string RoutingKey = "account.new";
-	private const string Queue = "account.new";
+	private const string EXCHANGE = "identity";
+	private const string ROUTING_KEY = "account.new";
+	private const string QUEUE = "account.new";
 
 	private IChannel? _channel;
 	private IChannel Channel => _channel ?? throw new InvalidOperationException("Channel was not initialized.");
@@ -61,19 +68,35 @@ public sealed class OnNewAccountCreatedConsumer(
 			}
 		};
 
+	/// <summary>
+	/// Инициализирует канал для потребления сообщений.
+	/// </summary>
+	/// <param name="connection">Подключение к RabbitMQ.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию инициализации канала.</returns>
 	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
 	{
 		FrontendOptions.Validate();
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
 	}
 
+	/// <summary>
+	/// Начинает потребление сообщений.
+	/// </summary>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию начала потребления сообщений.</returns>
 	public Task StartConsuming(CancellationToken ct = default)
 	{
 		AsyncEventingBasicConsumer consumer = new(Channel);
 		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, false, consumer, ct);
+		return Channel.BasicConsumeAsync(QUEUE, false, consumer, ct);
 	}
 
+	/// <summary>
+	/// Завершает работу потребителя.
+	/// </summary>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию завершения работы потребителя.</returns>
 	public async Task Shutdown(CancellationToken ct = default)
 	{
 		await Channel.CloseAsync(ct);

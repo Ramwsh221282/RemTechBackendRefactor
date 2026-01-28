@@ -2,6 +2,9 @@
 
 namespace Identity.Infrastructure.Common;
 
+/// <summary>
+/// Расширения для регистрации BcryptWorkFactorOptions в контейнере служб.
+/// </summary>
 public static class BcryptWorkFactorInjection
 {
 	extension(IServiceCollection services)

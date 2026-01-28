@@ -9,12 +9,23 @@ using RemTech.SharedKernel.NN;
 
 namespace Spares.Infrastructure.Queries.GetSparesLocations;
 
+/// <summary>
+/// Обработчик запроса на получение локаций запчастей.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
+/// <param name="embeddings">Провайдер эмбеддингов для поиска.</param>
 public sealed class GetSparesLocationsQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: IQueryHandler<GetSparesLocationsQuery, IEnumerable<SpareLocationResponse>>
 {
 	private NpgSqlSession Session { get; } = session;
 	private EmbeddingsProvider Embeddings { get; } = embeddings;
 
+	/// <summary>
+	/// Обрабатывает запрос на получение локаций запчастей.
+	/// </summary>
+	/// <param name="query">Запрос на получение локаций запчастей.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Коллекция ответов с информацией о локациях запчастей.</returns>
 	public async Task<IEnumerable<SpareLocationResponse>> Handle(
 		GetSparesLocationsQuery query,
 		CancellationToken ct = default

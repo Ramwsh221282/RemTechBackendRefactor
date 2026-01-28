@@ -6,10 +6,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.PermantlyDisableManyParsing;
 
+/// <summary>
+/// Обработчик команды <see cref="PermantlyDisableManyParsingCommand"/>.
+/// </summary>
+/// <param name="repository">Репозиторий для работы с коллекцией подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class PermantlyDisableManyParsingHandler(ISubscribedParsersCollectionRepository repository)
 	: ICommandHandler<PermantlyDisableManyParsingCommand, IEnumerable<SubscribedParser>>
 {
+	/// <summary>
+	/// Выполнение команды отключения списка подписанных парсеров.
+	/// </summary>
+	/// <param name="command">Команда для выполнения.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат выполнения команды с коллекцией подписанных парсеров.</returns>
 	public async Task<Result<IEnumerable<SubscribedParser>>> Execute(
 		PermantlyDisableManyParsingCommand command,
 		CancellationToken ct = default
@@ -34,8 +44,7 @@ public sealed class PermantlyDisableManyParsingHandler(ISubscribedParsersCollect
 			return parsers.Error;
 		if (enabling.IsFailure)
 			return enabling.Error;
-		Result<Unit> saving = await repository.SaveChanges(parsers.Value, ct);
-		return saving;
+		return await repository.SaveChanges(parsers.Value, ct);
 	}
 
 	private async Task<Result<SubscribedParsersCollection>> GetParsers(
@@ -45,8 +54,6 @@ public sealed class PermantlyDisableManyParsingHandler(ISubscribedParsersCollect
 	{
 		SubscribedParsersCollectionQuery query = new(Identifiers: identifiers);
 		SubscribedParsersCollection parsers = await repository.Get(query, ct);
-		return parsers.IsEmpty()
-			? (Result<SubscribedParsersCollection>)Error.NotFound($"Парсеры не найдены.")
-			: (Result<SubscribedParsersCollection>)parsers;
+		return parsers.IsEmpty() ? Error.NotFound("Парсеры не найдены.") : parsers;
 	}
 }

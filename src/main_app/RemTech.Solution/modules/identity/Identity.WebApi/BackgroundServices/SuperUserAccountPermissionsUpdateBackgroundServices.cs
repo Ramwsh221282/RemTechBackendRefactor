@@ -9,6 +9,11 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace Identity.WebApi.BackgroundServices;
 
+/// <summary>
+/// Фоновый сервис для обновления разрешений суперпользователя.
+/// </summary>
+/// <param name="services">Провайдер сервисов для разрешения зависимостей.</param>
+/// <param name="logger">Логгер для записи логов.</param>
 public sealed class SuperUserAccountPermissionsUpdateBackgroundServices(
 	IServiceProvider services,
 	Serilog.ILogger logger
@@ -17,6 +22,11 @@ public sealed class SuperUserAccountPermissionsUpdateBackgroundServices(
 	private IServiceProvider Services { get; } = services;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<SuperUserAccountPermissionsUpdateBackgroundServices>();
 
+	/// <summary>
+	/// Выполняет асинхронное обновление разрешений суперпользователя.
+	/// </summary>
+	/// <param name="stoppingToken">Токен отмены для остановки выполнения.</param>
+	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		while (!stoppingToken.IsCancellationRequested)

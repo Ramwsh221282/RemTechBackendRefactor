@@ -8,10 +8,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.ChangeLinkActivity;
 
+/// <summary>
+/// Обработчик команды изменения активности ссылки парсера.
+/// </summary>
+/// <param name="repository">Репозиторий для работы с подписанными парсерами.</param>
 [TransactionalHandler]
 public sealed class ChangeLinkActivityCommandHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<ChangeLinkActivityCommand, SubscribedParserLink>
 {
+	/// <summary>
+	/// Выполняет команду изменения активности ссылки парсера.
+	/// </summary>
+	/// <param name="activityCommand">Команда для выполнения.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат выполнения команды с подписанной ссылкой парсера.</returns>
 	public async Task<Result<SubscribedParserLink>> Execute(
 		ChangeLinkActivityCommand activityCommand,
 		CancellationToken ct = default

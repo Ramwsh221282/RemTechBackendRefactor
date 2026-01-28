@@ -3,6 +3,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace RemTech.SharedKernel.Web;
 
+/// <summary>
+/// Оболочка для стандартизированного HTTP-ответа.
+/// </summary>
+/// <param name="statusCode">HTTP статус код ответа.</param>
+/// <param name="body">Тело ответа.</param>
+/// <param name="message">Сообщение ответа.</param>
 public sealed class Envelope(int statusCode, object? body, string? message) : IResult
 {
 	private static readonly JsonSerializerOptions _jsonOptions = new()
@@ -15,6 +21,11 @@ public sealed class Envelope(int statusCode, object? body, string? message) : IR
 	private object? Body { get; } = body;
 	private string? Message { get; } = message;
 
+	/// <summary>
+	/// Выполняет запись стандартизированного HTTP-ответа в контекст HTTP.
+	/// </summary>
+	/// <param name="httpContext">Контекст HTTP для записи ответа.</param>
+	/// <returns>Задача, представляющая асинхронную операцию записи ответа.</returns>
 	public Task ExecuteAsync(HttpContext httpContext)
 	{
 		httpContext.Response.StatusCode = StatusCode;

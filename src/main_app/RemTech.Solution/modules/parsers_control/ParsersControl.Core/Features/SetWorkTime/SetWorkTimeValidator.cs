@@ -5,11 +5,17 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace ParsersControl.Core.Features.SetWorkTime;
 
+/// <summary>
+/// Валидатор команды установки рабочего времени.
+/// </summary>
 public sealed class SetWorkTimeValidator : AbstractValidator<SetWorkTimeCommand>
 {
-    public SetWorkTimeValidator()
-    {
-        RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
-        RuleFor(x => x.TotalElapsedSeconds).MustBeValid(ParsingWorkTime.FromTotalElapsedSeconds);
-    }
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="SetWorkTimeValidator"/>.
+	/// </summary>
+	public SetWorkTimeValidator()
+	{
+		RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
+		RuleFor(x => x.TotalElapsedSeconds).MustBeValid(ParsingWorkTime.FromTotalElapsedSeconds);
+	}
 }

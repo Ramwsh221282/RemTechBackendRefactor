@@ -2,9 +2,15 @@
 
 namespace Vehicles.Infrastructure.Migrations;
 
+/// <summary>
+/// Миграция для создания таблицы характеристик.
+/// </summary>
 [Migration(1767032660)]
 public sealed class CharacteristicTableMigration : Migration
 {
+	/// <summary>
+	/// Выполняет миграцию, создавая таблицу характеристик.
+	/// </summary>
 	public override void Up() =>
 		Execute.Sql(
 			"""
@@ -18,5 +24,8 @@ public sealed class CharacteristicTableMigration : Migration
 			"""
 		);
 
+	/// <summary>
+	/// Откатывает миграцию, удаляя таблицу характеристик.
+	/// </summary>
 	public override void Down() => Delete.Table("characteristics").InSchema("vehicles_module");
 }

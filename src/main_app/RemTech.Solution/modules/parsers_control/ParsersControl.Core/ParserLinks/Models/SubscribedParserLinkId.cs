@@ -2,20 +2,46 @@
 
 namespace ParsersControl.Core.ParserLinks.Models;
 
+/// <summary>
+/// Идентификатор ссылки на подписанный парсер.
+/// </summary>
 public readonly record struct SubscribedParserLinkId
 {
-	public SubscribedParserLinkId() => Value = Guid.NewGuid();
-
-	private SubscribedParserLinkId(Guid id) => Value = id;
-
-	public Guid Value { get; private init; }
-
-	public static Result<SubscribedParserLinkId> From(Guid id)
+	/// <summary>
+	/// Создаёт новый идентификатор ссылки на подписанный парсер.
+	/// </summary>
+	public SubscribedParserLinkId()
 	{
-		return id == Guid.Empty
-			? (Result<SubscribedParserLinkId>)Error.Validation("Идентификатор ссылки на парсер не может быть пустым.")
-			: (Result<SubscribedParserLinkId>)new SubscribedParserLinkId(id);
+		Value = Guid.NewGuid();
 	}
 
+	/// <summary>
+	/// Создаёт идентификатор ссылки на подписанный парсер из заданного значения.
+	/// </summary>
+	/// <param name="id">Значение идентификатора.</param>
+	private SubscribedParserLinkId(Guid id)
+	{
+		Value = id;
+	}
+
+	/// <summary>
+	/// Значение идентификатора ссылки на подписанный парсер.
+	/// </summary>
+	public Guid Value { get; private init; }
+
+	/// <summary>
+	/// Создаёт идентификатор ссылки на подписанный парсер из заданного значения.
+	/// </summary>
+	/// <param name="id">Значение идентификатора.</param>
+	/// <returns>Результат создания идентификатора ссылки на подписанный парсер.</returns>
+	public static Result<SubscribedParserLinkId> From(Guid id) =>
+		id == Guid.Empty
+			? Error.Validation("Идентификатор ссылки на парсер не может быть пустым.")
+			: new SubscribedParserLinkId(id);
+
+	/// <summary>
+	/// Создаёт новый идентификатор ссылки на подписанный парсер.
+	/// </summary>
+	/// <returns>Новый идентификатор ссылки на подписанный парсер.</returns>
 	public static SubscribedParserLinkId New() => new();
 }

@@ -9,11 +9,22 @@ using Vehicles.Domain.Categories.Contracts;
 
 namespace Vehicles.Infrastructure.Categories.CategoriesPersisterImplementation;
 
+/// <summary>
+/// Реализация персистера категорий на основе NpgSql и векторных представлений.
+/// </summary>
+/// <param name="session">Сессия для работы с базой данных NpgSql.</param>
+/// <param name="embeddings">Провайдер векторных представлений.</param>
 public sealed class NpgSqlCategoriesPersisterImplementation(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: ICategoryPersister
 {
-	private const double MaxDistance = 0.6;
+	private const double MAX_DISTANCE = 0.6;
 
+	/// <summary>
+	/// Сохраняет категорию в базе данных.
+	/// </summary>
+	/// <param name="category">Категория для сохранения.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат операции сохранения категории.</returns>
 	public async Task<Result<Category>> Save(Category category, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -57,7 +68,7 @@ public sealed class NpgSqlCategoriesPersisterImplementation(NpgSqlSession sessio
 		DynamicParameters parameters = new();
 		parameters.Add("@name", category.Name.Value, DbType.String);
 		parameters.Add("@input_embedding", vector);
-		parameters.Add("@max_distance", MaxDistance, DbType.Double);
+		parameters.Add("@max_distance", MAX_DISTANCE, DbType.Double);
 		return parameters;
 	}
 

@@ -2,9 +2,15 @@
 
 namespace Vehicles.Infrastructure.Migrations;
 
+/// <summary>
+/// Миграция для создания таблицы городов.
+/// </summary>
 [Migration(1767086200)]
 public sealed class LocationCitiesMigration : Migration
 {
+	/// <summary>
+	/// Выполняет миграцию, создавая таблицу городов.
+	/// </summary>
 	public override void Up() =>
 		Execute.Sql(
 			"""
@@ -18,5 +24,8 @@ public sealed class LocationCitiesMigration : Migration
 			"""
 		);
 
+	/// <summary>
+	/// Откатывает миграцию, удаляя таблицу городов.
+	/// </summary>
 	public override void Down() => Delete.Table("cities").InSchema("vehicles_module");
 }

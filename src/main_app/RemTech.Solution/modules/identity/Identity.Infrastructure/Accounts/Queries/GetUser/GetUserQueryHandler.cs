@@ -5,11 +5,21 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace Identity.Infrastructure.Accounts.Queries.GetUser;
 
+/// <summary>
+/// Обработчик запроса на получение пользователя.
+/// </summary>
+/// <param name="accounts">Репозиторий аккаунтов.</param>
 public sealed class GetUserQueryHandler(IAccountsRepository accounts)
 	: IQueryHandler<GetUserQuery, UserAccountResponse?>
 {
 	private IAccountsRepository Accounts { get; } = accounts;
 
+	/// <summary>
+	/// Обрабатывает запрос на получение пользователя.
+	/// </summary>
+	/// <param name="query">Запрос на получение пользователя.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат выполнения запроса на получение пользователя.</returns>
 	public async Task<UserAccountResponse?> Handle(GetUserQuery query, CancellationToken ct = default) =>
 		query switch
 		{

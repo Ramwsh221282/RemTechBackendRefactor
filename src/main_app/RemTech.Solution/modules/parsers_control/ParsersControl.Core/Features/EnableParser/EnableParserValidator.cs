@@ -4,10 +4,16 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace ParsersControl.Core.Features.EnableParser;
 
+/// <summary>
+/// Валидатор команды включения парсера.
+/// </summary>
 public sealed class EnableParserValidator : AbstractValidator<EnableParserCommand>
 {
-    public EnableParserValidator()
-    {
-        RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
-    }
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="EnableParserValidator"/>.
+	/// </summary>
+	public EnableParserValidator()
+	{
+		RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
+	}
 }

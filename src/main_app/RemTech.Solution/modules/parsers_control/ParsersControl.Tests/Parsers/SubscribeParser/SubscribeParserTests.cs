@@ -3,6 +3,10 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace ParsersControl.Tests.Parsers.SubscribeParser;
 
+/// <summary>
+///  Тесты для подписки на парсер.
+/// </summary>
+/// <param name="fixture">Фикстура для интеграционных тестов.</param>
 public sealed class SubscribeParserTests(IntegrationalTestsFixture fixture) : IClassFixture<IntegrationalTestsFixture>
 {
     private IServiceProvider Services { get; } = fixture.Services;

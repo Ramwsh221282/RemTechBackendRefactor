@@ -8,12 +8,23 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Notifications.Infrastructure.Mailers;
 
+/// <summary>
+/// Репозиторий почтовых ящиков.
+/// </summary>
+/// <param name="session">Сессия базы данных для выполнения операций.</param>
+/// <param name="changeTracker">Трекер изменений для управления транзакциями.</param>
 public sealed class MailersRepository(NpgSqlSession session, INotificationsModuleUnitOfWork changeTracker)
 	: IMailersRepository
 {
 	private NpgSqlSession Session { get; } = session;
 	private INotificationsModuleUnitOfWork ChangeTracker { get; } = changeTracker;
 
+	/// <summary>
+	/// 	Добавляет новый почтовый ящик в репозиторий.
+	/// </summary>
+	/// <param name="mailer">Почтовый ящик для добавления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию добавления почтового ящика.</returns>
 	public Task Add(Mailer mailer, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -27,6 +38,12 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 		return Session.Execute(command);
 	}
 
+	/// <summary>
+	/// 	Получает почтовый ящик по заданной спецификации.
+	/// </summary>
+	/// <param name="specification">Спецификация для фильтрации почтовых ящиков.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции, содержащий почтовый ящик или ошибку.</returns>
 	public async Task<Result<Mailer>> Get(MailersSpecification specification, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(specification);
@@ -50,6 +67,12 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 		return Result.Success(mailer);
 	}
 
+	/// <summary>
+	/// 	Получает множество почтовых ящиков по заданной спецификации.
+	/// </summary>
+	/// <param name="specification">Спецификация для фильтрации почтовых ящиков.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Массив почтовых ящиков, соответствующих спецификации.</returns>
 	public async Task<Mailer[]> GetMany(MailersSpecification specification, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(specification);
@@ -70,6 +93,12 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 		return mailers;
 	}
 
+	/// <summary>
+	///   Проверяет существование почтового ящика по заданной спецификации.
+	/// </summary>
+	/// <param name="specification">Спецификация для фильтрации почтовых ящиков.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию проверки существования почтового ящика.</returns>
 	public Task<bool> Exists(MailersSpecification specification, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(specification);
@@ -78,6 +107,12 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 		return Session.QuerySingleRow<bool>(command);
 	}
 
+	/// <summary>
+	/// 	Обновляет существующий почтовый ящик в репозитории.
+	/// </summary>
+	/// <param name="mailer">Почтовый ящик для удаления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию удаления почтового ящика.</returns>
 	public Task Delete(Mailer mailer, CancellationToken ct = default)
 	{
 		const string sql = "DELETE FROM notifications_module.mailers WHERE id = @id";

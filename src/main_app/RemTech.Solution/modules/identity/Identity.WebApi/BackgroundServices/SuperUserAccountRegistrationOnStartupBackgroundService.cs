@@ -6,6 +6,11 @@ using Microsoft.Extensions.Options;
 
 namespace Identity.WebApi.BackgroundServices;
 
+/// <summary>
+/// Фоновый сервис для регистрации аккаунта суперпользователя при запуске приложения.
+/// </summary>
+/// <param name="services">Провайдер сервисов для разрешения зависимостей.</param>
+/// <param name="logger">Логгер для записи логов.</param>
 public sealed class SuperUserAccountRegistrationOnStartupBackgroundService(
 	IServiceProvider services,
 	Serilog.ILogger logger
@@ -15,6 +20,11 @@ public sealed class SuperUserAccountRegistrationOnStartupBackgroundService(
 	private Serilog.ILogger Logger { get; } =
 		logger.ForContext<SuperUserAccountRegistrationOnStartupBackgroundService>();
 
+	/// <summary>
+	/// Выполняет асинхронную регистрацию аккаунта суперпользователя при запуске приложения.
+	/// </summary>
+	/// <param name="stoppingToken">Токен отмены для остановки выполнения.</param>
+	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		while (!await Executed(stoppingToken)) { }

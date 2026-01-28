@@ -6,10 +6,31 @@ using WebHostApplication.Common.Envelope;
 
 namespace WebHostApplication.Modules.vehicles;
 
+/// <summary>
+/// Контроллер для работы с категориями транспортных средств.
+/// </summary>
 [ApiController]
 [Route("api/categories")]
 public sealed class CategoriesController
 {
+	/// <summary>
+	/// Получить список категорий по фильтрам.
+	/// </summary>
+	/// <param name="id">Идентификатор категории</param>
+	/// <param name="name">Название категории</param>
+	/// <param name="brandId">Идентификатор бренда</param>
+	/// <param name="brandName">Название бренда</param>
+	/// <param name="modelId">Идентификатор модели</param>
+	/// <param name="modelName">Название модели</param>
+	/// <param name="includedInformation">Включаемая информация</param>
+	/// <param name="textSearch">Текстовый поиск</param>
+	/// <param name="page">Номер страницы</param>
+	/// <param name="pageSize">Размер страницы</param>
+	/// <param name="orderByFields">Поля сортировки</param>
+	/// <param name="orderByMode">Режим сортировки</param>
+	/// <param name="handler">Обработчик запроса</param>
+	/// <param name="ct">Токен отмены</param>
+	/// <returns>Список категорий</returns>
 	[HttpGet]
 	public async Task<Envelope> GetCategories(
 		[FromQuery(Name = "id")] Guid? id,

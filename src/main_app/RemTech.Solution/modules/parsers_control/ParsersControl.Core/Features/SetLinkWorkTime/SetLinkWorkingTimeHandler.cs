@@ -8,10 +8,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.SetLinkWorkTime;
 
+/// <summary>
+/// Обработчик команды установки рабочего времени ссылки.
+/// </summary>
+/// <param name="repository">Репозиторий подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class SetLinkWorkingTimeHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<SetLinkWorkingTimeCommand, SubscribedParserLink>
 {
+	/// <summary>
+	/// Выполняет команду установки рабочего времени ссылки.
+	/// </summary>
+	/// <param name="command">Команда установки рабочего времени ссылки.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с обновленной ссылкой парсера.</returns>
 	public async Task<Result<SubscribedParserLink>> Execute(
 		SetLinkWorkingTimeCommand command,
 		CancellationToken ct = default

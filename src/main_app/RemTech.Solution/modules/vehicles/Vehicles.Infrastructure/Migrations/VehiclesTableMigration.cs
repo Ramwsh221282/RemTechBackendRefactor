@@ -2,9 +2,15 @@
 
 namespace Vehicles.Infrastructure.Migrations;
 
+/// <summary>
+/// Миграция для создания таблицы транспортных средств.
+/// </summary>
 [Migration(1767097795)]
 public sealed class VehiclesTableMigration : Migration
 {
+	/// <summary>
+	/// Выполняет миграцию, создавая таблицу транспортных средств.
+	/// </summary>
 	public override void Up()
 	{
 		Create
@@ -51,5 +57,8 @@ public sealed class VehiclesTableMigration : Migration
 		);
 	}
 
+	/// <summary>
+	/// Откатывает миграцию, удаляя таблицу транспортных средств.
+	/// </summary>
 	public override void Down() => Delete.Table("vehicles").InSchema("vehicles_module");
 }

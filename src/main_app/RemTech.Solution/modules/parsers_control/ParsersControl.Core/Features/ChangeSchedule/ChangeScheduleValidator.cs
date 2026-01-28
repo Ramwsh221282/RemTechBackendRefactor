@@ -4,10 +4,16 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace ParsersControl.Core.Features.ChangeSchedule;
 
+/// <summary>
+/// Валидатор команды изменения расписания парсера.
+/// </summary>
 public sealed class ChangeScheduleValidator : AbstractValidator<ChangeScheduleCommand>
 {
-    public ChangeScheduleValidator()
-    {
-        RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
-    }
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="ChangeScheduleValidator"/>.
+	/// </summary>
+	public ChangeScheduleValidator()
+	{
+		RuleFor(x => x.Id).MustBeValid(SubscribedParserId.Create);
+	}
 }

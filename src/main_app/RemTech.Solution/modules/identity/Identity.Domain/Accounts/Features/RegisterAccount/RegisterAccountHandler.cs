@@ -9,6 +9,14 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace Identity.Domain.Accounts.Features.RegisterAccount;
 
+/// <summary>
+/// Обработчик команды для регистрации нового аккаунта пользователя.
+/// </summary>
+/// <param name="accounts">Репозиторий аккаунтов.</param>
+/// <param name="passwordRequirements">Требования к паролю аккаунта.</param>
+/// <param name="hasher">Сервис хеширования паролей.</param>
+/// <param name="tickets">Репозиторий тикетов аккаунтов.</param>
+/// <param name="outbox">Сервис исходящих сообщений модуля аккаунтов.</param>
 public sealed class RegisterAccountHandler(
 	IAccountsRepository accounts,
 	IEnumerable<IAccountPasswordRequirement> passwordRequirements,
@@ -17,6 +25,12 @@ public sealed class RegisterAccountHandler(
 	IAccountModuleOutbox outbox
 ) : ICommandHandler<RegisterAccountCommand, Unit>
 {
+	/// <summary>
+	/// Выполняет регистрацию нового аккаунта пользователя по команде.
+	/// </summary>
+	/// <param name="command">Команда регистрации аккаунта.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды.</returns>
 	public async Task<Result<Unit>> Execute(RegisterAccountCommand command, CancellationToken ct = default)
 	{
 		Result<Unit> approval = await ApproveRegistration(command, ct);
@@ -28,7 +42,7 @@ public sealed class RegisterAccountHandler(
 
 		AccountPassword encrypted = password.Value.HashBy(hasher);
 		Account account = CreateAccount(encrypted, command);
-		AccountTicket ticket = AccountTicket.New(account.Id.Value, AccountTicketPurposes.EmailConfirmationRequired);
+		AccountTicket ticket = AccountTicket.New(account.Id.Value, AccountTicketPurposes.EMAIL_CONFIRMATION_REQUIRED);
 		IdentityOutboxMessage message = CreateOutboxMessage(ticket, account);
 
 		await accounts.Add(account, ct);
@@ -53,7 +67,7 @@ public sealed class RegisterAccountHandler(
 			account.Login.Value
 		);
 
-		return IdentityOutboxMessage.CreateNew(AccountOutboxMessageTypes.NewAccountCreated, payload);
+		return IdentityOutboxMessage.CreateNew(AccountOutboxMessageTypes.NEW_ACCOUNT_CREATED, payload);
 	}
 
 	private Result<AccountPassword> ApprovePassword(RegisterAccountCommand command)

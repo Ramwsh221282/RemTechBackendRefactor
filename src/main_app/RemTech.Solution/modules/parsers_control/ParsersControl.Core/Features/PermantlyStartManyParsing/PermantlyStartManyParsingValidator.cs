@@ -4,10 +4,16 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace ParsersControl.Core.Features.PermantlyStartManyParsing;
 
+/// <summary>
+/// Валидатор команды постоянного запуска множества парсеров.
+/// </summary>
 public sealed class PermantlyStartManyParsingValidator : AbstractValidator<PermantlyStartManyParsingCommand>
 {
-    public PermantlyStartManyParsingValidator()
-    {
-        RuleFor(x => x.Identifiers).EachMustFollow([SubscribedParserId.Create]);
-    }
+	/// <summary>
+	///    Инициализирует новый экземпляр <see cref="PermantlyStartManyParsingValidator"/>.
+	/// </summary>
+	public PermantlyStartManyParsingValidator()
+	{
+		RuleFor(x => x.Identifiers).EachMustFollow([SubscribedParserId.Create]);
+	}
 }

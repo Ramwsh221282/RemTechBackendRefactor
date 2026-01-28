@@ -3,9 +3,15 @@ using FluentMigrator;
 
 namespace Vehicles.Infrastructure.Migrations;
 
+/// <summary>
+/// Миграция для создания таблицы характеристик транспортных средств.
+/// </summary>
 [Migration(1767097877)]
 public sealed class VehicleCharacteristicsMigration : Migration
 {
+	/// <summary>
+	/// Выполняет миграцию, создавая таблицу характеристик транспортных средств.
+	/// </summary>
 	public override void Up() =>
 		Create
 			.Table("vehicle_characteristics")
@@ -25,5 +31,8 @@ public sealed class VehicleCharacteristicsMigration : Migration
 			.AsString()
 			.NotNullable();
 
+	/// <summary>
+	/// Откатывает миграцию, удаляя таблицу характеристик транспортных средств.
+	/// </summary>
 	public override void Down() => Delete.Table("vehicle_characteristics").InSchema("vehicles_module");
 }

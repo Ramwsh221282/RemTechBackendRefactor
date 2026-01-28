@@ -6,10 +6,31 @@ using WebHostApplication.Common.Envelope;
 
 namespace WebHostApplication.Modules.vehicles;
 
+/// <summary>
+/// Контроллер для работы с брендами автомобилей.
+/// </summary>
 [ApiController]
 [Route("api/brands")]
 public sealed class BrandsController
 {
+	/// <summary>
+	/// Получает список брендов автомобилей с возможностью фильтрации, сортировки и пагинации.
+	/// </summary>
+	/// <param name="id">Идентификатор бренда.</param>
+	/// <param name="name">Название бренда.</param>
+	/// <param name="categoryId">Идентификатор категории.</param>
+	/// <param name="categoryName">Название категории.</param>
+	/// <param name="modelId">Идентификатор модели.</param>
+	/// <param name="modelName">Название модели.</param>
+	/// <param name="page">Номер страницы.</param>
+	/// <param name="pageSize">Размер страницы.</param>
+	/// <param name="includes">Список связанных сущностей для включения.</param>
+	/// <param name="textSearch">Текстовый поиск.</param>
+	/// <param name="sortFields">Поля для сортировки.</param>
+	/// <param name="sortMode">Режим сортировки.</param>
+	/// <param name="handler">Обработчик запроса.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Объект-обёртка с результатом запроса.</returns>
 	[HttpGet]
 	public async Task<Envelope> GetBrands(
 		[FromQuery(Name = "id")] Guid? id,

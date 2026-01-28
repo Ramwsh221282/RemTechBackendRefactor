@@ -5,9 +5,19 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Vehicles.Infrastructure.Models.Queries.GetModels;
 
+/// <summary>
+/// Обработчик запроса на получение моделей транспортных средств по различным фильтрам.
+/// </summary>
+/// <param name="session">Сессия для работы с базой данных PostgreSQL.</param>
 public sealed class GetModelsQueryHandler(NpgSqlSession session)
 	: IQueryHandler<GetModelsQuery, IEnumerable<ModelResponse>>
 {
+	/// <summary>
+	/// Обрабатывает запрос на получение моделей транспортных средств по различным фильтрам.
+	/// </summary>
+	/// <param name="query">Запрос с фильтрами для получения моделей транспортных средств.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Коллекция моделей транспортных средств, соответствующих фильтрам.</returns>
 	public Task<IEnumerable<ModelResponse>> Handle(GetModelsQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string sql) = CreateSql(query);

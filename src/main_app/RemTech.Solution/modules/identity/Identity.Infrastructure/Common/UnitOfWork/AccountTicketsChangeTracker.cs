@@ -5,17 +5,31 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Common.UnitOfWork;
 
+/// <summary>
+/// Трекер изменений тикетов аккаунтов.
+/// </summary>
+/// <param name="session">Сессия базы данных для выполнения операций.</param>
 public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 {
 	private readonly Dictionary<Guid, AccountTicket> _tracking = [];
 	private NpgSqlSession Session { get; } = session;
 
+	/// <summary>
+	/// Начинает отслеживание изменений для коллекции тикетов аккаунтов.
+	/// </summary>
+	/// <param name="tickets">Коллекция тикетов аккаунтов для отслеживания изменений.</param>
 	public void StartTracking(IEnumerable<AccountTicket> tickets)
 	{
 		foreach (AccountTicket ticket in tickets)
 			_tracking.TryAdd(ticket.TicketId, ticket.Clone());
 	}
 
+	/// <summary>
+	/// Сохраняет изменения для коллекции тикетов аккаунтов.
+	/// </summary>
+	/// <param name="tickets">Коллекция тикетов аккаунтов для сохранения изменений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
 	public async Task SaveChanges(IEnumerable<AccountTicket> tickets, CancellationToken ct)
 	{
 		IEnumerable<AccountTicket> tracking = GetTrackingTickets(tickets);

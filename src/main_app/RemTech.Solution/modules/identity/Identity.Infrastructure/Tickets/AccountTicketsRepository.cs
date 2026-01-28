@@ -10,12 +10,23 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Tickets;
 
+/// <summary>
+/// Репозиторий для управления заявками аккаунтов.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
+/// <param name="unitOfWork">Единица работы для модуля аккаунтов.</param>
 public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsModuleUnitOfWork unitOfWork)
 	: IAccountTicketsRepository
 {
 	private NpgSqlSession Session { get; } = session;
 	private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
 
+	/// <summary>
+	/// Добавляет новую заявку аккаунта в репозиторий.
+	/// </summary>
+	/// <param name="ticket">Заявка аккаунта для добавления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию добавления заявки.</returns>
 	public Task Add(AccountTicket ticket, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -29,6 +40,12 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 		return Session.Execute(command);
 	}
 
+	/// <summary>
+	/// Находит одну заявку аккаунта по заданной спецификации.
+	/// </summary>
+	/// <param name="specification">Спецификация для поиска заявки аккаунта.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат, содержащий найденную заявку аккаунта или ошибку.</returns>
 	public async Task<Result<AccountTicket>> Find(
 		AccountTicketSpecification specification,
 		CancellationToken ct = default
@@ -50,7 +67,7 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 
 		if (ticket is null)
 			return Error.NotFound("Заявка не найдена.");
-		if (specification.LockRequired.HasValue && specification.LockRequired.Value)
+		if (specification.LockRequired == true)
 			await BlockTicket(ticket, ct);
 		UnitOfWork.Track([ticket]);
 		return Result.Success(ticket);
@@ -110,12 +127,12 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 		while (await reader.ReadAsync(ct))
 		{
 			Guid id = reader.GetValue<Guid>("ticket_id");
-			if (!mappings.TryGetValue(id, out AccountTicket? ticket))
+			if (!mappings.TryGetValue(id, out _))
 			{
 				Guid creatorId = reader.GetValue<Guid>("creator_id");
 				bool finished = reader.GetValue<bool>("finished");
 				string purpose = reader.GetValue<string>("purpose");
-				ticket = new AccountTicket(AccountId.Create(creatorId), id, finished, purpose);
+				AccountTicket? ticket = new(AccountId.Create(creatorId), id, finished, purpose);
 				mappings.Add(id, ticket);
 			}
 		}

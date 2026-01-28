@@ -8,16 +8,21 @@ using Spares.Domain.Features;
 
 namespace Spares.Infrastructure.RabbitMq.Consumers;
 
+/// <summary>
+/// Потребитель сообщений о добавлении запчастей.
+/// </summary>
+/// <param name="rabbitMq">Источник подключения RabbitMQ.</param>
+/// <param name="logger">Логгер для записи информации.</param>
+/// <param name="services">Поставщик сервисов для разрешения зависимостей.</param>
 public sealed class AddSparesConsumer(
 	RabbitMqConnectionSource rabbitMq,
 	Serilog.ILogger logger,
 	IServiceProvider services
 ) : IConsumer
 {
-	private const string Exchange = "spares";
-	private const string Queue = "spares.add";
-	private const string RoutingKey = "spares.add";
-
+	private const string EXCHANGE = "spares";
+	private const string QUEUE = "spares.add";
+	private const string ROUTING_KEY = "spares.add";
 	private IChannel? _channel;
 	private IChannel Channel => _channel ?? throw new InvalidOperationException();
 	private Serilog.ILogger Logger { get; } = logger.ForContext<AddSparesConsumer>();
@@ -51,16 +56,32 @@ public sealed class AddSparesConsumer(
 			}
 		};
 
+	/// <summary>
+	/// Инициализирует канал для потребления сообщений.
+	/// </summary>
+	/// <param name="connection">Подключение к RabbitMQ.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию инициализации канала.</returns>
 	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
 
+	/// <summary>
+	/// Запускает потребление сообщений.
+	/// </summary>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию начала потребления сообщений.</returns>
 	public Task StartConsuming(CancellationToken ct = default)
 	{
 		AsyncEventingBasicConsumer consumer = new(Channel);
 		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, autoAck: false, consumer: consumer, cancellationToken: ct);
+		return Channel.BasicConsumeAsync(QUEUE, autoAck: false, consumer: consumer, cancellationToken: ct);
 	}
 
+	/// <summary>
+	/// Останавливает потребление сообщений и закрывает канал.
+	/// </summary>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию завершения работы канала.</returns>
 	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
 
 	private static async Task<(Guid CreatorId, int Added)> SaveSpares(

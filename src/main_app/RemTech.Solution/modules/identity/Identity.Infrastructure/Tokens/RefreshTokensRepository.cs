@@ -7,10 +7,20 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Tokens;
 
+/// <summary>
+/// Репозиторий для управления токенами обновления.
+/// </summary>
+/// <param name="session">Сессия базы данных для выполнения операций.</param>
 public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTokensRepository
 {
 	private NpgSqlSession Session { get; } = session;
 
+	/// <summary>
+	/// Проверяет существование токена обновления для заданного идентификатора аккаунта.
+	/// </summary>
+	/// <param name="accountId">Идентификатор аккаунта.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию проверки существования токена.</returns>
 	public Task<bool> Exists(Guid accountId, CancellationToken ct = default)
 	{
 		const string sql =
@@ -20,6 +30,12 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		return Session.QuerySingleRow<bool>(command);
 	}
 
+	/// <summary>
+	/// Добавляет токен обновления в репозиторий.
+	/// </summary>
+	/// <param name="token">Токен обновления для добавления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию добавления токена.</returns>
 	public Task Add(RefreshToken token, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -42,6 +58,12 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		return Session.Execute(command);
 	}
 
+	/// <summary>
+	/// Обновляет токен обновления в репозитории.
+	/// </summary>
+	/// <param name="token">Токен обновления для обновления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию обновления токена.</returns>
 	public Task Update(RefreshToken token, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -62,6 +84,12 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		return Session.Execute(command);
 	}
 
+	/// <summary>
+	/// Находит токен обновления по идентификатору аккаунта.
+	/// </summary>
+	/// <param name="accountId">Идентификатор аккаунта.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции, содержащий найденный токен обновления или ошибку.</returns>
 	public async Task<Result<RefreshToken>> Find(Guid accountId, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -80,6 +108,13 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		return token is null ? Error.NotFound("Токен обновления не найден.") : token;
 	}
 
+	/// <summary>
+	/// Находит токен обновления по его значению.
+	/// </summary>
+	/// <param name="refreshToken">Значение токена обновления.</param>
+	/// <param name="withLock">Флаг, указывающий, следует ли блокировать запись для обновления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции, содержащий найденный токен обновления или ошибку.</returns>
 	public async Task<Result<RefreshToken>> Find(
 		string refreshToken,
 		bool withLock = false,
@@ -104,6 +139,12 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		return token is null ? Error.NotFound("Токен обновления не найден.") : token;
 	}
 
+	/// <summary>
+	/// Удаляет токен обновления из репозитория.
+	/// </summary>
+	/// <param name="token">Токен обновления для удаления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию удаления токена.</returns>
 	public Task Delete(RefreshToken token, CancellationToken ct = default)
 	{
 		const string sql =
@@ -113,6 +154,12 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 		return Session.Execute(command);
 	}
 
+	/// <summary>
+	/// Удаляет токен обновления по идентификатору аккаунта.
+	/// </summary>
+	/// <param name="AccountId">ID аккаунта.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию удаления токена.</returns>
 	public Task Delete(Guid AccountId, CancellationToken ct = default)
 	{
 		const string sql = """

@@ -5,10 +5,30 @@ using Vehicles.Infrastructure.Locations.Queries;
 
 namespace WebHostApplication.Modules.vehicles;
 
+/// <summary>
+/// Контроллер для работы с локациями транспортных средств.
+/// </summary>
 [ApiController]
 [Route("api/locations")]
 public sealed class LocationsController
 {
+	/// <summary>
+	/// Получить список локаций по фильтрам.
+	/// </summary>
+	/// <param name="textSearch">Текстовый поиск</param>
+	/// <param name="id">Идентификатор локации</param>
+	/// <param name="categoryId">Идентификатор категории</param>
+	/// <param name="brandId">Идентификатор бренда</param>
+	/// <param name="modelId">Идентификатор модели</param>
+	/// <param name="categoryName">Название категории</param>
+	/// <param name="brandName">Название бренда</param>
+	/// <param name="modelName">Название модели</param>
+	/// <param name="amount">Количество</param>
+	/// <param name="orderByName">Сортировка по имени</param>
+	/// <param name="includes">Включаемые поля</param>
+	/// <param name="handler">Обработчик запроса</param>
+	/// <param name="ct">Токен отмены</param>
+	/// <returns>Список локаций</returns>
 	[HttpGet]
 	public async Task<Envelope> GetLocations(
 		[FromQuery(Name = "text-search")] string? textSearch,

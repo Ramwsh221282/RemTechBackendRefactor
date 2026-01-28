@@ -9,11 +9,22 @@ using Vehicles.Domain.Brands.Contracts;
 
 namespace Vehicles.Infrastructure.Brands.BrandsPersisterImplementation;
 
+/// <summary>
+/// Реализация персистера брендов на основе NpgSql и векторных представлений.
+/// </summary>
+/// <param name="embeddings">Провайдер векторных представлений.</param>
+/// <param name="session">Сессия для работы с базой данных NpgSql.</param>
 public sealed class NpgSqlBrandPersisterImplementation(EmbeddingsProvider embeddings, NpgSqlSession session)
 	: IBrandPersister
 {
-	private const double MaxDistance = 0.6;
+	private const double MAX_DISTANCE = 0.6;
 
+	/// <summary>
+	/// Сохраняет бренд в базе данных.
+	/// </summary>
+	/// <param name="brand">Бренд для сохранения.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Результат операции сохранения бренда.</returns>
 	public async Task<Result<Brand>> Save(Brand brand, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -55,7 +66,7 @@ public sealed class NpgSqlBrandPersisterImplementation(EmbeddingsProvider embedd
 		DynamicParameters parameters = new();
 		parameters.Add("@name", brand.Name.Name, DbType.String);
 		parameters.Add("@input_embedding", vector);
-		parameters.Add("@max_distance", MaxDistance, DbType.Double);
+		parameters.Add("@max_distance", MAX_DISTANCE, DbType.Double);
 		return parameters;
 	}
 

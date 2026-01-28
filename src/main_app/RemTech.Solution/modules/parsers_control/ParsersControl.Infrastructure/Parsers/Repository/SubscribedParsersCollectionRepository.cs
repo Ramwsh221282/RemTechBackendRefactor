@@ -11,11 +11,22 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace ParsersControl.Infrastructure.Parsers.Repository;
 
+/// <summary>
+/// Репозиторий коллекции подписанных парсеров.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
+/// <param name="logger">Логгер для записи логов.</param>
 public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session, Serilog.ILogger logger)
 	: ISubscribedParsersCollectionRepository
 {
 	private readonly SubscribedParsersCollectionChangeTracker _changeTracker = new(logger);
 
+	/// <summary>
+	///   Получает коллекцию подписанных парсеров на основе заданного запроса.
+	/// </summary>
+	/// <param name="query">Запрос для фильтрации коллекции подписанных парсеров.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Коллекция подписанных парсеров.</returns>
 	public async Task<SubscribedParsersCollection> Get(
 		SubscribedParsersCollectionQuery query,
 		CancellationToken ct = default
@@ -57,6 +68,12 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 		return collection;
 	}
 
+	/// <summary>
+	/// Сохраняет изменения в коллекции подписанных парсеров.
+	/// </summary>
+	/// <param name="collection">Коллекция подписанных парсеров для сохранения изменений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции сохранения изменений.</returns>
 	public Task<Result<Unit>> SaveChanges(SubscribedParsersCollection collection, CancellationToken ct = default) =>
 		_changeTracker.SaveChanges(collection, session, ct);
 

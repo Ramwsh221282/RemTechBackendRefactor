@@ -2,7 +2,16 @@
 
 namespace Vehicles.Domain.Brands.Contracts;
 
+/// <summary>
+/// Персистер брендов.
+/// </summary>
 public interface IBrandPersister
 {
-    public Task<Result<Brand>> Save(Brand brand, CancellationToken ct = default);
+	/// <summary>
+	/// Сохраняет бренд.
+	/// </summary>
+	/// <param name="brand">Бренд для сохранения.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат сохранения бренда.</returns>
+	Task<Result<Brand>> Save(Brand brand, CancellationToken ct = default);
 }

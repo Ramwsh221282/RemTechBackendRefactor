@@ -13,6 +13,13 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Notifications.Infrastructure.PendingEmails.BackgroundServices;
 
+/// <summary>
+/// Обработчик фоновых задач по обработке отложенных писем.
+/// </summary>
+/// <param name="npgSql">Фабрика соединений с базой данных PostgreSQL.</param>
+/// <param name="logger">Логгер для записи информации и ошибок.</param>
+/// <param name="cryptography">Сервис для криптографической обработки учетных данных почтовых ящиков.</param>
+/// <param name="sender">Сервис для отправки электронных писем.</param>
 public sealed class PendingEmailsProcessor(
 	NpgSqlConnectionFactory npgSql,
 	Serilog.ILogger logger,
@@ -25,6 +32,11 @@ public sealed class PendingEmailsProcessor(
 	private IMailerCredentialsCryptography Cryptography { get; } = cryptography;
 	private EmailSender Sender { get; } = sender;
 
+	/// <summary>
+	/// Выполняет фоновую задачу по обработке отложенных писем.
+	/// </summary>
+	/// <param name="stoppingToken">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая выполнение фоновой операции.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		while (!stoppingToken.IsCancellationRequested)

@@ -9,12 +9,23 @@ using RemTech.SharedKernel.NN;
 
 namespace Spares.Infrastructure.Queries.GetSpareTypes;
 
+/// <summary>
+/// Обработчик запроса на получение типов запчастей.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
+/// <param name="embeddings">Провайдер эмбеддингов для обработки текстовых запросов.</param>
 public sealed class GetSpareTypesQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: IQueryHandler<GetSpareTypesQuery, IEnumerable<SpareTypeResponse>>
 {
 	private NpgSqlSession Session { get; } = session;
 	private EmbeddingsProvider Embeddings { get; } = embeddings;
 
+	/// <summary>
+	/// Обрабатывает запрос на получение типов запчастей.
+	/// </summary>
+	/// <param name="query">Запрос на получение типов запчастей.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Коллекция ответов с типами запчастей.</returns>
 	public async Task<IEnumerable<SpareTypeResponse>> Handle(GetSpareTypesQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string sql) = CreateSql(query);

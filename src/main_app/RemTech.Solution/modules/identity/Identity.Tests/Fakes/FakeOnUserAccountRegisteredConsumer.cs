@@ -5,36 +5,26 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace Identity.Tests.Fakes;
 
+/// <summary>
+/// Фейковый потребитель сообщений о регистрации аккаунта пользователя.
+/// </summary>
+/// <param name="rabbitMq">Источник подключения к RabbitMQ.</param>
+/// <param name="logger">Логгер для записи информации.</param>
 public sealed class FakeOnUserAccountRegisteredConsumer(RabbitMqConnectionSource rabbitMq, Serilog.ILogger logger)
 	: IConsumer
 {
-	private const string Exchange = "identity";
-	private const string Queue = "account.new";
-	private const string RoutingKey = "account.new";
+	/// <summary>
+	/// Количество полученных сообщений.
+	/// </summary>
+	public static int Received;
+	private const string EXCHANGE = "identity";
+	private const string QUEUE = "account.new";
+	private const string ROUTING_KEY = "account.new";
 
 	private IChannel? _channel;
 	private RabbitMqConnectionSource RabbitMq { get; } = rabbitMq;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<FakeOnUserAccountRegisteredConsumer>();
 	private IChannel Channel => _channel ?? throw new NullReferenceException("Channel was not initialized");
-
-	public static int Received;
-
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
-
-	public Task StartConsuming(CancellationToken ct = default)
-	{
-		AsyncEventingBasicConsumer consumer = new(Channel);
-		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, false, consumer, ct);
-	}
-
-	public async Task Shutdown(CancellationToken ct = default)
-	{
-		await Channel.CloseAsync(ct);
-		await Channel.DisposeAsync();
-	}
-
 	private AsyncEventHandler<BasicDeliverEventArgs> Handler =>
 		async (_, @event) =>
 		{
@@ -43,4 +33,36 @@ public sealed class FakeOnUserAccountRegisteredConsumer(RabbitMqConnectionSource
 			Received++;
 			await Channel.BasicAckAsync(@event.DeliveryTag, false);
 		};
+
+	/// <summary>
+	/// Инициализирует канал для потребления сообщений.
+	/// </summary>
+	/// <param name="connection">Подключение к RabbitMQ.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Инициализация канала для потребления сообщений.</returns>
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
+
+	/// <summary>
+	/// Начинает потребление сообщений.
+	/// </summary>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию начала потребления сообщений.</returns>
+	public Task StartConsuming(CancellationToken ct = default)
+	{
+		AsyncEventingBasicConsumer consumer = new(Channel);
+		consumer.ReceivedAsync += Handler;
+		return Channel.BasicConsumeAsync(QUEUE, false, consumer, ct);
+	}
+
+	/// <summary>
+	/// Останавливает потребление сообщений и освобождает ресурсы.
+	/// </summary>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача, представляющая асинхронную операцию остановки потребления сообщений и освобождения ресурсов.</returns>
+	public async Task Shutdown(CancellationToken ct = default)
+	{
+		await Channel.CloseAsync(ct);
+		await Channel.DisposeAsync();
+	}
 }

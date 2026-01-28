@@ -5,11 +5,17 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace ParsersControl.Core.Features.SetLinkParsedAmount;
 
+/// <summary>
+/// Валидатор команды установки количества распарсенных ссылок.
+/// </summary>
 public sealed class SetLinkParsedAmountValidator : AbstractValidator<SetLinkParsedAmountCommand>
 {
-    public SetLinkParsedAmountValidator()
-    {
-        RuleFor(x => x.ParserId).MustBeValid(SubscribedParserId.Create);
-        RuleFor(x => x.LinkId).MustBeValid(SubscribedParserLinkId.From);
-    }
+	/// <summary>
+	///   Инициализирует новый экземпляр <see cref="SetLinkParsedAmountValidator"/>.
+	/// </summary>
+	public SetLinkParsedAmountValidator()
+	{
+		RuleFor(x => x.ParserId).MustBeValid(SubscribedParserId.Create);
+		RuleFor(x => x.LinkId).MustBeValid(SubscribedParserLinkId.From);
+	}
 }

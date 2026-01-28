@@ -6,6 +6,12 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace Notifications.Core.Mailers.Features.ChangeCredentials;
 
+/// <summary>
+/// Обработчик команды изменения учетных данных почтового ящика.
+/// </summary>
+/// <param name="repository">Репозиторий для работы с почтовыми ящиками.</param>
+/// <param name="cryptography">Сервис для шифрования учетных данных почтового ящика.</param>
+/// <param name="unitOfWork">Единица работы для сохранения изменений.</param>
 [TransactionalHandler]
 public sealed class ChangeCredentialsHandler(
 	IMailersRepository repository,
@@ -13,6 +19,12 @@ public sealed class ChangeCredentialsHandler(
 	INotificationsModuleUnitOfWork unitOfWork
 ) : ICommandHandler<ChangeCredentialsCommand, Mailer>
 {
+	/// <summary>
+	/// Выполняет команду изменения учетных данных почтового ящика.
+	/// </summary>
+	/// <param name="command">Команда изменения учетных данных почтового ящика.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с измененным почтовым ящиком.</returns>
 	public async Task<Result<Mailer>> Execute(ChangeCredentialsCommand command, CancellationToken ct = default)
 	{
 		Result<Mailer> mailer = await GetRequiredMailer(command, ct);

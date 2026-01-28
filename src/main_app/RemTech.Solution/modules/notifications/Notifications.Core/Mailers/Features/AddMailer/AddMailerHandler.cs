@@ -4,9 +4,20 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace Notifications.Core.Mailers.Features.AddMailer;
 
+/// <summary>
+/// Обработчик команды добавления почтового ящика.
+/// </summary>
+/// <param name="repository">Репозиторий для работы с почтовыми ящиками.</param>
+/// <param name="cryptography">Сервис для шифрования учетных данных почтового ящика.</param>
 public sealed class AddMailerHandler(IMailersRepository repository, IMailerCredentialsCryptography cryptography)
 	: ICommandHandler<AddMailerCommand, Mailer>
 {
+	/// <summary>
+	/// Выполняет команду добавления почтового ящика.
+	/// </summary>
+	/// <param name="command">Команда добавления почтового ящика.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с добавленным почтовым ящиком.</returns>
 	public async Task<Result<Mailer>> Execute(AddMailerCommand command, CancellationToken ct = default)
 	{
 		if (await MailerWithEmailExists(command, ct))

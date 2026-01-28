@@ -3,20 +3,31 @@ using RabbitMQ.Client;
 
 namespace RemTech.SharedKernel.Infrastructure.RabbitMq;
 
+/// <summary>
+/// Хост-сервис для агрегирования и управления жизненным циклом множества потребителей RabbitMQ.
+/// </summary>
+/// <param name="logger">Логгер для записи информации о работе сервиса.</param>
+/// <param name="consumers">Коллекция потребителей RabbitMQ для управления.</param>
+/// <param name="connectionSource">Источник подключения к RabbitMQ.</param>
 public sealed class AggregatedConsumersHostedService(
 	Serilog.ILogger logger,
 	IEnumerable<IConsumer> consumers,
 	RabbitMqConnectionSource connectionSource
 ) : BackgroundService
 {
+	private IConnection? _connection;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<AggregatedConsumersHostedService>();
 	private IEnumerable<IConsumer> Consumers { get; } = consumers;
 	private RabbitMqConnectionSource ConnectionSource { get; } = connectionSource;
 
-	private IConnection? _connection;
 	private IConnection Connection =>
 		_connection ?? throw new InvalidOperationException("Connection is not initialized.");
 
+	/// <summary>
+	/// Останавливает хост-сервис и завершает работу всех потребителей.
+	/// </summary>
+	/// <param name="cancellationToken">Токен отмены для прерывания операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию остановки сервиса.</returns>
 	public override async Task StopAsync(CancellationToken cancellationToken)
 	{
 		Logger.Information("Shutting down parsers control event listeners.");
@@ -48,6 +59,11 @@ public sealed class AggregatedConsumersHostedService(
 		Logger.Information("Parsers control event listeners shut down.");
 	}
 
+	/// <summary>
+	/// Запускает хост-сервис и инициализирует всех потребителей.
+	/// </summary>
+	/// <param name="stoppingToken">Токен отмены для прерывания операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию запуска сервиса.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		Logger.Information("Initializing aggregated consumers.");

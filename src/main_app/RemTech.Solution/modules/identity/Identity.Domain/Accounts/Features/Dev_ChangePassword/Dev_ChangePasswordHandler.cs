@@ -7,6 +7,13 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace Identity.Domain.Accounts.Features.Dev_ChangePassword;
 
+/// <summary>
+/// Обработчик команды изменения пароля пользователя в режиме разработки.
+/// </summary>
+/// <param name="accounts">Репозиторий аккаунтов.</param>
+/// <param name="requirements">Требования к паролю.</param>
+/// <param name="hasher">Сервис хеширования паролей.</param>
+/// <param name="unitOfWork">Единица работы для аккаунтов.</param>
 public sealed class Dev_ChangePasswordHandler(
 	IAccountsRepository accounts,
 	IEnumerable<IAccountPasswordRequirement> requirements,
@@ -14,6 +21,12 @@ public sealed class Dev_ChangePasswordHandler(
 	IAccountsModuleUnitOfWork unitOfWork
 ) : ICommandHandler<Dev_ChangePasswordCommand, Unit>
 {
+	/// <summary>
+	/// Выполняет изменение пароля пользователя по команде.
+	/// </summary>
+	/// <param name="command">Команда изменения пароля пользователя.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды.</returns>
 	public async Task<Result<Unit>> Execute(Dev_ChangePasswordCommand command, CancellationToken ct = default)
 	{
 		Result<Account> account = await ResolveAccount(command, ct);

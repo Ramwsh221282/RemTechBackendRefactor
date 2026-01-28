@@ -8,10 +8,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.SetLinkParsedAmount;
 
+/// <summary>
+/// Обработчик команды установки количества распарсенных ссылок.
+/// </summary>
+/// <param name="repository">Репозиторий подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class SetLinkParsedAmountHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<SetLinkParsedAmountCommand, SubscribedParserLink>
 {
+	/// <summary>
+	/// Выполняет команду установки количества распарсенных ссылок.
+	/// </summary>
+	/// <param name="command">Команда установки количества распарсенных ссылок.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с обновленной ссылкой парсера.</returns>
 	public async Task<Result<SubscribedParserLink>> Execute(
 		SetLinkParsedAmountCommand command,
 		CancellationToken ct = default

@@ -7,6 +7,10 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Tests;
 
+/// <summary>
+/// Тесты создания суперпользователя.
+/// </summary>
+/// <param name="factory">Фабрика для интеграционных тестов.</param>
 public sealed class SuperUserCreationTests(IntegrationalTestsFactory factory) : IClassFixture<IntegrationalTestsFactory>
 {
 	private IServiceProvider Services { get; } = factory.Services;

@@ -9,8 +9,19 @@ using Vehicles.Domain.Locations.Contracts;
 
 namespace Vehicles.Infrastructure.Locations.LocationsPersisterImplementation;
 
+/// <summary>
+/// Реализация персистера для локаций на PostgreSQL.
+/// </summary>
+/// <param name="session">Сессия для работы с базой данных PostgreSQL.</param>
+/// <param name="embeddings">Провайдер для работы с векторными представлениями.</param>
 public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsProvider embeddings) : ILocationsPersister
 {
+	/// <summary>
+	/// Сохраняет локацию.
+	/// </summary>
+	/// <param name="location">Локация для сохранения.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции сохранения локации.</returns>
 	public async Task<Result<Location>> Save(Location location, CancellationToken ct = default)
 	{
 		Result<NpgSqlSearchResult> fullResult = await TrySearchFullInfo(location.Name.Value, ct);

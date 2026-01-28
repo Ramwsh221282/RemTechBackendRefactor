@@ -8,10 +8,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.EditLinkUrlInfo;
 
+/// <summary>
+/// Обработчик команды редактирования информации о ссылке и URL парсера.
+/// </summary>
+/// <param name="repository">Репозиторий подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class EditLinkUrlInfoHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<EditLinkUrlInfoCommand, SubscribedParserLink>
 {
+	/// <summary>
+	/// Выполняет команду редактирования информации о ссылке и URL парсера.
+	/// </summary>
+	/// <param name="command">Команда редактирования информации о ссылке и URL парсера.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с отредактированной ссылкой парсера.</returns>
 	public async Task<Result<SubscribedParserLink>> Execute(
 		EditLinkUrlInfoCommand command,
 		CancellationToken ct = default

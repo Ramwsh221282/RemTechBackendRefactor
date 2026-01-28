@@ -5,11 +5,17 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Validation;
 
 namespace ParsersControl.Core.Features.DeleteLinkFromParser;
 
+/// <summary>
+/// Валидатор команды удаления ссылки из парсера.
+/// </summary>
 public sealed class DeleteLinkFromParserValidator : AbstractValidator<DeleteLinkFromParserCommand>
 {
-    public DeleteLinkFromParserValidator()
-    {
-        RuleFor(c => c.ParserId).MustBeValid(SubscribedParserId.Create);
-        RuleFor(c => c.LinkId).MustBeValid(SubscribedParserLinkId.From);
-    }
+	/// <summary>
+	/// Инициализирует новый экземпляр <see cref="DeleteLinkFromParserValidator"/>.
+	/// </summary>
+	public DeleteLinkFromParserValidator()
+	{
+		RuleFor(c => c.ParserId).MustBeValid(SubscribedParserId.Create);
+		RuleFor(c => c.LinkId).MustBeValid(SubscribedParserLinkId.From);
+	}
 }

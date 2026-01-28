@@ -8,10 +8,20 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace ParsersControl.Core.Features.UpdateParserLinks;
 
+/// <summary>
+/// Обработчик команды обновления ссылок парсера.
+/// </summary>
+/// <param name="repository">Репозиторий подписанных парсеров.</param>
 [TransactionalHandler]
 public sealed class ParserLinkUpdateHandler(ISubscribedParsersRepository repository)
 	: ICommandHandler<UpdateParserLinksCommand, IEnumerable<SubscribedParserLink>>
 {
+	/// <summary>
+	/// Выполняет команду обновления ссылок парсера.
+	/// </summary>
+	/// <param name="command">Команда обновления ссылок парсера.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды с обновленными ссылками парсера.</returns>
 	public async Task<Result<IEnumerable<SubscribedParserLink>>> Execute(
 		UpdateParserLinksCommand command,
 		CancellationToken ct = default

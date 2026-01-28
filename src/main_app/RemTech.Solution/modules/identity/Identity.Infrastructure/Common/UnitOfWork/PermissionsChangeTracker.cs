@@ -5,11 +5,21 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Common.UnitOfWork;
 
+/// <summary>
+/// Трекер изменений разрешений.
+/// </summary>
+/// <param name="session">Сессия базы данных для выполнения операций.</param>
 public sealed class PermissionsChangeTracker(NpgSqlSession session)
 {
 	private readonly Dictionary<Guid, Permission> _tracking = [];
 	private NpgSqlSession Session { get; } = session;
 
+	/// <summary>
+	/// Сохраняет изменения для коллекции разрешений.
+	/// </summary>
+	/// <param name="permissions">Коллекция разрешений для сохранения изменений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
 	public async Task SaveChanges(IEnumerable<Permission> permissions, CancellationToken ct)
 	{
 		IEnumerable<Permission> tracking = GetTrackingPermissions(permissions);
@@ -18,6 +28,10 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
 		await SavePermissionChanges(tracking, ct);
 	}
 
+	/// <summary>
+	/// Начинает отслеживание изменений для коллекции разрешений.
+	/// </summary>
+	/// <param name="permissions">Коллекция разрешений для отслеживания изменений.</param>
 	public void StartTracking(IEnumerable<Permission> permissions)
 	{
 		foreach (Permission permission in permissions)

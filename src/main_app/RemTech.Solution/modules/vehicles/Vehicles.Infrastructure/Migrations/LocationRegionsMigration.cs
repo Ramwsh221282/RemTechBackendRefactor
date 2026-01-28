@@ -2,9 +2,15 @@
 
 namespace Vehicles.Infrastructure.Migrations;
 
+/// <summary>
+/// Миграция для создания таблицы регионов.
+/// </summary>
 [Migration(1767086100)]
 public sealed class LocationRegionsMigration : Migration
 {
+	/// <summary>
+	/// Выполняет миграцию, создавая таблицу регионов.
+	/// </summary>
 	public override void Up() =>
 		Execute.Sql(
 			"""
@@ -19,5 +25,8 @@ public sealed class LocationRegionsMigration : Migration
 			"""
 		);
 
+	/// <summary>
+	/// Откатывает миграцию, удаляя таблицу регионов.
+	/// </summary>
 	public override void Down() => Delete.Table("regions").InSchema("vehicles_module");
 }

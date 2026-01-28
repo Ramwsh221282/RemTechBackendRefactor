@@ -5,13 +5,24 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 
 namespace ContainedItems.Infrastructure.Producers;
 
+/// <summary>
+/// Производитель для добавления запчастей.
+/// </summary>
+/// <param name="producer">Производитель RabbitMQ для отправки сообщений.</param>
+/// <param name="logger">Логгер для записи информации и ошибок.</param>
 public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger logger) : IItemPublishingStrategy
 {
-	private const string Exchange = "spares";
-	private const string RoutingKey = "spares.add";
+	private const string EXCHANGE = "spares";
+	private const string ROUTING_KEY = "spares.add";
 	private RabbitMqProducer Producer { get; } = producer;
 	private Serilog.ILogger Logger { get; } = logger.ForContext<AddSparesProducer>();
 
+	/// <summary>
+	/// Публикует содержащиеся элементы.
+	/// </summary>
+	/// <param name="items">Список содержащихся элементов для публикации.</param>
+	/// <param name="ct">Токен отмены для прерывания операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию публикации.</returns>
 	public async Task Publish(IEnumerable<ContainedItem> items, CancellationToken ct = default)
 	{
 		ContainedItem[] itemArray = [.. items];
@@ -26,7 +37,7 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 		{
 			ContainedItem first = entry.First();
 			AddSparesMessage message = CreateMessage(first, entry);
-			await Producer.PublishDirectAsync(message, Exchange, RoutingKey, options, ct: ct);
+			await Producer.PublishDirectAsync(message, EXCHANGE, ROUTING_KEY, options, ct: ct);
 			Logger.Information(
 				"Published {CreatorType} {CreatorDomain}",
 				first.CreatorInfo.Type,
@@ -35,8 +46,20 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 		}
 	}
 
+	/// <summary>
+	/// Публикует содержащийся элемент.
+	/// </summary>
+	/// <param name="item">Содержащийся элемент для публикации.</param>
+	/// <param name="ct">Токен отмены для прерывания операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию публикации.</returns>
 	public Task Publish(ContainedItem item, CancellationToken ct = default) => Publish([item], ct);
 
+	/// <summary>
+	/// Публикует множество содержащихся элементов.
+	/// </summary>
+	/// <param name="items">Список содержащихся элементов для публикации.</param>
+	/// <param name="ct">Токен отмены для прерывания операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию публикации.</returns>
 	public Task PublishMany(IEnumerable<ContainedItem> items, CancellationToken ct = default) => Publish(items, ct);
 
 	private static AddSparesMessage CreateMessage(ContainedItem first, IEnumerable<ContainedItem> items) =>

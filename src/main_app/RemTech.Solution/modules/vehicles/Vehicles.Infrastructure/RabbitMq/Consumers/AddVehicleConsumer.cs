@@ -9,15 +9,21 @@ using Vehicles.Domain.Features.AddVehicle;
 
 namespace Vehicles.Infrastructure.RabbitMq.Consumers;
 
+/// <summary>
+/// Потребитель сообщений для добавления транспортных средств.
+/// </summary>
+/// <param name="services">Сервис-провайдер для разрешения зависимостей.</param>
+/// <param name="logger">Логгер для записи логов.</param>
+/// <param name="rabbitMq">Источник подключения к RabbitMQ.</param>
 public sealed class AddVehicleConsumer(
 	IServiceProvider services,
 	Serilog.ILogger logger,
 	RabbitMqConnectionSource rabbitMq
 ) : IConsumer
 {
-	private const string Exchange = "vehicles";
-	private const string Queue = "vehicles.add";
-	private const string RoutingKey = "vehicles.add";
+	private const string EXCHANGE = "vehicles";
+	private const string QUEUE = "vehicles.add";
+	private const string ROUTING_KEY = "vehicles.add";
 
 	private IChannel? _channel;
 	private IChannel Channel => _channel ?? throw new InvalidOperationException("Channel was not initialized");
@@ -52,16 +58,32 @@ public sealed class AddVehicleConsumer(
 			}
 		};
 
+	/// <summary>
+	/// Инициализирует канал для потребления сообщений.
+	/// </summary>
+	/// <param name="connection">Подключение к RabbitMQ.</param>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Инициализация канала.</returns>
 	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
-		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, Exchange, Queue, RoutingKey, ct);
+		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
 
+	/// <summary>
+	/// Запускает потребление сообщений.
+	/// </summary>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача потребления сообщений.</returns>
 	public Task StartConsuming(CancellationToken ct = default)
 	{
 		AsyncEventingBasicConsumer consumer = new(Channel);
 		consumer.ReceivedAsync += Handler;
-		return Channel.BasicConsumeAsync(Queue, false, consumer, ct);
+		return Channel.BasicConsumeAsync(QUEUE, false, consumer, ct);
 	}
 
+	/// <summary>
+	/// Останавливает потребление сообщений и закрывает канал.
+	/// </summary>
+	/// <param name="ct">Токен отмены.</param>
+	/// <returns>Задача остановки потребления сообщений.</returns>
 	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
 
 	private static async Task<Result<(Guid CreatorId, int Saved)>> SaveVehicles(

@@ -5,17 +5,31 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Notifications.Infrastructure.Mailers;
 
+/// <summary>
+/// Трекер изменений почтовых ящиков.
+/// </summary>
+/// <param name="session">Сессия базы данных для выполнения операций.</param>
 public sealed class MailersChangeTracker(NpgSqlSession session)
 {
 	private NpgSqlSession Session { get; } = session;
 	private Dictionary<Guid, Mailer> Tracking { get; } = [];
 
+	/// <summary>
+	/// Начинает отслеживание изменений для коллекции почтовых ящиков.
+	/// </summary>
+	/// <param name="mailers">Коллекция почтовых ящиков для отслеживания.</param>
 	public void Track(IEnumerable<Mailer> mailers)
 	{
 		foreach (Mailer mailer in mailers)
 			Tracking.TryAdd(mailer.Id.Value, mailer.Copy());
 	}
 
+	/// <summary>
+	/// Сохраняет изменения отслеживаемых почтовых ящиков в базе данных.
+	/// </summary>
+	/// <param name="mailers">Коллекция почтовых ящиков для сохранения изменений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
 	public Task Save(IEnumerable<Mailer> mailers, CancellationToken ct = default)
 	{
 		IEnumerable<Mailer> tracking = GetTrackingMailers(mailers);

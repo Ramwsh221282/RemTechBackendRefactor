@@ -9,6 +9,15 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
 
 namespace Identity.Domain.Accounts.Features.ConfirmPasswordReset;
 
+/// <summary>
+/// Обработчик команды подтверждения сброса пароля пользователя.
+/// </summary>
+/// <param name="tokens">Репозиторий токенов обновления.</param>
+/// <param name="accounts">Репозиторий аккаунтов.</param>
+/// <param name="tickets">Репозиторий тикетов аккаунтов.</param>
+/// <param name="hasher">Хешер паролей.</param>
+/// <param name="requirements">Требования к паролю аккаунта.</param>
+/// <param name="unitOfWork">Единица работы для аккаунтов.</param>
 [TransactionalHandler]
 public sealed class ConfirmResetPasswordHandler(
 	IRefreshTokensRepository tokens,
@@ -19,6 +28,12 @@ public sealed class ConfirmResetPasswordHandler(
 	IAccountsModuleUnitOfWork unitOfWork
 ) : ICommandHandler<ConfirmResetPasswordCommand, Unit>
 {
+	/// <summary>
+	/// Выполняет подтверждение сброса пароля пользователя по команде.
+	/// </summary>
+	/// <param name="command">Команда подтверждения сброса пароля.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды.</returns>
 	public async Task<Result<Unit>> Execute(ConfirmResetPasswordCommand command, CancellationToken ct = default)
 	{
 		Result<Account> account = await GetAccount(command, ct);
@@ -35,12 +50,27 @@ public sealed class ConfirmResetPasswordHandler(
 		return saving.IsFailure ? saving.Error : await Logout(command, ct);
 	}
 
+	/// <summary>
+	/// Выполняет выход пользователя из всех сессий.
+	/// </summary>
+	/// <param name="command">Команда подтверждения сброса пароля.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения команды.</returns>
 	public async Task<Result<Unit>> Logout(ConfirmResetPasswordCommand command, CancellationToken ct)
 	{
 		await tokens.Delete(command.AccountId, ct);
 		return Unit.Value;
 	}
 
+	/// <summary>
+	/// Сохраняет изменения аккаунта и тикета в хранилище.
+	/// </summary>
+	/// <param name="account">Аккаунт пользователя.</param>
+	/// <param name="ticket">Тикет аккаунта.</param>
+	/// <param name="closing">Результат закрытия тикета.</param>
+	/// <param name="changing">Результат изменения пароля.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения операции сохранения.</returns>
 	public async Task<Result<Unit>> SaveChanges(
 		Result<Account> account,
 		Result<AccountTicket> ticket,
@@ -61,6 +91,13 @@ public sealed class ConfirmResetPasswordHandler(
 		return Unit.Value;
 	}
 
+	/// <summary>
+	/// Изменяет пароль пользователя.
+	/// </summary>
+	/// <param name="command">Команда подтверждения сброса пароля.</param>
+	/// <param name="account">Аккаунт пользователя.</param>
+	/// <param name="closing">Результат закрытия тикета.</param>
+	/// <returns>Результат выполнения операции изменения пароля.</returns>
 	public Result<Unit> ChangePassword(
 		ConfirmResetPasswordCommand command,
 		Result<Account> account,
@@ -75,9 +112,21 @@ public sealed class ConfirmResetPasswordHandler(
 		return account.Value.ChangePassword(password, hasher, requirements);
 	}
 
+	/// <summary>
+	/// Получает аккаунт пользователя по команде.
+	/// </summary>
+	/// <param name="command">Команда подтверждения сброса пароля.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения операции получения аккаунта.</returns>
 	public Task<Result<Account>> GetAccount(ConfirmResetPasswordCommand command, CancellationToken ct) =>
 		accounts.Find(new AccountSpecification().WithId(command.AccountId).WithLock(), ct);
 
+	/// <summary>
+	/// Получает тикет сброса пароля по команде.
+	/// </summary>
+	/// <param name="command">Команда подтверждения сброса пароля.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат выполнения операции получения тикета.</returns>
 	public Task<Result<AccountTicket>> GetTicket(ConfirmResetPasswordCommand command, CancellationToken ct) =>
 		tickets.Find(
 			new AccountTicketSpecification()

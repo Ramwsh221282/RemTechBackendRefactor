@@ -6,10 +6,20 @@ using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using WebHostApplication.ActionFilters.Common;
 
-namespace WebHostApplication.ActionFilters.Filters;
+namespace WebHostApplication.ActionFilters.Filters.AuthFilters;
 
+/// <summary>
+/// Фильтр для проверки валидности токена доступа.
+/// </summary>
+/// <param name="handler"> Обработчик команды проверки токена. </param>
 public sealed class VerifyTokenFilter(ICommandHandler<VerifyTokenCommand, Unit> handler) : IAsyncActionFilter
 {
+	/// <summary>
+	/// Вызывается перед выполнением действия контроллера.
+	/// </summary>
+	/// <param name="context"> Контекст выполнения действия. </param>
+	/// <param name="next"> Делегат для вызова следующего фильтра или действия. </param>
+	/// <returns> Задача, представляющая асинхронную операцию. </returns>
 	public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
 	{
 		CancellationToken ct = context.HttpContext.RequestAborted;

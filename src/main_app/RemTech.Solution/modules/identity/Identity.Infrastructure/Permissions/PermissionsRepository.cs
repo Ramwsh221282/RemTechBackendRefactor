@@ -9,12 +9,23 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Identity.Infrastructure.Permissions;
 
+/// <summary>
+/// Репозиторий для управления разрешениями.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
+/// <param name="unitOfWork">Единица работы для модуля аккаунтов.</param>
 public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModuleUnitOfWork unitOfWork)
 	: IPermissionsRepository
 {
 	private NpgSqlSession Session { get; } = session;
 	private IAccountsModuleUnitOfWork UnitOfWork { get; } = unitOfWork;
 
+	/// <summary>
+	/// Проверяет существование разрешения по заданной спецификации.
+	/// </summary>
+	/// <param name="specification">Спецификация для фильтрации разрешений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Значение, указывающее, существует ли разрешение, соответствующее спецификации.</returns>
 	public Task<bool> Exists(PermissionSpecification specification, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(specification);
@@ -30,6 +41,12 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		return Session.QuerySingleRow<bool>(command);
 	}
 
+	/// <summary>
+	/// Добавляет новое разрешение в репозиторий.
+	/// </summary>
+	/// <param name="permission">Разрешение для добавления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию добавления разрешения.</returns>
 	public Task Add(Permission permission, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -50,6 +67,12 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		return Session.Execute(command);
 	}
 
+	/// <summary>
+	/// Добавляет несколько разрешений в репозиторий.
+	/// </summary>
+	/// <param name="permissions">Коллекция разрешений для добавления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию добавления разрешений.</returns>
 	public async Task Add(IEnumerable<Permission> permissions, CancellationToken ct = default)
 	{
 		const string sql = """
@@ -70,6 +93,12 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		await connection.ExecuteAsync(sql, parameters, transaction: Session.Transaction);
 	}
 
+	/// <summary>
+	/// Получает одно разрешение по заданной спецификации.
+	/// </summary>
+	/// <param name="specification">Спецификация для фильтрации разрешений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Результат операции, содержащий найденное разрешение или ошибку.</returns>
 	public async Task<Result<Permission>> GetSingle(
 		PermissionSpecification specification,
 		CancellationToken ct = default
@@ -98,6 +127,12 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		return Result.Success(permission);
 	}
 
+	/// <summary>
+	/// Получает несколько разрешений по заданным спецификациям.
+	/// </summary>
+	/// <param name="specifications">Коллекция спецификаций для фильтрации разрешений.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Коллекция найденных разрешений.</returns>
 	public async Task<IEnumerable<Permission>> GetMany(
 		IEnumerable<PermissionSpecification> specifications,
 		CancellationToken ct = default
@@ -184,12 +219,12 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		while (await reader.ReadAsync(ct))
 		{
 			Guid id = reader.GetValue<Guid>("id");
-			if (!mappings.TryGetValue(id, out Permission? permission))
+			if (!mappings.TryGetValue(id, out _))
 			{
 				string name = reader.GetValue<string>("name");
 				string description = reader.GetValue<string>("description");
 
-				permission = new Permission(
+				Permission? permission = new(
 					PermissionId.Create(id),
 					PermissionName.Create(name),
 					PermissionDescription.Create(description)
