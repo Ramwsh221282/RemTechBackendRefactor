@@ -82,7 +82,7 @@ export class UsersActivityMonitoringPageComponent {
 			tooltip: {
 				enabled: true,
 				callbacks: {
-					label: (context: any) => `Значение: ${context.parsed.y}`,
+					label: (context: any): string => `Значение: ${context.parsed.y}`,
 				},
 			},
 			legend: {

@@ -9,8 +9,13 @@ use_tabs = false
 # C# files
 [*.cs]
 
+dotnet_diagnostic.RCS1213.severity = suggestion
+dotnet_diagnostic.RCS1163.severity = suggestion
+
+
 # Требовать проверки на null для аргументов публичных методов
 dotnet_diagnostic.CA1062.severity = error
+dotnet_diagnostic.CS8999.severity = none
 
 # Дереференс потенциально-nullable переменных (C# nullable reference types!)
 dotnet_diagnostic.CS8602.severity = error

@@ -49,25 +49,40 @@
 		</section>
 	</div>
 	<div class="rounded-lg shadow p-4 overflow-x-auto">
-		<p-table
-			[alwaysShowPaginator]="true"
-			[value]="actionRecords"
-			[scrollable]="true"
-			scrollHeight="400px"
-			class="min-w-full bg-transparent"
-		>
+		<p-table [stripedRows]="true" [value]="actionRecords" [scrollable]="true" scrollHeight="400px" class="min-w-full bg-transparent">
+			<ng-template #caption>
+				<div class="flex flex-row justify-start">
+					<h5 class="text-sm font-bold">Информация:</h5>
+				</div>
+			</ng-template>
 			<ng-template pTemplate="header">
 				<tr>
-					<th class="border px-2 py-2 bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">Дата и время</th>
-					<th class="border px-2 py-2 bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">Пользователь</th>
-					<th class="border px-2 py-2 bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">Действие</th>
-					<th class="border px-2 py-2 bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">Серьёзность</th>
-					<th class="border px-2 py-2 bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">Ошибка</th>
+					<th [pSortableColumn]="'date'" class="text-sm bg-blue-100 dark:bg-gray-800 text-left">
+						Дата и время<p-sortIcon class="mx-2" />
+					</th>
+					<th [pSortableColumn]="'date'" class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">
+						Логин<p-sortIcon class="mx-2" />
+					</th>
+					<th [pSortableColumn]="'date'" class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">
+						Почта<p-sortIcon class="mx-2" />
+					</th>
+					<th class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">Разрешения:</th>
+					<th [pSortableColumn]="'date'" class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">
+						Действие<p-sortIcon class="mx-2" />
+					</th>
+					<th [pSortableColumn]="'date'" class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">
+						Серьезность<p-sortIcon class="mx-2" />
+					</th>
+					<th [pSortableColumn]="'date'" class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">
+						Ошибка<p-sortIcon class="mx-2" />
+					</th>
 				</tr>
 			</ng-template>
 			<ng-template pTemplate="body" let-record let-rowIndex="rowIndex">
 				<tr>
 					<td class="border px-2 py-2 whitespace-nowrap align-middle">{{ record.OccuredDateTime | date: "dd.MM.yyyy HH:mm" }}</td>
+					<td class="border px-2 py-2 whitespace-nowrap align-middle">{{ `user_login` }}</td>
+					<td class="border px-2 py-2 whitespace-nowrap align-middle">{{ `read_permission` }}</td>
 					<td class="border px-2 py-2 whitespace-nowrap align-middle">
 						@if (record.InvokerId) {
 							<i class="pi pi-user mr-1 text-blue-500"></i>
