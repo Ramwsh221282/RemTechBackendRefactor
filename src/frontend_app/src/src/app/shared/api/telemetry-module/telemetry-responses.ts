@@ -3,7 +3,7 @@ export interface TelemetryResponse {
 	UserId: string | null;
 	UserLogin: string | null;
 	UserEmail: string | null;
-	UserPermissions: string[] | null;
+	UserPermissions: TelemetryPermissionResponse[] | null;
 	ActionName: string;
 	ActionSeverity: string;
 	ActionTimestamp: IsoDateString;
@@ -23,7 +23,13 @@ export interface FetchTelemetryRecordsResponse {
 
 export interface FetchAnalyticsTelemetryRecordsResponse {
 	DateByDay: string;
-	Results: FetchTelemetryRecordsResponse[];
+	Results: TelemetryResponse[];
+}
+
+export interface TelemetryPermissionResponse {
+	Id: string;
+	Name: string;
+	Description: string;
 }
 
 export type IsoDateString = string;

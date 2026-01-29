@@ -1,3 +1,4 @@
+using System.Data;
 using Dapper;
 
 namespace WebHostApplication.CommonSql;
@@ -10,6 +11,15 @@ namespace WebHostApplication.CommonSql;
 /// <param name="parameters">Параметры Dapper для добавления параметров в запрос.</param>
 /// <returns>Строка с построенной WHERE частью SQL запроса.</returns>
 public delegate string WhereClauseBuilderDelegate<T>(T source, DynamicParameters parameters);
+
+/// <summary>
+/// Контракт для построения части SQL запроса для пагинации.
+/// </summary>
+/// <typeparam name="T">Источник данных для выбора страницы и размера страницы.</typeparam>
+/// <param name="pageSelector">Функция для выбора номера страницы из источника данных.</param>
+/// <param name="pageSizeSelector">Функция для выбора размера страницы из источника данных.</param>
+/// <returns>Строка с построенной частью SQL запроса для пагинации.</returns>
+public delegate string PaginationClauseBuilderDelegate<T>(Func<T, int> pageSelector, Func<T, int> pageSizeSelector);
 
 /// <summary>
 /// Просто класс пустышка, чтобы по нему обращались к extension методам.
@@ -35,6 +45,22 @@ public static class SqlBuilderDelegateImplementation
 			];
 
 			return filterParts.Length == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filterParts);
+		}
+
+		public static string BuildPaginationClause<T>(
+			T source,
+			DynamicParameters parameters,
+			Func<T, int> pageSelector,
+			Func<T, int> pageSizeSelector
+		)
+		{
+			int pageSize = pageSizeSelector.Invoke(source);
+			int page = pageSelector.Invoke(source);
+			int limit = pageSize;
+			int offset = (page - 1) * pageSize;
+			parameters.Add("@PageSize", limit, DbType.Int32);
+			parameters.Add("@Page", offset, DbType.Int32);
+			return "LIMIT @PageSize OFFSET @Page";
 		}
 	}
 }

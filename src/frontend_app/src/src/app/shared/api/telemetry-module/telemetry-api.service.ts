@@ -1,9 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { apiUrl } from '../api-endpoint';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { finalize, map, Observable, shareReplay } from 'rxjs';
 import { FetchTelemetryRecordsResponse } from './telemetry-responses';
 import { TypedEnvelope } from '../envelope';
+import { FetchAnalyticsTelemetryRecordsQuery } from './telemetry-fetch.request';
 
 @Injectable({
 	providedIn: 'root',
@@ -13,10 +14,13 @@ export class TelemetryApiService {
 	private readonly _httpClient: HttpClient = inject(HttpClient);
 	private _fetch$: Observable<FetchTelemetryRecordsResponse> | null = null;
 
-	public fetchTelemetryRecords(): Observable<FetchTelemetryRecordsResponse> {
+	public fetchTelemetryRecords(query: FetchAnalyticsTelemetryRecordsQuery): Observable<FetchTelemetryRecordsResponse> {
 		if (this._fetch$) return this._fetch$;
 
-		return this._httpClient.get<TypedEnvelope<FetchTelemetryRecordsResponse>>(`${this._apiUrl}/records`).pipe(
+		const requestUrl: string = `${this._apiUrl}/records`;
+		const params: HttpParams = query.buildHttpParams();
+
+		return this._httpClient.get<TypedEnvelope<FetchTelemetryRecordsResponse>>(requestUrl, { params }).pipe(
 			map((envelope: TypedEnvelope<FetchTelemetryRecordsResponse>) => {
 				const response: FetchTelemetryRecordsResponse = {
 					HasNextPage: envelope.body?.HasNextPage ?? false,

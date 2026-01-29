@@ -1,5 +1,5 @@
 import { DatePipe, NgClass } from '@angular/common';
-import { Component, computed, inject, OnInit, signal, WritableSignal } from '@angular/core';
+import { Component, computed, inject, OnInit, Signal, signal, WritableSignal } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
 import { TableModule } from 'primeng/table';
 import { Select } from 'primeng/select';
@@ -11,10 +11,12 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 import {
 	FetchAnalyticsTelemetryRecordsResponse,
 	FetchTelemetryRecordsResponse,
+	TelemetryResponse,
 } from '../../../../shared/api/telemetry-module/telemetry-responses';
 import { createDefaultFetchTelemetryRecordsFetchResponse } from '../../../../shared/api/telemetry-module/telemetry-factories';
 import { TelemetryApiService } from '../../../../shared/api/telemetry-module/telemetry-api.service';
 import { tap } from 'rxjs';
+import { FetchAnalyticsTelemetryRecordsQuery } from '../../../../shared/api/telemetry-module/telemetry-fetch.request';
 
 @Component({
 	selector: 'app-users-activity-monitoring-page',
@@ -29,16 +31,20 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	readonly timeSelections: string[] = ['7 дней', 'месяц', 'диапазон'];
 	readonly selectedTimeOption: WritableSignal<string | null> = signal('7 дней');
 	readonly rangedFilterDates: WritableSignal<Date[] | undefined> = signal(undefined);
-	readonly fetchTelemetryRecords: WritableSignal<FetchTelemetryRecordsResponse> = signal(
-		createDefaultFetchTelemetryRecordsFetchResponse(),
-	);
+	readonly data: WritableSignal<FetchTelemetryRecordsResponse> = signal(createDefaultFetchTelemetryRecordsFetchResponse());
 	readonly _service: TelemetryApiService = inject(TelemetryApiService);
+	readonly _query: WritableSignal<FetchAnalyticsTelemetryRecordsQuery> = signal(
+		FetchAnalyticsTelemetryRecordsQuery.create().withPage(1).withPageSize(50),
+	);
+
+	readonly records: Signal<TelemetryResponse[]> = computed((): TelemetryResponse[] => {
+		return this.data().Items.flatMap((item: FetchAnalyticsTelemetryRecordsResponse) => item.Results);
+	});
 
 	readonly chartData = computed(() => {
-		const items: FetchAnalyticsTelemetryRecordsResponse[] = this.fetchTelemetryRecords().Items;
+		const items: FetchAnalyticsTelemetryRecordsResponse[] = this.data().Items;
 		const data: PrimeNgChartData = defaultPrimeNgChartData();
 		let dataSets: number[] = [];
-
 		for (const item of items) {
 			data.labels.push(new Date(item.DateByDay).toLocaleDateString('ru-RU'));
 			dataSets.push(item.Results.length);
@@ -60,7 +66,7 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 		for (let i: number = 0; i < data.datasets.length; i++) {
 			data.datasets[i].data = dataSets;
 		}
-
+		console.log(data);
 		return data;
 	});
 
@@ -121,80 +127,22 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 		return options;
 	});
 
-	actionRecords: ActionRecordResponse[] = [
-		{
-			Id: '1',
-			InvokerId: 'user-101',
-			Name: 'Login',
-			Severity: 'Info',
-			PayloadJson: '{"ip":"192.168.1.1"}',
-			OccuredDateTime: new Date(),
-			Error: null,
-		},
-		{
-			Id: '2',
-			InvokerId: 'user-102',
-			Name: 'UpdateProfile',
-			Severity: 'Warning',
-			PayloadJson: '{"fields":["email","phone"]}',
-			OccuredDateTime: new Date(),
-			Error: null,
-		},
-		{
-			Id: '3',
-			InvokerId: 'user-103',
-			Name: 'DeleteAccount',
-			Severity: 'Critical',
-			PayloadJson: '{"reason":"user request"}',
-			OccuredDateTime: new Date(),
-			Error: 'Account deletion failed: foreign key constraint.',
-		},
-		{
-			Id: '4',
-			InvokerId: null,
-			Name: 'SystemBackup',
-			Severity: 'Info',
-			PayloadJson: '{"size":"2GB"}',
-			OccuredDateTime: new Date(),
-			Error: null,
-		},
-		{
-			Id: '5',
-			InvokerId: 'user-104',
-			Name: 'ChangePassword',
-			Severity: 'Info',
-			PayloadJson: '{"method":"reset"}',
-			OccuredDateTime: new Date(),
-			Error: null,
-		},
-	];
+	public resolveInvokerIdDisplayValue(record: TelemetryResponse): string {
+		return record.UserId ? record.UserId : 'Аноним (гость)';
+	}
 
-	activityChartData: any;
-	activityChartOptions: any;
-
-	ngOnInit(): void {
+	public ngOnInit(): void {
 		this._service
-			.fetchTelemetryRecords()
+			.fetchTelemetryRecords(this._query())
 			.pipe(
 				tap((response: FetchTelemetryRecordsResponse) => {
-					this.fetchTelemetryRecords.set(response);
-					console.log(response);
+					this.data.set(response);
 				}),
 			)
 			.subscribe();
 	}
 
-	onPeriodChange(period: string, customRange?: Date[]): void {}
-}
-
-export interface ActionRecordResponse {
-	Id: string;
-	InvokerId: string | null;
-	Name: string;
-	Severity: string;
-	PayloadJson: string;
-	OccuredDateTime: Date;
-	Error: string | null;
+	public onPeriodChange(period: string, customRange?: Date[]): void {}
 }
 
 interface PrimeNgChartData {

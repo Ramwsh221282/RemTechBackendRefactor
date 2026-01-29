@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace WebHostApplication.Queries.GetActionRecords;
 
 /// <summary>
@@ -10,51 +8,50 @@ public sealed class ActionRecordResponse
 	/// <summary>
 	/// Идентификатор записи действия.
 	/// </summary>
-	public Guid Id { get; init; }
+	public required Guid Id { get; set; }
 
 	/// <summary>
 	/// Идентификатор пользователя, выполнившего действие.
 	/// </summary>
-	public Guid? UserId { get; init; }
+	public required Guid? UserId { get; set; }
 
 	/// <summary>
 	/// Идентификатор записи действия.
 	/// </summary>
-	public required string? UserLogin { get; init; }
+	public required string? UserLogin { get; set; }
 
 	/// <summary>
 	/// Email пользователя, выполнившего действие.
 	/// </summary>
-	public required string? UserEmail { get; init; }
+	public required string? UserEmail { get; set; }
 
 	/// <summary>
 	/// Разрешения пользователя, выполнившего действие.
 	/// </summary>
-	public required IReadOnlyList<ActionRecordUserPermissionResponse>? UserPermissions { get; init; }
+	public required IReadOnlyList<ActionRecordUserPermissionResponse>? UserPermissions { get; set; }
 
 	/// <summary>
 	/// Имя действия.
 	/// </summary>
-	public required string ActionName { get; init; }
+	public required string ActionName { get; set; }
 
 	/// <summary>
 	/// Уровень серьезности действия.
 	/// </summary>
-	public required string ActionSeverity { get; init; }
+	public required string ActionSeverity { get; set; }
 
 	/// <summary>
 	/// Сообщение об ошибке, если таковая имелась.
 	/// </summary>
-	public required string? ErrorMessage { get; init; }
+	public required string? ErrorMessage { get; set; }
 
 	/// <summary>
 	/// Временная метка действия.
 	/// </summary>
-	public required DateTime ActionTimestamp { get; init; }
+	public required DateTime ActionTimestamp { get; set; }
 
 	/// <summary>
-	/// Общее количество записей действий.
+	/// Общее количество записей, подходящих под фильтры запроса.
 	/// </summary>
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWriting)]
-	public required int TotalCount { get; init; }
+	public int TotalCount { get; set; }
 }

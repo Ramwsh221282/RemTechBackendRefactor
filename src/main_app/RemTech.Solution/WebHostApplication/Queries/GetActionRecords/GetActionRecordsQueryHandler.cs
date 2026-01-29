@@ -7,6 +7,7 @@ using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.NN;
 using WebHostApplication.CommonSql;
+using WebHostApplication.Injection;
 
 namespace WebHostApplication.Queries.GetActionRecords;
 
@@ -15,6 +16,7 @@ namespace WebHostApplication.Queries.GetActionRecords;
 /// </summary>
 /// <param name="session">Сессия NpgSql (PostgreSQL connection).</param>
 /// <param name="embeddings">Провайдер эмбеддингов.</param>
+[UseCache]
 public sealed class GetActionRecordsQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: IQueryHandler<GetActionRecordsQuery, GetActionRecordQueryResponse>
 {
@@ -41,6 +43,7 @@ public sealed class GetActionRecordsQueryHandler(NpgSqlSession session, Embeddin
 		DynamicParameters parameters = new();
 		string mainQueryFilters = BuildMainQuerySqlFilter(query, parameters);
 		string permissionsSubQueryFilter = BuildPermissionsSubQueryFilter(query, parameters);
+		string paginationQueryPart = BuildPaginationQueryPart(query, parameters);
 
 		string sql = $"""
 WITH items as (
@@ -71,6 +74,7 @@ WITH items as (
 telemetry_module.action_records ar
 	LEFT JOIN identity_module.accounts a ON ar.invoker_id = a.id
 {mainQueryFilters}
+{paginationQueryPart}
 )
 SELECT
 Date(i.ActionTimestamp) as DateByDay,
@@ -220,27 +224,6 @@ ORDER BY DateByDay
 		return response;
 	}
 
-	// private static async Task<ActionRecordResponse> CreateSingleFromReader(DbDataReader reader, CancellationToken ct)
-	// {
-	// 	return new ActionRecordResponse()
-	// 	{
-	// 		UserLogin = await reader.IsDBNullAsync(reader.GetOrdinal("user_login"), ct)
-	// 			? null
-	// 			: reader.GetString(reader.GetOrdinal("user_login")),
-	// 		UserEmail = await reader.IsDBNullAsync(reader.GetOrdinal("user_email"), ct)
-	// 			? null
-	// 			: reader.GetString(reader.GetOrdinal("user_email")),
-	// 		ErrorMessage = await reader.IsDBNullAsync(reader.GetOrdinal("error_message"), ct)
-	// 			? null
-	// 			: reader.GetString(reader.GetOrdinal("error_message")),
-	// 		UserId = await reader.IsDBNullAsync(reader.GetOrdinal("user_id"), ct)
-	// 			? null
-	// 			: reader.GetGuid(reader.GetOrdinal("user_id")),
-	// 		UserPermissions = await ActionRecordUserPermissionResponse.ArrayFromDbReader(reader, ct),
-	// 		Id = reader.GetGuid(reader.GetOrdinal("record_id")),
-	// 		ActionTimestamp = reader.GetDateTime(reader.GetOrdinal("action_timestamp")),
-	// 		ActionName = reader.GetString(reader.GetOrdinal("action_name")),
-	// 		ActionSeverity = reader.GetString(reader.GetOrdinal("action_severity")),
-	// 	};
-	// }
+	private static string BuildPaginationQueryPart(GetActionRecordsQuery query, DynamicParameters parameters) =>
+		SqlBuilderDelegate.BuildPaginationClause(query, parameters, q => q.Page, q => q.PageSize);
 }

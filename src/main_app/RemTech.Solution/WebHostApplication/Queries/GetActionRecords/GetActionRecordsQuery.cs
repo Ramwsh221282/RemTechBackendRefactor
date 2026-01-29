@@ -30,6 +30,16 @@ public sealed class GetActionRecordsQuery : IQuery
 	public IEnumerable<Guid>? PermissionIdentifiers { get; private init; }
 
 	/// <summary>
+	/// Номер страницы для пагинации. Стандартно 1.
+	/// </summary>
+	public int Page { get; init; } = 1;
+
+	/// <summary>
+	/// Размер страницы для пагинации. Максимум 50.
+	/// </summary>
+	public int PageSize { get; init; } = 50;
+
+	/// <summary>
 	/// Имя действия для поиска записей действий.
 	/// </summary>
 	public string? ActionNameSearch { get; private init; }
@@ -54,6 +64,20 @@ public sealed class GetActionRecordsQuery : IQuery
 	/// Игнорировать ошибки при получении записей действий.
 	/// </summary>
 	public bool IgnoreErrors { get; init; }
+
+	/// <summary>
+	/// Устанавливает номер страницы для пагинации.
+	/// </summary>
+	/// <param name="page">Номер страницы для пагинации.</param>
+	/// <returns>Запрос с установленным номером страницы для пагинации.</returns>
+	public GetActionRecordsQuery WithCustomPage(int? page) => Copy(this, page: page);
+
+	/// <summary>
+	/// Устанавливает размер страницы для пагинации.
+	/// </summary>
+	/// <param name="pageSize">Размер страницы для пагинации.</param>
+	/// <returns>Запрос с установленным размером страницы для пагинации.</returns>
+	public GetActionRecordsQuery WithCustomPageSize(int? pageSize) => Copy(this, pageSize: pageSize);
 
 	/// <summary>
 	/// Устанавливает Email для поиска записей действий.
@@ -138,7 +162,9 @@ public sealed class GetActionRecordsQuery : IQuery
 		DateTime? startDate = null,
 		DateTime? endDate = null,
 		Guid? guidOfRequestInvoker = null,
-		bool? ignoreErrors = null
+		bool? ignoreErrors = null,
+		int? page = null,
+		int? pageSize = null
 	) =>
 		new()
 		{
@@ -151,5 +177,31 @@ public sealed class GetActionRecordsQuery : IQuery
 			EndDate = endDate ?? origin.EndDate,
 			IdOfRequestInvoker = guidOfRequestInvoker ?? origin.IdOfRequestInvoker,
 			IgnoreErrors = ignoreErrors ?? origin.IgnoreErrors,
+			Page = CanUsePageFromArgument(page, out int validPage) ? validPage : origin.Page,
+			PageSize = CanUsePageSizeFromArgument(pageSize, out int validPageSize) ? validPageSize : origin.PageSize,
 		};
+
+	private static bool CanUsePageFromArgument(int? page, out int validPage)
+	{
+		if (page == null || page.Value < 1)
+		{
+			validPage = 1;
+			return false;
+		}
+
+		validPage = page.Value;
+		return true;
+	}
+
+	private static bool CanUsePageSizeFromArgument(int? pageSize, out int validPageSize)
+	{
+		if (pageSize is null || pageSize.Value > 50)
+		{
+			validPageSize = 50;
+			return false;
+		}
+
+		validPageSize = pageSize.Value;
+		return true;
+	}
 }
