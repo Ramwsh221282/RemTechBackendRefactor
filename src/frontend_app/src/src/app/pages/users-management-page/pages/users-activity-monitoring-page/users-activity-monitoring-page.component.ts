@@ -1,5 +1,5 @@
 import { DatePipe, NgClass } from '@angular/common';
-import { Component, signal, WritableSignal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
 import { TableModule } from 'primeng/table';
 import { Select } from 'primeng/select';
@@ -8,6 +8,13 @@ import { DatePicker } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
 import { Checkbox } from 'primeng/checkbox';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import {
+	FetchAnalyticsTelemetryRecordsResponse,
+	FetchTelemetryRecordsResponse,
+} from '../../../../shared/api/telemetry-module/telemetry-responses';
+import { createDefaultFetchTelemetryRecordsFetchResponse } from '../../../../shared/api/telemetry-module/telemetry-factories';
+import { TelemetryApiService } from '../../../../shared/api/telemetry-module/telemetry-api.service';
+import { tap } from 'rxjs';
 
 @Component({
 	selector: 'app-users-activity-monitoring-page',
@@ -15,68 +22,50 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 	templateUrl: './users-activity-monitoring-page.component.html',
 	styleUrl: './users-activity-monitoring-page.component.css',
 })
-export class UsersActivityMonitoringPageComponent {
+export class UsersActivityMonitoringPageComponent implements OnInit {
 	selectedPeriod: any;
 	customRange: [Date, Date] | undefined;
 
 	readonly timeSelections: string[] = ['7 дней', 'месяц', 'диапазон'];
 	readonly selectedTimeOption: WritableSignal<string | null> = signal('7 дней');
 	readonly rangedFilterDates: WritableSignal<Date[] | undefined> = signal(undefined);
+	readonly fetchTelemetryRecords: WritableSignal<FetchTelemetryRecordsResponse> = signal(
+		createDefaultFetchTelemetryRecordsFetchResponse(),
+	);
+	readonly _service: TelemetryApiService = inject(TelemetryApiService);
 
-	actionRecords: ActionRecordResponse[] = [
-		{
-			Id: '1',
-			InvokerId: 'user-101',
-			Name: 'Login',
-			Severity: 'Info',
-			PayloadJson: '{"ip":"192.168.1.1"}',
-			OccuredDateTime: new Date(),
-			Error: null,
-		},
-		{
-			Id: '2',
-			InvokerId: 'user-102',
-			Name: 'UpdateProfile',
-			Severity: 'Warning',
-			PayloadJson: '{"fields":["email","phone"]}',
-			OccuredDateTime: new Date(),
-			Error: null,
-		},
-		{
-			Id: '3',
-			InvokerId: 'user-103',
-			Name: 'DeleteAccount',
-			Severity: 'Critical',
-			PayloadJson: '{"reason":"user request"}',
-			OccuredDateTime: new Date(),
-			Error: 'Account deletion failed: foreign key constraint.',
-		},
-		{
-			Id: '4',
-			InvokerId: null,
-			Name: 'SystemBackup',
-			Severity: 'Info',
-			PayloadJson: '{"size":"2GB"}',
-			OccuredDateTime: new Date(),
-			Error: null,
-		},
-		{
-			Id: '5',
-			InvokerId: 'user-104',
-			Name: 'ChangePassword',
-			Severity: 'Info',
-			PayloadJson: '{"method":"reset"}',
-			OccuredDateTime: new Date(),
-			Error: null,
-		},
-	];
+	readonly chartData = computed(() => {
+		const items: FetchAnalyticsTelemetryRecordsResponse[] = this.fetchTelemetryRecords().Items;
+		const data: PrimeNgChartData = defaultPrimeNgChartData();
+		let dataSets: number[] = [];
 
-	activityChartData: any;
-	activityChartOptions: any;
+		for (const item of items) {
+			data.labels.push(new Date(item.DateByDay).toLocaleDateString('ru-RU'));
+			dataSets.push(item.Results.length);
+		}
 
-	constructor() {
-		this.generateChartData('7 дней');
-		this.activityChartOptions = {
+		data.datasets = [
+			...dataSets.map((): PrimeNgChartDataSet => {
+				return {
+					label: 'Активность',
+					backgroundColor: '#3b82f6',
+					borderColor: '#2563eb',
+					borderWidth: 1,
+					data: [],
+					type: 'line',
+				};
+			}),
+		];
+
+		for (let i: number = 0; i < data.datasets.length; i++) {
+			data.datasets[i].data = dataSets;
+		}
+
+		return data;
+	});
+
+	readonly chartOptions = computed(() => {
+		const options: PrimeNgChartOptions = {
 			responsive: true,
 			maintainAspectRatio: false,
 			tooltip: {
@@ -129,73 +118,73 @@ export class UsersActivityMonitoringPageComponent {
 				},
 			},
 		};
+		return options;
+	});
+
+	actionRecords: ActionRecordResponse[] = [
+		{
+			Id: '1',
+			InvokerId: 'user-101',
+			Name: 'Login',
+			Severity: 'Info',
+			PayloadJson: '{"ip":"192.168.1.1"}',
+			OccuredDateTime: new Date(),
+			Error: null,
+		},
+		{
+			Id: '2',
+			InvokerId: 'user-102',
+			Name: 'UpdateProfile',
+			Severity: 'Warning',
+			PayloadJson: '{"fields":["email","phone"]}',
+			OccuredDateTime: new Date(),
+			Error: null,
+		},
+		{
+			Id: '3',
+			InvokerId: 'user-103',
+			Name: 'DeleteAccount',
+			Severity: 'Critical',
+			PayloadJson: '{"reason":"user request"}',
+			OccuredDateTime: new Date(),
+			Error: 'Account deletion failed: foreign key constraint.',
+		},
+		{
+			Id: '4',
+			InvokerId: null,
+			Name: 'SystemBackup',
+			Severity: 'Info',
+			PayloadJson: '{"size":"2GB"}',
+			OccuredDateTime: new Date(),
+			Error: null,
+		},
+		{
+			Id: '5',
+			InvokerId: 'user-104',
+			Name: 'ChangePassword',
+			Severity: 'Info',
+			PayloadJson: '{"method":"reset"}',
+			OccuredDateTime: new Date(),
+			Error: null,
+		},
+	];
+
+	activityChartData: any;
+	activityChartOptions: any;
+
+	ngOnInit(): void {
+		this._service
+			.fetchTelemetryRecords()
+			.pipe(
+				tap((response: FetchTelemetryRecordsResponse) => {
+					this.fetchTelemetryRecords.set(response);
+					console.log(response);
+				}),
+			)
+			.subscribe();
 	}
 
-	// Генерация данных для графика по выбранному периоду
-	generateChartData(period: string): void {
-		let labels: string[] = [];
-		let data: number[] = [];
-		const now: Date = new Date();
-		if (period === '7 дней') {
-			// последние 7 дней
-			for (let i: number = 6; i >= 0; i--) {
-				const d: Date = new Date(now);
-				d.setDate(now.getDate() - i);
-				labels.push(d.toLocaleDateString('ru-RU'));
-				const count: number = this.actionRecords.filter((r: ActionRecordResponse) => {
-					return r.OccuredDateTime.toDateString() === d.toDateString();
-				}).length;
-				data.push(count);
-			}
-		} else if (period === 'месяц') {
-			for (let i: number = 3; i >= 0; i--) {
-				const start: Date = new Date(now);
-				start.setDate(now.getDate() - i * 7);
-				const end: Date = new Date(start);
-				end.setDate(start.getDate() + 6);
-				labels.push(`${start.toLocaleDateString('ru-RU')} - ${end.toLocaleDateString('ru-RU')}`);
-				const count: number = this.actionRecords.filter((r: ActionRecordResponse) => {
-					return r.OccuredDateTime >= start && r.OccuredDateTime <= end;
-				}).length;
-				data.push(count);
-			}
-		} else if (period === 'диапазон' && this.customRange && Array.isArray(this.customRange) && this.customRange.length === 2) {
-			// диапазон дат
-			const start: Date = new Date(this.customRange[0]);
-			const end: Date = new Date(this.customRange[1]);
-			const days: number = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-			for (let i: number = 0; i <= days; i++) {
-				const d: Date = new Date(start);
-				d.setDate(start.getDate() + i);
-				labels.push(d.toLocaleDateString('ru-RU'));
-				const count: number = this.actionRecords.filter((r: ActionRecordResponse) => {
-					return r.OccuredDateTime.toDateString() === d.toDateString();
-				}).length;
-				data.push(count);
-			}
-		}
-		this.activityChartData = {
-			labels,
-			datasets: [
-				{
-					label: 'Активность',
-					backgroundColor: '#3b82f6',
-					borderColor: '#2563eb',
-					borderWidth: 1,
-					data,
-					type: 'line',
-				},
-			],
-		};
-	}
-
-	onPeriodChange(period: string, customRange?: Date[]): void {
-		this.selectedTimeOption.set(period);
-		if (period === 'диапазон' && customRange && customRange.length === 2) {
-			this.customRange = [customRange[0], customRange[1]];
-		}
-		this.generateChartData(period);
-	}
+	onPeriodChange(period: string, customRange?: Date[]): void {}
 }
 
 export interface ActionRecordResponse {
@@ -206,4 +195,80 @@ export interface ActionRecordResponse {
 	PayloadJson: string;
 	OccuredDateTime: Date;
 	Error: string | null;
+}
+
+interface PrimeNgChartData {
+	labels: string[];
+	datasets: PrimeNgChartDataSet[];
+}
+
+function defaultPrimeNgChartData(): PrimeNgChartData {
+	return { labels: [], datasets: [] };
+}
+
+function defaultPrimeNgChartDataSet(): PrimeNgChartDataSet {
+	return { label: '', backgroundColor: '', borderColor: '', borderWidth: 1, data: [], type: 'line' };
+}
+
+interface PrimeNgChartDataSet {
+	label: string;
+	backgroundColor: string;
+	borderColor: string;
+	borderWidth: number;
+	data: number[];
+	type: string;
+}
+
+interface PrimeNgChartOptions {
+	responsive: boolean;
+	maintainAspectRatio: boolean;
+	tooltip: {
+		enabled: boolean;
+		callbacks: {
+			label: (context: any) => string;
+		};
+	};
+	legend: {
+		display: boolean;
+		position: 'top' | 'bottom' | 'left' | 'right';
+		labels: {
+			color: string;
+			font: { size: number };
+		};
+	};
+	layout: {
+		padding: number;
+	};
+	plugins: {
+		legend: {
+			display: boolean;
+		};
+		title: {
+			display: boolean;
+			text: string;
+		};
+	};
+	scales: {
+		x: {
+			title: {
+				display: boolean;
+				text: string;
+				color: string;
+				font: { size: number };
+			};
+		};
+		y: {
+			beginAtZero: boolean;
+			title: {
+				display: boolean;
+				text: string;
+				color: string;
+				font: { size: number };
+				padding: number;
+			};
+			ticks: {
+				precision: number;
+			};
+		};
+	};
 }

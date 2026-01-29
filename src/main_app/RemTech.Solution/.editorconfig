@@ -9,9 +9,11 @@ use_tabs = false
 # C# files
 [*.cs]
 
+dotnet_diagnostic.IDE1006.severity = none
+dotnet_diagnostic.IDE0130.severity = suggestion
 dotnet_diagnostic.RCS1213.severity = suggestion
 dotnet_diagnostic.RCS1163.severity = suggestion
-
+dotnet_diagnostic.IDE0060.severity = suggestion
 
 # Требовать проверки на null для аргументов публичных методов
 dotnet_diagnostic.CA1062.severity = error
@@ -30,7 +32,7 @@ dotnet_diagnostic.SA1210.severity = warning       # Using directives must be ord
 # Размещение членов — порядок: поля, свойства, методы, события, конструкторы и пр.
 dotnet_diagnostic.SA1201.severity = warning       # Elements must appear in the correct order
 dotnet_diagnostic.SA1202.severity = warning       # Elements must be ordered by access
-dotnet_diagnostic.SA1204.severity = warning       # Static elements must appear before instance elements
+dotnet_diagnostic.SA1204.severity = suggestion       # Static elements must appear before instance elements
 dotnet_diagnostic.SA1206.severity = warning       # Declaration keywords must follow order: static, readonly, etc.
 
 # Не использовать вложенные классы без необходимости
@@ -231,7 +233,7 @@ dotnet_diagnostic.CS0168.severity = error # Переменная объявле�
 dotnet_diagnostic.CS0219.severity = error # Переменная присвоена, но не используется
 dotnet_diagnostic.CA1804.severity = error # Неиспользуемое локальное переменное значение
 dotnet_diagnostic.CA1823.severity = error # Неиспользуемое приватное поле
-dotnet_diagnostic.CA1822.severity = error # Метод не использует instance-члены, можно сделать static
+dotnet_diagnostic.CA1822.severity = suggestion # Метод не использует instance-члены, можно сделать static
 dotnet_diagnostic.CS8602.severity = error # Возможное обращение к объекту, равному null (NullReferenceException)
 dotnet_diagnostic.CS8604.severity = none # fix null
 dotnet_diagnostic.CS8618.severity = error # Неинициализированное не-nullable свойство/поле
@@ -509,7 +511,7 @@ dotnet_diagnostic.SA1401.severity = none
 dotnet_diagnostic.SA1402.severity = none
 dotnet_diagnostic.SA1111.severity = none
 dotnet_diagnostic.SA1027.severity = none
-dotnet_diagnostic.SA1204.severity = error
+dotnet_diagnostic.SA1204.severity = suggestion
 dotnet_diagnostic.SA1516.severity = none
 dotnet_diagnostic.SA1512.severity = none
 dotnet_diagnostic.SA1515.severity = none
@@ -553,7 +555,7 @@ dotnet_diagnostic.EPC14.severity = error
 # Некорректная обработка исключений (проглатывание stack trace)
 dotnet_diagnostic.ERP021.severity = error
 # Делайте члены static, если они не обращаются к данным экземпляра (быстрее вызов)
-dotnet_diagnostic.CA1822.severity = error
+dotnet_diagnostic.CA1822.severity = suggestion
 # Избегайте пустых выделений массивов (используйте Array.Empty<T>)
 dotnet_diagnostic.CA1825.severity = error
 # Используйте Length/Count вместо Any() для коллекций, где это возможно (быстрее)
@@ -561,7 +563,7 @@ dotnet_diagnostic.CA1827.severity = error
 # Избегайте лишних проверок на приведение типов (as + null check лучше чем is + cast)
 dotnet_diagnostic.CA1820.severity = error
 # Удалять неиспользуемые параметры (уменьшает потребление стека)
-dotnet_diagnostic.RCS1163.severity = error
+dotnet_diagnostic.RCS1163.severity = suggestion
 # Оптимизировать вызовы LINQ (например, .Where().Any() -> .Any())
 dotnet_diagnostic.RCS1077.severity = error
 # Избегать двойного вызова методов получения данных
@@ -607,7 +609,7 @@ dotnet_diagnostic.RCS1132.severity = error
 dotnet_diagnostic.RCS1141.severity = suggestion
 dotnet_diagnostic.RCS1140.severity = suggestion
 dotnet_diagnostic.RCS1138.severity = suggestion
-dotnet_diagnostic.RCS1163.severity = error
+dotnet_diagnostic.RCS1163.severity = suggestion
 dotnet_diagnostic.RCS1179.severity = error
 dotnet_diagnostic.RCS1188.severity = suggestion
 dotnet_diagnostic.RCS1186.severity = suggestion

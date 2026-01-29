@@ -8,8 +8,8 @@
 			<p-chart
 				class="p-4 flex flex-col gap-4 rounded-lg shadow-sm bg-gradient-to-br from-blue-100 via-white to-blue-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700"
 				type="line"
-				[options]="activityChartOptions"
-				[data]="activityChartData"
+				[options]="chartOptions()"
+				[data]="chartData()"
 				style="width: 100%; height: 100%; display: block"
 			></p-chart>
 			<div

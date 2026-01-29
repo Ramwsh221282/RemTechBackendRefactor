@@ -35,6 +35,7 @@ using Vehicles.Domain.Vehicles;
 using Vehicles.Infrastructure.BackgroundServices;
 using Vehicles.Infrastructure.Vehicles.PersisterImplementation;
 using Vehicles.WebApi.Extensions;
+using WebHostApplication.Queries.GetActionRecords;
 
 namespace WebHostApplication.Injection;
 
@@ -165,5 +166,7 @@ public static class ModulesInjection
 			// telemetry module
 			typeof(ActionRecord).Assembly,
 			typeof(ActionRecordsTableMigration).Assembly,
+			// current assembly
+			typeof(GetActionRecordsQuery).Assembly,
 		];
 }

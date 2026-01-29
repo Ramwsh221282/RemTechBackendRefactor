@@ -48,7 +48,7 @@ public sealed class TelemetryRecordWritingMiddleware(
 		ResetBufferToBeginning(buffer);
 		await CopyClonedStreamToResponse(buffer, bodyClone, context, ct);
 
-		if (severity.Equals(ActionRecordSeverity.Error()))
+		if (severity.Equals(ActionRecordSeverity.Error()) && buffer.Length > 0)
 		{
 			string errorText = await TryReadBusinessLogicErrorMessage(buffer, ct);
 			error = ActionRecordError.FromNullableString(errorText);

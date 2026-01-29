@@ -1,6 +1,6 @@
 ﻿using ParsersControl.Core.ParserLinks.Models;
 
-namespace WebHostApplication.Modules.parsers_control;
+namespace WebHostApplication.Modules.ParsersControl;
 
 /// <summary>
 /// Ответ с информацией о ссылке парсера.
