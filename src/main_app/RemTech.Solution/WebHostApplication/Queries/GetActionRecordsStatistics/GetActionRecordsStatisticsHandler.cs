@@ -7,90 +7,69 @@ using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.NN;
 using WebHostApplication.CommonSql;
-using WebHostApplication.Injection;
+using WebHostApplication.Queries.GetActionRecords;
 
-namespace WebHostApplication.Queries.GetActionRecords;
+namespace WebHostApplication.Queries.GetActionRecordsStatistics;
 
 /// <summary>
-/// Обработчик запроса <see cref="GetActionRecordsQuery"/> .
+/// Обработчик запроса на получение статистики записей действий.
 /// </summary>
-/// <param name="session">Сессия NpgSql (PostgreSQL connection).</param>
-/// <param name="embeddings">Провайдер эмбеддингов.</param>
-[UseCache]
-public sealed class GetActionRecordsQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
-	: IQueryHandler<GetActionRecordsQuery, GetActionRecordQueryResponse>
+/// <param name="session">Сессия базы данных</param>
+/// <param name="embeddings">Провайдер эмбеддингов</param>
+public sealed class GetActionRecordsStatisticsHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
+	: IQueryHandler<GetActionRecordsQuery, IReadOnlyList<ActionRecordsStatisticsResponse>>
 {
 	private NpgSqlSession Session { get; } = session;
 	private EmbeddingsProvider Embeddings { get; } = embeddings;
 
 	/// <summary>
-	/// Обрабатывает запрос на получение записей действий.
+	/// Обрабатывает запрос на получение статистики записей действий.
 	/// </summary>
-	/// <param name="query">Запрос на получение записей действий.</param>
-	/// <param name="ct">Токен отмены операции.</param>
-	/// <returns>Список записей действий.</returns>
-	public async Task<GetActionRecordQueryResponse> Handle(GetActionRecordsQuery query, CancellationToken ct = default)
+	/// <param name="query">Запрос на получение статистики записей действий</param>
+	/// <param name="ct">Токен отмены</param>
+	/// <returns>Ответ с статистикой записей действий</returns>
+	public async Task<IReadOnlyList<ActionRecordsStatisticsResponse>> Handle(
+		GetActionRecordsQuery query,
+		CancellationToken ct = default
+	)
 	{
 		(DynamicParameters parameters, string sql) = CreateSql(query);
-		NpgsqlConnection session = await Session.GetConnection(ct);
+		NpgsqlConnection connection = await Session.GetConnection(ct);
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
-		await using DbDataReader reader = await session.ExecuteReaderAsync(command);
-		return await CreateFromReader(query, reader, ct);
+		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+		return await CreateFromReader(reader, ct);
 	}
 
+	// TODO: permissions fitlter should be added in main query using EXISTS.
 	private (DynamicParameters parameters, string sql) CreateSql(GetActionRecordsQuery query)
 	{
 		DynamicParameters parameters = new();
 		string mainQueryFilters = BuildMainQuerySqlFilter(query, parameters);
-		string permissionsSubQueryFilter = BuildPermissionsSubQueryFilter(query, parameters);
-		string paginationQueryPart = BuildPaginationQueryPart(query, parameters);
-
 		string sql = $"""
-WITH items AS (
-    	SELECT
-	ar.id as Id,
-	a.login as UserLogin,
-	a.email as UserEmail,
-	a.id as UserId,
-	ar.name as ActionName,
-	ar.severity as ActionSeverity,
-	ar.error as ErrorMessage,
-	ar.created_at as ActionTimestamp,
-	COUNT(*) OVER() as TotalCount,
-	(
-		SELECT
-			COALESCE(
-				jsonb_agg (
-					jsonb_build_object ('Name', p.name, 'Description', p.description, 'Id', p.id)
-				),
-				'[]'
-			)
-		FROM
-			identity_module.account_permissions ap
-			LEFT JOIN identity_module.permissions p ON p.id = ap.permission_id
-		{permissionsSubQueryFilter}
-	) as UserPermissions
-	FROM
-telemetry_module.action_records ar
-	LEFT JOIN identity_module.accounts a ON ar.invoker_id = a.id
-{mainQueryFilters}
-{paginationQueryPart}
-)
-SELECT 
-MAX(i.TotalCount) as TotalCount, 
-jsonb_agg(
-    jsonb_build_object(
-	'Id', i.Id,
-    'UserId', i.UserId,
-    'UserLogin', i.UserLogin,
-    'UserEmail', i.UserEmail,
-    'UserPermissions', i.UserPermissions,
-    'ActionName', i.ActionName,
-    'ActionSeverity', i.ActionSeverity,
-    'ErrorMessage', i.ErrorMessage,
-    'ActionTimestamp', i.ActionTimestamp
-	)
-) as Items FROM items i;
+SELECT
+    jsonb_agg (
+        jsonb_build_object (
+            'Date',
+            inner_query.Date,
+            'Amount',
+            inner_query.Amount
+        )
+    ) as result
+FROM
+    (
+        SELECT
+            Date (ar.created_at) as Date,
+            COUNT(*) as Amount
+        FROM
+            telemetry_module.action_records ar
+        LEFT JOIN 
+            identity_module.accounts a ON ar.invoker_id = a.id
+        {mainQueryFilters}
+        GROUP BY
+            Date (ar.created_at)
+        ORDER BY
+            Date
+    ) as inner_query
 """;
 		return (parameters, sql);
 	}
@@ -195,32 +174,20 @@ jsonb_agg(
 			]
 		);
 
-	private static async Task<GetActionRecordQueryResponse> CreateFromReader(
-		GetActionRecordsQuery query,
+	private static async Task<IReadOnlyList<ActionRecordsStatisticsResponse>> CreateFromReader(
 		DbDataReader reader,
 		CancellationToken ct
 	)
 	{
-		GetActionRecordQueryResponse response = new();
-		bool isTotalCountSet = false;
+		List<ActionRecordsStatisticsResponse> results = [];
 		while (await reader.ReadAsync(ct))
 		{
-			IReadOnlyList<ActionRecordResponse> records = JsonSerializer.Deserialize<
-				IReadOnlyList<ActionRecordResponse>
-			>(reader.GetString(reader.GetOrdinal("Items")))!;
-
-			if (!isTotalCountSet && records.Count > 0)
-			{
-				response.TotalCount = reader.GetInt32(reader.GetOrdinal("TotalCount"));
-				isTotalCountSet = true;
-			}
-
-			response.Items = records;
+			IReadOnlyList<ActionRecordsStatisticsResponse> records = JsonSerializer.Deserialize<
+				IReadOnlyList<ActionRecordsStatisticsResponse>
+			>(reader.GetString(reader.GetOrdinal("result")));
+			results.AddRange(records);
 		}
 
-		return response;
+		return results;
 	}
-
-	private static string BuildPaginationQueryPart(GetActionRecordsQuery query, DynamicParameters parameters) =>
-		SqlBuilderDelegate.BuildPaginationClause(query, parameters, q => q.Page, q => q.PageSize);
 }

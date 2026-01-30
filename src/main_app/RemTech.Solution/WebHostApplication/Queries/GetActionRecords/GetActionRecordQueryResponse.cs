@@ -43,5 +43,5 @@ public sealed class GetActionRecordQueryResponse
 	/// <summary>
 	/// Элементы записи действий.
 	/// </summary>
-	public IReadOnlyList<ActionRecordAnalyticsResponse> Items { get; set; } = [];
+	public IReadOnlyList<ActionRecordResponse> Items { get; set; } = [];
 }
