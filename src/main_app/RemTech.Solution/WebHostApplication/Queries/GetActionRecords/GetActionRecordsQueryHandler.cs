@@ -46,51 +46,50 @@ public sealed class GetActionRecordsQueryHandler(NpgSqlSession session, Embeddin
 		string paginationQueryPart = BuildPaginationQueryPart(query, parameters);
 
 		string sql = $"""
-WITH items AS (
-    	SELECT
-	ar.id as Id,
-	a.login as UserLogin,
-	a.email as UserEmail,
-	a.id as UserId,
-	ar.name as ActionName,
-	ar.severity as ActionSeverity,
-	ar.error as ErrorMessage,
-	ar.created_at as ActionTimestamp,
-	COUNT(*) OVER() as TotalCount,
-	(
-		SELECT
-			COALESCE(
-				jsonb_agg (
-					jsonb_build_object ('Name', p.name, 'Description', p.description, 'Id', p.id)
-				),
-				'[]'
-			)
-		FROM
-			identity_module.account_permissions ap
-			LEFT JOIN identity_module.permissions p ON p.id = ap.permission_id
-		{permissionsSubQueryFilter}
-	) as UserPermissions
-	FROM
-telemetry_module.action_records ar
-	LEFT JOIN identity_module.accounts a ON ar.invoker_id = a.id
-{mainQueryFilters}
-{paginationQueryPart}
+WITH user_permissions AS (
+    SELECT
+        ap.account_id,
+        jsonb_agg(
+            jsonb_build_object('Name', p.name, 'Description', p.description, 'Id', p.id)
+        ) AS permissions
+    FROM identity_module.account_permissions ap
+    LEFT JOIN identity_module.permissions p ON p.id = ap.permission_id
+    GROUP BY ap.account_id
+),
+items AS (
+    SELECT
+        ar.id as Id,
+        a.login as UserLogin,
+        a.email as UserEmail,
+        a.id as UserId,
+        ar.name as ActionName,
+        ar.severity as ActionSeverity,
+        ar.error as ErrorMessage,
+        ar.created_at as ActionTimestamp,
+        COUNT(*) OVER() as TotalCount,
+        COALESCE(up.permissions, '[]') as UserPermissions
+    FROM telemetry_module.action_records ar
+    LEFT JOIN identity_module.accounts a ON ar.invoker_id = a.id
+    LEFT JOIN user_permissions up ON up.account_id = a.id
+    {mainQueryFilters}
+	{paginationQueryPart}
 )
 SELECT 
-MAX(i.TotalCount) as TotalCount, 
-jsonb_agg(
-    jsonb_build_object(
-	'Id', i.Id,
-    'UserId', i.UserId,
-    'UserLogin', i.UserLogin,
-    'UserEmail', i.UserEmail,
-    'UserPermissions', i.UserPermissions,
-    'ActionName', i.ActionName,
-    'ActionSeverity', i.ActionSeverity,
-    'ErrorMessage', i.ErrorMessage,
-    'ActionTimestamp', i.ActionTimestamp
-	)
-) as Items FROM items i;
+    MAX(i.TotalCount) as TotalCount, 
+    jsonb_agg(
+        jsonb_build_object(
+            'Id', i.Id,
+            'UserId', i.UserId,
+            'UserLogin', i.UserLogin,
+            'UserEmail', i.UserEmail,
+            'UserPermissions', i.UserPermissions,
+            'ActionName', i.ActionName,
+            'ActionSeverity', i.ActionSeverity,
+            'ErrorMessage', i.ErrorMessage,
+            'ActionTimestamp', i.ActionTimestamp
+        )
+    ) as Items
+FROM items i;
 """;
 		return (parameters, sql);
 	}
