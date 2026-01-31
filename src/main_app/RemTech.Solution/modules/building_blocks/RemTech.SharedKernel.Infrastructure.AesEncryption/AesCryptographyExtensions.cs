@@ -10,6 +10,9 @@ public static class AesCryptographyExtensions
 {
 	extension(IServiceCollection services)
 	{
-		public void AddAesCryptography() => services.TryAddSingleton<AesCryptography>();
+		public void AddAesCryptography()
+		{
+			services.TryAddSingleton<AesCryptography>();
+		}
 	}
 }

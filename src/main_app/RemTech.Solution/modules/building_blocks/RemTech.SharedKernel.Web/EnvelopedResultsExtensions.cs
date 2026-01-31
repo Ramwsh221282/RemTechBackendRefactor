@@ -21,7 +21,10 @@ public static class EnvelopedResultsExtensions
 			return (int)code;
 		}
 
-		private string? ResolveMessage() => result.IsFailure ? result.Error.Message : null;
+		private string? ResolveMessage()
+		{
+			return result.IsFailure ? result.Error.Message : null;
+		}
 
 		/// <summary>
 		/// Определяет HTTP статус код на основе типа ошибки.
@@ -29,8 +32,9 @@ public static class EnvelopedResultsExtensions
 		/// <param name="error">Ошибка для определения соответствующего HTTP статус кода.</param>
 		/// <returns>Соответствующий HTTP статус код.</returns>
 		/// <exception cref="InvalidOperationException">Если ошибка не может быть сопоставлена с HTTP статус кодом.</exception>
-		private static HttpStatusCode ResolveStatusCodeByError(Error error) =>
-			error switch
+		private static HttpStatusCode ResolveStatusCodeByError(Error error)
+		{
+			return error switch
 			{
 				Error.ForbiddenError => HttpStatusCode.Forbidden,
 				Error.UnauthorizedError => HttpStatusCode.Unauthorized,
@@ -45,6 +49,7 @@ public static class EnvelopedResultsExtensions
 					$"Unknown error type cannot be resolved to http status code. Error type: {error.GetType().Name}"
 				),
 			};
+		}
 	}
 
 	extension(Result result)

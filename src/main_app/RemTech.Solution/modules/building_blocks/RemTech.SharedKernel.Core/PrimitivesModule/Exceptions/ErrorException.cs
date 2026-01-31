@@ -16,21 +16,30 @@ public abstract class ErrorException(string error) : Exception(error)
 	/// </summary>
 	/// <param name="message">Сообщение об ошибке.</param>
 	/// <returns>Исключение конфликта.</returns>
-	public static ConflictException Conflict(string message) => new(message);
+	public static ConflictException Conflict(string message)
+	{
+		return new(message);
+	}
 
 	/// <summary>
 	/// Создает исключение не найдено.
 	/// </summary>
 	/// <param name="message">Сообщение об ошибке.</param>
 	/// <returns>Исключение не найдено.</returns>
-	public static NotFoundException NotFound(string message) => new(message);
+	public static NotFoundException NotFound(string message)
+	{
+		return new(message);
+	}
 
 	/// <summary>
 	/// Создает исключение валидации.
 	/// </summary>
 	/// <param name="message">Сообщение об ошибке.</param>
 	/// <returns>Исключение валидации.</returns>
-	public static ValidationException Validation(string message) => new(message);
+	public static ValidationException Validation(string message)
+	{
+		return new(message);
+	}
 
 	/// <summary>
 	/// Создает исключение валидации для незаполненного значения.
@@ -94,7 +103,10 @@ public abstract class ErrorException(string error) : Exception(error)
 	/// </summary>
 	/// <param name="message">Сообщение об ошибке.</param>
 	/// <returns>Внутреннее исключение.</returns>
-	public static InternalException Internal(string message) => new(message);
+	public static InternalException Internal(string message)
+	{
+		return new(message);
+	}
 
 	/// <summary>
 	/// Исключение конфликта.

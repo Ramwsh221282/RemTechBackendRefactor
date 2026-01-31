@@ -10,7 +10,7 @@ export interface TelemetryResponse {
 	ErrorMessage: string | null;
 }
 
-export interface FetchTelemetryRecordsResponse {
+export interface PaginatedTelemetryRecordsResponse {
 	TotalCount: number;
 	MaxPage: number;
 	PagesCount: number;
@@ -19,6 +19,17 @@ export interface FetchTelemetryRecordsResponse {
 	HasNextPage: boolean;
 	HasPreviousPage: boolean;
 	Items: TelemetryResponse[];
+}
+
+export interface ActionRecordsPageResponse {
+	Records: PaginatedTelemetryRecordsResponse;
+	Statistics: TelemetryStatisticsResponse[];
+	Permissions: TelemetryPermissionResponse[] | null;
+	Statuses: TelemetryActionStatus[] | null;
+}
+
+export interface TelemetryActionStatus {
+	Name: string;
 }
 
 export interface TelemetryStatisticsResponse {

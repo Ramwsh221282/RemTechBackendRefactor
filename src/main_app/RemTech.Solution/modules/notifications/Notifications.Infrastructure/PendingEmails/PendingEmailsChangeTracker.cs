@@ -28,7 +28,9 @@ public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
 	public void Track(IEnumerable<PendingEmailNotification> notifications)
 	{
 		foreach (PendingEmailNotification notification in notifications)
+		{
 			Tracking.TryAdd(notification.Id, notification.Copy());
+		}
 	}
 
 	/// <summary>
@@ -43,7 +45,10 @@ public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
 		return SavePendingEmailNotificationChanges(tracking, ct);
 	}
 
-	private static string WhenClause(int i) => $"WHEN p.id = @id_{i}";
+	private static string WhenClause(int i)
+	{
+		return $"WHEN p.id = @id_{i}";
+	}
 
 	private async Task SavePendingEmailNotificationChanges(
 		IEnumerable<PendingEmailNotification> notifications,
@@ -52,7 +57,10 @@ public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
 	{
 		PendingEmailNotification[] notificationsArray = [.. notifications];
 		if (notificationsArray.Length == 0)
+		{
 			return;
+		}
+
 		List<string> setClauses = [];
 		DynamicParameters parameters = new();
 
@@ -73,7 +81,9 @@ public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
 		}
 
 		if (setClauses.Count == 0)
+		{
 			return;
+		}
 
 		List<Guid> ids = [];
 		int index = 0;
@@ -104,7 +114,9 @@ public sealed class PendingEmailsChangeTracker(NpgSqlSession session)
 		foreach (PendingEmailNotification notification in notifications)
 		{
 			if (Tracking.TryGetValue(notification.Id, out _))
+			{
 				result.Add(notification);
+			}
 		}
 
 		return result;

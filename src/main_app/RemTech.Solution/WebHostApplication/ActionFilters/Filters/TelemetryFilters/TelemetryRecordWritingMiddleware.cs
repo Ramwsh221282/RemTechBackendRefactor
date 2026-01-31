@@ -92,7 +92,10 @@ public sealed class TelemetryRecordWritingMiddleware(
 		ResetBufferToBeginning(bufferFromResponse);
 		using JsonDocument document = JsonDocument.Parse(message);
 		if (!document.RootElement.TryGetProperty("message", out JsonElement messageField))
+		{
 			return string.Empty;
+		}
+
 		return (messageField.ValueKind == JsonValueKind.Null) ? string.Empty : messageField.GetString() ?? string.Empty;
 	}
 

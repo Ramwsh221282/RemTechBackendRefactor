@@ -1,4 +1,4 @@
-import { TelemetryStatisticsResponse, FetchTelemetryRecordsResponse, TelemetryResponse } from './telemetry-responses';
+import { TelemetryStatisticsResponse, PaginatedTelemetryRecordsResponse, TelemetryResponse } from './telemetry-responses';
 
 export function createDefaultTelemetryResponse(): TelemetryResponse {
 	return {
@@ -14,7 +14,7 @@ export function createDefaultTelemetryResponse(): TelemetryResponse {
 	};
 }
 
-export function createDefaultFetchTelemetryRecordsFetchResponse(): FetchTelemetryRecordsResponse {
+export function createDefaultFetchTelemetryRecordsFetchResponse(): PaginatedTelemetryRecordsResponse {
 	return {
 		HasNextPage: false,
 		HasPreviousPage: false,

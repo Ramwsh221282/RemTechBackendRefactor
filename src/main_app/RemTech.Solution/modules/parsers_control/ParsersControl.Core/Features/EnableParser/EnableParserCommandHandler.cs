@@ -29,15 +29,22 @@ public sealed class EnableParserCommandHandler(ISubscribedParsersRepository repo
 		return saving.IsFailure ? saving.Error : parser.Value;
 	}
 
-	private static Result<Unit> Enable(Result<SubscribedParser> parser) =>
-		parser.IsFailure ? parser.Error : parser.Value.Enable();
+	private static Result<Unit> Enable(Result<SubscribedParser> parser)
+	{
+		return parser.IsFailure ? parser.Error : parser.Value.Enable();
+	}
 
 	private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> enabling, CancellationToken ct)
 	{
 		if (enabling.IsFailure)
+		{
 			return Result.Failure(enabling.Error);
+		}
 		if (parser.IsFailure)
+		{
 			return Result.Failure(parser.Error);
+		}
+
 		await repository.Save(parser.Value, ct);
 		return Result.Success();
 	}

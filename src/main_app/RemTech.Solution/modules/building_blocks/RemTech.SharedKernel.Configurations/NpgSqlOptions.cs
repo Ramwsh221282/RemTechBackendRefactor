@@ -57,14 +57,24 @@ public sealed class NpgSqlOptions
 	private void ValidateOptions()
 	{
 		if (string.IsNullOrWhiteSpace(Host))
+		{
 			throw new ArgumentException("Cannot use NpgSql Options. Host was not set.");
+		}
 		if (string.IsNullOrWhiteSpace(Port))
+		{
 			throw new ArgumentException("Cannot use NpgSql Options. Port was not set.");
+		}
 		if (string.IsNullOrWhiteSpace(Database))
+		{
 			throw new ArgumentException("Cannot use NpgSql Options. Database was not set.");
+		}
 		if (string.IsNullOrWhiteSpace(Username))
+		{
 			throw new ArgumentException("Cannot use NpgSql Options. Username was not set.");
+		}
 		if (string.IsNullOrWhiteSpace(Password))
+		{
 			throw new ArgumentException("Cannot use NpgSql Options. Password was not set.");
+		}
 	}
 }

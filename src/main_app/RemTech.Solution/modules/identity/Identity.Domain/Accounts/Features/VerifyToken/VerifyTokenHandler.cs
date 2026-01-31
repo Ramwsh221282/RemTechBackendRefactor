@@ -25,7 +25,9 @@ public sealed class VerifyTokenHandler(IAccessTokensRepository accessTokens, IJw
 	{
 		Result<AccessToken> token = await accessTokens.Find(command.Token, withLock: true, ct);
 		if (token.IsFailure)
+		{
 			return Error.Unauthorized("Token not found.");
+		}
 
 		Result<TokenValidationResult> validToken = await tokensManager.GetValidToken(token.Value.RawToken);
 		if (validToken.IsFailure)

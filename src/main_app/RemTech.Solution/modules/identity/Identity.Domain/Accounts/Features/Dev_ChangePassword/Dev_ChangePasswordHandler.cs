@@ -31,11 +31,18 @@ public sealed class Dev_ChangePasswordHandler(
 	{
 		Result<Account> account = await ResolveAccount(command, ct);
 		if (account.IsFailure)
+		{
 			return account.Error;
+		}
+
 		AccountPassword password = AccountPassword.Create(command.NewPassword);
 		Result<Unit> change = account.Value.ChangePassword(password, hasher, requirements);
+
 		if (change.IsFailure)
+		{
 			return change.Error;
+		}
+
 		await unitOfWork.Save(account.Value, ct);
 		return change;
 	}
@@ -43,9 +50,15 @@ public sealed class Dev_ChangePasswordHandler(
 	private async Task<Result<Account>> ResolveAccount(Dev_ChangePasswordCommand command, CancellationToken ct)
 	{
 		if (command.AccountId.HasValue)
+		{
 			return await accounts.Find(new AccountSpecification().WithId(command.AccountId.Value), ct: ct);
+		}
+
 		if (!string.IsNullOrWhiteSpace(command.AccountLogin))
+		{
 			return await accounts.Find(new AccountSpecification().WithLogin(command.AccountLogin), ct: ct);
+		}
+
 		return !string.IsNullOrWhiteSpace(command.AccountEmail)
 			? await accounts.Find(new AccountSpecification().WithEmail(command.AccountEmail), ct: ct)
 			: (Result<Account>)Error.Validation("Account not specified.");

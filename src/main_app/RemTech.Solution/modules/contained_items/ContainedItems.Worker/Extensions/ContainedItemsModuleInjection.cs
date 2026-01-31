@@ -13,7 +13,10 @@ public static class ContainedItemsModuleInjection
 {
 	extension(IServiceCollection services)
 	{
-		public void InjectContainedItemsModule() => services.RegisterInfrastructure();
+		public void InjectContainedItemsModule()
+		{
+			services.RegisterInfrastructure();
+		}
 
 		public void AddContainedItemsModule(bool isDevelopment)
 		{
@@ -21,7 +24,10 @@ public static class ContainedItemsModuleInjection
 			services.RegisterInfrastructure();
 		}
 
-		public void RegisterInfrastructure() => services.AddContainedItemsInfrastructure();
+		public void RegisterInfrastructure()
+		{
+			services.AddContainedItemsInfrastructure();
+		}
 
 		private void RegisterSharedDependencies(bool isDevelopment)
 		{

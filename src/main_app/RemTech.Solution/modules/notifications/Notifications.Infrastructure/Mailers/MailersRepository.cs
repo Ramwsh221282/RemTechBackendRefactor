@@ -62,7 +62,10 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
 		Mailer? mailer = await Session.QuerySingleUsingReader(command, Map);
 		if (mailer is null)
+		{
 			return Error.NotFound("Не найдена конфигурация почтового сервиса.");
+		}
+
 		ChangeTracker.Track([mailer]);
 		return Result.Success(mailer);
 	}
@@ -130,8 +133,12 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 		return new Mailer(MailerId.Create(id), credentials);
 	}
 
-	private static string LockClause(MailersSpecification specification) =>
-		specification.LockRequired.HasValue && specification.LockRequired.Value ? "FOR UPDATE OF m" : string.Empty;
+	private static string LockClause(MailersSpecification specification)
+	{
+		return specification.LockRequired.HasValue && specification.LockRequired.Value
+			? "FOR UPDATE OF m"
+			: string.Empty;
+	}
 
 	private static (DynamicParameters Parameters, string FilterSql) WhereClause(MailersSpecification specification)
 	{
@@ -153,11 +160,13 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 		return (parameters, filters.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filters)}");
 	}
 
-	private static object GetParameters(Mailer mailer) =>
-		new
+	private static object GetParameters(Mailer mailer)
+	{
+		return new
 		{
 			id = mailer.Id.Value,
 			email = mailer.Credentials.Email,
 			smtp_password = mailer.Credentials.SmtpPassword,
 		};
+	}
 }

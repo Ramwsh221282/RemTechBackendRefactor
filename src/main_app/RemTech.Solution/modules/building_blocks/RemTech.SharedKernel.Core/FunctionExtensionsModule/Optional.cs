@@ -32,7 +32,10 @@ public class Optional
 	/// <typeparam name="T">Тип значения.</typeparam>
 	/// <param name="value">Значение.</param>
 	/// <returns>Экземпляр <see cref="Optional{T}"/> с заданным значением.</returns>
-	public static Optional<T> Some<T>(T value) => new(value);
+	public static Optional<T> Some<T>(T value)
+	{
+		return new(value);
+	}
 
 	/// <summary>
 	/// Создает экземпляр <see cref="Optional{T}"/> из nullable значения.
@@ -40,29 +43,40 @@ public class Optional
 	/// <typeparam name="T">Тип значения.</typeparam>
 	/// <param name="value">Nullable значение.</param>
 	/// <returns>Экземпляр <see cref="Optional{T}"/> с заданным значением или пустой экземпляр, если значение null.</returns>
-	public static Optional<T> FromNullable<T>(T? value) => value is null ? None<T>() : Some(value);
+	public static Optional<T> FromNullable<T>(T? value)
+	{
+		return value is null ? None<T>() : Some(value);
+	}
 
 	/// <summary>
 	/// Создает экземпляр <see cref="Optional{DateTime}"/> из nullable значения DateTime.
 	/// </summary>
 	/// <param name="value">Nullable значение DateTime.</param>
 	/// <returns>Экземпляр <see cref="Optional{DateTime}"/> с заданным значением или пустой экземпляр, если значение null.</returns>
-	public static Optional<DateTime> FromNullable(DateTime? value) =>
-		value.HasValue ? Some(value.Value) : None<DateTime>();
+	public static Optional<DateTime> FromNullable(DateTime? value)
+	{
+		return value.HasValue ? Some(value.Value) : None<DateTime>();
+	}
 
 	/// <summary>
 	/// Создает пустой экземпляр <see cref="Optional{T}"/>.
 	/// </summary>
 	/// <typeparam name="T">Тип значения.</typeparam>
 	/// <returns>Пустой экземпляр <see cref="Optional{T}"/>.</returns>
-	public static Optional<T> None<T>() => new();
+	public static Optional<T> None<T>()
+	{
+		return new();
+	}
 
 	/// <summary>
 	/// Проверяет, существуют ли все значения в коллекции <see cref="Optional"/>.
 	/// </summary>
 	/// <param name="optionals">Коллекция объектов <see cref="Optional"/>.</param>
 	/// <returns>True, если все объекты содержат значения; в противном случае - false.</returns>
-	public static bool AllValuesExist(IEnumerable<Optional> optionals) => optionals.All(optional => optional.HasValue);
+	public static bool AllValuesExist(IEnumerable<Optional> optionals)
+	{
+		return optionals.All(optional => optional.HasValue);
+	}
 
 	/// <summary>
 	/// Проверяет, существуют ли все значения в объекте, содержащем поля типа <see cref="Optional{T}"/>.
@@ -89,7 +103,10 @@ public class Optional
 	/// <param name="onHasValue">Функция, вызываемая при наличии значения.</param>
 	/// <param name="onNoneValue">Функция, вызываемая при отсутствии значения.</param>
 	/// <returns>Значение типа <typeparamref name="U"/>, возвращаемое одной из функций.</returns>
-	public U Map<U>(Func<U> onHasValue, Func<U> onNoneValue) => HasValue ? onHasValue() : onNoneValue();
+	public U Map<U>(Func<U> onHasValue, Func<U> onNoneValue)
+	{
+		return HasValue ? onHasValue() : onNoneValue();
+	}
 
 	/// <summary>
 	/// Преобразует объект <see cref="Optional"/> в значение указанного типа.
@@ -98,7 +115,10 @@ public class Optional
 	/// <param name="onHasValue">Значение, возвращаемое при наличии значения.</param>
 	/// <param name="onNoneValue">Значение, возвращаемое при отсутствии значения.</param>
 	/// <returns>Значение типа <typeparamref name="U"/>, возвращаемое одним из параметров.</returns>
-	public U Map<U>(U onHasValue, U onNoneValue) => HasValue ? onHasValue : onNoneValue;
+	public U Map<U>(U onHasValue, U onNoneValue)
+	{
+		return HasValue ? onHasValue : onNoneValue;
+	}
 }
 
 /// <summary>
@@ -135,20 +155,29 @@ public sealed class Optional<T> : Optional
 			? field
 			: throw new InvalidOperationException($"Нельзя получить доступ к пустому значению {nameof(Optional<>)}");
 
-	public static implicit operator Optional<T>(T value) => Some(value);
+	public static implicit operator Optional<T>(T value)
+	{
+		return Some(value);
+	}
 
 	/// <summary>
 	/// Создает экземпляр <see cref="Optional{T}"/> с заданным значением.
 	/// </summary>
 	/// <param name="value">Значение для создания экземпляра.</param>
 	/// <returns>Экземпляр <see cref="Optional{T}"/> с заданным значением.</returns>
-	public static Optional<T> Some(T value) => new(value);
+	public static Optional<T> Some(T value)
+	{
+		return new(value);
+	}
 
 	/// <summary>
 	/// Создает пустой экземпляр <see cref="Optional{T}"/>.
 	/// </summary>
 	/// <returns>Пустой экземпляр <see cref="Optional{T}"/>.</returns>
-	public static Optional<T> None() => new();
+	public static Optional<T> None()
+	{
+		return new();
+	}
 
 	/// <summary>
 	/// Выполняет указанное действие, если значение присутствует.

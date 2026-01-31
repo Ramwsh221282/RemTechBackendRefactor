@@ -31,7 +31,10 @@ public sealed class Dev_ChangeEmailHandler(IAccountsRepository repository, IAcco
 	private static Result<Unit> ChangeEmail(Dev_ChangeEmailCommand command, Result<Account> account)
 	{
 		if (account.IsFailure)
+		{
 			return account.Error;
+		}
+
 		account.Value.ChangeEmail(AccountEmail.Create(command.NewEmail));
 		return Unit.Value;
 	}
@@ -44,8 +47,10 @@ public sealed class Dev_ChangeEmailHandler(IAccountsRepository repository, IAcco
 			return Unit.Value;
 		}
 
-		Error ErrorClause(Result<Account> account, Result<Unit> change) =>
-			Error.Conflict(string.Join(", ", account.Error.Message, change.Error.Message));
+		Error ErrorClause(Result<Account> account, Result<Unit> change)
+		{
+			return Error.Conflict(string.Join(", ", account.Error.Message, change.Error.Message));
+		}
 
 		return (account, change) switch
 		{
@@ -56,8 +61,9 @@ public sealed class Dev_ChangeEmailHandler(IAccountsRepository repository, IAcco
 		};
 	}
 
-	private async Task<Result<Account>> ResolveAccount(Dev_ChangeEmailCommand command, CancellationToken ct) =>
-		command switch
+	private async Task<Result<Account>> ResolveAccount(Dev_ChangeEmailCommand command, CancellationToken ct)
+	{
+		return command switch
 		{
 			{ AccountId: not null } => await repository.Find(
 				new AccountSpecification().WithId(command.AccountId.Value).WithLock(),
@@ -73,4 +79,5 @@ public sealed class Dev_ChangeEmailHandler(IAccountsRepository repository, IAcco
 			),
 			_ => Error.Validation("Не предоставлен ни Email, ни логин, ни Id аккаунта для изменения Email."),
 		};
+	}
 }

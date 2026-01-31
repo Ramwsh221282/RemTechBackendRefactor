@@ -27,7 +27,10 @@ public sealed record ServiceItemId
 	public static Result<ServiceItemId> Create(string value)
 	{
 		if (string.IsNullOrWhiteSpace(value))
+		{
 			return Error.Validation("Идентификатор сохраняемого элемента не может быть пустым.");
+		}
+
 		return value.Length > MAX_LENGTH
 			? Error.Validation($"Идентификатор сохраняемого элемента не может превышать {MAX_LENGTH} символов.")
 			: new ServiceItemId(value);

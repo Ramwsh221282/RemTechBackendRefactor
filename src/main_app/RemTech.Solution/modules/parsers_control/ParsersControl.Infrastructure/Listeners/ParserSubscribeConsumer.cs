@@ -54,7 +54,10 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 	public Task StartConsuming(CancellationToken ct = default)
 	{
 		if (Channel is null)
+		{
 			throw new InvalidOperationException("Channel is not initialized.");
+		}
+
 		return Consumer is null
 			? throw new InvalidOperationException("Consumer is not initialized.")
 			: (Task)Channel.BasicConsumeAsync(queue: QUEUE, autoAck: false, consumer: Consumer, cancellationToken: ct);
@@ -69,38 +72,46 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 	public async Task Shutdown(CancellationToken ct = default)
 	{
 		if (Channel is null)
+		{
 			throw new InvalidOperationException("Channel is not initialized.");
+		}
+
 		await Channel.DisposeAsync();
 	}
 
-	private static Task DeclareExchange(IChannel channel, CancellationToken ct) =>
-		channel.ExchangeDeclareAsync(
+	private static Task DeclareExchange(IChannel channel, CancellationToken ct)
+	{
+		return channel.ExchangeDeclareAsync(
 			exchange: EXCHANGE,
 			type: "topic",
 			durable: true,
 			autoDelete: false,
 			cancellationToken: ct
 		);
+	}
 
-	private static Task<QueueDeclareOk> DeclareQueue(IChannel channel, CancellationToken ct) =>
-		channel.QueueDeclareAsync(
+	private static Task<QueueDeclareOk> DeclareQueue(IChannel channel, CancellationToken ct)
+	{
+		return channel.QueueDeclareAsync(
 			queue: QUEUE,
 			durable: true,
 			exclusive: false,
 			autoDelete: false,
 			cancellationToken: ct
 		);
+	}
 
-	private static Task<Result<SubscribedParser>> HandleCommand(
-		SubscribeParserCommand command,
-		AsyncServiceScope scope
-	) =>
-		scope
+	private static Task<Result<SubscribedParser>> HandleCommand(SubscribeParserCommand command, AsyncServiceScope scope)
+	{
+		return scope
 			.ServiceProvider.GetRequiredService<ICommandHandler<SubscribeParserCommand, SubscribedParser>>()
 			.Execute(command);
+	}
 
-	private static Task BindQueue(IChannel channel, CancellationToken ct) =>
-		channel.QueueBindAsync(queue: QUEUE, exchange: EXCHANGE, routingKey: ROUTING_KEY, cancellationToken: ct);
+	private static Task BindQueue(IChannel channel, CancellationToken ct)
+	{
+		return channel.QueueBindAsync(queue: QUEUE, exchange: EXCHANGE, routingKey: ROUTING_KEY, cancellationToken: ct);
+	}
 
 	private AsyncEventingBasicConsumer CreateConsumer(IChannel channel)
 	{
@@ -139,7 +150,9 @@ public sealed class ParserSubscribeConsumer(IServiceProvider services, Serilog.I
 		public string parser_domain { get; set; } = null!;
 		public string parser_type { get; set; } = null!;
 
-		public static SubscribeParserMessage Create(BasicDeliverEventArgs @event) =>
-			JsonSerializer.Deserialize<SubscribeParserMessage>(@event.Body.Span)!;
+		public static SubscribeParserMessage Create(BasicDeliverEventArgs @event)
+		{
+			return JsonSerializer.Deserialize<SubscribeParserMessage>(@event.Body.Span)!;
+		}
 	}
 }

@@ -38,11 +38,15 @@ public sealed class ConfirmResetPasswordHandler(
 	{
 		Result<Account> account = await GetAccount(command, ct);
 		if (account.IsFailure)
+		{
 			return account.Error;
+		}
 
 		Result<AccountTicket> ticket = await GetTicket(command, ct);
 		if (ticket.IsFailure)
+		{
 			return ticket.Error;
+		}
 
 		Result<Unit> closing = account.Value.CloseTicket(ticket.Value);
 		Result<Unit> changing = ChangePassword(command, account, closing);
@@ -80,13 +84,25 @@ public sealed class ConfirmResetPasswordHandler(
 	)
 	{
 		if (account.IsFailure)
+		{
 			return account.Error;
+		}
+
 		if (ticket.IsFailure)
+		{
 			return ticket.Error;
+		}
+
 		if (closing.IsFailure)
+		{
 			return closing.Error;
+		}
+
 		if (changing.IsFailure)
+		{
 			return changing.Error;
+		}
+
 		await unitOfWork.Save(account.Value, ct);
 		return Unit.Value;
 	}
@@ -105,9 +121,15 @@ public sealed class ConfirmResetPasswordHandler(
 	)
 	{
 		if (account.IsFailure)
+		{
 			return account.Error;
+		}
+
 		if (closing.IsFailure)
+		{
 			return closing.Error;
+		}
+
 		AccountPassword password = AccountPassword.Create(command.NewPassword);
 		return account.Value.ChangePassword(password, hasher, requirements);
 	}
@@ -118,8 +140,10 @@ public sealed class ConfirmResetPasswordHandler(
 	/// <param name="command">Команда подтверждения сброса пароля.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат выполнения операции получения аккаунта.</returns>
-	public Task<Result<Account>> GetAccount(ConfirmResetPasswordCommand command, CancellationToken ct) =>
-		accounts.Find(new AccountSpecification().WithId(command.AccountId).WithLock(), ct);
+	public Task<Result<Account>> GetAccount(ConfirmResetPasswordCommand command, CancellationToken ct)
+	{
+		return accounts.Find(new AccountSpecification().WithId(command.AccountId).WithLock(), ct);
+	}
 
 	/// <summary>
 	/// Получает тикет сброса пароля по команде.
@@ -127,12 +151,14 @@ public sealed class ConfirmResetPasswordHandler(
 	/// <param name="command">Команда подтверждения сброса пароля.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат выполнения операции получения тикета.</returns>
-	public Task<Result<AccountTicket>> GetTicket(ConfirmResetPasswordCommand command, CancellationToken ct) =>
-		tickets.Find(
+	public Task<Result<AccountTicket>> GetTicket(ConfirmResetPasswordCommand command, CancellationToken ct)
+	{
+		return tickets.Find(
 			new AccountTicketSpecification()
 				.WithTicketId(command.TicketId)
 				.WithAccountId(command.AccountId)
 				.WithLockRequired(),
 			ct
 		);
+	}
 }

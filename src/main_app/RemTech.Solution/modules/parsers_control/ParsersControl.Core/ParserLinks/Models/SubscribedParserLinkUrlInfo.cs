@@ -34,9 +34,15 @@ public sealed record SubscribedParserLinkUrlInfo
 	public static Result<SubscribedParserLinkUrlInfo> Create(string url, string name)
 	{
 		if (string.IsNullOrWhiteSpace(url))
+		{
 			return Error.Validation("Ссылка на парсер не может быть пустой.");
+		}
+
 		if (string.IsNullOrWhiteSpace(name))
+		{
 			return Error.Validation("Название ссылки на парсер не может быть пустым.");
+		}
+
 		return name.Length > MAX_NAME_LENGTH
 			? Error.Validation($"Название ссылки на парсер не может быть больше {MAX_NAME_LENGTH} символов.")
 			: new SubscribedParserLinkUrlInfo(url, name);
@@ -47,18 +53,27 @@ public sealed record SubscribedParserLinkUrlInfo
 	/// </summary>
 	/// <param name="otherName">Новое имя.</param>
 	/// <returns>Результат переименования.</returns>
-	public Result<SubscribedParserLinkUrlInfo> Rename(string otherName) => Create(Url, otherName);
+	public Result<SubscribedParserLinkUrlInfo> Rename(string otherName)
+	{
+		return Create(Url, otherName);
+	}
 
 	/// <summary>
 	/// Изменить url ссылки.
 	/// </summary>
 	/// <param name="otherUrl">Новый url.</param>
 	/// <returns>Результат изменения url.</returns>
-	public Result<SubscribedParserLinkUrlInfo> ChangeUrl(string otherUrl) => Create(otherUrl, Name);
+	public Result<SubscribedParserLinkUrlInfo> ChangeUrl(string otherUrl)
+	{
+		return Create(otherUrl, Name);
+	}
 
 	/// <summary>
 	/// Создать копию информации о ссылке.
 	/// </summary>
 	/// <returns>Копия информации о ссылке.</returns>
-	public SubscribedParserLinkUrlInfo Copy() => new(Url, Name);
+	public SubscribedParserLinkUrlInfo Copy()
+	{
+		return new(Url, Name);
+	}
 }

@@ -31,8 +31,10 @@ public sealed class AccountsModuleUnitOfWork(
 	/// <param name="accounts">Коллекция аккаунтов для сохранения изменений.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
-	public Task Save(IEnumerable<Account> accounts, CancellationToken ct = default) =>
-		Accounts.SaveChanges(accounts, ct);
+	public Task Save(IEnumerable<Account> accounts, CancellationToken ct = default)
+	{
+		return Accounts.SaveChanges(accounts, ct);
+	}
 
 	/// <summary>
 	/// Сохраняет изменения для аккаунта.
@@ -40,7 +42,10 @@ public sealed class AccountsModuleUnitOfWork(
 	/// <param name="account">Аккаунт для сохранения изменений.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
-	public Task Save(Account account, CancellationToken ct = default) => Accounts.SaveChanges([account], ct);
+	public Task Save(Account account, CancellationToken ct = default)
+	{
+		return Accounts.SaveChanges([account], ct);
+	}
 
 	/// <summary>
 	/// Сохраняет изменения для коллекции разрешений.
@@ -48,8 +53,10 @@ public sealed class AccountsModuleUnitOfWork(
 	/// <param name="permissions">Коллекция разрешений для сохранения изменений.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
-	public Task Save(IEnumerable<Permission> permissions, CancellationToken ct = default) =>
-		Permissions.SaveChanges(permissions, ct);
+	public Task Save(IEnumerable<Permission> permissions, CancellationToken ct = default)
+	{
+		return Permissions.SaveChanges(permissions, ct);
+	}
 
 	/// <summary>
 	/// Сохраняет изменения для разрешения.
@@ -57,8 +64,10 @@ public sealed class AccountsModuleUnitOfWork(
 	/// <param name="permission">Разрешение для сохранения изменений.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
-	public Task Save(Permission permission, CancellationToken ct = default) =>
-		Permissions.SaveChanges([permission], ct);
+	public Task Save(Permission permission, CancellationToken ct = default)
+	{
+		return Permissions.SaveChanges([permission], ct);
+	}
 
 	/// <summary>
 	/// Сохраняет изменения для коллекции тикетов аккаунтов.
@@ -66,8 +75,10 @@ public sealed class AccountsModuleUnitOfWork(
 	/// <param name="tickets">Коллекция тикетов аккаунтов для сохранения изменений.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
-	public Task Save(IEnumerable<AccountTicket> tickets, CancellationToken ct = default) =>
-		AccountTickets.SaveChanges(tickets, ct);
+	public Task Save(IEnumerable<AccountTicket> tickets, CancellationToken ct = default)
+	{
+		return AccountTickets.SaveChanges(tickets, ct);
+	}
 
 	/// <summary>
 	/// Сохраняет изменения для тикета аккаунта.
@@ -75,7 +86,10 @@ public sealed class AccountsModuleUnitOfWork(
 	/// <param name="ticket">Тикет аккаунта для сохранения изменений.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
-	public Task Save(AccountTicket ticket, CancellationToken ct = default) => AccountTickets.SaveChanges([ticket], ct);
+	public Task Save(AccountTicket ticket, CancellationToken ct = default)
+	{
+		return AccountTickets.SaveChanges([ticket], ct);
+	}
 
 	/// <summary>
 	/// Сохраняет изменения для коллекции исходящих сообщений.
@@ -83,8 +97,10 @@ public sealed class AccountsModuleUnitOfWork(
 	/// <param name="messages">Коллекция исходящих сообщений для сохранения изменений.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
-	public Task Save(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct = default) =>
-		OutboxMessages.Save(messages, ct);
+	public Task Save(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct = default)
+	{
+		return OutboxMessages.Save(messages, ct);
+	}
 
 	/// <summary>
 	/// Сохраняет изменения для исходящего сообщения.
@@ -92,30 +108,44 @@ public sealed class AccountsModuleUnitOfWork(
 	/// <param name="message">Исходящее сообщение для сохранения изменений.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
-	public Task Save(IdentityOutboxMessage message, CancellationToken ct = default) =>
-		OutboxMessages.Save([message], ct);
+	public Task Save(IdentityOutboxMessage message, CancellationToken ct = default)
+	{
+		return OutboxMessages.Save([message], ct);
+	}
 
 	/// <summary>
 	/// Начинает отслеживание изменений для коллекции аккаунтов.
 	/// </summary>
 	/// <param name="accounts">Коллекция аккаунтов для отслеживания изменений.</param>
-	public void Track(IEnumerable<Account> accounts) => Accounts.StartTracking(accounts);
+	public void Track(IEnumerable<Account> accounts)
+	{
+		Accounts.StartTracking(accounts);
+	}
 
 	/// <summary>
 	/// Начинает отслеживание изменений для коллекции тикетов аккаунтов.
 	/// </summary>
 	/// <param name="tickets">Коллекция тикетов аккаунтов для отслеживания изменений.</param>
-	public void Track(IEnumerable<AccountTicket> tickets) => AccountTickets.StartTracking(tickets);
+	public void Track(IEnumerable<AccountTicket> tickets)
+	{
+		AccountTickets.StartTracking(tickets);
+	}
 
 	/// <summary>
 	/// Начинает отслеживание изменений для коллекции разрешений.
 	/// </summary>
 	/// <param name="permissions">Коллекция разрешений для отслеживания изменений.</param>
-	public void Track(IEnumerable<Permission> permissions) => Permissions.StartTracking(permissions);
+	public void Track(IEnumerable<Permission> permissions)
+	{
+		Permissions.StartTracking(permissions);
+	}
 
 	/// <summary>
 	/// Начинает отслеживание изменений для коллекции исходящих сообщений.
 	/// </summary>
 	/// <param name="messages">Коллекция исходящих сообщений для отслеживания изменений.</param>
-	public void Track(IEnumerable<IdentityOutboxMessage> messages) => OutboxMessages.Track(messages);
+	public void Track(IEnumerable<IdentityOutboxMessage> messages)
+	{
+		OutboxMessages.Track(messages);
+	}
 }

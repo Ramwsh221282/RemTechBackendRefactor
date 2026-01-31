@@ -48,7 +48,10 @@ public sealed class TestCachingQueryHandler<TQuery, TResult>(HybridCache cache, 
 		byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
 		StringBuilder sb = new(bytes.Length * 2);
 		foreach (byte b in bytes)
+		{
 			sb.Append(b.ToString("x2"));
+		}
+
 		return sb.ToString();
 	}
 
@@ -69,7 +72,10 @@ public sealed class TestCachingQueryHandler<TQuery, TResult>(HybridCache cache, 
 		);
 	}
 
-	private Task<TResult> ReadFromOriginSource(TQuery query, CancellationToken ct) => Inner.Handle(query, ct);
+	private Task<TResult> ReadFromOriginSource(TQuery query, CancellationToken ct)
+	{
+		return Inner.Handle(query, ct);
+	}
 
 	private static bool HasCachingAttribute(object? instance)
 	{

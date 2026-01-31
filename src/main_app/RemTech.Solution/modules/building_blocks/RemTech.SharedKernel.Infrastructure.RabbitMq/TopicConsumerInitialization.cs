@@ -32,12 +32,18 @@ public static class TopicConsumerInitialization
 		return channel;
 	}
 
-	private static Task DeclareExchange(IChannel channel, string exchangeName) =>
-		channel.ExchangeDeclareAsync(exchange: exchangeName, type: "topic", durable: true, autoDelete: false);
+	private static Task DeclareExchange(IChannel channel, string exchangeName)
+	{
+		return channel.ExchangeDeclareAsync(exchange: exchangeName, type: "topic", durable: true, autoDelete: false);
+	}
 
-	private static Task<QueueDeclareOk> DeclareQueue(IChannel channel, string queueName) =>
-		channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false);
+	private static Task<QueueDeclareOk> DeclareQueue(IChannel channel, string queueName)
+	{
+		return channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false);
+	}
 
-	private static Task BindQueue(IChannel channel, string queueName, string exchangeName, string routingKey) =>
-		channel.QueueBindAsync(queue: queueName, exchange: exchangeName, routingKey: routingKey);
+	private static Task BindQueue(IChannel channel, string queueName, string exchangeName, string routingKey)
+	{
+		return channel.QueueBindAsync(queue: queueName, exchange: exchangeName, routingKey: routingKey);
+	}
 }

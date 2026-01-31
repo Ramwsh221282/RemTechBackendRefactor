@@ -29,15 +29,20 @@ public readonly record struct PermissionId
 	/// Создает новый уникальный идентификатор разрешения.
 	/// </summary>
 	/// <returns>Новый уникальный идентификатор разрешения.</returns>
-	public static PermissionId New() => new(Guid.NewGuid());
+	public static PermissionId New()
+	{
+		return new(Guid.NewGuid());
+	}
 
 	/// <summary>
 	/// Создает экземпляр <see cref="PermissionId"/> с валидацией.
 	/// </summary>
 	/// <param name="value">Значение идентификатора разрешения.</param>
 	/// <returns>Результат создания экземпляра <see cref="PermissionId"/>.</returns>
-	public static Result<PermissionId> Create(Guid value) =>
-		value == Guid.Empty
+	public static Result<PermissionId> Create(Guid value)
+	{
+		return value == Guid.Empty
 			? Error.Validation("Идентификатор разрешения не может быть пустым.")
 			: new PermissionId(value);
+	}
 }

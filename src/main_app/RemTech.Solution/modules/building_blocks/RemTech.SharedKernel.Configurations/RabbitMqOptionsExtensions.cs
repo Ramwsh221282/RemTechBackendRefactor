@@ -9,7 +9,9 @@ public static class RabbitMqOptionsExtensions
 {
 	extension(IServiceCollection services)
 	{
-		public void AddRabbitMqOptionsFromAppsettings(string sectionName = nameof(RabbitMqOptions)) =>
+		public void AddRabbitMqOptionsFromAppsettings(string sectionName = nameof(RabbitMqOptions))
+		{
 			services.AddOptions<RabbitMqOptions>().BindConfiguration(sectionName);
+		}
 	}
 }

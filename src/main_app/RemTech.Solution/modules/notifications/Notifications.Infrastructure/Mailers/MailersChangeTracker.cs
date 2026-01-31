@@ -21,7 +21,9 @@ public sealed class MailersChangeTracker(NpgSqlSession session)
 	public void Track(IEnumerable<Mailer> mailers)
 	{
 		foreach (Mailer mailer in mailers)
+		{
 			Tracking.TryAdd(mailer.Id.Value, mailer.Copy());
+		}
 	}
 
 	/// <summary>
@@ -36,13 +38,18 @@ public sealed class MailersChangeTracker(NpgSqlSession session)
 		return SaveMailerChanges(tracking, ct);
 	}
 
-	private static string WhenClause(int index) => $"WHEN m.id=@id_{index}";
+	private static string WhenClause(int index)
+	{
+		return $"WHEN m.id=@id_{index}";
+	}
 
 	private async Task SaveMailerChanges(IEnumerable<Mailer> mailers, CancellationToken ct)
 	{
 		Mailer[] mailersArray = [.. mailers];
 		if (mailersArray.Length == 0)
+		{
 			return;
+		}
 
 		List<string> setClauses = [];
 		DynamicParameters parameters = new();
@@ -80,7 +87,9 @@ public sealed class MailersChangeTracker(NpgSqlSession session)
 		}
 
 		if (setClauses.Count == 0)
+		{
 			return;
+		}
 
 		int index = 0;
 		List<Guid> ids = [];
@@ -112,7 +121,10 @@ public sealed class MailersChangeTracker(NpgSqlSession session)
 		foreach (Mailer mailer in mailers)
 		{
 			if (!Tracking.TryGetValue(mailer.Id.Value, out Mailer? tracked))
+			{
 				continue;
+			}
+
 			tracking.Add(tracked);
 		}
 

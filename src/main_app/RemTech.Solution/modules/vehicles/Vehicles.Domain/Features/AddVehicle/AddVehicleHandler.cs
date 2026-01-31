@@ -32,19 +32,27 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 		{
 			Result<Brand> brand = CreateValidBrand(payload);
 			if (brand.IsFailure)
+			{
 				continue;
+			}
 
 			Result<Category> category = CreateValidCategory(payload);
 			if (category.IsFailure)
+			{
 				continue;
+			}
 
 			Result<Model> model = CreateValidModel(payload);
 			if (model.IsFailure)
+			{
 				continue;
+			}
 
 			Result<Location> location = CreateValidLocation(payload);
 			if (location.IsFailure)
+			{
 				continue;
+			}
 
 			Dictionary<Characteristic, VehicleCharacteristicValue> characteristics = CreateCharacteristicsDictionary(
 				payload
@@ -59,19 +67,27 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 
 			Result<Brand> savedBrand = await brand.Value.SaveBy(persister, ct);
 			if (savedBrand.IsFailure)
+			{
 				continue;
+			}
 
 			Result<Category> savedCategory = await category.Value.SaveBy(persister, ct);
 			if (savedCategory.IsFailure)
+			{
 				continue;
+			}
 
 			Result<Model> savedModel = await model.Value.SaveBy(persister, ct);
 			if (savedModel.IsFailure)
+			{
 				continue;
+			}
 
 			Result<Location> savedLocation = await location.Value.SaveBy(persister, ct);
 			if (savedLocation.IsFailure)
+			{
 				continue;
+			}
 
 			Vehicle vehicle = CreateVehicle(
 				savedBrand.Value,
@@ -150,7 +166,10 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 				CharacteristicName.Create(characteristic.Name)
 			);
 			if (result.ContainsKey(ctx))
+			{
 				continue;
+			}
+
 			VehicleCharacteristicValue value = VehicleCharacteristicValue.Create(characteristic.Value);
 			result.Add(ctx, value);
 		}
@@ -171,7 +190,10 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 			Characteristic ctx = kvp.Key;
 			ctx = await ctx.SaveBy(persister, ct);
 			if (result.ContainsKey(ctx))
+			{
 				continue;
+			}
+
 			result.Add(ctx, kvp.Value);
 		}
 
@@ -185,6 +207,9 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 			return x is null || y is null ? false : x.Name == y.Name;
 		}
 
-		public int GetHashCode(Characteristic obj) => HashCode.Combine(obj.Name);
+		public int GetHashCode(Characteristic obj)
+		{
+			return HashCode.Combine(obj.Name);
+		}
 	}
 }

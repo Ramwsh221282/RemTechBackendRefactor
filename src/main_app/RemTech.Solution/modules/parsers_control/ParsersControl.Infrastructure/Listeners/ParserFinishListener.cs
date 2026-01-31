@@ -68,8 +68,10 @@ public sealed class ParserFinishListener(
 	/// <param name="connection">Подключение к RabbitMQ.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Задача, представляющая асинхронную операцию инициализации канала.</returns>
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
+	{
 		_channel = await TopicConsumerInitialization.InitializeChannel(rabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
+	}
 
 	/// <summary>
 	/// Начинает прослушивание сообщений.
@@ -88,14 +90,19 @@ public sealed class ParserFinishListener(
 	/// </summary>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Задача, представляющая асинхронную операцию остановки прослушивания сообщений.</returns>
-	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
+	public Task Shutdown(CancellationToken ct = default)
+	{
+		return Channel.CloseAsync(ct);
+	}
 
 	private sealed class ParserFinishMessage
 	{
 		public Guid Id { get; set; }
 		public long TotalElapsedSeconds { get; set; }
 
-		public static ParserFinishMessage FromEvent(BasicDeliverEventArgs ea) =>
-			JsonSerializer.Deserialize<ParserFinishMessage>(ea.Body.Span)!;
+		public static ParserFinishMessage FromEvent(BasicDeliverEventArgs ea)
+		{
+			return JsonSerializer.Deserialize<ParserFinishMessage>(ea.Body.Span)!;
+		}
 	}
 }

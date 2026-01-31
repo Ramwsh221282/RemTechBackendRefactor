@@ -50,25 +50,37 @@ public sealed record ActionRecordSeverity
 	/// Создает успешный уровень серьезности действия.
 	/// </summary>
 	/// <returns>Новый уровень серьезности действия.</returns>
-	public static ActionRecordSeverity Success() => new(SUCCESS);
+	public static ActionRecordSeverity Success()
+	{
+		return new(SUCCESS);
+	}
 
 	/// <summary>
 	/// Создает уровень серьезности действия с предупреждением.
 	/// </summary>
 	/// <returns>Новый уровень серьезности действия.</returns>
-	public static ActionRecordSeverity Warning() => new(WARNING);
+	public static ActionRecordSeverity Warning()
+	{
+		return new(WARNING);
+	}
 
 	/// <summary>
 	/// Создает уровень серьезности действия с ошибкой.
 	/// </summary>
 	/// <returns>Новый уровень серьезности действия.</returns>
-	public static ActionRecordSeverity Error() => new(ERROR);
+	public static ActionRecordSeverity Error()
+	{
+		return new(ERROR);
+	}
 
 	/// <summary>
 	/// Создает информационный уровень серьезности действия.
 	/// </summary>
 	/// <returns>Новый уровень серьезности действия.</returns>
-	public static ActionRecordSeverity Info() => new(INFO);
+	public static ActionRecordSeverity Info()
+	{
+		return new(INFO);
+	}
 
 	/// <summary>
 	/// Создает новый уровень серьезности действия.

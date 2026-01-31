@@ -43,11 +43,20 @@ public sealed partial record MailerCredentials
 	public static Result<MailerCredentials> Create(string smtpPassword, string email)
 	{
 		if (string.IsNullOrWhiteSpace(smtpPassword))
+		{
 			return Error.Validation("Пароль SMTP-сервиса не может быть пустым.");
+		}
+
 		if (string.IsNullOrWhiteSpace(email))
+		{
 			return Error.Validation("Адрес почты не может быть пустым.");
+		}
+
 		if (!HasValidEmailFormat(email, out Error error))
+		{
 			return error;
+		}
+
 		Result<string> resolvedSmtpHost = ResolveSmtpHost(email);
 		return resolvedSmtpHost.IsFailure
 			? resolvedSmtpHost.Error
@@ -60,10 +69,10 @@ public sealed partial record MailerCredentials
 	/// <param name="cryptography">Объект для выполнения криптографических операций.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию шифрования.</returns>
-	public Task<MailerCredentials> Encrypt(
-		IMailerCredentialsCryptography cryptography,
-		CancellationToken ct = default
-	) => cryptography.Encrypt(this, ct);
+	public Task<MailerCredentials> Encrypt(IMailerCredentialsCryptography cryptography, CancellationToken ct = default)
+	{
+		return cryptography.Encrypt(this, ct);
+	}
 
 	/// <summary>
 	/// Дешифрует учетные данные почтовой рассылки.
@@ -71,10 +80,10 @@ public sealed partial record MailerCredentials
 	/// <param name="cryptography">Объект для выполнения криптографических операций.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию дешифрования.</returns>
-	public Task<MailerCredentials> Decrypt(
-		IMailerCredentialsCryptography cryptography,
-		CancellationToken ct = default
-	) => cryptography.Decrypt(this, ct);
+	public Task<MailerCredentials> Decrypt(IMailerCredentialsCryptography cryptography, CancellationToken ct = default)
+	{
+		return cryptography.Decrypt(this, ct);
+	}
 
 	[GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "ru-RU")]
 	private static partial Regex RegexExpression();

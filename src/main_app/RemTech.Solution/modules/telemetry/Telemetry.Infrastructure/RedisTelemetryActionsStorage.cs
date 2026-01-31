@@ -41,7 +41,10 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	/// Записывает запись действия.
 	/// </summary>
 	/// <param name="record">Запись действия для записи.</param>
-	public void WriteRecord(ActionRecord record) => _recordsQueue.Enqueue(record);
+	public void WriteRecord(ActionRecord record)
+	{
+		_recordsQueue.Enqueue(record);
+	}
 
 	/// <summary>
 	/// Читает ожидающие записи действий в транзакции.
@@ -117,7 +120,6 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 		_semaphore.Dispose();
 	}
 
-	// TODO: FIX ISSUE WITH JSON DESERIALIZATION.
 	private static ActionRecord RedisValueToActionRecord(RedisValue value)
 	{
 		RedisStoredActionRecord stored = JsonSerializer.Deserialize<RedisStoredActionRecord>(value.ToString())!;
@@ -136,7 +138,9 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 		for (int index = 0; recordsQueue.TryDequeue(out ActionRecord? record); index++)
 		{
 			if (record is null)
+			{
 				continue;
+			}
 
 			snapshot.Add(record);
 		}
@@ -182,8 +186,10 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 		}
 	}
 
-	private async Task<ConnectionMultiplexer> ReadMultiplexer() =>
-		_multiplexer ??= await ConnectionMultiplexer.ConnectAsync(Options.RedisConnectionString);
+	private async Task<ConnectionMultiplexer> ReadMultiplexer()
+	{
+		return _multiplexer ??= await ConnectionMultiplexer.ConnectAsync(Options.RedisConnectionString);
+	}
 
 	private async Task<IDatabase> ReadDatabase()
 	{

@@ -29,8 +29,10 @@ public sealed class StartParserCommandHandler(ISubscribedParsersRepository repos
 		return result.IsFailure ? result.Error : parser.Value;
 	}
 
-	private static Result<Unit> CallParserWorkInvocation(Result<SubscribedParser> parser) =>
-		parser.IsFailure ? parser.Error : parser.Value.StartWaiting();
+	private static Result<Unit> CallParserWorkInvocation(Result<SubscribedParser> parser)
+	{
+		return parser.IsFailure ? parser.Error : parser.Value.StartWaiting();
+	}
 
 	private Task<Result<SubscribedParser>> GetRequiredParser(StartParserCommand command, CancellationToken ct)
 	{

@@ -42,20 +42,28 @@ internal readonly ref struct EmbeddingData
 	public void CopySortedTokensTo(Span<int> destination)
 	{
 		if (destination.Length < Tokens.Length)
+		{
 			throw new ArgumentException("Destination span is too small", nameof(destination));
+		}
 
 		int len = Tokens.Length;
 		if (len == 0)
+		{
 			return;
+		}
 
 		Span<int> pos = len <= 128 ? stackalloc int[len] : new int[len];
 
 		for (int i = 0; i < len; i++)
+		{
 			pos[i] = i;
+		}
 
 		QuickSort(pos, Indices);
 		for (int i = 0; i < len; i++)
+		{
 			destination[i] = Tokens[pos[i]];
+		}
 	}
 
 	/// <summary>
@@ -83,7 +91,9 @@ internal readonly ref struct EmbeddingData
 	private static void QuickSort(Span<int> idx, ReadOnlySpan<int> indices)
 	{
 		if (idx.Length <= 1)
+		{
 			return;
+		}
 
 		int left = 0;
 		int right = idx.Length - 1;
@@ -92,9 +102,14 @@ internal readonly ref struct EmbeddingData
 		while (left <= right)
 		{
 			while (indices[idx[left]] < pivot)
+			{
 				left++;
+			}
+
 			while (indices[idx[right]] > pivot)
+			{
 				right--;
+			}
 
 			if (left <= right)
 			{
@@ -105,8 +120,13 @@ internal readonly ref struct EmbeddingData
 		}
 
 		if (right > 0)
+		{
 			QuickSort(idx[..(right + 1)], indices);
+		}
+
 		if (left < idx.Length - 1)
+		{
 			QuickSort(idx[left..], indices);
+		}
 	}
 }

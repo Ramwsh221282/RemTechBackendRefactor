@@ -19,10 +19,13 @@ public static class RabbitMqExtensions
 			services.AddHostedService<AggregatedConsumersHostedService>();
 		}
 
-		public void AddAggregatedConsumersBackgroundService() =>
+		public void AddAggregatedConsumersBackgroundService()
+		{
 			services.TryAddSingleton<AggregatedConsumersHostedService>();
+		}
 
-		public void AddConsumersFromAssemblies(IEnumerable<Assembly> assemblies) =>
+		public void AddConsumersFromAssemblies(IEnumerable<Assembly> assemblies)
+		{
 			services.Scan(x =>
 				x.FromAssemblies(assemblies)
 					.AddClasses(classes => classes.AssignableTo<IConsumer>())
@@ -30,5 +33,6 @@ public static class RabbitMqExtensions
 					.AsSelfWithInterfaces()
 					.WithSingletonLifetime()
 			);
+		}
 	}
 }

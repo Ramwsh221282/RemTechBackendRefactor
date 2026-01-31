@@ -11,7 +11,8 @@ public sealed class AccountTableMigration : Migration
 	/// <summary>
 	/// Выполняет миграцию вверх (создание таблицы аккаунтов).
 	/// </summary>
-	public override void Up() =>
+	public override void Up()
+	{
 		Create
 			.Table("accounts")
 			.InSchema("identity_module")
@@ -31,9 +32,13 @@ public sealed class AccountTableMigration : Migration
 			.WithColumn("activation_status")
 			.AsBoolean()
 			.NotNullable();
+	}
 
 	/// <summary>
 	/// Выполняет миграцию вниз (удаление таблицы аккаунтов).
 	/// </summary>
-	public override void Down() => Delete.Table("accounts").InSchema("identity_module");
+	public override void Down()
+	{
+		Delete.Table("accounts").InSchema("identity_module");
+	}
 }

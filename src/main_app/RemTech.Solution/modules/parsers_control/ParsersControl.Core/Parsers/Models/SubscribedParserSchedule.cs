@@ -59,15 +59,20 @@ public readonly record struct SubscribedParserSchedule
 	/// </summary>
 	/// <param name="startedAt">Время начала подписки парсера.</param>
 	/// <returns>Результат с обновлённым расписанием подписки парсера.</returns>
-	public Result<SubscribedParserSchedule> WithStartedAt(DateTime startedAt) =>
-		Create(startedAt, FinishedAt, NextRun, WaitDays);
+	public Result<SubscribedParserSchedule> WithStartedAt(DateTime startedAt)
+	{
+		return Create(startedAt, FinishedAt, NextRun, WaitDays);
+	}
 
 	/// <summary>
 	/// Устанавливает время следующего запуска парсера.
 	/// </summary>
 	/// <param name="nextRun">Время следующего запуска парсера.</param>
 	/// <returns>Результат с обновлённым расписанием подписки парсера.</returns>
-	public SubscribedParserSchedule WithNextRun(DateTime nextRun) => Create(StartedAt, FinishedAt, nextRun, WaitDays);
+	public SubscribedParserSchedule WithNextRun(DateTime nextRun)
+	{
+		return Create(StartedAt, FinishedAt, nextRun, WaitDays);
+	}
 
 	/// <summary>
 	/// Устанавливает время окончания подписки парсера.
@@ -87,14 +92,19 @@ public readonly record struct SubscribedParserSchedule
 	/// </summary>
 	/// <param name="waitDays">Количество дней ожидания перед следующим запуском.</param>
 	/// <returns>Результат с обновлённым расписанием подписки парсера.</returns>
-	public Result<SubscribedParserSchedule> WithWaitDays(int waitDays) =>
-		Create(StartedAt, FinishedAt, NextRun, waitDays);
+	public Result<SubscribedParserSchedule> WithWaitDays(int waitDays)
+	{
+		return Create(StartedAt, FinishedAt, NextRun, waitDays);
+	}
 
 	/// <summary>
 	/// Создаёт новое расписание подписки парсера с одним днём ожидания.
 	/// </summary>
 	/// <returns>Новое расписание подписки парсера с одним днём ожидания.</returns>
-	public static SubscribedParserSchedule New() => new() { WaitDays = 1 };
+	public static SubscribedParserSchedule New()
+	{
+		return new() { WaitDays = 1 };
+	}
 
 	/// <summary>
 	/// Создаёт расписание подписки парсера с заданными значениями.
@@ -112,7 +122,9 @@ public readonly record struct SubscribedParserSchedule
 	)
 	{
 		if (waitDays != null && waitDays.Value is < 1 or > MAX_WAIT_DAYS_AMOUNT)
+		{
 			return Error.Validation($"Дни ожидания не могут быть менее 1 или более {MAX_WAIT_DAYS_AMOUNT}");
+		}
 
 		return new SubscribedParserSchedule(startedAt, finishedAt, nextRun, waitDays);
 	}
@@ -120,7 +132,10 @@ public readonly record struct SubscribedParserSchedule
 	private SubscribedParserSchedule AdjustNextRun()
 	{
 		if (WaitDays == null || FinishedAt == null)
+		{
 			return this;
+		}
+
 		DateTime newNextRun = FinishedAt.Value.AddDays(WaitDays.Value);
 		return Create(StartedAt, FinishedAt, newNextRun, WaitDays);
 	}

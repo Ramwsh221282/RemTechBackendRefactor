@@ -38,7 +38,10 @@ public sealed class AccountTicketSpecification
 	public AccountTicketSpecification WithAccountId(Guid accountId)
 	{
 		if (AccountId.HasValue)
+		{
 			return this;
+		}
+
 		AccountId = accountId;
 		return this;
 	}
@@ -51,7 +54,10 @@ public sealed class AccountTicketSpecification
 	public AccountTicketSpecification WithTicketId(Guid ticketId)
 	{
 		if (TicketId.HasValue)
+		{
 			return this;
+		}
+
 		TicketId = ticketId;
 		return this;
 	}
@@ -64,7 +70,10 @@ public sealed class AccountTicketSpecification
 	public AccountTicketSpecification WithPurpose(string purpose)
 	{
 		if (!string.IsNullOrWhiteSpace(Purpose))
+		{
 			return this;
+		}
+
 		Purpose = purpose;
 		return this;
 	}
@@ -76,7 +85,10 @@ public sealed class AccountTicketSpecification
 	public AccountTicketSpecification WithLockRequired()
 	{
 		if (LockRequired.HasValue)
+		{
 			return this;
+		}
+
 		LockRequired = true;
 		return this;
 	}
@@ -88,7 +100,10 @@ public sealed class AccountTicketSpecification
 	public AccountTicketSpecification NotFinished()
 	{
 		if (Finished.HasValue)
+		{
 			return this;
+		}
+
 		Finished = false;
 		return this;
 	}
@@ -100,7 +115,10 @@ public sealed class AccountTicketSpecification
 	public AccountTicketSpecification WithFinished()
 	{
 		if (Finished.HasValue)
+		{
 			return this;
+		}
+
 		Finished = true;
 		return this;
 	}

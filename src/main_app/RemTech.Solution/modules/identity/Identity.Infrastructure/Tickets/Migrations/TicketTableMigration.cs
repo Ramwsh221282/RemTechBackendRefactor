@@ -35,5 +35,8 @@ public sealed class TicketTableMigration : Migration
 	/// <summary>
 	/// Откатывает миграцию, удаляя таблицу тикетов модуля identity.
 	/// </summary>
-	public override void Down() => Delete.Table("tickets").InSchema("identity_module");
+	public override void Down()
+	{
+		Delete.Table("tickets").InSchema("identity_module");
+	}
 }

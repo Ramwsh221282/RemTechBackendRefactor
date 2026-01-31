@@ -33,9 +33,15 @@ public sealed record AccountEmail
 	public static Result<AccountEmail> Create(string value)
 	{
 		if (string.IsNullOrWhiteSpace(value))
+		{
 			return Error.Validation("Email не может быть пустым.");
+		}
+
 		if (value.Length > MAX_EMAIL_LENGTH)
+		{
 			return Error.Validation($"Email не может быть длиннее {MAX_EMAIL_LENGTH} символов.");
+		}
+
 		return !_emailRegex.IsMatch(value)
 			? (Result<AccountEmail>)Error.InvalidFormat($"Email: {value} некоррекнтого формата.")
 			: (Result<AccountEmail>)new AccountEmail(value);

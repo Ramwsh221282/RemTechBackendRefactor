@@ -11,10 +11,16 @@ public sealed class NotificationsModuleSchemaMigration : Migration
 	/// <summary>
 	/// Выполняет миграцию вверх.
 	/// </summary>
-	public override void Up() => Execute.Sql("CREATE SCHEMA IF NOT EXISTS notifications_module;");
+	public override void Up()
+	{
+		Execute.Sql("CREATE SCHEMA IF NOT EXISTS notifications_module;");
+	}
 
 	/// <summary>
 	/// Выполняет миграцию вниз.
 	/// </summary>
-	public override void Down() => Execute.Sql("DROP SCHEMA IF EXISTS notifications_module;");
+	public override void Down()
+	{
+		Execute.Sql("DROP SCHEMA IF EXISTS notifications_module;");
+	}
 }

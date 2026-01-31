@@ -29,8 +29,10 @@ public sealed class ChangeWaitDaysHandler(ISubscribedParsersRepository repositor
 		return saving.IsSuccess ? parser.Value : saving.Error;
 	}
 
-	private static Result<Unit> SetRequiredWaitDays(int days, Result<SubscribedParser> parser) =>
-		parser.IsFailure ? parser.Error : parser.Value.ChangeScheduleWaitDays(days);
+	private static Result<Unit> SetRequiredWaitDays(int days, Result<SubscribedParser> parser)
+	{
+		return parser.IsFailure ? parser.Error : parser.Value.ChangeScheduleWaitDays(days);
+	}
 
 	private async Task<Result<Unit>> SaveChanges(
 		Result<SubscribedParser> parser,
@@ -39,9 +41,15 @@ public sealed class ChangeWaitDaysHandler(ISubscribedParsersRepository repositor
 	)
 	{
 		if (parser.IsFailure)
+		{
 			return parser.Error;
+		}
+
 		if (result.IsFailure)
+		{
 			return result.Error;
+		}
+
 		await parser.Value.SaveChanges(repository, ct);
 		return Unit.Value;
 	}

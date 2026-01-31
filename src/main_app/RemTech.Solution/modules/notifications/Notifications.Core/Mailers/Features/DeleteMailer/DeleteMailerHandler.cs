@@ -22,7 +22,9 @@ public sealed class DeleteMailerHandler(IMailersRepository repository) : IComman
 	{
 		Result<Mailer> mailer = await GetRequiredMailer(command, ct);
 		if (mailer.IsFailure)
+		{
 			return mailer.Error;
+		}
 
 		await repository.Delete(mailer.Value, ct);
 		return mailer.Value.Id.Value;

@@ -3,7 +3,7 @@ using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using WebHostApplication.ActionFilters.Attributes;
 using WebHostApplication.Queries.GetActionRecords;
-using WebHostApplication.Queries.GetActionRecordsStatistics;
+using WebHostApplication.Queries.Responses;
 
 namespace WebHostApplication.Modules.Telemetry;
 
@@ -14,6 +14,24 @@ namespace WebHostApplication.Modules.Telemetry;
 [Route("api/telemetry")]
 public sealed class TelemetryController : ControllerBase
 {
+	[HttpGet]
+	public async Task<Envelope> GetData(
+		[FromQuery(Name = "page")] int? page,
+		[FromQuery(Name = "page-size")] int? pageSize,
+		[FromQuery(Name = "permissions")] IEnumerable<Guid>? permissions,
+		[FromServices] IQueryHandler<GetActionRecordsQuery, ActionRecordsPageResponse> handler,
+		CancellationToken ct
+	)
+	{
+		GetActionRecordsQuery query = GetActionRecordsQuery
+			.Create()
+			.WithCustomPage(page)
+			.WithCustomPageSize(pageSize)
+			.WithPermissionIdentifiers(permissions);
+		ActionRecordsPageResponse response = await handler.Handle(query, ct);
+		return EnvelopedResultsExtensions.AsEnvelope(response);
+	}
+
 	/// <summary>
 	/// Получить записи действий пользователя.
 	/// </summary>
@@ -27,11 +45,17 @@ public sealed class TelemetryController : ControllerBase
 	public async Task<Envelope> GetRecords(
 		[FromQuery(Name = "page")] int? page,
 		[FromQuery(Name = "page-size")] int? pageSize,
+		[FromQuery(Name = "permissions")] IEnumerable<Guid>? permissions,
 		[FromServices] IQueryHandler<GetActionRecordsQuery, GetActionRecordQueryResponse> handler,
 		CancellationToken ct
 	)
 	{
-		GetActionRecordsQuery query = GetActionRecordsQuery.Create().WithCustomPage(page).WithCustomPageSize(pageSize);
+		GetActionRecordsQuery query = GetActionRecordsQuery
+			.Create()
+			.WithCustomPage(page)
+			.WithCustomPageSize(pageSize)
+			.WithPermissionIdentifiers(permissions);
+
 		GetActionRecordQueryResponse response = await handler.Handle(query, ct);
 		return EnvelopedResultsExtensions.AsEnvelope(response);
 	}

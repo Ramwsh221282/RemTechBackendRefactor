@@ -23,13 +23,26 @@ public sealed class GetLocationsCachedQueryHandler(
 	public Task<IEnumerable<LocationsResponse>> ExecuteWithCache(
 		GetLocationsQuery query,
 		CancellationToken ct = default
-	) => ReadFromCache(query, CreateCacheKey(query), ct);
+	)
+	{
+		return ReadFromCache(query, CreateCacheKey(query), ct);
+	}
 
-	private static string CreateCacheKey(GetLocationsQuery query) => $"{nameof(GetLocationsQuery)}_{query}";
+	private static string CreateCacheKey(GetLocationsQuery query)
+	{
+		return $"{nameof(GetLocationsQuery)}_{query}";
+	}
 
 	private async Task<IEnumerable<LocationsResponse>> ReadFromCache(
 		GetLocationsQuery query,
 		string key,
 		CancellationToken ct
-	) => await cache.GetOrCreateAsync(key, async (token) => await handler.Handle(query, token), cancellationToken: ct);
+	)
+	{
+		return await cache.GetOrCreateAsync(
+			key,
+			async (token) => await handler.Handle(query, token),
+			cancellationToken: ct
+		);
+	}
 }

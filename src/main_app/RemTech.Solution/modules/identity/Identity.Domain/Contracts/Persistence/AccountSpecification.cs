@@ -38,7 +38,10 @@ public sealed class AccountSpecification
 	public AccountSpecification WithRefreshToken(string refreshToken)
 	{
 		if (!string.IsNullOrEmpty(RefreshToken))
+		{
 			return this;
+		}
+
 		RefreshToken = refreshToken;
 		return this;
 	}
@@ -51,7 +54,10 @@ public sealed class AccountSpecification
 	public AccountSpecification WithId(Guid id)
 	{
 		if (Id.HasValue)
+		{
 			return this;
+		}
+
 		Id = id;
 		return this;
 	}
@@ -64,7 +70,10 @@ public sealed class AccountSpecification
 	public AccountSpecification WithEmail(string email)
 	{
 		if (!string.IsNullOrEmpty(Email))
+		{
 			return this;
+		}
+
 		Email = email;
 		return this;
 	}
@@ -77,7 +86,10 @@ public sealed class AccountSpecification
 	public AccountSpecification WithLogin(string login)
 	{
 		if (!string.IsNullOrEmpty(Login))
+		{
 			return this;
+		}
+
 		Login = login;
 		return this;
 	}

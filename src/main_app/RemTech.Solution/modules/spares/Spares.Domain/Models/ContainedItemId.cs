@@ -30,8 +30,10 @@ public readonly record struct ContainedItemId
 	/// </summary>
 	/// <param name="value">Значение идентификатора.</param>
 	/// <returns>Результат создания идентификатора.</returns>
-	public static Result<ContainedItemId> Create(Guid value) =>
-		value == Guid.Empty
+	public static Result<ContainedItemId> Create(Guid value)
+	{
+		return value == Guid.Empty
 			? Error.Validation("Идентификатор запчасти не может быть пустым.")
 			: Result.Success(new ContainedItemId(value));
+	}
 }

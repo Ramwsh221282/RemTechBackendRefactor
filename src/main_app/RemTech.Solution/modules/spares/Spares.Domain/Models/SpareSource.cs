@@ -26,6 +26,8 @@ public sealed record SpareSource
 	/// </summary>
 	/// <param name="url">Ссылка на источник.</param>
 	/// <returns>Результат создания источника.</returns>
-	public static Result<SpareSource> Create(string url) =>
-		string.IsNullOrWhiteSpace(url) ? Error.Validation("Ссылка на источник пустая.") : new SpareSource(url);
+	public static Result<SpareSource> Create(string url)
+	{
+		return string.IsNullOrWhiteSpace(url) ? Error.Validation("Ссылка на источник пустая.") : new SpareSource(url);
+	}
 }

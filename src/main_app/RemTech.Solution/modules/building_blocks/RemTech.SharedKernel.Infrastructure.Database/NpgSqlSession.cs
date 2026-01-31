@@ -26,7 +26,10 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 	public async Task<NpgsqlConnection> GetConnection(CancellationToken ct)
 	{
 		if (_connection is not null)
+		{
 			return _connection;
+		}
+
 		_connection = await connectionFactory.Create(ct);
 		return _connection;
 	}
@@ -39,7 +42,10 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 	public async Task<NpgsqlTransaction> GetTransaction(CancellationToken ct)
 	{
 		if (Transaction is not null)
+		{
 			return Transaction;
+		}
+
 		NpgsqlConnection connection = await GetConnection(ct);
 		Transaction = await connection.BeginTransactionAsync(ct);
 		return Transaction;
@@ -52,8 +58,10 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 	/// <param name="parameters">Параметры для SQL-запроса.</param>
 	/// <param name="ct">Токен отмены для асинхронной операции.</param>
 	/// <returns>Определение команды для выполнения.</returns>
-	public CommandDefinition FormCommand(string sql, object parameters, CancellationToken ct) =>
-		new(sql, parameters, transaction: Transaction, cancellationToken: ct);
+	public CommandDefinition FormCommand(string sql, object parameters, CancellationToken ct)
+	{
+		return new(sql, parameters, transaction: Transaction, cancellationToken: ct);
+	}
 
 	/// <summary>
 	/// Формирует команду для выполнения в базе данных PostgreSQL.
@@ -62,8 +70,10 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 	/// <param name="parameters">Параметры для SQL-запроса.</param>
 	/// <param name="ct">Токен отмены для асинхронной операции.</param>
 	/// <returns>Определение команды для выполнения.</returns>
-	public CommandDefinition FormCommand(string sql, DynamicParameters parameters, CancellationToken ct) =>
-		new(sql, parameters, transaction: Transaction, cancellationToken: ct);
+	public CommandDefinition FormCommand(string sql, DynamicParameters parameters, CancellationToken ct)
+	{
+		return new(sql, parameters, transaction: Transaction, cancellationToken: ct);
+	}
 
 	/// <summary>
 	/// Выполняет команду и возвращает количество затронутых строк.
@@ -157,9 +167,14 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 	public async ValueTask DisposeAsync()
 	{
 		if (Transaction != null)
+		{
 			await Transaction.DisposeAsync();
+		}
+
 		if (_connection != null)
+		{
 			await _connection.DisposeAsync();
+		}
 	}
 
 	/// <summary>
@@ -176,7 +191,10 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
 		List<T> result = [];
 		while (await reader.ReadAsync())
+		{
 			result.Add(mapper(reader));
+		}
+
 		return result.Count == 0 ? default : result[0];
 	}
 
@@ -204,12 +222,17 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 		{
 			T mainEntity = mainEntityMapper(reader);
 
-			if (!mappings.ContainsKey(mainEntity))
-				mappings.Add(mainEntity, []);
+			if (!mappings.TryGetValue(mainEntity, out List<U>? value))
+			{
+				value = [];
+				mappings.Add(mainEntity, value);
+			}
 
 			U? related = relatedEntityMapper(reader);
 			if (related != null)
-				mappings[mainEntity].Add(related);
+			{
+				value.Add(related);
+			}
 		}
 
 		return mappings.Count == 0 ? default : (mappings.First().Key, mappings[mappings.First().Key]);
@@ -229,7 +252,10 @@ public sealed class NpgSqlSession(NpgSqlConnectionFactory connectionFactory) : I
 		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
 		List<T> result = [];
 		while (await reader.ReadAsync())
+		{
 			result.Add(mapper(reader));
+		}
+
 		return [.. result];
 	}
 

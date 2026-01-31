@@ -1,7 +1,7 @@
 using System.Data.Common;
 using System.Text.Json;
 
-namespace WebHostApplication.Queries.GetActionRecords;
+namespace WebHostApplication.Queries.Responses;
 
 /// <summary>
 /// Ответ с информацией о разрешениях пользователя.
@@ -38,7 +38,10 @@ public sealed class ActionRecordUserPermissionResponse
 	{
 		_ordinal ??= reader.GetOrdinal("user_permissions");
 		if (await reader.IsDBNullAsync(_ordinal.Value, ct))
+		{
 			return null;
+		}
+
 		return JsonSerializer.Deserialize<IReadOnlyList<ActionRecordUserPermissionResponse>>(
 			reader.GetString(_ordinal.Value)
 		);

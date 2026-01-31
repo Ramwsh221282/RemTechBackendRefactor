@@ -14,6 +14,8 @@ public sealed class CachedParserArrayInvalidator(HybridCache cache)
 	/// </summary>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию инвалидирования кэша.</returns>
-	public async Task Invalidate(CancellationToken ct = default) =>
+	public async Task Invalidate(CancellationToken ct = default)
+	{
 		await cache.RemoveAsync(ParserCacheContants.ARRAY, cancellationToken: ct);
+	}
 }

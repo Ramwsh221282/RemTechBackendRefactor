@@ -14,7 +14,9 @@ public static class ResourseNameResolver
 	{
 		string? path = context.Request.Path.Value;
 		if (string.IsNullOrWhiteSpace(path))
+		{
 			return "Неизвестный ресурс";
+		}
 
 		return path switch
 		{
@@ -75,10 +77,15 @@ public static class ResourseNameResolver
 		};
 	}
 
-	private static bool IncludesAll(string[] routes, string segment) => routes.All(r => Includes(r, segment));
+	private static bool IncludesAll(string[] routes, string segment)
+	{
+		return routes.All(r => Includes(r, segment));
+	}
 
-	private static bool Includes(string route, string segment) =>
-		segment.Contains(route, StringComparison.OrdinalIgnoreCase);
+	private static bool Includes(string route, string segment)
+	{
+		return segment.Contains(route, StringComparison.OrdinalIgnoreCase);
+	}
 
 	private static string DispatchByMethod(
 		HttpContext httpContext,
@@ -116,7 +123,9 @@ public static class ResourseNameResolver
 	{
 		bool contains = includes(segment);
 		if (!contains)
+		{
 			return "Неизвестный ресурс.";
+		}
 
 		string method = httpContext.Request.Method;
 		Func<string>? dispatchedFunction = method switch
@@ -145,7 +154,9 @@ public static class ResourseNameResolver
 	{
 		bool contains = route.Contains(segment, StringComparison.OrdinalIgnoreCase);
 		if (!contains)
+		{
 			return "Неизвестный ресурс.";
+		}
 
 		string method = httpContext.Request.Method;
 		Func<string>? dispatchedFunction = method switch

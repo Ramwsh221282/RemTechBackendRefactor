@@ -30,10 +30,12 @@ public readonly record struct SubscribedParserId
 	/// </summary>
 	/// <param name="value">Значение для создания идентификатора.</param>
 	/// <returns>Результат создания идентификатора.</returns>
-	public static Result<SubscribedParserId> Create(Guid value) =>
-		value == Guid.Empty
+	public static Result<SubscribedParserId> Create(Guid value)
+	{
+		return value == Guid.Empty
 			? Error.Validation("Идентификатор подписки парсера не может быть пустым.")
 			: new SubscribedParserId(value);
+	}
 
 	/// <summary>
 	/// Создаёт новый идентификатор подписки парсера.

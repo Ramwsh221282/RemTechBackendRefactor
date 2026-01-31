@@ -73,8 +73,10 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 	/// <param name="parsers">Коллекция подписанных парсеров для сохранения изменений.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
-	public Task Save(IEnumerable<SubscribedParser> parsers, CancellationToken ct = default) =>
-		_tracker.SaveChanges(parsers, ct);
+	public Task Save(IEnumerable<SubscribedParser> parsers, CancellationToken ct = default)
+	{
+		return _tracker.SaveChanges(parsers, ct);
+	}
 
 	/// <summary>
 	/// Сохраняет изменения в подписанном парсере.
@@ -82,7 +84,10 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 	/// <param name="parser">Подписанный парсер для сохранения изменений.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения изменений.</returns>
-	public Task Save(SubscribedParser parser, CancellationToken ct = default) => _tracker.SaveChanges([parser], ct);
+	public Task Save(SubscribedParser parser, CancellationToken ct = default)
+	{
+		return _tracker.SaveChanges([parser], ct);
+	}
 
 	/// <summary>
 	/// Получает подписанный парсер на основе заданного запроса.
@@ -94,7 +99,9 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(query);
 		if (query.WithLock)
+		{
 			await Block(query, ct);
+		}
 		string sql = $"""
 			SELECT p.id as parser_id, 
 			       p.type as parser_type, 
@@ -128,7 +135,10 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		);
 
 		if (parser is null)
+		{
 			return Error.NotFound("Парсер не найден.");
+		}
+
 		SubscribedParser result = new(parser, links);
 		_tracker.StartTracking(result);
 		return result;
@@ -189,7 +199,9 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 	private static SubscribedParserLink? MapLinkFromReader(IDataReader reader)
 	{
 		if (reader.IsNull("link_id"))
+		{
 			return null;
+		}
 
 		Guid id = reader.GetValue<Guid>("link_id");
 		Guid parserId = reader.GetValue<Guid>("link_parser_id");
@@ -228,7 +240,10 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			return x is null || y is null ? x == y : x.Id == y.Id;
 		}
 
-		public int GetHashCode(SubscribedParser obj) => obj.Id.GetHashCode();
+		public int GetHashCode(SubscribedParser obj)
+		{
+			return obj.Id.GetHashCode();
+		}
 	}
 
 	private sealed class ChangeTracker(NpgSqlSession session)
@@ -251,29 +266,46 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		private static Dictionary<Guid, SubscribedParserLink> GetOriginalLinksToCompare(
 			SubscribedParser original,
 			SubscribedParser updated
-		) =>
-			original
+		)
+		{
+			return original
 				.Links.IntersectBy(updated.Links.Select(l => l.Id.Value), l => l.Id.Value)
 				.ToDictionary(l => l.Id.Value, l => l);
+		}
 
 		private static IEnumerable<SubscribedParserLink> GetLinksToUpdate(
 			SubscribedParser original,
 			SubscribedParser updated
-		) => updated.Links.IntersectBy(original.Links.Select(l => l.Id.Value), l => l.Id.Value);
+		)
+		{
+			return updated.Links.IntersectBy(original.Links.Select(l => l.Id.Value), l => l.Id.Value);
+		}
 
 		private static IEnumerable<SubscribedParserLink> GetLinksToRemove(
 			SubscribedParser original,
 			SubscribedParser updated
-		) => original.Links.ExceptBy(updated.Links.Select(l => l.Id.Value), l => l.Id.Value);
+		)
+		{
+			return original.Links.ExceptBy(updated.Links.Select(l => l.Id.Value), l => l.Id.Value);
+		}
 
 		private static IEnumerable<SubscribedParserLink> GetLinksToAdd(
 			SubscribedParser original,
 			SubscribedParser updated
-		) => updated.Links.ExceptBy(original.Links.Select(l => l.Id.Value), l => l.Id.Value);
+		)
+		{
+			return updated.Links.ExceptBy(original.Links.Select(l => l.Id.Value), l => l.Id.Value);
+		}
 
-		private static string CreateLinkWhenClause(int index) => $"WHEN pl.id = @id_{index}";
+		private static string CreateLinkWhenClause(int index)
+		{
+			return $"WHEN pl.id = @id_{index}";
+		}
 
-		private static string CreateParserWhenClause(int index) => $"WHEN p.id = @id_{index}";
+		private static string CreateParserWhenClause(int index)
+		{
+			return $"WHEN p.id = @id_{index}";
+		}
 
 		private async Task SaveParserChanges(IEnumerable<SubscribedParser> parsers, CancellationToken ct = default)
 		{
@@ -281,7 +313,9 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 
 			string updateClause = FormUpdateClauses(parsers, parameters);
 			if (string.IsNullOrWhiteSpace(updateClause))
+			{
 				return;
+			}
 
 			CommandDefinition command = new(
 				updateClause,
@@ -313,9 +347,14 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		{
 			SubscribedParserLink[] linksToUpdateArray = [.. linksToUpdate];
 			if (linksToUpdateArray.Length == 0)
+			{
 				return;
+			}
+
 			if (linksToCompare.Count == 0)
+			{
 				return;
+			}
 
 			Guid[] ids = [.. linksToUpdateArray.Select(l => l.Id.Value)];
 			List<string> setClauses = [];
@@ -411,7 +450,9 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			}
 
 			if (setClauses.Count == 0)
+			{
 				return;
+			}
 
 			for (int i = 0; i < ids.Length; i++)
 			{
@@ -435,7 +476,10 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		private async Task RemoveLinks(IEnumerable<SubscribedParserLink> links, CancellationToken ct)
 		{
 			if (!links.Any())
+			{
 				return;
+			}
+
 			const string sql = "DELETE FROM parsers_control_module.parser_links pl WHERE pl.id = ANY (@ids)";
 			Guid[] ids = [.. links.Select(l => l.Id.Value)];
 			DynamicParameters parameters = new();
@@ -447,7 +491,10 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 		private async Task AddLinks(IEnumerable<SubscribedParserLink> links, CancellationToken ct)
 		{
 			if (!links.Any())
+			{
 				return;
+			}
+
 			const string sql = """
 				INSERT INTO parsers_control_module.parser_links (id, parser_id, name, url, processed, elapsed_seconds, is_active) 
 				VALUES (@id, @parser_id, @name, @url, @processed, @elapsed_seconds, @is_active)
@@ -611,7 +658,9 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			}
 
 			if (setClauses.Count == 0)
+			{
 				return string.Empty;
+			}
 
 			for (int i = 0; i < ids.Length; i++)
 			{
@@ -634,7 +683,9 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 			foreach (SubscribedParser parser in parsers)
 			{
 				if (!_trackingParsers.TryGetValue(parser.Id.Value, out _))
+				{
 					continue;
+				}
 				updated.Add(parser);
 			}
 

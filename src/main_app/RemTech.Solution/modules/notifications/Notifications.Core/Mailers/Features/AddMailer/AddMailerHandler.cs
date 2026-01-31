@@ -21,7 +21,9 @@ public sealed class AddMailerHandler(IMailersRepository repository, IMailerCrede
 	public async Task<Result<Mailer>> Execute(AddMailerCommand command, CancellationToken ct = default)
 	{
 		if (await MailerWithEmailExists(command, ct))
+		{
 			return Error.Conflict($"Настройка почтового сервиса для адреса: {command.Email} уже существует.");
+		}
 
 		MailerCredentials credentials = await CreateEncryptedCredentials(command, ct);
 		Mailer mailer = Mailer.CreateNew(credentials);
@@ -35,6 +37,8 @@ public sealed class AddMailerHandler(IMailersRepository repository, IMailerCrede
 		return repository.Exists(specification, ct);
 	}
 
-	private Task<MailerCredentials> CreateEncryptedCredentials(AddMailerCommand command, CancellationToken ct) =>
-		MailerCredentials.Create(command.SmtpPassword, command.Email).Value.Encrypt(cryptography, ct);
+	private Task<MailerCredentials> CreateEncryptedCredentials(AddMailerCommand command, CancellationToken ct)
+	{
+		return MailerCredentials.Create(command.SmtpPassword, command.Email).Value.Encrypt(cryptography, ct);
+	}
 }

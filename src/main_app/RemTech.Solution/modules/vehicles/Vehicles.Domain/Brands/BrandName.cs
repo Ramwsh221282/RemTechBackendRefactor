@@ -27,7 +27,10 @@ public sealed record BrandName
 	public static Result<BrandName> Create(string name)
 	{
 		if (string.IsNullOrWhiteSpace(name))
+		{
 			return Error.Validation("Название бренда не может быть пустым.");
+		}
+
 		return name.Length > MAX_LENGTH
 			? Error.Validation($"Название бренда превышает {MAX_LENGTH} символов.")
 			: new BrandName(name);

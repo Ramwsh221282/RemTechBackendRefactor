@@ -22,7 +22,9 @@ public sealed class PasswordRequirement : IAccountPasswordRequirement
 		{
 			Result<Unit> validation = requirement.Satisfies(password);
 			if (validation.IsFailure)
+			{
 				errors.Add(validation.Error.Message);
+			}
 		}
 
 		return errors.Count == 0 ? Unit.Value : Error.Validation(string.Join(", ", errors));

@@ -17,5 +17,8 @@ public sealed class GetVehiclesQuery(GetVehiclesQueryParameters parameters) : IQ
 	/// Преобразует параметры запроса в строковое представление.
 	/// </summary>
 	/// <returns>Строковое представление параметров запроса.</returns>
-	public override string ToString() => Parameters.ToString();
+	public override string ToString()
+	{
+		return Parameters.ToString();
+	}
 }

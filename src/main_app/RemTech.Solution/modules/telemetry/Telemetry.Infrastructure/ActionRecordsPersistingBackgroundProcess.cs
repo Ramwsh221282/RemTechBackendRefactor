@@ -65,9 +65,15 @@ public sealed class ActionRecordsPersistingBackgroundProcess(
 	private static JsonElement? Payload(ActionRecord record)
 	{
 		if (record.PayloadJson is null)
+		{
 			return null;
+		}
+
 		if (string.IsNullOrWhiteSpace(record.PayloadJson.Value))
+		{
 			return null;
+		}
+
 		using JsonDocument doc = JsonDocument.Parse(record.PayloadJson.Value);
 		return doc.RootElement.Clone();
 	}
@@ -75,13 +81,25 @@ public sealed class ActionRecordsPersistingBackgroundProcess(
 	private static string GetSeverityText(ActionRecordSeverity severity)
 	{
 		if (severity.Equals(ActionRecordSeverity.ERROR))
+		{
 			return "с ошибкой.";
+		}
+
 		if (severity.Equals(ActionRecordSeverity.SUCCESS))
+		{
 			return "с успехом.";
+		}
+
 		if (severity.Equals(ActionRecordSeverity.INFO))
+		{
 			return "с успехом.";
+		}
+
 		if (severity.Equals(ActionRecordSeverity.WARNING))
+		{
 			return "с предупреждением.";
+		}
+
 		return "неизвестно.";
 	}
 
@@ -163,6 +181,7 @@ public sealed class ActionRecordsPersistingBackgroundProcess(
 		try
 		{
 			await connection.ExecuteAsync(sql, parameters, transaction: session.Transaction);
+
 			Result commit = await transaction.Commit();
 			if (commit.IsFailure)
 			{

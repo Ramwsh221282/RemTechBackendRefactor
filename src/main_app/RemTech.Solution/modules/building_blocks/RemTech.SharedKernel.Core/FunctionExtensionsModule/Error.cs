@@ -11,20 +11,35 @@ public abstract class Error(string message)
 	/// </summary>
 	public string Message => message;
 
-	public static implicit operator Result(Error error) => Result.Failure(error);
+	public static implicit operator Result(Error error)
+	{
+		return Result.Failure(error);
+	}
 
-	public static implicit operator string(Error error) => error.Message;
+	public static implicit operator string(Error error)
+	{
+		return error.Message;
+	}
 
-	public override string ToString() => Message;
+	public override string ToString()
+	{
+		return Message;
+	}
 
-	public Result ToResult() => new(this);
+	public Result ToResult()
+	{
+		return new(this);
+	}
 
 	/// <summary>
 	/// Ошибка валидации.
 	/// </summary>
 	/// <param name="message">Сообщение об ошибке валидации.</param>
 	/// <returns>Объект ошибки валидации.</returns>
-	public static Error Validation(string message) => new ValidationError(message);
+	public static Error Validation(string message)
+	{
+		return new ValidationError(message);
+	}
 
 	/// <summary>
 	/// Ошибка валидации из коллекции сообщений.
@@ -42,7 +57,10 @@ public abstract class Error(string message)
 	/// </summary>
 	/// <param name="valueName">Имя значения.</param>
 	/// <returns>Объект ошибки валидации.</returns>
-	public static Error NotSet(string valueName) => new ValidationError($"{valueName} значение не установлено.");
+	public static Error NotSet(string valueName)
+	{
+		return new ValidationError($"{valueName} значение не установлено.");
+	}
 
 	/// <summary>
 	/// Ошибка превышения максимальной длины значения.
@@ -50,63 +68,89 @@ public abstract class Error(string message)
 	/// <param name="valueName">Имя значения.</param>
 	/// <param name="maxLength">Максимальная длина значения.</param>
 	/// <returns>Объект ошибки валидации.</returns>
-	public static Error GreaterThan(string valueName, int maxLength) =>
-		new ValidationError($"{valueName} значение превышает длину {maxLength} символов.");
+	public static Error GreaterThan(string valueName, int maxLength)
+	{
+		return new ValidationError($"{valueName} значение превышает длину {maxLength} символов.");
+	}
 
 	/// <summary>
 	/// Ошибка некорректного формата значения.
 	/// </summary>
 	/// <param name="valueName">Имя значения.</param>
 	/// <returns>Объект ошибки валидации.</returns>
-	public static Error InvalidFormat(string valueName) => new ValidationError($"{valueName} некорректный формат.");
+	public static Error InvalidFormat(string valueName)
+	{
+		return new ValidationError($"{valueName} некорректный формат.");
+	}
 
 	/// <summary>
 	/// Ошибка валидации из результата.
 	/// </summary>
 	/// <param name="result">Результат с ошибкой валидации.</param>
 	/// <returns>Объект ошибки валидации.</returns>
-	public static Error Validation(Result result) => new ValidationError(result.Error.Message);
+	public static Error Validation(Result result)
+	{
+		return new ValidationError(result.Error.Message);
+	}
 
 	/// <summary>
 	/// Ошибка приложения.
 	/// </summary>
 	/// <param name="message">Сообщение об ошибке приложения.</param>
 	/// <returns>Объект ошибки приложения.</returns>
-	public static Error Application(string message) => new ApplicationError(message);
+	public static Error Application(string message)
+	{
+		return new ApplicationError(message);
+	}
 
 	/// <summary>
 	/// Ошибка не найдена.
 	/// </summary>
 	/// <param name="message">Сообщение об ошибке не найдено.</param>
 	/// <returns>Объект ошибки не найдено.</returns>
-	public static Error NotFound(string message) => new NotFoundError(message);
+	public static Error NotFound(string message)
+	{
+		return new NotFoundError(message);
+	}
 
 	/// <summary>
 	/// Ошибка неавторизованности.
 	/// </summary>
 	/// <param name="message">Сообщение об ошибке неавторизованности.</param>
 	/// <returns>Объект ошибки неавторизованности.</returns>
-	public static Error Unauthorized(string message) => new UnauthorizedError(message);
+	public static Error Unauthorized(string message)
+	{
+		return new UnauthorizedError(message);
+	}
 
 	/// <summary>
 	/// Ошибка запрещено.
 	/// </summary>
 	/// <param name="message">Сообщение об ошибке запрещено.</param>
 	/// <returns>Объект ошибки запрещено.</returns>
-	public static Error Forbidden(string message) => new ForbiddenError(message);
+	public static Error Forbidden(string message)
+	{
+		return new ForbiddenError(message);
+	}
 
 	/// <summary>
 	/// Ошибка конфликта.
 	/// </summary>
 	/// <param name="message">Сообщение об ошибке конфликта.</param>
 	/// <returns>Объект ошибки конфликта.</returns>
-	public static Error Conflict(string message) => new ConflictError(message);
+	public static Error Conflict(string message)
+	{
+		return new ConflictError(message);
+	}
 
 	/// <summary>
 	/// Нет ошибки.
 	/// </summary>
 	/// <returns>Объект отсутствия ошибки.</returns>
-	public static Error NoError() => new NoneError();
+	public static Error NoError()
+	{
+		return new NoneError();
+	}
 
 	/// <summary>
 	/// Ошибка запрещено.

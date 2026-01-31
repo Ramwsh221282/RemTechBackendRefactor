@@ -25,8 +25,10 @@ public sealed class NewAccountRegisteredProducer(RabbitMqProducer producer, Seri
 	/// </summary>
 	/// <param name="message">Сообщение для проверки.</param>
 	/// <returns>True, если сообщение может быть опубликовано, иначе false.</returns>
-	public bool CanPublish(IdentityOutboxMessage message) =>
-		message.Type == AccountOutboxMessageTypes.NEW_ACCOUNT_CREATED;
+	public bool CanPublish(IdentityOutboxMessage message)
+	{
+		return message.Type == AccountOutboxMessageTypes.NEW_ACCOUNT_CREATED;
+	}
 
 	/// <summary>
 	/// Публикует сообщение о регистрации нового аккаунта в RabbitMQ.
@@ -43,6 +45,8 @@ public sealed class NewAccountRegisteredProducer(RabbitMqProducer producer, Seri
 		Logger.Information("Published account registration message for {Email}", payload.Email);
 	}
 
-	private static NewAccountRegisteredOutboxMessagePayload GetPayload(IdentityOutboxMessage message) =>
-		JsonSerializer.Deserialize<NewAccountRegisteredOutboxMessagePayload>(message.Payload)!;
+	private static NewAccountRegisteredOutboxMessagePayload GetPayload(IdentityOutboxMessage message)
+	{
+		return JsonSerializer.Deserialize<NewAccountRegisteredOutboxMessagePayload>(message.Payload)!;
+	}
 }

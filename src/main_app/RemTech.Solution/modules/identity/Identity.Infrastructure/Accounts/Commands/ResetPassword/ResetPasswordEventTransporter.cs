@@ -34,13 +34,15 @@ public sealed class ResetPasswordEventTransporter(RabbitMqProducer producer, Ser
 		);
 	}
 
-	private static ResetPasswordRequiredMessage MapToMessage(ResetPasswordResult result) =>
-		new(
+	private static ResetPasswordRequiredMessage MapToMessage(ResetPasswordResult result)
+	{
+		return new(
 			AccountId: result.AccountId,
 			AccountEmail: result.AccountEmail,
 			TicketId: result.TicketId,
 			TicketPurpose: result.TicketPurpose
 		);
+	}
 
 	private Task PublishMessageToRabbitMq(ResetPasswordRequiredMessage message, CancellationToken ct)
 	{

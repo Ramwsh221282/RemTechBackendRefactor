@@ -26,6 +26,8 @@ public sealed class Category(CategoryId id, CategoryName name) : IPersistable<Ca
 	/// <param name="persister">Персистер для сохранения категории.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции сохранения категории.</returns>
-	public Task<Result<Category>> SaveBy(IPersister persister, CancellationToken ct = default) =>
-		persister.Save(this, ct);
+	public Task<Result<Category>> SaveBy(IPersister persister, CancellationToken ct = default)
+	{
+		return persister.Save(this, ct);
+	}
 }

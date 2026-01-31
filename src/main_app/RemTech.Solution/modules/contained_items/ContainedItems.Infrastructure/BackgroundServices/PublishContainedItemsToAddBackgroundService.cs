@@ -65,7 +65,9 @@ public sealed class PublishContainedItemsToAddBackgroundService(
 	{
 		ContainedItemsRepository repository = new(session);
 		foreach (ContainedItem item in items)
+		{
 			item.MarkSaved();
+		}
 		return repository.UpdateMany(items, ct);
 	}
 

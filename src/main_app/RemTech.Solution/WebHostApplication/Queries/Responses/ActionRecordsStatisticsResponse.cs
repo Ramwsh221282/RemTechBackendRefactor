@@ -1,4 +1,4 @@
-namespace WebHostApplication.Queries.GetActionRecordsStatistics;
+namespace WebHostApplication.Queries.Responses;
 
 /// <summary>
 ///  Ответ с статистикой записей действий.

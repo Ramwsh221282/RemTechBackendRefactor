@@ -34,14 +34,19 @@ public readonly record struct SubscribedParserLinkId
 	/// </summary>
 	/// <param name="id">Значение идентификатора.</param>
 	/// <returns>Результат создания идентификатора ссылки на подписанный парсер.</returns>
-	public static Result<SubscribedParserLinkId> From(Guid id) =>
-		id == Guid.Empty
+	public static Result<SubscribedParserLinkId> From(Guid id)
+	{
+		return id == Guid.Empty
 			? Error.Validation("Идентификатор ссылки на парсер не может быть пустым.")
 			: new SubscribedParserLinkId(id);
+	}
 
 	/// <summary>
 	/// Создаёт новый идентификатор ссылки на подписанный парсер.
 	/// </summary>
 	/// <returns>Новый идентификатор ссылки на подписанный парсер.</returns>
-	public static SubscribedParserLinkId New() => new();
+	public static SubscribedParserLinkId New()
+	{
+		return new();
+	}
 }

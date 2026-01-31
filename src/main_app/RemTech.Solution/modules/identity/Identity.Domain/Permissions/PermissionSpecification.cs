@@ -33,7 +33,10 @@ public sealed class PermissionSpecification
 	public PermissionSpecification WithId(Guid id)
 	{
 		if (Id.HasValue)
+		{
 			return this;
+		}
+
 		Id = id;
 		return this;
 	}
@@ -46,7 +49,10 @@ public sealed class PermissionSpecification
 	public PermissionSpecification WithName(string name)
 	{
 		if (!string.IsNullOrWhiteSpace(Name))
+		{
 			return this;
+		}
+
 		Name = name;
 		return this;
 	}
@@ -59,7 +65,10 @@ public sealed class PermissionSpecification
 	public PermissionSpecification WithDescription(string description)
 	{
 		if (!string.IsNullOrWhiteSpace(Description))
+		{
 			return this;
+		}
+
 		Description = description;
 		return this;
 	}

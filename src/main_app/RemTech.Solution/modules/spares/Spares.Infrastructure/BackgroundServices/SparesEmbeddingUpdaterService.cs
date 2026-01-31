@@ -50,8 +50,10 @@ public sealed class SparesEmbeddingUpdaterService(
 		}
 	}
 
-	private static SpareWithoutEmbedding MapFromReader(IDataReader reader) =>
-		new() { Id = reader.GetValue<Guid>("id"), TextForEmbedding = reader.GetValue<string>("text") };
+	private static SpareWithoutEmbedding MapFromReader(IDataReader reader)
+	{
+		return new() { Id = reader.GetValue<Guid>("id"), TextForEmbedding = reader.GetValue<string>("text") };
+	}
 
 	private async Task Execute(CancellationToken ct)
 	{
@@ -60,14 +62,18 @@ public sealed class SparesEmbeddingUpdaterService(
 		await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
 		SpareWithoutEmbedding[] spares = await GetSparesWithoutEmbeddings(session, ct);
 		if (spares.Length == 0)
+		{
 			return;
+		}
 
 		string[] texts = [.. spares.Select(s => s.TextForEmbedding)];
 		IReadOnlyList<ReadOnlyMemory<float>> generatedEmbeddings = Embeddings.GenerateBatch(texts);
 		await UpdateSpareEmbeddings(session, spares, generatedEmbeddings, ct);
 		Result commit = await transaction.Commit(ct);
 		if (commit.IsFailure)
+		{
 			Logger.Fatal(commit.Error, "Error committing transaction.");
+		}
 	}
 
 	private async Task UpdateSpareEmbeddings(

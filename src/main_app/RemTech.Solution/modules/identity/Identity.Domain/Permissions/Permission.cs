@@ -42,17 +42,26 @@ public sealed class Permission(PermissionId id, PermissionName name, PermissionD
 	/// Переименовывает разрешение.
 	/// </summary>
 	/// <param name="newName">Новое имя разрешения.</param>
-	public void Rename(PermissionName newName) => Name = newName;
+	public void Rename(PermissionName newName)
+	{
+		Name = newName;
+	}
 
 	/// <summary>
 	/// Изменяет описание разрешения.
 	/// </summary>
 	/// <param name="newDescription">Новое описание разрешения.</param>
-	public void ChangeDescription(PermissionDescription newDescription) => Description = newDescription;
+	public void ChangeDescription(PermissionDescription newDescription)
+	{
+		Description = newDescription;
+	}
 
 	/// <summary>
 	/// Создает копию текущего разрешения.
 	/// </summary>
 	/// <returns>Копия текущего разрешения.</returns>
-	public Permission Clone() => new(this);
+	public Permission Clone()
+	{
+		return new(this);
+	}
 }

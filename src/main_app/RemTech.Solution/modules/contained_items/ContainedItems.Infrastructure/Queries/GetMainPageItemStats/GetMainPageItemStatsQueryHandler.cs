@@ -131,28 +131,36 @@ public sealed class GetMainPageItemStatsQueryHandler(NpgSqlSession session)
 	private static void ParseItemStatAndFillCollection(string itemStatJson, List<ItemStats> collection)
 	{
 		if (string.IsNullOrEmpty(itemStatJson))
+		{
 			return;
+		}
 
 		using JsonDocument jsonDoc = JsonDocument.Parse(itemStatJson);
 		foreach (JsonElement element in jsonDoc.RootElement.EnumerateArray())
 		{
 			ItemStats? itemStat = ItemFromJson(element.GetProperty("item_stat"));
 			if (itemStat != null)
+			{
 				collection.Add(itemStat);
+			}
 		}
 	}
 
 	private static void ParseBrandStatAndFillCollection(string brandStatJson, List<BrandsPopularity> collection)
 	{
 		if (string.IsNullOrEmpty(brandStatJson))
+		{
 			return;
+		}
 
 		using JsonDocument jsonDoc = JsonDocument.Parse(brandStatJson);
 		foreach (JsonElement element in jsonDoc.RootElement.EnumerateArray())
 		{
 			BrandsPopularity? brandStat = BrandFromJson(element.GetProperty("brands_stat"));
 			if (brandStat != null)
+			{
 				collection.Add(brandStat);
+			}
 		}
 	}
 
@@ -162,14 +170,18 @@ public sealed class GetMainPageItemStatsQueryHandler(NpgSqlSession session)
 	)
 	{
 		if (string.IsNullOrEmpty(categoryStatJson))
+		{
 			return;
+		}
 
 		using JsonDocument jsonDoc = JsonDocument.Parse(categoryStatJson);
 		foreach (JsonElement element in jsonDoc.RootElement.EnumerateArray())
 		{
 			CategoriesPopularity? categoryStat = CategoryFromJson(element.GetProperty("categories_stat"));
 			if (categoryStat != null)
+			{
 				collection.Add(categoryStat);
+			}
 		}
 	}
 

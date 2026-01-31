@@ -11,7 +11,8 @@ public sealed class BrandTableMigration : Migration
 	/// <summary>
 	/// Выполняет миграцию, создавая таблицу брендов.
 	/// </summary>
-	public override void Up() =>
+	public override void Up()
+	{
 		Execute.Sql(
 			"""
 			CREATE TABLE IF NOT EXISTS vehicles_module.brands (
@@ -23,9 +24,13 @@ public sealed class BrandTableMigration : Migration
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_brands_name ON vehicles_module.brands(name);
 			"""
 		);
+	}
 
 	/// <summary>
 	/// Откатывает миграцию, удаляя таблицу брендов.
 	/// </summary>
-	public override void Down() => Delete.Table("brands").InSchema("vehicles_module");
+	public override void Down()
+	{
+		Delete.Table("brands").InSchema("vehicles_module");
+	}
 }

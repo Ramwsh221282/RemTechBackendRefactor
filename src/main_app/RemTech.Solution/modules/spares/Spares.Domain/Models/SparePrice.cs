@@ -33,8 +33,10 @@ public sealed record SparePrice
 	/// <param name="value">Значение цены.</param>
 	/// <param name="isNds">Признак наличия НДС.</param>
 	/// <returns>Результат создания цены.</returns>
-	public static Result<SparePrice> Create(long value, bool isNds) =>
-		value <= 0
+	public static Result<SparePrice> Create(long value, bool isNds)
+	{
+		return value <= 0
 			? Error.Validation("Цена запчасти должна быть больше 0.")
 			: Result.Success(new SparePrice(value, isNds));
+	}
 }

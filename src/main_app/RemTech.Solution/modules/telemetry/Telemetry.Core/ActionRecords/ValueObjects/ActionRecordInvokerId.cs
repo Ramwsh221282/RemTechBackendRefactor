@@ -33,7 +33,10 @@ public readonly record struct ActionRecordInvokerId
 	/// Создает новый идентификатор инициатора действия.
 	/// </summary>
 	/// <returns>Новый идентификатор инициатора действия.</returns>
-	public static ActionRecordInvokerId New() => new();
+	public static ActionRecordInvokerId New()
+	{
+		return new();
+	}
 
 	/// <summary>
 	/// Создает новый идентификатор инициатора действия.

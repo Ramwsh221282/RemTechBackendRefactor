@@ -18,8 +18,10 @@ public sealed class FrontendOptions
 	/// Регистрация FrontendOptions в контейнере служб.
 	/// </summary>
 	/// <param name="services">Контейнер служб для регистрации настроек.</param>
-	public static void AddFrontendOptions(IServiceCollection services) =>
+	public static void AddFrontendOptions(IServiceCollection services)
+	{
 		services.AddOptions<FrontendOptions>().BindConfiguration(nameof(FrontendOptions));
+	}
 
 	/// <summary>
 	/// Перерегистрация FrontendOptions с новыми значениями.

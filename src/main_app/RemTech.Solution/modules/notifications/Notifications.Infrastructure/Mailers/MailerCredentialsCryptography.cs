@@ -36,6 +36,8 @@ public sealed class MailerCredentialsCryptography(AesCryptography cryptography) 
 		return Recreate(credentials, decryptedPassword);
 	}
 
-	private static MailerCredentials Recreate(MailerCredentials credentials, string password) =>
-		MailerCredentials.Create(password, credentials.Email);
+	private static MailerCredentials Recreate(MailerCredentials credentials, string password)
+	{
+		return MailerCredentials.Create(password, credentials.Email);
+	}
 }

@@ -10,17 +10,33 @@ import { Checkbox } from 'primeng/checkbox';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import {
 	TelemetryStatisticsResponse,
-	FetchTelemetryRecordsResponse,
+	PaginatedTelemetryRecordsResponse,
 	TelemetryResponse,
+	TelemetryPermissionResponse,
+	ActionRecordsPageResponse,
+	TelemetryActionStatus,
 } from '../../../../shared/api/telemetry-module/telemetry-responses';
 import { createDefaultFetchTelemetryRecordsFetchResponse } from '../../../../shared/api/telemetry-module/telemetry-factories';
 import { TelemetryApiService } from '../../../../shared/api/telemetry-module/telemetry-api.service';
 import { catchError, EMPTY, forkJoin, map, Observable, tap } from 'rxjs';
-import { FetchAnalyticsTelemetryRecordsQuery } from '../../../../shared/api/telemetry-module/telemetry-fetch.request';
+import { MultiSelect, MultiSelectChangeEvent } from 'primeng/multiselect';
+import { ActionRecordsQuery } from '../../../../shared/api/telemetry-module/telemetry-fetch.request';
 
 @Component({
 	selector: 'app-users-activity-monitoring-page',
-	imports: [FormsModule, NgClass, ChartModule, TableModule, Select, InputText, DatePicker, Checkbox, DatePipe, PaginationComponent],
+	imports: [
+		FormsModule,
+		NgClass,
+		ChartModule,
+		TableModule,
+		Select,
+		InputText,
+		DatePicker,
+		Checkbox,
+		DatePipe,
+		PaginationComponent,
+		MultiSelect,
+	],
 	templateUrl: './users-activity-monitoring-page.component.html',
 	styleUrl: './users-activity-monitoring-page.component.css',
 })
@@ -28,19 +44,17 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	selectedPeriod: any;
 	customRange: [Date, Date] | undefined;
 
+	private readonly _service: TelemetryApiService = inject(TelemetryApiService);
+	private readonly _query: WritableSignal<ActionRecordsQuery> = signal(ActionRecordsQuery.create().withPage(1).withPageSize(50));
+
 	readonly timeSelections: string[] = ['7 дней', 'месяц', 'диапазон'];
 	readonly selectedTimeOption: WritableSignal<string | null> = signal('7 дней');
 	readonly rangedFilterDates: WritableSignal<Date[] | undefined> = signal(undefined);
-	readonly data: WritableSignal<FetchTelemetryRecordsResponse> = signal(createDefaultFetchTelemetryRecordsFetchResponse());
-	readonly _service: TelemetryApiService = inject(TelemetryApiService);
-	readonly _query: WritableSignal<FetchAnalyticsTelemetryRecordsQuery> = signal(
-		FetchAnalyticsTelemetryRecordsQuery.create().withPage(1).withPageSize(50),
-	);
-
 	readonly statistics: WritableSignal<TelemetryStatisticsResponse[]> = signal([]);
-	readonly records: Signal<TelemetryResponse[]> = computed((): TelemetryResponse[] => {
-		return this.data().Items;
-	});
+	readonly permissions: WritableSignal<TelemetryPermissionResponse[]> = signal([]);
+	readonly statuses: WritableSignal<TelemetryActionStatus[]> = signal([]);
+	readonly records: WritableSignal<TelemetryResponse[]> = signal([]);
+	readonly totalCount: WritableSignal<number> = signal(0);
 
 	readonly chartData = computed(() => {
 		const items: TelemetryStatisticsResponse[] = this.statistics();
@@ -81,7 +95,7 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 			},
 			legend: {
 				display: true,
-				position: 'top', // 'bottom', 'left', 'right'
+				position: 'top',
 				labels: {
 					color: '#333',
 					font: { size: 14 },
@@ -126,20 +140,41 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 		return options;
 	});
 
+	public handlePermissionSelected($event: MultiSelectChangeEvent): void {
+		const permissions: TelemetryPermissionResponse[] = $event.value as TelemetryPermissionResponse[];
+		const names: string[] = permissions.map((perm: TelemetryPermissionResponse) => perm.Name);
+		console.log('query updated with permissions select.');
+	}
+
+	public permissionDisplayText(record: TelemetryResponse): string[] {
+		const permissions: TelemetryPermissionResponse[] | null = record.UserPermissions;
+		if (!permissions || permissions.length === 0) {
+			return ['Нет прав / аноним'];
+		}
+		return permissions.map((perm: TelemetryPermissionResponse) => perm.Description);
+	}
+
 	public resolveInvokerIdDisplayValue(record: TelemetryResponse): string {
 		return record.UserId ? record.UserId : 'Аноним (гость)';
 	}
 
 	public ngOnInit(): void {
-		const dataFetch: Observable<FetchTelemetryRecordsResponse> = this._service.fetchTelemetryRecords(this._query());
-		const statsFetch: Observable<TelemetryStatisticsResponse[]> = this._service.fetchTelemetryRecordsStatistics(this._query());
-		forkJoin([dataFetch, statsFetch])
+		this._service
+			.fetchTelemetryPageInfo(this._query())
 			.pipe(
-				map((response: [FetchTelemetryRecordsResponse, TelemetryStatisticsResponse[]]) => {
-					this.data.set(response[0]);
-					this.statistics.set(response[1]);
+				tap((response: ActionRecordsPageResponse): void => {
+					const records: TelemetryResponse[] = response.Records.Items;
+					console.log(records);
+					const statistics: TelemetryStatisticsResponse[] = response.Statistics;
+					const totalCount: number = response.Records.TotalCount;
+					const statuses: TelemetryActionStatus[] | null = response.Statuses;
+					const permissions: TelemetryPermissionResponse[] | null = response.Permissions;
+					this.records.set(records);
+					this.statistics.set(statistics);
+					this.totalCount.set(totalCount);
+					if (statuses) this.statuses.set(statuses);
+					if (permissions) this.permissions.set(permissions);
 				}),
-				catchError(() => EMPTY),
 			)
 			.subscribe();
 	}

@@ -6,6 +6,7 @@ using Pgvector;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.NN;
+using Vehicles.Infrastructure.Categories.Queries.GetCategories;
 
 namespace Vehicles.Infrastructure.Categories.Queries.GetCategories;
 
@@ -76,7 +77,9 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsP
 		}
 
 		if (subFilters.Count == 0)
+		{
 			return;
+		}
 
 		filters.Add(
 			$"""
@@ -93,7 +96,9 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsP
 	private static string ApplyPagination(GetCategoriesQuery query)
 	{
 		if (query.Page == null || query.PageSize == null)
+		{
 			return string.Empty;
+		}
 
 		int normalizedPage = (query.Page <= 0) ? 1 : query.Page.Value;
 		int normalizedPageSize = (query.PageSize >= 50) ? 50 : query.PageSize.Value;
@@ -129,27 +134,39 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsP
 		return includedFields.Any() ? ", " + string.Join(", ", includedFields) : string.Empty;
 	}
 
-	private static string IncludeTextSearchScore(GetCategoriesQuery query) =>
-		query.ContainsIncludedInformationKey("text-search-score")
+	private static string IncludeTextSearchScore(GetCategoriesQuery query)
+	{
+		return query.ContainsIncludedInformationKey("text-search-score")
 			? "c.embedding <-> @embedding as text_search_score"
 			: string.Empty;
+	}
 
-	private static string IncludeCategoriesTotalAmountIfProvided(GetCategoriesQuery query) =>
-		query.ContainsIncludedInformationKey("total-categories-count")
+	private static string IncludeCategoriesTotalAmountIfProvided(GetCategoriesQuery query)
+	{
+		return query.ContainsIncludedInformationKey("total-categories-count")
 			? "COUNT(*) over () as total_categories_count"
 			: string.Empty;
+	}
 
-	private static string IncludeVehiclesAmountIfProvided(GetCategoriesQuery query) =>
-		query.ContainsIncludedInformationKey("vehicles-count") ? "COUNT(v.id) as vehicle_count" : string.Empty;
+	private static string IncludeVehiclesAmountIfProvided(GetCategoriesQuery query)
+	{
+		return query.ContainsIncludedInformationKey("vehicles-count") ? "COUNT(v.id) as vehicle_count" : string.Empty;
+	}
 
-	private static string CreateWhereClause(List<string> filters) =>
-		filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
+	private static string CreateWhereClause(List<string> filters)
+	{
+		return filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
+	}
 
-	private static bool SomeBrandFilterProvided(GetCategoriesQuery query) =>
-		query.BrandId.HasValue || !string.IsNullOrWhiteSpace(query.BrandName);
+	private static bool SomeBrandFilterProvided(GetCategoriesQuery query)
+	{
+		return query.BrandId.HasValue || !string.IsNullOrWhiteSpace(query.BrandName);
+	}
 
-	private static bool SomeModelFilterProvided(GetCategoriesQuery query) =>
-		query.ModelId.HasValue || !string.IsNullOrWhiteSpace(query.ModelName);
+	private static bool SomeModelFilterProvided(GetCategoriesQuery query)
+	{
+		return query.ModelId.HasValue || !string.IsNullOrWhiteSpace(query.ModelName);
+	}
 
 	private static async Task<IEnumerable<CategoryResponse>> MapFromReader(DbDataReader reader, CancellationToken ct)
 	{
@@ -162,8 +179,9 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsP
 		return responses;
 	}
 
-	private static CategoryResponse CreateFromReader(DbDataReader reader) =>
-		new()
+	private static CategoryResponse CreateFromReader(DbDataReader reader)
+	{
+		return new()
 		{
 			Id = reader.GetGuid(reader.GetOrdinal("id")),
 			Name = reader.GetString(reader.GetOrdinal("name")),
@@ -177,6 +195,7 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsP
 				? reader.GetInt32(reader.GetOrdinal("total_categories_count"))
 				: null,
 		};
+	}
 
 	private static bool ContainsColumn(DbDataReader reader, string columnName)
 	{
@@ -203,7 +222,9 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsP
 	private static string UseOrderByFields(GetCategoriesQuery query)
 	{
 		if (query.OrderByFields == null)
+		{
 			return string.Empty;
+		}
 
 		string[] fields = [.. query.OrderByFields];
 		string orderByMode =
@@ -216,11 +237,17 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsP
 		foreach (string field in fields)
 		{
 			if (field == "name")
+			{
 				orderings.Add($"c.name {orderByMode}");
+			}
 			if (field == "vehicles-count" && query.ContainsIncludedInformationKey("vehicles-count"))
+			{
 				orderings.Add($"vehicle_count {orderByMode}");
+			}
 			if (field == "vehicles-count" && !query.ContainsIncludedInformationKey("vehicles-count"))
+			{
 				orderings.Add($"COUNT(v.id) {orderByMode}");
+			}
 		}
 
 		return orderings.Count > 0 ? string.Join(", ", orderings) : string.Empty;
@@ -263,7 +290,9 @@ public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsP
 	private void ApplyTextSearchFilter(GetCategoriesQuery query, List<string> filters, DynamicParameters parameters)
 	{
 		if (string.IsNullOrWhiteSpace(query.TextSearch))
+		{
 			return;
+		}
 		Vector vector = new(embeddings.Generate(query.TextSearch));
 		parameters.Add("@embedding", vector);
 		parameters.Add("@text_search", query.TextSearch, DbType.String);

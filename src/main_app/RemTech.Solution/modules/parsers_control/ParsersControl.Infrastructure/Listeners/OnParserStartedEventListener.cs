@@ -54,14 +54,16 @@ public sealed class OnParserStartedEventListener(RabbitMqProducer producer, Seri
 		string domain,
 		string type,
 		IReadOnlyList<SubscribedParserLink> links
-	) =>
-		new()
+	)
+	{
+		return new()
 		{
 			parser_id = parserId,
 			parser_domain = domain,
 			parser_type = type,
 			parser_links = [.. links.Select(l => new StartParserMessageLinks { id = l.Id.Value, url = l.UrlInfo.Url })],
 		};
+	}
 
 	private async Task PublishMessage(
 		string exchange,

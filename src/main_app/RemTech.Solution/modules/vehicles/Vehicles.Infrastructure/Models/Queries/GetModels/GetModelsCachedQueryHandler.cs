@@ -20,14 +20,22 @@ public sealed class GetModelsCachedQueryHandler(
 	/// <param name="query">Запрос на получение моделей.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат выполнения запроса - коллекция моделей.</returns>
-	public Task<IEnumerable<ModelResponse>> ExecuteWithCache(GetModelsQuery query, CancellationToken ct = default) =>
-		ReadFromCache(query, CreateCacheKey(query), ct);
+	public Task<IEnumerable<ModelResponse>> ExecuteWithCache(GetModelsQuery query, CancellationToken ct = default)
+	{
+		return ReadFromCache(query, CreateCacheKey(query), ct);
+	}
 
-	private static string CreateCacheKey(GetModelsQuery query) => $"{nameof(GetModelsQuery)}_{query}";
+	private static string CreateCacheKey(GetModelsQuery query)
+	{
+		return $"{nameof(GetModelsQuery)}_{query}";
+	}
 
-	private async Task<IEnumerable<ModelResponse>> ReadFromCache(
-		GetModelsQuery query,
-		string key,
-		CancellationToken ct
-	) => await cache.GetOrCreateAsync(key, async (token) => await inner.Handle(query, token), cancellationToken: ct);
+	private async Task<IEnumerable<ModelResponse>> ReadFromCache(GetModelsQuery query, string key, CancellationToken ct)
+	{
+		return await cache.GetOrCreateAsync(
+			key,
+			async (token) => await inner.Handle(query, token),
+			cancellationToken: ct
+		);
+	}
 }

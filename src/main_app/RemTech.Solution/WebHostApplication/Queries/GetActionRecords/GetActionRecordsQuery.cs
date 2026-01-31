@@ -70,87 +70,119 @@ public sealed class GetActionRecordsQuery : IQuery
 	/// </summary>
 	/// <param name="page">Номер страницы для пагинации.</param>
 	/// <returns>Запрос с установленным номером страницы для пагинации.</returns>
-	public GetActionRecordsQuery WithCustomPage(int? page) => Copy(this, page: page);
+	public GetActionRecordsQuery WithCustomPage(int? page)
+	{
+		return Copy(this, page: page);
+	}
 
 	/// <summary>
 	/// Устанавливает размер страницы для пагинации.
 	/// </summary>
 	/// <param name="pageSize">Размер страницы для пагинации.</param>
 	/// <returns>Запрос с установленным размером страницы для пагинации.</returns>
-	public GetActionRecordsQuery WithCustomPageSize(int? pageSize) => Copy(this, pageSize: pageSize);
+	public GetActionRecordsQuery WithCustomPageSize(int? pageSize)
+	{
+		return Copy(this, pageSize: pageSize);
+	}
 
 	/// <summary>
 	/// Устанавливает Email для поиска записей действий.
 	/// </summary>
 	/// <param name="loginSearch">Логин для поиска записей действий.</param>
 	/// <returns>Запрос с установленным логином для поиска записей действий.</returns>
-	public GetActionRecordsQuery WithLoginSearch(string? loginSearch) => Copy(this, loginSearch: loginSearch);
+	public GetActionRecordsQuery WithLoginSearch(string? loginSearch)
+	{
+		return Copy(this, loginSearch: loginSearch);
+	}
 
 	/// <summary>
 	/// Устанавливает Email для поиска записей действий.
 	/// </summary>
 	/// <param name="emailSearch">Email для поиска записей действий.</param>
 	/// <returns>Запрос с установленным Email для поиска записей действий.</returns>
-	public GetActionRecordsQuery WithEmailSearch(string? emailSearch) => Copy(this, emailSearch: emailSearch);
+	public GetActionRecordsQuery WithEmailSearch(string? emailSearch)
+	{
+		return Copy(this, emailSearch: emailSearch);
+	}
 
 	/// <summary>
 	/// Устанавливает имена статусов для фильтрации записей действий.
 	/// </summary>
 	/// <param name="statusNames">Имена статусов для фильтрации записей действий.</param>
 	/// <returns>Запрос с установленными именами статусов для фильтрации записей действий.</returns>
-	public GetActionRecordsQuery WithStatusNames(IEnumerable<string>? statusNames) =>
-		Copy(this, statusNames: statusNames);
+	public GetActionRecordsQuery WithStatusNames(IEnumerable<string>? statusNames)
+	{
+		return Copy(this, statusNames: statusNames);
+	}
 
 	/// <summary>
 	/// Устанавливает идентификаторы разрешений для фильтрации записей действий.
 	/// </summary>
 	/// <param name="permissionIdentifiers">Идентификаторы разрешений для фильтрации записей действий.</param>
 	/// <returns>Запрос с установленными идентификаторами разрешений для фильтрации записей действий.</returns>
-	public GetActionRecordsQuery WithPermissionIdentifiers(IEnumerable<Guid>? permissionIdentifiers) =>
-		Copy(this, permissionIdentifiers: permissionIdentifiers);
+	public GetActionRecordsQuery WithPermissionIdentifiers(IEnumerable<Guid>? permissionIdentifiers)
+	{
+		return Copy(this, permissionIdentifiers: permissionIdentifiers);
+	}
 
 	/// <summary>
 	/// Устанавливает имя действия для поиска записей действий.
 	/// </summary>
 	/// <param name="actionNameSearch">Имя действия для поиска записей действий.</param>
 	/// <returns>Запрос с установленным именем действия для поиска записей действий.</returns>
-	public GetActionRecordsQuery WithActionNameSearch(string? actionNameSearch) =>
-		Copy(this, actionNameSearch: actionNameSearch);
+	public GetActionRecordsQuery WithActionNameSearch(string? actionNameSearch)
+	{
+		return Copy(this, actionNameSearch: actionNameSearch);
+	}
 
 	/// <summary>
 	/// Устанавливает дату начала диапазона для фильтрации записей действий.
 	/// </summary>
 	/// <param name="startDate">Дата начала диапазона для фильтрации записей действий.</param>
 	/// <returns>Запрос с установленной датой начала диапазона для фильтрации записей действий.</returns>
-	public GetActionRecordsQuery WithStartDate(DateTime? startDate) => Copy(this, startDate: startDate);
+	public GetActionRecordsQuery WithStartDate(DateTime? startDate)
+	{
+		return Copy(this, startDate: startDate);
+	}
 
 	/// <summary>
 	/// Устанавливает дату окончания диапазона для фильтрации записей действий.
 	/// </summary>
 	/// <param name="endDate">Дата окончания диапазона для фильтрации записей действий.</param>
 	/// <returns>Запрос с установленной датой окончания диапазона для фильтрации записей действий.</returns>
-	public GetActionRecordsQuery WithEndDate(DateTime? endDate) => Copy(this, endDate: endDate);
+	public GetActionRecordsQuery WithEndDate(DateTime? endDate)
+	{
+		return Copy(this, endDate: endDate);
+	}
 
 	/// <summary>
 	/// Устанавливает идентификатор вызывающего запроса.
 	/// </summary>
 	/// <param name="guidOfRequestInvoker">Идентификатор вызывающего запроса.</param>
 	/// <returns>Запрос с установленным идентификатором вызывающего запроса.</returns>
-	public GetActionRecordsQuery WithIdOfRequestInvoker(Guid? guidOfRequestInvoker) =>
-		Copy(this, guidOfRequestInvoker: guidOfRequestInvoker);
+	public GetActionRecordsQuery WithIdOfRequestInvoker(Guid? guidOfRequestInvoker)
+	{
+		return Copy(this, guidOfRequestInvoker: guidOfRequestInvoker);
+	}
 
 	/// <summary>
 	/// Устанавливает флаг игнорирования ошибок при получении записей действий.
 	/// </summary>
 	/// <param name="ignoreErrors">Флаг игнорирования ошибок при получении записей действий.</param>
 	/// <returns>Запрос с установленным флагом игнорирования ошибок при получении записей действий.</returns>
-	public GetActionRecordsQuery WithIgnoreErrors(bool ignoreErrors) => Copy(this, ignoreErrors: ignoreErrors);
+	public GetActionRecordsQuery WithIgnoreErrors(bool ignoreErrors)
+	{
+		return Copy(this, ignoreErrors: ignoreErrors);
+	}
 
 	/// <summary>
 	/// Создает новый экземпляр без фильтров.
 	/// </summary>
 	/// <returns>Новый экземпляр <see cref="GetActionRecordsQuery"/>.</returns>
-	public static GetActionRecordsQuery Create() => new();
+	public static GetActionRecordsQuery Create()
+	{
+		return new();
+	}
 
 	private static GetActionRecordsQuery Copy(
 		GetActionRecordsQuery origin,
@@ -165,8 +197,9 @@ public sealed class GetActionRecordsQuery : IQuery
 		bool? ignoreErrors = null,
 		int? page = null,
 		int? pageSize = null
-	) =>
-		new()
+	)
+	{
+		return new()
 		{
 			LoginSearch = loginSearch ?? origin.LoginSearch,
 			EmailSearch = emailSearch ?? origin.EmailSearch,
@@ -180,6 +213,7 @@ public sealed class GetActionRecordsQuery : IQuery
 			Page = CanUsePageFromArgument(page, out int validPage) ? validPage : origin.Page,
 			PageSize = CanUsePageSizeFromArgument(pageSize, out int validPageSize) ? validPageSize : origin.PageSize,
 		};
+	}
 
 	private static bool CanUsePageFromArgument(int? page, out int validPage)
 	{

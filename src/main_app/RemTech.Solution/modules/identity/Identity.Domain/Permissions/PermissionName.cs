@@ -27,7 +27,10 @@ public sealed record PermissionName
 	public static Result<PermissionName> Create(string value)
 	{
 		if (string.IsNullOrWhiteSpace(value))
+		{
 			return Error.Validation("Название разрешения не может быть пустым.");
+		}
+
 		return value.Length > MAX_LENGTH
 			? Error.Validation("Название разрешения не может быть длиннее 128 символов.")
 			: new PermissionName(value);

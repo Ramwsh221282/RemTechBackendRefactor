@@ -54,13 +54,19 @@ public sealed record ParsingStatistics
 	/// Сбросить время работы парсера.
 	/// </summary>
 	/// <returns>Обновленная статистика парсинга с сброшенным временем работы.</returns>
-	public ParsingStatistics ResetWorkTime() => this with { WorkTime = ParsingWorkTime.New() };
+	public ParsingStatistics ResetWorkTime()
+	{
+		return this with { WorkTime = ParsingWorkTime.New() };
+	}
 
 	/// <summary>
 	/// Сбросить количество обработанных элементов.
 	/// </summary>
 	/// <returns>Обновленная статистика парсинга с сброшенным количеством обработанных элементов.</returns>
-	public ParsingStatistics ResetParsedCount() => this with { ParsedCount = ParsedCount.New() };
+	public ParsingStatistics ResetParsedCount()
+	{
+		return this with { ParsedCount = ParsedCount.New() };
+	}
 
 	/// <summary>
 	/// Создает новую статистику парсинга с нулевыми значениями.

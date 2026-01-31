@@ -21,10 +21,28 @@
 				</div>
 				<div class="grid grid-cols-2 gap-4">
 					<p-select [fluid]="true" [size]="'small'" [placeholder]="'Статусы операций'" />
-					<p-select [fluid]="true" [size]="'small'" [placeholder]="'Права пользователя'" />
+					<div class="card flex justify-center">
+						<p-multiSelect
+							[options]="permissions()"
+							[size]="'small'"
+							[fluid]="true"
+							[placeholder]="'Выбрать разрешения'"
+							[optionLabel]="'Description'"
+							display="chip"
+							class="w-full md:w-80"
+							(onChange)="handlePermissionSelected($event)"
+						/>
+					</div>
+					<!-- <p-select
+						[fluid]="true"
+						[size]="'small'"
+						[options]="permissions()"
+						[optionValue]="'Id'"
+						[optionLabel]="'Description'"
+						[placeholder]="'Права пользователя'"
+					/> -->
 				</div>
 				<div class="grid grid-cols-2 gap-4">
-					<!-- TODO: лучше тут select с поиском и фильтрацией -->
 					<input pInputText [pSize]="'small'" [fluid]="true" [placeholder]="'Искать по названию действия'" />
 					<p-date-picker
 						[selectionMode]="'range'"
@@ -82,10 +100,10 @@
 							</div>
 						</div>
 					</td>
-					<td class="border px-2 py-2 whitespace-nowrap align-middle">
+					<td class="border px-2 py-2 align-middle wrap-break-word">
 						<div>
 							<div>
-								<span class="font-semibold">{{ record.ActionName }}</span>
+								<span class="font-semibold wrap-break-word">{{ record.ActionName }}</span>
 							</div>
 							<div class="text-xs mt-1">
 								<span
@@ -111,7 +129,18 @@
 							</div>
 						</div>
 					</td>
-					<td class="border px-2 py-2 whitespace-nowrap align-middle">{{ "разрешения" }}</td>
+					<td class="border px-2 py-2 whitespace-nowrap align-middle">
+						<div class="flex flex-wrap gap-2">
+							@for (permission of permissionDisplayText(record); track `${permission}`) {
+								<span
+									class="inline-block bg-blue-100 dark:bg-blue-700 text-blue-800 dark:text-blue-100 text-xs px-3 py-1 rounded-full shadow-sm"
+									[title]="permission"
+								>
+									{{ permission }}
+								</span>
+							}
+						</div>
+					</td>
 				</tr>
 			</ng-template>
 		</p-table>

@@ -162,9 +162,14 @@ public sealed class GetSparesQueryHandler(
 		}
 
 		if (!string.IsNullOrWhiteSpace(query.TextSearch))
+		{
 			ApplyTextSearch(query.TextSearch, parameters, filters);
+		}
+
 		if (!string.IsNullOrWhiteSpace(query.Oem))
+		{
 			ApplyOemSearch(query.Oem, parameters, filters);
+		}
 	}
 
 	private void ApplyOemSearch(string oem, DynamicParameters parameters, List<string> filters)

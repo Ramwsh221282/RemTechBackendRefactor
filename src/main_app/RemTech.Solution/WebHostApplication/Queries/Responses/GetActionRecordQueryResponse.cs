@@ -1,4 +1,4 @@
-namespace WebHostApplication.Queries.GetActionRecords;
+namespace WebHostApplication.Queries.Responses;
 
 /// <summary>
 /// Ответ на запрос <see cref="GetActionRecordsQuery"/> .

@@ -39,5 +39,8 @@ public sealed class NewAccountCreatedEvent(Guid accountId, string accountEmail, 
 	/// <param name="handler">Обработчик доменного события.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию обработки события.</returns>
-	public Task PublishTo(IDomainEventHandler handler, CancellationToken ct = default) => handler.Handle(this, ct);
+	public Task PublishTo(IDomainEventHandler handler, CancellationToken ct = default)
+	{
+		return handler.Handle(this, ct);
+	}
 }

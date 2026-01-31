@@ -28,7 +28,10 @@ public sealed class AddParserLinkHandler(ISubscribedParsersRepository repository
 	)
 	{
 		if (!command.Links.Any())
+		{
 			return Error.Validation("Ссылки не указаны.");
+		}
+
 		Result<SubscribedParser> parser = await GetRequiredParser(command.ParserId, ct);
 		Result<IEnumerable<SubscribedParserLink>> links = AddLinks(parser, command.Links);
 		Result saving = await SaveChanges(links, parser, ct);
@@ -41,7 +44,10 @@ public sealed class AddParserLinkHandler(ISubscribedParsersRepository repository
 	)
 	{
 		if (parser.IsFailure)
+		{
 			return parser.Error;
+		}
+
 		IEnumerable<SubscribedParserLinkUrlInfo> infos = args.Select(arg =>
 			SubscribedParserLinkUrlInfo.Create(arg.LinkUrl, arg.LinkName).Value
 		);
@@ -55,9 +61,15 @@ public sealed class AddParserLinkHandler(ISubscribedParsersRepository repository
 	)
 	{
 		if (parser.IsFailure)
+		{
 			return Result.Failure(parser.Error);
+		}
+
 		if (result.IsFailure)
+		{
 			return Result.Failure(result.Error);
+		}
+
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();
 	}

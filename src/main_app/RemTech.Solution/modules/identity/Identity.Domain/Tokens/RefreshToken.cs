@@ -61,7 +61,10 @@ public sealed class RefreshToken(Guid accountId, string tokenValue, long expires
 	/// </summary>
 	/// <param name="currentUnixTime">Текущее время в формате Unix времени.</param>
 	/// <returns>True, если срок действия токена истек; в противном случае false.</returns>
-	public bool IsExpired(long currentUnixTime) => currentUnixTime > ExpiresAt;
+	public bool IsExpired(long currentUnixTime)
+	{
+		return currentUnixTime > ExpiresAt;
+	}
 
 	private static string GenerateRandomString()
 	{

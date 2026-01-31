@@ -11,7 +11,8 @@ public sealed class LocationRegionsMigration : Migration
 	/// <summary>
 	/// Выполняет миграцию, создавая таблицу регионов.
 	/// </summary>
-	public override void Up() =>
+	public override void Up()
+	{
 		Execute.Sql(
 			"""
 			CREATE TABLE IF NOT EXISTS vehicles_module.regions (
@@ -24,9 +25,13 @@ public sealed class LocationRegionsMigration : Migration
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_regions_name ON vehicles_module.regions(name);
 			"""
 		);
+	}
 
 	/// <summary>
 	/// Откатывает миграцию, удаляя таблицу регионов.
 	/// </summary>
-	public override void Down() => Delete.Table("regions").InSchema("vehicles_module");
+	public override void Down()
+	{
+		Delete.Table("regions").InSchema("vehicles_module");
+	}
 }

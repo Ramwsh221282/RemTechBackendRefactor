@@ -8,6 +8,7 @@ using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.NN;
 using WebHostApplication.CommonSql;
 using WebHostApplication.Injection;
+using WebHostApplication.Queries.Responses;
 
 namespace WebHostApplication.Queries.GetActionRecords;
 
@@ -35,14 +36,13 @@ public sealed class GetActionRecordsQueryHandler(NpgSqlSession session, Embeddin
 		NpgsqlConnection session = await Session.GetConnection(ct);
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
 		await using DbDataReader reader = await session.ExecuteReaderAsync(command);
-		return await CreateFromReader(query, reader, ct);
+		return await CreateFromReader(reader, ct);
 	}
 
 	private (DynamicParameters parameters, string sql) CreateSql(GetActionRecordsQuery query)
 	{
 		DynamicParameters parameters = new();
 		string mainQueryFilters = BuildMainQuerySqlFilter(query, parameters);
-		string permissionsSubQueryFilter = BuildPermissionsSubQueryFilter(query, parameters);
 		string paginationQueryPart = BuildPaginationQueryPart(query, parameters);
 
 		string sql = $"""
@@ -97,7 +97,9 @@ FROM items i;
 	private static string UseLoginSearch(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
 		if (string.IsNullOrWhiteSpace(query.LoginSearch))
+		{
 			return string.Empty;
+		}
 
 		parameters.Add("@LoginSearch", query.LoginSearch, DbType.String);
 		return "a.login ILIKE '%' || @LoginSearch || '%'";
@@ -106,7 +108,9 @@ FROM items i;
 	private static string UseEmailSearch(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
 		if (string.IsNullOrWhiteSpace(query.EmailSearch))
+		{
 			return string.Empty;
+		}
 
 		parameters.Add("@EmailSearch", query.EmailSearch, DbType.String);
 		return "a.email ILIKE '%' || @EmailSearch || '%'";
@@ -115,7 +119,9 @@ FROM items i;
 	private string UseActionNameSearch(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
 		if (string.IsNullOrWhiteSpace(query.ActionNameSearch))
+		{
 			return string.Empty;
+		}
 
 		parameters.Add("@ActionNameSearch", query.ActionNameSearch, DbType.String);
 		return """
@@ -130,7 +136,9 @@ FROM items i;
 	private string UseDateRangeFilter(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
 		if (query.StartDate == null || query.EndDate == null)
+		{
 			return string.Empty;
+		}
 
 		parameters.Add("@StartDate", query.StartDate.Value, DbType.DateTime);
 		parameters.Add("@EndDate", query.EndDate.Value, DbType.DateTime);
@@ -141,7 +149,9 @@ FROM items i;
 	{
 		List<string> filters = ["ap.account_id = a.id"];
 		if (query.PermissionIdentifiers?.Any() != true)
+		{
 			return string.Empty;
+		}
 
 		Guid[] ids = [.. query.PermissionIdentifiers];
 		filters.Add("ap.permission_id = ANY(@PermissionIds)");
@@ -152,7 +162,9 @@ FROM items i;
 	private static string UseOperationStatusesFilter(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
 		if (query.StatusNames?.Any() != true)
+		{
 			return string.Empty;
+		}
 
 		string[] statusNames = [.. query.StatusNames];
 		parameters.Add("@StatusNames", statusNames);
@@ -162,7 +174,9 @@ FROM items i;
 	private static string UseIgnoreSelfFilter(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
 		if (query.IdOfRequestInvoker == null)
+		{
 			return string.Empty;
+		}
 
 		parameters.Add("@InvokerId", query.IdOfRequestInvoker.Value, DbType.Guid);
 		return "ar.invoker_id <> @InvokerId";
@@ -170,17 +184,18 @@ FROM items i;
 
 	private static string UseIgnoreErrorsFilter(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
-		if (!query.IgnoreErrors)
-			return string.Empty;
-
-		return "ar.error IS NULL";
+		return !query.IgnoreErrors ? string.Empty : "ar.error IS NULL";
 	}
 
-	private static string BuildPermissionsSubQueryFilter(GetActionRecordsQuery query, DynamicParameters parameters) =>
-		SqlBuilderDelegate.CombineWhereClauses(query, parameters, UseSubQueryPermissionsFilter);
+	//TODO: implement permissions filter
+	private static string UsePermissionsFilter(GetActionRecordsQuery query, DynamicParameters parameters)
+	{
+		return string.Empty;
+	}
 
-	private string BuildMainQuerySqlFilter(GetActionRecordsQuery query, DynamicParameters parameters) =>
-		SqlBuilderDelegate.CombineWhereClauses(
+	private string BuildMainQuerySqlFilter(GetActionRecordsQuery query, DynamicParameters parameters)
+	{
+		return SqlBuilderDelegate.CombineWhereClauses(
 			query,
 			parameters,
 			[
@@ -191,14 +206,12 @@ FROM items i;
 				UseOperationStatusesFilter,
 				UseIgnoreErrorsFilter,
 				UseIgnoreSelfFilter,
+				UsePermissionsFilter,
 			]
 		);
+	}
 
-	private static async Task<GetActionRecordQueryResponse> CreateFromReader(
-		GetActionRecordsQuery query,
-		DbDataReader reader,
-		CancellationToken ct
-	)
+	private static async Task<GetActionRecordQueryResponse> CreateFromReader(DbDataReader reader, CancellationToken ct)
 	{
 		GetActionRecordQueryResponse response = new();
 		bool isTotalCountSet = false;
@@ -220,6 +233,8 @@ FROM items i;
 		return response;
 	}
 
-	private static string BuildPaginationQueryPart(GetActionRecordsQuery query, DynamicParameters parameters) =>
-		SqlBuilderDelegate.BuildPaginationClause(query, parameters, q => q.Page, q => q.PageSize);
+	private static string BuildPaginationQueryPart(GetActionRecordsQuery query, DynamicParameters parameters)
+	{
+		return SqlBuilderDelegate.BuildPaginationClause(query, parameters, q => q.Page, q => q.PageSize);
+	}
 }

@@ -39,8 +39,9 @@ public sealed record ParserResponse(
 	/// </summary>
 	/// <param name="parser">Модель подписанного парсера.</param>
 	/// <returns>Ответ с информацией о парсере.</returns>
-	public static ParserResponse Create(SubscribedParser parser) =>
-		new(
+	public static ParserResponse Create(SubscribedParser parser)
+	{
+		return new(
 			parser.Id.Value,
 			parser.Identity.DomainName,
 			parser.Identity.ServiceType,
@@ -55,4 +56,5 @@ public sealed record ParserResponse(
 			parser.Statistics.WorkTime.Seconds,
 			parser.Links.Select(ParserLinkResponse.Create)
 		);
+	}
 }

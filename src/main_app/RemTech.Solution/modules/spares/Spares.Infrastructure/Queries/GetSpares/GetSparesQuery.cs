@@ -61,9 +61,15 @@ public sealed class GetSparesQuery : IQuery
 	public GetSparesQuery ForType(string? type)
 	{
 		if (!string.IsNullOrWhiteSpace(Type))
+		{
 			return this;
+		}
+
 		if (string.IsNullOrWhiteSpace(type))
+		{
 			return this;
+		}
+
 		Type = type;
 		return this;
 	}
@@ -76,9 +82,15 @@ public sealed class GetSparesQuery : IQuery
 	public GetSparesQuery ForRegion(Guid? regionId)
 	{
 		if (RegionId.HasValue)
+		{
 			return this;
+		}
+
 		if (regionId is null)
+		{
 			return this;
+		}
+
 		RegionId = regionId;
 		return this;
 	}
@@ -91,9 +103,14 @@ public sealed class GetSparesQuery : IQuery
 	public GetSparesQuery ForOem(string? oem)
 	{
 		if (!string.IsNullOrWhiteSpace(Oem))
+		{
 			return this;
+		}
+
 		if (string.IsNullOrWhiteSpace(oem))
+		{
 			return this;
+		}
 		Oem = oem;
 		return this;
 	}
@@ -106,9 +123,15 @@ public sealed class GetSparesQuery : IQuery
 	public GetSparesQuery WithMinimalPrice(long? price)
 	{
 		if (PriceMin.HasValue)
+		{
 			return this;
+		}
+
 		if (price is null)
+		{
 			return this;
+		}
+
 		PriceMin = price;
 		return this;
 	}
@@ -121,9 +144,15 @@ public sealed class GetSparesQuery : IQuery
 	public GetSparesQuery WithMaximalPrice(long? price)
 	{
 		if (PriceMax.HasValue)
+		{
 			return this;
+		}
+
 		if (price is null)
+		{
 			return this;
+		}
+
 		PriceMax = price;
 		return this;
 	}
@@ -136,9 +165,15 @@ public sealed class GetSparesQuery : IQuery
 	public GetSparesQuery WithTextSearch(string? text)
 	{
 		if (!string.IsNullOrWhiteSpace(TextSearch))
+		{
 			return this;
+		}
+
 		if (string.IsNullOrWhiteSpace(text))
+		{
 			return this;
+		}
+
 		TextSearch = text;
 		return this;
 	}
@@ -151,7 +186,10 @@ public sealed class GetSparesQuery : IQuery
 	public GetSparesQuery WithOrderMode(string? mode)
 	{
 		if (string.IsNullOrWhiteSpace(mode))
+		{
 			return this;
+		}
+
 		OrderMode = mode;
 		return this;
 	}
@@ -164,9 +202,14 @@ public sealed class GetSparesQuery : IQuery
 	public GetSparesQuery WithPage(int? page)
 	{
 		if (page is null)
+		{
 			return this;
+		}
+
 		if (page.Value <= 0)
+		{
 			return this;
+		}
 		Page = page.Value;
 		return this;
 	}
@@ -179,9 +222,15 @@ public sealed class GetSparesQuery : IQuery
 	public GetSparesQuery WithPageSize(int? size)
 	{
 		if (size is null)
+		{
 			return this;
+		}
+
 		if (size.Value > 50)
+		{
 			return this;
+		}
+
 		PageSize = size.Value;
 		return this;
 	}
@@ -190,5 +239,8 @@ public sealed class GetSparesQuery : IQuery
 	/// Преобразует запрос в строковое представление JSON.
 	/// </summary>
 	/// <returns>Строковое представление запроса в формате JSON.</returns>
-	public override string ToString() => JsonSerializer.Serialize(this);
+	public override string ToString()
+	{
+		return JsonSerializer.Serialize(this);
+	}
 }

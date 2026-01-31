@@ -49,7 +49,10 @@ public sealed class GetSpareTypesQueryHandler(NpgSqlSession session, EmbeddingsP
 	private static string UseLimit(GetSpareTypesQuery query, DynamicParameters parameters)
 	{
 		if (query.Amount is null)
+		{
 			return string.Empty;
+		}
+
 		parameters.Add("@limit", query.Amount, DbType.Int32);
 		return "LIMIT @limit";
 	}
@@ -63,8 +66,12 @@ public sealed class GetSpareTypesQueryHandler(NpgSqlSession session, EmbeddingsP
 		IEnumerable<string> clauses = filters
 			.Select(f => f.Invoke(query, parameters))
 			.Where(s => !string.IsNullOrWhiteSpace(s));
+
 		if (!clauses.Any())
+		{
 			return string.Empty;
+		}
+
 		return "WHERE " + string.Join(" AND ", clauses);
 	}
 
@@ -86,7 +93,9 @@ public sealed class GetSpareTypesQueryHandler(NpgSqlSession session, EmbeddingsP
 	private string UseTextSearchFilter(GetSpareTypesQuery query, DynamicParameters parameters)
 	{
 		if (string.IsNullOrWhiteSpace(query.TextSearch))
+		{
 			return string.Empty;
+		}
 
 		Vector vector = new(Embeddings.Generate(query.TextSearch));
 		parameters.Add("@embedding", vector);

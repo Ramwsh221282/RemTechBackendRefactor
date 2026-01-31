@@ -29,8 +29,10 @@ public sealed class SetParserAmountCommandHandler(ISubscribedParsersRepository r
 		return saving.IsFailure ? saving.Error : parser.Value;
 	}
 
-	private static Result<Unit> SetRequiredAmount(SetParsedAmountCommand command, Result<SubscribedParser> parser) =>
-		parser.IsFailure ? parser.Error : parser.Value.AddParserAmount(command.Amount);
+	private static Result<Unit> SetRequiredAmount(SetParsedAmountCommand command, Result<SubscribedParser> parser)
+	{
+		return parser.IsFailure ? parser.Error : parser.Value.AddParserAmount(command.Amount);
+	}
 
 	private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
 	{

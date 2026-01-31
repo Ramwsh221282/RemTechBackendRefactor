@@ -70,8 +70,10 @@ public sealed class PendingEmailsProcessor(
 		return repository.GetMany(specification, ct);
 	}
 
-	private static NotificationsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session) =>
-		new(new MailersChangeTracker(session), new PendingEmailsChangeTracker(session));
+	private static NotificationsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session)
+	{
+		return new(new MailersChangeTracker(session), new PendingEmailsChangeTracker(session));
+	}
 
 	private async Task Execute(CancellationToken ct)
 	{
@@ -130,13 +132,17 @@ public sealed class PendingEmailsProcessor(
 		{
 			bool processed = await Sender.Process(mailer, pendingEmails[i], ct);
 			if (processed)
+			{
 				pendingEmails[i].MarkSent();
+			}
 		}
 	}
 
 	private async Task DecryptMailers(Mailer[] mailers, CancellationToken ct)
 	{
 		for (int i = 0; i < mailers.Length; i++)
+		{
 			await mailers[i].DecryptCredentials(Cryptography, ct);
+		}
 	}
 }

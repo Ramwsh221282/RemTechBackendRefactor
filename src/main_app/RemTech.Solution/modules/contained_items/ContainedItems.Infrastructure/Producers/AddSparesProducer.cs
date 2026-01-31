@@ -52,7 +52,10 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 	/// <param name="item">Содержащийся элемент для публикации.</param>
 	/// <param name="ct">Токен отмены для прерывания операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию публикации.</returns>
-	public Task Publish(ContainedItem item, CancellationToken ct = default) => Publish([item], ct);
+	public Task Publish(ContainedItem item, CancellationToken ct = default)
+	{
+		return Publish([item], ct);
+	}
 
 	/// <summary>
 	/// Публикует множество содержащихся элементов.
@@ -60,19 +63,25 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 	/// <param name="items">Список содержащихся элементов для публикации.</param>
 	/// <param name="ct">Токен отмены для прерывания операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию публикации.</returns>
-	public Task PublishMany(IEnumerable<ContainedItem> items, CancellationToken ct = default) => Publish(items, ct);
+	public Task PublishMany(IEnumerable<ContainedItem> items, CancellationToken ct = default)
+	{
+		return Publish(items, ct);
+	}
 
-	private static AddSparesMessage CreateMessage(ContainedItem first, IEnumerable<ContainedItem> items) =>
-		new()
+	private static AddSparesMessage CreateMessage(ContainedItem first, IEnumerable<ContainedItem> items)
+	{
+		return new()
 		{
 			CreatorId = first.CreatorInfo.CreatorId,
 			CreatorDomain = first.CreatorInfo.Type,
 			CreatorType = first.CreatorInfo.Domain,
 			Payload = CreatePayload(items),
 		};
+	}
 
-	private static IEnumerable<AddSpareMessagePayload> CreatePayload(IEnumerable<ContainedItem> item) =>
-		item.Select(i =>
+	private static IEnumerable<AddSpareMessagePayload> CreatePayload(IEnumerable<ContainedItem> item)
+	{
+		return item.Select(i =>
 		{
 			using JsonDocument document = JsonDocument.Parse(i.Info.Content);
 			return new AddSpareMessagePayload()
@@ -92,6 +101,7 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 				Url = document.RootElement.GetProperty("url").GetString()!,
 			};
 		});
+	}
 
 	private sealed class AddSparesMessage
 	{

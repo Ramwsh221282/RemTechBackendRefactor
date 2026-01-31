@@ -35,7 +35,10 @@ public sealed class AccountPermissionsCollection(AccountId id, IEnumerable<Permi
 	/// </summary>
 	/// <param name="id">Идентификатор аккаунта.</param>
 	/// <returns>Пустая коллекция разрешений.</returns>
-	public static AccountPermissionsCollection Empty(AccountId id) => new(id, []);
+	public static AccountPermissionsCollection Empty(AccountId id)
+	{
+		return new(id, []);
+	}
 
 	/// <summary>
 	/// Добавляет разрешение в коллекцию.
@@ -45,7 +48,10 @@ public sealed class AccountPermissionsCollection(AccountId id, IEnumerable<Permi
 	public Result<Unit> Add(Permission permission)
 	{
 		if (HasPermission(permission))
+		{
 			return Error.Conflict("Разрешение уже присвоено учетной записи.");
+		}
+
 		_permissions.Add(permission);
 		return Result.Success(Unit.Value);
 	}
@@ -58,7 +64,10 @@ public sealed class AccountPermissionsCollection(AccountId id, IEnumerable<Permi
 	public Result<Unit> Remove(Permission permission)
 	{
 		if (!HasPermission(permission))
+		{
 			return Error.NotFound("Разрешение не найдено.");
+		}
+
 		_permissions.Remove(permission);
 		return Result.Success(Unit.Value);
 	}
@@ -67,7 +76,10 @@ public sealed class AccountPermissionsCollection(AccountId id, IEnumerable<Permi
 	/// Клонирует коллекцию разрешений.
 	/// </summary>
 	/// <returns>Клонированная коллекция разрешений.</returns>
-	public AccountPermissionsCollection Clone() => new(this);
+	public AccountPermissionsCollection Clone()
+	{
+		return new(this);
+	}
 
 	/// <summary>
 	/// Находит разрешение по идентификатору.
@@ -96,5 +108,8 @@ public sealed class AccountPermissionsCollection(AccountId id, IEnumerable<Permi
 	/// </summary>
 	/// <param name="permission">Разрешение для проверки.</param>
 	/// <returns>True, если разрешение присутствует в коллекции; в противном случае false.</returns>
-	private bool HasPermission(Permission permission) => _permissions.Any(p => p.Id == permission.Id);
+	private bool HasPermission(Permission permission)
+	{
+		return _permissions.Any(p => p.Id == permission.Id);
+	}
 }

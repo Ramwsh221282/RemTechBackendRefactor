@@ -127,7 +127,10 @@ public sealed class Account(
 	public Result<Unit> Activate()
 	{
 		if (ActivationStatus.IsActivated())
+		{
 			return Error.Conflict("Учетная запись уже активирована.");
+		}
+
 		ActivationStatus = AccountActivationStatus.Activated();
 		_events.Add(new AccountActivatedEvent(this));
 		return Result.Success(Unit.Value);
@@ -138,7 +141,10 @@ public sealed class Account(
 	/// </summary>
 	/// <param name="purpose">Цель создания тикета.</param>
 	/// <returns>Результат создания тикета для аккаунта.</returns>
-	public Result<AccountTicket> CreateTicket(string purpose) => AccountTicket.New(this, purpose);
+	public Result<AccountTicket> CreateTicket(string purpose)
+	{
+		return AccountTicket.New(this, purpose);
+	}
 
 	/// <summary>
 	/// Добавить разрешения к аккаунту.
@@ -152,7 +158,9 @@ public sealed class Account(
 		{
 			Result<Unit> add = Permissions.Add(permission);
 			if (add.IsFailure)
+			{
 				errors.Add(add.Error.Message);
+			}
 		}
 
 		return errors.Count != 0 ? (Result<Unit>)Error.Conflict(string.Join(", ", errors)) : Result.Success(Unit.Value);
@@ -178,7 +186,10 @@ public sealed class Account(
 	{
 		Result<Unit> finishing = ticket.FinishBy(Id.Value);
 		if (finishing.IsFailure)
+		{
 			return finishing.Error;
+		}
+
 		_events.Add(new AccountClosedTicketEvent(this, ticket));
 		return Unit.Value;
 	}
@@ -198,7 +209,10 @@ public sealed class Account(
 	{
 		Result<Unit> validation = new PasswordRequirement().Use(requirements).Satisfies(password);
 		if (validation.IsFailure)
+		{
 			return validation.Error;
+		}
+
 		Password = password.HashBy(hasher);
 		return Unit.Value;
 	}
@@ -219,20 +233,28 @@ public sealed class Account(
 	/// Изменяет электронную почту аккаунта.
 	/// </summary>
 	/// <param name="email">Новая электронная почта аккаунта.</param>
-	public void ChangeEmail(AccountEmail email) => Email = email;
+	public void ChangeEmail(AccountEmail email)
+	{
+		Email = email;
+	}
 
 	/// <summary>
 	/// Проверяет, можно ли сбросить пароль для аккаунта.
 	/// </summary>
 	/// <returns>Результат проверки возможности сброса пароля.</returns>
-	public Result<Unit> CanResetPassword() =>
-		ActivationStatus.IsActivated()
+	public Result<Unit> CanResetPassword()
+	{
+		return ActivationStatus.IsActivated()
 			? Result.Success(Unit.Value)
 			: Error.Validation("Сброс пароля невозможен для неактивированной учетной записи.");
+	}
 
 	/// <summary>
 	/// Создает копию аккаунта.
 	/// </summary>
 	/// <returns>Копия аккаунта.</returns>
-	public Account Copy() => new(this) { _events = [.. _events] };
+	public Account Copy()
+	{
+		return new(this) { _events = [.. _events] };
+	}
 }

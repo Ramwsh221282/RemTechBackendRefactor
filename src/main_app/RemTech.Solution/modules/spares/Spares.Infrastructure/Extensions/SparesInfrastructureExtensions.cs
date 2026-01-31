@@ -10,8 +10,9 @@ public static class SparesInfrastructureExtensions
 {
 	extension(Spare spare)
 	{
-		public object ExtractForParameters() =>
-			new
+		public object ExtractForParameters()
+		{
+			return new
 			{
 				id = spare.Id.Value,
 				contained_item_id = spare.Id.Value,
@@ -29,5 +30,6 @@ public static class SparesInfrastructureExtensions
 					}
 				),
 			};
+		}
 	}
 }

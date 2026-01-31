@@ -36,11 +36,15 @@ public sealed class AuthenticateHandler(
 	{
 		Result<Account> account = await GetRequiredAccount(command, ct);
 		if (account.IsFailure)
+		{
 			return account.Error;
+		}
 
 		Result<Unit> verification = account.Value.VerifyPassword(command.Password, hasher);
 		if (verification.IsFailure)
+		{
 			return verification.Error;
+		}
 
 		AccessToken tokenData = tokenManager.GenerateToken(account.Value);
 		await accessTokens.Add(tokenData, ct);
@@ -50,19 +54,28 @@ public sealed class AuthenticateHandler(
 		return CreateAuthenticationResult(tokenData.RawToken, refreshToken);
 	}
 
-	private static AuthenticationResult CreateAuthenticationResult(string token, RefreshToken refreshToken) =>
-		new(AccessToken: token, RefreshToken: refreshToken.TokenValue);
+	private static AuthenticationResult CreateAuthenticationResult(string token, RefreshToken refreshToken)
+	{
+		return new(AccessToken: token, RefreshToken: refreshToken.TokenValue);
+	}
 
 	private async Task<Result<Account>> GetRequiredAccount(AuthenticateCommand command, CancellationToken ct)
 	{
 		if (string.IsNullOrEmpty(command.Login) && string.IsNullOrEmpty(command.Email))
+		{
 			return Error.Validation("Логин или email не указаны.");
+		}
 
 		AccountSpecification spec = new AccountSpecification().WithLock();
 		if (!string.IsNullOrEmpty(command.Login))
+		{
 			spec = spec.WithLogin(command.Login);
+		}
+
 		if (!string.IsNullOrEmpty(command.Email))
+		{
 			spec = spec.WithEmail(command.Email);
+		}
 
 		return await accounts.Find(spec, ct);
 	}

@@ -22,24 +22,36 @@ public readonly record struct AccountActivationStatus
 	/// Создает статус активации "неактивирован".
 	/// </summary>
 	/// <returns>Статус активации "неактивирован".</returns>
-	public static AccountActivationStatus NotActivated() => new();
+	public static AccountActivationStatus NotActivated()
+	{
+		return new();
+	}
 
 	/// <summary>
 	/// Создает статус активации "активирован".
 	/// </summary>
 	/// <returns>Статус активации "активирован".</returns>
-	public static AccountActivationStatus Activated() => new() { Value = true };
+	public static AccountActivationStatus Activated()
+	{
+		return new() { Value = true };
+	}
 
 	/// <summary>
 	/// Создает статус активации на основе булевого значения.
 	/// </summary>
 	/// <param name="value">Значение для создания статуса активации.</param>
 	/// <returns>Статус активации на основе булевого значения.</returns>
-	public static AccountActivationStatus Create(bool value) => new() { Value = value };
+	public static AccountActivationStatus Create(bool value)
+	{
+		return new() { Value = value };
+	}
 
 	/// <summary>
 	/// Проверяет, активирован ли аккаунт.
 	/// </summary>
 	/// <returns>True, если аккаунт активирован; в противном случае false.</returns>
-	public bool IsActivated() => Value;
+	public bool IsActivated()
+	{
+		return Value;
+	}
 }

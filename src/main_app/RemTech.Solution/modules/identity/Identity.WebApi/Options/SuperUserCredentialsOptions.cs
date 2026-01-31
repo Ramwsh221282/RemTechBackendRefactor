@@ -30,7 +30,10 @@ public sealed class SuperUserCredentialsOptions
 	public static void AddFromAppsettings(
 		IServiceCollection services,
 		string section = nameof(SuperUserCredentialsOptions)
-	) => services.AddOptions<IOptions<SuperUserCredentialsOptions>>().BindConfiguration(section);
+	)
+	{
+		services.AddOptions<IOptions<SuperUserCredentialsOptions>>().BindConfiguration(section);
+	}
 
 	/// <summary>
 	/// Валидирует настройки учетных данных суперпользователя.
@@ -39,10 +42,18 @@ public sealed class SuperUserCredentialsOptions
 	public void Validate()
 	{
 		if (string.IsNullOrWhiteSpace(Login))
+		{
 			throw new InvalidOperationException("Super user login is empty.");
+		}
+
 		if (string.IsNullOrWhiteSpace(Email))
+		{
 			throw new InvalidOperationException("Super user email is empty.");
+		}
+
 		if (string.IsNullOrWhiteSpace(Password))
+		{
 			throw new InvalidOperationException("Super user password is empty.");
+		}
 	}
 }
