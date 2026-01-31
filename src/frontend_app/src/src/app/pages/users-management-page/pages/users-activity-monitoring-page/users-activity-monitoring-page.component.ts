@@ -9,13 +9,13 @@ import { FormsModule } from '@angular/forms';
 import { Checkbox } from 'primeng/checkbox';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import {
-	FetchAnalyticsTelemetryRecordsResponse,
+	TelemetryStatisticsResponse,
 	FetchTelemetryRecordsResponse,
 	TelemetryResponse,
 } from '../../../../shared/api/telemetry-module/telemetry-responses';
 import { createDefaultFetchTelemetryRecordsFetchResponse } from '../../../../shared/api/telemetry-module/telemetry-factories';
 import { TelemetryApiService } from '../../../../shared/api/telemetry-module/telemetry-api.service';
-import { tap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, map, Observable, tap } from 'rxjs';
 import { FetchAnalyticsTelemetryRecordsQuery } from '../../../../shared/api/telemetry-module/telemetry-fetch.request';
 
 @Component({
@@ -37,19 +37,19 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 		FetchAnalyticsTelemetryRecordsQuery.create().withPage(1).withPageSize(50),
 	);
 
+	readonly statistics: WritableSignal<TelemetryStatisticsResponse[]> = signal([]);
 	readonly records: Signal<TelemetryResponse[]> = computed((): TelemetryResponse[] => {
-		return this.data().Items.flatMap((item: FetchAnalyticsTelemetryRecordsResponse) => item.Results);
+		return this.data().Items;
 	});
 
 	readonly chartData = computed(() => {
-		const items: FetchAnalyticsTelemetryRecordsResponse[] = this.data().Items;
+		const items: TelemetryStatisticsResponse[] = this.statistics();
 		const data: PrimeNgChartData = defaultPrimeNgChartData();
 		let dataSets: number[] = [];
 		for (const item of items) {
-			data.labels.push(new Date(item.DateByDay).toLocaleDateString('ru-RU'));
-			dataSets.push(item.Results.length);
+			data.labels.push(new Date(item.Date).toLocaleDateString('ru-RU'));
+			dataSets.push(item.Amount);
 		}
-
 		data.datasets = [
 			...dataSets.map((): PrimeNgChartDataSet => {
 				return {
@@ -62,11 +62,10 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 				};
 			}),
 		];
-
 		for (let i: number = 0; i < data.datasets.length; i++) {
 			data.datasets[i].data = dataSets;
 		}
-		console.log(data);
+
 		return data;
 	});
 
@@ -132,12 +131,15 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	}
 
 	public ngOnInit(): void {
-		this._service
-			.fetchTelemetryRecords(this._query())
+		const dataFetch: Observable<FetchTelemetryRecordsResponse> = this._service.fetchTelemetryRecords(this._query());
+		const statsFetch: Observable<TelemetryStatisticsResponse[]> = this._service.fetchTelemetryRecordsStatistics(this._query());
+		forkJoin([dataFetch, statsFetch])
 			.pipe(
-				tap((response: FetchTelemetryRecordsResponse) => {
-					this.data.set(response);
+				map((response: [FetchTelemetryRecordsResponse, TelemetryStatisticsResponse[]]) => {
+					this.data.set(response[0]);
+					this.statistics.set(response[1]);
 				}),
+				catchError(() => EMPTY),
 			)
 			.subscribe();
 	}

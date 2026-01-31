@@ -165,6 +165,7 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 	{
 		CharacteristicByNameComparer comparer = new();
 		Dictionary<Characteristic, VehicleCharacteristicValue> result = new(comparer);
+
 		foreach (KeyValuePair<Characteristic, VehicleCharacteristicValue> kvp in existing)
 		{
 			Characteristic ctx = kvp.Key;

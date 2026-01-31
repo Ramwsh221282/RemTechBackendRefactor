@@ -18,12 +18,12 @@ export interface FetchTelemetryRecordsResponse {
 	PageSize: number;
 	HasNextPage: boolean;
 	HasPreviousPage: boolean;
-	Items: FetchAnalyticsTelemetryRecordsResponse[];
+	Items: TelemetryResponse[];
 }
 
-export interface FetchAnalyticsTelemetryRecordsResponse {
-	DateByDay: string;
-	Results: TelemetryResponse[];
+export interface TelemetryStatisticsResponse {
+	Date: string;
+	Amount: number;
 }
 
 export interface TelemetryPermissionResponse {

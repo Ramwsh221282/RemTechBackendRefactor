@@ -80,14 +80,22 @@ public sealed class PublishContainedItemsToAddBackgroundService(
 		{
 			IEnumerable<ContainedItem> items = await GetPendingContainedItems(session, ct);
 			if (!items.Any())
+			{
 				return;
+			}
+
 			await PublishItems(items, factory, ct);
 			await MarkItemsSaved(session, items, ct);
 			Result committing = await transaction.Commit(ct);
+
 			if (committing.IsFailure)
+			{
 				Logger.Fatal(committing.Error, "Error committing transaction.");
+			}
 			else
+			{
 				Logger.Information("Committed transaction");
+			}
 		}
 		catch (Exception e)
 		{

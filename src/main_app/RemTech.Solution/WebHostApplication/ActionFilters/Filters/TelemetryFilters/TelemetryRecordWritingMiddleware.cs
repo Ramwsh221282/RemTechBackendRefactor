@@ -58,7 +58,10 @@ public sealed class TelemetryRecordWritingMiddleware(
 		actionRecords.WriteRecord(action);
 	}
 
-	private static void ResetBufferToBeginning(Stream stream) => stream.Seek(0, SeekOrigin.Begin);
+	private static void ResetBufferToBeginning(Stream stream)
+	{
+		stream.Seek(0, SeekOrigin.Begin);
+	}
 
 	private static MemoryStream CreateTemporaryBufferForProcessing(HttpContext context)
 	{

@@ -1,4 +1,4 @@
-import { FetchAnalyticsTelemetryRecordsResponse, FetchTelemetryRecordsResponse, TelemetryResponse } from './telemetry-responses';
+import { TelemetryStatisticsResponse, FetchTelemetryRecordsResponse, TelemetryResponse } from './telemetry-responses';
 
 export function createDefaultTelemetryResponse(): TelemetryResponse {
 	return {
@@ -27,9 +27,9 @@ export function createDefaultFetchTelemetryRecordsFetchResponse(): FetchTelemetr
 	};
 }
 
-export function createDefaultFetchAnalyticsTelemetryRecordsResponse(): FetchAnalyticsTelemetryRecordsResponse {
+export function createDefaultFetchAnalyticsTelemetryRecordsResponse(): TelemetryStatisticsResponse {
 	return {
-		DateByDay: new Date(0).toLocaleDateString('ru-Ru'),
-		Results: [],
+		Date: new Date(0).toLocaleDateString('ru-Ru'),
+		Amount: 0,
 	};
 }

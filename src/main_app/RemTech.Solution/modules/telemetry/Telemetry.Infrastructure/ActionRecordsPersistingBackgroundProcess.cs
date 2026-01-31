@@ -59,9 +59,7 @@ public sealed class ActionRecordsPersistingBackgroundProcess(
 
 	private static string ErrorText(ActionRecord record)
 	{
-		if (record.Error is null)
-			return string.Empty;
-		return $" Ошибка: {record.Error.Value}.";
+		return record.Error is null ? string.Empty : $" Ошибка: {record.Error.Value}.";
 	}
 
 	private static JsonElement? Payload(ActionRecord record)
