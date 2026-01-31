@@ -48,7 +48,7 @@ public sealed class ChangeCredentialsHandler(
 	private Task<Result<Mailer>> GetRequiredMailer(ChangeCredentialsCommand command, CancellationToken ct)
 	{
 		MailersSpecification specification = new MailersSpecification().WithId(command.Id).WithLockRequired();
-		return repository.Get(specification, ct);
+		return repository.Read(specification, ct);
 	}
 
 	private Task<bool> CredentialsEmailDuplicated(ChangeCredentialsCommand command, CancellationToken ct)

@@ -102,6 +102,8 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	{
 		await _timerCts.CancelAsync();
 		await _runningPeriodicallyWritingTask;
+		_timerCts.Dispose();
+		_semaphore.Dispose();
 	}
 
 	/// <summary>
@@ -111,6 +113,8 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	{
 		_timerCts.Cancel();
 		_runningPeriodicallyWritingTask.Wait();
+		_timerCts.Dispose();
+		_semaphore.Dispose();
 	}
 
 	// TODO: FIX ISSUE WITH JSON DESERIALIZATION.
@@ -129,8 +133,11 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	private static ActionRecord[] MakeRecordsSnapshot(ConcurrentQueue<ActionRecord> recordsQueue)
 	{
 		List<ActionRecord> snapshot = [];
-		for (int index = 0; recordsQueue.TryDequeue(out ActionRecord record); index++)
+		for (int index = 0; recordsQueue.TryDequeue(out ActionRecord? record); index++)
 		{
+			if (record is null)
+				continue;
+
 			snapshot.Add(record);
 		}
 
@@ -166,7 +173,7 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 
 	private async Task RunPeriodicProcessingAsync(CancellationToken ct)
 	{
-		PeriodicTimer timer = new(TimeSpan.FromSeconds(5));
+		using PeriodicTimer timer = new(TimeSpan.FromSeconds(5));
 		while (await timer.WaitForNextTickAsync(ct))
 		{
 			ActionRecord[] snapshot = MakeRecordsSnapshot(_recordsQueue);

@@ -27,7 +27,7 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 	/// <param name="query">Запрос для фильтрации коллекции подписанных парсеров.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Коллекция подписанных парсеров.</returns>
-	public async Task<SubscribedParsersCollection> Get(
+	public async Task<SubscribedParsersCollection> Read(
 		SubscribedParsersCollectionQuery query,
 		CancellationToken ct = default
 	)

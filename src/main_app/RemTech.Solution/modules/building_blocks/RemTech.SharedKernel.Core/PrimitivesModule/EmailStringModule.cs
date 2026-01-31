@@ -16,7 +16,7 @@ public static partial class EmailStringModule
 		/// <returns>Экземпляр <see cref="EmailString"/>.</returns>
 		public static EmailString Create(string? input)
 		{
-			if (IsNullOrEmpty(input))
+			if (string.IsNullOrWhiteSpace(input))
 			{
 				return new EmailString(string.Empty, false);
 			}

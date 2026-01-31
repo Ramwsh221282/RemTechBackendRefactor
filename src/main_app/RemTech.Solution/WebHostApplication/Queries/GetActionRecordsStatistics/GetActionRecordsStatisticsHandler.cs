@@ -184,7 +184,7 @@ FROM
 		{
 			IReadOnlyList<ActionRecordsStatisticsResponse> records = JsonSerializer.Deserialize<
 				IReadOnlyList<ActionRecordsStatisticsResponse>
-			>(reader.GetString(reader.GetOrdinal("result")));
+			>(reader.GetString(reader.GetOrdinal("result")))!;
 			results.AddRange(records);
 		}
 

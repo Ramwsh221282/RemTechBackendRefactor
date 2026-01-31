@@ -25,8 +25,12 @@ public static class TestProjectExtensions
 	{
 		IEnumerable<ServiceDescriptor> jobs = services.Where(s => s.ServiceType == typeof(ICronScheduleJob));
 		services.RemoveAll<ICronScheduleJob>();
-		foreach (ServiceDescriptor job in jobs)
+		foreach (ServiceDescriptor? job in jobs)
+		{
+			if (job.ImplementationType is null)
+				continue;
 			services.AddTransient(job.ServiceType, job.ImplementationType);
+		}
 	}
 
 	/// <summary>

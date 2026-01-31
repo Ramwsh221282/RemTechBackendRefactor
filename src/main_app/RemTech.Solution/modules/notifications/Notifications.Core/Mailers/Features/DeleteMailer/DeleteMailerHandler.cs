@@ -31,6 +31,6 @@ public sealed class DeleteMailerHandler(IMailersRepository repository) : IComman
 	private Task<Result<Mailer>> GetRequiredMailer(DeleteMailerCommand command, CancellationToken ct)
 	{
 		MailersSpecification specification = new MailersSpecification().WithId(command.Id).WithLockRequired();
-		return repository.Get(specification, ct);
+		return repository.Read(specification, ct);
 	}
 }

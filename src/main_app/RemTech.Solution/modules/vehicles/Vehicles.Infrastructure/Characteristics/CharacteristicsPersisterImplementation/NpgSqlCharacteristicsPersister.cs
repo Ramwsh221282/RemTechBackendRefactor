@@ -53,11 +53,16 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 		DynamicParameters parameters = BuildParameters(characteristic, vector);
 		CommandDefinition command = session.FormCommand(sql, parameters, ct);
 
-		NpgSqlSearchResult result = await session.QuerySingleUsingReader(command, MapFromReader);
-		if (HasFromExactSearch(result))
-			return MapToCharacteristicFromExactSearch(result);
-		if (HasFromEmbeddingSearch(result))
-			return MapToCharacteristicFromEmbeddingSearch(result);
+		NpgSqlSearchResult? result = await session.QuerySingleUsingReader(command, MapFromReader);
+		if (result is not null)
+		{
+			if (HasFromExactSearch(result))
+				return MapToCharacteristicFromExactSearch(result);
+
+			if (HasFromEmbeddingSearch(result))
+				return MapToCharacteristicFromEmbeddingSearch(result);
+		}
+
 		await SaveAsNewCharacteristic(characteristic, vector, ct);
 		return characteristic;
 	}

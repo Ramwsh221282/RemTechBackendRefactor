@@ -15,7 +15,7 @@ public static class SubscribedParserPersistenceExtensions
 			ISubscribedParsersRepository repository,
 			SubscribedParserQuery query,
 			CancellationToken ct = default
-		) => repository.Get(query, ct);
+		) => repository.Read(query, ct);
 	}
 
 	extension(SubscribedParser parser)

@@ -53,7 +53,7 @@ public sealed class PermantlyDisableManyParsingHandler(ISubscribedParsersCollect
 	)
 	{
 		SubscribedParsersCollectionQuery query = new(Identifiers: identifiers);
-		SubscribedParsersCollection parsers = await repository.Get(query, ct);
+		SubscribedParsersCollection parsers = await repository.Read(query, ct);
 		return parsers.IsEmpty() ? Error.NotFound("Парсеры не найдены.") : parsers;
 	}
 }

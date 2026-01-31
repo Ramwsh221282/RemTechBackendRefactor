@@ -90,7 +90,7 @@ public sealed class SubscribedParsersRepository(NpgSqlSession session) : ISubscr
 	/// <param name="query">Запрос для получения подписанного парсера.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции получения подписанного парсера.</returns>
-	public async Task<Result<SubscribedParser>> Get(SubscribedParserQuery query, CancellationToken ct = default)
+	public async Task<Result<SubscribedParser>> Read(SubscribedParserQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(query);
 		if (query.WithLock)

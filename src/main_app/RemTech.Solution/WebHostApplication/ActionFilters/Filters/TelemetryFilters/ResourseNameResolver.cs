@@ -12,7 +12,7 @@ public static class ResourseNameResolver
 	/// <returns>Человекочитаемое имя ресурса.</returns>
 	public static string ResolveHumanizedResourceNameFromHttpContext(HttpContext context)
 	{
-		string path = context.Request.Path.Value;
+		string? path = context.Request.Path.Value;
 		if (string.IsNullOrWhiteSpace(path))
 			return "Неизвестный ресурс";
 

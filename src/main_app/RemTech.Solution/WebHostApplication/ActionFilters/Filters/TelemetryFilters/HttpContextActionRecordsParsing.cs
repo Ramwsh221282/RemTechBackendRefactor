@@ -110,7 +110,7 @@ public static class HttpContextActionRecordsParsing
 				Dictionary<string, string>? payload = await context.Request.ReadFromJsonAsync<
 					Dictionary<string, string>
 				>(cancellationToken: context.CancellationToken);
-				return payload is null ? payload.AsReadOnly() : ReadOnlyDictionary<string, string>.Empty;
+				return payload != null ? payload.AsReadOnly() : ReadOnlyDictionary<string, string>.Empty;
 			}
 			catch (Exception ex)
 			{

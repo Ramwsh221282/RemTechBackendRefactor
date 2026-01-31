@@ -65,6 +65,6 @@ public sealed class AddParserLinkHandler(ISubscribedParsersRepository repository
 	private Task<Result<SubscribedParser>> GetRequiredParser(Guid id, CancellationToken ct)
 	{
 		SubscribedParserQuery query = new(Id: id, WithLock: true);
-		return repository.Get(query, ct: ct);
+		return repository.Read(query, ct: ct);
 	}
 }

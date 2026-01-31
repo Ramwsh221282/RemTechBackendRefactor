@@ -21,7 +21,7 @@ public sealed class GetMailerHandler(IMailersRepository repository) : IQueryHand
 	public async Task<MailerResponse?> Handle(GetMailerQuery query, CancellationToken ct = default)
 	{
 		MailersSpecification spec = new MailersSpecification().WithId(query.Id);
-		Result<Mailer> mailer = await repository.Get(spec, ct);
+		Result<Mailer> mailer = await repository.Read(spec, ct);
 		return mailer.IsSuccess ? MailerResponse.Create(mailer.Value) : null;
 	}
 }

@@ -59,7 +59,7 @@ public sealed class TestCachingQueryHandler<TQuery, TResult>(HybridCache cache, 
 			return await ReadFromOriginSource(query, ct);
 		}
 
-		string hashedPayload = ToSha256Hash(query.ToString());
+		string hashedPayload = ToSha256Hash(query.ToString()!);
 		string key = $"{typeof(TQuery).Name}:{hashedPayload}";
 		return await Cache.GetOrCreateAsync(
 			key,

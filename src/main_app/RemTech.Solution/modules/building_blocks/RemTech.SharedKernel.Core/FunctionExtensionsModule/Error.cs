@@ -15,6 +15,10 @@ public abstract class Error(string message)
 
 	public static implicit operator string(Error error) => error.Message;
 
+	public override string ToString() => Message;
+
+	public Result ToResult() => new(this);
+
 	/// <summary>
 	/// Ошибка валидации.
 	/// </summary>

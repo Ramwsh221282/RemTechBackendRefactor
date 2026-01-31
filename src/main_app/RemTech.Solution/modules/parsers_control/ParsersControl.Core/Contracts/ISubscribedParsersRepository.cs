@@ -46,5 +46,5 @@ public interface ISubscribedParsersRepository
 	/// <param name="query">Запрос парсера.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Результат получения парсера.</returns>
-	Task<Result<SubscribedParser>> Get(SubscribedParserQuery query, CancellationToken ct = default);
+	Task<Result<SubscribedParser>> Read(SubscribedParserQuery query, CancellationToken ct = default);
 }

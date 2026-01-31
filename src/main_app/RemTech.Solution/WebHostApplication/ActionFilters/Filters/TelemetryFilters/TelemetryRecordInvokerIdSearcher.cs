@@ -37,7 +37,7 @@ public sealed class TelemetryRecordInvokerIdSearcher(IOptions<JwtOptions> option
 
 	private static string? ExtractAccessTokenFromHttpContext(HttpContext context)
 	{
-		string token = context.GetAccessToken();
+		string? token = context.GetAccessToken();
 		return string.IsNullOrWhiteSpace(token) ? null : token;
 	}
 

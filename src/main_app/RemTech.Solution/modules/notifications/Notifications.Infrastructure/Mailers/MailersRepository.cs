@@ -44,7 +44,7 @@ public sealed class MailersRepository(NpgSqlSession session, INotificationsModul
 	/// <param name="specification">Спецификация для фильтрации почтовых ящиков.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции, содержащий почтовый ящик или ошибку.</returns>
-	public async Task<Result<Mailer>> Get(MailersSpecification specification, CancellationToken ct = default)
+	public async Task<Result<Mailer>> Read(MailersSpecification specification, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string filterSql) = WhereClause(specification);
 		string lockClause = LockClause(specification);

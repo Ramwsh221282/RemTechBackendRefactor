@@ -344,7 +344,9 @@ public sealed class SubscribedParser
 	public Result<SubscribedParserLink> FindLink(Func<SubscribedParserLinkUrlInfo, bool> predicate)
 	{
 		SubscribedParserLink? link = Links.FirstOrDefault(l => predicate(l.UrlInfo));
-		return (Result<SubscribedParserLink>?)link ?? Error.NotFound("Ссылка не найдена.");
+		if (link is null)
+			return Error.NotFound("Ссылка не найдена.");
+		return link;
 	}
 
 	/// <summary>
