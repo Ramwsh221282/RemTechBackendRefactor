@@ -159,16 +159,15 @@ FROM items i;
 		return string.Join(" AND ", filters);
 	}
 
-	private static string UseOperationStatusesFilter(GetActionRecordsQuery query, DynamicParameters parameters)
+	private static string UserOperationStatusFilter(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
-		if (query.StatusNames?.Any() != true)
+		if (string.IsNullOrWhiteSpace(query.Status))
 		{
 			return string.Empty;
 		}
 
-		string[] statusNames = [.. query.StatusNames];
-		parameters.Add("@StatusNames", statusNames);
-		return "ar.severity = ANY(@StatusNames)";
+		parameters.Add("@statusName", query.Status, DbType.String);
+		return "ar.severity = @statusName";
 	}
 
 	private static string UseIgnoreSelfFilter(GetActionRecordsQuery query, DynamicParameters parameters)
@@ -203,7 +202,7 @@ FROM items i;
 				UseEmailSearch,
 				UseActionNameSearch,
 				UseDateRangeFilter,
-				UseOperationStatusesFilter,
+				UserOperationStatusFilter,
 				UseIgnoreErrorsFilter,
 				UseIgnoreSelfFilter,
 				UsePermissionsFilter,

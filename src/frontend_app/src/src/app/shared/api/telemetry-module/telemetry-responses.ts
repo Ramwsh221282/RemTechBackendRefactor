@@ -29,7 +29,7 @@ export interface ActionRecordsPageResponse {
 }
 
 export interface TelemetryActionStatus {
-	Name: string;
+	Status: string;
 }
 
 export interface TelemetryStatisticsResponse {

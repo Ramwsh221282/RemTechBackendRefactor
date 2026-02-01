@@ -105,6 +105,7 @@ public sealed class TelemetryController : ControllerBase
 		[FromQuery(Name = "sort")] SortDictionary? sort,
 		[FromQuery(Name = "login")] string? login,
 		[FromQuery(Name = "email")] string? email,
+		[FromQuery(Name = "status")] string? status,
 		[FromServices] IQueryHandler<GetActionRecordsQuery, ActionRecordsPageResponse> handler,
 		CancellationToken ct
 	)
@@ -116,7 +117,8 @@ public sealed class TelemetryController : ControllerBase
 			.WithPermissionIdentifiers(permissions)
 			.WithSort(sort)
 			.WithLoginSearch(login)
-			.WithEmailSearch(email);
+			.WithEmailSearch(email)
+			.WithStatusName(status);
 
 		ActionRecordsPageResponse response = await handler.Handle(query, ct);
 		return EnvelopedResultsExtensions.AsEnvelope(response);

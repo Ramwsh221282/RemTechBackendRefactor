@@ -102,14 +102,13 @@ internal static class GetActionRecordsQueryBuilder
 
 	private static string UseOperationStatusesFilter(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
-		if (query.StatusNames?.Any() != true)
+		if (string.IsNullOrWhiteSpace(query.Status))
 		{
 			return string.Empty;
 		}
 
-		string[] statusNames = [.. query.StatusNames];
-		parameters.Add("@I_StatusNames", statusNames);
-		return "ar.severity = ANY(@I_StatusNames)";
+		parameters.Add("@I_StatusName", query.Status, DbType.String);
+		return "ar.severity = @I_StatusName";
 	}
 
 	private static string UseIgnoreSelfFilter(GetActionRecordsQuery query, DynamicParameters parameters)

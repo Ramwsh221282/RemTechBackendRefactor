@@ -25,7 +25,7 @@ public sealed class GetActionRecordsQuery : IQuery
 	/// <summary>
 	/// Имена статусов для фильтрации записей действий.
 	/// </summary>
-	public IEnumerable<string>? StatusNames { get; private init; }
+	public string? Status { get; private init; }
 
 	/// <summary>
 	/// Идентификаторы разрешений для фильтрации записей действий.
@@ -109,13 +109,13 @@ public sealed class GetActionRecordsQuery : IQuery
 	}
 
 	/// <summary>
-	/// Устанавливает имена статусов для фильтрации записей действий.
+	/// Устанавливает имя статуса операции для фильтрации записей действий.
 	/// </summary>
-	/// <param name="statusNames">Имена статусов для фильтрации записей действий.</param>
-	/// <returns>Запрос с установленными именами статусов для фильтрации записей действий.</returns>
-	public GetActionRecordsQuery WithStatusNames(IEnumerable<string>? statusNames)
+	/// <param name="status">Имя статуса для фильтрации.</param>
+	/// <returns>Запрос с установленными именем статуса для фильтрации записей действий.</returns>
+	public GetActionRecordsQuery WithStatusName(string? status)
 	{
-		return Copy(this, statusNames: statusNames);
+		return Copy(this, status: status);
 	}
 
 	public GetActionRecordsQuery WithSort(Dictionary<string, string>? sort)
@@ -208,7 +208,7 @@ public sealed class GetActionRecordsQuery : IQuery
 		GetActionRecordsQuery origin,
 		string? loginSearch = null,
 		string? emailSearch = null,
-		IEnumerable<string>? statusNames = null,
+		string? status = null,
 		IEnumerable<Guid>? permissionIdentifiers = null,
 		string? actionNameSearch = null,
 		DateTime? startDate = null,
@@ -224,7 +224,7 @@ public sealed class GetActionRecordsQuery : IQuery
 		{
 			LoginSearch = loginSearch ?? origin.LoginSearch,
 			EmailSearch = emailSearch ?? origin.EmailSearch,
-			StatusNames = statusNames ?? origin.StatusNames,
+			Status = status ?? origin.Status,
 			PermissionIdentifiers = permissionIdentifiers ?? origin.PermissionIdentifiers,
 			ActionNameSearch = actionNameSearch ?? origin.ActionNameSearch,
 			StartDate = startDate ?? origin.StartDate,

@@ -2,7 +2,7 @@ import { DatePipe, NgClass } from '@angular/common';
 import { Component, computed, effect, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
 import { TableModule } from 'primeng/table';
-import { Select } from 'primeng/select';
+import { Select, SelectChangeEvent } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
 import { DatePicker } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
@@ -22,6 +22,7 @@ import { tap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { SortButtonsComponent, SortChangeEvent } from '../../../../shared/components/sort-buttons/sort-buttons.component';
 import { ActionRecordInvokerLoginSearchInputComponent } from './components/action-record-invoker-login-search-input/action-record-invoker-login-search-input.component';
+import { ActionRecordSelectFilterComponent } from './components/action-record-select-filter/action-record-select-filter.component';
 
 @Component({
 	selector: 'app-users-activity-monitoring-page',
@@ -39,6 +40,7 @@ import { ActionRecordInvokerLoginSearchInputComponent } from './components/actio
 		MultiSelect,
 		SortButtonsComponent,
 		ActionRecordInvokerLoginSearchInputComponent,
+		ActionRecordSelectFilterComponent,
 	],
 	templateUrl: './users-activity-monitoring-page.component.html',
 	styleUrl: './users-activity-monitoring-page.component.css',
@@ -163,6 +165,13 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	public handleLoginSearchChanged($event: string | null): void {
 		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
 			return query.withLogin($event);
+		});
+	}
+
+	public handleOperationStatusSelectChange($event: TelemetryActionStatus | null): void {
+		const status: string | null = !!$event ? $event.Status : null;
+		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+			return query.withStatus(status);
 		});
 	}
 

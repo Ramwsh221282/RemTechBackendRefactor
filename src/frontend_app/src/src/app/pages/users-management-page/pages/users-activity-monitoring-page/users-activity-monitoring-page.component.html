@@ -20,7 +20,21 @@
 					<app-action-record-filter-input [placeholder]="'Искать по email'" (searchChange)="handleEmailSearchChanged($event)" />
 				</div>
 				<div class="grid grid-cols-2 gap-4">
-					<p-select [fluid]="true" [size]="'small'" [placeholder]="'Статусы операций'" />
+					<app-action-record-select-filter
+						[showClearButton]="true"
+						[labelName]="'Status'"
+						[values]="statuses()"
+						[placeHolder]="'Выбрать статус'"
+						(valueSelected)="handleOperationStatusSelectChange($event)"
+					/>
+					<!-- <p-select
+						[showClear]="true"
+						[fluid]="true"
+						[size]="'small'"
+						[options]="statuses()"
+						[optionLabel]="'Status'"
+						[placeholder]="'Статусы операций'"
+					/> -->
 					<div class="card flex justify-center">
 						<p-multiSelect
 							[options]="permissions()"
@@ -47,10 +61,6 @@
 					<div class="flex flex-row items-center gap-4">
 						<span class="flex items-center gap-1">
 							Убрать себя
-							<p-check-box></p-check-box>
-						</span>
-						<span class="flex items-center gap-1">
-							Убрать ошибки
 							<p-check-box></p-check-box>
 						</span>
 					</div>
