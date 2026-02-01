@@ -35,6 +35,7 @@ using Vehicles.Domain.Vehicles;
 using Vehicles.Infrastructure.BackgroundServices;
 using Vehicles.Infrastructure.Vehicles.PersisterImplementation;
 using Vehicles.WebApi.Extensions;
+using WebHostApplication.Queries.GetActionRecords;
 
 namespace WebHostApplication.Injection;
 

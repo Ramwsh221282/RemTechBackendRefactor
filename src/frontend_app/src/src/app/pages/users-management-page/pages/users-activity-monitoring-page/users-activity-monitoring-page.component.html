@@ -33,14 +33,6 @@
 							(onChange)="handlePermissionSelected($event)"
 						/>
 					</div>
-					<!-- <p-select
-						[fluid]="true"
-						[size]="'small'"
-						[options]="permissions()"
-						[optionValue]="'Id'"
-						[optionLabel]="'Description'"
-						[placeholder]="'Права пользователя'"
-					/> -->
 				</div>
 				<div class="grid grid-cols-2 gap-4">
 					<input pInputText [pSize]="'small'" [fluid]="true" [placeholder]="'Искать по названию действия'" />
@@ -75,16 +67,19 @@
 			</ng-template>
 			<ng-template pTemplate="header">
 				<tr>
-					<th [pSortableColumn]="'date'" class="text-sm bg-blue-100 dark:bg-gray-800 text-left">
-						Дата и время<p-sortIcon class="mx-2" />
+					<th class="text-sm bg-blue-100 dark:bg-gray-800 text-left align-top" style="vertical-align: top">
+						Дата и время
+						<app-sort-buttons [sortField]="'date'" (sortChange)="handleDateSortSelected($event)" />
 					</th>
-					<th [pSortableColumn]="'date'" class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">
-						Логин / Почта<p-sortIcon class="mx-2" />
+					<th class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10 align-top" style="vertical-align: top">
+						Логин / Почта
 					</th>
-					<th [pSortableColumn]="'date'" class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">
-						Действие<p-sortIcon class="mx-2" />
+					<th class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10 align-top" style="vertical-align: top">
+						Действие
 					</th>
-					<th class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10">Разрешения:</th>
+					<th class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10 align-top" style="vertical-align: top">
+						Разрешения:
+					</th>
 				</tr>
 			</ng-template>
 			<ng-template pTemplate="body" let-record let-rowIndex="rowIndex">

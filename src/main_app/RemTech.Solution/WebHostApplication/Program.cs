@@ -1,5 +1,9 @@
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using Identity.Domain.Accounts.Features.Dev_ChangePassword;
+using Identity.Domain.Accounts.Models;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Web;
 using SwaggerThemes;
@@ -41,8 +45,8 @@ builder.Services.AddSingleton<TelemetryRecordInvokerIdSearcher>();
 builder.Services.RegisterRedisActionRecordDependencies();
 
 WebApplication app = builder.Build();
-app.Services.ApplyModuleMigrations();
 
+app.Services.ApplyModuleMigrations();
 app.UseHttpsRedirection();
 app.UseCors("frontend");
 app.MapControllers();

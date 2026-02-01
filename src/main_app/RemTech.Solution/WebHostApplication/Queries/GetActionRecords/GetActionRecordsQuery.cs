@@ -1,3 +1,4 @@
+using System.Text.Json;
 using RemTech.SharedKernel.Core.Handlers;
 
 namespace WebHostApplication.Queries.GetActionRecords;
@@ -8,6 +9,8 @@ namespace WebHostApplication.Queries.GetActionRecords;
 public sealed class GetActionRecordsQuery : IQuery
 {
 	private GetActionRecordsQuery() { }
+
+	public Dictionary<string, string> Sort { get; init; } = [];
 
 	/// <summary>
 	/// Инициализирует новый экземпляр класса <see cref="GetActionRecordsQuery"/>.
@@ -115,6 +118,11 @@ public sealed class GetActionRecordsQuery : IQuery
 		return Copy(this, statusNames: statusNames);
 	}
 
+	public GetActionRecordsQuery WithSort(Dictionary<string, string>? sort)
+	{
+		return Copy(this, sort: sort);
+	}
+
 	/// <summary>
 	/// Устанавливает идентификаторы разрешений для фильтрации записей действий.
 	/// </summary>
@@ -184,6 +192,18 @@ public sealed class GetActionRecordsQuery : IQuery
 		return new();
 	}
 
+	/// <summary>
+	/// Перечисляет пары ключ-значение для сортировки.
+	/// </summary>
+	/// <returns>Ключ значения пары для сортировки.</returns>
+	public IEnumerable<KeyValuePair<string, string>> EnumerateSort()
+	{
+		foreach (KeyValuePair<string, string> pair in Sort)
+		{
+			yield return pair;
+		}
+	}
+
 	private static GetActionRecordsQuery Copy(
 		GetActionRecordsQuery origin,
 		string? loginSearch = null,
@@ -196,7 +216,8 @@ public sealed class GetActionRecordsQuery : IQuery
 		Guid? guidOfRequestInvoker = null,
 		bool? ignoreErrors = null,
 		int? page = null,
-		int? pageSize = null
+		int? pageSize = null,
+		Dictionary<string, string>? sort = null
 	)
 	{
 		return new()
@@ -212,6 +233,7 @@ public sealed class GetActionRecordsQuery : IQuery
 			IgnoreErrors = ignoreErrors ?? origin.IgnoreErrors,
 			Page = CanUsePageFromArgument(page, out int validPage) ? validPage : origin.Page,
 			PageSize = CanUsePageSizeFromArgument(pageSize, out int validPageSize) ? validPageSize : origin.PageSize,
+			Sort = sort ?? origin.Sort,
 		};
 	}
 
@@ -237,5 +259,10 @@ public sealed class GetActionRecordsQuery : IQuery
 
 		validPageSize = pageSize.Value;
 		return true;
+	}
+
+	public override string ToString()
+	{
+		return JsonSerializer.Serialize(this);
 	}
 }

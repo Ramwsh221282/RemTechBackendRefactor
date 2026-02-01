@@ -1,4 +1,7 @@
+using System.ComponentModel;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using WebHostApplication.ActionFilters.Attributes;
@@ -6,6 +9,86 @@ using WebHostApplication.Queries.GetActionRecords;
 using WebHostApplication.Queries.Responses;
 
 namespace WebHostApplication.Modules.Telemetry;
+
+[TypeConverter(typeof(SortDictionaryQueryParameterConverter))]
+public sealed class SortDictionary : Dictionary<string, string>
+{
+	private const char SORT_RELATION_SEPARATOR = ':';
+	private const char ARGUMENTS_SEPARATOR = ',';
+
+	public static SortDictionary FromString(string? input)
+	{
+		SortDictionary dictionary = [];
+		if (string.IsNullOrWhiteSpace(input))
+		{
+			return dictionary;
+		}
+
+		string[] parts = SplitArguments(input);
+		AddSortParts(dictionary, parts);
+		return dictionary;
+	}
+
+	private static void AddSortParts(SortDictionary dictionary, string[] parts)
+	{
+		foreach (string part in parts)
+		{
+			Optional<KeyValuePair<string, string>> sortClause = ParseArgument(part);
+			if (!sortClause.HasValue)
+			{
+				continue;
+			}
+
+			if (dictionary.ContainsKey(sortClause.Value.Key))
+			{
+				continue;
+			}
+
+			dictionary.Add(sortClause.Value.Key, sortClause.Value.Value);
+		}
+	}
+
+	private static Optional<KeyValuePair<string, string>> ParseArgument(string argument)
+	{
+		string[] field_sortMode = argument.Split(SORT_RELATION_SEPARATOR, StringSplitOptions.RemoveEmptyEntries);
+		if (field_sortMode.Length != 2)
+		{
+			return Optional.None<KeyValuePair<string, string>>();
+		}
+
+		string field = field_sortMode[0];
+		string sortMode = field_sortMode[1];
+		if (sortMode == "ASC" || sortMode == "DESC" || sortMode == "NONE")
+		{
+			return new KeyValuePair<string, string>(field, sortMode);
+		}
+
+		return Optional.None<KeyValuePair<string, string>>();
+	}
+
+	private static string[] SplitArguments(string input)
+	{
+		return input.Split(ARGUMENTS_SEPARATOR, StringSplitOptions.RemoveEmptyEntries);
+	}
+}
+
+public sealed class SortDictionaryQueryParameterConverter : TypeConverter
+{
+	public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+	{
+		return sourceType == typeof(string);
+	}
+
+	public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+	{
+		if (value is string stringValue)
+		{
+			return SortDictionary.FromString(stringValue);
+		}
+
+		return base.ConvertFrom(context, culture, value);
+	}
+}
 
 /// <summary>
 /// Контроллер для работы с телеметрией.
@@ -19,6 +102,7 @@ public sealed class TelemetryController : ControllerBase
 		[FromQuery(Name = "page")] int? page,
 		[FromQuery(Name = "page-size")] int? pageSize,
 		[FromQuery(Name = "permissions")] IEnumerable<Guid>? permissions,
+		[FromQuery(Name = "sort")] SortDictionary? sort,
 		[FromServices] IQueryHandler<GetActionRecordsQuery, ActionRecordsPageResponse> handler,
 		CancellationToken ct
 	)
@@ -27,7 +111,8 @@ public sealed class TelemetryController : ControllerBase
 			.Create()
 			.WithCustomPage(page)
 			.WithCustomPageSize(pageSize)
-			.WithPermissionIdentifiers(permissions);
+			.WithPermissionIdentifiers(permissions)
+			.WithSort(sort);
 		ActionRecordsPageResponse response = await handler.Handle(query, ct);
 		return EnvelopedResultsExtensions.AsEnvelope(response);
 	}

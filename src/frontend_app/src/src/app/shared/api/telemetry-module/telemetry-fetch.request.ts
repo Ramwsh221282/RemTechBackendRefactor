@@ -1,16 +1,21 @@
 import { HttpParams } from '@angular/common/http';
+import { SortEvent } from 'primeng/api';
 
 type QueryParameters = {
 	page: number | null;
 	pageSize: number | null;
 	permissions: string[] | null;
+	sort: SortClause[] | null;
 };
+
+export interface SortClause extends SortEvent {}
 
 function defaultParams(): QueryParameters {
 	return {
 		page: null,
 		pageSize: null,
 		permissions: null,
+		sort: null,
 	};
 }
 
@@ -30,7 +35,23 @@ export class ActionRecordsQuery {
 				params = params.append('permissions', permission);
 			}
 		}
+		if (!!this._params.sort && this._params.sort.length > 0) {
+			for (const sortClause of this._params.sort) {
+				params = params.append('sort', `${sortClause.field}:${sortClause.mode}`);
+			}
+		}
 		return params;
+	}
+
+	public addSort(sortClause: SortClause): ActionRecordsQuery {
+		const currentSorts: SortClause[] = this._params.sort ? this._params.sort : [];
+		const index: number = currentSorts.findIndex((s) => s.field === sortClause.field);
+		if (index !== -1) {
+			currentSorts[index] = sortClause;
+		} else {
+			currentSorts.push(sortClause);
+		}
+		return new ActionRecordsQuery({ ...this._params, sort: currentSorts.filter((s: SortClause) => s.mode !== 'NONE') });
 	}
 
 	public withPermissions(permissions: string[] | null): ActionRecordsQuery {

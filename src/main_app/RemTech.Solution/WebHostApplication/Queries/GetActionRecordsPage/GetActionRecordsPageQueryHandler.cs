@@ -143,6 +143,7 @@ items AS (
     LEFT JOIN identity_module.accounts a ON ar.invoker_id = a.id
     LEFT JOIN user_permissions up ON up.account_id = a.id
     {GetActionRecordsQueryBuilder.CreateFilterSql(parameters, query, embeddings)}
+    {GetActionRecordsQueryBuilder.CreateOrderBySql(query)}
     {GetActionRecordsQueryBuilder.CreatePaginationSql(parameters, query)}
 ),
 results AS (

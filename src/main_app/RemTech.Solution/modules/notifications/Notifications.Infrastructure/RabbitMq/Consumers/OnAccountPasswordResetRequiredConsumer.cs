@@ -119,7 +119,7 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
 		FrontendOptions.Validate();
 		string frontendUrl = FrontendOptions.Url;
 		string ticketId = message.TicketId.ToString();
-		return $"{frontendUrl}/reset-password?ticketId={ticketId}&accountId={message.AccountId}";
+		return $"{frontendUrl}/confirm-reset-password?ticketId={ticketId}&accountId={message.AccountId}";
 	}
 
 	private sealed record ResetPasswordRequiredMessage(

@@ -1,5 +1,5 @@
 import { DatePipe, NgClass } from '@angular/common';
-import { Component, computed, inject, OnInit, Signal, signal, WritableSignal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
 import { TableModule } from 'primeng/table';
 import { Select } from 'primeng/select';
@@ -10,17 +10,17 @@ import { Checkbox } from 'primeng/checkbox';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import {
 	TelemetryStatisticsResponse,
-	PaginatedTelemetryRecordsResponse,
 	TelemetryResponse,
 	TelemetryPermissionResponse,
 	ActionRecordsPageResponse,
 	TelemetryActionStatus,
 } from '../../../../shared/api/telemetry-module/telemetry-responses';
-import { createDefaultFetchTelemetryRecordsFetchResponse } from '../../../../shared/api/telemetry-module/telemetry-factories';
 import { TelemetryApiService } from '../../../../shared/api/telemetry-module/telemetry-api.service';
-import { catchError, EMPTY, forkJoin, map, Observable, tap } from 'rxjs';
 import { MultiSelect, MultiSelectChangeEvent } from 'primeng/multiselect';
 import { ActionRecordsQuery } from '../../../../shared/api/telemetry-module/telemetry-fetch.request';
+import { tap } from 'rxjs';
+import { Button } from 'primeng/button';
+import { SortButtonsComponent, SortChangeEvent } from '../../../../shared/components/sort-buttons/sort-buttons.component';
 
 @Component({
 	selector: 'app-users-activity-monitoring-page',
@@ -36,6 +36,7 @@ import { ActionRecordsQuery } from '../../../../shared/api/telemetry-module/tele
 		DatePipe,
 		PaginationComponent,
 		MultiSelect,
+		SortButtonsComponent,
 	],
 	templateUrl: './users-activity-monitoring-page.component.html',
 	styleUrl: './users-activity-monitoring-page.component.css',
@@ -55,6 +56,11 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	readonly statuses: WritableSignal<TelemetryActionStatus[]> = signal([]);
 	readonly records: WritableSignal<TelemetryResponse[]> = signal([]);
 	readonly totalCount: WritableSignal<number> = signal(0);
+
+	readonly queryChangeEffect = effect((): void => {
+		const query: ActionRecordsQuery = this._query();
+		this.fetchRecords(query);
+	});
 
 	readonly chartData = computed(() => {
 		const items: TelemetryStatisticsResponse[] = this.statistics();
@@ -140,10 +146,15 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 		return options;
 	});
 
+	public handleDateSortSelected($event: SortChangeEvent): void {
+		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+			return query.addSort($event);
+		});
+	}
+
 	public handlePermissionSelected($event: MultiSelectChangeEvent): void {
 		const permissions: TelemetryPermissionResponse[] = $event.value as TelemetryPermissionResponse[];
 		const names: string[] = permissions.map((perm: TelemetryPermissionResponse) => perm.Name);
-		console.log('query updated with permissions select.');
 	}
 
 	public permissionDisplayText(record: TelemetryResponse): string[] {
@@ -159,12 +170,18 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	}
 
 	public ngOnInit(): void {
+		const query: ActionRecordsQuery = this._query();
+		this.fetchRecords(query);
+	}
+
+	public onPeriodChange(period: string, customRange?: Date[]): void {}
+
+	private fetchRecords(query: ActionRecordsQuery): void {
 		this._service
-			.fetchTelemetryPageInfo(this._query())
+			.fetchTelemetryPageInfo(query)
 			.pipe(
 				tap((response: ActionRecordsPageResponse): void => {
 					const records: TelemetryResponse[] = response.Records.Items;
-					console.log(records);
 					const statistics: TelemetryStatisticsResponse[] = response.Statistics;
 					const totalCount: number = response.Records.TotalCount;
 					const statuses: TelemetryActionStatus[] | null = response.Statuses;
@@ -178,8 +195,6 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 			)
 			.subscribe();
 	}
-
-	public onPeriodChange(period: string, customRange?: Date[]): void {}
 }
 
 interface PrimeNgChartData {

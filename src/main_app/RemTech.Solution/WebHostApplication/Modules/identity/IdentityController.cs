@@ -337,31 +337,31 @@ public sealed class IdentityController : ControllerBase
 
 	private static void ClearAuthHeaders(HttpContext context)
 	{
+		CookieOptions options = CreateCookieOptions(context);
 		context.Response.Headers.Remove(ACCESS_TOKEN_NAME);
 		context.Response.Headers.Remove(REFRESH_TOKEN_NAME);
-		context.Response.Cookies.Delete(ACCESS_TOKEN_NAME);
-		context.Response.Cookies.Delete(REFRESH_TOKEN_NAME);
+		context.Response.Cookies.Delete(ACCESS_TOKEN_NAME, options);
+		context.Response.Cookies.Delete(REFRESH_TOKEN_NAME, options);
 	}
 
 	private static void SetAuthCookies(HttpContext context, AuthenticationResult result)
 	{
-		context.Response.Cookies.Delete(ACCESS_TOKEN_NAME);
-		context.Response.Cookies.Delete(REFRESH_TOKEN_NAME);
-
-		CookieOptions options = CreateCookieOptions();
-
+		CookieOptions options = CreateCookieOptions(context);
+		context.Response.Cookies.Delete(ACCESS_TOKEN_NAME, options);
+		context.Response.Cookies.Delete(REFRESH_TOKEN_NAME, options);
 		context.Response.Cookies.Append(ACCESS_TOKEN_NAME, result.AccessToken, options);
 		context.Response.Cookies.Append(REFRESH_TOKEN_NAME, result.RefreshToken, options);
 	}
 
-	private static CookieOptions CreateCookieOptions()
+	private static CookieOptions CreateCookieOptions(HttpContext context)
 	{
+		bool isHttps = context.Request.IsHttps;
 		return new()
 		{
 			HttpOnly = true,
 			SameSite = SameSiteMode.None,
-			Expires = DateTime.UtcNow.AddDays(30),
-			Secure = true,
+			Secure = isHttps,
+			Path = "/",
 		};
 	}
 }

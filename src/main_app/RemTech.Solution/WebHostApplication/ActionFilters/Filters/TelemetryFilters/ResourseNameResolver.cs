@@ -73,6 +73,7 @@ public static class ResourseNameResolver
 			_ when Includes("locations", path) => "Просмотр списка геолокаций техники.",
 			_ when Includes("models", path) => "Просмотр списка моделей техники.",
 			_ when Includes("vehicles", path) => "Просмотр списка техники.",
+			_ when Includes("telemetry", path) => "Просмотр активности пользователей.",
 			_ => "Неизвестный ресурс",
 		};
 	}

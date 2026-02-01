@@ -22,6 +22,13 @@ public delegate string WhereClauseBuilderDelegate<T>(T source, DynamicParameters
 public delegate string PaginationClauseBuilderDelegate<T>(Func<T, int> pageSelector, Func<T, int> pageSizeSelector);
 
 /// <summary>
+/// Контракт для построения части SQL запроса для сортировки.
+/// </summary>
+/// <param name="fields">Поля для сортировки.</param>
+/// <returns>Строка с order by и полями для сортировки.</returns>
+public delegate string OrderByClauseBuilderDelegate(Func<IEnumerable<string>> fields);
+
+/// <summary>
 /// Просто класс пустышка, чтобы по нему обращались к extension методам.
 /// </summary>
 public static class SqlBuilderDelegate;
@@ -61,6 +68,12 @@ public static class SqlBuilderDelegateImplementation
 			parameters.Add("@PageSize", limit, DbType.Int32);
 			parameters.Add("@Page", offset, DbType.Int32);
 			return "LIMIT @PageSize OFFSET @Page";
+		}
+
+		public static string BuildOrderByClause(Func<IEnumerable<string>> fieldsProvider)
+		{
+			string[] normalized = [.. fieldsProvider().Select(f => f.Trim()).Where(s => !string.IsNullOrWhiteSpace(s))];
+			return normalized.Length == 0 ? string.Empty : "ORDER BY " + string.Join(", ", normalized);
 		}
 	}
 }

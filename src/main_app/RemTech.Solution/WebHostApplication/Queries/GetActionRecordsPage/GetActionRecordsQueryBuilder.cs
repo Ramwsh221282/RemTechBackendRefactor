@@ -9,6 +9,11 @@ namespace WebHostApplication.Queries.GetActionRecordsPage;
 
 internal static class GetActionRecordsQueryBuilder
 {
+	public static string CreateOrderBySql(GetActionRecordsQuery query)
+	{
+		return BuildOrderByPart(query);
+	}
+
 	public static string CreateFilterSql(
 		DynamicParameters parameters,
 		GetActionRecordsQuery query,
@@ -148,5 +153,37 @@ internal static class GetActionRecordsQueryBuilder
 	private static string BuildPaginationQueryPart(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
 		return SqlBuilderDelegate.BuildPaginationClause(query, parameters, q => q.Page, q => q.PageSize);
+	}
+
+	private static string BuildOrderByPart(GetActionRecordsQuery query)
+	{
+		List<string> orderByClauses = [];
+		foreach (KeyValuePair<string, string> sortEntry in query.EnumerateSort())
+		{
+			string field = sortEntry.Key;
+			string mode = sortEntry.Value;
+			if (mode == "NONE")
+			{
+				continue;
+			}
+
+			if (!(mode == "ASC" || mode == "DESC"))
+			{
+				continue;
+			}
+
+			string clause = field switch
+			{
+				"date" => $"ar.created_at {mode}",
+				"login" => $"a.login {mode}",
+				"email" => $"a.email {mode}",
+				"name" => $"ar.name {mode}",
+				_ => string.Empty,
+			};
+
+			orderByClauses.Add(clause);
+		}
+
+		return SqlBuilderDelegate.BuildOrderByClause(() => orderByClauses);
 	}
 }

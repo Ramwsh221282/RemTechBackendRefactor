@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
@@ -44,6 +45,18 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	public void WriteRecord(ActionRecord record)
 	{
 		_recordsQueue.Enqueue(record);
+	}
+
+	/// <summary>
+	/// Записывает несколько записей действий.
+	/// </summary>
+	/// <param name="records">Записи действий.</param>
+	public void WriteRecords(IEnumerable<ActionRecord> records)
+	{
+		foreach (ActionRecord record in records)
+		{
+			WriteRecord(record);
+		}
 	}
 
 	/// <summary>

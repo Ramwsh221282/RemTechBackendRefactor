@@ -8,6 +8,7 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.NN;
+using Serilog;
 using Telemetry.Core.ActionRecords;
 using Telemetry.Core.ActionRecords.ValueObjects;
 
@@ -80,27 +81,11 @@ public sealed class ActionRecordsPersistingBackgroundProcess(
 
 	private static string GetSeverityText(ActionRecordSeverity severity)
 	{
-		if (severity.Equals(ActionRecordSeverity.ERROR))
-		{
-			return "с ошибкой.";
-		}
-
-		if (severity.Equals(ActionRecordSeverity.SUCCESS))
-		{
-			return "с успехом.";
-		}
-
-		if (severity.Equals(ActionRecordSeverity.INFO))
-		{
-			return "с успехом.";
-		}
-
-		if (severity.Equals(ActionRecordSeverity.WARNING))
-		{
-			return "с предупреждением.";
-		}
-
-		return "неизвестно.";
+		return severity.Equals(ActionRecordSeverity.ERROR) ? "с ошибкой."
+			: severity.Equals(ActionRecordSeverity.SUCCESS) ? "с успехом."
+			: severity.Equals(ActionRecordSeverity.INFO) ? "с успехом."
+			: severity.Equals(ActionRecordSeverity.WARNING) ? "с предупреждением."
+			: "неизвестно.";
 	}
 
 	private async Task ProcessActionRecordsAsync(CancellationToken token)
@@ -110,7 +95,22 @@ public sealed class ActionRecordsPersistingBackgroundProcess(
 		{
 			TelemetryActionRecordsTransaction transaction = await Storage.ReadPendingRecordsTransaction(token);
 			Result cacheResult = await ProcessOnCacheLevelSide(transaction);
+			if (cacheResult.IsFailure)
+			{
+				string error = cacheResult.Error.Message;
+				Logger.Fatal("Failed to process action records on cache level side. Error: {Error}", error);
+				return;
+			}
+
 			Result dbResult = await ProcessOnDatabaseLevelSide(transaction.Records);
+			if (dbResult.IsFailure)
+			{
+				string error = dbResult.Error.Message;
+				Logger.Fatal("Failed to process action records on database level side. Error: {Error}", error);
+				Logger.Information("Re-adding {Count} action records back to Redis.", transaction.Records.Count);
+				Storage.WriteRecords(transaction.Records);
+				return;
+			}
 		}
 		catch (Exception ex)
 		{
@@ -173,10 +173,10 @@ public sealed class ActionRecordsPersistingBackgroundProcess(
 			(@id, @invoker_id, @error, @severity, @name, @created_at, @payload, @embedding);
 			""";
 
-		await using NpgSqlSession session = new(NpgSql);
-		await using NpgsqlConnection connection = await session.GetConnection(CancellationToken.None);
+		NpgSqlSession session = new(NpgSql);
+		NpgsqlConnection connection = await session.GetConnection(CancellationToken.None);
 		NpgSqlTransactionSource transactionSource = new(session);
-		await using ITransactionScope transaction = await transactionSource.BeginTransaction();
+		ITransactionScope transaction = await transactionSource.BeginTransaction();
 
 		try
 		{
@@ -189,6 +189,7 @@ public sealed class ActionRecordsPersistingBackgroundProcess(
 				return commit;
 			}
 
+			Logger.Information("Successfully persisted {Count} telemetry action records to database.", records.Count);
 			return commit;
 		}
 		catch (Exception ex)
@@ -198,7 +199,6 @@ public sealed class ActionRecordsPersistingBackgroundProcess(
 		}
 		finally
 		{
-			await transaction.DisposeAsync();
 			await session.DisposeAsync();
 		}
 	}
