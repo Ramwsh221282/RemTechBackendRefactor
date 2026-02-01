@@ -1,145 +1,162 @@
-<section class="max-w-7.5xl mx-auto p-6 space-y-6">
-	<div class="p-6 rounded-lg flex flex-col min-h-[260px] relative">
-		<div class="flex flex-row items-center justify-between mb-4">
-			<h2 class="text-2xl font-bold">Мониторинг активности пользователей</h2>
-			<i class="pi pi-chart-bar" style="font-size: 48px; color: #8884; pointer-events: none; z-index: 0"></i>
+<section class="max-w-7.5xl mx-auto p-1">
+	<div class="p-2 rounded-lg flex flex-col">
+		<div class="flex flex-row items-center mb-4">
+			<i class="pi pi-chart-bar" style="font-size: 48px; color: rgba(255, 255, 255, 0.267); pointer-events: none; z-index: 0"></i>
+			<h2 class="mx-2 text-2xl font-bold">Мониторинг активности пользователей</h2>
 		</div>
-		<section class="grid grid-cols-2 gap-4">
-			<p-chart
-				class="p-4 flex flex-col gap-4 rounded-lg shadow-sm bg-gradient-to-br from-blue-100 via-white to-blue-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700"
-				type="line"
-				[options]="chartOptions()"
-				[data]="chartData()"
-				style="width: 100%; height: 100%; display: block"
-			></p-chart>
-			<div
-				class="p-4 flex flex-col justify-start gap-4 rounded-lg shadow-sm bg-gradient-to-br from-blue-100 via-white to-blue-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700"
-			>
-				<div class="grid grid-cols-2 gap-4">
-					<app-action-record-filter-input [placeholder]="'Искать по логину'" (searchChange)="handleLoginSearchChanged($event)" />
-					<app-action-record-filter-input [placeholder]="'Искать по email'" (searchChange)="handleEmailSearchChanged($event)" />
-				</div>
-				<div class="grid grid-cols-2 gap-4">
-					<app-action-record-select-filter
-						[showClearButton]="true"
-						[labelName]="'Status'"
-						[values]="statuses()"
-						[placeHolder]="'Выбрать статус'"
-						(valueSelected)="handleOperationStatusSelectChange($event)"
-					/>
-					<app-action-records-multiselect-filter
-						[values]="permissions()"
-						[labelName]="'Description'"
-						[placeHolder]="'Выбрать разрешения'"
-						[useFilter]="true"
-						[wrapperClass]="'card flex justify-center'"
-						(multiSelectListUpdated)="handlePermissionSelected($event)"
-					/>
-				</div>
-				<div class="grid grid-cols-2 gap-4">
-					<app-action-record-filter-input
-						[placeholder]="'Искать по названию действия'"
-						(searchChange)="handleActionNameSearchChanged($event)"
-					/>
-					<p-date-picker
-						[selectionMode]="'range'"
-						[size]="'small'"
-						[placeholder]="'Выбрать диапазон дат'"
-						[dateFormat]="'dd.mm.yy'"
-					/>
-				</div>
-				<div class="grid grid-cols-2 gap-4">
-					<div class="flex flex-row items-center gap-4">
-						<span class="flex items-center gap-1">
-							Убрать себя
-							<p-check-box></p-check-box>
-						</span>
+		<div class="grid grid-cols-2 gap-4">
+			<section class="inline-block">
+				<p-chart
+					class="p-10 gap-4 rounded-lg shadow-sm bg-linear-to-br from-blue-100 via-white to-blue-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700"
+					type="line"
+					[options]="chartOptions()"
+					[data]="chartData()"
+				/>
+				<div
+					class="my-2 p-4 flex flex-col justify-start gap-4 rounded-lg shadow-sm bg-linear-to-br from-blue-100 via-white to-blue-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700"
+				>
+					<div class="grid grid-cols-2 gap-4">
+						<app-action-record-filter-input
+							[placeholder]="'Искать по логину'"
+							(searchChange)="handleLoginSearchChanged($event)"
+						/>
+						<app-action-record-filter-input
+							[placeholder]="'Искать по email'"
+							(searchChange)="handleEmailSearchChanged($event)"
+						/>
+					</div>
+					<div class="grid grid-cols-2 gap-4">
+						<app-action-record-select-filter
+							[showClearButton]="true"
+							[labelName]="'Status'"
+							[values]="statuses()"
+							[placeHolder]="'Выбрать статус'"
+							(valueSelected)="handleOperationStatusSelectChange($event)"
+						/>
+						<app-action-records-multiselect-filter
+							[values]="permissions()"
+							[labelName]="'Description'"
+							[placeHolder]="'Выбрать разрешения'"
+							[useFilter]="true"
+							[wrapperClass]="'card flex justify-center'"
+							(multiSelectListUpdated)="handlePermissionSelected($event)"
+						/>
+					</div>
+					<div class="grid grid-cols-2 gap-4">
+						<app-action-record-filter-input
+							[placeholder]="'Искать по названию действия'"
+							(searchChange)="handleActionNameSearchChanged($event)"
+						/>
+						<p-date-picker
+							[selectionMode]="'range'"
+							[size]="'small'"
+							[placeholder]="'Выбрать диапазон дат'"
+							[dateFormat]="'dd.mm.yy'"
+						/>
+					</div>
+					<div class="grid grid-cols-2 gap-4">
+						<div class="flex flex-row items-center gap-4">
+							<span class="flex items-center gap-1">
+								Убрать себя
+								<p-check-box></p-check-box>
+							</span>
+						</div>
 					</div>
 				</div>
-			</div>
-		</section>
-	</div>
-	<div class="rounded-lg shadow p-4 overflow-x-auto">
-		<p-table [stripedRows]="true" [value]="records()" [scrollable]="true" scrollHeight="400px" class="min-w-full bg-transparent">
-			<ng-template #caption>
-				<div class="flex flex-row justify-start">
-					<h5 class="text-sm font-bold">Информация:</h5>
+			</section>
+			<section>
+				<div class="rounded-lg shadow">
+					<p-table
+						[stripedRows]="true"
+						[value]="records()"
+						[scrollHeight]="'660px'"
+						[scrollable]="true"
+						class="min-w-full bg-transparent"
+					>
+						<ng-template pTemplate="header">
+							<tr>
+								<th
+									class="sticky top-0 z-10 text-xs bg-blue-100 dark:bg-gray-800 text-left align-top px-1 py-1"
+									style="vertical-align: top"
+								>
+									Дата и время
+									<app-sort-buttons [sortField]="'date'" (sortChange)="handleDateSortSelected($event)" />
+								</th>
+								<th
+									class="sticky top-0 z-10 text-xs bg-blue-100 dark:bg-gray-800 text-left align-top px-1 py-1"
+									style="vertical-align: top"
+								>
+									Логин / Почта
+								</th>
+								<th
+									class="sticky top-0 z-10 text-xs bg-blue-100 dark:bg-gray-800 text-left align-top px-1 py-1"
+									style="vertical-align: top"
+								>
+									Действие
+								</th>
+								<th
+									class="sticky top-0 z-10 text-xs bg-blue-100 dark:bg-gray-800 text-left align-top px-1 py-1"
+									style="vertical-align: top"
+								>
+									Разрешения:
+								</th>
+							</tr>
+						</ng-template>
+						<ng-template pTemplate="body" let-record let-rowIndex="rowIndex">
+							<tr class="text-[11px]">
+								<td class="border px-1 py-1 whitespace-nowrap align-middle">
+									{{ record.ActionTimestamp | date: "dd.MM.yyyy HH:mm" }}
+								</td>
+								<td class="border px-1 py-1 whitespace-nowrap align-middle">
+									<div>
+										<span class="font-semibold">{{ record.UserLogin || "Аноним" }}</span>
+										<div class="text-[10px] text-blue-400">{{ record.UserEmail || "—" }}</div>
+									</div>
+								</td>
+								<td class="border px-1 py-1 align-middle wrap-break-word">
+									<div>
+										<span class="font-semibold wrap-break-word">{{ record.ActionName }}</span>
+										<div class="text-[10px] mt-0.5">
+											<span
+												class="inline-flex items-center gap-1 font-semibold"
+												[ngClass]="{
+													'text-green-600': record.ActionSeverity === 'SUCCESS',
+													'text-yellow-600': record.ActionSeverity === 'WARNING',
+													'text-red-600': record.ActionSeverity === 'ERROR' || record.Severity === 'Critical',
+												}"
+											>
+												@if (record.ActionSeverity === "SUCCESS") {
+													<i class="pi pi-info-circle"></i>
+												}
+												@if (record.ActionSeverity === "WARNING") {
+													<i class="pi pi-exclamation-triangle"></i>
+												}
+												@if (record.ActionSeverity === "ERROR") {
+													<i class="pi pi-times-circle"></i>
+												}
+												{{ record.ActionSeverity + " " + (!!record.ErrorMessage ? record.ErrorMessage : "") }}
+											</span>
+										</div>
+									</div>
+								</td>
+								<td class="border px-1 py-1 whitespace-nowrap align-middle">
+									<div class="flex flex-wrap gap-1">
+										@for (permission of permissionDisplayText(record); track `${permission}`) {
+											<span
+												class="inline-block bg-blue-100 dark:bg-blue-700 text-blue-800 dark:text-blue-100 text-[10px] px-2 py-0.5 rounded-full shadow-sm"
+												[title]="permission"
+											>
+												{{ permission }}
+											</span>
+										}
+									</div>
+								</td>
+							</tr>
+						</ng-template>
+					</p-table>
+					<app-pagination [total_count]="totalCount()" [page_size]="query().pageSize" [current_page]="query().page" />
 				</div>
-			</ng-template>
-			<ng-template pTemplate="header">
-				<tr>
-					<th class="text-sm bg-blue-100 dark:bg-gray-800 text-left align-top" style="vertical-align: top">
-						Дата и время
-						<app-sort-buttons [sortField]="'date'" (sortChange)="handleDateSortSelected($event)" />
-					</th>
-					<th class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10 align-top" style="vertical-align: top">
-						Логин / Почта
-					</th>
-					<th class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10 align-top" style="vertical-align: top">
-						Действие
-					</th>
-					<th class="text-sm bg-blue-100 dark:bg-gray-800 text-left sticky top-0 z-10 align-top" style="vertical-align: top">
-						Разрешения:
-					</th>
-				</tr>
-			</ng-template>
-			<ng-template pTemplate="body" let-record let-rowIndex="rowIndex">
-				<tr class="text-xs">
-					<td class="border px-2 py-2 whitespace-nowrap align-middle">{{ record.ActionTimestamp | date: "dd.MM.yyyy HH:mm" }}</td>
-					<td class="border px-2 py-2 whitespace-nowrap align-middle">
-						<div>
-							<div>
-								<span class="font-semibold">{{ record.UserLogin || "Аноним" }}</span>
-							</div>
-							<div class="text-xs text-blue-400">
-								{{ record.UserEmail || "—" }}
-							</div>
-						</div>
-					</td>
-					<td class="border px-2 py-2 align-middle wrap-break-word">
-						<div>
-							<div>
-								<span class="font-semibold wrap-break-word">{{ record.ActionName }}</span>
-							</div>
-							<div class="text-xs mt-1">
-								<span
-									class="inline-flex items-center gap-1 font-semibold"
-									[ngClass]="{
-										'text-green-600': record.ActionSeverity === 'SUCCESS',
-										'text-yellow-600': record.ActionSeverity === 'WARNING',
-										'text-red-600': record.ActionSeverity === 'ERROR' || record.Severity === 'Critical',
-									}"
-								>
-									@if (record.ActionSeverity === "SUCCESS") {
-										<i class="pi pi-info-circle"></i>
-									}
-									@if (record.ActionSeverity === "WARNING") {
-										<i class="pi pi-exclamation-triangle"></i>
-									}
-									@if (record.ActionSeverity === "ERROR") {
-										<i class="pi pi-times-circle"></i>
-									}
-
-									{{ record.ActionSeverity + " " + (!!record.ErrorMessage ? record.ErrorMessage : "") }}
-								</span>
-							</div>
-						</div>
-					</td>
-					<td class="border px-2 py-2 whitespace-nowrap align-middle">
-						<div class="flex flex-wrap gap-2">
-							@for (permission of permissionDisplayText(record); track `${permission}`) {
-								<span
-									class="inline-block bg-blue-100 dark:bg-blue-700 text-blue-800 dark:text-blue-100 text-xs px-3 py-1 rounded-full shadow-sm"
-									[title]="permission"
-								>
-									{{ permission }}
-								</span>
-							}
-						</div>
-					</td>
-				</tr>
-			</ng-template>
-		</p-table>
-		<app-pagination [total_count]="10" [page_size]="10" [current_page]="1"></app-pagination>
+			</section>
+		</div>
 	</div>
 </section>

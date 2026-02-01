@@ -114,4 +114,12 @@ export class ActionRecordsQuery {
 			pageSize: pageSize,
 		});
 	}
+
+	public get page(): number {
+		return this._params.page ? this._params.page : 1;
+	}
+
+	public get pageSize(): number {
+		return this._params.pageSize ? this._params.pageSize : 50;
+	}
 }

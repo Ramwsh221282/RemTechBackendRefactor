@@ -52,7 +52,7 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	customRange: [Date, Date] | undefined;
 
 	private readonly _service: TelemetryApiService = inject(TelemetryApiService);
-	private readonly _query: WritableSignal<ActionRecordsQuery> = signal(ActionRecordsQuery.create().withPage(1).withPageSize(50));
+	readonly query: WritableSignal<ActionRecordsQuery> = signal(ActionRecordsQuery.create().withPage(1).withPageSize(50));
 
 	readonly timeSelections: string[] = ['7 дней', 'месяц', 'диапазон'];
 	readonly selectedTimeOption: WritableSignal<string | null> = signal('7 дней');
@@ -64,33 +64,28 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	readonly totalCount: WritableSignal<number> = signal(0);
 
 	readonly queryChangeEffect = effect((): void => {
-		const query: ActionRecordsQuery = this._query();
+		const query: ActionRecordsQuery = this.query();
 		this.fetchRecords(query);
 	});
 
 	readonly chartData = computed(() => {
 		const items: TelemetryStatisticsResponse[] = this.statistics();
-		const data: PrimeNgChartData = defaultPrimeNgChartData();
-		let dataSets: number[] = [];
-		for (const item of items) {
-			data.labels.push(new Date(item.Date).toLocaleDateString('ru-RU'));
-			dataSets.push(item.Amount);
-		}
-		data.datasets = [
-			...dataSets.map((): PrimeNgChartDataSet => {
-				return {
-					label: 'Активность',
-					backgroundColor: '#3b82f6',
-					borderColor: '#2563eb',
-					borderWidth: 1,
-					data: [],
-					type: 'line',
-				};
-			}),
-		];
-		for (let i: number = 0; i < data.datasets.length; i++) {
-			data.datasets[i].data = dataSets;
-		}
+		const amounts = items.map((item: TelemetryStatisticsResponse) => item.Amount);
+
+		const dataSet: PrimeNgChartDataSet = {
+			label: 'Активность',
+			backgroundColor: '#3b82f6',
+			borderColor: '#2563eb',
+			borderWidth: 1,
+			data: items.map((item: TelemetryStatisticsResponse) => item.Amount),
+			type: 'line',
+		};
+
+		const data: PrimeNgChartData = {
+			...defaultPrimeNgChartData(),
+			labels: items.map((item: TelemetryStatisticsResponse) => new Date(item.Date).toLocaleDateString('ru-RU')),
+			datasets: [dataSet],
+		};
 
 		return data;
 	});
@@ -98,7 +93,7 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	readonly chartOptions = computed(() => {
 		const options: PrimeNgChartOptions = {
 			responsive: true,
-			maintainAspectRatio: false,
+			maintainAspectRatio: true,
 			tooltip: {
 				enabled: true,
 				callbacks: {
@@ -114,7 +109,7 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 				},
 			},
 			layout: {
-				padding: 10,
+				padding: 1,
 			},
 			plugins: {
 				legend: {
@@ -130,8 +125,8 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 					title: {
 						display: true,
 						text: 'Дата',
-						color: '#e5e7eb',
-						font: { size: 13 },
+						color: '#ffffff',
+						font: { size: 16 },
 					},
 				},
 				y: {
@@ -139,9 +134,9 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 					title: {
 						display: true,
 						text: 'Количество действий',
-						color: '#e5e7eb',
-						font: { size: 13 },
-						padding: 30,
+						color: '#ffffff',
+						font: { size: 16 },
+						padding: 10,
 					},
 					ticks: {
 						precision: 0,
@@ -153,38 +148,38 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	});
 
 	public handleDateSortSelected($event: SortChangeEvent): void {
-		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+		this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
 			return query.addSort($event);
 		});
 	}
 
 	public handleEmailSearchChanged($event: string | null): void {
-		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+		this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
 			return query.withEmail($event);
 		});
 	}
 
 	public handleLoginSearchChanged($event: string | null): void {
-		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+		this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
 			return query.withLogin($event);
 		});
 	}
 
 	public handleActionNameSearchChanged($event: string | null): void {
-		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+		this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
 			return query.withActionNameSearch($event);
 		});
 	}
 
 	public handleOperationStatusSelectChange($event: TelemetryActionStatus | null): void {
 		const status: string | null = !!$event ? $event.Status : null;
-		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+		this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
 			return query.withStatus(status);
 		});
 	}
 
 	public handlePermissionSelected($event: TelemetryPermissionResponse[] | null): void {
-		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+		this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
 			return query.withPermissions($event ? $event.map((perm: TelemetryPermissionResponse) => perm.Id) : null);
 		});
 	}
@@ -202,7 +197,7 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	}
 
 	public ngOnInit(): void {
-		const query: ActionRecordsQuery = this._query();
+		const query: ActionRecordsQuery = this.query();
 		this.fetchRecords(query);
 	}
 
