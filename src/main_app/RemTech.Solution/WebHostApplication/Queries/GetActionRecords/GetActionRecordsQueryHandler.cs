@@ -127,7 +127,7 @@ FROM items i;
 		return """
 			(
 				ar.name ILIKE '%' || @ActionNameSearch || '%' OR
-				ts_rank_cd(ts_vector_field, to_tsquery('russian', @ActionNameSearch))) > 0 OR
+				ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @ActionNameSearch))) > 0 OR
 				(embedding_vector <=> @ActionNameSearchEmbedding) < 0.5
 			)
 			""";

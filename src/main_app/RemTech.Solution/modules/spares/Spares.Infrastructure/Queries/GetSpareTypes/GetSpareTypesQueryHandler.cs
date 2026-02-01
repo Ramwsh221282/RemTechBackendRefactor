@@ -104,7 +104,7 @@ public sealed class GetSpareTypesQueryHandler(NpgSqlSession session, EmbeddingsP
 			(
 			s.embedding <=> @embedding OR
 			s.type ILIKE '%' || @text_search_parameter || '%' OR
-			ts_rank_cd(to_tsvector('russian', s.type), to_tsquery('russian', @text_search_parameter)) > 0
+			ts_rank_cd(to_tsvector('russian', s.type), plainto_tsquery('russian', @text_search_parameter)) > 0
 			)
 			""";
 	}

@@ -68,8 +68,8 @@ internal static class GetActionRecordsQueryBuilder
 		return """
 			(
 				ar.name ILIKE '%' || @I_ActionNameSearch || '%' OR
-				ts_rank_cd(ts_vector_field, to_tsquery('russian', @I_ActionNameSearch))) > 0 OR
-				(embedding_vector <=> @I_ActionNameSearchEmbedding) < 0.5
+				ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @I_ActionNameSearch)) > 0 OR
+				(ar.embedding <=> @I_ActionNameSearchEmbedding) < 0.5
 			)
 			""";
 	}
@@ -170,7 +170,7 @@ internal static class GetActionRecordsQueryBuilder
 				continue;
 			}
 
-			if (!(mode == "ASC" || mode == "DESC"))
+			if (mode is not ("ASC" or "DESC"))
 			{
 				continue;
 			}
@@ -185,6 +185,11 @@ internal static class GetActionRecordsQueryBuilder
 			};
 
 			orderByClauses.Add(clause);
+		}
+
+		if (!string.IsNullOrWhiteSpace(query.ActionNameSearch))
+		{
+			orderByClauses.Add("(ar.embedding <=> @I_ActionNameSearchEmbedding) ASC");
 		}
 
 		return SqlBuilderDelegate.BuildOrderByClause(() => orderByClauses);

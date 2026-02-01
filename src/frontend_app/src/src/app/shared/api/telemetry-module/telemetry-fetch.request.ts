@@ -10,6 +10,7 @@ type QueryParameters = {
 	login: string | null;
 	email: string | null;
 	status: string | null;
+	actionName: string | null;
 };
 
 export interface SortClause extends SortEvent {}
@@ -23,6 +24,7 @@ function defaultParams(): QueryParameters {
 		login: null,
 		email: null,
 		status: null,
+		actionName: null,
 	};
 }
 
@@ -55,6 +57,9 @@ export class ActionRecordsQuery {
 			}
 		}
 
+		if (!!this._params.actionName && !StringUtils.isEmptyOrWhiteSpace(this._params.actionName))
+			params = params.append('text-search', this._params.actionName);
+
 		if (!!this._params.sort && this._params.sort.length > 0) {
 			for (const sortClause of this._params.sort) {
 				params = params.append('sort', `${sortClause.field}:${sortClause.mode}`);
@@ -73,6 +78,10 @@ export class ActionRecordsQuery {
 			currentSorts.push(sortClause);
 		}
 		return new ActionRecordsQuery({ ...this._params, sort: currentSorts.filter((s: SortClause) => s.mode !== 'NONE') });
+	}
+
+	public withActionNameSearch(actionName: string | null): ActionRecordsQuery {
+		return new ActionRecordsQuery({ ...this._params, actionName: actionName });
 	}
 
 	public withStatus(status: string | null): ActionRecordsQuery {

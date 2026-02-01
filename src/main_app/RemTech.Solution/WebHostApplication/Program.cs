@@ -1,9 +1,5 @@
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
-using Identity.Domain.Accounts.Features.Dev_ChangePassword;
-using Identity.Domain.Accounts.Models;
-using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Web;
 using SwaggerThemes;
@@ -15,6 +11,7 @@ using WebHostApplication.Middlewares;
 // TODO: Add rate limiters.
 // TODO: Add response compression.
 // TODO: Добавить очистку тикетов из identity module, которые уже завершены (сделать background service для этого или использовать quartz).
+// TODO: Добавить запрос на получение характеристик техники по каталогу.
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.RegisterApplicationModules();

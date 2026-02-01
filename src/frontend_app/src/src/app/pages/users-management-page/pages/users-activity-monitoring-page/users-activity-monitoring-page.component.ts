@@ -170,6 +170,12 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 		});
 	}
 
+	public handleActionNameSearchChanged($event: string | null): void {
+		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+			return query.withActionNameSearch($event);
+		});
+	}
+
 	public handleOperationStatusSelectChange($event: TelemetryActionStatus | null): void {
 		const status: string | null = !!$event ? $event.Status : null;
 		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {

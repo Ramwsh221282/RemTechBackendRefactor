@@ -290,7 +290,7 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 				""" 
 				(
 				b.embedding <-> @embedding <= 0.81
-				OR ts_rand_cd(to_tsvector('russian', b.name), to_tsquery('russian', @text_search)) > 0 
+				OR ts_rand_cd(to_tsvector('russian', b.name), plainto_tsquery('russian', @text_search)) > 0 
 				OR b.name ILIKE '%' || @text_search || '%'
 				)
 				"""

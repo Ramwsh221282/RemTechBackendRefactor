@@ -76,7 +76,7 @@ public sealed class GetActionRecordsPageQueryHandler(NpgSqlSession session, Embe
 	{
 		DynamicParameters parameters = new();
 		string sql = $"""
-        WITH statistics_query AS (
+       WITH statistics_query AS (
     SELECT
     jsonb_agg (
         jsonb_build_object (

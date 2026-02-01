@@ -37,7 +37,10 @@
 					/>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
-					<input pInputText [pSize]="'small'" [fluid]="true" [placeholder]="'Искать по названию действия'" />
+					<app-action-record-filter-input
+						[placeholder]="'Искать по названию действия'"
+						(searchChange)="handleActionNameSearchChanged($event)"
+					/>
 					<p-date-picker
 						[selectionMode]="'range'"
 						[size]="'small'"
