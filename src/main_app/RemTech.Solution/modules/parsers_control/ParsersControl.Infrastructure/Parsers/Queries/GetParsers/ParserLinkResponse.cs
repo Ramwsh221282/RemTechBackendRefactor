@@ -16,6 +16,8 @@ public sealed record ParserLinkResponse(Guid Id, bool IsActive, string UrlName, 
 	/// </summary>
 	/// <param name="link">Модель ссылки на подписанный парсер.</param>
 	/// <returns>Ответ с информацией о ссылке на парсер.</returns>
-	public static ParserLinkResponse Create(SubscribedParserLink link) =>
-		new(link.Id.Value, link.Active, link.UrlInfo.Name, link.UrlInfo.Url);
+	public static ParserLinkResponse Create(SubscribedParserLink link)
+	{
+		return new(link.Id.Value, link.Active, link.UrlInfo.Name, link.UrlInfo.Url);
+	}
 }

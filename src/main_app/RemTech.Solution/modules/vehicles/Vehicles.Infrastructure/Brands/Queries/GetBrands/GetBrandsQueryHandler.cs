@@ -45,8 +45,9 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 		return brands;
 	}
 
-	private static BrandResponse CreateFromReader(DbDataReader reader) =>
-		new()
+	private static BrandResponse CreateFromReader(DbDataReader reader)
+	{
+		return new()
 		{
 			Id = reader.GetGuid(reader.GetOrdinal("Id")),
 			Name = reader.GetString(reader.GetOrdinal("Name")),
@@ -60,6 +61,7 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 				? reader.GetInt32(reader.GetOrdinal("TotalCount"))
 				: null,
 		};
+	}
 
 	private static string IncludeAdditionals(GetBrandsQuery query, Func<GetBrandsQuery, string>[] includes)
 	{
@@ -72,28 +74,41 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 		for (int i = 0; i < reader.FieldCount; i++)
 		{
 			if (reader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+			{
 				return true;
+			}
 		}
 
 		return false;
 	}
 
-	private static string CreateWhereClause(List<string> filters) =>
-		filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
+	private static string CreateWhereClause(List<string> filters)
+	{
+		return filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
+	}
 
-	private static bool SomeCategoryFilterProvided(GetBrandsQuery query) =>
-		!string.IsNullOrWhiteSpace(query.CategoryName) || (query.CategoryId.HasValue && query.CategoryId != Guid.Empty);
+	private static bool SomeCategoryFilterProvided(GetBrandsQuery query)
+	{
+		return !string.IsNullOrWhiteSpace(query.CategoryName)
+			|| (query.CategoryId.HasValue && query.CategoryId != Guid.Empty);
+	}
 
-	private static bool SomeModelFilterProvided(GetBrandsQuery query) =>
-		!string.IsNullOrWhiteSpace(query.ModelName) || (query.ModelId.HasValue && query.ModelId != Guid.Empty);
+	private static bool SomeModelFilterProvided(GetBrandsQuery query)
+	{
+		return !string.IsNullOrWhiteSpace(query.ModelName) || (query.ModelId.HasValue && query.ModelId != Guid.Empty);
+	}
 
-	private static string IncludeTextSearchOrderBy(GetBrandsQuery query) =>
-		string.IsNullOrWhiteSpace(query.TextSearch) ? string.Empty : "b.embedding <-> @embedding ASC";
+	private static string IncludeTextSearchOrderBy(GetBrandsQuery query)
+	{
+		return string.IsNullOrWhiteSpace(query.TextSearch) ? string.Empty : "b.embedding <-> @embedding ASC";
+	}
 
 	private static string IncludeFieldsOrderBy(GetBrandsQuery query)
 	{
 		if (query.SortFields is null)
+		{
 			return string.Empty;
+		}
 
 		string orderByMode =
 			string.IsNullOrWhiteSpace(query.SortMode) ? "ASC"
@@ -107,7 +122,9 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 		foreach (string clause in orderings)
 		{
 			if (string.Equals(clause, "name", STRING_COMPARISON))
+			{
 				clauses.Add($"b.name {orderByMode}");
+			}
 
 			if (
 				string.Equals(clause, "vehicles-count", STRING_COMPARISON)
@@ -129,10 +146,12 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 		return clauses.Count > 0 ? string.Join(", ", clauses) : string.Empty;
 	}
 
-	private static string IncludePagination(GetBrandsQuery query) =>
-		(query.Page.HasValue && query.PageSize.HasValue)
+	private static string IncludePagination(GetBrandsQuery query)
+	{
+		return (query.Page.HasValue && query.PageSize.HasValue)
 			? $"LIMIT {query.PageSize.Value} OFFSET {(query.Page.Value - 1) * query.PageSize.Value}"
 			: string.Empty;
+	}
 
 	private static string IncludeOrderBy(GetBrandsQuery query, Func<GetBrandsQuery, string>[] includes)
 	{
@@ -141,14 +160,20 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 		return normalized.Length == 0 ? string.Empty : "ORDER BY " + string.Join(", ", normalized);
 	}
 
-	private static string IncludeVehiclesCount(GetBrandsQuery query) =>
-		!query.ContainsFieldInclude("vehicles-count") ? string.Empty : "COUNT(v.id) AS VehiclesCount";
+	private static string IncludeVehiclesCount(GetBrandsQuery query)
+	{
+		return !query.ContainsFieldInclude("vehicles-count") ? string.Empty : "COUNT(v.id) AS VehiclesCount";
+	}
 
-	private static string IncludeBrandsTotalCount(GetBrandsQuery query) =>
-		!query.ContainsFieldInclude("total-brands-count") ? string.Empty : "COUNT(*) OVER() AS TotalCount";
+	private static string IncludeBrandsTotalCount(GetBrandsQuery query)
+	{
+		return !query.ContainsFieldInclude("total-brands-count") ? string.Empty : "COUNT(*) OVER() AS TotalCount";
+	}
 
-	private static string IncludeVehiclesTextSearchScore(GetBrandsQuery query) =>
-		!query.ContainsFieldInclude("text-search-score") ? string.Empty : "b.embedding <-> @embedding";
+	private static string IncludeVehiclesTextSearchScore(GetBrandsQuery query)
+	{
+		return !query.ContainsFieldInclude("text-search-score") ? string.Empty : "b.embedding <-> @embedding";
+	}
 
 	private static void ApplySubQueryFilters(GetBrandsQuery query, List<string> filters, DynamicParameters parameters)
 	{
@@ -156,10 +181,14 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 		List<string> subFilters = [];
 
 		if (SomeCategoryFilterProvided(query))
+		{
 			subJoins.Add("INNER JOIN vehicles_module.categories ic ON ic.id = v.category_id");
+		}
 
 		if (SomeModelFilterProvided(query))
+		{
 			subJoins.Add("INNER JOIN vehicles_module.models im ON im.id = v.model_id");
+		}
 
 		if (query.CategoryId.HasValue && query.CategoryId != Guid.Empty)
 		{
@@ -186,7 +215,9 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 		}
 
 		if (subFilters.Count == 0)
+		{
 			return;
+		}
 
 		filters.Add(
 			$"""
@@ -259,7 +290,7 @@ public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvi
 				""" 
 				(
 				b.embedding <-> @embedding <= 0.81
-				OR ts_rand_cd(to_tsvector('russian', b.name), to_tsquery('russian', @text_search)) > 0 
+				OR ts_rand_cd(to_tsvector('russian', b.name), plainto_tsquery('russian', @text_search)) > 0 
 				OR b.name ILIKE '%' || @text_search || '%'
 				)
 				"""

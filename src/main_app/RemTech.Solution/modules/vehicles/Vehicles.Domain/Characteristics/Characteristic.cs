@@ -26,6 +26,8 @@ public sealed class Characteristic(CharacteristicId id, CharacteristicName name)
 	/// <param name="persister">Персистер для сохранения характеристики.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции сохранения характеристики.</returns>
-	public Task<Result<Characteristic>> SaveBy(IPersister persister, CancellationToken ct = default) =>
-		persister.Save(this, ct);
+	public Task<Result<Characteristic>> SaveBy(IPersister persister, CancellationToken ct = default)
+	{
+		return persister.Save(this, ct);
+	}
 }

@@ -10,11 +10,16 @@ using WebHostApplication.Middlewares;
 
 // TODO: Add rate limiters.
 // TODO: Add response compression.
+// TODO: Добавить очистку тикетов из identity module, которые уже завершены (сделать background service для этого или использовать quartz).
+// TODO: Добавить запрос на получение характеристик техники по каталогу.
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.RegisterApplicationModules();
 if (builder.Environment.IsDevelopment())
+{
 	builder.Services.RegisterConfigurationFromAppsettings();
+}
+
 builder.Services.RegisterSharedDependencies(builder.Configuration);
 builder.Services.RegisterModuleMigrations();
 builder.Services.AddSwaggerGen();
@@ -38,8 +43,8 @@ builder.Services.AddSingleton<TelemetryRecordInvokerIdSearcher>();
 builder.Services.RegisterRedisActionRecordDependencies();
 
 WebApplication app = builder.Build();
-app.Services.ApplyModuleMigrations();
 
+app.Services.ApplyModuleMigrations();
 app.UseHttpsRedirection();
 app.UseCors("frontend");
 app.MapControllers();
@@ -55,7 +60,7 @@ app.Run();
 namespace WebHostApplication
 {
 	/// <summary>
-	/// Главная точка входа для приложения WebHostApplication.
+	/// Главная точка входа для приложения WebHostApplication (этот нужен для тестов).
 	/// </summary>
 	public partial class Program { }
 }

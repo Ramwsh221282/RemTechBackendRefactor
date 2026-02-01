@@ -13,12 +13,14 @@ public static class QuartzOutboxDependencyInjection
 	{
 		public void AddCronScheduledJobs()
 		{
-			Type[] jobTypes = services
-				.Where(s => s.ServiceType == typeof(ICronScheduleJob))
-				.Select(s => s.ImplementationType)
-				.Where(t => t != null)
-				.Cast<Type>()
-				.ToArray();
+			Type[] jobTypes =
+			[
+				.. services
+					.Where(s => s.ServiceType == typeof(ICronScheduleJob))
+					.Select(s => s.ImplementationType)
+					.Where(t => t != null)
+					.Cast<Type>(),
+			];
 
 			if (jobTypes.Length == 0)
 			{

@@ -62,8 +62,10 @@ public sealed class AddSparesConsumer(
 	/// <param name="connection">Подключение к RabbitMQ.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию инициализации канала.</returns>
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
+	{
 		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
+	}
 
 	/// <summary>
 	/// Запускает потребление сообщений.
@@ -82,7 +84,10 @@ public sealed class AddSparesConsumer(
 	/// </summary>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию завершения работы канала.</returns>
-	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
+	public Task Shutdown(CancellationToken ct = default)
+	{
+		return Channel.CloseAsync(ct);
+	}
 
 	private static async Task<(Guid CreatorId, int Added)> SaveSpares(
 		IServiceProvider services,
@@ -102,11 +107,18 @@ public sealed class AddSparesConsumer(
 		return new AddSparesCommand(creator, spares);
 	}
 
-	private static AddSparesCreatorPayload CreateCreatorPayload(AddSparesMessage message) =>
-		new(CreatorId: message.CreatorId, CreatorDomain: message.CreatorDomain, CreatorType: message.CreatorType);
+	private static AddSparesCreatorPayload CreateCreatorPayload(AddSparesMessage message)
+	{
+		return new(
+			CreatorId: message.CreatorId,
+			CreatorDomain: message.CreatorDomain,
+			CreatorType: message.CreatorType
+		);
+	}
 
-	private static AddSpareCommandPayload ConvertToAddSpareCommandCreatorInfo(AddSpareMessagePayload payload) =>
-		new(
+	private static AddSpareCommandPayload ConvertToAddSpareCommandCreatorInfo(AddSpareMessagePayload payload)
+	{
+		return new(
 			ContainedItemId: payload.ContainedItemId,
 			Source: payload.Url,
 			Oem: payload.Oem,
@@ -117,18 +129,31 @@ public sealed class AddSparesConsumer(
 			Type: payload.Type,
 			PhotoPaths: payload.Photos
 		);
+	}
 
 	private static bool IsMessageValid(AddSparesMessage message, out string error)
 	{
 		List<string> errors = [];
 		if (message.CreatorId == Guid.Empty)
+		{
 			errors.Add("Идентификатор создателя пуст");
+		}
+
 		if (string.IsNullOrWhiteSpace(message.CreatorType))
+		{
 			errors.Add("Тип создателя пуст");
+		}
+
 		if (string.IsNullOrWhiteSpace(message.CreatorDomain))
+		{
 			errors.Add("Домен создателя пуст");
+		}
+
 		if (message.Payload?.Any() != true)
+		{
 			errors.Add("Список запчастей пуст");
+		}
+
 		error = string.Join(", ", errors);
 		return errors.Count == 0;
 	}
@@ -140,8 +165,10 @@ public sealed class AddSparesConsumer(
 		public string CreatorDomain { get; set; } = string.Empty;
 		public IEnumerable<AddSpareMessagePayload> Payload { get; set; } = [];
 
-		public static AddSparesMessage ConvertMessageFrom(BasicDeliverEventArgs @event) =>
-			JsonSerializer.Deserialize<AddSparesMessage>(@event.Body.ToArray())!;
+		public static AddSparesMessage ConvertMessageFrom(BasicDeliverEventArgs @event)
+		{
+			return JsonSerializer.Deserialize<AddSparesMessage>(@event.Body.ToArray())!;
+		}
 	}
 
 	private sealed class AddSpareMessagePayload

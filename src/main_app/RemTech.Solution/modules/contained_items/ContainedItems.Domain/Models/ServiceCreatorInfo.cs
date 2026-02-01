@@ -41,13 +41,21 @@ public sealed record ServiceCreatorInfo
 	public static Result<ServiceCreatorInfo> Create(Guid creatorId, string type, string domain)
 	{
 		if (creatorId == Guid.Empty)
+		{
 			return Error.Validation("Идентификатор создателя сохраняемого элемента не может быть пустым.");
+		}
 		if (string.IsNullOrWhiteSpace(type))
+		{
 			return Error.Validation("Тип сохраняемого элемента не может быть пустым.");
+		}
 		if (string.IsNullOrWhiteSpace(domain))
+		{
 			return Error.Validation("Домен сохраняемого элемента не может быть пустым.");
+		}
 		if (type.Length > MAX_LENGTH)
+		{
 			return Error.Validation($"Тип сохраняемого элемента не может превышать {MAX_LENGTH} символов.");
+		}
 		return domain.Length > MAX_LENGTH
 			? Error.Validation($"Домен сохраняемого элемента не может превышать {MAX_LENGTH} символов.")
 			: new ServiceCreatorInfo(creatorId, type, domain);

@@ -21,7 +21,7 @@ public interface IMailersRepository
 	/// <param name="specification">Спецификация для фильтрации почтовых рассылок.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Задача, представляющая асинхронную операцию получения.</returns>
-	Task<Result<Mailer>> Get(MailersSpecification specification, CancellationToken ct = default);
+	Task<Result<Mailer>> Read(MailersSpecification specification, CancellationToken ct = default);
 
 	/// <summary>
 	/// Получает множество почтовых рассылок из репозитория по заданной спецификации.

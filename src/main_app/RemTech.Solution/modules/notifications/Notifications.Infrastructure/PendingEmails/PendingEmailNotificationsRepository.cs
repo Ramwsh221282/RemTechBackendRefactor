@@ -92,7 +92,10 @@ public sealed class PendingEmailNotificationsRepository(
 	{
 		PendingEmailNotification[] array = [.. notifications];
 		if (array.Length == 0)
+		{
 			return 0;
+		}
+
 		const string sql = "DELETE FROM notifications_module.pending_emails WHERE id = ANY (@ids)";
 		DynamicParameters parameters = new();
 		parameters.Add("@ids", array.Select(n => n.Id).ToArray());
@@ -131,9 +134,13 @@ public sealed class PendingEmailNotificationsRepository(
 		return (parameters, filters.Count == 0 ? string.Empty : " WHERE " + string.Join(" AND ", filters));
 	}
 
-	private static string LockClause(PendingEmailNotificationsSpecification specification) =>
-		specification.LockRequired == true ? "FOR UPDATE OF n" : string.Empty;
+	private static string LockClause(PendingEmailNotificationsSpecification specification)
+	{
+		return specification.LockRequired == true ? "FOR UPDATE OF n" : string.Empty;
+	}
 
-	private static string LimitClause(PendingEmailNotificationsSpecification specification) =>
-		specification.Limit.HasValue ? $"LIMIT {specification.Limit.Value}" : string.Empty;
+	private static string LimitClause(PendingEmailNotificationsSpecification specification)
+	{
+		return specification.Limit.HasValue ? $"LIMIT {specification.Limit.Value}" : string.Empty;
+	}
 }

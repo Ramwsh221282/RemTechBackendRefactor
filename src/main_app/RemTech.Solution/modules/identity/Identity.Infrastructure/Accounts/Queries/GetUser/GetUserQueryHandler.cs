@@ -20,20 +20,28 @@ public sealed class GetUserQueryHandler(IAccountsRepository accounts)
 	/// <param name="query">Запрос на получение пользователя.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Результат выполнения запроса на получение пользователя.</returns>
-	public async Task<UserAccountResponse?> Handle(GetUserQuery query, CancellationToken ct = default) =>
-		query switch
+	public async Task<UserAccountResponse?> Handle(GetUserQuery query, CancellationToken ct = default)
+	{
+		return query switch
 		{
 			GetUserByIdQuery byId => await SearchById(byId, ct),
 			GetUserByRefreshTokenQuery byToken => await SearchById(byToken, ct),
 			_ => null,
 		};
+	}
 
-	private static UserAccountResponse? CreateResponse(Result<Account> result) =>
-		result.IsFailure ? null : UserAccountResponse.Create(result.Value);
+	private static UserAccountResponse? CreateResponse(Result<Account> result)
+	{
+		return result.IsFailure ? null : UserAccountResponse.Create(result.Value);
+	}
 
-	private async Task<UserAccountResponse?> SearchById(GetUserByRefreshTokenQuery query, CancellationToken ct) =>
-		CreateResponse(await Accounts.Find(new AccountSpecification().WithRefreshToken(query.RefreshToken), ct));
+	private async Task<UserAccountResponse?> SearchById(GetUserByRefreshTokenQuery query, CancellationToken ct)
+	{
+		return CreateResponse(await Accounts.Find(new AccountSpecification().WithRefreshToken(query.RefreshToken), ct));
+	}
 
-	private async Task<UserAccountResponse?> SearchById(GetUserByIdQuery query, CancellationToken ct) =>
-		CreateResponse(await Accounts.Find(new AccountSpecification().WithId(query.AccountId), ct));
+	private async Task<UserAccountResponse?> SearchById(GetUserByIdQuery query, CancellationToken ct)
+	{
+		return CreateResponse(await Accounts.Find(new AccountSpecification().WithId(query.AccountId), ct));
+	}
 }

@@ -75,8 +75,9 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 		return response;
 	}
 
-	private static VehicleResponse CreateFromReader(DbDataReader reader) =>
-		new()
+	private static VehicleResponse CreateFromReader(DbDataReader reader)
+	{
+		return new()
 		{
 			VehicleId = reader.GetGuid(reader.GetOrdinal("vehicle_id")),
 			BrandId = reader.GetGuid(reader.GetOrdinal("brand_id")),
@@ -99,6 +100,7 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 				reader.GetString(reader.GetOrdinal("characteristics"))
 			)!,
 		};
+	}
 
 	private static (DynamicParameters Parameters, string VehiclesCTEQuery) FormVehiclesQuery(
 		GetVehiclesQueryParameters queryParameters,
@@ -153,7 +155,9 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 	)
 	{
 		if (string.IsNullOrWhiteSpace(queryParameters.TextSearch))
+		{
 			return;
+		}
 
 		const string sql = """
 			v.id IN (
@@ -208,19 +212,30 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 	{
 		List<string> orderBySql = [];
 		if (queryParameters.Sort == "NONE")
+		{
 			return (parameters, string.Empty);
+		}
+
 		if (queryParameters.SortFields is null)
+		{
 			return (parameters, string.Empty);
+		}
+
 		if (!queryParameters.SortFields.Any())
+		{
 			return (parameters, string.Empty);
+		}
 		string? sortMode = queryParameters.Sort switch
 		{
 			"DESC" => "DESC",
 			"ASC" => "ASC",
 			_ => null,
 		};
+
 		if (sortMode is null)
+		{
 			return (parameters, string.Empty);
+		}
 
 		foreach (string field in queryParameters.SortFields)
 		{
@@ -231,14 +246,19 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 				_ => null,
 			};
 			if (orderByClause is not null)
+			{
 				orderBySql.Add(orderByClause);
+			}
 		}
 
 		return orderBySql.Count == 0
 			? (parameters, string.Empty)
 			: (parameters, " ORDER BY " + string.Join(", ", orderBySql));
+	}
 
-		static string OrderByForReleaseYear(string mode) => mode == "ASC" ? "DESC" : "ASC";
+	private static string OrderByForReleaseYear(string mode)
+	{
+		return mode == "ASC" ? "DESC" : "ASC";
 	}
 
 	private static (DynamicParameters Parameters, string VehiclesFilterSql) FormVehiclesFilterSql(
@@ -317,9 +337,14 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 	)
 	{
 		if (queryParameters.Characteristics is null)
+		{
 			return;
+		}
 		if (queryParameters.Characteristics.Count == 0)
+		{
 			return;
+		}
+
 		string json = JsonSerializer.Serialize(
 			queryParameters.Characteristics.Select(c => new { id = c.Key, value = c.Value })
 		);

@@ -32,11 +32,20 @@ public sealed class DisableParserHandler(ISubscribedParsersRepository repository
 	private static Result<Unit> Disable(Result<SubscribedParser> parser)
 	{
 		if (parser.IsFailure)
+		{
 			return parser.Error;
+		}
+
 		if (parser.Value.State.IsWorking())
+		{
 			return Error.Conflict("Парсер в рабочем состоянии. Отключить можно только перманентно.");
+		}
+
 		if (parser.Value.State.IsDisabled())
+		{
 			return Error.Conflict("Парсер уже отключен.");
+		}
+
 		parser.Value.Disable();
 		return Unit.Value;
 	}
@@ -48,9 +57,15 @@ public sealed class DisableParserHandler(ISubscribedParsersRepository repository
 	)
 	{
 		if (parser.IsFailure)
+		{
 			return parser.Error;
+		}
+
 		if (result.IsFailure)
+		{
 			return result.Error;
+		}
+
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success(Unit.Value);
 	}

@@ -20,14 +20,22 @@ public sealed class GetVehiclesCachingQueryHandler(
 	/// <param name="query">Запрос на получение транспортных средств.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Ответ с транспортными средствами.</returns>
-	public Task<GetVehiclesQueryResponse> ExecuteWithCache(GetVehiclesQuery query, CancellationToken ct = default) =>
-		ReadFromCache(query, FormCacheKey(query), ct);
+	public Task<GetVehiclesQueryResponse> ExecuteWithCache(GetVehiclesQuery query, CancellationToken ct = default)
+	{
+		return ReadFromCache(query, FormCacheKey(query), ct);
+	}
 
-	private static string FormCacheKey(GetVehiclesQuery query) => $"{nameof(GetVehiclesQuery)}_{query.Parameters}";
+	private static string FormCacheKey(GetVehiclesQuery query)
+	{
+		return $"{nameof(GetVehiclesQuery)}_{query.Parameters}";
+	}
 
-	private async Task<GetVehiclesQueryResponse> ReadFromCache(
-		GetVehiclesQuery query,
-		string key,
-		CancellationToken ct
-	) => await cache.GetOrCreateAsync(key, async token => await inner.Handle(query, token), cancellationToken: ct);
+	private async Task<GetVehiclesQueryResponse> ReadFromCache(GetVehiclesQuery query, string key, CancellationToken ct)
+	{
+		return await cache.GetOrCreateAsync(
+			key,
+			async token => await inner.Handle(query, token),
+			cancellationToken: ct
+		);
+	}
 }

@@ -76,7 +76,9 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 		{
 			Result<Guid> regionId = await addressProvider.SearchRegionId(spare.Details.Address.Value, ct);
 			if (regionId.IsFailure)
+			{
 				continue;
+			}
 
 			string url = spare.Source.Url;
 			Guid id = spare.Id.Value;

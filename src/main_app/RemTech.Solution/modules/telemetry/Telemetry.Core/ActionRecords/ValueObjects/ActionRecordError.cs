@@ -25,7 +25,10 @@ public sealed record ActionRecordError
 	public static Result<ActionRecordError> Create(string value)
 	{
 		if (string.IsNullOrWhiteSpace(value))
+		{
 			return Error.Validation("Ошибка действия пользователя не может быть пустой.");
+		}
+
 		return Result.Success(new ActionRecordError(value));
 	}
 
@@ -37,7 +40,10 @@ public sealed record ActionRecordError
 	public static ActionRecordError? FromNullableString(string? value)
 	{
 		if (string.IsNullOrWhiteSpace(value))
+		{
 			return null;
+		}
+
 		return new ActionRecordError(value);
 	}
 }

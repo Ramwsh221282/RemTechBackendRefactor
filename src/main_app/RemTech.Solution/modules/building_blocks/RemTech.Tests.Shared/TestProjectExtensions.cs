@@ -25,8 +25,14 @@ public static class TestProjectExtensions
 	{
 		IEnumerable<ServiceDescriptor> jobs = services.Where(s => s.ServiceType == typeof(ICronScheduleJob));
 		services.RemoveAll<ICronScheduleJob>();
-		foreach (ServiceDescriptor job in jobs)
+		foreach (ServiceDescriptor? job in jobs)
+		{
+			if (job.ImplementationType is null)
+			{
+				continue;
+			}
 			services.AddTransient(job.ServiceType, job.ImplementationType);
+		}
 	}
 
 	/// <summary>
@@ -44,7 +50,9 @@ public static class TestProjectExtensions
 		);
 
 		if (quartzHostedService != null)
+		{
 			services.Remove(quartzHostedService);
+		}
 
 		services.AddQuartzHostedService(configure);
 	}
@@ -110,36 +118,45 @@ public static class TestProjectExtensions
 	/// </summary>
 	/// <param name="builder">Построитель контейнера PostgreSQL.</param>
 	/// <returns>Настроенный контейнер PostgreSQL с расширением pgvector.</returns>
-	public static PostgreSqlContainer BuildPgVectorContainer(this PostgreSqlBuilder builder) =>
-		builder
+	public static PostgreSqlContainer BuildPgVectorContainer(this PostgreSqlBuilder builder)
+	{
+		return builder
 			.WithImage("pgvector/pgvector:0.8.0-pg17-bookworm")
 			.WithDatabase("database")
 			.WithUsername("username")
 			.WithPassword("password")
 			.Build();
+	}
 
 	/// <summary>
 	/// Строит и настраивает контейнер RabbitMQ для использования в тестах.
 	/// </summary>
 	/// <param name="builder">Построитель контейнера RabbitMQ.</param>
 	/// <returns>Настроенный контейнер RabbitMQ.</returns>
-	public static RabbitMqContainer BuildRabbitMqContainer(this RabbitMqBuilder builder) =>
-		builder.WithImage("rabbitmq:3.11").Build();
+	public static RabbitMqContainer BuildRabbitMqContainer(this RabbitMqBuilder builder)
+	{
+		return builder.WithImage("rabbitmq:3.11").Build();
+	}
 
 	/// <summary>
 	/// Строит и настраивает контейнер Redis для использования в тестах.
 	/// </summary>
 	/// <param name="builder">Построитель контейнера Redis.</param>
 	/// <returns>Настроенный контейнер Redis.</returns>
-	public static RedisContainer BuildRedisContainer(this RedisBuilder builder) =>
-		builder.WithImage("redis:alpine").Build();
+	public static RedisContainer BuildRedisContainer(this RedisBuilder builder)
+	{
+		return builder.WithImage("redis:alpine").Build();
+	}
 
 	/// <summary>
 	/// Получает строку подключения из контейнера Redis.
 	/// </summary>
 	/// <param name="container">Контейнер Redis.</param>
 	/// <returns>Строка подключения к Redis.</returns>
-	public static string GetConnectionString(this RedisContainer container) => container.GetConnectionString();
+	public static string GetConnectionString(this RedisContainer container)
+	{
+		return container.GetConnectionString();
+	}
 
 	/// <summary>
 	/// Создает конфигурацию базы данных NpgSqlOptions из контейнера PostgreSQL.

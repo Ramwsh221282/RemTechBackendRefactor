@@ -17,5 +17,8 @@ public sealed class ParserStartedEventTransporter(IOnParserStartedListener liste
 	/// <param name="result">Результат события начала работы парсера.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию транспортировки события.</returns>
-	public Task Transport(SubscribedParser result, CancellationToken ct = default) => listener.Handle(result, ct);
+	public Task Transport(SubscribedParser result, CancellationToken ct = default)
+	{
+		return listener.Handle(result, ct);
+	}
 }

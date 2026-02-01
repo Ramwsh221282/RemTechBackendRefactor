@@ -22,8 +22,10 @@ public sealed record SpareId
 	/// </summary>
 	/// <param name="value">Строковое значение идентификатора.</param>
 	/// <returns>Результат создания идентификатора.</returns>
-	public static Result<SpareId> Create(string value) =>
-		string.IsNullOrWhiteSpace(value)
+	public static Result<SpareId> Create(string value)
+	{
+		return string.IsNullOrWhiteSpace(value)
 			? Error.Validation("Идентификатор запчасти не может быть пустым.")
 			: Result.Success(new SpareId(value));
+	}
 }

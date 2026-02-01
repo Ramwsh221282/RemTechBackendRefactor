@@ -34,12 +34,14 @@ public sealed class SuperUserAccountRegistrationOnStartupBackgroundService(
 		SuperUserCredentialsOptions Options,
 		IAccountsRepository Repository,
 		IPasswordHasher Cryptography
-	) GetDependencies(AsyncServiceScope scope) =>
-		(
+	) GetDependencies(AsyncServiceScope scope)
+	{
+		return (
 			scope.ServiceProvider.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value,
 			scope.ServiceProvider.GetRequiredService<IAccountsRepository>(),
 			scope.ServiceProvider.GetRequiredService<IPasswordHasher>()
 		);
+	}
 
 	private static Task AddAccount(
 		SuperUserCredentialsOptions options,

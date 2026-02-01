@@ -41,10 +41,16 @@ public sealed class EditLinkUrlInfoHandler(ISubscribedParsersRepository reposito
 	)
 	{
 		if (parser.IsFailure)
+		{
 			return Result.Failure<SubscribedParserLink>(parser.Error);
+		}
+
 		Result<SubscribedParserLink> link = parser.Value.FindLink(linkId);
 		if (link.IsFailure)
+		{
 			return Result.Failure<SubscribedParserLink>(link.Error);
+		}
+
 		Result<SubscribedParserLink> editResult = parser.Value.EditLink(link.Value, newName, newUrl);
 		return editResult.IsFailure ? Result.Failure<SubscribedParserLink>(editResult.Error) : editResult;
 	}
@@ -62,9 +68,15 @@ public sealed class EditLinkUrlInfoHandler(ISubscribedParsersRepository reposito
 	)
 	{
 		if (parser.IsFailure)
+		{
 			return Result.Failure(parser.Error);
+		}
+
 		if (editResult.IsFailure)
+		{
 			return Result.Failure(editResult.Error);
+		}
+
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();
 	}

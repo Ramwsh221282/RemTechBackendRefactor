@@ -11,7 +11,8 @@ public sealed class MailersTableMigration : Migration
 	/// <summary>
 	/// 	Выполняет миграцию вверх, создавая таблицу почтовых ящиков.
 	/// </summary>
-	public override void Up() =>
+	public override void Up()
+	{
 		Execute.Sql(
 			"""
 			CREATE TABLE IF NOT EXISTS notifications_module.mailers
@@ -22,9 +23,13 @@ public sealed class MailersTableMigration : Migration
 			)
 			"""
 		);
+	}
 
 	/// <summary>
 	/// 	Выполняет миграцию вниз, удаляя таблицу почтовых ящиков.
 	/// </summary>
-	public override void Down() => Execute.Sql("DROP TABLE IF EXISTS notifications_module.mailers;");
+	public override void Down()
+	{
+		Execute.Sql("DROP TABLE IF EXISTS notifications_module.mailers;");
+	}
 }

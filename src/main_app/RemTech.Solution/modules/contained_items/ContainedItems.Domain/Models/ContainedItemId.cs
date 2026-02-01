@@ -29,15 +29,20 @@ public readonly record struct ContainedItemId
 	/// Создает новый идентификатор содержащегося элемента.
 	/// </summary>
 	/// <returns>Новый идентификатор содержащегося элемента.</returns>
-	public static ContainedItemId New() => new();
+	public static ContainedItemId New()
+	{
+		return new();
+	}
 
 	/// <summary>
 	/// Создает идентификатор содержащегося элемента из заданного значения.
 	/// </summary>
 	/// <param name="value">Значение идентификатора содержащегося элемента.</param>
 	/// <returns>Результат создания идентификатора содержащегося элемента.</returns>
-	public static Result<ContainedItemId> Create(Guid value) =>
-		value == Guid.Empty
+	public static Result<ContainedItemId> Create(Guid value)
+	{
+		return value == Guid.Empty
 			? Error.Validation("Идентификатор сохраняемого элемента не может быть пустым.")
 			: new ContainedItemId(value);
+	}
 }

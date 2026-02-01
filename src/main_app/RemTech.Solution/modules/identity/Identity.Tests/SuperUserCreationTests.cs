@@ -28,8 +28,10 @@ public sealed class SuperUserCreationTests(IntegrationalTestsFactory factory) : 
 		Assert.Equal(permissions.Length, account.Value.PermissionsCount);
 	}
 
-	private SuperUserCredentialsOptions GetOptions() =>
-		Services.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value;
+	private SuperUserCredentialsOptions GetOptions()
+	{
+		return Services.GetRequiredService<IOptions<SuperUserCredentialsOptions>>().Value;
+	}
 
 	private async Task<Permission[]> GetPermissions()
 	{
@@ -37,6 +39,8 @@ public sealed class SuperUserCreationTests(IntegrationalTestsFactory factory) : 
 		return permissions.ToArray();
 	}
 
-	private Task<Result<Account>> GetSuperUserAccount(SuperUserCredentialsOptions options) =>
-		Services.GetAccountByName(options.Login);
+	private Task<Result<Account>> GetSuperUserAccount(SuperUserCredentialsOptions options)
+	{
+		return Services.GetAccountByName(options.Login);
+	}
 }

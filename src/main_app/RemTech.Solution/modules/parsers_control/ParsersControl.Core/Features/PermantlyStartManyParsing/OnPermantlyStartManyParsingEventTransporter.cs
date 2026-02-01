@@ -20,6 +20,8 @@ public sealed class OnPermantlyStartManyParsingEventTransporter(IOnParserStarted
 	public async Task Transport(IEnumerable<SubscribedParser> result, CancellationToken ct = default)
 	{
 		foreach (SubscribedParser parser in result)
+		{
 			await listener.Handle(parser, ct);
+		}
 	}
 }

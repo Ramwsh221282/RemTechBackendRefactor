@@ -43,7 +43,10 @@ public sealed class SubscribeParserHandler(
 	private async Task NotifyListener(Result<SubscribedParser> result, CancellationToken ct = default)
 	{
 		if (result.IsFailure)
+		{
 			return;
+		}
+
 		await listener.Handle(result.Value, ct: ct);
 	}
 }

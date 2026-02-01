@@ -29,8 +29,10 @@ public sealed class SetWorkTimeHandler(ISubscribedParsersRepository repository)
 		return saving.IsFailure ? (Result<SubscribedParser>)saving.Error : (Result<SubscribedParser>)parser.Value;
 	}
 
-	private static Result<Unit> SetRequiredTime(SetWorkTimeCommand command, Result<SubscribedParser> parser) =>
-		parser.IsFailure ? parser.Error : parser.Value.AddWorkTime(command.TotalElapsedSeconds);
+	private static Result<Unit> SetRequiredTime(SetWorkTimeCommand command, Result<SubscribedParser> parser)
+	{
+		return parser.IsFailure ? parser.Error : parser.Value.AddWorkTime(command.TotalElapsedSeconds);
+	}
 
 	private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
 	{

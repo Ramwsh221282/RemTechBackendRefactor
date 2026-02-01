@@ -42,13 +42,19 @@ public class Result
 	/// Импlicitное преобразование ошибки в результат.
 	/// </summary>
 	/// <param name="error">Ошибка для преобразования в результат.</param>
-	public static implicit operator Result(Error error) => Failure(error);
+	public static implicit operator Result(Error error)
+	{
+		return Failure(error);
+	}
 
 	/// <summary>
 	/// Создает успешный результат.
 	/// </summary>
 	/// <returns>Успешный результат.</returns>
-	public static Result Success() => new();
+	public static Result Success()
+	{
+		return new();
+	}
 
 	/// <summary>
 	/// Создает успешный результат с заданным значением.
@@ -56,7 +62,10 @@ public class Result
 	/// <typeparam name="T">Тип значения результата.</typeparam>
 	/// <param name="value">Значение успешного результата.</param>
 	/// <returns>Успешный результат с заданным значением.</returns>
-	public static Result<T> Success<T>(T value) => new(value);
+	public static Result<T> Success<T>(T value)
+	{
+		return new(value);
+	}
 
 	/// <summary>
 	/// Создает неуспешный результат с заданной ошибкой.
@@ -64,14 +73,20 @@ public class Result
 	/// <typeparam name="T">Тип значения результата.</typeparam>
 	/// <param name="error">Ошибка, связанная с результатом.</param>
 	/// <returns>Неуспешный результат с заданной ошибкой.</returns>
-	public static Result<T> Failure<T>(Error error) => new(error);
+	public static Result<T> Failure<T>(Error error)
+	{
+		return new(error);
+	}
 
 	/// <summary>
 	/// Создает неуспешный результат с заданной ошибкой.
 	/// </summary>
 	/// <param name="error">Ошибка, связанная с результатом.</param>
 	/// <returns>Неуспешный результат с заданной ошибкой.</returns>
-	public static Result Failure(Error error) => new(error);
+	public static Result Failure(Error error)
+	{
+		return new(error);
+	}
 
 	/// <summary>
 	/// Преобразует результат в значение указанного типа при успешном результате.
@@ -79,7 +94,10 @@ public class Result
 	/// <typeparam name="T">Тип значения результата.</typeparam>
 	/// <param name="onSuccess">Функция для преобразования успешного результата.</param>
 	/// <returns>Результат с преобразованным значением или ошибкой.</returns>
-	public Result<T> Map<T>(Func<T> onSuccess) => IsSuccess ? Success(onSuccess()) : Failure<T>(Error);
+	public Result<T> Map<T>(Func<T> onSuccess)
+	{
+		return IsSuccess ? Success(onSuccess()) : Failure<T>(Error);
+	}
 }
 
 /// <summary>
@@ -120,17 +138,26 @@ public class Result<T> : Result
 	/// Импlicitное преобразование значения в результат.
 	/// </summary>
 	/// <param name="value">Значение для преобразования в результат.</param>
-	public static implicit operator Result<T>(T value) => new(value);
+	public static implicit operator Result<T>(T value)
+	{
+		return new(value);
+	}
 
 	/// <summary>
 	/// Импlicitное преобразование ошибки в результат.
 	/// </summary>
 	/// <param name="error">Ошибка для преобразования в результат.</param>
-	public static implicit operator Result<T>(Error error) => new(error);
+	public static implicit operator Result<T>(Error error)
+	{
+		return new(error);
+	}
 
 	/// <summary>
 	/// Импlicitное преобразование результата в значение типа <typeparamref name="T"/>.
 	/// </summary>
 	/// <param name="result">Результат для преобразования в значение типа <typeparamref name="T"/>.</param>
-	public static implicit operator T(Result<T> result) => result.Value;
+	public static implicit operator T(Result<T> result)
+	{
+		return result.Value;
+	}
 }

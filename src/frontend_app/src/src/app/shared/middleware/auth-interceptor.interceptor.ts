@@ -1,83 +1,97 @@
-import {HttpErrorResponse, HttpInterceptorFn, HttpRequest} from '@angular/common/http';
-import {AuthenticationStatusService} from '../services/AuthenticationStatusService';
-import {inject} from '@angular/core';
-import {catchError, finalize, map, Observable, of, Subject, switchMap, take, tap, throwError} from 'rxjs';
-import {IdentityApiService} from '../api/identity-module/identity-api-service';
-import {
-  PermissionsStatusService,
-  UserAccountPermissionsFromAccountResponse
-} from '../services/PermissionsStatus.service';
-import {TypedEnvelope} from '../api/envelope';
-import {AccountResponse} from '../api/identity-module/identity-responses';
+import { HttpErrorResponse, HttpEvent, HttpInterceptorFn, HttpResponse } from '@angular/common/http';
+import { AuthenticationStatusService } from '../services/AuthenticationStatusService';
+import { inject } from '@angular/core';
+import { catchError, finalize, Observable, Subject, switchMap, take, tap, throwError } from 'rxjs';
+import { IdentityApiService } from '../api/identity-module/identity-api-service';
+import { PermissionsStatusService, UserAccountPermissionsFromAccountResponse } from '../services/PermissionsStatus.service';
+import { TypedEnvelope } from '../api/envelope';
+import { AccountResponse } from '../api/identity-module/identity-responses';
 
 let refreshInProgress: boolean = false;
 let refreshSubject: Subject<boolean> | null = null;
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authStatus = inject(AuthenticationStatusService);
-  const identityService = inject(IdentityApiService);
-  const permissionsStatus = inject(PermissionsStatusService);
-  const cloned = req.clone({ withCredentials: true });
+	const authStatus = inject(AuthenticationStatusService);
+	const identityService = inject(IdentityApiService);
+	const permissionsStatus = inject(PermissionsStatusService);
+	const cloned = req.clone({ withCredentials: true });
 
-  const startRefresh = (): Observable<boolean> => {
-    if (!refreshInProgress) {
-      refreshInProgress = true;
-      refreshSubject = new Subject<boolean>();
+	const startRefresh = (): Observable<boolean> => {
+		if (!refreshInProgress) {
+			refreshInProgress = true;
+			refreshSubject = new Subject<boolean>();
 
-      identityService.refreshToken().pipe(
-        tap(() => {
-          authStatus.setIsAuthenticated(true);
-          identityService.fetchAccount().subscribe((resp: TypedEnvelope<AccountResponse>): void => {
-            if (resp.body) {
-              permissionsStatus.initializePermissions(UserAccountPermissionsFromAccountResponse(resp.body));
-            }
-          })
-        }),
-        catchError((err: HttpErrorResponse) => {
-          authStatus.setIsNotAuthenticated();
-          permissionsStatus.clean();
-          return throwError(() => err);
-        }),
-        finalize(() => {
-          refreshInProgress = false;
-        })
-      ).subscribe({
-        next: () => {
-          refreshSubject?.next(true);
-          refreshSubject?.complete();
-        },
-        error: () => {
-          refreshSubject?.next(false);
-          refreshSubject?.complete();
-        }
-      });
-    }
+			identityService
+				.refreshToken()
+				.pipe(
+					tap(() => {
+						authStatus.setIsAuthenticated(true);
+						identityService.fetchAccount().subscribe((resp: TypedEnvelope<AccountResponse>): void => {
+							if (resp.body) {
+								permissionsStatus.initializePermissions(UserAccountPermissionsFromAccountResponse(resp.body));
+								authStatus.setUserId(resp.body.Id);
+							}
+						});
+					}),
+					catchError((err: HttpErrorResponse) => {
+						authStatus.setIsNotAuthenticated();
+						permissionsStatus.clean();
+						return throwError(() => err);
+					}),
+					finalize(() => {
+						refreshInProgress = false;
+					}),
+				)
+				.subscribe({
+					next: () => {
+						refreshSubject?.next(true);
+						refreshSubject?.complete();
+					},
+					error: () => {
+						refreshSubject?.next(false);
+						refreshSubject?.complete();
+					},
+				});
+		}
 
-    if (!refreshSubject) {
-      return throwError(() => new Error('No refreshSubject'));
-    }
+		if (!refreshSubject) {
+			return throwError(() => new Error('No refreshSubject'));
+		}
 
-    return refreshSubject.asObservable().pipe(take(1));
-  };
+		return refreshSubject.asObservable().pipe(take(1));
+	};
 
-  const handle401 = (error: HttpErrorResponse): Observable<any> => {
-    const isRefreshRequest = cloned.url.includes('/identity/refresh-token');
+	const handle401 = (error: HttpErrorResponse): Observable<any> => {
+		const isRefreshRequest = cloned.url.includes('/identity/refresh-token');
 
-    if (error.status !== 401 || isRefreshRequest) {
-      return throwError(() => error);
-    }
+		if (error.status !== 401 || isRefreshRequest) {
+			return throwError(() => error);
+		}
 
-    return startRefresh().pipe(
-      switchMap((success) => {
-        if (!success) {
-          return throwError(() => error);
-        }
-        return next(cloned);
-      })
-    );
-  };
+		return startRefresh().pipe(
+			switchMap((success) => {
+				if (!success) {
+					return throwError(() => error);
+				}
+				return next(cloned);
+			}),
+		);
+	};
 
-  return next(cloned).pipe(
-    catchError((error: HttpErrorResponse) => handle401(error))
-  );
-}
+	return next(cloned).pipe(
+		tap((resp: HttpEvent<unknown>) => {
+			initializeUserAccountData(resp);
+		}),
+		catchError((error: HttpErrorResponse) => {
+			return handle401(error);
+		}),
+	);
+
+	function initializeUserAccountData(response: HttpEvent<unknown>): void {
+		if (response instanceof HttpResponse && response.status === 200 && response.url?.endsWith('/identity/account')) {
+			const envelope = response.body as TypedEnvelope<AccountResponse>;
+			permissionsStatus.initializePermissions(UserAccountPermissionsFromAccountResponse(envelope.body!));
+			authStatus.setUserId(envelope.body!.Id);
+		}
+	}
+};

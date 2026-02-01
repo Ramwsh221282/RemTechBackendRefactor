@@ -22,7 +22,7 @@ public sealed class GetParsersQueryHandler(ISubscribedParsersCollectionRepositor
 	public async Task<IEnumerable<ParserResponse>> Handle(GetParsersQuery query, CancellationToken ct = default)
 	{
 		SubscribedParsersCollectionQuery emptyQuery = new();
-		SubscribedParsersCollection parsers = await Repository.Get(emptyQuery, ct);
+		SubscribedParsersCollection parsers = await Repository.Read(emptyQuery, ct);
 		return parsers.IsEmpty() ? [] : parsers.Read().Select(ParserResponse.Create);
 	}
 }

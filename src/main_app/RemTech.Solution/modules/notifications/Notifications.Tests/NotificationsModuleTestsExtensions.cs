@@ -49,7 +49,7 @@ public static class NotificationsModuleTestsExtensions
 			await using AsyncServiceScope scope = sp.CreateAsyncScope();
 			IMailersRepository repository = scope.ServiceProvider.GetRequiredService<IMailersRepository>();
 			MailersSpecification specification = new MailersSpecification().WithEmail(email);
-			Result<Mailer> result = await repository.Get(specification);
+			Result<Mailer> result = await repository.Read(specification);
 			return result;
 		}
 

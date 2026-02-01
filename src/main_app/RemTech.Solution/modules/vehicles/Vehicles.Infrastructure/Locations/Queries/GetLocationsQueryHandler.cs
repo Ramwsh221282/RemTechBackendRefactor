@@ -57,10 +57,15 @@ public sealed class GetLocationsQueryHandler(
 				);
 	}
 
-	private static string CreateLimitClause(GetLocationsQuery query) =>
-		query.Amount == null ? string.Empty : $"LIMIT {query.Amount.Value}";
+	private static string CreateLimitClause(GetLocationsQuery query)
+	{
+		return query.Amount == null ? string.Empty : $"LIMIT {query.Amount.Value}";
+	}
 
-	private static void ApplyNotDeletedFilter(List<string> filters) => filters.Add("ci.deleted_at IS NULL");
+	private static void ApplyNotDeletedFilter(List<string> filters)
+	{
+		filters.Add("ci.deleted_at IS NULL");
+	}
 
 	private static void ApplySubQueryFilters(
 		GetLocationsQuery query,
@@ -77,7 +82,9 @@ public sealed class GetLocationsQueryHandler(
 		ApplyLocationForSubfilters(query, subFilters, parameters);
 
 		if (subJoins.Count == 0 && subFilters.Count == 0)
+		{
 			return;
+		}
 
 		string join = $"""
 			EXISTS (
@@ -100,7 +107,9 @@ public sealed class GetLocationsQueryHandler(
 	)
 	{
 		if (!query.ContainsCategoryFilter())
+		{
 			return;
+		}
 
 		subJoins.Add("INNER JOIN vehicles_module.categories c ON iv.category_id = c.id");
 
@@ -125,7 +134,9 @@ public sealed class GetLocationsQueryHandler(
 	)
 	{
 		if (!query.ContainsBrandFilter())
+		{
 			return;
+		}
 
 		subJoins.Add("INNER JOIN vehicles_module.brands b ON b.id = iv.brand_id");
 		if (query.BrandId.HasValue && query.BrandId != Guid.Empty)
@@ -149,7 +160,9 @@ public sealed class GetLocationsQueryHandler(
 	)
 	{
 		if (!query.ContainsModelFilter())
+		{
 			return;
+		}
 
 		subJoins.Add("INNER JOIN vehicles_module.models m ON m.id = iv.model_id");
 		if (query.ModelId.HasValue && query.ModelId != Guid.Empty)
@@ -178,38 +191,53 @@ public sealed class GetLocationsQueryHandler(
 		}
 	}
 
-	private static string IncludeTextSearchScore(GetLocationsQuery query) =>
-		query.ContainsInclude("text-search-score") ? "r.embedding <-> @embedding AS TextSearchScore" : string.Empty;
+	private static string IncludeTextSearchScore(GetLocationsQuery query)
+	{
+		return query.ContainsInclude("text-search-score")
+			? "r.embedding <-> @embedding AS TextSearchScore"
+			: string.Empty;
+	}
 
-	private static string IncludeVehiclesCount(GetLocationsQuery query) =>
-		query.ContainsInclude("vehicles-count") ? "COUNT(v.id) AS VehiclesCount" : string.Empty;
+	private static string IncludeVehiclesCount(GetLocationsQuery query)
+	{
+		return query.ContainsInclude("vehicles-count") ? "COUNT(v.id) AS VehiclesCount" : string.Empty;
+	}
 
-	private static string CreateWhereClause(List<string> filters) =>
-		filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
+	private static string CreateWhereClause(List<string> filters)
+	{
+		return filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
+	}
 
 	private static string OrderByLocationName(GetLocationsQuery query)
 	{
 		if (query.UseOrderByName == null)
+		{
 			return string.Empty;
+		}
+
 		bool use = query.UseOrderByName.Value;
 		return use ? "Name ASC" : "Name DESC";
 	}
 
-	private static string OrderByTextSearchSimilarity(GetLocationsQuery query) =>
-		query.ContainsInclude("text-search-score")
+	private static string OrderByTextSearchSimilarity(GetLocationsQuery query)
+	{
+		return query.ContainsInclude("text-search-score")
 			? !string.IsNullOrWhiteSpace(query.TextSearch)
 				? "TextSearchScore ASC"
 				: string.Empty
 			: !string.IsNullOrWhiteSpace(query.TextSearch)
 				? "r.embedding <-> @embedding ASC"
 				: string.Empty;
+	}
 
 	private static bool ReaderContainsField(DbDataReader reader, string fieldName)
 	{
 		for (int i = 0; i < reader.FieldCount; i++)
 		{
 			if (reader.GetName(i).Equals(fieldName, StringComparison.OrdinalIgnoreCase))
+			{
 				return true;
+			}
 		}
 
 		return false;
@@ -226,8 +254,9 @@ public sealed class GetLocationsQueryHandler(
 		return responses;
 	}
 
-	private static LocationsResponse CreateFromReader(DbDataReader reader) =>
-		new()
+	private static LocationsResponse CreateFromReader(DbDataReader reader)
+	{
+		return new()
 		{
 			Id = reader.GetGuid(reader.GetOrdinal("id")),
 			Name = reader.GetString(reader.GetOrdinal("name")),
@@ -238,6 +267,7 @@ public sealed class GetLocationsQueryHandler(
 				? reader.GetInt32(reader.GetOrdinal("VehiclesCount"))
 				: null,
 		};
+	}
 
 	private (DynamicParameters Parameters, string Sql) CreateSql(GetLocationsQuery query)
 	{
@@ -281,7 +311,9 @@ public sealed class GetLocationsQueryHandler(
 	private void ApplyTextSearchFilter(GetLocationsQuery query, List<string> filters, DynamicParameters parameters)
 	{
 		if (string.IsNullOrWhiteSpace(query.TextSearch))
+		{
 			return;
+		}
 
 		filters.Add(
 			"""

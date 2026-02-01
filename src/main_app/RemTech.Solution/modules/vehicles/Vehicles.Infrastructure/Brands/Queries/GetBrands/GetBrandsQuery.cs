@@ -81,104 +81,139 @@ public sealed class GetBrandsQuery : IQuery
 	/// </summary>
 	/// <param name="include"> Включаемая информация для проверки. </param>
 	/// <returns> Возвращает true, если включаемая информация присутствует в запросе; в противном случае false. </returns>
-	public bool ContainsFieldInclude(string include) => IncludedInformationKeys.ContainsKey(include);
+	public bool ContainsFieldInclude(string include)
+	{
+		return IncludedInformationKeys.ContainsKey(include);
+	}
 
 	/// <summary>
 	/// Устанавливает направление сортировки.
 	/// </summary>
 	/// <param name="sortDirection"> Направление сортировки. </param>
 	/// <returns> Возвращает новый экземпляр запроса с установленным направлением сортировки. </returns>
-	public GetBrandsQuery WithSortDirection(string? sortDirection) => Copy(this, sortDirection: sortDirection);
+	public GetBrandsQuery WithSortDirection(string? sortDirection)
+	{
+		return Copy(this, sortDirection: sortDirection);
+	}
 
 	/// <summary>
 	/// Устанавливает поля для сортировки.
 	/// </summary>
 	/// <param name="sortFields"> Поля для сортировки. </param>
 	/// <returns> Возвращает новый экземпляр запроса с установленными полями для сортировки. </returns>
-	public GetBrandsQuery WithSortFields(IEnumerable<string>? sortFields) => Copy(this, sortFields: sortFields);
+	public GetBrandsQuery WithSortFields(IEnumerable<string>? sortFields)
+	{
+		return Copy(this, sortFields: sortFields);
+	}
 
 	/// <summary>
 	/// Устанавливает включаемую информацию.
 	/// </summary>
 	/// <param name="includes"> Включаемая информация. </param>
 	/// <returns> Возвращает новый экземпляр запроса с установленной включаемой информацией. </returns>
-	public GetBrandsQuery WithInclude(IEnumerable<string>? includes) =>
-		includes?.Any() != true ? this : Copy(this, includes: includes);
+	public GetBrandsQuery WithInclude(IEnumerable<string>? includes)
+	{
+		return includes?.Any() != true ? this : Copy(this, includes: includes);
+	}
 
 	/// <summary>
 	/// Устанавливает номер страницы.
 	/// </summary>
 	/// <param name="page"> Номер страницы. </param>
 	/// <returns> Возвращает новый экземпляр запроса с установленным номером страницы. </returns>
-	public GetBrandsQuery WithPagination(int? page) => page == null || page <= 0 ? this : Copy(this, page: page);
+	public GetBrandsQuery WithPagination(int? page)
+	{
+		return page == null || page <= 0 ? this : Copy(this, page: page);
+	}
 
 	/// <summary>
 	/// Устанавливает размер страницы.
 	/// </summary>
 	/// <param name="pageSize"> Размер страницы. </param>
 	/// <returns> Возвращает новый экземпляр запроса с установленным размером страницы. </returns>
-	public GetBrandsQuery WithPageSize(int? pageSize) =>
-		pageSize == null || pageSize >= 30 ? this : Copy(this, pageSize: pageSize);
+	public GetBrandsQuery WithPageSize(int? pageSize)
+	{
+		return pageSize == null || pageSize >= 30 ? this : Copy(this, pageSize: pageSize);
+	}
 
 	/// <summary>
 	/// Устанавливает текстовый поиск.
 	/// </summary>
 	/// <param name="textSearch"> Текст для поиска. </param>
 	/// <returns> Возвращает новый экземпляр запроса с установленным текстовым поиском. </returns>
-	public GetBrandsQuery WithTextSearch(string? textSearch) =>
-		string.IsNullOrWhiteSpace(textSearch) ? this : Copy(this, textSearch: textSearch);
+	public GetBrandsQuery WithTextSearch(string? textSearch)
+	{
+		return string.IsNullOrWhiteSpace(textSearch) ? this : Copy(this, textSearch: textSearch);
+	}
 
 	/// <summary>
 	/// Устанавливает идентификатор бренда.
 	/// </summary>
 	/// <param name="id"> Идентификатор бренда. </param>
 	/// <returns> Возвращает новый экземпляр запроса с установленным идентификатором бренда. </returns>
-	public GetBrandsQuery ForId(Guid? id) => id == null || id == Guid.Empty ? this : Copy(this, id: id);
+	public GetBrandsQuery ForId(Guid? id)
+	{
+		return id == null || id == Guid.Empty ? this : Copy(this, id: id);
+	}
 
 	/// <summary>
 	/// Устанавливает название бренда.
 	/// </summary>
 	/// <param name="name"> Название бренда. </param>
 	/// <returns> Возвращает новый экземпляр запроса с установленным названием бренда. </returns>
-	public GetBrandsQuery ForName(string? name) => string.IsNullOrWhiteSpace(name) ? this : Copy(this, name: name);
+	public GetBrandsQuery ForName(string? name)
+	{
+		return string.IsNullOrWhiteSpace(name) ? this : Copy(this, name: name);
+	}
 
 	/// <summary>
 	/// Устанавливает идентификатор категории транспортного средства.
 	/// </summary>
 	/// <param name="categoryId"> Идентификатор категории транспортного средства. </param>
 	/// <returns> Возвращает новый экземпляр запроса с установленным идентификатором категории транспортного средства. </returns>
-	public GetBrandsQuery ForCategoryId(Guid? categoryId) =>
-		categoryId == null || categoryId == Guid.Empty ? this : Copy(this, categoryId: categoryId);
+	public GetBrandsQuery ForCategoryId(Guid? categoryId)
+	{
+		return categoryId == null || categoryId == Guid.Empty ? this : Copy(this, categoryId: categoryId);
+	}
 
 	/// <summary>
 	/// Устанавливает название категории транспортного средства.
 	/// </summary>
 	/// <param name="categoryName"> Название категории транспортного средства. </param>
 	/// <returns> Возвращает новый экземпляр запроса с установленным названием категории транспортного средства. </returns>
-	public GetBrandsQuery ForCategoryName(string? categoryName) =>
-		string.IsNullOrWhiteSpace(categoryName) ? this : Copy(this, categoryName: categoryName);
+	public GetBrandsQuery ForCategoryName(string? categoryName)
+	{
+		return string.IsNullOrWhiteSpace(categoryName) ? this : Copy(this, categoryName: categoryName);
+	}
 
 	/// <summary>
 	/// Устанавливает идентификатор модели транспортного средства.
 	/// </summary>
 	/// <param name="modelId"> Идентификатор модели транспортного средства. </param>
 	/// <returns> Возвращает новый экземпляр запроса с установленным идентификатором модели транспортного средства. </returns>
-	public GetBrandsQuery ForModelId(Guid? modelId) =>
-		modelId == null || modelId == Guid.Empty ? this : Copy(this, modelId: modelId);
+	public GetBrandsQuery ForModelId(Guid? modelId)
+	{
+		return modelId == null || modelId == Guid.Empty ? this : Copy(this, modelId: modelId);
+	}
 
 	/// <summary>
 	/// Устанавливает название модели транспортного средства.
 	/// </summary>
 	/// <param name="modelName"> Название модели транспортного средства. </param>
 	/// <returns> Возвращает новый экземпляр запроса с установленным названием модели транспортного средства. </returns>
-	public GetBrandsQuery ForModelName(string? modelName) =>
-		string.IsNullOrWhiteSpace(modelName) ? this : Copy(this, modelName: modelName);
+	public GetBrandsQuery ForModelName(string? modelName)
+	{
+		return string.IsNullOrWhiteSpace(modelName) ? this : Copy(this, modelName: modelName);
+	}
 
 	/// <summary>
 	/// Преобразует запрос в строковое представление в формате JSON.
 	/// </summary>
 	/// <returns> Строковое представление запроса в формате JSON. </returns>
-	public override string ToString() => JsonSerializer.Serialize(this);
+	public override string ToString()
+	{
+		return JsonSerializer.Serialize(this);
+	}
 
 	private static GetBrandsQuery Copy(
 		GetBrandsQuery origin,
@@ -194,8 +229,9 @@ public sealed class GetBrandsQuery : IQuery
 		string? textSearch = null,
 		string? sortDirection = null,
 		IEnumerable<string>? sortFields = null
-	) =>
-		new()
+	)
+	{
+		return new()
 		{
 			CategoryId = categoryId ?? origin.CategoryId,
 			CategoryName = categoryName ?? origin.CategoryName,
@@ -210,4 +246,5 @@ public sealed class GetBrandsQuery : IQuery
 			SortMode = sortDirection ?? origin.SortMode,
 			SortFields = sortFields ?? origin.SortFields,
 		};
+	}
 }

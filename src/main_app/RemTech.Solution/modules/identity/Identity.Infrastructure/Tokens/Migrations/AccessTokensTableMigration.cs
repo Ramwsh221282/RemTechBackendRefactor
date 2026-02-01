@@ -11,7 +11,8 @@ public sealed class AccessTokensTableMigration : Migration
 	/// <summary>
 	/// Применяет миграцию, создавая таблицу access_tokens модуля identity.
 	/// </summary>
-	public override void Up() =>
+	public override void Up()
+	{
 		Execute.Sql(
 			"""
 			CREATE TABLE IF NOT EXISTS identity_module.access_tokens 
@@ -28,9 +29,13 @@ public sealed class AccessTokensTableMigration : Migration
 			);
 			"""
 		);
+	}
 
 	/// <summary>
 	/// Откатывает миграцию, удаляя таблицу access_tokens модуля identity.
 	/// </summary>
-	public override void Down() => Execute.Sql("DROP TABLE IF EXISTS identity_module.access_tokens;");
+	public override void Down()
+	{
+		Execute.Sql("DROP TABLE IF EXISTS identity_module.access_tokens;");
+	}
 }

@@ -24,7 +24,10 @@ public sealed class NpgSqlVehiclesListPersister(NpgSqlSession session) : IVehicl
 		IEnumerable<VehiclePersistInfo> filtered = FilterFromExisting(infos, existing);
 		int saved = await SaveVehicles(filtered, ct);
 		if (saved == 0)
+		{
 			return saved;
+		}
+
 		await PersistCharacteristics(session, filtered, ct);
 		return saved;
 	}
@@ -32,7 +35,10 @@ public sealed class NpgSqlVehiclesListPersister(NpgSqlSession session) : IVehicl
 	private static IEnumerable<VehiclePersistInfo> FilterFromExisting(
 		IEnumerable<VehiclePersistInfo> infos,
 		IEnumerable<Guid> existing
-	) => infos.Where(i => !existing.Contains(i.Vehicle.Id.Value));
+	)
+	{
+		return infos.Where(i => !existing.Contains(i.Vehicle.Id.Value));
+	}
 
 	private static async Task PersistCharacteristics(
 		NpgSqlSession session,

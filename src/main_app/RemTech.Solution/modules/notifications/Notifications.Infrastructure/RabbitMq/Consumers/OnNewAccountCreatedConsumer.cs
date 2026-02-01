@@ -42,6 +42,7 @@ public sealed class OnNewAccountCreatedConsumer(
 			{
 				NewAccountRegisteredOutboxMessagePayload payload =
 					NewAccountRegisteredOutboxMessagePayload.FromDeliverEventArgs(@event);
+
 				if (!payload.IsValid(out string error))
 				{
 					Logger.Warning("Invalid message: {Error}", error);
@@ -129,20 +130,33 @@ public sealed class OnNewAccountCreatedConsumer(
 		string Login
 	)
 	{
-		public static NewAccountRegisteredOutboxMessagePayload FromDeliverEventArgs(BasicDeliverEventArgs @event) =>
-			JsonSerializer.Deserialize<NewAccountRegisteredOutboxMessagePayload>(@event.Body.Span)!;
+		public static NewAccountRegisteredOutboxMessagePayload FromDeliverEventArgs(BasicDeliverEventArgs @event)
+		{
+			return JsonSerializer.Deserialize<NewAccountRegisteredOutboxMessagePayload>(@event.Body.Span)!;
+		}
 
 		public bool IsValid(out string error)
 		{
 			List<string> errors = [];
 			if (AccountId == Guid.Empty)
+			{
 				errors.Add("Идентификатор аккаунта пуст");
+			}
+
 			if (TicketId == Guid.Empty)
+			{
 				errors.Add("Идентификатор тикета пуст");
+			}
+
 			if (string.IsNullOrWhiteSpace(Email))
+			{
 				errors.Add("Почта пуста");
+			}
 			if (string.IsNullOrWhiteSpace(Login))
+			{
 				errors.Add("Логин пуст");
+			}
+
 			error = string.Join(", ", errors);
 			return errors.Count == 0;
 		}

@@ -109,7 +109,10 @@ public sealed class UniqueSequence<T>
 	/// <typeparam name="U">Тип элементов результирующей последовательности.</typeparam>
 	/// <param name="selector">Функция для преобразования элементов.</param>
 	/// <returns>Последовательность преобразованных элементов.</returns>
-	public IEnumerable<U> Map<U>(Func<T, U> selector) => _items.Select(selector);
+	public IEnumerable<U> Map<U>(Func<T, U> selector)
+	{
+		return _items.Select(selector);
+	}
 
 	/// <summary>
 	/// Преобразует элементы уникальной последовательности в массив другого типа.

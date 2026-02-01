@@ -66,9 +66,15 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 		AccountTicket? ticket = await GetSingle(command, ct);
 
 		if (ticket is null)
+		{
 			return Error.NotFound("Заявка не найдена.");
+		}
+
 		if (specification.LockRequired == true)
+		{
 			await BlockTicket(ticket, ct);
+		}
+
 		UnitOfWork.Track([ticket]);
 		return Result.Success(ticket);
 	}
@@ -95,9 +101,13 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 		if (specification.Finished.HasValue)
 		{
 			if (specification.Finished.Value)
+			{
 				filterSql.Add("finished is true");
+			}
 			else
+			{
 				filterSql.Add("finished is false");
+			}
 		}
 
 		if (!string.IsNullOrWhiteSpace(specification.Purpose))
@@ -109,14 +119,16 @@ public sealed class AccountTicketsRepository(NpgSqlSession session, IAccountsMod
 		return (parameters, filterSql.Count == 0 ? string.Empty : $"WHERE {string.Join(" AND ", filterSql)}");
 	}
 
-	private static object GetParameters(AccountTicket ticket) =>
-		new
+	private static object GetParameters(AccountTicket ticket)
+	{
+		return new
 		{
 			id = ticket.TicketId,
 			creator_id = ticket.AccountId.Value,
 			finished = ticket.Finished,
 			purpose = ticket.Purpose,
 		};
+	}
 
 	private async Task<AccountTicket?> GetSingle(CommandDefinition command, CancellationToken ct)
 	{

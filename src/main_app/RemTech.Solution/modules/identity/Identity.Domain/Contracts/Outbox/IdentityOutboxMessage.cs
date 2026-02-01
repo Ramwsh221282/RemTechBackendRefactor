@@ -65,7 +65,10 @@ public sealed class IdentityOutboxMessage(
 	/// <param name="payload">Полезная нагрузка сообщения.</param>
 	/// <returns>Новое сообщение исходящей очереди.</returns>
 	public static IdentityOutboxMessage CreateNew<T>(string type, int retryCount, T payload)
-		where T : IOutboxMessagePayload => new(type, retryCount, JsonSerializer.Serialize(payload));
+		where T : IOutboxMessagePayload
+	{
+		return new(type, retryCount, JsonSerializer.Serialize(payload));
+	}
 
 	/// <summary>
 	/// Создает новое сообщение исходящей очереди с нулевым количеством попыток отправки.
@@ -75,21 +78,33 @@ public sealed class IdentityOutboxMessage(
 	/// <param name="payload">Полезная нагрузка сообщения.</param>
 	/// <returns>Новое сообщение исходящей очереди.</returns>
 	public static IdentityOutboxMessage CreateNew<T>(string type, T payload)
-		where T : IOutboxMessagePayload => new(type, 0, JsonSerializer.Serialize(payload));
+		where T : IOutboxMessagePayload
+	{
+		return new(type, 0, JsonSerializer.Serialize(payload));
+	}
 
 	/// <summary>
 	/// Отмечает сообщение как отправленное, устанавливая дату и время отправки.
 	/// </summary>
-	public void MarkSent() => Sent = DateTime.UtcNow;
+	public void MarkSent()
+	{
+		Sent = DateTime.UtcNow;
+	}
 
 	/// <summary>
 	/// Увеличивает количество попыток отправки на единицу.
 	/// </summary>
-	public void IncreaseRetryCount() => RetryCount++;
+	public void IncreaseRetryCount()
+	{
+		RetryCount++;
+	}
 
 	/// <summary>
 	/// Клонирует сообщение исходящей очереди.
 	/// </summary>
 	/// <returns>Клон сообщения исходящей очереди.</returns>
-	public IdentityOutboxMessage Clone() => new(this);
+	public IdentityOutboxMessage Clone()
+	{
+		return new(this);
+	}
 }

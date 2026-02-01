@@ -36,7 +36,10 @@ public sealed record AccountPassword
 	/// </summary>
 	/// <param name="hasher">Хешер для хеширования пароля.</param>
 	/// <returns>Хешированный пароль.</returns>
-	public AccountPassword HashBy(IPasswordHasher hasher) => hasher.Hash(this);
+	public AccountPassword HashBy(IPasswordHasher hasher)
+	{
+		return hasher.Hash(this);
+	}
 
 	/// <summary>
 	/// Проверяет, соответствует ли введенное значение хешированному паролю с помощью указанного хешера.
@@ -44,12 +47,18 @@ public sealed record AccountPassword
 	/// <param name="input">Введенное значение для проверки.</param>
 	/// <param name="hasher">Хешер для проверки пароля.</param>
 	/// <returns>Результат проверки соответствия.</returns>
-	public bool Verify(string input, IPasswordHasher hasher) => hasher.Verify(input, this);
+	public bool Verify(string input, IPasswordHasher hasher)
+	{
+		return hasher.Verify(input, this);
+	}
 
 	/// <summary>
 	/// Проверяет, удовлетворяет ли пароль указанному требованию.
 	/// </summary>
 	/// <param name="requirement">Требование к паролю для проверки.</param>
 	/// <returns>Результат проверки соответствия.</returns>
-	public Result<Unit> Satisfies(IAccountPasswordRequirement requirement) => requirement.Satisfies(this);
+	public Result<Unit> Satisfies(IAccountPasswordRequirement requirement)
+	{
+		return requirement.Satisfies(this);
+	}
 }

@@ -17,6 +17,8 @@ public sealed class FrontendOptions
 	public void Validate()
 	{
 		if (string.IsNullOrWhiteSpace(Url))
+		{
 			throw new ArgumentNullException($"Frontend URL option is empty. {nameof(FrontendOptions)}");
+		}
 	}
 }

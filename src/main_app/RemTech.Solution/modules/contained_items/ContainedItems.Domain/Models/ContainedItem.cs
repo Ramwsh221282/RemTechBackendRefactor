@@ -54,10 +54,16 @@ public sealed class ContainedItem(
 		ServiceItemId serviceItemId,
 		ServiceCreatorInfo creatorInfo,
 		ContainedItemInfo info
-	) => new(id, serviceItemId, creatorInfo, info, ContainedItemStatus.PendingToSave);
+	)
+	{
+		return new(id, serviceItemId, creatorInfo, info, ContainedItemStatus.PendingToSave);
+	}
 
 	/// <summary>
 	/// Помечает содержащийся элемент как сохраненный, изменяя его статус на "Saved".
 	/// </summary>
-	public void MarkSaved() => Status = ContainedItemStatus.Saved;
+	public void MarkSaved()
+	{
+		Status = ContainedItemStatus.Saved;
+	}
 }

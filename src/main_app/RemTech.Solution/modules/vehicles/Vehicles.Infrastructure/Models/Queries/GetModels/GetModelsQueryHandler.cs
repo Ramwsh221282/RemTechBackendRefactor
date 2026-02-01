@@ -65,10 +65,14 @@ public sealed class GetModelsQueryHandler(NpgSqlSession session)
 		}
 
 		if (HasSomeCategoryFilter(query))
+		{
 			subJoins.Add("INNER JOIN vehicles_module.categories ic ON ic.id = v.category_id");
+		}
 
 		if (HasSomeBrandFilter(query))
+		{
 			subJoins.Add("INNER JOIN vehicles_module.brands ib ON ib.id = v.brand_id");
+		}
 
 		if (query.CategoryId != null && query.CategoryId != Guid.Empty)
 		{
@@ -95,7 +99,9 @@ public sealed class GetModelsQueryHandler(NpgSqlSession session)
 		}
 
 		if (subFilters.Count == 0)
+		{
 			return;
+		}
 
 		filters.Add(
 			$"""
@@ -109,13 +115,20 @@ public sealed class GetModelsQueryHandler(NpgSqlSession session)
 		);
 	}
 
-	private static string CreateWhereClause(List<string> filters) =>
-		filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
+	private static string CreateWhereClause(List<string> filters)
+	{
+		return filters.Count == 0 ? string.Empty : "WHERE " + string.Join(" AND ", filters);
+	}
 
-	private static bool HasSomeCategoryFilter(GetModelsQuery query) =>
-		(query.CategoryId != null && query.CategoryId.Value != Guid.Empty)
-		|| !string.IsNullOrWhiteSpace(query.CategoryName);
+	private static bool HasSomeCategoryFilter(GetModelsQuery query)
+	{
+		return (query.CategoryId != null && query.CategoryId.Value != Guid.Empty)
+			|| !string.IsNullOrWhiteSpace(query.CategoryName);
+	}
 
-	private static bool HasSomeBrandFilter(GetModelsQuery query) =>
-		(query.BrandId != null && query.BrandId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(query.BrandName);
+	private static bool HasSomeBrandFilter(GetModelsQuery query)
+	{
+		return (query.BrandId != null && query.BrandId.Value != Guid.Empty)
+			|| !string.IsNullOrWhiteSpace(query.BrandName);
+	}
 }

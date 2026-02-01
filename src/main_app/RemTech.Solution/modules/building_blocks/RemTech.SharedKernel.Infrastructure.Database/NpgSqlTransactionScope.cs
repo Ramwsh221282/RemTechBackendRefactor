@@ -34,11 +34,17 @@ public sealed class NpgSqlTransactionScope(NpgsqlTransaction transaction) : ITra
 	/// <summary>
 	/// Освобождает ресурсы, используемые областью транзакции.
 	/// </summary>
-	public void Dispose() => Transaction.Dispose();
+	public void Dispose()
+	{
+		Transaction.Dispose();
+	}
 
 	/// <summary>
 	/// Асинхронно освобождает ресурсы, используемые областью транзакции.
 	/// </summary>
 	/// <returns>ValueTask.</returns>
-	public ValueTask DisposeAsync() => Transaction.DisposeAsync();
+	public async ValueTask DisposeAsync()
+	{
+		await Transaction.DisposeAsync();
+	}
 }

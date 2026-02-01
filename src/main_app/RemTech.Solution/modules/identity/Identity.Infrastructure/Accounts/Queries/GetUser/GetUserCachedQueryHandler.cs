@@ -23,13 +23,15 @@ public sealed class GetUserCachedQueryHandler(
 	/// <param name="query">Запрос на получение пользователя.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Результат выполнения запроса на получение пользователя с использованием кэша.</returns>
-	public async Task<UserAccountResponse?> ExecuteWithCache(GetUserQuery query, CancellationToken ct = default) =>
-		query switch
+	public async Task<UserAccountResponse?> ExecuteWithCache(GetUserQuery query, CancellationToken ct = default)
+	{
+		return query switch
 		{
 			GetUserByIdQuery byId => await HandleAsIdQuery(byId, ct),
 			GetUserByRefreshTokenQuery byToken => await HandleAsRefreshTokenQuery(byToken, ct),
 			_ => null,
 		};
+	}
 
 	private async Task<UserAccountResponse?> HandleAsRefreshTokenQuery(
 		GetUserByRefreshTokenQuery query,

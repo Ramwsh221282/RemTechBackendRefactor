@@ -65,7 +65,10 @@ public static class IdentityModuleInjection
 			RemTech.SharedKernel.Infrastructure.AesEncryption.AesCryptographyExtensions.AddAesCryptography(services);
 		}
 
-		private void AddDomain() => services.AddPasswordRequirements();
+		private void AddDomain()
+		{
+			services.AddPasswordRequirements();
+		}
 
 		private void AddPasswordRequirements()
 		{
@@ -96,10 +99,15 @@ public static class IdentityModuleInjection
 			services.UseCacheOnRepositories();
 		}
 
-		private void AddPasswordHasher() => services.AddSingleton<IPasswordHasher, PasswordHasher>();
+		private void AddPasswordHasher()
+		{
+			services.AddSingleton<IPasswordHasher, PasswordHasher>();
+		}
 
-		private void UseCacheOnRepositories() =>
+		private void UseCacheOnRepositories()
+		{
 			services.Decorate<IAccessTokensRepository, CachedAccessTokenRepository>();
+		}
 
 		private void AddChangeTracker()
 		{
@@ -120,7 +128,10 @@ public static class IdentityModuleInjection
 			services.AddScoped<IAccountModuleOutbox, AccountsModuleOutbox>();
 		}
 
-		private void AddJwt() => services.AddSingleton<IJwtTokenManager, JwtTokenManager>();
+		private void AddJwt()
+		{
+			services.AddSingleton<IJwtTokenManager, JwtTokenManager>();
+		}
 
 		private void AddOutboxMessagePublishers()
 		{

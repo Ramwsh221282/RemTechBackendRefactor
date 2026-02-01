@@ -29,7 +29,10 @@ public readonly record struct ActionRecordOccuredDateTime
 	///  Создает дату и время возникновения действия.
 	/// </summary>
 	/// <returns>Дата и время возникновения действия.</returns>
-	public static ActionRecordOccuredDateTime Now() => new();
+	public static ActionRecordOccuredDateTime Now()
+	{
+		return new();
+	}
 
 	/// <summary>
 	/// Создает дату и время возникновения действия.

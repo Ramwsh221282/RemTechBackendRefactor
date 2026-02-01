@@ -22,8 +22,10 @@ public sealed record SpareOem
 	/// </summary>
 	/// <param name="value">Строковое значение OEM-номера.</param>
 	/// <returns>Результат создания OEM-номера.</returns>
-	public static Result<SpareOem> Create(string value) =>
-		string.IsNullOrWhiteSpace(value)
+	public static Result<SpareOem> Create(string value)
+	{
+		return string.IsNullOrWhiteSpace(value)
 			? Error.Validation("OEM-номер запчасти не может быть пустым.")
 			: Result.Success(new SpareOem(value));
+	}
 }

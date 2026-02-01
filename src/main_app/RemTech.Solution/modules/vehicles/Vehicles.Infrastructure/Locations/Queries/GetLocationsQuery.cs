@@ -78,118 +78,166 @@ public sealed class GetLocationsQuery : IQuery
 	/// Создает новый экземпляр запроса на получение локаций с значением по умолчанию.
 	/// </summary>
 	/// <returns>Новый экземпляр запроса на получение локаций с значением по умолчанию.</returns>
-	public static GetLocationsQuery Create() => new() { Amount = 20 };
+	public static GetLocationsQuery Create()
+	{
+		return new() { Amount = 20 };
+	}
 
 	/// <summary>
 	/// Создает новый экземпляр запроса на получение локаций с указанным идентификатором.
 	/// </summary>
 	/// <param name="id">Идентификатор локации.</param>
 	/// <returns>Новый экземпляр запроса на получение локаций с указанным идентификатором.</returns>
-	public GetLocationsQuery WithId(Guid? id) => Copy(this, id: id);
+	public GetLocationsQuery WithId(Guid? id)
+	{
+		return Copy(this, id: id);
+	}
 
 	/// <summary>
 	/// Создает новый экземпляр запроса на получение локаций с указанным количеством.
 	/// </summary>
 	/// <param name="amount">Количество локаций для получения.</param>
 	/// <returns>Новый экземпляр запроса на получение локаций с указанным количеством.</returns>
-	public GetLocationsQuery WithAmount(int? amount) => Copy(this, amount: amount);
+	public GetLocationsQuery WithAmount(int? amount)
+	{
+		return Copy(this, amount: amount);
+	}
 
 	/// <summary>
 	/// Создает новый экземпляр запроса на получение локаций с указанным идентификатором категории.
 	/// </summary>
 	/// <param name="categoryId">Идентификатор категории.</param>
 	/// <returns>Новый экземпляр запроса на получение локаций с указанным идентификатором категории.</returns>
-	public GetLocationsQuery WithCategoryId(Guid? categoryId) => Copy(this, categoryId: categoryId);
+	public GetLocationsQuery WithCategoryId(Guid? categoryId)
+	{
+		return Copy(this, categoryId: categoryId);
+	}
 
 	/// <summary>
 	/// Создает новый экземпляр запроса на получение локаций с указанным идентификатором бренда.
 	/// </summary>
 	/// <param name="brandId">Идентификатор бренда.</param>
 	/// <returns>Новый экземпляр запроса на получение локаций с указанным идентификатором бренда.</returns>
-	public GetLocationsQuery WithBrandId(Guid? brandId) => Copy(this, brandId: brandId);
+	public GetLocationsQuery WithBrandId(Guid? brandId)
+	{
+		return Copy(this, brandId: brandId);
+	}
 
 	/// <summary>
 	/// Создает новый экземпляр запроса на получение локаций с указанным идентификатором модели.
 	/// </summary>
 	/// <param name="modelId">Идентификатор модели.</param>
 	/// <returns>Новый экземпляр запроса на получение локаций с указанным идентификатором модели.</returns>
-	public GetLocationsQuery WithModelId(Guid? modelId) => Copy(this, modelId: modelId);
+	public GetLocationsQuery WithModelId(Guid? modelId)
+	{
+		return Copy(this, modelId: modelId);
+	}
 
 	/// <summary>
 	/// Создает новый экземпляр запроса на получение локаций с указанием сортировки по имени.
 	/// </summary>
 	/// <param name="useOrderByName">Флаг, указывающий, следует ли сортировать по имени.</param>
 	/// <returns>Новый экземпляр запроса на получение локаций с указанным параметром сортировки по имени.</returns>
-	public GetLocationsQuery WithOrderByName(bool? useOrderByName) => Copy(this, orderByName: useOrderByName);
+	public GetLocationsQuery WithOrderByName(bool? useOrderByName)
+	{
+		return Copy(this, orderByName: useOrderByName);
+	}
 
 	/// <summary>
 	/// Создает новый экземпляр запроса на получение локаций с указанным названием категории.
 	/// </summary>
 	/// <param name="categoryName">Название категории.</param>
 	/// <returns>Новый экземпляр запроса на получение локаций с указанным названием категории.</returns>
-	public GetLocationsQuery WithCategoryName(string? categoryName) => Copy(this, categoryName: categoryName);
+	public GetLocationsQuery WithCategoryName(string? categoryName)
+	{
+		return Copy(this, categoryName: categoryName);
+	}
 
 	/// <summary>
 	/// Создает новый экземпляр запроса на получение локаций с указанным названием бренда.
 	/// </summary>
 	/// <param name="brandName">Название бренда.</param>
 	/// <returns>Новый экземпляр запроса на получение локаций с указанным названием бренда.</returns>
-	public GetLocationsQuery WithBrandName(string? brandName) => Copy(this, brandName: brandName);
+	public GetLocationsQuery WithBrandName(string? brandName)
+	{
+		return Copy(this, brandName: brandName);
+	}
 
 	/// <summary>
 	/// Создает новый экземпляр запроса на получение локаций с указанным названием модели.
 	/// </summary>
 	/// <param name="modelName">Название модели.</param>
 	/// <returns>Новый экземпляр запроса на получение локаций с указанным названием модели.</returns>
-	public GetLocationsQuery WithModelName(string? modelName) => Copy(this, modelName: modelName);
+	public GetLocationsQuery WithModelName(string? modelName)
+	{
+		return Copy(this, modelName: modelName);
+	}
 
 	/// <summary>
 	/// Создает новый экземпляр запроса на получение локаций с указанным текстовым поиском.
 	/// </summary>
 	/// <param name="textSearch">Текст для поиска.</param>
 	/// <returns>Новый экземпляр запроса на получение локаций с указанным текстовым поиском.</returns>
-	public GetLocationsQuery WithTextSearch(string? textSearch) => Copy(this, textSearch: textSearch);
+	public GetLocationsQuery WithTextSearch(string? textSearch)
+	{
+		return Copy(this, textSearch: textSearch);
+	}
 
 	/// <summary>
 	/// Создает новый экземпляр запроса на получение локаций с указанными включаемыми полями.
 	/// </summary>
 	/// <param name="includes">Перечисление включаемых полей.</param>
 	/// <returns>Новый экземпляр запроса на получение локаций с указанными включаемыми полями.</returns>
-	public GetLocationsQuery WithIncludes(IEnumerable<string>? includes) => Copy(this, includes: includes);
+	public GetLocationsQuery WithIncludes(IEnumerable<string>? includes)
+	{
+		return Copy(this, includes: includes);
+	}
 
 	/// <summary>
 	/// Проверяет, содержит ли запрос указанное включаемое поле.
 	/// </summary>
 	/// <param name="includeName">Название включаемого поля.</param>
 	/// <returns>True, если запрос содержит указанное включаемое поле; в противном случае false.</returns>
-	public bool ContainsInclude(string includeName) => IncludedInformationKeys.ContainsKey(includeName);
+	public bool ContainsInclude(string includeName)
+	{
+		return IncludedInformationKeys.ContainsKey(includeName);
+	}
 
 	/// <summary>
 	/// Проверяет, содержит ли запрос фильтр по категории.
 	/// </summary>
 	/// <returns>True, если запрос содержит фильтр по категории; в противном случае false.</returns>
-	public bool ContainsCategoryFilter() =>
-		(CategoryId != null && CategoryId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(CategoryName);
+	public bool ContainsCategoryFilter()
+	{
+		return (CategoryId != null && CategoryId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(CategoryName);
+	}
 
 	/// <summary>
 	/// Проверяет, содержит ли запрос фильтр по бренду.
 	/// </summary>
 	/// <returns>True, если запрос содержит фильтр по бренду; в противном случае false.</returns>
-	public bool ContainsBrandFilter() =>
-		(BrandId != null && BrandId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(BrandName);
+	public bool ContainsBrandFilter()
+	{
+		return (BrandId != null && BrandId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(BrandName);
+	}
 
 	/// <summary>
 	/// Проверяет, содержит ли запрос фильтр по модели.
 	/// </summary>
 	/// <returns>True, если запрос содержит фильтр по модели; в противном случае false.</returns>
-	public bool ContainsModelFilter() =>
-		(ModelId != null && ModelId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(ModelName);
+	public bool ContainsModelFilter()
+	{
+		return (ModelId != null && ModelId.Value != Guid.Empty) || !string.IsNullOrWhiteSpace(ModelName);
+	}
 
 	/// <summary>
 	/// Преобразует текущий объект запроса в его строковое представление в формате JSON.
 	/// </summary>
 	/// <returns>Строковое представление объекта запроса в формате JSON.</returns>
-	public override string ToString() => JsonSerializer.Serialize(this);
+	public override string ToString()
+	{
+		return JsonSerializer.Serialize(this);
+	}
 
 	/// <summary>
 	/// Создает копию текущего запроса с возможностью изменения отдельных свойств.
@@ -220,8 +268,9 @@ public sealed class GetLocationsQuery : IQuery
 		string? modelName = null,
 		IEnumerable<string>? includes = null,
 		bool? orderByName = null
-	) =>
-		new()
+	)
+	{
+		return new()
 		{
 			Amount = amount ?? original.Amount,
 			TextSearch = textSearch ?? original.TextSearch,
@@ -235,4 +284,5 @@ public sealed class GetLocationsQuery : IQuery
 			Includes = includes is null ? original.Includes : [.. includes],
 			UseOrderByName = orderByName ?? original.UseOrderByName,
 		};
+	}
 }

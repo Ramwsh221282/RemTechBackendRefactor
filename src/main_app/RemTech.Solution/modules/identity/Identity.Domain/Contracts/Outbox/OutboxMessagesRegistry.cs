@@ -19,7 +19,9 @@ public sealed class OutboxMessagesRegistry(IEnumerable<IAccountOutboxMessagePubl
 			foreach (IAccountOutboxMessagePublisher publisher in publishers)
 			{
 				if (publisher.CanPublish(message))
+				{
 					await publisher.Publish(message, ct);
+				}
 			}
 		}
 	}

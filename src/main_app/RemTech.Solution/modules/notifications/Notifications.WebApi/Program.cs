@@ -11,5 +11,5 @@ app.Run();
 
 namespace Notifications.WebApi
 {
-    public partial class Program { }
+	public partial class Program { }
 }

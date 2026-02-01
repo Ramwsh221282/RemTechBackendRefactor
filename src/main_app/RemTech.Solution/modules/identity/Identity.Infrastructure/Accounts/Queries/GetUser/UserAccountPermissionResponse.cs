@@ -15,6 +15,8 @@ public sealed record UserAccountPermissionResponse(Guid Id, string Name, string 
 	/// </summary>
 	/// <param name="permission">Модель разрешения.</param>
 	/// <returns>Экземпляр <see cref="UserAccountPermissionResponse"/>.</returns>
-	public static UserAccountPermissionResponse Create(Permission permission) =>
-		new(permission.Id.Value, permission.Name.Value, permission.Description.Value);
+	public static UserAccountPermissionResponse Create(Permission permission)
+	{
+		return new(permission.Id.Value, permission.Name.Value, permission.Description.Value);
+	}
 }

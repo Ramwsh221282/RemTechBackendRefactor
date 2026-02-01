@@ -27,7 +27,7 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 	/// <param name="query">Запрос для фильтрации коллекции подписанных парсеров.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Коллекция подписанных парсеров.</returns>
-	public async Task<SubscribedParsersCollection> Get(
+	public async Task<SubscribedParsersCollection> Read(
 		SubscribedParsersCollectionQuery query,
 		CancellationToken ct = default
 	)
@@ -61,9 +61,15 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
 		SubscribedParsersCollection collection = await MapFromReader(reader, ct);
 		if (collection.IsEmpty())
+		{
 			return collection;
+		}
+
 		if (query.WithLock)
+		{
 			await BlockParsers(collection.GetIdentifiers(), ct);
+		}
+
 		_changeTracker.StartTracking(collection);
 		return collection;
 	}
@@ -74,8 +80,10 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 	/// <param name="collection">Коллекция подписанных парсеров для сохранения изменений.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции сохранения изменений.</returns>
-	public Task<Result<Unit>> SaveChanges(SubscribedParsersCollection collection, CancellationToken ct = default) =>
-		_changeTracker.SaveChanges(collection, session, ct);
+	public Task<Result<Unit>> SaveChanges(SubscribedParsersCollection collection, CancellationToken ct = default)
+	{
+		return _changeTracker.SaveChanges(collection, session, ct);
+	}
 
 	private static async Task<SubscribedParsersCollection> MapFromReader(DbDataReader reader, CancellationToken ct)
 	{
@@ -91,7 +99,9 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 
 			Guid? linkId = reader.GetNullable<Guid>("link_id");
 			if (!linkId.HasValue)
+			{
 				continue;
+			}
 
 			SubscribedParserLink link = MapParserLink(linkId.Value, parser, reader);
 			Result<Unit> result = parser.AddLinkIgnoringStatePolitics(link);
@@ -309,28 +319,43 @@ public sealed class SubscribedParsersCollectionRepository(NpgSqlSession session,
 			List<string> setClauses = [];
 
 			if (ids.Count == 0)
+			{
 				return Result.Success(Unit.Value);
+			}
 			if (stateCases.Count > 0)
+			{
 				setClauses.Add($"state = CASE {string.Join(" ", stateCases)} ELSE state END");
+			}
 			if (waitDaysCases.Count > 0)
+			{
 				setClauses.Add($"wait_days = CASE {string.Join(" ", waitDaysCases)} ELSE wait_days END");
+			}
 			if (nextRunCases.Count > 0)
+			{
 				setClauses.Add($"next_run = CASE {string.Join(" ", nextRunCases)} ELSE next_run END");
+			}
 			if (finishedAtCases.Count > 0)
+			{
 				setClauses.Add($"finished_at = CASE {string.Join(" ", finishedAtCases)} ELSE finished_at END");
+			}
 			if (startedAtCases.Count > 0)
+			{
 				setClauses.Add($"started_at = CASE {string.Join(" ", startedAtCases)} ELSE started_at END");
+			}
 			if (processedCases.Count > 0)
+			{
 				setClauses.Add($"processed = CASE {string.Join(" ", processedCases)} ELSE processed END");
+			}
 			if (elapsedSecondsCases.Count > 0)
 			{
 				setClauses.Add(
 					$"elapsed_seconds = CASE {string.Join(" ", elapsedSecondsCases)} ELSE elapsed_seconds END"
 				);
 			}
-
 			if (setClauses.Count == 0)
+			{
 				return Result.Success(Unit.Value);
+			}
 
 			string sql = $"""
 				UPDATE parsers_control_module.registered_parsers p

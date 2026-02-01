@@ -113,7 +113,10 @@ public sealed class Vehicle(
 		VehicleCharacteristicByNameComparer comparer = new VehicleCharacteristicByNameComparer();
 		HashSet<VehicleCharacteristic> result = new(comparer);
 		foreach (VehicleCharacteristicToAdd characteristic in characteristics)
+		{
 			result.Add(new VehicleCharacteristic(this, characteristic.Characteristic, characteristic.Value));
+		}
+
 		Characteristics = [.. result];
 	}
 }

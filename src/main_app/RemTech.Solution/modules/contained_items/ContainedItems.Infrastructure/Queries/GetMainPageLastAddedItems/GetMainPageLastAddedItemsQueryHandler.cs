@@ -19,14 +19,20 @@ public sealed class GetMainPageLastAddedItemsQueryHandler(NpgSqlSession session)
 	/// </summary>
 	/// <param name="spare">Данные запчасти.</param>
 	/// <returns>Элемент содержащегося элемента, представляющий запчасть.</returns>
-	public static MainPageLastAddedItem CreateAsSpare(SpareData spare) => new(spare, null);
+	public static MainPageLastAddedItem CreateAsSpare(SpareData spare)
+	{
+		return new(spare, null);
+	}
 
 	/// <summary>
 	/// Создает элемент содержащегося элемента как технику.
 	/// </summary>
 	/// <param name="vehicle">Данные техники.</param>
 	/// <returns>Элемент содержащегося элемента, представляющий технику.</returns>
-	public static MainPageLastAddedItem CreateAsVehicle(VehicleData vehicle) => new(null, vehicle);
+	public static MainPageLastAddedItem CreateAsVehicle(VehicleData vehicle)
+	{
+		return new(null, vehicle);
+	}
 
 	/// <summary>
 	/// Обрабатывает запрос для получения последних добавленных элементов на главную страницу.
@@ -108,10 +114,14 @@ public sealed class GetMainPageLastAddedItemsQueryHandler(NpgSqlSession session)
 			int spareDataPosition = reader.GetOrdinal("spare");
 
 			if (!await reader.IsDBNullAsync(vehicleDataPosition, ct))
+			{
 				ParseAndAddVehicleItem(reader.GetString(vehicleDataPosition), items);
+			}
 
 			if (!await reader.IsDBNullAsync(spareDataPosition, ct))
+			{
 				ParseAndAddSpareItem(reader.GetString(spareDataPosition), items);
+			}
 		}
 
 		return new MainPageLastAddedItemsResponse(items);
@@ -120,25 +130,34 @@ public sealed class GetMainPageLastAddedItemsQueryHandler(NpgSqlSession session)
 	private static void ParseAndAddSpareItem(string spareDataJson, List<MainPageLastAddedItem> collection)
 	{
 		if (string.IsNullOrWhiteSpace(spareDataJson))
+		{
 			return;
+		}
 
 		using JsonDocument doc = JsonDocument.Parse(spareDataJson);
 		Guid id = doc.RootElement.GetProperty("id").GetGuid();
 		string? title = doc.RootElement.GetProperty("title").GetString();
 		if (!string.IsNullOrWhiteSpace(title))
+		{
 			collection.Add(CreateAsSpare(new SpareData(id, title)));
+		}
 	}
 
 	private static void ParseAndAddVehicleItem(string vehicleDataJson, List<MainPageLastAddedItem> collection)
 	{
 		if (string.IsNullOrWhiteSpace(vehicleDataJson))
+		{
 			return;
+		}
 
 		using JsonDocument doc = JsonDocument.Parse(vehicleDataJson);
 		Guid id = doc.RootElement.GetProperty("id").GetGuid();
 		string? title = doc.RootElement.GetProperty("title").GetString();
 		if (string.IsNullOrWhiteSpace(title))
+		{
 			return;
+		}
+
 		string[]? photos = JsonSerializer.Deserialize<string[]>(doc.RootElement.GetProperty("photos"));
 		photos ??= [];
 		List<VehicleDataCharacteristic> characteristics = [];
@@ -147,10 +166,16 @@ public sealed class GetMainPageLastAddedItemsQueryHandler(NpgSqlSession session)
 		{
 			string value = element.GetProperty("value").GetString() ?? string.Empty;
 			if (string.IsNullOrWhiteSpace(value))
+			{
 				continue;
+			}
+
 			string characteristic = element.GetProperty("characteristic").GetString() ?? string.Empty;
 			if (string.IsNullOrWhiteSpace(characteristic))
+			{
 				continue;
+			}
+
 			characteristics.Add(new VehicleDataCharacteristic(characteristic, value));
 		}
 

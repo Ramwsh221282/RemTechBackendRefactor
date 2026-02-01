@@ -50,7 +50,10 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogge
 	/// </summary>
 	/// <param name="tokenString">Строка access токена.</param>
 	/// <returns>Структурированный access токен.</returns>
-	public AccessToken ReadToken(string tokenString) => CreateStructuredAccessToken(tokenString);
+	public AccessToken ReadToken(string tokenString)
+	{
+		return CreateStructuredAccessToken(tokenString);
+	}
 
 	/// <summary>
 	/// Проверяет валидность JWT токена.
@@ -63,9 +66,14 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogge
 		{
 			JwtSecurityTokenHandler handler = new();
 			if (!handler.CanValidateToken)
+			{
 				return Error.Unauthorized("Invalid token");
+			}
+
 			if (!handler.CanReadToken(jwtToken))
+			{
 				return Error.Unauthorized("Invalid token");
+			}
 
 			TokenValidationParameters parameters = CreateValidationParameters();
 			TokenValidationResult validationResult = await handler.ValidateTokenAsync(jwtToken, parameters);
@@ -131,7 +139,10 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogge
 	private TokenValidationParameters CreateValidationParameters()
 	{
 		if (_validationParameters is not null)
+		{
 			return _validationParameters;
+		}
+
 		_validationParameters = new TokenValidationParameters()
 		{
 			ValidateIssuer = true,
@@ -142,6 +153,7 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogge
 			ValidAudience = Options.Audience,
 			ValidIssuer = Options.Issuer,
 		};
+
 		return _validationParameters;
 	}
 
@@ -158,13 +170,15 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogge
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
 
-	private SecurityTokenDescriptor CreateTokenDescriptor(Account account) =>
-		new()
+	private SecurityTokenDescriptor CreateTokenDescriptor(Account account)
+	{
+		return new()
 		{
 			Subject = CreateClaims(account),
 			Expires = DateTime.UtcNow.AddMinutes(5),
 			SigningCredentials = CreateSigningCredentials(),
 		};
+	}
 
 	private SigningCredentials CreateSigningCredentials()
 	{

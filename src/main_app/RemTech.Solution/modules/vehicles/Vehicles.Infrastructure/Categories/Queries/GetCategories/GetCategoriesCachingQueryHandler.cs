@@ -23,18 +23,26 @@ public sealed class GetCategoriesCachingQueryHandler(
 	public Task<IEnumerable<CategoryResponse>> ExecuteWithCache(
 		GetCategoriesQuery query,
 		CancellationToken ct = default
-	) => ReadFromCache(query, CreateCacheKey(query), ct);
+	)
+	{
+		return ReadFromCache(query, CreateCacheKey(query), ct);
+	}
 
-	private static string CreateCacheKey(GetCategoriesQuery query) => $"{nameof(GetCategoriesQuery)}_{query}";
+	private static string CreateCacheKey(GetCategoriesQuery query)
+	{
+		return $"{nameof(GetCategoriesQuery)}_{query}";
+	}
 
 	private async Task<IEnumerable<CategoryResponse>> ReadFromCache(
 		GetCategoriesQuery query,
 		string key,
 		CancellationToken ct
-	) =>
-		await cache.GetOrCreateAsync(
+	)
+	{
+		return await cache.GetOrCreateAsync(
 			key,
 			async cancellationToken => await inner.Handle(query, cancellationToken),
 			cancellationToken: ct
 		);
+	}
 }

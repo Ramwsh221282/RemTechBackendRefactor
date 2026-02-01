@@ -17,6 +17,8 @@ public sealed record VehiclePersistInfo(Vehicle Vehicle, Location Location) : IP
 	/// <param name="persister">Персистер для сохранения данных.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат сохранения информации о транспортном средстве.</returns>
-	public Task<Result<VehiclePersistInfo>> SaveBy(IPersister persister, CancellationToken ct = default) =>
-		persister.Save(this, ct);
+	public Task<Result<VehiclePersistInfo>> SaveBy(IPersister persister, CancellationToken ct = default)
+	{
+		return persister.Save(this, ct);
+	}
 }

@@ -32,7 +32,10 @@ public sealed class PendingEmailNotificationsSpecification
 	public PendingEmailNotificationsSpecification OfSentOnly()
 	{
 		if (SentOnly.HasValue)
+		{
 			return this;
+		}
+
 		SentOnly = true;
 		return this;
 	}
@@ -44,7 +47,10 @@ public sealed class PendingEmailNotificationsSpecification
 	public PendingEmailNotificationsSpecification OfNotSentOnly()
 	{
 		if (NotSentOnly.HasValue)
+		{
 			return this;
+		}
+
 		NotSentOnly = true;
 		return this;
 	}
@@ -56,7 +62,10 @@ public sealed class PendingEmailNotificationsSpecification
 	public PendingEmailNotificationsSpecification WithLock()
 	{
 		if (LockRequired.HasValue)
+		{
 			return this;
+		}
+
 		LockRequired = true;
 		return this;
 	}
@@ -69,7 +78,10 @@ public sealed class PendingEmailNotificationsSpecification
 	public PendingEmailNotificationsSpecification WithLimit(int limit)
 	{
 		if (Limit.HasValue)
+		{
 			return this;
+		}
+
 		Limit = limit;
 		return this;
 	}

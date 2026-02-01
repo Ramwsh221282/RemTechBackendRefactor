@@ -26,8 +26,10 @@ public sealed class AddContainedItemsHandler(IContainedItemsRepository repositor
 		return await repository.AddMany(items, ct);
 	}
 
-	private static IEnumerable<ContainedItem> ConvertToContainedItems(IEnumerable<AddContainedItemsBody> bodies) =>
-		bodies.Select(ConvertToContainedItem);
+	private static IEnumerable<ContainedItem> ConvertToContainedItems(IEnumerable<AddContainedItemsBody> bodies)
+	{
+		return bodies.Select(ConvertToContainedItem);
+	}
 
 	private static ContainedItem ConvertToContainedItem(AddContainedItemsBody body)
 	{

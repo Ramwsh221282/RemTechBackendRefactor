@@ -72,16 +72,19 @@ public sealed class ParserResponseModel
 	/// </summary>
 	/// <param name="parsers">Коллекция парсеров для преобразования.</param>
 	/// <returns>Коллекция моделей ответа парсеров.</returns>
-	public static IEnumerable<ParserResponseModel> ConvertFrom(IEnumerable<SubscribedParser> parsers) =>
-		parsers.Select(ConvertFrom).ToArray();
+	public static IEnumerable<ParserResponseModel> ConvertFrom(IEnumerable<SubscribedParser> parsers)
+	{
+		return parsers.Select(ConvertFrom).ToArray();
+	}
 
 	/// <summary>
 	/// Преобразование парсера в модель ответа.
 	/// </summary>
 	/// <param name="parser">Парсер для преобразования.</param>
 	/// <returns>Модель ответа парсера.</returns>
-	public static ParserResponseModel ConvertFrom(SubscribedParser parser) =>
-		new()
+	public static ParserResponseModel ConvertFrom(SubscribedParser parser)
+	{
+		return new()
 		{
 			Id = parser.Id.Value,
 			Type = parser.Identity.ServiceType,
@@ -96,4 +99,5 @@ public sealed class ParserResponseModel
 			NextRun = parser.Schedule.NextRun,
 			FinishedAt = parser.Schedule.FinishedAt,
 		};
+	}
 }

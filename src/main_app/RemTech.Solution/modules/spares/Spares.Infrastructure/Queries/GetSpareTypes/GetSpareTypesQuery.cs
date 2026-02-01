@@ -24,32 +24,46 @@ public sealed class GetSpareTypesQuery : IQuery
 	/// Создаёт запрос на получение типов запчастей.
 	/// </summary>
 	/// <returns>Созданный запрос на получение типов запчастей.</returns>
-	public static GetSpareTypesQuery Create() => new();
+	public static GetSpareTypesQuery Create()
+	{
+		return new();
+	}
 
 	/// <summary>
 	/// Добавляет текст для поиска типов запчастей.
 	/// </summary>
 	/// <param name="text">Текст для поиска типов запчастей.</param>
 	/// <returns>Обновлённый запрос на получение типов запчастей.</returns>
-	public GetSpareTypesQuery WithTextSearch(string? text) => Clone(this, textSearch: text);
+	public GetSpareTypesQuery WithTextSearch(string? text)
+	{
+		return Clone(this, textSearch: text);
+	}
 
 	/// <summary>
 	/// Добавляет количество типов запчастей для получения.
 	/// </summary>
 	/// <param name="amount">Количество типов запчастей для получения.</param>
 	/// <returns>Обновлённый запрос на получение типов запчастей.</returns>
-	public GetSpareTypesQuery WithAmount(int? amount) => Clone(this, amount: amount);
+	public GetSpareTypesQuery WithAmount(int? amount)
+	{
+		return Clone(this, amount: amount);
+	}
 
 	/// <summary>
 	/// Преобразует запрос в строку.
 	/// </summary>
 	/// <returns>Строковое представление запроса на получение типов запчастей.</returns>
-	public override string ToString() => JsonSerializer.Serialize(this);
+	public override string ToString()
+	{
+		return JsonSerializer.Serialize(this);
+	}
 
-	private static GetSpareTypesQuery Clone(GetSpareTypesQuery origin, string? textSearch = null, int? amount = null) =>
-		new()
+	private static GetSpareTypesQuery Clone(GetSpareTypesQuery origin, string? textSearch = null, int? amount = null)
+	{
+		return new()
 		{
 			TextSearch = string.IsNullOrWhiteSpace(textSearch) ? origin.TextSearch : textSearch,
 			Amount = amount ?? origin.Amount,
 		};
+	}
 }

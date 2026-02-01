@@ -34,7 +34,9 @@ public sealed class RefreshTokenHandler(
 	{
 		Result<RefreshToken> refreshToken = await refreshTokens.Find(command.RefreshToken, withLock: true, ct);
 		if (refreshToken.IsFailure)
+		{
 			return Error.Unauthorized("Token not found.");
+		}
 
 		if (refreshToken.Value.IsExpired(tokenManager))
 		{
@@ -44,7 +46,9 @@ public sealed class RefreshTokenHandler(
 
 		Result<Account> account = await GetRequiredAccount(refreshToken.Value, ct);
 		if (account.IsFailure)
+		{
 			return Error.Unauthorized("Account not found.");
+		}
 
 		AccessToken newAccessToken = tokenManager.GenerateToken(account.Value);
 		RefreshToken newRefreshToken = tokenManager.GenerateRefreshToken(account.Value.Id.Value);

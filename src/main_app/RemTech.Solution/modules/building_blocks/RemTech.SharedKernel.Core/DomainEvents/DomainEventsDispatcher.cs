@@ -14,7 +14,10 @@ public sealed class DomainEventsDispatcher(IEnumerable<IDomainEventHandler> hand
 	/// <param name="bearer">Носитель доменных событий.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Задача, представляющая асинхронную операцию.</returns>
-	public Task Dispatch(IDomainEventBearer bearer, CancellationToken ct = default) => Dispatch(bearer.Events, ct);
+	public Task Dispatch(IDomainEventBearer bearer, CancellationToken ct = default)
+	{
+		return Dispatch(bearer.Events, ct);
+	}
 
 	/// <summary>
 	/// Диспетчеризация доменного события.

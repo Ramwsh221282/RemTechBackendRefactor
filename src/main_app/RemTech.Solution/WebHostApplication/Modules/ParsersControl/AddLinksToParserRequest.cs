@@ -1,4 +1,4 @@
-﻿namespace WebHostApplication.Modules.parsers_control;
+﻿namespace WebHostApplication.Modules.ParsersControl;
 
 /// <summary>
 /// Запрос на добавление ссылок к парсеру.

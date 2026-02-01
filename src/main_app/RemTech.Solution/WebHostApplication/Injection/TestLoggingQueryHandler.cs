@@ -37,7 +37,8 @@ public sealed class TestLoggingQueryHandler<TQuery, TResult>(
 		return result;
 	}
 
-	private void LogEntry(TQuery query) =>
+	private void LogEntry(TQuery query)
+	{
 		Logger.Information(
 			"""
 			Executing query: {Query}
@@ -46,12 +47,15 @@ public sealed class TestLoggingQueryHandler<TQuery, TResult>(
 			typeof(TQuery).Name,
 			query.ToString()
 		);
+	}
 
-	private void LogFinish(Stopwatch stopwatch) =>
+	private void LogFinish(Stopwatch stopwatch)
+	{
 		Logger.Information(
 			"""
 			Query executed in {ElapsedMilliseconds} ms.
 			""",
 			stopwatch.ElapsedMilliseconds
 		);
+	}
 }

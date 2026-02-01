@@ -7,5 +7,5 @@ app.Run();
 
 namespace Identity.WebApi
 {
-    public partial class Program { }
+	public partial class Program { }
 }

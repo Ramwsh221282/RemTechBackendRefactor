@@ -27,7 +27,10 @@ public sealed record CategoryName
 	public static Result<CategoryName> Create(string value)
 	{
 		if (string.IsNullOrWhiteSpace(value))
+		{
 			return Error.Validation("Имя категории не может быть пустым.");
+		}
+
 		return value.Length > MAX_LENGTH
 			? Error.Validation($"Имя категории не может быть больше {MAX_LENGTH} символов.")
 			: new CategoryName(value);

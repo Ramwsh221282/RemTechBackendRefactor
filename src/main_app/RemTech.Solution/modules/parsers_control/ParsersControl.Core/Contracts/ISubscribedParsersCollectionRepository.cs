@@ -14,7 +14,7 @@ public interface ISubscribedParsersCollectionRepository
 	/// <param name="query">Запрос коллекции.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Коллекция подписанных парсеров.</returns>
-	Task<SubscribedParsersCollection> Get(SubscribedParsersCollectionQuery query, CancellationToken ct = default);
+	Task<SubscribedParsersCollection> Read(SubscribedParsersCollectionQuery query, CancellationToken ct = default);
 
 	/// <summary>
 	/// Сохраняет изменения в коллекции подписанных парсеров.

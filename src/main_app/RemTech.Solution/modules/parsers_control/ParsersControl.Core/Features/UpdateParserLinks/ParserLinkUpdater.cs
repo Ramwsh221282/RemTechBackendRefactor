@@ -55,7 +55,10 @@ public sealed class ParserLinkUpdater
 	/// </summary>
 	/// <param name="link">Ссылка парсера для проверки принадлежности.</param>
 	/// <returns>True, если обновитель принадлежит указанной ссылке парсера; в противном случае false.</returns>
-	public bool UpdateBelongsTo(SubscribedParserLink link) => Id == link.Id;
+	public bool UpdateBelongsTo(SubscribedParserLink link)
+	{
+		return Id == link.Id;
+	}
 
 	/// <summary>
 	/// Обновляет ссылку парсера.
@@ -66,13 +69,20 @@ public sealed class ParserLinkUpdater
 	{
 		Result<SubscribedParserLink> editing = link.Edit(Name, Url);
 		if (editing.IsFailure)
+		{
 			return Result.Failure(editing.Error);
+		}
+
 		if (Activity.HasValue)
 		{
 			if (Activity.Value)
+			{
 				link.Enable();
+			}
 			else
+			{
 				link.Disable();
+			}
 		}
 
 		return editing;

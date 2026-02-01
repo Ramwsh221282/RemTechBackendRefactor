@@ -22,6 +22,10 @@ public sealed record SpareAddress
 	/// </summary>
 	/// <param name="value">Значение адреса.</param>
 	/// <returns>Результат создания адреса запчасти.</returns>
-	public static Result<SpareAddress> Create(string value) =>
-		string.IsNullOrWhiteSpace(value) ? Error.Validation("Адрес не может быть пустым") : new SpareAddress(value);
+	public static Result<SpareAddress> Create(string value)
+	{
+		return string.IsNullOrWhiteSpace(value)
+			? Error.Validation("Адрес не может быть пустым")
+			: new SpareAddress(value);
+	}
 }

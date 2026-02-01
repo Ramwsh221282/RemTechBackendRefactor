@@ -43,6 +43,8 @@ public class AesEncryptionOptions
 	private void ValidatePlainKey()
 	{
 		if (string.IsNullOrWhiteSpace(PlainKey))
+		{
 			throw new ArgumentException("Cannot use Aes Encryption Options. Plain key was not set.");
+		}
 	}
 }

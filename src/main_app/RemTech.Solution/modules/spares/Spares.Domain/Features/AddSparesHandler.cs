@@ -18,7 +18,9 @@ public sealed class AddSparesHandler(ISparesRepository repository) : ICommandHan
 	/// </summary>
 	/// <param name="spareInfo">Информация о запчастях для создания.</param>
 	/// <returns>Массив созданных запчастей.</returns>
-	public static Spare[] CreateSpares(IEnumerable<AddSpareCommandPayload> spareInfo) =>
+	public static Spare[] CreateSpares(IEnumerable<AddSpareCommandPayload> spareInfo)
+	{
+		return
 		[
 			.. spareInfo
 				.Select(info =>
@@ -37,6 +39,7 @@ public sealed class AddSparesHandler(ISparesRepository repository) : ICommandHan
 				.Where(r => r.IsSuccess)
 				.Select(s => s.Value),
 		];
+	}
 
 	/// <summary>
 	/// Выполняет команду добавления запчастей.

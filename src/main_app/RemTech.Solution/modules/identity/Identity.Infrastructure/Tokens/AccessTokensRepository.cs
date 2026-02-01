@@ -178,7 +178,10 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 	{
 		AccessToken[] tokensArray = [.. tokens];
 		if (tokensArray.Length == 0)
+		{
 			return;
+		}
+
 		Guid[] ids = [.. tokensArray.Select(t => t.TokenId)];
 		const string sql = """
 			DELETE FROM identity_module.access_tokens
@@ -231,5 +234,8 @@ public sealed class AccessTokensRepository(NpgSqlSession session) : IAccessToken
 		};
 	}
 
-	private static string LockClause(bool withLock) => withLock ? "FOR UPDATE" : string.Empty;
+	private static string LockClause(bool withLock)
+	{
+		return withLock ? "FOR UPDATE" : string.Empty;
+	}
 }

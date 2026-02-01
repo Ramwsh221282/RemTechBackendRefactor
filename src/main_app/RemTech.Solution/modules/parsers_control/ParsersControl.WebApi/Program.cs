@@ -11,7 +11,7 @@ WebApplication app = builder.Build();
 
 if (args.Contains("--clean-migrations"))
 {
-    app.Services.RollBackModuleMigrations();
+	app.Services.RollBackModuleMigrations();
 }
 
 app.Services.ApplyModuleMigrations();
@@ -22,5 +22,5 @@ app.Run();
 
 namespace ParsersControl.WebApi
 {
-    public partial class Program { }
+	public partial class Program { }
 }

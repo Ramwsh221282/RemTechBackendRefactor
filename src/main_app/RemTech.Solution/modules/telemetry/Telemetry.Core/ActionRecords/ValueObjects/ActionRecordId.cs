@@ -29,7 +29,10 @@ public readonly record struct ActionRecordId
 	/// Создает новый идентификатор действия.
 	/// </summary>
 	/// <returns>Новый идентификатор действия.</returns>
-	public static ActionRecordId New() => new();
+	public static ActionRecordId New()
+	{
+		return new();
+	}
 
 	/// <summary>
 	/// Создает новый идентификатор действия.

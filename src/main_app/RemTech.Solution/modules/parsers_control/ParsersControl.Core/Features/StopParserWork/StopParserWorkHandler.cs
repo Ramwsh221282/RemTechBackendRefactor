@@ -29,15 +29,22 @@ public sealed class StopParserWorkHandler(ISubscribedParsersRepository repositor
 		return saving.IsFailure ? (Result<SubscribedParser>)saving.Error : (Result<SubscribedParser>)parser.Value;
 	}
 
-	private static Result<Unit> FinishWork(Result<SubscribedParser> parser) =>
-		parser.IsFailure ? parser.Error : parser.Value.FinishWork();
+	private static Result<Unit> FinishWork(Result<SubscribedParser> parser)
+	{
+		return parser.IsFailure ? parser.Error : parser.Value.FinishWork();
+	}
 
 	private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> finished, CancellationToken ct)
 	{
 		if (finished.IsFailure)
+		{
 			return Result.Failure(finished.Error);
+		}
 		if (parser.IsFailure)
+		{
 			return Result.Failure(parser.Error);
+		}
+
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();
 	}

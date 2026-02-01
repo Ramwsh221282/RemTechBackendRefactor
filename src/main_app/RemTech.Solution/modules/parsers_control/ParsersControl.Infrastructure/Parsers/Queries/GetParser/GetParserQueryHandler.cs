@@ -24,7 +24,7 @@ public sealed class GetParserQueryHandler(ISubscribedParsersRepository repositor
 	public async Task<ParserResponse?> Handle(GetParserQuery query, CancellationToken ct = default)
 	{
 		SubscribedParserQuery spec = new SubscribedParserQuery().WithId(query.Id);
-		Result<SubscribedParser> result = await Repository.Get(spec, ct);
+		Result<SubscribedParser> result = await Repository.Read(spec, ct);
 		return result.IsFailure ? null : ParserResponse.Create(result.Value);
 	}
 }

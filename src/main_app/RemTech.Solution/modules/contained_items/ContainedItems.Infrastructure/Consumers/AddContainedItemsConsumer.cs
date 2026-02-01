@@ -56,7 +56,10 @@ public sealed class AddContainedItemsConsumer(
 					.Execute(command);
 
 				if (inserted.IsSuccess)
+				{
 					Logger.Information("Added {Count} items.", inserted.Value);
+				}
+
 				await Channel.BasicAckAsync(@event.DeliveryTag, false);
 			}
 			catch (Exception e)
@@ -72,8 +75,10 @@ public sealed class AddContainedItemsConsumer(
 	/// <param name="connection">Подключение к RabbitMQ.</param>
 	/// <param name="ct">Токен отмены для прерывания операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию инициализации канала.</returns>
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
+	{
 		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
+	}
 
 	/// <summary>
 	/// Запускает потребление сообщений.
@@ -92,7 +97,10 @@ public sealed class AddContainedItemsConsumer(
 	/// </summary>
 	/// <param name="ct">Токен отмены для прерывания операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию остановки потребления сообщений и закрытия канала.</returns>
-	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(cancellationToken: ct);
+	public Task Shutdown(CancellationToken ct = default)
+	{
+		return Channel.CloseAsync(cancellationToken: ct);
+	}
 
 	private sealed class AddContainedItemsMessage
 	{
@@ -101,8 +109,10 @@ public sealed class AddContainedItemsConsumer(
 		public string CreatorType { get; set; } = string.Empty;
 		public AddContainedItemMessagePayload[] Items { get; set; } = [];
 
-		public static AddContainedItemsMessage FromEventArgs(BasicDeliverEventArgs ea) =>
-			JsonSerializer.Deserialize<AddContainedItemsMessage>(ea.Body.Span)!;
+		public static AddContainedItemsMessage FromEventArgs(BasicDeliverEventArgs ea)
+		{
+			return JsonSerializer.Deserialize<AddContainedItemsMessage>(ea.Body.Span)!;
+		}
 	}
 
 	private sealed class AddContainedItemMessagePayload

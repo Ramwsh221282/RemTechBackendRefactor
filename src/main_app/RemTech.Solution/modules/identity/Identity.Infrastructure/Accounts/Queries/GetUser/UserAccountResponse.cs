@@ -23,12 +23,14 @@ public sealed record UserAccountResponse(
 	/// </summary>
 	/// <param name="account">Модель аккаунта пользователя.</param>
 	/// <returns>Экземпляр <see cref="UserAccountResponse"/>.</returns>
-	public static UserAccountResponse Create(Account account) =>
-		new(
+	public static UserAccountResponse Create(Account account)
+	{
+		return new(
 			account.Id.Value,
 			account.Login.Value,
 			account.Email.Value,
 			account.ActivationStatus.Value,
-			account.PermissionsList.Select(p => UserAccountPermissionResponse.Create(p))
+			account.PermissionsList.Select(UserAccountPermissionResponse.Create)
 		);
+	}
 }

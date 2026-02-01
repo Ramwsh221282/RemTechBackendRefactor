@@ -15,6 +15,8 @@ public sealed record AccountPermissionsResponse(Guid Id, string Name, string Des
 	/// </summary>
 	/// <param name="permission">Доменная модель права.</param>
 	/// <returns>Ответ с информацией о праве пользователя.</returns>
-	public static AccountPermissionsResponse ConvertFrom(Permission permission) =>
-		new(permission.Id.Value, permission.Name.Value, permission.Description.Value);
+	public static AccountPermissionsResponse ConvertFrom(Permission permission)
+	{
+		return new(permission.Id.Value, permission.Name.Value, permission.Description.Value);
+	}
 }

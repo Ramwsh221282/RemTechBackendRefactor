@@ -35,10 +35,15 @@ public sealed class RegisterAccountHandler(
 	{
 		Result<Unit> approval = await ApproveRegistration(command, ct);
 		if (approval.IsFailure)
+		{
 			return approval.Error;
+		}
+
 		Result<AccountPassword> password = ApprovePassword(command);
 		if (password.IsFailure)
+		{
 			return password.Error;
+		}
 
 		AccountPassword encrypted = password.Value.HashBy(hasher);
 		Account account = CreateAccount(encrypted, command);
@@ -81,7 +86,10 @@ public sealed class RegisterAccountHandler(
 	{
 		Result<Unit> emailCheck = await CheckAccountEmailDuplicate(command.Email, ct);
 		if (emailCheck.IsFailure)
+		{
 			return emailCheck.Error;
+		}
+
 		Result<Unit> loginCheck = await CheckAccountLoginDuplicate(command.Login, ct);
 		return loginCheck.IsFailure ? (Result<Unit>)loginCheck.Error : (Result<Unit>)Unit.Value;
 	}

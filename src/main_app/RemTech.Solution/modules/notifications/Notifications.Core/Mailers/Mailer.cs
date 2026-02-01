@@ -37,7 +37,10 @@ public sealed class Mailer(MailerId id, MailerCredentials credentials)
 	/// Изменяет учетные данные почтовой рассылки.
 	/// </summary>
 	/// <param name="credentials">Новые учетные данные почтовой рассылки.</param>
-	public void ChangeCredentials(MailerCredentials credentials) => Credentials = credentials;
+	public void ChangeCredentials(MailerCredentials credentials)
+	{
+		Credentials = credentials;
+	}
 
 	/// <summary>
 	/// Шифрует учетные данные почтовой рассылки.
@@ -45,8 +48,10 @@ public sealed class Mailer(MailerId id, MailerCredentials credentials)
 	/// <param name="cryptography">Объект для выполнения криптографических операций.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию шифрования.</returns>
-	public async Task EncryptCredentials(IMailerCredentialsCryptography cryptography, CancellationToken ct = default) =>
+	public async Task EncryptCredentials(IMailerCredentialsCryptography cryptography, CancellationToken ct = default)
+	{
 		Credentials = await Credentials.Encrypt(cryptography, ct);
+	}
 
 	/// <summary>
 	/// Дешифрует учетные данные почтовой рассылки.
@@ -54,12 +59,17 @@ public sealed class Mailer(MailerId id, MailerCredentials credentials)
 	/// <param name="cryptography">Объект для выполнения криптографических операций.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию дешифрования.</returns>
-	public async Task DecryptCredentials(IMailerCredentialsCryptography cryptography, CancellationToken ct = default) =>
+	public async Task DecryptCredentials(IMailerCredentialsCryptography cryptography, CancellationToken ct = default)
+	{
 		Credentials = await Credentials.Decrypt(cryptography, ct);
+	}
 
 	/// <summary>
 	/// Создает копию текущей почтовой рассылки.
 	/// </summary>
 	/// <returns>Копия текущей почтовой рассылки.</returns>
-	public Mailer Copy() => new(this);
+	public Mailer Copy()
+	{
+		return new(this);
+	}
 }

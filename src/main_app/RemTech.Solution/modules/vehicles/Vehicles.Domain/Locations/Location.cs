@@ -26,6 +26,8 @@ public sealed class Location(LocationId id, LocationName name) : IPersistable<Lo
 	/// <param name="persister">Персистер для сохранения данных.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат сохранения локации.</returns>
-	public Task<Result<Location>> SaveBy(IPersister persister, CancellationToken ct = default) =>
-		persister.Save(this, ct);
+	public Task<Result<Location>> SaveBy(IPersister persister, CancellationToken ct = default)
+	{
+		return persister.Save(this, ct);
+	}
 }

@@ -60,6 +60,8 @@ public sealed class AccessToken
 	/// </summary>
 	/// <param name="permission">Разрешение для проверки.</param>
 	/// <returns>True, если токен содержит указанное разрешение; в противном случае false.</returns>
-	public bool ContainsPermission(string permission) =>
-		RawPermissionsString.Contains(permission, StringComparison.OrdinalIgnoreCase);
+	public bool ContainsPermission(string permission)
+	{
+		return RawPermissionsString.Contains(permission, StringComparison.OrdinalIgnoreCase);
+	}
 }

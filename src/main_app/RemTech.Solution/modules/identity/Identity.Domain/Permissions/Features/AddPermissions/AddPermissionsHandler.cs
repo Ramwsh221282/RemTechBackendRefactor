@@ -27,7 +27,10 @@ public sealed class AddPermissionsHandler(IPermissionsRepository repository)
 		IEnumerable<Permission> existing = await GetExistingPermissions(specifications, ct);
 
 		if (HasDuplicates(existing, out Error error))
+		{
 			return error;
+		}
+
 		await repository.Add(permissions, ct);
 		return Result.Success(permissions);
 	}
@@ -46,17 +49,25 @@ public sealed class AddPermissionsHandler(IPermissionsRepository repository)
 		return false;
 	}
 
-	private static IEnumerable<Permission> CreatePermissions(IEnumerable<AddPermissionCommandPayload> payloads) =>
-		payloads.Select(p =>
+	private static IEnumerable<Permission> CreatePermissions(IEnumerable<AddPermissionCommandPayload> payloads)
+	{
+		return payloads.Select(p =>
 			Permission.CreateNew(PermissionName.Create(p.Name), PermissionDescription.Create(p.Description))
 		);
+	}
 
 	private static IEnumerable<PermissionSpecification> CreateSpecificationsForExistanceCheck(
 		IEnumerable<Permission> permissions
-	) => permissions.Select(p => new PermissionSpecification().WithName(p.Name.Value));
+	)
+	{
+		return permissions.Select(p => new PermissionSpecification().WithName(p.Name.Value));
+	}
 
 	private Task<IEnumerable<Permission>> GetExistingPermissions(
 		IEnumerable<PermissionSpecification> specifications,
 		CancellationToken ct
-	) => repository.GetMany(specifications, ct);
+	)
+	{
+		return repository.GetMany(specifications, ct);
+	}
 }

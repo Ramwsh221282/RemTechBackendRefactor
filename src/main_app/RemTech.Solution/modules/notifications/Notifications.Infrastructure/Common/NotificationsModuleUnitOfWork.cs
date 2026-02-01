@@ -24,7 +24,10 @@ public sealed class NotificationsModuleUnitOfWork(
 	/// <param name="mailers">Коллекция почтовых ящиков для сохранения.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения.</returns>
-	public Task Save(IEnumerable<Mailer> mailers, CancellationToken ct = default) => Mailers.Save(mailers, ct);
+	public Task Save(IEnumerable<Mailer> mailers, CancellationToken ct = default)
+	{
+		return Mailers.Save(mailers, ct);
+	}
 
 	/// <summary>
 	/// Сохраняет изменения почтового ящика.
@@ -32,7 +35,10 @@ public sealed class NotificationsModuleUnitOfWork(
 	/// <param name="mailer">Почтовый ящик для сохранения.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения.</returns>
-	public Task Save(Mailer mailer, CancellationToken ct = default) => Mailers.Save([mailer], ct);
+	public Task Save(Mailer mailer, CancellationToken ct = default)
+	{
+		return Mailers.Save([mailer], ct);
+	}
 
 	/// <summary>
 	/// Сохраняет изменения ожидающих email-уведомлений.
@@ -40,18 +46,26 @@ public sealed class NotificationsModuleUnitOfWork(
 	/// <param name="notifications">Коллекция ожидающих email-уведомлений для сохранения.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию сохранения.</returns>
-	public Task Save(IEnumerable<PendingEmailNotification> notifications, CancellationToken ct = default) =>
-		pendingEmails.Save(notifications, ct);
+	public Task Save(IEnumerable<PendingEmailNotification> notifications, CancellationToken ct = default)
+	{
+		return pendingEmails.Save(notifications, ct);
+	}
 
 	/// <summary>
 	/// Отслеживает изменения почтовых ящиков.
 	/// </summary>
 	/// <param name="mailers">Коллекция почтовых ящиков для отслеживания.</param>
-	public void Track(IEnumerable<Mailer> mailers) => Mailers.Track(mailers);
+	public void Track(IEnumerable<Mailer> mailers)
+	{
+		Mailers.Track(mailers);
+	}
 
 	/// <summary>
 	/// Отслеживает изменения ожидающих email-уведомлений.
 	/// </summary>
 	/// <param name="notifications">Коллекция ожидающих email-уведомлений для отслеживания.</param>
-	public void Track(IEnumerable<PendingEmailNotification> notifications) => pendingEmails.Track(notifications);
+	public void Track(IEnumerable<PendingEmailNotification> notifications)
+	{
+		
+	}
 }

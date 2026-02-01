@@ -24,7 +24,10 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
 	{
 		IEnumerable<Permission> tracking = GetTrackingPermissions(permissions);
 		if (!tracking.Any())
+		{
 			return;
+		}
+
 		await SavePermissionChanges(tracking, ct);
 	}
 
@@ -35,10 +38,15 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
 	public void StartTracking(IEnumerable<Permission> permissions)
 	{
 		foreach (Permission permission in permissions)
+		{
 			_tracking.TryAdd(permission.Id.Value, permission.Clone());
+		}
 	}
 
-	private static string WhenClause(int index) => $"WHEN p.id = @permission_id_{index}";
+	private static string WhenClause(int index)
+	{
+		return $"WHEN p.id = @permission_id_{index}";
+	}
 
 	private async Task SavePermissionChanges(IEnumerable<Permission> permissions, CancellationToken ct)
 	{
@@ -79,7 +87,9 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
 		}
 
 		if (setClauses.Count == 0)
+		{
 			return;
+		}
 
 		List<Guid> ids = [];
 		int index = 0;
@@ -109,7 +119,9 @@ public sealed class PermissionsChangeTracker(NpgSqlSession session)
 		foreach (Permission permission in permissions)
 		{
 			if (_tracking.ContainsKey(permission.Id.Value))
+			{
 				tracking.Add(permission);
+			}
 		}
 
 		return tracking;

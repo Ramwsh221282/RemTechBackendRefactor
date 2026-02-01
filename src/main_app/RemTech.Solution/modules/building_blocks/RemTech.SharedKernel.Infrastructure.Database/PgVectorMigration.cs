@@ -16,10 +16,16 @@ public sealed class PgVectorMigration : Migration
 	/// <summary>
 	/// Применяет миграцию, создавая расширение PgVector, если оно еще не существует.
 	/// </summary>
-	public override void Up() => Execute.Sql("CREATE EXTENSION IF NOT EXISTS vector;");
+	public override void Up()
+	{
+		Execute.Sql("CREATE EXTENSION IF NOT EXISTS vector;");
+	}
 
 	/// <summary>
 	/// Откатывает миграцию, удаляя расширение PgVector, если оно существует.
 	/// </summary>
-	public override void Down() => Execute.Sql("DROP EXTENSION IF EXISTS vector;");
+	public override void Down()
+	{
+		Execute.Sql("DROP EXTENSION IF EXISTS vector;");
+	}
 }

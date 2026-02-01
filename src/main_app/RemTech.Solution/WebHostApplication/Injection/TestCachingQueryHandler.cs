@@ -1,4 +1,6 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -22,6 +24,8 @@ public sealed class TestCachingQueryHandler<TQuery, TResult>(HybridCache cache, 
 {
 	private static HybridCacheEntryOptions _cacheOptions =>
 		new() { Expiration = TimeSpan.FromMinutes(5), LocalCacheExpiration = TimeSpan.FromMinutes(5) };
+
+	private static readonly ConcurrentDictionary<Type, bool> _cachingAttributeCache = new();
 	private HybridCache Cache { get; } = cache;
 	private IQueryHandler<TQuery, TResult> Inner { get; } = inner;
 
@@ -44,13 +48,21 @@ public sealed class TestCachingQueryHandler<TQuery, TResult>(HybridCache cache, 
 		byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
 		StringBuilder sb = new(bytes.Length * 2);
 		foreach (byte b in bytes)
+		{
 			sb.Append(b.ToString("x2"));
+		}
+
 		return sb.ToString();
 	}
 
 	private async Task<TResult> ReadFromCache(TQuery query, CancellationToken ct)
 	{
-		string hashedPayload = ToSha256Hash(query.ToString());
+		if (!HasCachingAttribute(Inner))
+		{
+			return await ReadFromOriginSource(query, ct);
+		}
+
+		string hashedPayload = ToSha256Hash(query.ToString()!);
 		string key = $"{typeof(TQuery).Name}:{hashedPayload}";
 		return await Cache.GetOrCreateAsync(
 			key,
@@ -59,4 +71,87 @@ public sealed class TestCachingQueryHandler<TQuery, TResult>(HybridCache cache, 
 			cancellationToken: ct
 		);
 	}
+
+	private Task<TResult> ReadFromOriginSource(TQuery query, CancellationToken ct)
+	{
+		return Inner.Handle(query, ct);
+	}
+
+	private static bool HasCachingAttribute(object? instance)
+	{
+		if (instance is null)
+		{
+			return false;
+		}
+
+		Type rootType = instance.GetType();
+		return _cachingAttributeCache.GetOrAdd(
+			rootType,
+			static t =>
+			{
+				HashSet<Type> visited = [];
+				return HasTransactionalAttributeForTypeRecursive(t, visited);
+			}
+		);
+	}
+
+	private static bool HasTransactionalAttributeForTypeRecursive(Type type, ISet<Type> visited)
+	{
+		if (!visited.Add(type))
+		{
+			return false;
+		}
+
+		if (type.GetCustomAttribute<UseCacheAttribute>() != null)
+		{
+			return true;
+		}
+
+		const BindingFlags flags =
+			BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
+
+		foreach (FieldInfo field in type.GetFields(flags))
+		{
+			Type fieldType = field.FieldType;
+
+			if (fieldType.GetCustomAttribute<UseCacheAttribute>() != null)
+			{
+				return true;
+			}
+
+			if (HasTransactionalAttributeForTypeRecursive(fieldType, visited))
+			{
+				return true;
+			}
+		}
+
+		// тут начинается рекурсия по свойствам вложенного типа
+		foreach (PropertyInfo prop in type.GetProperties(flags))
+		{
+			if (prop.GetIndexParameters().Length > 0)
+			{
+				continue;
+			}
+
+			Type propType = prop.PropertyType;
+
+			if (propType.GetCustomAttribute<UseCacheAttribute>() != null)
+			{
+				return true;
+			}
+
+			if (HasTransactionalAttributeForTypeRecursive(propType, visited))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
+
+/// <summary>
+/// Атрибут для указания использования кэша в обработчике запросов.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class)]
+public sealed class UseCacheAttribute : Attribute;

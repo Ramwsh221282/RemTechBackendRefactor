@@ -15,8 +15,10 @@ public sealed class MinLengthPasswordRequirement : IAccountPasswordRequirement
 	/// </summary>
 	/// <param name="password">Пароль для проверки.</param>
 	/// <returns>Результат проверки требования к паролю.</returns>
-	public Result<Unit> Satisfies(AccountPassword password) =>
-		password.Value.Length < LENGTH
+	public Result<Unit> Satisfies(AccountPassword password)
+	{
+		return password.Value.Length < LENGTH
 			? Error.Validation($"Пароль должен быть длиннее {LENGTH} символов.")
 			: Unit.Value;
+	}
 }

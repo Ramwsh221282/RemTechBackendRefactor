@@ -17,7 +17,10 @@ public static class ParsersModuleInjection
 {
 	extension(IServiceCollection services)
 	{
-		public void InjectParsersControlModule() => services.AddInfrastructureLayer();
+		public void InjectParsersControlModule()
+		{
+			services.AddInfrastructureLayer();
+		}
 
 		public void AddParsersControlModule(bool isDevelopment)
 		{

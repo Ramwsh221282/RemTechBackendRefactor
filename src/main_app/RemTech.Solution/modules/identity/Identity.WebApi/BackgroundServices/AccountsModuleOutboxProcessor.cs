@@ -37,18 +37,23 @@ public sealed class AccountsModuleOutboxProcessor(
 		}
 	}
 
-	private static AccountsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session) =>
-		new(
+	private static AccountsModuleUnitOfWork CreateUnitOfWork(NpgSqlSession session)
+	{
+		return new(
 			new AccountsChangeTracker(session),
 			new AccountTicketsChangeTracker(session),
 			new PermissionsChangeTracker(session),
 			new IdentityOutboxMessageChangeTracker(session)
 		);
+	}
 
 	private static Task<IdentityOutboxMessage[]> GetMessages(
 		IAccountModuleOutbox outbox,
 		CancellationToken ct = default
-	) => outbox.GetMany(new OutboxMessageSpecification().OfLimit(50).OfNotSentOnly().OfWithLock(), ct);
+	)
+	{
+		return outbox.GetMany(new OutboxMessageSpecification().OfLimit(50).OfNotSentOnly().OfWithLock(), ct);
+	}
 
 	private async Task Execute(CancellationToken ct)
 	{

@@ -35,7 +35,9 @@ public sealed class PermantlyDisableParsingHandler(ISubscribedParsersRepository 
 	private static Result<Unit> InvokePermantlyDisable(Result<SubscribedParser> parser)
 	{
 		if (parser.IsFailure)
+		{
 			return parser.Error;
+		}
 
 		parser.Value.PermanentlyDisable();
 		return Unit.Value;
@@ -44,9 +46,14 @@ public sealed class PermantlyDisableParsingHandler(ISubscribedParsersRepository 
 	private async Task<Result> SaveChanges(Result<SubscribedParser> parser, Result<Unit> result, CancellationToken ct)
 	{
 		if (parser.IsFailure)
+		{
 			return Result.Failure(parser.Error);
+		}
+
 		if (result.IsFailure)
+		{
 			return Result.Failure(result.Error);
+		}
 
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();

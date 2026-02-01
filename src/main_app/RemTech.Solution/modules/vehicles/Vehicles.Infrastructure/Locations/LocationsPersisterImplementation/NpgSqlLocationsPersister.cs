@@ -26,9 +26,15 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
 	{
 		Result<NpgSqlSearchResult> fullResult = await TrySearchFullInfo(location.Name.Value, ct);
 		if (fullResult.IsFailure)
+		{
 			return fullResult.Error;
+		}
+
 		if (fullResult.Value.Region is null)
+		{
 			return Error.NotFound("Unable to resolve location.");
+		}
+
 		return fullResult.IsFailure
 			? (Result<Location>)Error.NotFound("Unable to resolve location.")
 			: (Result<Location>)CreateLocationFromSearchResult(fullResult);
@@ -54,7 +60,9 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
 	{
 		Guid? regionId = reader.GetNullable<Guid>("region_id");
 		if (regionId is null)
+		{
 			return null;
+		}
 
 		string regionName = reader.GetValue<string>("region_name");
 		string regionKind = reader.GetValue<string>("region_kind");
@@ -70,7 +78,10 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
 	{
 		Guid? cityId = reader.GetNullable<Guid>("city_id");
 		if (cityId is null)
+		{
 			return null;
+		}
+
 		string? cityName = reader.GetNullableReferenceType<string>("city_name");
 		return new CitySearchResult { CityId = cityId.Value, CityName = cityName! };
 	}

@@ -31,8 +31,10 @@ public sealed class PermantlyStartManyParsingHandler(ISubscribedParsersCollectio
 		return saving.IsFailure ? saving.Error : Result.Success(parsers.Value.Read());
 	}
 
-	private static Result<Unit> PermanentlyStartParsers(Result<SubscribedParsersCollection> parsers) =>
-		parsers.IsFailure ? parsers.Error : parsers.Value.PermanentlyEnableAll();
+	private static Result<Unit> PermanentlyStartParsers(Result<SubscribedParsersCollection> parsers)
+	{
+		return parsers.IsFailure ? parsers.Error : parsers.Value.PermanentlyEnableAll();
+	}
 
 	private async Task<Result<Unit>> SaveChanges(
 		Result<Unit> enabling,
@@ -41,9 +43,15 @@ public sealed class PermantlyStartManyParsingHandler(ISubscribedParsersCollectio
 	)
 	{
 		if (parsers.IsFailure)
+		{
 			return parsers.Error;
+		}
+
 		if (enabling.IsFailure)
+		{
 			return enabling.Error;
+		}
+
 		return await repository.SaveChanges(parsers.Value, ct);
 	}
 
@@ -53,7 +61,7 @@ public sealed class PermantlyStartManyParsingHandler(ISubscribedParsersCollectio
 	)
 	{
 		SubscribedParsersCollectionQuery query = new(Identifiers: identifiers);
-		SubscribedParsersCollection parsers = await repository.Get(query, ct);
+		SubscribedParsersCollection parsers = await repository.Read(query, ct);
 		return parsers.IsEmpty() ? Error.NotFound("Парсеры не найдены.") : parsers;
 	}
 }

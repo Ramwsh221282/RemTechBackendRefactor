@@ -88,7 +88,7 @@ public static class ParserTestsHelperExtensions
 			ISubscribedParsersRepository repository =
 				scope.ServiceProvider.GetRequiredService<ISubscribedParsersRepository>();
 			SubscribedParserQuery query = new(Id: parserId);
-			return await repository.Get(query);
+			return await repository.Read(query);
 		}
 
 		public async Task<bool> EnsureSaved(Guid id)
@@ -96,7 +96,7 @@ public static class ParserTestsHelperExtensions
 			await using AsyncServiceScope scope = services.CreateAsyncScope();
 			ISubscribedParsersRepository repository =
 				scope.ServiceProvider.GetRequiredService<ISubscribedParsersRepository>();
-			Result<SubscribedParser> parser = await repository.Get(new SubscribedParserQuery(Id: id));
+			Result<SubscribedParser> parser = await repository.Read(new SubscribedParserQuery(Id: id));
 			return parser.IsSuccess;
 		}
 
