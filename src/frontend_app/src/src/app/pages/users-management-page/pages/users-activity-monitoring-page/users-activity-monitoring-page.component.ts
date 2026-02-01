@@ -2,9 +2,6 @@ import { DatePipe, NgClass } from '@angular/common';
 import { Component, computed, effect, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
 import { TableModule } from 'primeng/table';
-import { Select, SelectChangeEvent } from 'primeng/select';
-import { InputText } from 'primeng/inputtext';
-import { DatePicker } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
 import { Checkbox } from 'primeng/checkbox';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
@@ -16,14 +13,14 @@ import {
 	TelemetryActionStatus,
 } from '../../../../shared/api/telemetry-module/telemetry-responses';
 import { TelemetryApiService } from '../../../../shared/api/telemetry-module/telemetry-api.service';
-import { MultiSelect, MultiSelectChangeEvent } from 'primeng/multiselect';
 import { ActionRecordsQuery } from '../../../../shared/api/telemetry-module/telemetry-fetch.request';
 import { tap } from 'rxjs';
-import { Button } from 'primeng/button';
 import { SortButtonsComponent, SortChangeEvent } from '../../../../shared/components/sort-buttons/sort-buttons.component';
 import { ActionRecordInvokerLoginSearchInputComponent } from './components/action-record-invoker-login-search-input/action-record-invoker-login-search-input.component';
 import { ActionRecordSelectFilterComponent } from './components/action-record-select-filter/action-record-select-filter.component';
 import { ActionRecordsMultiselectFilterComponent } from './components/action-records-multiselect-filter/action-records-multiselect-filter.component';
+import { ActionRecordDateRangeSelectComponent } from './components/action-record-date-range-select/action-record-date-range-select.component';
+import { AuthenticationStatusService } from '../../../../shared/services/AuthenticationStatusService';
 
 @Component({
 	selector: 'app-users-activity-monitoring-page',
@@ -32,17 +29,15 @@ import { ActionRecordsMultiselectFilterComponent } from './components/action-rec
 		NgClass,
 		ChartModule,
 		TableModule,
-		Select,
-		InputText,
-		DatePicker,
 		Checkbox,
 		DatePipe,
 		PaginationComponent,
-		MultiSelect,
 		SortButtonsComponent,
 		ActionRecordInvokerLoginSearchInputComponent,
 		ActionRecordSelectFilterComponent,
 		ActionRecordsMultiselectFilterComponent,
+		ActionRecordDateRangeSelectComponent,
+		FormsModule,
 	],
 	templateUrl: './users-activity-monitoring-page.component.html',
 	styleUrl: './users-activity-monitoring-page.component.css',
@@ -51,9 +46,13 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	selectedPeriod: any;
 	customRange: [Date, Date] | undefined;
 
+	private readonly _authService: AuthenticationStatusService = inject(AuthenticationStatusService);
 	private readonly _service: TelemetryApiService = inject(TelemetryApiService);
 	readonly query: WritableSignal<ActionRecordsQuery> = signal(ActionRecordsQuery.create().withPage(1).withPageSize(50));
 
+	readonly usingWeekRangeForChart: WritableSignal<boolean> = signal(true);
+	readonly ignoringRequestInvokerId: WritableSignal<boolean> = signal(false);
+	readonly ignoringAnonymous: WritableSignal<boolean> = signal(false);
 	readonly timeSelections: string[] = ['7 дней', 'месяц', 'диапазон'];
 	readonly selectedTimeOption: WritableSignal<string | null> = signal('7 дней');
 	readonly rangedFilterDates: WritableSignal<Date[] | undefined> = signal(undefined);
@@ -70,7 +69,6 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 
 	readonly chartData = computed(() => {
 		const items: TelemetryStatisticsResponse[] = this.statistics();
-		const amounts = items.map((item: TelemetryStatisticsResponse) => item.Amount);
 
 		const dataSet: PrimeNgChartDataSet = {
 			label: 'Активность',
@@ -192,6 +190,12 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 		return permissions.map((perm: TelemetryPermissionResponse) => perm.Description);
 	}
 
+	public handleDateRangeSelect($event: Date[] | null): void {
+		this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+			return query.withDateRange($event);
+		});
+	}
+
 	public resolveInvokerIdDisplayValue(record: TelemetryResponse): string {
 		return record.UserId ? record.UserId : 'Аноним (гость)';
 	}
@@ -201,7 +205,54 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 		this.fetchRecords(query);
 	}
 
-	public onPeriodChange(period: string, customRange?: Date[]): void {}
+	public handleChartDateRangeSelected(date: Date[] | null): void {
+		this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+			return query.withoutChartWeekDateRange().withChartDateRange(date);
+		});
+	}
+
+	public handleChartWeekDateRangeSelected(): void {
+		const usingWeekRangeForChart: boolean = this.usingWeekRangeForChart();
+		if (usingWeekRangeForChart) {
+			this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+				return query.withChartWeekDateRange().withChartDateRange(null);
+			});
+		}
+	}
+
+	public handleChangeIgnoreInvokerId(): void {
+		const isIgnoring: boolean = this.ignoringRequestInvokerId();
+		if (isIgnoring) {
+			const id: string | null = this._authService.userId();
+			if (!id) return;
+			this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+				return query.withCallerId(id);
+			});
+			return;
+		}
+
+		this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+			return query.withCallerId(null);
+		});
+	}
+
+	public handleAnonymousIgnore(): void {
+		const isIgnoring: boolean = this.ignoringAnonymous();
+		this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+			return query.withAnonymousIgnore(isIgnoring ? true : null);
+		});
+	}
+
+	public get canSelectCustomDateRangeForChart(): boolean {
+		const isWeekSelected: boolean = this.usingWeekRangeForChart();
+		return !isWeekSelected;
+	}
+
+	public handlePageChanged(page: number): void {
+		this.query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+			return query.withPage(page);
+		});
+	}
 
 	private fetchRecords(query: ActionRecordsQuery): void {
 		this._service

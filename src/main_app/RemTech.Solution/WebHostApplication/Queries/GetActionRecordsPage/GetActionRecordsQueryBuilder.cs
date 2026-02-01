@@ -108,6 +108,13 @@ internal static class GetActionRecordsQueryBuilder
 		return "ar.invoker_id <> @I_InvokerId";
 	}
 
+	private static string UseIgnoreAnonymousFilter(GetActionRecordsQuery query)
+	{
+		return query.IgnoreAnonymous is null ? string.Empty
+			: query.IgnoreAnonymous.Value ? "a.id IS NOT NULL"
+			: string.Empty;
+	}
+
 	private static string UseIgnoreErrorsFilter(GetActionRecordsQuery query)
 	{
 		return !query.IgnoreErrors ? string.Empty : "ar.error IS NULL";
@@ -141,13 +148,14 @@ internal static class GetActionRecordsQueryBuilder
 			query,
 			parameters,
 			[
+				(quer, param) => UseActionNameSearch(quer, param, provider),
+				(quer, _) => UseIgnoreErrorsFilter(quer),
+				(quer, _) => UseIgnoreAnonymousFilter(quer),
 				UseLoginSearch,
 				UseEmailSearch,
-				(quer, param) => UseActionNameSearch(quer, param, provider),
 				UseDateRangeFilter,
 				UseOperationStatusesFilter,
 				UsePermissionsFilter,
-				(quer, param) => UseIgnoreErrorsFilter(quer),
 				UseIgnoreSelfFilter,
 			]
 		);

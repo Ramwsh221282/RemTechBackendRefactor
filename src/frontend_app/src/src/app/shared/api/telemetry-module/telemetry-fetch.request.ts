@@ -11,6 +11,11 @@ type QueryParameters = {
 	email: string | null;
 	status: string | null;
 	actionName: string | null;
+	dateRange: Date[] | null;
+	chartDateRange: Date[] | null;
+	usingWeek: boolean | null;
+	callerId: string | null;
+	anynomyousIgnore: boolean | null;
 };
 
 export interface SortClause extends SortEvent {}
@@ -25,6 +30,11 @@ function defaultParams(): QueryParameters {
 		email: null,
 		status: null,
 		actionName: null,
+		dateRange: null,
+		chartDateRange: null,
+		usingWeek: null,
+		callerId: null,
+		anynomyousIgnore: null,
 	};
 }
 
@@ -57,6 +67,24 @@ export class ActionRecordsQuery {
 			}
 		}
 
+		if (!!this._params.chartDateRange && this._params.chartDateRange.length === 2) {
+			params = params.append('chart-date-from', this._params.chartDateRange[0].toISOString());
+			params = params.append('chart-date-to', this._params.chartDateRange[1].toISOString());
+		}
+
+		if (!!this._params.usingWeek) {
+			if (this._params.usingWeek) {
+				params = params.append('using-week', 'true');
+			} else {
+				params = params.append('using-week', 'false');
+			}
+		}
+
+		if (!!this._params.dateRange && this._params.dateRange.length === 2) {
+			params = params.append('date-from', this._params.dateRange[0].toISOString());
+			params = params.append('date-to', this._params.dateRange[1].toISOString());
+		}
+
 		if (!!this._params.actionName && !StringUtils.isEmptyOrWhiteSpace(this._params.actionName))
 			params = params.append('text-search', this._params.actionName);
 
@@ -65,6 +93,14 @@ export class ActionRecordsQuery {
 				params = params.append('sort', `${sortClause.field}:${sortClause.mode}`);
 			}
 		}
+
+		if (!!this._params.anynomyousIgnore) {
+			if (this._params.anynomyousIgnore) params = params.append('ignore-anonymous', 'true');
+			else params = params.append('ignore-anonymous', 'fale');
+		}
+
+		if (!!this._params.callerId && !StringUtils.isEmptyOrWhiteSpace(this._params.callerId))
+			params = params.append('caller-id', this._params.callerId);
 
 		return params;
 	}
@@ -96,6 +132,28 @@ export class ActionRecordsQuery {
 		return new ActionRecordsQuery({ ...this._params, email: email });
 	}
 
+	public withCallerId(callerId: string | null): ActionRecordsQuery {
+		return new ActionRecordsQuery({ ...this._params, callerId: callerId });
+	}
+
+	public withDateRange(dateRange: Date[] | null): ActionRecordsQuery {
+		const normalized: Date[] | null = dateRange === null ? null : dateRange.length === 2 ? dateRange : null;
+		return new ActionRecordsQuery({ ...this._params, dateRange: normalized });
+	}
+
+	public withChartDateRange(dateRange: Date[] | null): ActionRecordsQuery {
+		const normalized: Date[] | null = dateRange === null ? null : dateRange.length === 2 ? dateRange : null;
+		return new ActionRecordsQuery({ ...this._params, dateRange: normalized, usingWeek: false });
+	}
+
+	public withChartWeekDateRange(): ActionRecordsQuery {
+		return new ActionRecordsQuery({ ...this._params, usingWeek: true });
+	}
+
+	public withoutChartWeekDateRange(): ActionRecordsQuery {
+		return new ActionRecordsQuery({ ...this._params, usingWeek: null });
+	}
+
 	public withPermissions(permissions: string[] | null): ActionRecordsQuery {
 		if (!!permissions) return new ActionRecordsQuery({ ...this._params, permissions: permissions });
 		return new ActionRecordsQuery({ ...this._params, permissions: length === 0 ? null : permissions });
@@ -105,6 +163,13 @@ export class ActionRecordsQuery {
 		return new ActionRecordsQuery({
 			...this._params,
 			page: page,
+		});
+	}
+
+	public withAnonymousIgnore(anynomyousIgnore: boolean | null): ActionRecordsQuery {
+		return new ActionRecordsQuery({
+			...this._params,
+			anynomyousIgnore: anynomyousIgnore,
 		});
 	}
 

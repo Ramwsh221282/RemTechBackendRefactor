@@ -107,6 +107,13 @@ public sealed class TelemetryController : ControllerBase
 		[FromQuery(Name = "email")] string? email,
 		[FromQuery(Name = "status")] string? status,
 		[FromQuery(Name = "text-search")] string? textSearch,
+		[FromQuery(Name = "date-from")] DateTime? dateFrom,
+		[FromQuery(Name = "date-to")] DateTime? dateTo,
+		[FromQuery(Name = "chart-date-from")] DateTime? chartDateFrom,
+		[FromQuery(Name = "chart-date-to")] DateTime? chartDateTo,
+		[FromQuery(Name = "using-week")] bool usingWeek,
+		[FromQuery(Name = "caller-id")] Guid? guidOfRequestInvoker,
+		[FromQuery(Name = "ignore-anonymous")] bool ignoreAnonymous,
 		[FromServices] IQueryHandler<GetActionRecordsQuery, ActionRecordsPageResponse> handler,
 		CancellationToken ct
 	)
@@ -120,7 +127,14 @@ public sealed class TelemetryController : ControllerBase
 			.WithLoginSearch(login)
 			.WithEmailSearch(email)
 			.WithStatusName(status)
-			.WithActionNameSearch(textSearch);
+			.WithActionNameSearch(textSearch)
+			.WithStartDate(dateFrom)
+			.WithEndDate(dateTo)
+			.WithChartStartDate(chartDateFrom)
+			.WithChartEndDate(chartDateTo)
+			.IgnoreRequestInvoker(guidOfRequestInvoker)
+			.WithWeekDateRangeChart(usingWeek)
+			.WithIgnoreAnonymous(ignoreAnonymous);
 
 		ActionRecordsPageResponse response = await handler.Handle(query, ct);
 		return EnvelopedResultsExtensions.AsEnvelope(response);

@@ -5,16 +5,38 @@
 			<h2 class="mx-2 text-2xl font-bold">Мониторинг активности пользователей</h2>
 		</div>
 		<div class="grid grid-cols-2 gap-4">
-			<section class="inline-block">
-				<p-chart
-					class="p-10 gap-4 rounded-lg shadow-sm bg-linear-to-br from-blue-100 via-white to-blue-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700"
-					type="line"
-					[options]="chartOptions()"
-					[data]="chartData()"
-				/>
-				<div
-					class="my-2 p-4 flex flex-col justify-start gap-4 rounded-lg shadow-sm bg-linear-to-br from-blue-100 via-white to-blue-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700"
-				>
+			<section
+				class="inline-block rounded-lg shadow-sm bg-linear-to-br from-blue-100 via-white to-blue-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700"
+			>
+				<div class="p-5 gap-4 rounded-lg shadow-sm bg-linear-to-br">
+					<div class="grid grid-cols-2 gap-1 items-center">
+						<app-action-record-date-range-select
+							[placeHolder]="'Срез дат'"
+							[disabled]="!canSelectCustomDateRangeForChart"
+							(dateRangeSelected)="handleChartDateRangeSelected($event)"
+						/>
+						<div>
+							<span class="mx-2 flex items-center">
+								<p-check-box
+									class="mx-2"
+									[(ngModel)]="usingWeekRangeForChart"
+									(ngModelChange)="handleChartWeekDateRangeSelected()"
+									[binary]="true"
+								></p-check-box>
+								За последнюю неделю
+							</span>
+						</div>
+					</div>
+				</div>
+				<div class="items-center">
+					<p-chart
+						class="p-10 gap-4 rounded-lg shadow-sm bg-linear-to-br"
+						type="line"
+						[options]="chartOptions()"
+						[data]="chartData()"
+					/>
+				</div>
+				<div class="my-2 p-2 flex flex-col justify-start gap-4 rounded-lg shadow-sm bg-linear-to-br">
 					<div class="grid grid-cols-2 gap-4">
 						<app-action-record-filter-input
 							[placeholder]="'Искать по логину'"
@@ -47,18 +69,28 @@
 							[placeholder]="'Искать по названию действия'"
 							(searchChange)="handleActionNameSearchChanged($event)"
 						/>
-						<p-date-picker
-							[selectionMode]="'range'"
-							[size]="'small'"
-							[placeholder]="'Выбрать диапазон дат'"
-							[dateFormat]="'dd.mm.yy'"
+						<app-action-record-date-range-select
+							[placeHolder]="'Выбрать Диапазон дат'"
+							(dateRangeSelected)="handleDateRangeSelect($event)"
 						/>
 					</div>
 					<div class="grid grid-cols-2 gap-4">
 						<div class="flex flex-row items-center gap-4">
 							<span class="flex items-center gap-1">
 								Убрать себя
-								<p-check-box></p-check-box>
+								<p-check-box
+									[(ngModel)]="ignoringRequestInvokerId"
+									[binary]="true"
+									(ngModelChange)="handleChangeIgnoreInvokerId()"
+								></p-check-box>
+							</span>
+							<span class="flex items-center gap-1">
+								Убрать анонимов
+								<p-check-box
+									[(ngModel)]="ignoringAnonymous"
+									[binary]="true"
+									(ngModelChange)="handleAnonymousIgnore()"
+								></p-check-box>
 							</span>
 						</div>
 					</div>
@@ -154,7 +186,12 @@
 							</tr>
 						</ng-template>
 					</p-table>
-					<app-pagination [total_count]="totalCount()" [page_size]="query().pageSize" [current_page]="query().page" />
+					<app-pagination
+						[total_count]="totalCount()"
+						[page_size]="query().pageSize"
+						[current_page]="query().page"
+						(pageChanged)="handlePageChanged($event)"
+					/>
 				</div>
 			</section>
 		</div>

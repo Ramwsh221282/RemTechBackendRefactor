@@ -5,7 +5,6 @@ using Dapper;
 using Npgsql;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Infrastructure.Database;
-using RemTech.SharedKernel.NN;
 using WebHostApplication.CommonSql;
 using WebHostApplication.Queries.GetActionRecords;
 using WebHostApplication.Queries.Responses;
@@ -17,11 +16,10 @@ namespace WebHostApplication.Queries.GetActionRecordsStatistics;
 /// </summary>
 /// <param name="session">Сессия базы данных</param>
 /// <param name="embeddings">Провайдер эмбеддингов</param>
-public sealed class GetActionRecordsStatisticsHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
+public sealed class GetActionRecordsStatisticsHandler(NpgSqlSession session)
 	: IQueryHandler<GetActionRecordsQuery, IReadOnlyList<ActionRecordsStatisticsResponse>>
 {
 	private NpgSqlSession Session { get; } = session;
-	private EmbeddingsProvider Embeddings { get; } = embeddings;
 
 	/// <summary>
 	/// Обрабатывает запрос на получение статистики записей действий.
@@ -41,7 +39,7 @@ public sealed class GetActionRecordsStatisticsHandler(NpgSqlSession session, Emb
 		return await CreateFromReader(reader, ct);
 	}
 
-	private (DynamicParameters parameters, string sql) CreateSql(GetActionRecordsQuery query)
+	private static (DynamicParameters parameters, string sql) CreateSql(GetActionRecordsQuery query)
 	{
 		DynamicParameters parameters = new();
 		string mainQueryFilters = BuildMainQuerySqlFilter(query, parameters);
@@ -74,9 +72,47 @@ FROM
 		return (parameters, sql);
 	}
 
-	private string BuildMainQuerySqlFilter(GetActionRecordsQuery query, DynamicParameters parameters)
+	/// <summary>
+	/// Строит SQL фильтр для основного запроса.
+	/// </summary>
+	private static string BuildMainQuerySqlFilter(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
-		return SqlBuilderDelegate.CombineWhereClauses(query, parameters, []);
+		return SqlBuilderDelegate.CombineWhereClauses(
+			query,
+			parameters,
+			[UseDateRangeFilter, (query, _) => UseWeekDateRangeFilter(query)]
+		);
+	}
+
+	private static string UseWeekDateRangeFilter(GetActionRecordsQuery query)
+	{
+		return query.UsingWeek.HasValue && query.UsingWeek.Value
+			? "Date (ar.created_at) >= Date (CURRENT_DATE - INTERVAL '7 days')"
+			: string.Empty;
+	}
+
+	private static string UseDateRangeFilter(GetActionRecordsQuery query, DynamicParameters parameters)
+	{
+		List<string> clauses = [];
+
+		if (query.UsingWeek.HasValue && query.UsingWeek.Value)
+		{
+			return string.Empty;
+		}
+
+		if (query.ChartStartDate.HasValue)
+		{
+			clauses.Add("ar.created_at >= @StartDate");
+			parameters.Add("StartDate", query.ChartStartDate.Value, DbType.DateTime);
+		}
+
+		if (query.ChartEndDate.HasValue)
+		{
+			clauses.Add("ar.created_at <= @EndDate");
+			parameters.Add("EndDate", query.ChartEndDate.Value, DbType.DateTime);
+		}
+
+		return clauses.Count == 0 ? string.Empty : string.Join(" AND ", clauses);
 	}
 
 	private static async Task<IReadOnlyList<ActionRecordsStatisticsResponse>> CreateFromReader(
