@@ -86,20 +86,6 @@ internal static class GetActionRecordsQueryBuilder
 		return "ar.created_at BETWEEN @I_StartDate AND @I_EndDate";
 	}
 
-	private static string UseSubQueryPermissionsFilter(GetActionRecordsQuery query, DynamicParameters parameters)
-	{
-		List<string> filters = ["ap.account_id = a.id"];
-		if (query.PermissionIdentifiers?.Any() != true)
-		{
-			return string.Empty;
-		}
-
-		Guid[] ids = [.. query.PermissionIdentifiers];
-		filters.Add("ap.permission_id = ANY(@I_PermissionIds)");
-		parameters.Add("@I_PermissionIds", ids);
-		return string.Join(" AND ", filters);
-	}
-
 	private static string UseOperationStatusesFilter(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
 		if (string.IsNullOrWhiteSpace(query.Status))
@@ -127,6 +113,24 @@ internal static class GetActionRecordsQueryBuilder
 		return !query.IgnoreErrors ? string.Empty : "ar.error IS NULL";
 	}
 
+	private static string UsePermissionsFilter(GetActionRecordsQuery query, DynamicParameters parameters)
+	{
+		Guid[] ids = query.PermissionIdentifiers is null ? [] : [.. query.PermissionIdentifiers];
+		if (ids.Length == 0)
+		{
+			return string.Empty;
+		}
+
+		parameters.Add("@I_PermissionIds", ids);
+		return """
+			EXISTS 
+				(
+					SELECT 1 FROM jsonb_array_elements(up.permissions) AS perm
+				 	WHERE (perm->>'Id')::uuid = ANY(@I_PermissionIds)
+				)
+			""";
+	}
+
 	private static string BuildMainQuerySqlFilter(
 		DynamicParameters parameters,
 		GetActionRecordsQuery query,
@@ -142,9 +146,9 @@ internal static class GetActionRecordsQueryBuilder
 				(quer, param) => UseActionNameSearch(quer, param, provider),
 				UseDateRangeFilter,
 				UseOperationStatusesFilter,
+				UsePermissionsFilter,
 				(quer, param) => UseIgnoreErrorsFilter(quer),
 				UseIgnoreSelfFilter,
-				UseSubQueryPermissionsFilter,
 			]
 		);
 	}

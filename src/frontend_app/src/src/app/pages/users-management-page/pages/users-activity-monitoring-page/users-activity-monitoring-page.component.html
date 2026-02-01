@@ -27,26 +27,14 @@
 						[placeHolder]="'Выбрать статус'"
 						(valueSelected)="handleOperationStatusSelectChange($event)"
 					/>
-					<!-- <p-select
-						[showClear]="true"
-						[fluid]="true"
-						[size]="'small'"
-						[options]="statuses()"
-						[optionLabel]="'Status'"
-						[placeholder]="'Статусы операций'"
-					/> -->
-					<div class="card flex justify-center">
-						<p-multiSelect
-							[options]="permissions()"
-							[size]="'small'"
-							[fluid]="true"
-							[placeholder]="'Выбрать разрешения'"
-							[optionLabel]="'Description'"
-							display="chip"
-							class="w-full md:w-80"
-							(onChange)="handlePermissionSelected($event)"
-						/>
-					</div>
+					<app-action-records-multiselect-filter
+						[values]="permissions()"
+						[labelName]="'Description'"
+						[placeHolder]="'Выбрать разрешения'"
+						[useFilter]="true"
+						[wrapperClass]="'card flex justify-center'"
+						(multiSelectListUpdated)="handlePermissionSelected($event)"
+					/>
 				</div>
 				<div class="grid grid-cols-2 gap-4">
 					<input pInputText [pSize]="'small'" [fluid]="true" [placeholder]="'Искать по названию действия'" />

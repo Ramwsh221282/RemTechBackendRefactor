@@ -261,6 +261,10 @@ public sealed class GetActionRecordsQuery : IQuery
 		return true;
 	}
 
+	/// <summary>
+	/// Сериализует объект в строку JSON.
+	/// </summary>
+	/// <returns>JSON строка - запрос.</returns>
 	public override string ToString()
 	{
 		return JsonSerializer.Serialize(this);

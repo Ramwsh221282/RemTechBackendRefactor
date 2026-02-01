@@ -23,6 +23,7 @@ import { Button } from 'primeng/button';
 import { SortButtonsComponent, SortChangeEvent } from '../../../../shared/components/sort-buttons/sort-buttons.component';
 import { ActionRecordInvokerLoginSearchInputComponent } from './components/action-record-invoker-login-search-input/action-record-invoker-login-search-input.component';
 import { ActionRecordSelectFilterComponent } from './components/action-record-select-filter/action-record-select-filter.component';
+import { ActionRecordsMultiselectFilterComponent } from './components/action-records-multiselect-filter/action-records-multiselect-filter.component';
 
 @Component({
 	selector: 'app-users-activity-monitoring-page',
@@ -41,6 +42,7 @@ import { ActionRecordSelectFilterComponent } from './components/action-record-se
 		SortButtonsComponent,
 		ActionRecordInvokerLoginSearchInputComponent,
 		ActionRecordSelectFilterComponent,
+		ActionRecordsMultiselectFilterComponent,
 	],
 	templateUrl: './users-activity-monitoring-page.component.html',
 	styleUrl: './users-activity-monitoring-page.component.css',
@@ -175,9 +177,10 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 		});
 	}
 
-	public handlePermissionSelected($event: MultiSelectChangeEvent): void {
-		const permissions: TelemetryPermissionResponse[] = $event.value as TelemetryPermissionResponse[];
-		const names: string[] = permissions.map((perm: TelemetryPermissionResponse) => perm.Name);
+	public handlePermissionSelected($event: TelemetryPermissionResponse[] | null): void {
+		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+			return query.withPermissions($event ? $event.map((perm: TelemetryPermissionResponse) => perm.Id) : null);
+		});
 	}
 
 	public permissionDisplayText(record: TelemetryResponse): string[] {
