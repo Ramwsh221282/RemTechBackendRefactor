@@ -119,9 +119,14 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		Permission? permission = await GetSingle(command, ct);
 
 		if (permission is null)
+		{
 			return Error.NotFound("Разрешение не найдено.");
+		}
+
 		if (specification.LockRequired)
+		{
 			await BlockPermission(permission, ct);
+		}
 
 		UnitOfWork.Track([permission]);
 		return Result.Success(permission);
@@ -159,7 +164,10 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 			}
 
 			if (innerFilter.Count > 0)
+			{
 				whereClauses.Add($"({string.Join(" AND ", innerFilter)})");
+			}
+
 			index++;
 		}
 
@@ -177,7 +185,10 @@ public sealed class PermissionsRepository(NpgSqlSession session, IAccountsModule
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
 		IEnumerable<Permission> permissions = await GetMultiple(command, ct);
 		if (!permissions.Any())
+		{
 			return [];
+		}
+
 		UnitOfWork.Track(permissions);
 		return permissions;
 	}

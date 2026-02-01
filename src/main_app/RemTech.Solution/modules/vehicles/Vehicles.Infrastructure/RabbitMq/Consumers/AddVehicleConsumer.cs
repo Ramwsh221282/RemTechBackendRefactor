@@ -64,8 +64,10 @@ public sealed class AddVehicleConsumer(
 	/// <param name="connection">Подключение к RabbitMQ.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Инициализация канала.</returns>
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
+	{
 		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
+	}
 
 	/// <summary>
 	/// Запускает потребление сообщений.
@@ -84,7 +86,10 @@ public sealed class AddVehicleConsumer(
 	/// </summary>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Задача остановки потребления сообщений.</returns>
-	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
+	public Task Shutdown(CancellationToken ct = default)
+	{
+		return Channel.CloseAsync(ct);
+	}
 
 	private static async Task<Result<(Guid CreatorId, int Saved)>> SaveVehicles(
 		IServiceProvider services,
@@ -104,11 +109,18 @@ public sealed class AddVehicleConsumer(
 		return new AddVehicleCommand(creator, vehicles);
 	}
 
-	private static AddVehicleCreatorCommandPayload CreateCreatorPayload(AddVehicleMessage message) =>
-		new(CreatorId: message.CreatorId, CreatorDomain: message.CreatorDomain, CreatorType: message.CreatorType);
+	private static AddVehicleCreatorCommandPayload CreateCreatorPayload(AddVehicleMessage message)
+	{
+		return new(
+			CreatorId: message.CreatorId,
+			CreatorDomain: message.CreatorDomain,
+			CreatorType: message.CreatorType
+		);
+	}
 
-	private static IEnumerable<AddVehicleVehiclesCommandPayload> CreateVehiclesPayload(AddVehicleMessage message) =>
-		message.Payload.Select(p => new AddVehicleVehiclesCommandPayload(
+	private static IEnumerable<AddVehicleVehiclesCommandPayload> CreateVehiclesPayload(AddVehicleMessage message)
+	{
+		return message.Payload.Select(p => new AddVehicleVehiclesCommandPayload(
 			Id: p.Id,
 			Title: p.Title,
 			Url: p.Url,
@@ -118,18 +130,27 @@ public sealed class AddVehicleConsumer(
 			Photos: p.Photos,
 			Characteristics: [.. p.Characteristics.Select(c => new AddVehicleCommandCharacteristics(c.Name, c.Value))]
 		));
+	}
 
 	private static bool IsMessageValid(AddVehicleMessage message, out string error)
 	{
 		List<string> errors = [];
 		if (message.CreatorId == Guid.Empty)
+		{
 			errors.Add("Идентификатор создателя пуст");
+		}
 		if (string.IsNullOrWhiteSpace(message.CreatorType))
+		{
 			errors.Add("Тип создателя пуст");
+		}
 		if (string.IsNullOrWhiteSpace(message.CreatorDomain))
+		{
 			errors.Add("Домен создателя пуст");
+		}
 		if (message.Payload == null || !message.Payload.Any())
+		{
 			errors.Add("Список автомобилей пуст");
+		}
 		error = string.Join(", ", errors);
 		return errors.Count == 0;
 	}
@@ -141,8 +162,10 @@ public sealed class AddVehicleConsumer(
 		public required string CreatorType { get; set; }
 		public required IEnumerable<AddVehicleMessagePayload> Payload { get; set; }
 
-		public static AddVehicleMessage CreateFrom(BasicDeliverEventArgs @event) =>
-			JsonSerializer.Deserialize<AddVehicleMessage>(@event.Body.Span)!;
+		public static AddVehicleMessage CreateFrom(BasicDeliverEventArgs @event)
+		{
+			return JsonSerializer.Deserialize<AddVehicleMessage>(@event.Body.Span)!;
+		}
 	}
 
 	private sealed class AddVehicleMessagePayload

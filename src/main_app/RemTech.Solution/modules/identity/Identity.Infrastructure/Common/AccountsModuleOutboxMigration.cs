@@ -11,7 +11,8 @@ public sealed class AccountsModuleOutboxMigration : Migration
 	/// <summary>
 	/// Применяет миграцию, создавая таблицу outbox модуля аккаунтов.
 	/// </summary>
-	public override void Up() =>
+	public override void Up()
+	{
 		Create
 			.Table("outbox")
 			.InSchema("identity_module")
@@ -33,9 +34,13 @@ public sealed class AccountsModuleOutboxMigration : Migration
 			.WithColumn("payload")
 			.AsCustom("jsonb")
 			.NotNullable();
+	}
 
 	/// <summary>
 	/// Откатывает миграцию, удаляя таблицу outbox модуля аккаунтов.
 	/// </summary>
-	public override void Down() => Delete.Table("outbox").InSchema("identity_module");
+	public override void Down()
+	{
+		Delete.Table("outbox").InSchema("identity_module");
+	}
 }

@@ -51,11 +51,20 @@ public sealed class PendingEmailNotification(Guid id, string recipient, string s
 	{
 		List<string> errors = [];
 		if (string.IsNullOrWhiteSpace(recipient))
+		{
 			errors.Add("Почта поле не может быть пустой");
+		}
+
 		if (string.IsNullOrWhiteSpace(subject))
+		{
 			errors.Add("Тема письма не может быть пустой");
+		}
+
 		if (string.IsNullOrWhiteSpace(body))
+		{
 			errors.Add("Текст письма не может быть пустым");
+		}
+
 		if (errors.Count > 0)
 		{
 			string message = string.Join(", ", errors);
@@ -68,11 +77,17 @@ public sealed class PendingEmailNotification(Guid id, string recipient, string s
 	/// <summary>
 	/// Отмечает уведомление как отправленное.
 	/// </summary>
-	public void MarkSent() => WasSent = true;
+	public void MarkSent()
+	{
+		WasSent = true;
+	}
 
 	/// <summary>
 	/// Создает копию уведомления.
 	/// </summary>
 	/// <returns>Копия уведомления.</returns>
-	public PendingEmailNotification Copy() => new(this);
+	public PendingEmailNotification Copy()
+	{
+		return new(this);
+	}
 }

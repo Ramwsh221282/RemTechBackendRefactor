@@ -162,9 +162,14 @@ public sealed class GetSparesQueryHandler(
 		}
 
 		if (!string.IsNullOrWhiteSpace(query.TextSearch))
+		{
 			ApplyTextSearch(query.TextSearch, parameters, filters);
+		}
+
 		if (!string.IsNullOrWhiteSpace(query.Oem))
+		{
 			ApplyOemSearch(query.Oem, parameters, filters);
+		}
 	}
 
 	private void ApplyOemSearch(string oem, DynamicParameters parameters, List<string> filters)
@@ -176,7 +181,7 @@ public sealed class GetSparesQueryHandler(
 			 LIMIT 1
 			),
 			keyword_oem_search AS (
-			 SELECT kos.id FROM spares_module.spares kos WHERE ts_rank_cd(ts_vector_field, to_tsquery('russian', @oem)) >= @oem_search_threshold
+			 SELECT kos.id FROM spares_module.spares kos WHERE ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @oem)) >= @oem_search_threshold
 			),
 			all_match AS (
 			    SELECT coalesce(plain_oem_search.id, keyword_oem_search.id) as id FROM plain_oem_search

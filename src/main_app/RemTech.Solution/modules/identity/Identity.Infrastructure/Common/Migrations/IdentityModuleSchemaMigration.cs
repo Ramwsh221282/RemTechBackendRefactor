@@ -11,10 +11,16 @@ public sealed class IdentityModuleSchemaMigration : Migration
 	/// <summary>
 	/// Применяет миграцию, создавая схему модуля идентификации.
 	/// </summary>
-	public override void Up() => Create.Schema("identity_module");
+	public override void Up()
+	{
+		Create.Schema("identity_module");
+	}
 
 	/// <summary>
 	/// Откатывает миграцию, удаляя схему модуля идентификации.
 	/// </summary>
-	public override void Down() => Delete.Schema("identity_module");
+	public override void Down()
+	{
+		Delete.Schema("identity_module");
+	}
 }

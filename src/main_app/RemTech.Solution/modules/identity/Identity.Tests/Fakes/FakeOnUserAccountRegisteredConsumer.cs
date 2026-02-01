@@ -40,8 +40,10 @@ public sealed class FakeOnUserAccountRegisteredConsumer(RabbitMqConnectionSource
 	/// <param name="connection">Подключение к RabbitMQ.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Инициализация канала для потребления сообщений.</returns>
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
+	{
 		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
+	}
 
 	/// <summary>
 	/// Начинает потребление сообщений.

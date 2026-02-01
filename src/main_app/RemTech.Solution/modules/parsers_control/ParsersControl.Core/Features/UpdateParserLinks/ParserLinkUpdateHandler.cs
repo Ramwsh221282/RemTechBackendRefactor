@@ -34,13 +34,20 @@ public sealed class ParserLinkUpdateHandler(ISubscribedParsersRepository reposit
 		return saving.IsFailure ? saving.Error : Result.Success(result.Value);
 	}
 
-	private static IEnumerable<ParserLinkUpdater> GetUpdaters(UpdateParserLinksCommand command) =>
-		command.UpdateParameters.Select(p => ParserLinkUpdater.Create(p.LinkId, p.Activity, p.Name, p.Url).Value);
+	private static IEnumerable<ParserLinkUpdater> GetUpdaters(UpdateParserLinksCommand command)
+	{
+		return command.UpdateParameters.Select(p =>
+			ParserLinkUpdater.Create(p.LinkId, p.Activity, p.Name, p.Url).Value
+		);
+	}
 
 	private static Result<IEnumerable<SubscribedParserLink>> UpdateLinks(
 		Result<SubscribedParser> parser,
 		IEnumerable<ParserLinkUpdater> updaters
-	) => parser.IsFailure ? parser.Error : parser.Value.UpdateLinks(updaters);
+	)
+	{
+		return parser.IsFailure ? parser.Error : parser.Value.UpdateLinks(updaters);
+	}
 
 	private async Task<Result> SaveChanges(
 		Result<SubscribedParser> parser,
@@ -49,9 +56,15 @@ public sealed class ParserLinkUpdateHandler(ISubscribedParsersRepository reposit
 	)
 	{
 		if (parser.IsFailure)
+		{
 			return Result.Failure(parser.Error);
+		}
+
 		if (links.IsFailure)
+		{
 			return Result.Failure(links.Error);
+		}
+
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();
 	}

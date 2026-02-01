@@ -22,5 +22,8 @@ public sealed record ActionRecordPayloadJson
 	/// </summary>
 	/// <param name="value">Значение полезной нагрузки действия в формате JSON.</param>
 	/// <returns>Результат создания полезной нагрузки действия в формате JSON.</returns>
-	public static Result<ActionRecordPayloadJson> Create(string value) => new ActionRecordPayloadJson(value);
+	public static Result<ActionRecordPayloadJson> Create(string value)
+	{
+		return new ActionRecordPayloadJson(value);
+	}
 }

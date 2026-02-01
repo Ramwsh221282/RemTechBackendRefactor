@@ -6,3 +6,10 @@ export function readInputTextFromInputElementEvent($event: Event): string | null
 	if (StringUtils.isEmptyOrWhiteSpace(text)) return undefined;
 	return text;
 }
+
+export function readInputTextFromInputElementEventNullable($event: Event): string | null {
+	const input: HTMLInputElement = $event.target as HTMLInputElement;
+	const text: string = input.value;
+	if (StringUtils.isEmptyOrWhiteSpace(text)) return null;
+	return text;
+}

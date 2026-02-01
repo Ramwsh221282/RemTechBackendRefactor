@@ -32,5 +32,8 @@ public sealed class PermissionsTableMigration : Migration
 	/// <summary>
 	/// Откатывает миграцию, удаляя таблицу permissions модуля identity.
 	/// </summary>
-	public override void Down() => Delete.Table("permissions").InSchema("identity_module");
+	public override void Down()
+	{
+		Delete.Table("permissions").InSchema("identity_module");
+	}
 }

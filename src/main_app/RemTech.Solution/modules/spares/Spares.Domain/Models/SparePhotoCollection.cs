@@ -27,12 +27,14 @@ public sealed class SparePhotoCollection
 	/// </summary>
 	/// <param name="value">Список фото запчастей.</param>
 	/// <returns>Результат создания коллекции фото.</returns>
-	public static Result<SparePhotoCollection> Create(IReadOnlyList<SparePhoto> value) =>
-		value.HasDuplicates(out _) switch
+	public static Result<SparePhotoCollection> Create(IReadOnlyList<SparePhoto> value)
+	{
+		return value.HasDuplicates(out _) switch
 		{
 			true => Error.Validation("Фото запчасти не может содержать дубликаты: "),
 			false => new SparePhotoCollection(value),
 		};
+	}
 
 	/// <summary>
 	/// Создаёт коллекцию фото из перечисления строк.

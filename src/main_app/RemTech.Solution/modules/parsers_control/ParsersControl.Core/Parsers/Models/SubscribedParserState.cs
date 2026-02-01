@@ -57,23 +57,35 @@ public sealed record SubscribedParserState
 	/// </summary>
 	/// <param name="other">Другое состояние работы парсера для сравнения.</param>
 	/// <returns>True, если состояния совпадают; в противном случае false.</returns>
-	public bool HasSameState(SubscribedParserState other) => Value == other.Value;
+	public bool HasSameState(SubscribedParserState other)
+	{
+		return Value == other.Value;
+	}
 
 	/// <summary>
 	/// Проверяет, находится ли парсер в рабочем состоянии.
 	/// </summary>
 	/// <returns>True, если парсер находится в рабочем состоянии; в противном случае false.</returns>
-	public bool IsWorking() => Value == WORKING;
+	public bool IsWorking()
+	{
+		return Value == WORKING;
+	}
 
 	/// <summary>
 	/// Проверяет, отключен ли парсер.
 	/// </summary>
 	/// <returns>True, если парсер отключен; в противном случае false.</returns>
-	public bool IsDisabled() => Value == DISABLED;
+	public bool IsDisabled()
+	{
+		return Value == DISABLED;
+	}
 
 	/// <summary>
 	/// Проверяет, находится ли парсер в состоянии ожидания.
 	/// </summary>
 	/// <returns>True, если парсер находится в состоянии ожидания; в противном случае false.</returns>
-	public bool IsSleeping() => Value == SLEEPING;
+	public bool IsSleeping()
+	{
+		return Value == SLEEPING;
+	}
 }

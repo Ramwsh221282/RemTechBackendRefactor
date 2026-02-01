@@ -29,7 +29,10 @@ public readonly record struct MailerId
 	/// Создает новый идентификатор почтовой рассылки.
 	/// </summary>
 	/// <returns>Новый идентификатор почтовой рассылки.</returns>
-	public static MailerId New() => new();
+	public static MailerId New()
+	{
+		return new();
+	}
 
 	/// <summary>
 	/// Создает идентификатор почтовой рассылки из заданного значения.

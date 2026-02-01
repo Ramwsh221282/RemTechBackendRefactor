@@ -61,13 +61,16 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 	/// <param name="specification">Спецификация для фильтрации аккаунтов.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Задача, представляющая асинхронную операцию с результатом поиска аккаунта.</returns>
-	async Task<Result<Account>> IAccountsRepository.Find(AccountSpecification specification, CancellationToken ct) =>
-		string.IsNullOrWhiteSpace(specification.RefreshToken)
+	async Task<Result<Account>> IAccountsRepository.Find(AccountSpecification specification, CancellationToken ct)
+	{
+		return string.IsNullOrWhiteSpace(specification.RefreshToken)
 			? await Get(specification, ct)
 			: await SearchWithRefreshTokenFilter(specification, ct);
+	}
 
-	private static object GetParameters(Account account) =>
-		new
+	private static object GetParameters(Account account)
+	{
+		return new
 		{
 			id = account.Id.Value,
 			email = account.Email.Value,
@@ -75,6 +78,7 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 			login = account.Login.Value,
 			activation_status = account.ActivationStatus.Value,
 		};
+	}
 
 	private static (DynamicParameters Parameters, string FilterSql) WhereClause(AccountSpecification specification)
 	{
@@ -147,9 +151,14 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		Account? account = await GetSingle(command, ct);
 
 		if (account is null)
+		{
 			return Error.NotFound("Учетная запись не найдена.");
+		}
+
 		if (specification.LockRequired)
+		{
 			await BlockEntity(account, ct);
+		}
 
 		UnitOfWork.Track([account]);
 		return account;
@@ -180,9 +189,14 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 		Account? account = await GetSingle(command, ct);
 
 		if (account is null)
+		{
 			return Error.NotFound("Учетная запись не найдена.");
+		}
+
 		if (specification.LockRequired)
+		{
 			await BlockEntity(account, ct);
+		}
 
 		UnitOfWork.Track([account]);
 		return account;
@@ -216,7 +230,9 @@ public sealed class AccountsRepository(NpgSqlSession session, IAccountsModuleUni
 			}
 
 			if (await reader.IsDBNullAsync(reader.GetOrdinal("account_permission_id"), ct))
+			{
 				continue;
+			}
 
 			Guid permissionId = reader.GetValue<Guid>("account_permission_id");
 			string permissionName = reader.GetValue<string>("permission_name");

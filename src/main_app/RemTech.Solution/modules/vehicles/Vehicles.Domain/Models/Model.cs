@@ -26,5 +26,8 @@ public sealed class Model(ModelId id, ModelName name) : IPersistable<Model>
 	/// <param name="persister">Персистер для сохранения данных.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат сохранения модели транспортного средства.</returns>
-	public Task<Result<Model>> SaveBy(IPersister persister, CancellationToken ct = default) => persister.Save(this, ct);
+	public Task<Result<Model>> SaveBy(IPersister persister, CancellationToken ct = default)
+	{
+		return persister.Save(this, ct);
+	}
 }

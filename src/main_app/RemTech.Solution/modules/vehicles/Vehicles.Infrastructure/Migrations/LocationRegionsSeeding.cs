@@ -11,8 +11,10 @@ public sealed class LocationRegionsSeeding : Migration
 	/// <summary>
 	/// Выполняет миграцию, заполняя таблицу регионов начальными данными.
 	/// </summary>
-	public override void Up() =>
+	public override void Up()
+	{
 		Execute.EmbeddedScript("Vehicles.Infrastructure.Locations.SeedingImplementation.regions_seeding.sql");
+	}
 
 	/// <summary>
 	/// Откатывает миграцию. В данном случае откат не выполняется.

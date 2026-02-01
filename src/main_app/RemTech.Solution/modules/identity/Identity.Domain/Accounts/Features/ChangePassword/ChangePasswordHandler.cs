@@ -39,7 +39,9 @@ public sealed class ChangePasswordHandler(
 		Result<Account> account = await GetRequiredAccount(command, ct);
 		Result<Unit> verification = VerifyCurrentPassword(account, command.CurrentPassword);
 		if (verification.IsFailure)
+		{
 			return verification.Error;
+		}
 
 		Result<Unit> change = ChangePassword(command, account);
 		Result<Unit> logout = await Logout(account, change, command, ct);
@@ -59,11 +61,18 @@ public sealed class ChangePasswordHandler(
 	)
 	{
 		if (account.IsFailure)
+		{
 			return account.Error;
+		}
 		if (change.IsFailure)
+		{
 			return change.Error;
+		}
 		if (logout.IsFailure)
+		{
 			return logout.Error;
+		}
+
 		await unitOfWork.Save(account.Value, ct);
 		return Unit.Value;
 	}
@@ -76,22 +85,38 @@ public sealed class ChangePasswordHandler(
 	)
 	{
 		if (account.IsFailure)
+		{
 			return account.Error;
+		}
+
 		if (change.IsFailure)
+		{
 			return change.Error;
+		}
+
 		Result<AccessToken> accessToken = await accessTokens.Find(command.AccessToken, withLock: true, ct);
 		Result<RefreshToken> refreshToken = await refreshTokens.Find(command.RefreshToken, withLock: true, ct);
+
 		if (accessToken.IsSuccess)
+		{
 			await accessTokens.Remove(accessToken.Value, ct);
+		}
+
 		if (refreshToken.IsSuccess)
+		{
 			await refreshTokens.Delete(refreshToken.Value, ct);
+		}
+
 		return Unit.Value;
 	}
 
 	private Result<Unit> ChangePassword(ChangePasswordCommand command, Result<Account> account)
 	{
 		if (account.IsFailure)
+		{
 			return account.Error;
+		}
+
 		AccountPassword password = AccountPassword.Create(command.NewPassword);
 		return account.Value.ChangePassword(password, hasher, passwordRequirements);
 	}

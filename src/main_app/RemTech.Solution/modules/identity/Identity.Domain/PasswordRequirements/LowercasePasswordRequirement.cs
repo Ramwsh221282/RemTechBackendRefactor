@@ -13,8 +13,10 @@ public sealed class LowercasePasswordRequirement : IAccountPasswordRequirement
 	/// </summary>
 	/// <param name="password">Пароль для проверки.</param>
 	/// <returns>Результат проверки требования к паролю.</returns>
-	public Result<Unit> Satisfies(AccountPassword password) =>
-		!password.Value.Any(char.IsLower)
+	public Result<Unit> Satisfies(AccountPassword password)
+	{
+		return !password.Value.Any(char.IsLower)
 			? Error.Validation("Пароль должен содержать хотя бы одну строчную букву.")
 			: Unit.Value;
+	}
 }

@@ -27,7 +27,10 @@ public sealed class ParserCacheRecordInvalidator(HybridCache cache)
 	/// <param name="id">Идентификатор подписанного парсера.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию инвалидирования кэша.</returns>
-	public Task Invalidate(SubscribedParserId id, CancellationToken ct = default) => Invalidate(id.Value, ct);
+	public Task Invalidate(SubscribedParserId id, CancellationToken ct = default)
+	{
+		return Invalidate(id.Value, ct);
+	}
 
 	/// <summary>
 	/// Инвалидирует кэш для записи парсера по подписанному парсеру.
@@ -35,5 +38,8 @@ public sealed class ParserCacheRecordInvalidator(HybridCache cache)
 	/// <param name="parser">Подписанный парсер.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию инвалидирования кэша.</returns>
-	public Task Invalidate(SubscribedParser parser, CancellationToken ct = default) => Invalidate(parser.Id.Value, ct);
+	public Task Invalidate(SubscribedParser parser, CancellationToken ct = default)
+	{
+		return Invalidate(parser.Id.Value, ct);
+	}
 }

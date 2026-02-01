@@ -21,8 +21,10 @@ public sealed class TelemetryRecordInvokerIdSearcher(IOptions<JwtOptions> option
 	/// </summary>
 	/// <param name="context">Контекст выполнения действия.</param>
 	/// <returns>Идентификатор вызывающего объекта, если найден.</returns>
-	public Optional<Guid> TryReadInvokerIdToken(ActionExecutingContext context) =>
-		TryReadInvokerIdToken(context.HttpContext);
+	public Optional<Guid> TryReadInvokerIdToken(ActionExecutingContext context)
+	{
+		return TryReadInvokerIdToken(context.HttpContext);
+	}
 
 	/// <summary>
 	/// Пытается найти идентификатор вызывающего объекта из HttpContext.
@@ -37,14 +39,16 @@ public sealed class TelemetryRecordInvokerIdSearcher(IOptions<JwtOptions> option
 
 	private static string? ExtractAccessTokenFromHttpContext(HttpContext context)
 	{
-		string token = context.GetAccessToken();
+		string? token = context.GetAccessToken();
 		return string.IsNullOrWhiteSpace(token) ? null : token;
 	}
 
 	private Optional<Guid> ReadTokenUsingJwtManager(string? token)
 	{
 		if (string.IsNullOrWhiteSpace(token))
+		{
 			return Optional.None<Guid>();
+		}
 
 		try
 		{

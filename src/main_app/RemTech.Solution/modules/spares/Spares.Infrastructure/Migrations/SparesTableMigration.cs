@@ -52,5 +52,8 @@ public sealed class SparesTableMigration : Migration
 	/// <summary>
 	///  Выполняет миграцию "вниз".
 	/// </summary>
-	public override void Down() => Delete.Table("spares").InSchema("spares_module");
+	public override void Down()
+	{
+		Delete.Table("spares").InSchema("spares_module");
+	}
 }

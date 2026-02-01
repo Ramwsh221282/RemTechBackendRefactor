@@ -11,7 +11,8 @@ public sealed class PendingEmailTableMigration : Migration
 	/// <summary>
 	/// Выполняет миграцию вверх, создавая таблицу отложенных писем.
 	/// </summary>
-	public override void Up() =>
+	public override void Up()
+	{
 		Execute.Sql(
 			"""
 			CREATE TABLE IF NOT EXISTS notifications_module.pending_emails
@@ -24,9 +25,13 @@ public sealed class PendingEmailTableMigration : Migration
 			)
 			"""
 		);
+	}
 
 	/// <summary>
 	/// Выполняет миграцию вниз, удаляя таблицу отложенных писем.
 	/// </summary>
-	public override void Down() => Execute.Sql("DROP TABLE IF EXISTS notifications_module.pending_emails");
+	public override void Down()
+	{
+		Execute.Sql("DROP TABLE IF EXISTS notifications_module.pending_emails");
+	}
 }

@@ -34,24 +34,31 @@ public readonly record struct ParsedCount
 	/// </summary>
 	/// <param name="value">Значение количества обработанных данных парсером.</param>
 	/// <returns>Результат создания счётчика.</returns>
-	public static Result<ParsedCount> Create(int value) =>
-		value < 0
+	public static Result<ParsedCount> Create(int value)
+	{
+		return value < 0
 			? Error.Validation("Количество обработанных данных парсером не может быть отрицательным.")
 			: new ParsedCount(value);
+	}
 
 	/// <summary>
 	/// Создаёт новый счётчик с нулевым значением.
 	/// </summary>
 	/// <returns>Новый счётчик с нулевым значением.</returns>
-	public static ParsedCount New() => Create(0).Value;
+	public static ParsedCount New()
+	{
+		return Create(0).Value;
+	}
 
 	/// <summary>
 	/// Добавляет заданное количество к текущему счётчику.
 	/// </summary>
 	/// <param name="amount">Количество, которое нужно добавить к текущему счётчику.</param>
 	/// <returns>Новый счётчик с обновлённым значением.</returns>
-	public Result<ParsedCount> Add(int amount) =>
-		amount < 0
+	public Result<ParsedCount> Add(int amount)
+	{
+		return amount < 0
 			? Error.Validation("Количество добавляемых данных парсером не может быть отрицательным.")
 			: new ParsedCount(Value + amount);
+	}
 }

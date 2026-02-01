@@ -17,13 +17,19 @@ public sealed class SubscribedParsersCollection(IEnumerable<SubscribedParser> pa
 	/// Создаёт пустую коллекцию подписанных парсеров.
 	/// </summary>
 	/// <returns>Пустая коллекция подписанных парсеров.</returns>
-	public static SubscribedParsersCollection Empty() => new();
+	public static SubscribedParsersCollection Empty()
+	{
+		return new();
+	}
 
 	/// <summary>
 	/// Проверяет, пуста ли коллекция.
 	/// </summary>
 	/// <returns>True, если коллекция пуста; в противном случае false.</returns>
-	public bool IsEmpty() => Parsers.Length == 0;
+	public bool IsEmpty()
+	{
+		return Parsers.Length == 0;
+	}
 
 	/// <summary>
 	/// Отключает все парсеры в коллекции.
@@ -32,9 +38,14 @@ public sealed class SubscribedParsersCollection(IEnumerable<SubscribedParser> pa
 	public Result<Unit> PermanentlyDisableAll()
 	{
 		if (IsEmpty())
+		{
 			return Error.NotFound("Список парсеров пуст.");
+		}
+
 		foreach (SubscribedParser parser in Parsers)
+		{
 			parser.Disable();
+		}
 
 		return Result.Success(Unit.Value);
 	}
@@ -46,12 +57,17 @@ public sealed class SubscribedParsersCollection(IEnumerable<SubscribedParser> pa
 	public Result<Unit> PermanentlyEnableAll()
 	{
 		if (IsEmpty())
+		{
 			return Error.NotFound("Список парсеров пуст.");
+		}
+
 		foreach (SubscribedParser parser in Parsers)
 		{
 			Result<Unit> enabling = parser.PermantlyEnable();
 			if (enabling.IsFailure)
+			{
 				return enabling.Error;
+			}
 		}
 
 		return Result.Success(Unit.Value);
@@ -61,11 +77,17 @@ public sealed class SubscribedParsersCollection(IEnumerable<SubscribedParser> pa
 	/// Получает идентификаторы всех парсеров в коллекции.
 	/// </summary>
 	/// <returns>Идентификаторы всех парсеров в коллекции.</returns>
-	public IEnumerable<Guid> GetIdentifiers() => Parsers.Select(p => p.Id.Value);
+	public IEnumerable<Guid> GetIdentifiers()
+	{
+		return Parsers.Select(p => p.Id.Value);
+	}
 
 	/// <summary>
 	/// Читает все парсеры в коллекции.
 	/// </summary>
 	/// <returns>Все подписанные парсеры в коллекции.</returns>
-	public IEnumerable<SubscribedParser> Read() => Parsers;
+	public IEnumerable<SubscribedParser> Read()
+	{
+		return Parsers;
+	}
 }

@@ -63,7 +63,10 @@ public sealed class EmbeddingsProvider(IOptions<EmbeddingsProviderOptions> optio
 	/// <summary>
 	/// Освобождает ресурсы, используемые провайдером встраиваний.
 	/// </summary>
-	public void Dispose() => Dispose(true);
+	public void Dispose()
+	{
+		Dispose(true);
+	}
 
 	/// <summary>
 	/// Генерирует пакет встраиваний для заданного списка текстов.

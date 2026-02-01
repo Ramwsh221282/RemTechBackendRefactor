@@ -60,5 +60,8 @@ public sealed class VehiclesTableMigration : Migration
 	/// <summary>
 	/// Откатывает миграцию, удаляя таблицу транспортных средств.
 	/// </summary>
-	public override void Down() => Delete.Table("vehicles").InSchema("vehicles_module");
+	public override void Down()
+	{
+		Delete.Table("vehicles").InSchema("vehicles_module");
+	}
 }

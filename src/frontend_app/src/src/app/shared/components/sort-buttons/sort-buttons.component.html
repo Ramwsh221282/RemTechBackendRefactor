@@ -1,0 +1,26 @@
+<div class="p-1 flex flex-row gap-1">
+	<p-button
+		[severity]="getSeverity('ASC')"
+		(onClick)="select('ASC')"
+		[outlined]="true"
+		[rounded]="true"
+		[size]="'small'"
+		[icon]="'pi pi-arrow-up'"
+	/>
+	<p-button
+		[severity]="getSeverity('DESC')"
+		(onClick)="select('DESC')"
+		[outlined]="true"
+		[rounded]="true"
+		[size]="'small'"
+		[icon]="'pi pi-arrow-down'"
+	/>
+	<p-button
+		[severity]="getSeverity('NONE')"
+		(onClick)="select('NONE')"
+		[outlined]="true"
+		[rounded]="true"
+		[size]="'small'"
+		[icon]="'pi pi-times'"
+	/>
+</div>

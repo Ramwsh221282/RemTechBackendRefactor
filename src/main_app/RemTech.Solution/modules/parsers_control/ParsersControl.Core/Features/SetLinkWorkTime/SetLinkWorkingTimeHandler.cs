@@ -40,7 +40,10 @@ public sealed class SetLinkWorkingTimeHandler(ISubscribedParsersRepository repos
 	)
 	{
 		if (parser.IsFailure)
+		{
 			return Result.Failure<SubscribedParserLink>(parser.Error);
+		}
+
 		Result<SubscribedParserLink> link = parser.Value.FindLink(linkId);
 		return link.IsFailure
 			? Result.Failure<SubscribedParserLink>(link.Error)
@@ -60,9 +63,14 @@ public sealed class SetLinkWorkingTimeHandler(ISubscribedParsersRepository repos
 	)
 	{
 		if (parser.IsFailure)
+		{
 			return Result.Failure(parser.Error);
+		}
 		if (link.IsFailure)
+		{
 			return Result.Failure(link.Error);
+		}
+
 		await parser.Value.SaveChanges(repository, ct);
 		return Result.Success();
 	}

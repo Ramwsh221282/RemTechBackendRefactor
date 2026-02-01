@@ -18,6 +18,8 @@ public sealed record ResetPasswordResult(Guid AccountId, string AccountEmail, Gu
 	/// <param name="account">Аккаунт пользователя.</param>
 	/// <param name="ticket">Тикет для сброса пароля.</param>
 	/// <returns>Результат сброса пароля.</returns>
-	public static ResetPasswordResult From(Account account, AccountTicket ticket) =>
-		new(account.Id.Value, account.Email.Value, ticket.TicketId, ticket.Purpose);
+	public static ResetPasswordResult From(Account account, AccountTicket ticket)
+	{
+		return new(account.Id.Value, account.Email.Value, ticket.TicketId, ticket.Purpose);
+	}
 }

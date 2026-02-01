@@ -17,10 +17,15 @@ public static class HttpContextActionRecordsParsing
 
 	extension(ActionExecutingContext context)
 	{
-		public Result<ActionRecordName> ExtractRecordName() => context.HttpContext.ExtractRecordName();
+		public Result<ActionRecordName> ExtractRecordName()
+		{
+			return context.HttpContext.ExtractRecordName();
+		}
 
-		public Task<ActionRecordPayloadJson?> ExtractPayload(Serilog.ILogger? logger = null) =>
-			context.HttpContext.ExtractPayload(logger);
+		public Task<ActionRecordPayloadJson?> ExtractPayload(Serilog.ILogger? logger = null)
+		{
+			return context.HttpContext.ExtractPayload(logger);
+		}
 	}
 
 	extension(HttpContext context)
@@ -42,7 +47,9 @@ public static class HttpContextActionRecordsParsing
 			);
 
 			if (queryParameters.Count is 0 && payloadParameters.Count is 0 && routeParameters.Count is 0)
+			{
 				return null;
+			}
 
 			string jsonPayload = JsonSerializer.Serialize(
 				new
@@ -63,7 +70,9 @@ public static class HttpContextActionRecordsParsing
 			{
 				string key = entry.Key;
 				if (ContainsInIgnoredRouteParameters(key))
+				{
 					continue;
+				}
 
 				if (!result.TryGetValue(key, out List<object?>? existing))
 				{
@@ -80,7 +89,9 @@ public static class HttpContextActionRecordsParsing
 		private ReadOnlyDictionary<string, List<object>> GetQueryParametersFromHttpContext()
 		{
 			if (!context.Request.QueryString.HasValue)
+			{
 				return ReadOnlyDictionary<string, List<object>>.Empty;
+			}
 
 			Dictionary<string, List<object>> result = [];
 			foreach (KeyValuePair<string, StringValues> entry in context.Request.Query)
@@ -103,14 +114,16 @@ public static class HttpContextActionRecordsParsing
 		)
 		{
 			if (!context.Request.Body.CanSeek)
+			{
 				return ReadOnlyDictionary<string, string>.Empty;
+			}
 
 			try
 			{
 				Dictionary<string, string>? payload = await context.Request.ReadFromJsonAsync<
 					Dictionary<string, string>
 				>(cancellationToken: context.CancellationToken);
-				return payload is null ? payload.AsReadOnly() : ReadOnlyDictionary<string, string>.Empty;
+				return payload != null ? payload.AsReadOnly() : ReadOnlyDictionary<string, string>.Empty;
 			}
 			catch (Exception ex)
 			{
@@ -128,7 +141,9 @@ public static class HttpContextActionRecordsParsing
 		foreach (string ignoredKey in _ignoredKeyForRouterParameters)
 		{
 			if (string.Equals(input, ignoredKey, StringComparison.OrdinalIgnoreCase))
+			{
 				return true;
+			}
 		}
 
 		return false;

@@ -6,29 +6,25 @@ import { SidebarComponent } from './shared/components/app-menu/sidebar/sidebar.c
 import { RouterOutlet } from '@angular/router';
 
 @Component({
-  selector: 'app-root',
-  imports: [ButtonModule, HeaderComponent, SidebarComponent, RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+	selector: 'app-root',
+	imports: [ButtonModule, HeaderComponent, SidebarComponent, RouterOutlet],
+	templateUrl: './app.component.html',
+	styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  private readonly _appMenuService: AppMenuService;
+	public constructor(private readonly _appMenuService: AppMenuService) {}
 
-  public constructor(AppMenuService: AppMenuService) {
-    this._appMenuService = AppMenuService;
-  }
+	public get isSideBarVisible(): boolean {
+		return this._appMenuService.isSideBarVisible;
+	}
 
-  public get isSideBarVisible(): boolean {
-    return this._appMenuService.isSideBarVisible;
-  }
+	public acceptSideBarClose(): void {
+		this._appMenuService.turnSideBarVisibility();
+	}
 
-  public acceptSideBarClose(): void {
-    this._appMenuService.turnSideBarVisibility();
-  }
-
-  public onAnimationStart(event: any) {
-    if (event.toState === 'collapse') {
-      return;
-    }
-  }
+	public onAnimationStart(event: any) {
+		if (event.toState === 'collapse') {
+			return;
+		}
+	}
 }

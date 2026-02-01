@@ -26,5 +26,8 @@ public class Brand(BrandId id, BrandName name) : IPersistable<Brand>
 	/// <param name="persister">Персистер для сохранения марки.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции сохранения марки.</returns>
-	public Task<Result<Brand>> SaveBy(IPersister persister, CancellationToken ct = default) => persister.Save(this, ct);
+	public Task<Result<Brand>> SaveBy(IPersister persister, CancellationToken ct = default)
+	{
+		return persister.Save(this, ct);
+	}
 }

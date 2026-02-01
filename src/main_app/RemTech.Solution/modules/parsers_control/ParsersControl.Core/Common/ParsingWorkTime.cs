@@ -27,7 +27,7 @@ public sealed record ParsingWorkTime
 	/// <summary>
 	/// Минуты работы парсера.
 	/// </summary>
-	public int Minutes => (int)((TotalElapsedSeconds % 3600) / 60);
+	public int Minutes => (int)(TotalElapsedSeconds % 3600 / 60);
 
 	/// <summary>
 	/// Секунды работы парсера.
@@ -38,7 +38,10 @@ public sealed record ParsingWorkTime
 	/// Создаёт новый экземпляр времени работы парсера с нулевым значением.
 	/// </summary>
 	/// <returns>Экземпляр ParsingWorkTime.</returns>
-	public static ParsingWorkTime New() => new(INITIAL_VALUE);
+	public static ParsingWorkTime New()
+	{
+		return new(INITIAL_VALUE);
+	}
 
 	/// <summary>
 	/// Создаёт экземпляр времени работы парсера по общему количеству секунд.

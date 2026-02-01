@@ -43,13 +43,22 @@ public sealed record SubscribedParserIdentity
 	{
 		List<string> errors = [];
 		if (string.IsNullOrWhiteSpace(domainName))
+		{
 			errors.Add(Error.NotSet("Идентификатор домена сервиса парсера"));
+		}
 		if (domainName.Length > MAX_DOMAIN_NAME_LENGTH)
+		{
 			errors.Add(Error.GreaterThan("Идентификатор домена сервиса парсера", MAX_DOMAIN_NAME_LENGTH));
+		}
 		if (string.IsNullOrWhiteSpace(serviceType))
+		{
 			errors.Add(Error.NotSet("Тип обрабатываемых данных парсером"));
+		}
 		if (serviceType.Length > MAX_SERVICE_TYPE_LENGTH)
+		{
 			errors.Add(Error.GreaterThan("Тип обрабатываемых данных парсером", MAX_SERVICE_TYPE_LENGTH));
+		}
+
 		return errors.Count > 0 ? Error.Validation(errors) : new SubscribedParserIdentity(domainName, serviceType);
 	}
 }

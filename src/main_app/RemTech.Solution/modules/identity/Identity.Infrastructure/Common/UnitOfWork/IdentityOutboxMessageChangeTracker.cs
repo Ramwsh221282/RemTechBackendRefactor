@@ -21,7 +21,9 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 	public void Track(IEnumerable<IdentityOutboxMessage> messages)
 	{
 		foreach (IdentityOutboxMessage message in messages)
+		{
 			Tracking.TryAdd(message.Id, message.Clone());
+		}
 	}
 
 	/// <summary>
@@ -36,13 +38,18 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 		return SaveOutboxMessageChanges(tracking, ct);
 	}
 
-	private static string WhenClause(int index) => $"WHEN m.id = @id_{index}";
+	private static string WhenClause(int index)
+	{
+		return $"WHEN m.id = @id_{index}";
+	}
 
 	private async Task SaveOutboxMessageChanges(IEnumerable<IdentityOutboxMessage> messages, CancellationToken ct)
 	{
 		IdentityOutboxMessage[] messagesArray = [.. messages];
 		if (messagesArray.Length == 0)
+		{
 			return;
+		}
 
 		List<string> setClauses = [];
 		DynamicParameters parameters = new();
@@ -80,7 +87,9 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 		}
 
 		if (setClauses.Count == 0)
+		{
 			return;
+		}
 
 		int index = 0;
 		List<Guid> ids = [];
@@ -105,7 +114,10 @@ public sealed class IdentityOutboxMessageChangeTracker(NpgSqlSession session)
 		foreach (IdentityOutboxMessage message in messages)
 		{
 			if (!Tracking.TryGetValue(message.Id, out IdentityOutboxMessage? _))
+			{
 				continue;
+			}
+
 			tracking.Add(message);
 		}
 

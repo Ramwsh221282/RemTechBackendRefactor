@@ -23,7 +23,9 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 	public void StartTracking(IEnumerable<Account> accounts)
 	{
 		foreach (Account account in accounts)
+		{
 			Accounts.TryAdd(account.Id.Value, account.Copy());
+		}
 	}
 
 	/// <summary>
@@ -36,36 +38,46 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 	{
 		IEnumerable<Account> tracking = GetTrackingAccounts(accounts);
 		if (!tracking.Any())
+		{
 			return;
+		}
+
 		await SavePermissionChanges(tracking, ct);
 		await SaveAccountChanges(tracking, ct);
 	}
 
-	private static string WhenById(int index) => $"WHEN a.id = @id_{index}";
+	private static string WhenById(int index)
+	{
+		return $"WHEN a.id = @id_{index}";
+	}
 
 	private static (AccountId AccountId, IEnumerable<Permission> Permissions) GetRemovedPermissions(
 		Account account,
 		Account original
-	) =>
-		(
+	)
+	{
+		return (
 			account.Id,
 			original.Permissions.Permissions.ExceptBy(
 				account.Permissions.Permissions.Select(p => p.Id.Value),
 				p => p.Id.Value
 			)
 		);
+	}
 
 	private static (AccountId AccountId, IEnumerable<Permission> Permissions) GetAddedPermissions(
 		Account account,
 		Account original
-	) =>
-		(
+	)
+	{
+		return (
 			account.Id,
 			account.Permissions.Permissions.ExceptBy(
 				original.Permissions.Permissions.Select(p => p.Id.Value),
 				p => p.Id.Value
 			)
 		);
+	}
 
 	private async Task SavePermissionChanges(IEnumerable<Account> tracking, CancellationToken ct)
 	{
@@ -85,16 +97,21 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 	)
 	{
 		if (!added.Permissions.Any())
+		{
 			return;
+		}
+
 		var parameters = added.Permissions.Select(p => new
 		{
 			account_id = added.AccountId.Value,
 			permission_id = p.Id.Value,
 		});
+
 		const string sql = """
 			INSERT INTO identity_module.account_permissions (account_id, permission_id)
 			VALUES (@account_id, @permission_id)
 			""";
+
 		NpgsqlConnection connection = await Session.GetConnection(ct);
 		await connection.ExecuteAsync(sql, parameters, transaction: Session.Transaction);
 	}
@@ -105,7 +122,10 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 	)
 	{
 		if (!removed.Permissions.Any())
+		{
 			return;
+		}
+
 		Guid[] permissionIds = [.. removed.Permissions.Select(p => p.Id.Value)];
 		Guid accountId = removed.AccountId.Value;
 		const string sql = """
@@ -190,7 +210,9 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 		}
 
 		if (caseSet.Count == 0)
+		{
 			return;
+		}
 
 		List<Guid> ids = [];
 		int index = 0;
@@ -214,7 +236,9 @@ public sealed class AccountsChangeTracker(NpgSqlSession session)
 		foreach (Account account in accounts)
 		{
 			if (Accounts.ContainsKey(account.Id.Value))
+			{
 				tracking.Add(account);
+			}
 		}
 
 		return tracking;

@@ -23,7 +23,10 @@ public sealed class EmbeddingsProviderOptions
 	public bool Validate()
 	{
 		if (string.IsNullOrWhiteSpace(TokenizerPath))
+		{
 			throw new InvalidOperationException("Tokenizer path is empty.");
+		}
+
 		return string.IsNullOrWhiteSpace(ModelPath)
 			? throw new InvalidOperationException("Model path is empty.")
 			: true;

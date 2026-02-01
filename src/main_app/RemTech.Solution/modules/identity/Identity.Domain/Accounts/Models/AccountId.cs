@@ -29,15 +29,20 @@ public readonly record struct AccountId
 	/// Создает новый уникальный идентификатор аккаунта.
 	/// </summary>
 	/// <returns>Новый уникальный идентификатор аккаунта.</returns>
-	public static AccountId New() => new(Guid.NewGuid());
+	public static AccountId New()
+	{
+		return new(Guid.NewGuid());
+	}
 
 	/// <summary>
 	/// Создает экземпляр <see cref="AccountId"/> с валидацией.
 	/// </summary>
 	/// <param name="value">Значение для создания идентификатора аккаунта.</param>
 	/// <returns>Результат создания экземпляра <see cref="AccountId"/>.</returns>
-	public static Result<AccountId> Create(Guid value) =>
-		value == Guid.Empty
+	public static Result<AccountId> Create(Guid value)
+	{
+		return value == Guid.Empty
 			? Error.Validation("Идентификатор учетной записи не может быть пустым.")
 			: new AccountId(value);
+	}
 }

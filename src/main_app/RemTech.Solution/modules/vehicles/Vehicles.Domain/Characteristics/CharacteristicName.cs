@@ -27,7 +27,10 @@ public sealed record CharacteristicName
 	public static Result<CharacteristicName> Create(string value)
 	{
 		if (string.IsNullOrWhiteSpace(value))
+		{
 			return Error.Validation("Имя характеристики не может быть пустым.");
+		}
+
 		return value.Length > MAX_LENGTH
 			? Error.Validation($"Имя характеристики не может быть больше {MAX_LENGTH} символов.")
 			: new CharacteristicName(value);

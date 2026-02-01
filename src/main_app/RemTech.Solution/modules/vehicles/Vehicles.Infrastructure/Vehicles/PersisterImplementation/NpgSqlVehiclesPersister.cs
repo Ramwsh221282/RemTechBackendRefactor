@@ -39,7 +39,10 @@ public sealed class NpgSqlVehiclesPersister(NpgSqlSession session, EmbeddingsPro
 		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
 		int affected = await connection.ExecuteAsync(command);
 		if (affected == 0)
+		{
 			return Error.Conflict("Unable to save vehicle.");
+		}
+
 		await PersistCharacteristics(session, connection, info.Vehicle, ct);
 		return Unit.Value;
 	}
@@ -69,8 +72,10 @@ public sealed class NpgSqlVehiclesPersister(NpgSqlSession session, EmbeddingsPro
 		return parameters;
 	}
 
-	private static string CreateTextForEmbedding(Location location, Vehicle vehicle) =>
-		$"{vehicle.Text.Value.Trim()} {vehicle.Characteristics.Select(c => $"{c.Name.Value.Trim()} {c.Value.Value.Trim()}").Aggregate((a, b) => $"{a} {b}").Trim()} {location.Name.Value.Trim()}";
+	private static string CreateTextForEmbedding(Location location, Vehicle vehicle)
+	{
+		return $"{vehicle.Text.Value.Trim()} {vehicle.Characteristics.Select(c => $"{c.Name.Value.Trim()} {c.Value.Value.Trim()}").Aggregate((a, b) => $"{a} {b}").Trim()} {location.Name.Value.Trim()}";
+	}
 
 	private static Task<int> PersistCharacteristics(
 		NpgSqlSession session,

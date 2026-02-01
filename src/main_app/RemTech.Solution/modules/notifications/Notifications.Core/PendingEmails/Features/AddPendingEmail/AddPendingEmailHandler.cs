@@ -24,6 +24,8 @@ public sealed class AddPendingEmailHandler(IPendingEmailNotificationsRepository 
 		return Unit.Value;
 	}
 
-	private static PendingEmailNotification CreateNotification(AddPendingEmailCommand command) =>
-		PendingEmailNotification.CreateNew(command.Recipient, command.Subject, command.Body).Value;
+	private static PendingEmailNotification CreateNotification(AddPendingEmailCommand command)
+	{
+		return PendingEmailNotification.CreateNew(command.Recipient, command.Subject, command.Body).Value;
+	}
 }

@@ -78,11 +78,15 @@ public sealed class AccountsModuleOutbox(NpgSqlSession session, IAccountsModuleU
 		return messages;
 	}
 
-	private static string LockClause(OutboxMessageSpecification spec) =>
-		spec.WithLock == true ? "FOR UPDATE" : string.Empty;
+	private static string LockClause(OutboxMessageSpecification spec)
+	{
+		return spec.WithLock == true ? "FOR UPDATE" : string.Empty;
+	}
 
-	private static string LimitClause(OutboxMessageSpecification spec) =>
-		spec.Limit.HasValue ? $"LIMIT {spec.Limit.Value}" : string.Empty;
+	private static string LimitClause(OutboxMessageSpecification spec)
+	{
+		return spec.Limit.HasValue ? $"LIMIT {spec.Limit.Value}" : string.Empty;
+	}
 
 	private static (DynamicParameters Parameters, string FilterSql) WhereClause(OutboxMessageSpecification spec)
 	{

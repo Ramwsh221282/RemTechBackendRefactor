@@ -89,20 +89,28 @@ public sealed class SubscribedParserLink
 		SubscribedParserLinkUrlInfo urlInfo,
 		ParsingStatistics statistics,
 		bool active
-	) => new(parserId, id, urlInfo, statistics, active);
+	)
+	{
+		return new(parserId, id, urlInfo, statistics, active);
+	}
 
 	/// <summary>
 	/// Создаёт копию ссылки на парсер.
 	/// </summary>
 	/// <param name="link">Ссылка для копирования.</param>
 	/// <returns>Копия ссылки.</returns>
-	public static SubscribedParserLink CreateCopy(SubscribedParserLink link) =>
-		new(link.ParserId, link.Id, link.UrlInfo, link.Statistics, link.Active);
+	public static SubscribedParserLink CreateCopy(SubscribedParserLink link)
+	{
+		return new(link.ParserId, link.Id, link.UrlInfo, link.Statistics, link.Active);
+	}
 
 	/// <summary>
 	/// Сбросить время работы парсера.
 	/// </summary>
-	public void ResetWorkTime() => Statistics = Statistics.ResetWorkTime();
+	public void ResetWorkTime()
+	{
+		Statistics = Statistics.ResetWorkTime();
+	}
 
 	/// <summary>
 	/// Добавить количество обработанных элементов.
@@ -113,7 +121,10 @@ public sealed class SubscribedParserLink
 	{
 		Result<ParsingStatistics> updated = Statistics.IncreaseParsedCount(count);
 		if (updated.IsFailure)
+		{
 			return Result.Failure(updated.Error);
+		}
+
 		Statistics = updated.Value;
 		return Result.Success();
 	}
@@ -127,7 +138,10 @@ public sealed class SubscribedParserLink
 	{
 		Result<ParsingStatistics> updated = Statistics.AddWorkTime(totalElapsedSeconds);
 		if (updated.IsFailure)
+		{
 			return Result.Failure(updated.Error);
+		}
+
 		Statistics = updated.Value;
 		return Result.Success();
 	}
@@ -138,7 +152,10 @@ public sealed class SubscribedParserLink
 	public void Enable()
 	{
 		if (Active)
+		{
 			return;
+		}
+
 		Active = true;
 	}
 
@@ -148,7 +165,10 @@ public sealed class SubscribedParserLink
 	public void Disable()
 	{
 		if (!Active)
+		{
 			return;
+		}
+
 		Active = false;
 	}
 
@@ -163,13 +183,20 @@ public sealed class SubscribedParserLink
 		Result<SubscribedParserLinkUrlInfo> copy = UrlInfo.Copy();
 
 		if (!string.IsNullOrWhiteSpace(otherName))
+		{
 			copy = copy.Value.Rename(otherName);
+		}
 
 		if (!string.IsNullOrWhiteSpace(otherUrl))
+		{
 			copy = copy.Value.ChangeUrl(otherUrl);
+		}
 
 		if (copy.IsFailure)
+		{
 			return Result.Failure<SubscribedParserLink>(copy.Error);
+		}
+
 		UrlInfo = copy.Value;
 		return this;
 	}

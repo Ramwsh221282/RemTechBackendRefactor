@@ -34,15 +34,21 @@ public sealed class GivePermissionsHandler(
 	{
 		Result<Account> account = await GetRequiredAccount(command, ct);
 		if (account.IsFailure)
+		{
 			return account.Error;
+		}
 
 		IEnumerable<Permission> queriedPermissions = await GetRequiredPermissions(command, ct);
 		if (!PermissionsFound(queriedPermissions, command, out Error error))
+		{
 			return error;
+		}
 
 		Result<Unit> add = account.Value.AddPermissions(queriedPermissions);
 		if (add.IsFailure)
+		{
 			return add.Error;
+		}
 
 		await UnitOfWork.Save(account.Value, ct);
 		return account.Value;
@@ -58,6 +64,7 @@ public sealed class GivePermissionsHandler(
 		IEnumerable<Guid> notFoundPermissions = command
 			.Permissions.Select(p => p.Id)
 			.ExceptBy(permissions.Select(fp => fp.Id.Value), fp => fp);
+
 		if (notFoundPermissions.Any())
 		{
 			string message = $"Разрешения не найдены: {string.Join(", ", notFoundPermissions.ToString())}";

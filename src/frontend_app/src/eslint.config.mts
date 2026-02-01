@@ -21,18 +21,18 @@ export default [
 			"@angular-eslint": angularEslint,
 		},
 		rules: {
-			"@typescript-eslint/typedef": [
-				"error",
-				{
-					arrayDestructuring: true,
-					arrowParameter: true,
-					memberVariableDeclaration: true,
-					objectDestructuring: true,
-					parameter: true,
-					propertyDeclaration: true,
-					variableDeclaration: true,
-				},
-			],
+			// "@typescript-eslint/typedef": [
+			// 	"error",
+			// 	{
+			// 		arrayDestructuring: true,
+			// 		arrowParameter: true,
+			// 		memberVariableDeclaration: true,
+			// 		objectDestructuring: true,
+			// 		parameter: true,
+			// 		propertyDeclaration: true,
+			// 		variableDeclaration: true,
+			// 	},
+			// ],
 			"@typescript-eslint/explicit-function-return-type": "error",
 			"@typescript-eslint/explicit-module-boundary-types": "error",
 			"@typescript-eslint/no-inferrable-types": "off",

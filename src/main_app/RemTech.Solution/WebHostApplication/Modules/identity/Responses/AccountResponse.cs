@@ -23,12 +23,14 @@ public sealed record AccountResponse(
 	/// </summary>
 	/// <param name="account">Доменная модель учетной записи.</param>
 	/// <returns>Ответ с информацией об учетной записи пользователя.</returns>
-	public static AccountResponse ConvertFrom(Account account) =>
-		new(
+	public static AccountResponse ConvertFrom(Account account)
+	{
+		return new(
 			account.Id.Value,
 			account.Login.Value,
 			account.Email.Value,
 			account.ActivationStatus.Value,
 			account.PermissionsList.Select(AccountPermissionsResponse.ConvertFrom)
 		);
+	}
 }

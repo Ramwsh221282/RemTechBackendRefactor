@@ -33,7 +33,7 @@ public sealed class EmailSender(Serilog.ILogger logger)
 		ImmutableString smtpPassword = new(mailer.Credentials.SmtpPassword);
 		ImmutableString senderEmail = new(mailer.Credentials.Email);
 		BodyBuilder builder = new() { TextBody = notification.Body };
-		MimeMessage mimeMessage = new();
+		using MimeMessage mimeMessage = new();
 		mimeMessage.Subject = notification.Subject;
 		mimeMessage.Body = builder.ToMessageBody();
 		mimeMessage.To.Add(MailboxAddress.Parse(notification.Recipient));

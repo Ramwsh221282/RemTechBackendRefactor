@@ -13,8 +13,10 @@ public sealed class DigitPasswordRequirement : IAccountPasswordRequirement
 	/// </summary>
 	/// <param name="password">Пароль для проверки.</param>
 	/// <returns>Результат проверки требования к паролю.</returns>
-	public Result<Unit> Satisfies(AccountPassword password) =>
-		!password.Value.Any(char.IsDigit)
+	public Result<Unit> Satisfies(AccountPassword password)
+	{
+		return !password.Value.Any(char.IsDigit)
 			? Error.Validation("Пароль должен содержать хотя бы одну цифру.")
 			: Unit.Value;
+	}
 }

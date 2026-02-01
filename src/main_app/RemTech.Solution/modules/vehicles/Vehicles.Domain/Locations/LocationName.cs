@@ -30,7 +30,10 @@ public sealed record LocationName
 	public static Result<LocationName> Create(string value)
 	{
 		if (string.IsNullOrWhiteSpace(value))
+		{
 			return Error.Validation("Имя локации не может быть пустым.");
+		}
+
 		return value.Length > MAX_LENGTH
 			? Error.Validation($"Имя локации не может быть больше {MAX_LENGTH} символов.")
 			: new LocationName(value);

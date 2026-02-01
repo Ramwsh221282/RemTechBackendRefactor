@@ -28,7 +28,10 @@ public sealed class ResetPasswordCommandHandler(IAccountsRepository accounts, IA
 		Result<Unit> canReset = CanResetPassword(account);
 		Result<AccountTicket> ticket = CreateResetPasswordTicket(account, canReset);
 		if (ticket.IsFailure)
+		{
 			return ticket.Error;
+		}
+
 		await tickets.Add(ticket.Value, ct);
 		return ResetPasswordResult.From(account.Value, ticket.Value);
 	}
@@ -36,7 +39,10 @@ public sealed class ResetPasswordCommandHandler(IAccountsRepository accounts, IA
 	private static Result<AccountTicket> CreateResetPasswordTicket(Result<Account> account, Result<Unit> canReset)
 	{
 		if (account.IsFailure)
+		{
 			return account.Error;
+		}
+
 		return canReset.IsFailure
 			? (Result<AccountTicket>)canReset.Error
 			: account.Value.CreateTicket(AccountTicketPurposes.RESET_PASSWORD);
@@ -50,7 +56,10 @@ public sealed class ResetPasswordCommandHandler(IAccountsRepository accounts, IA
 	private async Task<Result<Account>> ResolveAccount(ResetPasswordCommand command, CancellationToken ct)
 	{
 		if (!string.IsNullOrWhiteSpace(command.Email))
+		{
 			return await FindAccountByEmail(command.Email, ct);
+		}
+
 		return !string.IsNullOrWhiteSpace(command.Login)
 			? await FindAccountByLogin(command.Login, ct)
 			: (Result<Account>)Error.Validation("Не предоставлен ни Email, ни логин для сброса пароля.");

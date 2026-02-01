@@ -16,8 +16,9 @@ public static class ActionRecordsConstruction
 			ActionRecordPayloadJson? payload,
 			ActionRecordSeverity severity,
 			ActionRecordError? error
-		) =>
-			new()
+		)
+		{
+			return new()
 			{
 				Error = error,
 				InvokerId = invokerId,
@@ -27,6 +28,7 @@ public static class ActionRecordsConstruction
 				Id = ActionRecordId.New(),
 				OccuredDateTime = ActionRecordOccuredDateTime.Now(),
 			};
+		}
 
 		public static ActionRecord CreateNew(
 			Optional<Guid> invokerId,
@@ -34,8 +36,9 @@ public static class ActionRecordsConstruction
 			ActionRecordPayloadJson? payload,
 			ActionRecordSeverity severity,
 			ActionRecordError? error
-		) =>
-			new()
+		)
+		{
+			return new()
 			{
 				Error = error,
 				InvokerId = invokerId.HasValue ? ActionRecordInvokerId.Create(invokerId.Value).Value : null,
@@ -45,5 +48,6 @@ public static class ActionRecordsConstruction
 				Id = ActionRecordId.New(),
 				OccuredDateTime = ActionRecordOccuredDateTime.Now(),
 			};
+		}
 	}
 }

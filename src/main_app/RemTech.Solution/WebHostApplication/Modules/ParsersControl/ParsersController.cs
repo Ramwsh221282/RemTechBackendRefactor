@@ -22,7 +22,7 @@ using RemTech.SharedKernel.Web;
 using WebHostApplication.ActionFilters.Attributes;
 using WebHostApplication.Common.Envelope;
 
-namespace WebHostApplication.Modules.parsers_control;
+namespace WebHostApplication.Modules.ParsersControl;
 
 /// <summary>
 /// Контроллер для управления парсерами.

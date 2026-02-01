@@ -37,8 +37,10 @@ public static class DbDataReaderExtensions
 	/// <param name="reader">Объект IDataReader для чтения данных.</param>
 	/// <param name="columnName">Имя столбца для проверки значения на NULL.</param>
 	/// <returns>True, если значение в столбце является NULL, иначе false.</returns>
-	public static bool IsNull(this IDataReader reader, string columnName) =>
-		reader.IsDBNull(reader.GetOrdinal(columnName));
+	public static bool IsNull(this IDataReader reader, string columnName)
+	{
+		return reader.IsDBNull(reader.GetOrdinal(columnName));
+	}
 
 	/// <summary>
 	/// Получает значение указанного типа из столбца с заданным именем, возвращая null, если значение является NULL в базе данных.

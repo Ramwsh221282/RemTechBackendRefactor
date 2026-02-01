@@ -17,6 +17,8 @@ public sealed class BcryptWorkFactorOptions
 	public void Validate()
 	{
 		if (WorkFactor < 4 || WorkFactor > 31)
+		{
 			throw new InvalidOperationException("Work factor must be between 4 and 31.");
+		}
 	}
 }

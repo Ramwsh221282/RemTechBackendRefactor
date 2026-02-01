@@ -40,7 +40,10 @@ public sealed class NpgSqlPersister(
 	/// <param name="brand">Бренд для сохранения.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции сохранения бренда.</returns>
-	public Task<Result<Brand>> Save(Brand brand, CancellationToken ct = default) => brandPersister.Save(brand, ct);
+	public Task<Result<Brand>> Save(Brand brand, CancellationToken ct = default)
+	{
+		return brandPersister.Save(brand, ct);
+	}
 
 	/// <summary>
 	/// Сохраняет модель.
@@ -48,7 +51,10 @@ public sealed class NpgSqlPersister(
 	/// <param name="model">Модель для сохранения.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции сохранения модели.</returns>
-	public Task<Result<Model>> Save(Model model, CancellationToken ct = default) => modelPersister.Save(model, ct);
+	public Task<Result<Model>> Save(Model model, CancellationToken ct = default)
+	{
+		return modelPersister.Save(model, ct);
+	}
 
 	/// <summary>
 	/// Сохраняет локацию.
@@ -56,8 +62,10 @@ public sealed class NpgSqlPersister(
 	/// <param name="location">Локация для сохранения.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции сохранения локации.</returns>
-	public Task<Result<Location>> Save(Location location, CancellationToken ct = default) =>
-		locationsPersister.Save(location, ct);
+	public Task<Result<Location>> Save(Location location, CancellationToken ct = default)
+	{
+		return locationsPersister.Save(location, ct);
+	}
 
 	/// <summary>
 	/// Сохраняет категорию.
@@ -65,8 +73,10 @@ public sealed class NpgSqlPersister(
 	/// <param name="category">Категория для сохранения.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции сохранения категории.</returns>
-	public Task<Result<Category>> Save(Category category, CancellationToken ct = default) =>
-		categoryPersister.Save(category, ct);
+	public Task<Result<Category>> Save(Category category, CancellationToken ct = default)
+	{
+		return categoryPersister.Save(category, ct);
+	}
 
 	/// <summary>
 	/// Сохраняет характеристику.
@@ -74,8 +84,10 @@ public sealed class NpgSqlPersister(
 	/// <param name="characteristic">Характеристика для сохранения.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции сохранения характеристики.</returns>
-	public Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default) =>
-		characteristicPersister.Save(characteristic, ct);
+	public Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default)
+	{
+		return characteristicPersister.Save(characteristic, ct);
+	}
 
 	/// <summary>
 	/// Сохраняет информацию о транспортном средстве.
@@ -95,6 +107,8 @@ public sealed class NpgSqlPersister(
 	/// <param name="infos">Список информации о транспортных средствах для сохранения.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции сохранения нескольких транспортных средств.</returns>
-	public Task<int> Save(IEnumerable<VehiclePersistInfo> infos, CancellationToken ct = default) =>
-		vehiclesListPersister.Persist(infos, ct);
+	public Task<int> Save(IEnumerable<VehiclePersistInfo> infos, CancellationToken ct = default)
+	{
+		return vehiclesListPersister.Persist(infos, ct);
+	}
 }

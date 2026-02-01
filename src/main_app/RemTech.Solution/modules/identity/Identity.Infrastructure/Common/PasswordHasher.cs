@@ -30,6 +30,8 @@ public sealed class PasswordHasher(IOptions<BcryptWorkFactorOptions> options) : 
 	/// <param name="input">Введенный пароль.</param>
 	/// <param name="hashed">Хешированный пароль.</param>
 	/// <returns>Результат проверки соответствия.</returns>
-	public bool Verify(string input, AccountPassword hashed) =>
-		BCrypt.Net.BCrypt.EnhancedVerify(input, hashed.Value, HashType.SHA512);
+	public bool Verify(string input, AccountPassword hashed)
+	{
+		return BCrypt.Net.BCrypt.EnhancedVerify(input, hashed.Value, HashType.SHA512);
+	}
 }

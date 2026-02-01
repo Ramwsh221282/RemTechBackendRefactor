@@ -21,6 +21,8 @@ public sealed class VehicleCharacteristicByNameComparer : IEqualityComparer<Vehi
 	/// </summary>
 	/// <param name="obj">Характеристика транспортного средства.</param>
 	/// <returns>Хэш-код характеристики транспортного средства.</returns>
-	public int GetHashCode(VehicleCharacteristic obj) =>
-		HashCode.Combine(obj.VehicleId, obj.CharacteristicId, obj.Name);
+	public int GetHashCode(VehicleCharacteristic obj)
+	{
+		return HashCode.Combine(obj.VehicleId, obj.CharacteristicId, obj.Name);
+	}
 }

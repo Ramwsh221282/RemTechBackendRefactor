@@ -73,8 +73,10 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
 	/// <param name="connection">Подключение к RabbitMQ.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию инициализации канала.</returns>
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
+	{
 		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
+	}
 
 	/// <summary>
 	/// Завершает работу потребителя.
@@ -84,7 +86,10 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
 	public async Task Shutdown(CancellationToken ct = default)
 	{
 		if (Channel.IsClosed)
+		{
 			return;
+		}
+
 		await Channel.CloseAsync(cancellationToken: ct);
 	}
 
@@ -114,7 +119,7 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
 		FrontendOptions.Validate();
 		string frontendUrl = FrontendOptions.Url;
 		string ticketId = message.TicketId.ToString();
-		return $"{frontendUrl}/reset-password?ticketId={ticketId}&accountId={message.AccountId}";
+		return $"{frontendUrl}/confirm-reset-password?ticketId={ticketId}&accountId={message.AccountId}";
 	}
 
 	private sealed record ResetPasswordRequiredMessage(
@@ -124,20 +129,34 @@ public sealed class OnAccountPasswordResetRequiredConsumer(
 		string TicketPurpose
 	)
 	{
-		public static ResetPasswordRequiredMessage FromDeliverEventArgs(BasicDeliverEventArgs ea) =>
-			JsonSerializer.Deserialize<ResetPasswordRequiredMessage>(ea.Body.Span)!;
+		public static ResetPasswordRequiredMessage FromDeliverEventArgs(BasicDeliverEventArgs ea)
+		{
+			return JsonSerializer.Deserialize<ResetPasswordRequiredMessage>(ea.Body.Span)!;
+		}
 
 		public bool IsValid(out string error)
 		{
 			List<string> errors = [];
 			if (AccountId == Guid.Empty)
+			{
 				errors.Add("Идентификатор учетной записи не указан.");
+			}
+
 			if (string.IsNullOrWhiteSpace(AccountEmail))
+			{
 				errors.Add("Почта учетной записи не указана.");
+			}
+
 			if (TicketId == Guid.Empty)
+			{
 				errors.Add("Идентификатор тикета не указан.");
+			}
+
 			if (string.IsNullOrWhiteSpace(TicketPurpose))
+			{
 				errors.Add("Назначение тикета не указано.");
+			}
+
 			error = string.Join(", ", errors);
 			return errors.Count == 0;
 		}

@@ -10,29 +10,45 @@ public static class HttpContextTokensBehavior
 {
 	extension(HttpContext context)
 	{
-		public string? GetAccessToken() =>
-			_getAccessTokenMethods
+		public string? GetAccessToken()
+		{
+			return _getAccessTokenMethods
 				.Select(method => method(context))
 				.FirstOrDefault(token => !string.IsNullOrWhiteSpace(token));
+		}
 
-		public string? GetRefreshToken() =>
-			_getRefreshTokenMethods
+		public string? GetRefreshToken()
+		{
+			return _getRefreshTokenMethods
 				.Select(method => method(context))
 				.FirstOrDefault(token => !string.IsNullOrWhiteSpace(token));
+		}
 	}
 
 	extension(ActionExecutingContext context)
 	{
-		public string? GetAccessToken() => context.HttpContext.GetAccessToken();
+		public string? GetAccessToken()
+		{
+			return context.HttpContext.GetAccessToken();
+		}
 
-		public string? GetRefreshToken() => context.HttpContext.GetRefreshToken();
+		public string? GetRefreshToken()
+		{
+			return context.HttpContext.GetRefreshToken();
+		}
 	}
 
 	extension(ActionExecutedContext context)
 	{
-		public string? GetAccessToken() => context.HttpContext.GetAccessToken();
+		public string? GetAccessToken()
+		{
+			return context.HttpContext.GetAccessToken();
+		}
 
-		public string? GetRefreshToken() => context.HttpContext.GetRefreshToken();
+		public string? GetRefreshToken()
+		{
+			return context.HttpContext.GetRefreshToken();
+		}
 	}
 
 	private static readonly Func<HttpContext, string>[] _getAccessTokenMethods =

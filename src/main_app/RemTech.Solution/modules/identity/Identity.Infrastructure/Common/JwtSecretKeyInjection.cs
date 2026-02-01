@@ -9,7 +9,9 @@ public static class JwtSecretKeyInjection
 {
 	extension(IServiceCollection services)
 	{
-		public void AddJwtOptionsFromAppsettings(string sectionName = nameof(JwtOptions)) =>
+		public void AddJwtOptionsFromAppsettings(string sectionName = nameof(JwtOptions))
+		{
 			services.AddOptions<JwtOptions>().BindConfiguration(sectionName);
+		}
 	}
 }

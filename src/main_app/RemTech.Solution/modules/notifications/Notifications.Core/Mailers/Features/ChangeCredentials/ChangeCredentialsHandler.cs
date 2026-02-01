@@ -29,10 +29,14 @@ public sealed class ChangeCredentialsHandler(
 	{
 		Result<Mailer> mailer = await GetRequiredMailer(command, ct);
 		if (mailer.IsFailure)
+		{
 			return mailer.Error;
+		}
 
 		if (mailer.Value.Credentials.Email != command.Email || await CredentialsEmailDuplicated(command, ct))
+		{
 			return Error.Conflict($"Настройка почтового сервиса с адресом: {command.Email} уже существует.");
+		}
 
 		MailerCredentials credentials = await CreateEncryptedCredentials(command, ct);
 		mailer.Value.ChangeCredentials(credentials);
@@ -40,15 +44,15 @@ public sealed class ChangeCredentialsHandler(
 		return mailer.Value;
 	}
 
-	private Task<MailerCredentials> CreateEncryptedCredentials(
-		ChangeCredentialsCommand command,
-		CancellationToken ct
-	) => MailerCredentials.Create(command.SmtpPassword, command.Email).Value.Encrypt(cryptography, ct);
+	private Task<MailerCredentials> CreateEncryptedCredentials(ChangeCredentialsCommand command, CancellationToken ct)
+	{
+		return MailerCredentials.Create(command.SmtpPassword, command.Email).Value.Encrypt(cryptography, ct);
+	}
 
 	private Task<Result<Mailer>> GetRequiredMailer(ChangeCredentialsCommand command, CancellationToken ct)
 	{
 		MailersSpecification specification = new MailersSpecification().WithId(command.Id).WithLockRequired();
-		return repository.Get(specification, ct);
+		return repository.Read(specification, ct);
 	}
 
 	private Task<bool> CredentialsEmailDuplicated(ChangeCredentialsCommand command, CancellationToken ct)

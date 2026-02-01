@@ -50,8 +50,10 @@ public sealed class VehicleEmbeddingsUpdaterService(
 		}
 	}
 
-	private static VehicleWithoutEmbedding MapFromReader(IDataReader reader) =>
-		new() { Id = reader.GetValue<Guid>("id"), TextForEmbedding = reader.GetValue<string>("text") };
+	private static VehicleWithoutEmbedding MapFromReader(IDataReader reader)
+	{
+		return new() { Id = reader.GetValue<Guid>("id"), TextForEmbedding = reader.GetValue<string>("text") };
+	}
 
 	private async Task Execute(CancellationToken ct)
 	{
@@ -60,14 +62,18 @@ public sealed class VehicleEmbeddingsUpdaterService(
 		await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
 		VehicleWithoutEmbedding[] vehicles = await GetVehiclesWithoutEmbeddings(session, ct);
 		if (vehicles.Length == 0)
+		{
 			return;
+		}
 
 		string[] texts = [.. vehicles.Select(v => v.TextForEmbedding)];
 		IReadOnlyList<ReadOnlyMemory<float>> embeddings = Provider.GenerateBatch(texts);
 		await UpdateVehicleEmbeddings(session, vehicles, embeddings, ct);
 		Result commit = await transaction.Commit(ct);
 		if (commit.IsFailure)
+		{
 			Logger.Fatal(commit.Error, "Error committing transaction.");
+		}
 	}
 
 	private async Task UpdateVehicleEmbeddings(

@@ -35,6 +35,7 @@ using Vehicles.Domain.Vehicles;
 using Vehicles.Infrastructure.BackgroundServices;
 using Vehicles.Infrastructure.Vehicles.PersisterImplementation;
 using Vehicles.WebApi.Extensions;
+using WebHostApplication.Queries.GetActionRecords;
 
 namespace WebHostApplication.Injection;
 
@@ -97,7 +98,8 @@ public static class ModulesInjection
 			services.TryDecorate(queryHandlerType, type);
 		}
 
-		private void RegisterDomainEventHandlers(Assembly[] assemblies) =>
+		private void RegisterDomainEventHandlers(Assembly[] assemblies)
+		{
 			services.Scan(x =>
 				x.FromAssemblies(assemblies)
 					.AddClasses(classes => classes.AssignableTo(typeof(IDomainEventHandler<>)))
@@ -109,8 +111,10 @@ public static class ModulesInjection
 					.AsSelfWithInterfaces()
 					.WithScopedLifetime()
 			);
+		}
 
-		private void RegisterHandlers(Type handlerType, Assembly[] assemblies) =>
+		private void RegisterHandlers(Type handlerType, Assembly[] assemblies)
+		{
 			services.Scan(x =>
 				x.FromAssemblies(assemblies)
 					.AddClasses(classes => classes.AssignableTo(handlerType))
@@ -118,6 +122,7 @@ public static class ModulesInjection
 					.AsSelfWithInterfaces()
 					.WithScopedLifetime()
 			);
+		}
 
 		private void RegisterConsumers(Assembly[] assemblies)
 		{
@@ -141,7 +146,9 @@ public static class ModulesInjection
 		}
 	}
 
-	private static Assembly[] GetModulesAssemblies() =>
+	private static Assembly[] GetModulesAssemblies()
+	{
+		return
 		[
 			// spares module
 			typeof(Spare).Assembly,
@@ -165,5 +172,8 @@ public static class ModulesInjection
 			// telemetry module
 			typeof(ActionRecord).Assembly,
 			typeof(ActionRecordsTableMigration).Assembly,
+			// current assembly
+			typeof(GetActionRecordsQuery).Assembly,
 		];
+	}
 }

@@ -27,10 +27,18 @@ public sealed class JwtOptions
 	public void Validate()
 	{
 		if (string.IsNullOrEmpty(SecretKey))
+		{
 			throw new InvalidOperationException("Secret key must not be empty.");
+		}
+
 		if (string.IsNullOrEmpty(Issuer))
+		{
 			throw new InvalidOperationException("Issuer must not be empty.");
+		}
+
 		if (string.IsNullOrEmpty(Audience))
+		{
 			throw new InvalidOperationException("Audience must not be empty.");
+		}
 	}
 }

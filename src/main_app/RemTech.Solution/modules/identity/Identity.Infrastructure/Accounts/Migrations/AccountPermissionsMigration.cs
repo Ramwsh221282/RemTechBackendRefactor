@@ -11,7 +11,8 @@ public sealed class AccountPermissionsMigration : Migration
 	/// <summary>
 	/// Выполняет миграцию вверх (создание таблицы разрешений аккаунтов).
 	/// </summary>
-	public override void Up() =>
+	public override void Up()
+	{
 		Execute.Sql(
 			"""
 			CREATE TABLE IF NOT EXISTS identity_module.account_permissions (
@@ -23,9 +24,13 @@ public sealed class AccountPermissionsMigration : Migration
 			);
 			"""
 		);
+	}
 
 	/// <summary>
 	/// Выполняет миграцию вниз (удаление таблицы разрешений аккаунтов).
 	/// </summary>
-	public override void Down() => Execute.Sql("DROP TABLE IF EXISTS identity_module.account_permissions;");
+	public override void Down()
+	{
+		Execute.Sql("DROP TABLE IF EXISTS identity_module.account_permissions;");
+	}
 }

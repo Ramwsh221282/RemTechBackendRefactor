@@ -11,7 +11,8 @@ public sealed class CharacteristicTableMigration : Migration
 	/// <summary>
 	/// Выполняет миграцию, создавая таблицу характеристик.
 	/// </summary>
-	public override void Up() =>
+	public override void Up()
+	{
 		Execute.Sql(
 			"""
 			CREATE TABLE IF NOT EXISTS vehicles_module.characteristics (
@@ -23,9 +24,13 @@ public sealed class CharacteristicTableMigration : Migration
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_characteristics_name ON vehicles_module.characteristics(name);
 			"""
 		);
+	}
 
 	/// <summary>
 	/// Откатывает миграцию, удаляя таблицу характеристик.
 	/// </summary>
-	public override void Down() => Delete.Table("characteristics").InSchema("vehicles_module");
+	public override void Down()
+	{
+		Delete.Table("characteristics").InSchema("vehicles_module");
+	}
 }

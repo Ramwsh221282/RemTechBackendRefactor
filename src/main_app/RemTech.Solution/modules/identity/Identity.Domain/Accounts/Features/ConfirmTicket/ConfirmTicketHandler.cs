@@ -30,15 +30,21 @@ public sealed class ConfirmTicketHandler(
 	{
 		Result<Account> account = await GetRequiredAccount(command, ct);
 		if (account.IsFailure)
+		{
 			return account.Error;
+		}
 
 		Result<AccountTicket> ticket = await GetRequiredAccountTicket(command, ct);
 		if (ticket.IsFailure)
+		{
 			return ticket.Error;
+		}
 
 		Result<Unit> confirmation = ConfirmAccountTicket(ticket.Value, account.Value);
 		if (confirmation.IsFailure)
+		{
 			return confirmation.Error;
+		}
 
 		await SaveChanges(account.Value, ticket.Value, ct);
 		return account.Value;
@@ -48,13 +54,18 @@ public sealed class ConfirmTicketHandler(
 	{
 		Result<Unit> confirmation = ticket.FinishBy(account.Id.Value);
 		if (confirmation.IsFailure)
+		{
 			return confirmation.Error;
+		}
 
 		if (ticket.Purpose == AccountTicketPurposes.EMAIL_CONFIRMATION_REQUIRED)
 		{
 			Result<Unit> activation = account.Activate();
+
 			if (activation.IsFailure)
+			{
 				return activation.Error;
+			}
 		}
 
 		return Unit.Value;

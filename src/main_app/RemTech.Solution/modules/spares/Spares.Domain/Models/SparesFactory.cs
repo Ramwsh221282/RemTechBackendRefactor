@@ -34,31 +34,45 @@ public static class SparesFactory
 	{
 		Result<ContainedItemId> itemId = ContainedItemId.Create(containedItemId);
 		if (itemId.IsFailure)
+		{
 			return itemId.Error;
+		}
 
 		Result<SpareOem> oemResult = SpareOem.Create(oem);
 		if (oemResult.IsFailure)
+		{
 			return oemResult.Error;
+		}
 
 		Result<SpareTextInfo> textResult = SpareTextInfo.Create(title);
 		if (textResult.IsFailure)
+		{
 			return textResult.Error;
+		}
 
 		Result<SparePrice> priceResult = SparePrice.Create(price, isNds);
 		if (priceResult.IsFailure)
+		{
 			return priceResult.Error;
+		}
 
 		Result<SparePhotoCollection> photosResult = SparePhotoCollection.Create(photoPaths);
 		if (photosResult.IsFailure)
+		{
 			return photosResult.Error;
+		}
 
 		Result<SpareSource> sourceResult = SpareSource.Create(source);
 		if (sourceResult.IsFailure)
+		{
 			return sourceResult.Error;
+		}
 
 		Result<SpareType> typeResult = SpareType.Create(type);
 		if (typeResult.IsFailure)
+		{
 			return typeResult.Error;
+		}
 
 		Result<SpareAddress> addressResult = SpareAddress.Create(address);
 		return addressResult.IsFailure

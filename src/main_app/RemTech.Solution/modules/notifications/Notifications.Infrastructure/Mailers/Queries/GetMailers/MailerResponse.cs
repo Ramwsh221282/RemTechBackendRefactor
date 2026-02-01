@@ -15,6 +15,8 @@ public sealed record MailerResponse(Guid Id, string Email, string SmtpHost)
 	/// </summary>
 	/// <param name="mailer">Сущность почтового ящика.</param>
 	/// <returns>Ответ с данными почтового ящика.</returns>
-	public static MailerResponse Create(Mailer mailer) =>
-		new(mailer.Id.Value, mailer.Credentials.Email, mailer.Credentials.SmtpHost);
+	public static MailerResponse Create(Mailer mailer)
+	{
+		return new(mailer.Id.Value, mailer.Credentials.Email, mailer.Credentials.SmtpHost);
+	}
 }

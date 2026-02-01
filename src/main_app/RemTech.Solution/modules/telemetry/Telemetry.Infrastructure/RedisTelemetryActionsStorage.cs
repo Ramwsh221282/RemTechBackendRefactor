@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
@@ -41,7 +42,22 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	/// Записывает запись действия.
 	/// </summary>
 	/// <param name="record">Запись действия для записи.</param>
-	public void WriteRecord(ActionRecord record) => _recordsQueue.Enqueue(record);
+	public void WriteRecord(ActionRecord record)
+	{
+		_recordsQueue.Enqueue(record);
+	}
+
+	/// <summary>
+	/// Записывает несколько записей действий.
+	/// </summary>
+	/// <param name="records">Записи действий.</param>
+	public void WriteRecords(IEnumerable<ActionRecord> records)
+	{
+		foreach (ActionRecord record in records)
+		{
+			WriteRecord(record);
+		}
+	}
 
 	/// <summary>
 	/// Читает ожидающие записи действий в транзакции.
@@ -102,6 +118,8 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	{
 		await _timerCts.CancelAsync();
 		await _runningPeriodicallyWritingTask;
+		_timerCts.Dispose();
+		_semaphore.Dispose();
 	}
 
 	/// <summary>
@@ -111,9 +129,10 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	{
 		_timerCts.Cancel();
 		_runningPeriodicallyWritingTask.Wait();
+		_timerCts.Dispose();
+		_semaphore.Dispose();
 	}
 
-	// TODO: FIX ISSUE WITH JSON DESERIALIZATION.
 	private static ActionRecord RedisValueToActionRecord(RedisValue value)
 	{
 		RedisStoredActionRecord stored = JsonSerializer.Deserialize<RedisStoredActionRecord>(value.ToString())!;
@@ -129,8 +148,13 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 	private static ActionRecord[] MakeRecordsSnapshot(ConcurrentQueue<ActionRecord> recordsQueue)
 	{
 		List<ActionRecord> snapshot = [];
-		for (int index = 0; recordsQueue.TryDequeue(out ActionRecord record); index++)
+		for (int index = 0; recordsQueue.TryDequeue(out ActionRecord? record); index++)
 		{
+			if (record is null)
+			{
+				continue;
+			}
+
 			snapshot.Add(record);
 		}
 
@@ -166,7 +190,7 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 
 	private async Task RunPeriodicProcessingAsync(CancellationToken ct)
 	{
-		PeriodicTimer timer = new(TimeSpan.FromSeconds(5));
+		using PeriodicTimer timer = new(TimeSpan.FromSeconds(5));
 		while (await timer.WaitForNextTickAsync(ct))
 		{
 			ActionRecord[] snapshot = MakeRecordsSnapshot(_recordsQueue);
@@ -175,8 +199,10 @@ public sealed class RedisTelemetryActionsStorage : IDisposable, IAsyncDisposable
 		}
 	}
 
-	private async Task<ConnectionMultiplexer> ReadMultiplexer() =>
-		_multiplexer ??= await ConnectionMultiplexer.ConnectAsync(Options.RedisConnectionString);
+	private async Task<ConnectionMultiplexer> ReadMultiplexer()
+	{
+		return _multiplexer ??= await ConnectionMultiplexer.ConnectAsync(Options.RedisConnectionString);
+	}
 
 	private async Task<IDatabase> ReadDatabase()
 	{

@@ -28,7 +28,10 @@ public sealed class MailersSpecification
 	public MailersSpecification WithId(Guid id)
 	{
 		if (Id.HasValue)
+		{
 			return this;
+		}
+
 		Id = id;
 		return this;
 	}
@@ -41,7 +44,10 @@ public sealed class MailersSpecification
 	public MailersSpecification WithEmail(string email)
 	{
 		if (!string.IsNullOrWhiteSpace(Email))
+		{
 			return this;
+		}
+
 		Email = email;
 		return this;
 	}

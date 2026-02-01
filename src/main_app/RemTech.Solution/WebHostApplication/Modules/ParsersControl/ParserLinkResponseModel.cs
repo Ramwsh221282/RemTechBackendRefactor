@@ -1,6 +1,6 @@
 ﻿using ParsersControl.Core.ParserLinks.Models;
 
-namespace WebHostApplication.Modules.parsers_control;
+namespace WebHostApplication.Modules.ParsersControl;
 
 /// <summary>
 /// Ответ с информацией о ссылке парсера.
@@ -57,8 +57,9 @@ public sealed class ParserLinkResponseModel
 	/// </summary>
 	/// <param name="link">Доменная модель ссылки парсера.</param>
 	/// <returns>Ответ с информацией о ссылке парсера.</returns>
-	public static ParserLinkResponseModel ConvertFrom(SubscribedParserLink link) =>
-		new()
+	public static ParserLinkResponseModel ConvertFrom(SubscribedParserLink link)
+	{
+		return new()
 		{
 			Id = link.Id.Value,
 			Name = link.UrlInfo.Name,
@@ -70,12 +71,15 @@ public sealed class ParserLinkResponseModel
 			Minutes = link.Statistics.WorkTime.Minutes,
 			Seconds = link.Statistics.WorkTime.Seconds,
 		};
+	}
 
 	/// <summary>
 	/// Преобразование из коллекции доменных моделей ссылок парсера в ответы.
 	/// </summary>
 	/// <param name="links">Коллекция доменных моделей ссылок парсера.</param>
 	/// <returns>Коллекция ответов с информацией о ссылках парсера.</returns>
-	public static IEnumerable<ParserLinkResponseModel> ConvertFrom(IEnumerable<SubscribedParserLink> links) =>
-		[.. links.Select(ConvertFrom)];
+	public static IEnumerable<ParserLinkResponseModel> ConvertFrom(IEnumerable<SubscribedParserLink> links)
+	{
+		return [.. links.Select(ConvertFrom)];
+	}
 }

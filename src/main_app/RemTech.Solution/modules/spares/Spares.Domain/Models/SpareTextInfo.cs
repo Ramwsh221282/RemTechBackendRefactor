@@ -26,8 +26,10 @@ public sealed record SpareTextInfo
 	/// </summary>
 	/// <param name="value">Текстовое описание.</param>
 	/// <returns>Результат создания описания.</returns>
-	public static Result<SpareTextInfo> Create(string value) =>
-		string.IsNullOrWhiteSpace(value)
+	public static Result<SpareTextInfo> Create(string value)
+	{
+		return string.IsNullOrWhiteSpace(value)
 			? Error.Validation("Описание запчасти не может быть пустым.")
 			: Result.Success(new SpareTextInfo(value));
+	}
 }

@@ -45,8 +45,11 @@ public sealed class ParserIncreaseProcessedListener(
 
 				SetParsedAmountCommand command = CreateCommand(message);
 				Result result = await HandleCommand(command);
+
 				if (result.IsFailure)
+				{
 					Logger.Error("Error handling command: {Error}", result.Error.Message);
+				}
 				Logger.Information("Message handled.");
 			}
 			catch (Exception e)
@@ -65,8 +68,10 @@ public sealed class ParserIncreaseProcessedListener(
 	/// <param name="connection">Подключение к RabbitMQ.</param>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Инициализация канала.</returns>
-	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default) =>
+	public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
+	{
 		_channel = await TopicConsumerInitialization.InitializeChannel(RabbitMq, EXCHANGE, QUEUE, ROUTING_KEY, ct);
+	}
 
 	/// <summary>
 	/// Начинает прослушивание сообщений.
@@ -85,18 +90,29 @@ public sealed class ParserIncreaseProcessedListener(
 	/// </summary>
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Задача остановки прослушивания сообщений.</returns>
-	public Task Shutdown(CancellationToken ct = default) => Channel.CloseAsync(ct);
+	public Task Shutdown(CancellationToken ct = default)
+	{
+		return Channel.CloseAsync(ct);
+	}
 
-	private static SetParsedAmountCommand CreateCommand(ParserIncreaseProcessedMessage message) =>
-		new(message.Id, message.Amount);
+	private static SetParsedAmountCommand CreateCommand(ParserIncreaseProcessedMessage message)
+	{
+		return new(message.Id, message.Amount);
+	}
 
 	private static bool IsMessageValid(ParserIncreaseProcessedMessage message, out string error)
 	{
 		List<string> errors = [];
 		if (message.Id == Guid.Empty)
+		{
 			errors.Add("Идентификатор парсера пуст");
+		}
+
 		if (message.Amount == 0)
+		{
 			errors.Add("Количество обработанных пуст");
+		}
+
 		error = string.Join(", ", errors);
 		return errors.Count == 0;
 	}
@@ -114,7 +130,9 @@ public sealed class ParserIncreaseProcessedListener(
 		public Guid Id { get; set; }
 		public int Amount { get; set; }
 
-		public static ParserIncreaseProcessedMessage CreateFrom(BasicDeliverEventArgs @event) =>
-			JsonSerializer.Deserialize<ParserIncreaseProcessedMessage>(@event.Body.Span)!;
+		public static ParserIncreaseProcessedMessage CreateFrom(BasicDeliverEventArgs @event)
+		{
+			return JsonSerializer.Deserialize<ParserIncreaseProcessedMessage>(@event.Body.Span)!;
+		}
 	}
 }

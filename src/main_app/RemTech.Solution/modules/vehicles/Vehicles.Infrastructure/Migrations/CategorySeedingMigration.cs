@@ -11,10 +11,12 @@ public sealed class CategorySeedingMigration : Migration
 	/// <summary>
 	/// Выполняет миграцию, заполняя таблицу категорий начальными данными.
 	/// </summary>
-	public override void Up() =>
+	public override void Up()
+	{
 		Execute.EmbeddedScript(
 			"Vehicles.Infrastructure.Categories.SeedingImplementation.Scripts.0002.categories_seeding.sql"
 		);
+	}
 
 	/// <summary>
 	/// Откатывает миграцию. В данном случае откат не выполняется.

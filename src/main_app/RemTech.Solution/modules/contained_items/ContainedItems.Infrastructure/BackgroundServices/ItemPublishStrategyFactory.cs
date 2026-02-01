@@ -19,11 +19,13 @@ public sealed class ItemPublishStrategyFactory(AddSparesProducer addSpares, AddV
 	/// <param name="itemType">Тип содержащегося элемента.</param>
 	/// <returns>Стратегия публикации для указанного типа элемента.</returns>
 	/// <exception cref="UnreachableException">Выбрасывается, если тип элемента неизвестен.</exception>
-	public IItemPublishingStrategy Resolve(string itemType) =>
-		itemType switch
+	public IItemPublishingStrategy Resolve(string itemType)
+	{
+		return itemType switch
 		{
 			"Запчасти" => Spares,
 			"Техника" => Vehicles,
 			_ => throw new UnreachableException("Unknown item type: " + itemType),
 		};
+	}
 }

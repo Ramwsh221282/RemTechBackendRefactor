@@ -60,8 +60,10 @@ public sealed class CachedAccessTokenRepository(HybridCache cache, IAccessTokens
 	/// <param name="withLock">Флаг, указывающий, следует ли блокировать запись для обновления.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Результат операции, содержащий найденный токен доступа или ошибку.</returns>
-	public Task<Result<AccessToken>> Find(string accessToken, bool withLock = false, CancellationToken ct = default) =>
-		Inner.Find(accessToken, withLock, ct);
+	public Task<Result<AccessToken>> Find(string accessToken, bool withLock = false, CancellationToken ct = default)
+	{
+		return Inner.Find(accessToken, withLock, ct);
+	}
 
 	/// <summary>
 	/// Обновляет статус истечения срока действия токена доступа.
@@ -69,8 +71,10 @@ public sealed class CachedAccessTokenRepository(HybridCache cache, IAccessTokens
 	/// <param name="rawToken">Значение токена доступа.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию.</returns>
-	public Task UpdateTokenExpired(string rawToken, CancellationToken ct = default) =>
-		Inner.UpdateTokenExpired(rawToken, ct);
+	public Task UpdateTokenExpired(string rawToken, CancellationToken ct = default)
+	{
+		return Inner.UpdateTokenExpired(rawToken, ct);
+	}
 
 	/// <summary>
 	/// Находит истекшие токены доступа.
@@ -83,7 +87,10 @@ public sealed class CachedAccessTokenRepository(HybridCache cache, IAccessTokens
 		int maxCount = 50,
 		bool withLock = false,
 		CancellationToken ct = default
-	) => Inner.FindExpired(maxCount, withLock, ct);
+	)
+	{
+		return Inner.FindExpired(maxCount, withLock, ct);
+	}
 
 	/// <summary>
 	/// Удаляет заданные токены доступа из репозитория и кэша.
@@ -114,6 +121,8 @@ public sealed class CachedAccessTokenRepository(HybridCache cache, IAccessTokens
 		await Cache.RemoveAsync(key, cancellationToken: ct);
 	}
 
-	private Task<Result<AccessToken>> GetFromInner(Guid tokenId, bool withLock, CancellationToken ct) =>
-		Inner.Find(tokenId, withLock, ct);
+	private Task<Result<AccessToken>> GetFromInner(Guid tokenId, bool withLock, CancellationToken ct)
+	{
+		return Inner.Find(tokenId, withLock, ct);
+	}
 }

@@ -20,10 +20,15 @@ public static class ContainedItemsInfrastructureInjection
 			services.RegisterBackgroundServices();
 		}
 
-		private void RegisterRepository() => services.AddScoped<IContainedItemsRepository, ContainedItemsRepository>();
+		private void RegisterRepository()
+		{
+			services.AddScoped<IContainedItemsRepository, ContainedItemsRepository>();
+		}
 
-		private void RegisterBackgroundServices() =>
+		private void RegisterBackgroundServices()
+		{
 			services.AddHostedService<PublishContainedItemsToAddBackgroundService>();
+		}
 
 		private void RegisterProducers()
 		{

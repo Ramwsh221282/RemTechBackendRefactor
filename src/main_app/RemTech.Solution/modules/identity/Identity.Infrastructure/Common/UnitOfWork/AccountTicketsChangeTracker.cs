@@ -21,7 +21,9 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 	public void StartTracking(IEnumerable<AccountTicket> tickets)
 	{
 		foreach (AccountTicket ticket in tickets)
+		{
 			_tracking.TryAdd(ticket.TicketId, ticket.Clone());
+		}
 	}
 
 	/// <summary>
@@ -34,11 +36,17 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 	{
 		IEnumerable<AccountTicket> tracking = GetTrackingTickets(tickets);
 		if (!tracking.Any())
+		{
 			return;
+		}
+
 		await SaveTicketChanges(tracking, ct);
 	}
 
-	private static string WhenClause(int index) => $"WHEN ac.id = @ticket_id_{index}";
+	private static string WhenClause(int index)
+	{
+		return $"WHEN ac.id = @ticket_id_{index}";
+	}
 
 	private async Task SaveTicketChanges(IEnumerable<AccountTicket> tickets, CancellationToken ct = default)
 	{
@@ -63,7 +71,9 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 		}
 
 		if (updateSet.Count == 0)
+		{
 			return;
+		}
 
 		List<Guid> ids = [];
 		int index = 0;
@@ -94,7 +104,9 @@ public sealed class AccountTicketsChangeTracker(NpgSqlSession session)
 		foreach (AccountTicket ticket in tickets)
 		{
 			if (_tracking.ContainsKey(ticket.TicketId))
+			{
 				tracking.Add(ticket);
+			}
 		}
 
 		return tracking;

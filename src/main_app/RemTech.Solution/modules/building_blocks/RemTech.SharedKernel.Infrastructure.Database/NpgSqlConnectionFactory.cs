@@ -27,6 +27,8 @@ public sealed class NpgSqlConnectionFactory
 	/// </summary>
 	/// <param name="ct">Токен отмены для асинхронной операции.</param>
 	/// <returns>Открытое подключение к базе данных PostgreSQL.</returns>
-	public async Task<NpgsqlConnection> Create(CancellationToken ct = default) =>
-		await _dataSource.OpenConnectionAsync(ct);
+	public async Task<NpgsqlConnection> Create(CancellationToken ct = default)
+	{
+		return await _dataSource.OpenConnectionAsync(ct);
+	}
 }

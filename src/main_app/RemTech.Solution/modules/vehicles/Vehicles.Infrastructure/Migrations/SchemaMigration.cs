@@ -11,10 +11,16 @@ public sealed class SchemaMigration : Migration
 	/// <summary>
 	/// Выполняет миграцию, создавая схему vehicles_module.
 	/// </summary>
-	public override void Up() => Execute.Sql("CREATE SCHEMA IF NOT EXISTS vehicles_module;");
+	public override void Up()
+	{
+		Execute.Sql("CREATE SCHEMA IF NOT EXISTS vehicles_module;");
+	}
 
 	/// <summary>
 	/// Откатывает миграцию, удаляя схему vehicles_module.
 	/// </summary>
-	public override void Down() => Delete.Schema("vehicles_module");
+	public override void Down()
+	{
+		Delete.Schema("vehicles_module");
+	}
 }

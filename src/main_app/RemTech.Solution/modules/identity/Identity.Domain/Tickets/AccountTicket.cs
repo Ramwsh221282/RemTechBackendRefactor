@@ -54,7 +54,10 @@ public sealed class AccountTicket(AccountId accountId, Guid ticketId, bool finis
 	/// <param name="accountId">Идентификатор аккаунта.</param>
 	/// <param name="purpose">Причина создания заявки.</param>
 	/// <returns>Результат создания заявки аккаунта.</returns>
-	public static Result<AccountTicket> New(AccountId accountId, string purpose) => New(accountId.Value, purpose);
+	public static Result<AccountTicket> New(AccountId accountId, string purpose)
+	{
+		return New(accountId.Value, purpose);
+	}
 
 	/// <summary>
 	/// Создает новую заявку аккаунта с валидацией.
@@ -62,7 +65,10 @@ public sealed class AccountTicket(AccountId accountId, Guid ticketId, bool finis
 	/// <param name="account">Аккаунт.</param>
 	/// <param name="purpose">Причина создания заявки.</param>
 	/// <returns>Результат создания заявки аккаунта.</returns>
-	public static Result<AccountTicket> New(Account account, string purpose) => New(account.Id, purpose);
+	public static Result<AccountTicket> New(Account account, string purpose)
+	{
+		return New(account.Id, purpose);
+	}
 
 	/// <summary>
 	/// Завершает заявку.
@@ -71,7 +77,10 @@ public sealed class AccountTicket(AccountId accountId, Guid ticketId, bool finis
 	public Result<Unit> Finish()
 	{
 		if (Finished)
+		{
 			return Error.Conflict("Заявка уже выполнена.");
+		}
+
 		Finished = true;
 		return Result.Success(Unit.Value);
 	}
@@ -84,9 +93,15 @@ public sealed class AccountTicket(AccountId accountId, Guid ticketId, bool finis
 	public Result<Unit> FinishBy(Guid finisherId)
 	{
 		if (Finished)
+		{
 			return Error.Conflict("Заявка уже выполнена.");
+		}
+
 		if (finisherId != AccountId.Value)
+		{
 			return Error.Forbidden("Заявка не привязана к учетной записи.");
+		}
+
 		Finished = true;
 		return Result.Success(Unit.Value);
 	}
@@ -95,5 +110,8 @@ public sealed class AccountTicket(AccountId accountId, Guid ticketId, bool finis
 	/// Клонирует заявку.
 	/// </summary>
 	/// <returns>Клон заявки.</returns>
-	public AccountTicket Clone() => new(this);
+	public AccountTicket Clone()
+	{
+		return new(this);
+	}
 }

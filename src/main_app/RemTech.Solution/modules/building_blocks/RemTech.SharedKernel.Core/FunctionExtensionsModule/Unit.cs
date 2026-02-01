@@ -18,7 +18,10 @@ public sealed record Unit
 	/// <typeparam name="T">Тип значения.</typeparam>
 	/// <param name="value">Значение для создания экземпляра Unit.</param>
 	/// <returns>Экземпляр Unit с заданным значением.</returns>
-	public static Unit<T> UnitOf<T>(T value) => new(value);
+	public static Unit<T> UnitOf<T>(T value)
+	{
+		return new(value);
+	}
 }
 
 /// <summary>
@@ -63,7 +66,9 @@ public static class UnitModule
 			return Unit.Value;
 		}
 
-		public static Result<Unit> ValidationUnit(IEnumerable<string> errors) =>
-			errors.Any() ? Error.Validation(errors) : Unit.Value;
+		public static Result<Unit> ValidationUnit(IEnumerable<string> errors)
+		{
+			return errors.Any() ? Error.Validation(errors) : Unit.Value;
+		}
 	}
 }

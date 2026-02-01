@@ -20,8 +20,9 @@ public static class CommandValidationExtensions
 	public static IRuleBuilderOptionsConditions<T, TProperty> MustBeValid<T, TProperty>(
 		this IRuleBuilderInitial<T, TProperty> builder,
 		Func<TProperty, Result> validation
-	) =>
-		builder.Custom(
+	)
+	{
+		return builder.Custom(
 			(validate, context) =>
 			{
 				Result result = validation(validate);
@@ -32,6 +33,7 @@ public static class CommandValidationExtensions
 				}
 			}
 		);
+	}
 
 	/// <summary>
 	/// Проверяет, что каждый элемент в коллекции соответствует всем предоставленным функциям валидации.
@@ -44,8 +46,9 @@ public static class CommandValidationExtensions
 	public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> EachMustFollow<T, TProperty>(
 		this IRuleBuilderInitial<T, IEnumerable<TProperty>> builder,
 		Func<TProperty, Result>[] validations
-	) =>
-		builder.Custom(
+	)
+	{
+		return builder.Custom(
 			(validate, context) =>
 			{
 				List<ValidationFailure> failures = [];
@@ -71,6 +74,7 @@ public static class CommandValidationExtensions
 				}
 			}
 		);
+	}
 
 	/// <summary>
 	/// Проверяет, что все элементы в коллекции являются допустимыми согласно предоставленной функции валидации.
@@ -83,8 +87,9 @@ public static class CommandValidationExtensions
 	public static IRuleBuilderOptionsConditions<T, IEnumerable<TProperty>> AllMustBeValid<T, TProperty>(
 		this IRuleBuilderInitial<T, IEnumerable<TProperty>> builder,
 		Func<TProperty, Result> validation
-	) =>
-		builder.Custom(
+	)
+	{
+		return builder.Custom(
 			(validate, context) =>
 			{
 				List<ValidationFailure> failures = [];
@@ -107,4 +112,5 @@ public static class CommandValidationExtensions
 				}
 			}
 		);
+	}
 }

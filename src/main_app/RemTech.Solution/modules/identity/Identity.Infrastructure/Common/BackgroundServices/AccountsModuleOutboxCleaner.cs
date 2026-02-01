@@ -54,9 +54,13 @@ public sealed class AccountsModuleOutboxCleaner(Serilog.ILogger logger, NpgSqlCo
 			Result commit = await transaction.Commit(ct);
 
 			if (commit.IsFailure)
+			{
 				Logger.Fatal(commit.Error, "Error committing transaction.");
+			}
 			else
+			{
 				Logger.Information("Removed {Count} sent outbox messages.", removed);
+			}
 		}
 		catch (Exception e)
 		{

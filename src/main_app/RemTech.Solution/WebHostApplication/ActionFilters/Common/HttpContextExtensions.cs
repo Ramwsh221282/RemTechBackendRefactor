@@ -12,13 +12,25 @@ public static class HttpContextExtensions
 {
 	extension(HttpContext context)
 	{
-		public string GetRefreshTokenFromHeaderOrEmpty() => GetHeaderValueOrEmpty(context, "refresh_token");
+		public string GetRefreshTokenFromHeaderOrEmpty()
+		{
+			return GetHeaderValueOrEmpty(context, "refresh_token");
+		}
 
-		public string GetAccessTokenFromHeaderOrEmpty() => GetHeaderValueOrEmpty(context, "access_token");
+		public string GetAccessTokenFromHeaderOrEmpty()
+		{
+			return GetHeaderValueOrEmpty(context, "access_token");
+		}
 
-		public string GetRefreshTokenFromCookieOrEmpty() => GetCookieValueOrEmpty(context, "refresh_token");
+		public string GetRefreshTokenFromCookieOrEmpty()
+		{
+			return GetCookieValueOrEmpty(context, "refresh_token");
+		}
 
-		public string GetAccessTokenFromCookieOrEmpty() => GetCookieValueOrEmpty(context, "access_token");
+		public string GetAccessTokenFromCookieOrEmpty()
+		{
+			return GetCookieValueOrEmpty(context, "access_token");
+		}
 
 		public string GetAccessToken(Func<HttpContext, string>[] accessTokenSearchMethods)
 		{
@@ -67,7 +79,10 @@ public static class HttpContextExtensions
 			{
 				string result = method(context);
 				if (string.IsNullOrWhiteSpace(result))
+				{
 					continue;
+				}
+
 				tokens["access_token"] = result;
 				break;
 			}
@@ -76,7 +91,10 @@ public static class HttpContextExtensions
 			{
 				string result = method(context);
 				if (string.IsNullOrWhiteSpace(result))
+				{
 					continue;
+				}
+
 				tokens["refresh_token"] = result;
 				break;
 			}
@@ -105,7 +123,10 @@ public static class HttpContextExtensions
 		}
 	}
 
-	private static Envelope ForbiddenEnvelope() => new((int)HttpStatusCode.Forbidden, null, "Forbidden");
+	private static Envelope ForbiddenEnvelope()
+	{
+		return new((int)HttpStatusCode.Forbidden, null, "Forbidden");
+	}
 
 	private static string GetCookieValueOrEmpty(HttpContext context, string cookieName)
 	{
@@ -115,7 +136,9 @@ public static class HttpContextExtensions
 	private static string GetHeaderValueOrEmpty(HttpContext context, string headerName)
 	{
 		if (!context.Request.Headers.TryGetValue(headerName, out StringValues refreshToken))
+		{
 			return string.Empty;
+		}
 
 		string? token = refreshToken.FirstOrDefault();
 		return token ?? string.Empty;

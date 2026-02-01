@@ -78,11 +78,19 @@ public sealed class GetSparesLocationsQueryHandler(NpgSqlSession session, Embedd
 		return !appliers.Any() ? string.Empty : " ORDER BY " + string.Join(" AND ", appliers);
 	}
 
-	private static string UseEmbeddingsSearchOrderBy(GetSparesLocationsQuery query, DynamicParameters parameters) =>
-		string.IsNullOrWhiteSpace(query.TextSearch) ? string.Empty : "r.embedding <=> @embedding_search ASC";
+	private static string UseEmbeddingsSearchOrderBy(GetSparesLocationsQuery query, DynamicParameters parameters)
+	{
+		return string.IsNullOrWhiteSpace(query.TextSearch) ? string.Empty : "r.embedding <=> @embedding_search ASC";
+	}
 
-	private static SpareLocationResponse MapSingleFromReader(DbDataReader reader) =>
-		new() { Id = reader.GetGuid(reader.GetOrdinal("Id")), Name = reader.GetString(reader.GetOrdinal("Name")) };
+	private static SpareLocationResponse MapSingleFromReader(DbDataReader reader)
+	{
+		return new()
+		{
+			Id = reader.GetGuid(reader.GetOrdinal("Id")),
+			Name = reader.GetString(reader.GetOrdinal("Name")),
+		};
+	}
 
 	private (DynamicParameters Parameters, string Sql) CreateSql(GetSparesLocationsQuery query)
 	{
@@ -103,7 +111,10 @@ public sealed class GetSparesLocationsQueryHandler(NpgSqlSession session, Embedd
 	private string UseTextSearchFilter(GetSparesLocationsQuery query, DynamicParameters parameters)
 	{
 		if (string.IsNullOrWhiteSpace(query.TextSearch))
+		{
 			return string.Empty;
+		}
+
 		Vector embeddings = new(Embeddings.Generate(query.TextSearch));
 		parameters.Add("@embedding_search", embeddings);
 		parameters.Add("@text_search_parameter", query.TextSearch, DbType.String);

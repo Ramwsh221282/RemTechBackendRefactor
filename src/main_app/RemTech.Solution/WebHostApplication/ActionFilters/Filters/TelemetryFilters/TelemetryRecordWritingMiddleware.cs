@@ -48,7 +48,7 @@ public sealed class TelemetryRecordWritingMiddleware(
 		ResetBufferToBeginning(buffer);
 		await CopyClonedStreamToResponse(buffer, bodyClone, context, ct);
 
-		if (severity.Equals(ActionRecordSeverity.Error()))
+		if (severity.Equals(ActionRecordSeverity.Error()) && buffer.Length > 0)
 		{
 			string errorText = await TryReadBusinessLogicErrorMessage(buffer, ct);
 			error = ActionRecordError.FromNullableString(errorText);
@@ -58,7 +58,10 @@ public sealed class TelemetryRecordWritingMiddleware(
 		actionRecords.WriteRecord(action);
 	}
 
-	private static void ResetBufferToBeginning(Stream stream) => stream.Seek(0, SeekOrigin.Begin);
+	private static void ResetBufferToBeginning(Stream stream)
+	{
+		stream.Seek(0, SeekOrigin.Begin);
+	}
 
 	private static MemoryStream CreateTemporaryBufferForProcessing(HttpContext context)
 	{
@@ -89,7 +92,10 @@ public sealed class TelemetryRecordWritingMiddleware(
 		ResetBufferToBeginning(bufferFromResponse);
 		using JsonDocument document = JsonDocument.Parse(message);
 		if (!document.RootElement.TryGetProperty("message", out JsonElement messageField))
+		{
 			return string.Empty;
+		}
+
 		return (messageField.ValueKind == JsonValueKind.Null) ? string.Empty : messageField.GetString() ?? string.Empty;
 	}
 

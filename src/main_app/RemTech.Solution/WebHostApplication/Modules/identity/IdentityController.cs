@@ -11,6 +11,7 @@ using Identity.Domain.Accounts.Features.ResetPassword;
 using Identity.Domain.Accounts.Features.VerifyToken;
 using Identity.Domain.Accounts.Models;
 using Identity.Infrastructure.Accounts.Queries.GetUser;
+using Identity.Infrastructure.Permissions.GetPermissions;
 using Microsoft.AspNetCore.Mvc;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
@@ -44,6 +45,17 @@ public sealed class IdentityController : ControllerBase
 		context => context.GetRefreshTokenFromHeaderOrEmpty(),
 		context => context.GetRefreshTokenFromCookieOrEmpty(),
 	];
+
+	[HttpGet("permissions")]
+	public async Task<Envelope> GetPermissions(
+		[FromServices] IQueryHandler<GetPermissionsQuery, IReadOnlyList<PermissionResponse>> handler,
+		CancellationToken ct
+	)
+	{
+		GetPermissionsQuery query = GetPermissionsQuery.Create();
+		IReadOnlyList<PermissionResponse> permissions = await handler.Handle(query, ct);
+		return new Envelope((int)HttpStatusCode.OK, permissions, null);
+	}
 
 	/// <summary>
 	/// Подтвердить сброс пароля.
@@ -104,7 +116,10 @@ public sealed class IdentityController : ControllerBase
 		AuthenticateCommand command = new(request.Login, request.Email, request.Password);
 		Result<AuthenticationResult> result = await handler.Execute(command, ct);
 		if (result.IsFailure)
+		{
 			return result.AsEnvelope();
+		}
+
 		SetAuthCookies(HttpContext, result.Value);
 		SetAuthHeaders(HttpContext, result.Value);
 		return Ok();
@@ -140,7 +155,10 @@ public sealed class IdentityController : ControllerBase
 		);
 		Result<Unit> result = await handler.Execute(command, ct);
 		if (result.IsFailure)
+		{
 			return result.AsEnvelope();
+		}
+
 		ClearAuthHeaders(HttpContext);
 		return Ok();
 	}
@@ -164,7 +182,10 @@ public sealed class IdentityController : ControllerBase
 		LogoutCommand command = new(accessToken, refreshToken);
 		Result<Unit> result = await handler.Execute(command, ct);
 		if (result.IsFailure)
+		{
 			return result.AsEnvelope();
+		}
+
 		ClearAuthHeaders(HttpContext);
 		return Ok();
 	}
@@ -255,7 +276,9 @@ public sealed class IdentityController : ControllerBase
 		Result<AuthenticationResult> result = await handler.Execute(command, ct);
 
 		if (result.IsFailure)
+		{
 			return result.AsEnvelope();
+		}
 
 		SetAuthCookies(HttpContext, result.Value);
 		SetAuthHeaders(HttpContext, result.Value);
@@ -299,7 +322,10 @@ public sealed class IdentityController : ControllerBase
 		return result.IsFailure ? result.AsEnvelope() : Ok();
 	}
 
-	private static new Envelope Ok() => new((int)HttpStatusCode.OK, null, null);
+	private static new Envelope Ok()
+	{
+		return new((int)HttpStatusCode.OK, null, null);
+	}
 
 	private static void SetAuthHeaders(HttpContext context, AuthenticationResult result)
 	{
@@ -311,29 +337,31 @@ public sealed class IdentityController : ControllerBase
 
 	private static void ClearAuthHeaders(HttpContext context)
 	{
+		CookieOptions options = CreateCookieOptions(context);
 		context.Response.Headers.Remove(ACCESS_TOKEN_NAME);
 		context.Response.Headers.Remove(REFRESH_TOKEN_NAME);
-		context.Response.Cookies.Delete(ACCESS_TOKEN_NAME);
-		context.Response.Cookies.Delete(REFRESH_TOKEN_NAME);
+		context.Response.Cookies.Delete(ACCESS_TOKEN_NAME, options);
+		context.Response.Cookies.Delete(REFRESH_TOKEN_NAME, options);
 	}
 
 	private static void SetAuthCookies(HttpContext context, AuthenticationResult result)
 	{
-		context.Response.Cookies.Delete(ACCESS_TOKEN_NAME);
-		context.Response.Cookies.Delete(REFRESH_TOKEN_NAME);
-
-		CookieOptions options = CreateCookieOptions();
-
+		CookieOptions options = CreateCookieOptions(context);
+		context.Response.Cookies.Delete(ACCESS_TOKEN_NAME, options);
+		context.Response.Cookies.Delete(REFRESH_TOKEN_NAME, options);
 		context.Response.Cookies.Append(ACCESS_TOKEN_NAME, result.AccessToken, options);
 		context.Response.Cookies.Append(REFRESH_TOKEN_NAME, result.RefreshToken, options);
 	}
 
-	private static CookieOptions CreateCookieOptions() =>
-		new()
+	private static CookieOptions CreateCookieOptions(HttpContext context)
+	{
+		bool isHttps = context.Request.IsHttps;
+		return new()
 		{
 			HttpOnly = true,
 			SameSite = SameSiteMode.None,
-			Expires = DateTime.UtcNow.AddDays(30),
-			Secure = true,
+			Secure = isHttps,
+			Path = "/",
 		};
+	}
 }

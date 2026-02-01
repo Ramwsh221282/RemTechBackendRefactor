@@ -27,5 +27,8 @@ public sealed record EmailString
 	/// Проверяет, имеет ли строка допустимый формат электронной почты.
 	/// </summary>
 	/// <returns>True, если строка имеет допустимый формат электронной почты; иначе false.</returns>
-	public bool IsValid() => _hasValidFormat;
+	public bool IsValid()
+	{
+		return _hasValidFormat;
+	}
 }

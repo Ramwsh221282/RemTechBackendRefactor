@@ -9,7 +9,9 @@ public static class BcryptWorkFactorInjection
 {
 	extension(IServiceCollection services)
 	{
-		public void AddBcryptWorkFactorOptionsFromAppsettings(string sectionName = nameof(BcryptWorkFactorOptions)) =>
+		public void AddBcryptWorkFactorOptionsFromAppsettings(string sectionName = nameof(BcryptWorkFactorOptions))
+		{
 			services.AddOptions<BcryptWorkFactorOptions>().BindConfiguration(sectionName);
+		}
 	}
 }
