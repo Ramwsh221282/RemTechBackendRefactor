@@ -21,6 +21,7 @@ import { ActionRecordsQuery } from '../../../../shared/api/telemetry-module/tele
 import { tap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { SortButtonsComponent, SortChangeEvent } from '../../../../shared/components/sort-buttons/sort-buttons.component';
+import { ActionRecordInvokerLoginSearchInputComponent } from './components/action-record-invoker-login-search-input/action-record-invoker-login-search-input.component';
 
 @Component({
 	selector: 'app-users-activity-monitoring-page',
@@ -37,6 +38,7 @@ import { SortButtonsComponent, SortChangeEvent } from '../../../../shared/compon
 		PaginationComponent,
 		MultiSelect,
 		SortButtonsComponent,
+		ActionRecordInvokerLoginSearchInputComponent,
 	],
 	templateUrl: './users-activity-monitoring-page.component.html',
 	styleUrl: './users-activity-monitoring-page.component.css',
@@ -149,6 +151,18 @@ export class UsersActivityMonitoringPageComponent implements OnInit {
 	public handleDateSortSelected($event: SortChangeEvent): void {
 		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
 			return query.addSort($event);
+		});
+	}
+
+	public handleEmailSearchChanged($event: string | null): void {
+		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+			return query.withEmail($event);
+		});
+	}
+
+	public handleLoginSearchChanged($event: string | null): void {
+		this._query.update((query: ActionRecordsQuery): ActionRecordsQuery => {
+			return query.withLogin($event);
 		});
 	}
 

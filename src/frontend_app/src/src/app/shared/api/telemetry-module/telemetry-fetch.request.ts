@@ -1,11 +1,14 @@
 import { HttpParams } from '@angular/common/http';
 import { SortEvent } from 'primeng/api';
+import { StringUtils } from '../../utils/string-utils';
 
 type QueryParameters = {
 	page: number | null;
 	pageSize: number | null;
 	permissions: string[] | null;
 	sort: SortClause[] | null;
+	login: string | null;
+	email: string | null;
 };
 
 export interface SortClause extends SortEvent {}
@@ -16,6 +19,8 @@ function defaultParams(): QueryParameters {
 		pageSize: null,
 		permissions: null,
 		sort: null,
+		login: null,
+		email: null,
 	};
 }
 
@@ -40,6 +45,12 @@ export class ActionRecordsQuery {
 				params = params.append('sort', `${sortClause.field}:${sortClause.mode}`);
 			}
 		}
+		if (this._params.login && !StringUtils.isEmptyOrWhiteSpace(this._params.login)) {
+			params = params.append('login', this._params.login);
+		}
+		if (this._params.email && !StringUtils.isEmptyOrWhiteSpace(this._params.email)) {
+			params = params.append('email', this._params.email);
+		}
 		return params;
 	}
 
@@ -52,6 +63,14 @@ export class ActionRecordsQuery {
 			currentSorts.push(sortClause);
 		}
 		return new ActionRecordsQuery({ ...this._params, sort: currentSorts.filter((s: SortClause) => s.mode !== 'NONE') });
+	}
+
+	public withLogin(login: string | null): ActionRecordsQuery {
+		return new ActionRecordsQuery({ ...this._params, login: login });
+	}
+
+	public withEmail(email: string | null): ActionRecordsQuery {
+		return new ActionRecordsQuery({ ...this._params, email: email });
 	}
 
 	public withPermissions(permissions: string[] | null): ActionRecordsQuery {

@@ -137,7 +137,7 @@ items AS (
         ar.severity as ActionSeverity,
         ar.error as ErrorMessage,
         ar.created_at as ActionTimestamp,
-        COUNT(*) OVER() as TotalCount,
+        COALESCE(COUNT(*) OVER(), 0) as TotalCount,
         COALESCE(up.permissions, '[]') as UserPermissions
     FROM telemetry_module.action_records ar
     LEFT JOIN identity_module.accounts a ON ar.invoker_id = a.id
@@ -164,11 +164,11 @@ results AS (
     ) as Items
 FROM items i
 )
-SELECT sq.result as statistics,
-       up.permissions as permissions,
-       stq.result as statuses,
-       items.Items as items,
-       items.TotalCount as total_count
+SELECT COALESCE(sq.result, '[]'::jsonb) as statistics,
+       COALESCE(up.permissions, '[]'::jsonb) as permissions,
+       COALESCE(stq.result, '[]'::jsonb) as statuses,
+       COALESCE(items.Items, '[]'::jsonb) as items,
+       COALESCE(items.TotalCount, 0) as total_count
 FROM statistics_query sq
 CROSS JOIN user_permissions up
 CROSS JOIN statuses_query stq

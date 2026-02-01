@@ -103,6 +103,8 @@ public sealed class TelemetryController : ControllerBase
 		[FromQuery(Name = "page-size")] int? pageSize,
 		[FromQuery(Name = "permissions")] IEnumerable<Guid>? permissions,
 		[FromQuery(Name = "sort")] SortDictionary? sort,
+		[FromQuery(Name = "login")] string? login,
+		[FromQuery(Name = "email")] string? email,
 		[FromServices] IQueryHandler<GetActionRecordsQuery, ActionRecordsPageResponse> handler,
 		CancellationToken ct
 	)
@@ -112,7 +114,10 @@ public sealed class TelemetryController : ControllerBase
 			.WithCustomPage(page)
 			.WithCustomPageSize(pageSize)
 			.WithPermissionIdentifiers(permissions)
-			.WithSort(sort);
+			.WithSort(sort)
+			.WithLoginSearch(login)
+			.WithEmailSearch(email);
+
 		ActionRecordsPageResponse response = await handler.Handle(query, ct);
 		return EnvelopedResultsExtensions.AsEnvelope(response);
 	}

@@ -14,6 +14,7 @@ using WebHostApplication.Middlewares;
 
 // TODO: Add rate limiters.
 // TODO: Add response compression.
+// TODO: Добавить очистку тикетов из identity module, которые уже завершены (сделать background service для этого или использовать quartz).
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.RegisterApplicationModules();
@@ -62,7 +63,7 @@ app.Run();
 namespace WebHostApplication
 {
 	/// <summary>
-	/// Главная точка входа для приложения WebHostApplication.
+	/// Главная точка входа для приложения WebHostApplication (этот нужен для тестов).
 	/// </summary>
 	public partial class Program { }
 }
