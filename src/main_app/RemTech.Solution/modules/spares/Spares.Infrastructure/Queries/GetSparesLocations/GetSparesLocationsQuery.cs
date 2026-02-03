@@ -3,8 +3,6 @@ using RemTech.SharedKernel.Core.Handlers;
 
 namespace Spares.Infrastructure.Queries.GetSparesLocations;
 
-// TODO: amount is not used. Use it in query handler as LIMIT for sql.
-
 /// <summary>
 /// Запрос на получение локаций запчастей.
 /// </summary>
