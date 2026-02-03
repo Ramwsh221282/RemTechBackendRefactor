@@ -1,7 +1,6 @@
 ﻿using System.Data;
 using System.Data.Common;
 using Dapper;
-using Microsoft.Extensions.Options;
 using Npgsql;
 using Pgvector;
 using RemTech.SharedKernel.Core.Handlers;
@@ -16,14 +15,9 @@ namespace Spares.Infrastructure.Queries.GetSpares;
 /// <param name="session">Сессия базы данных для выполнения запросов.</param>
 /// <param name="embeddings">Провайдер эмбеддингов для обработки текстового поиска.</param>
 /// <param name="textSearchConstants">Константы пороговых значений для текстового поиска.</param>
-public sealed class GetSparesQueryHandler(
-	NpgSqlSession session,
-	EmbeddingsProvider embeddings,
-	IOptions<GetSparesThresholdConstants> textSearchConstants
-) : IQueryHandler<GetSparesQuery, GetSparesQueryResponse>
+public sealed class GetSparesQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
+	: IQueryHandler<GetSparesQuery, GetSparesQueryResponse>
 {
-	private GetSparesThresholdConstants TextSearchConstants { get; } = textSearchConstants.Value;
-
 	/// <summary>
 	/// Обрабатывает запрос на получение запчастей.
 	/// </summary>
@@ -181,7 +175,7 @@ public sealed class GetSparesQueryHandler(
 			 LIMIT 1
 			),
 			keyword_oem_search AS (
-			 SELECT kos.id FROM spares_module.spares kos WHERE ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @oem)) >= @oem_search_threshold
+			 SELECT kos.id FROM spares_module.spares kos WHERE ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @oem)) >= 0
 			),
 			all_match AS (
 			    SELECT coalesce(plain_oem_search.id, keyword_oem_search.id) as id FROM plain_oem_search
@@ -192,7 +186,6 @@ public sealed class GetSparesQueryHandler(
 
 		filters.Add(sql);
 		parameters.Add("@oem", oem, DbType.String);
-		parameters.Add("@oem_search_threshold", TextSearchConstants.TextSearchThreshold, DbType.Double);
 	}
 
 	private void ApplyTextSearch(string text, DynamicParameters parameters, List<string> filters)

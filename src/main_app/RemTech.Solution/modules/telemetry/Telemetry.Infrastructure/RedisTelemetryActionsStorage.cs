@@ -1,8 +1,7 @@
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using RemTech.SharedKernel.Infrastructure.Redis;
+using RemTech.SharedKernel.Configurations;
 using Serilog;
 using StackExchange.Redis;
 using Telemetry.Core.ActionRecords;

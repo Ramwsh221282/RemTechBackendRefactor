@@ -4,6 +4,7 @@ using Dapper;
 using Npgsql;
 using Pgvector;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.NN;
 
@@ -14,6 +15,7 @@ namespace Vehicles.Infrastructure.Brands.Queries.GetBrands;
 /// </summary>
 /// <param name="session">Сессия базы данных PostgreSQL.</param>
 /// <param name="embeddings">Провайдер эмбеддингов для обработки текстового поиска.</param>
+[UseCache]
 public sealed class GetBrandsQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: IQueryHandler<GetBrandsQuery, IEnumerable<BrandResponse>>
 {

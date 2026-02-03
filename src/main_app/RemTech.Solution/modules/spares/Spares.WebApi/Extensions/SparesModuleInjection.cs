@@ -38,12 +38,9 @@ public static class SparesModuleInjection
 			if (isDevelopment)
 			{
 				services.AddMigrations([typeof(SparesSchemaMigration).Assembly]);
-				services.AddNpgSqlOptionsFromAppsettings();
-				services.AddRabbitMqOptionsFromAppsettings();
+				services.AddOptions<NpgSqlOptions>().BindConfiguration(nameof(NpgSqlOptions));
+				services.AddOptions<RabbitMqOptions>().BindConfiguration(nameof(RabbitMqOptions));
 				services.AddOptions<EmbeddingsProviderOptions>().BindConfiguration(nameof(EmbeddingsProviderOptions));
-				services
-					.AddOptions<GetSparesThresholdConstants>()
-					.BindConfiguration(nameof(GetSparesThresholdConstants));
 			}
 
 			services.TryAddSingleton<EmbeddingsProvider>();

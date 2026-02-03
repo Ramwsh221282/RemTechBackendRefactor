@@ -15,6 +15,8 @@ roslynator_body_style = block
 dotnet_diagnostic.rcs1224.severity = suggestion
 dotnet_diagnostic.rcs1225.severity = suggestion
 dotnet_diagnostic.rcs9001.severity = suggestion
+dotnet_diagnostic.CS0718.severity = none
+dotnet_diagnostic.CS9003.severity = none
 
 # Remove unnecessary 'else'
 dotnet_diagnostic.rcs1211.severity = suggestion
@@ -492,7 +494,6 @@ roslynator_compiler_diagnostic_fix.cs0708.enabled = true
 roslynator_compiler_diagnostic_fix.cs0710.enabled = true
 roslynator_compiler_diagnostic_fix.cs0713.enabled = true
 roslynator_compiler_diagnostic_fix.cs0714.enabled = true
-roslynator_compiler_diagnostic_fix.cs0718.enabled = true
 roslynator_compiler_diagnostic_fix.cs0750.enabled = true
 roslynator_compiler_diagnostic_fix.cs0751.enabled = true
 roslynator_compiler_diagnostic_fix.cs0753.enabled = true

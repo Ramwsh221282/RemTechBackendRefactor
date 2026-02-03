@@ -3,6 +3,7 @@ using System.Text.Json;
 using Dapper;
 using Npgsql;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace ContainedItems.Infrastructure.Queries.GetMainPageItemStats;
@@ -11,6 +12,7 @@ namespace ContainedItems.Infrastructure.Queries.GetMainPageItemStats;
 /// Обработчик запроса для получения статистики основных страниц.
 /// </summary>
 /// <param name="session">Сессия для работы с базой данных PostgreSQL.</param>
+[UseCache]
 public sealed class GetMainPageItemStatsQueryHandler(NpgSqlSession session)
 	: IQueryHandler<GetMainPageItemStatsQuery, MainPageItemStatsResponse>
 {
