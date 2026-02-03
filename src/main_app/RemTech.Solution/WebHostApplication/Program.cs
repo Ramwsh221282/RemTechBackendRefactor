@@ -3,15 +3,12 @@ using System.Text.Unicode;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Infrastructure.Database;
 using SwaggerThemes;
-using Telemetry.Infrastructure;
 using WebHostApplication.Injection;
 using WebHostApplication.Middlewares;
 using WebHostApplication.Middlewares.Telemetry;
 
 // TODO: Add rate limiters.
 // TODO: Add response compression.
-// TODO: Добавить очистку тикетов из identity module, которые уже завершены (сделать background service для этого или использовать quartz).
-// TODO: Добавить запрос на получение характеристик техники по каталогу.
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.RegisterApplicationModules();
@@ -37,10 +34,6 @@ builder.Services.AddCors(options =>
 		policy => policy.WithOrigins(url).AllowCredentials().AllowAnyMethod().AllowAnyHeader()
 	);
 });
-
-// TODO: move to dependency injection method such as inject shared dependencies.
-builder.Services.AddSingleton<TelemetryRecordInvokerIdSearcher>();
-builder.Services.RegisterRedisActionRecordDependencies();
 
 WebApplication app = builder.Build();
 
