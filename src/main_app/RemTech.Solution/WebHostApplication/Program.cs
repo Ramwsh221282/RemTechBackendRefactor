@@ -1,5 +1,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Infrastructure.Database;
 using SwaggerThemes;
@@ -14,6 +15,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.RegisterApplicationModules();
 if (builder.Environment.IsDevelopment())
 {
+	builder.InvokeTestEnv();
 	builder.Services.RegisterConfigurationFromAppsettings();
 }
 
@@ -36,6 +38,10 @@ builder.Services.AddCors(options =>
 });
 
 WebApplication app = builder.Build();
+
+await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
+IServiceProvider sp = scope.ServiceProvider;
+IOptions<TestEnv> env = sp.GetRequiredService<IOptions<TestEnv>>();
 
 app.Services.ApplyModuleMigrations();
 app.UseHttpsRedirection();
