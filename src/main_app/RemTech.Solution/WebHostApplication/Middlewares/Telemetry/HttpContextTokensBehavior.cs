@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using WebHostApplication.ActionFilters.Common;
 
-namespace WebHostApplication.ActionFilters.Filters.TelemetryFilters;
+namespace WebHostApplication.Middlewares.Telemetry;
 
 /// <summary>
 /// Поведение для получения токенов из HttpContext.

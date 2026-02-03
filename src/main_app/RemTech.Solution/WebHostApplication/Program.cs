@@ -4,9 +4,9 @@ using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Infrastructure.Database;
 using SwaggerThemes;
 using Telemetry.Infrastructure;
-using WebHostApplication.ActionFilters.Filters.TelemetryFilters;
 using WebHostApplication.Injection;
 using WebHostApplication.Middlewares;
+using WebHostApplication.Middlewares.Telemetry;
 
 // TODO: Add rate limiters.
 // TODO: Add response compression.

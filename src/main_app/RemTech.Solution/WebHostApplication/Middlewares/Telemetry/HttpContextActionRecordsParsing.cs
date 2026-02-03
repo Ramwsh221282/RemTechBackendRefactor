@@ -6,7 +6,7 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using Telemetry.Core.ActionRecords.ValueObjects;
 using WebHostApplication.ActionFilters.Common;
 
-namespace WebHostApplication.ActionFilters.Filters.TelemetryFilters;
+namespace WebHostApplication.Middlewares.Telemetry;
 
 /// <summary>
 /// Поведение для извлечения имени записи действия и полезной нагрузки из HttpContext.
