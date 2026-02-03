@@ -33,6 +33,7 @@ using Vehicles.Domain.Vehicles;
 using Vehicles.Infrastructure.BackgroundServices;
 using Vehicles.Infrastructure.Vehicles.PersisterImplementation;
 using Vehicles.WebApi.Extensions;
+using WebHostApplication.Middlewares.Telemetry;
 using WebHostApplication.Queries.GetActionRecords;
 
 namespace WebHostApplication.Injection;
@@ -52,6 +53,7 @@ public static class ModulesInjection
 			services.RegisterHybridCache(configuration);
 			RemTech.SharedKernel.Infrastructure.AesEncryption.AesCryptographyExtensions.AddAesCryptography(services);
 			services.TryAddSingleton<EmbeddingsProvider>();
+			services.AddTelemetryModule();
 		}
 
 		public void RegisterModuleMigrations()
@@ -137,6 +139,12 @@ public static class ModulesInjection
 			ContainedItemsModuleInjection.RegisterInfrastructure(services);
 			SparesModuleInjection.RegisterSparesInfrastructure(services);
 			VehiclesModuleInjection.RegisterInfrastructureLayerDependencies(services);
+		}
+
+		private void AddTelemetryModule()
+		{
+			services.AddSingleton<TelemetryRecordInvokerIdSearcher>();
+			services.RegisterRedisActionRecordDependencies();
 		}
 	}
 

@@ -4,6 +4,7 @@ using System.Text.Json;
 using Dapper;
 using Npgsql;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.NN;
 using WebHostApplication.CommonSql;
@@ -186,7 +187,6 @@ FROM items i;
 		return !query.IgnoreErrors ? string.Empty : "ar.error IS NULL";
 	}
 
-	//TODO: implement permissions filter
 	private static string UsePermissionsFilter(GetActionRecordsQuery query, DynamicParameters parameters)
 	{
 		return string.Empty;
