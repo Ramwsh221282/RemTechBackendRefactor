@@ -1,4 +1,4 @@
-﻿namespace RemTech.SharedKernel.Infrastructure.Redis;
+namespace RemTech.SharedKernel.Configurations;
 
 /// <summary>
 /// Опции кэширования с использованием Redis.

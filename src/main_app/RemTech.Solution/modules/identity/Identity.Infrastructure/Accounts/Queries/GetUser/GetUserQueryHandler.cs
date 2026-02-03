@@ -2,6 +2,7 @@
 using Identity.Domain.Contracts.Persistence;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 
 namespace Identity.Infrastructure.Accounts.Queries.GetUser;
 
@@ -9,6 +10,7 @@ namespace Identity.Infrastructure.Accounts.Queries.GetUser;
 /// Обработчик запроса на получение пользователя.
 /// </summary>
 /// <param name="accounts">Репозиторий аккаунтов.</param>
+[UseCache]
 public sealed class GetUserQueryHandler(IAccountsRepository accounts)
 	: IQueryHandler<GetUserQuery, UserAccountResponse?>
 {

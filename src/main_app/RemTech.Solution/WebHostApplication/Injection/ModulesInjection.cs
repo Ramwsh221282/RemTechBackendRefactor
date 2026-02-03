@@ -14,8 +14,6 @@ using ParsersControl.Core.Parsers.Models;
 using ParsersControl.Infrastructure.Parsers.Repository;
 using ParsersControl.WebApi.Extensions;
 using RemTech.SharedKernel.Core.Handlers;
-using RemTech.SharedKernel.Core.Handlers.Decorators.CacheInvalidate;
-using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 using RemTech.SharedKernel.Core.Handlers.Decorators.DomainEvents;
 using RemTech.SharedKernel.Core.Handlers.Decorators.Logging;
 using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
@@ -68,10 +66,7 @@ public static class ModulesInjection
 			services.RegisterInfrastructureDependencies();
 
 			services.RegisterHandlers(typeof(IQueryHandler<,>), assemblies);
-
-			services.RegisterHandlers(typeof(IQueryExecutorWithCache<,>), assemblies);
 			services.RegisterHandlers(typeof(IEventTransporter<,>), assemblies);
-			services.RegisterHandlers(typeof(ICacheInvalidator<,>), assemblies);
 			services.RegisterHandlers(typeof(ICommandHandler<,>), assemblies);
 
 			services.RegisterConsumers(assemblies);
@@ -79,11 +74,13 @@ public static class ModulesInjection
 
 			services.DecorateCommandHandlersWith(typeof(TransactionalHandler<,>));
 			services.DecorateCommandHandlersWith(typeof(ValidatingHandler<,>));
-			services.DecorateCommandHandlersWith(typeof(CacheInvalidatingHandler<,>));
 			services.DecorateCommandHandlersWith(typeof(LoggingCommandHandler<,>));
 
-			services.DecorateQueryHandlersWith(typeof(TestCachingQueryHandler<,>));
-			services.DecorateQueryHandlersWith(typeof(TestLoggingQueryHandler<,>));
+			// services.DecorateQueryHandlersWith(typeof(TestCachingQueryHandler<,>));
+			// services.DecorateQueryHandlersWith(typeof(TestLoggingQueryHandler<,>));
+
+			services.DecorateQueryHandlersWith(typeof(CachingQueryHandler<,>));
+			services.DecorateQueryHandlersWith(typeof(LoggingQueryHandler<,>));
 		}
 
 		private void DecorateCommandHandlersWith(Type decoratorType)

@@ -34,8 +34,8 @@ public static class ContainedItemsModuleInjection
 			if (isDevelopment)
 			{
 				services.AddMigrations([typeof(ContainedItemsInfrastructureInjection).Assembly]);
-				services.AddNpgSqlOptionsFromAppsettings();
-				services.AddRabbitMqOptionsFromAppsettings();
+				services.AddOptions<NpgSqlOptions>().BindConfiguration(nameof(NpgSqlOptions));
+				services.AddOptions<RabbitMqOptions>().BindConfiguration(nameof(RabbitMqOptions));
 			}
 
 			services.RegisterLogging();

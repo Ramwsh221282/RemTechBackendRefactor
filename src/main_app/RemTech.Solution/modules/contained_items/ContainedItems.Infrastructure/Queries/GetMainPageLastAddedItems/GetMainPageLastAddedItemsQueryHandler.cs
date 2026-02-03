@@ -3,6 +3,7 @@ using System.Text.Json;
 using Dapper;
 using Npgsql;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace ContainedItems.Infrastructure.Queries.GetMainPageLastAddedItems;
@@ -11,6 +12,7 @@ namespace ContainedItems.Infrastructure.Queries.GetMainPageLastAddedItems;
 /// Обработчик запроса для получения последних добавленных элементов на главную страницу.
 /// </summary>
 /// <param name="session">Сессия базы данных PostgreSQL.</param>
+[UseCache]
 public sealed class GetMainPageLastAddedItemsQueryHandler(NpgSqlSession session)
 	: IQueryHandler<GetMainPageLastAddedItemsQuery, MainPageLastAddedItemsResponse>
 {

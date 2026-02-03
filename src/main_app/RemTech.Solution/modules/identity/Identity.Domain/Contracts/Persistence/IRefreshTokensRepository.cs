@@ -60,8 +60,8 @@ public interface IRefreshTokensRepository
 	/// <summary>
 	/// Удаляет токены обновления для указанного аккаунта.
 	/// </summary>
-	/// <param name="AccountId">Идентификатор аккаунта.</param>
+	/// <param name="accountId">Идентификатор аккаунта.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача.</returns>
-	Task Delete(Guid AccountId, CancellationToken ct = default);
+	Task Delete(Guid accountId, CancellationToken ct = default);
 }
