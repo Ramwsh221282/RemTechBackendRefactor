@@ -25,17 +25,20 @@ public sealed class CachedRefreshTokensRepository : IRefreshTokensRepository
 
 	public Task Add(RefreshToken token, CancellationToken ct = default)
 	{
+		Console.WriteLine("Adding token to cache repository");
 		return _inner.Add(token, ct);
 	}
 
 	public async Task Delete(RefreshToken token, CancellationToken ct = default)
 	{
+		Console.WriteLine("Deleting token from cache repository. Token instance provided.");
 		await _inner.Delete(token, ct);
 		await InvalidateTokens(token, ct);
 	}
 
 	public async Task Delete(Guid accountId, CancellationToken ct = default)
 	{
+		Console.WriteLine("Deleting token from cache repository. AccountId provided.");
 		await _inner.Delete(accountId, ct);
 		CachedRefreshToken? cachedToken = await GetFromCacheByAccountId(accountId, ct);
 		if (cachedToken is not null)
@@ -46,6 +49,7 @@ public sealed class CachedRefreshTokensRepository : IRefreshTokensRepository
 
 	public async Task<bool> Exists(Guid accountId, CancellationToken ct = default)
 	{
+		Console.WriteLine("Checking token existence in cache repository.");
 		CachedRefreshToken? cachedToken = await GetFromCacheByAccountId(accountId, ct);
 		if (cachedToken is not null)
 		{
@@ -57,6 +61,7 @@ public sealed class CachedRefreshTokensRepository : IRefreshTokensRepository
 
 	public async Task<Result<RefreshToken>> Find(Guid accountId, CancellationToken ct = default)
 	{
+		Console.WriteLine("Finding token by accountId in cache repository.");
 		CachedRefreshToken? cachedToken = await GetFromCacheByAccountId(accountId, ct);
 		if (cachedToken is not null)
 		{
@@ -72,8 +77,10 @@ public sealed class CachedRefreshTokensRepository : IRefreshTokensRepository
 		CancellationToken ct = default
 	)
 	{
+		Console.WriteLine("Finding token by token value in cache repository.");
 		if (withLock)
 		{
+			Console.WriteLine("With lock is requested, bypassing cache.");
 			return await _inner.Find(refreshToken, withLock, ct);
 		}
 
@@ -83,6 +90,7 @@ public sealed class CachedRefreshTokensRepository : IRefreshTokensRepository
 
 	public async Task Update(RefreshToken token, CancellationToken ct = default)
 	{
+		Console.WriteLine("Updating token in cache repository.");
 		await _inner.Update(token, ct);
 		await InvalidateTokens(token, ct);
 	}

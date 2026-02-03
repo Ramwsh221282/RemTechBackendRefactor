@@ -104,8 +104,20 @@ public sealed class GetSparesLocationsQueryHandler(NpgSqlSession session, Embedd
 			    INNER JOIN contained_items_module.contained_items ci ON s.id = ci.id AND ci.deleted_at IS NULL
 			    {ApplyFilters(query, parameters, [UseTextSearchFilter])}
 			    {ApplyOrderBy(query, parameters, [UseEmbeddingsSearchOrderBy])}
+				{ApplyAmountLimitFilter(query, parameters)}
 			""";
 		return (parameters, sql);
+	}
+
+	private static string ApplyAmountLimitFilter(GetSparesLocationsQuery query, DynamicParameters parameters)
+	{
+		if (query.Amount.HasValue)
+		{
+			parameters.Add("@limit", query.Amount.Value, DbType.Int32);
+			return "LIMIT @limit";
+		}
+
+		return string.Empty;
 	}
 
 	private string UseTextSearchFilter(GetSparesLocationsQuery query, DynamicParameters parameters)

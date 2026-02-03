@@ -359,7 +359,7 @@ public sealed class IdentityController : ControllerBase
 		return new()
 		{
 			HttpOnly = true,
-			SameSite = SameSiteMode.None,
+			SameSite = !isHttps ? SameSiteMode.Lax : SameSiteMode.None,
 			Secure = isHttps,
 			Path = "/",
 		};
