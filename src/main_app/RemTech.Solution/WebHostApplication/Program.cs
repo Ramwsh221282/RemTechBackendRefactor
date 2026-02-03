@@ -1,7 +1,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Infrastructure.Database;
-using RemTech.SharedKernel.Web;
 using SwaggerThemes;
 using Telemetry.Infrastructure;
 using WebHostApplication.ActionFilters.Filters.TelemetryFilters;

@@ -50,9 +50,9 @@ public static class IdentityModuleInjection
 			if (isDevelopment)
 			{
 				services.AddMigrations([typeof(IdentityModuleSchemaMigration).Assembly]);
-				services.AddNpgSqlOptionsFromAppsettings();
-				services.AddRabbitMqOptionsFromAppsettings();
-				services.AddAesEncryptionOptionsFromAppsettings();
+				services.AddOptions<NpgSqlOptions>().BindConfiguration(nameof(NpgSqlOptions));
+				services.AddOptions<RabbitMqOptions>().BindConfiguration(nameof(RabbitMqOptions));
+				services.AddOptions<AesEncryptionOptions>().BindConfiguration(nameof(AesEncryptionOptions));
 				SuperUserCredentialsOptions.AddFromAppsettings(services);
 				services.AddBcryptWorkFactorOptionsFromAppsettings();
 				services.AddJwtOptionsFromAppsettings();
@@ -126,6 +126,8 @@ public static class IdentityModuleInjection
 			services.AddScoped<IRefreshTokensRepository, RefreshTokensRepository>();
 			services.AddScoped<IAccessTokensRepository, AccessTokensRepository>();
 			services.AddScoped<IAccountModuleOutbox, AccountsModuleOutbox>();
+
+			services.Decorate<IRefreshTokensRepository, CachedRefreshTokensRepository>();
 		}
 
 		private void AddJwt()

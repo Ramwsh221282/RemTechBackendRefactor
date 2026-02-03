@@ -4,9 +4,9 @@ using Dapper;
 using Npgsql;
 using Pgvector;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.NN;
-using Vehicles.Infrastructure.Categories.Queries.GetCategories;
 
 namespace Vehicles.Infrastructure.Categories.Queries.GetCategories;
 
@@ -15,6 +15,7 @@ namespace Vehicles.Infrastructure.Categories.Queries.GetCategories;
 /// </summary>
 /// <param name="session">Сессия базы данных PostgreSQL.</param>
 /// <param name="embeddings">Провайдер эмбеддингов для обработки запросов с использованием нейронных сетей.</param>
+[UseCache]
 public sealed class GetCategoriesQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: IQueryHandler<GetCategoriesQuery, IEnumerable<CategoryResponse>>
 {

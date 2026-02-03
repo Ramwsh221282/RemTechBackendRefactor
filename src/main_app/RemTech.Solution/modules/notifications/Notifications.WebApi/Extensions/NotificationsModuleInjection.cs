@@ -5,7 +5,6 @@ using Notifications.Infrastructure.Common;
 using Notifications.Infrastructure.Common.Migrations;
 using Notifications.Infrastructure.EmailSending;
 using Notifications.Infrastructure.Mailers;
-using Notifications.Infrastructure.Mailers.CacheInvalidators;
 using Notifications.Infrastructure.PendingEmails;
 using Notifications.Infrastructure.PendingEmails.BackgroundServices;
 using RemTech.SharedKernel.Configurations;
@@ -40,10 +39,10 @@ public static class NotificationsModuleInjection
 			if (isDevelopment)
 			{
 				services.AddMigrations([typeof(NotificationsModuleSchemaMigration).Assembly]);
-				services.AddNpgSqlOptionsFromAppsettings();
-				services.AddRabbitMqOptionsFromAppsettings();
-				services.AddAesEncryptionOptionsFromAppsettings();
-				FrontendOptionsExtensions.AddFromAppsettings(services);
+				services.AddOptions<NpgSqlOptions>().BindConfiguration(nameof(NpgSqlOptions));
+				services.AddOptions<RabbitMqOptions>().BindConfiguration(nameof(RabbitMqOptions));
+				services.AddOptions<AesEncryptionOptions>().BindConfiguration(nameof(AesEncryptionOptions));
+				services.AddOptions<FrontendOptions>().BindConfiguration(nameof(FrontendOptions));
 			}
 
 			services.AddPostgres();
@@ -57,13 +56,6 @@ public static class NotificationsModuleInjection
 			services.AddCryptography();
 			services.AddEmailSender();
 			services.AddBackgroundServices();
-			services.AddCacheInvalidators();
-		}
-
-		private void AddCacheInvalidators()
-		{
-			services.AddScoped<MailerArrayCacheInvalidator>();
-			services.AddScoped<MailerRecordCacheInvalidator>();
 		}
 
 		private void AddBackgroundServices()

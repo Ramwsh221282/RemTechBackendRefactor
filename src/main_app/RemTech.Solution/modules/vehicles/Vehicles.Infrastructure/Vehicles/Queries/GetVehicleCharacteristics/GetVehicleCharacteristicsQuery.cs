@@ -1,4 +1,5 @@
-﻿using RemTech.SharedKernel.Core.Handlers;
+﻿using System.Text.Json;
+using RemTech.SharedKernel.Core.Handlers;
 
 namespace Vehicles.Infrastructure.Vehicles.Queries.GetVehicleCharacteristics;
 
@@ -68,5 +69,10 @@ public sealed class GetVehicleCharacteristicsQuery : IQuery
 
 		ModelId = modelId;
 		return this;
+	}
+
+	public override string ToString()
+	{
+		return JsonSerializer.Serialize(this);
 	}
 }

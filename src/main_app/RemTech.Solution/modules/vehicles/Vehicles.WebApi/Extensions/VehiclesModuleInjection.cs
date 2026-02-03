@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -21,7 +21,6 @@ using Vehicles.Infrastructure.Locations.LocationsPersisterImplementation;
 using Vehicles.Infrastructure.Models.ModelPersisterImplementation;
 using Vehicles.Infrastructure.RabbitMq.Producers;
 using Vehicles.Infrastructure.Vehicles.PersisterImplementation;
-using Vehicles.Infrastructure.Vehicles.Queries.GetVehicles;
 
 namespace Vehicles.WebApi.Extensions;
 
@@ -84,12 +83,8 @@ public static class VehiclesModuleInjection
 			{
 				Assembly assembly = typeof(NpgSqlVehiclesPersister).Assembly;
 				services.RegisterMigrations(assembly);
-				services.AddNpgSqlOptionsFromAppsettings();
-				services.AddRabbitMqOptionsFromAppsettings();
-				services.RegisterFromAppsettings();
-				services
-					.AddOptions<GetVehiclesThresholdConstants>()
-					.BindConfiguration(nameof(GetVehiclesThresholdConstants));
+				services.AddOptions<NpgSqlOptions>().BindConfiguration(nameof(NpgSqlOptions));
+				services.AddOptions<RabbitMqOptions>().BindConfiguration(nameof(RabbitMqOptions));
 			}
 
 			services.AddSingleton<EmbeddingsProvider>();

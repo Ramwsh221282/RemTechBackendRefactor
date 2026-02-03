@@ -1,7 +1,6 @@
 ﻿using ParsersControl.Core.Contracts;
 using ParsersControl.Infrastructure.Listeners;
 using ParsersControl.Infrastructure.Migrations;
-using ParsersControl.Infrastructure.Parsers.CacheInvalidators;
 using ParsersControl.Infrastructure.Parsers.Repository;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
@@ -34,8 +33,8 @@ public static class ParsersModuleInjection
 			if (isDevelopment)
 			{
 				services.AddMigrations([typeof(ParsersTableMigration).Assembly]);
-				services.AddNpgSqlOptionsFromAppsettings();
-				services.AddRabbitMqOptionsFromAppsettings();
+				services.AddOptions<NpgSqlOptions>().BindConfiguration(nameof(NpgSqlOptions));
+				services.AddOptions<RabbitMqOptions>().BindConfiguration(nameof(RabbitMqOptions));
 			}
 
 			services.AddPostgres();
@@ -46,13 +45,6 @@ public static class ParsersModuleInjection
 		{
 			services.AddEventListeners();
 			services.AddRepositories();
-			services.AddCacheInvalidators();
-		}
-
-		private void AddCacheInvalidators()
-		{
-			services.AddScoped<CachedParserArrayInvalidator>();
-			services.AddScoped<ParserCacheRecordInvalidator>();
 		}
 
 		private void AddEventListeners()

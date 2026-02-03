@@ -1,6 +1,7 @@
 using System.Data;
 using Dapper;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Vehicles.Infrastructure.Models.Queries.GetModels;
@@ -9,6 +10,7 @@ namespace Vehicles.Infrastructure.Models.Queries.GetModels;
 /// Обработчик запроса на получение моделей транспортных средств по различным фильтрам.
 /// </summary>
 /// <param name="session">Сессия для работы с базой данных PostgreSQL.</param>
+[UseCache]
 public sealed class GetModelsQueryHandler(NpgSqlSession session)
 	: IQueryHandler<GetModelsQuery, IEnumerable<ModelResponse>>
 {

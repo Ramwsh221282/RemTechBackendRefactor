@@ -3,6 +3,7 @@ using System.Data.Common;
 using Dapper;
 using Npgsql;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace Vehicles.Infrastructure.Vehicles.Queries.GetVehicleCharacteristics;
@@ -11,6 +12,7 @@ namespace Vehicles.Infrastructure.Vehicles.Queries.GetVehicleCharacteristics;
 /// Обработчик запроса на получение характеристик транспортных средств по фильтрам.
 /// </summary>
 /// <param name="session">Сессия для работы с базой данных.</param>
+[UseCache]
 public sealed class GetVehiclesCharacteristicsQueryHandler(NpgSqlSession session)
 	: IQueryHandler<GetVehicleCharacteristicsQuery, GetVehicleCharacteristicsQueryResponse>
 {

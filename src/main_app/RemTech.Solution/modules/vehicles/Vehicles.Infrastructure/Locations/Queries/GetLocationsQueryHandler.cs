@@ -4,6 +4,7 @@ using Dapper;
 using Npgsql;
 using Pgvector;
 using RemTech.SharedKernel.Core.Handlers;
+using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.NN;
 
@@ -15,6 +16,7 @@ namespace Vehicles.Infrastructure.Locations.Queries;
 /// <param name="session">Сессия для работы с базой данных PostgreSQL.</param>
 /// <param name="embeddings">Провайдер для работы с векторными представлениями.</param>
 /// <param name="logger">Логгер для записи логов.</param>
+[UseCache]
 public sealed class GetLocationsQueryHandler(
 	NpgSqlSession session,
 	EmbeddingsProvider embeddings,

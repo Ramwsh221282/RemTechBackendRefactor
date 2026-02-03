@@ -157,16 +157,16 @@ public sealed class RefreshTokensRepository(NpgSqlSession session) : IRefreshTok
 	/// <summary>
 	/// Удаляет токен обновления по идентификатору аккаунта.
 	/// </summary>
-	/// <param name="AccountId">ID аккаунта.</param>
+	/// <param name="accountId">ID аккаунта.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Задача, представляющая асинхронную операцию удаления токена.</returns>
-	public Task Delete(Guid AccountId, CancellationToken ct = default)
+	public Task Delete(Guid accountId, CancellationToken ct = default)
 	{
 		const string sql = """
 			    DELETE FROM identity_module.refresh_tokens
 			    WHERE account_id = @account_id
 			""";
-		object parameters = new { account_id = AccountId };
+		object parameters = new { account_id = accountId };
 		CommandDefinition command = Session.FormCommand(sql, parameters, ct);
 		return Session.Execute(command);
 	}
