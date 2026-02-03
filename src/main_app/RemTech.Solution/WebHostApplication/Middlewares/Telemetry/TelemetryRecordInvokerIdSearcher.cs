@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
-namespace WebHostApplication.ActionFilters.Filters.TelemetryFilters;
+namespace WebHostApplication.Middlewares.Telemetry;
 
 /// <summary>
 /// Искатель идентификатора вызывающего объекта для записей телеметрии.

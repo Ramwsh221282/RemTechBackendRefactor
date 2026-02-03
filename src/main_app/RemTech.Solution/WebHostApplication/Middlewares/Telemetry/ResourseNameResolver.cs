@@ -1,4 +1,4 @@
-namespace WebHostApplication.ActionFilters.Filters.TelemetryFilters;
+namespace WebHostApplication.Middlewares.Telemetry;
 
 /// <summary>
 /// Парсит из пути к ресурсу человекочитаемое имя ресурса из HttpContext.

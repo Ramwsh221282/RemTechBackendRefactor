@@ -6,9 +6,7 @@ using Telemetry.Core.ActionRecords.ValueObjects;
 using Telemetry.Infrastructure;
 using WebHostApplication.ActionFilters.Common;
 
-namespace WebHostApplication.ActionFilters.Filters.TelemetryFilters;
-
-// TODO: вынести в папку с middleware, и удалить текущую папку с текущим неймпспейсом.
+namespace WebHostApplication.Middlewares.Telemetry;
 
 /// <summary>
 /// Middleware для записи действий телеметрии.
@@ -111,8 +109,6 @@ public sealed class TelemetryRecordWritingMiddleware(
 		};
 	}
 
-	// TODO: system errors do not have envelope, so give to payload infromation about system error.
-	// TODO: business logic errors do have envelope, so give to payload information about business logic error (inspect response body json for that).
 	private async Task<ActionRecordSeverity> InvokeAndReturnSeverity(HttpContext context)
 	{
 		try
