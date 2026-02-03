@@ -76,9 +76,6 @@ public static class ModulesInjection
 			services.DecorateCommandHandlersWith(typeof(ValidatingHandler<,>));
 			services.DecorateCommandHandlersWith(typeof(LoggingCommandHandler<,>));
 
-			// services.DecorateQueryHandlersWith(typeof(TestCachingQueryHandler<,>));
-			// services.DecorateQueryHandlersWith(typeof(TestLoggingQueryHandler<,>));
-
 			services.DecorateQueryHandlersWith(typeof(CachingQueryHandler<,>));
 			services.DecorateQueryHandlersWith(typeof(LoggingQueryHandler<,>));
 		}
