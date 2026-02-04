@@ -31,6 +31,138 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 		return type;
 	}
 
+	public async Task<Dictionary<string, SpareType>> SaveOrFindManySimilar(
+		IEnumerable<SpareType> types,
+		CancellationToken ct = default
+	)
+	{
+		int count = await GetAppropriateEfSearchValue(ct);
+		Logger.Information("Appropriate hnsw.ef_search value for SpareType embeddings: {Count}", count);
+		await SetHnswlSimilarityCountForCurrentSession(count, ct);
+		return await FindManySimilarOrNewlyAdded(types, ct);
+	}
+
+	private async Task<Dictionary<string, SpareType>> FindManySimilarOrNewlyAdded(
+		IEnumerable<SpareType> types,
+		CancellationToken ct = default
+	)
+	{
+		SpareType[] origins = [.. types];
+		Dictionary<string, SpareType> source = origins.ToDictionary(t => t.Value, t => t);
+		Dictionary<string, SpareType?> found = origins.ToDictionary(t => t.Value, t => (SpareType?)null);
+		await FillWithSimilarTypes(origins, found, ct);
+		List<SpareType> toAdd = FilterFromNotAdded(found, source);
+		if (toAdd.Count != 0)
+		{
+			await SaveMany(toAdd, ct);
+		}
+
+		return FormMatchingAndNewlyAddedTypes(found, toAdd);
+	}
+
+	private static Dictionary<string, SpareType> FormMatchingAndNewlyAddedTypes(
+		Dictionary<string, SpareType?> found,
+		List<SpareType> added
+	)
+	{
+		foreach (SpareType type in added)
+		{
+			found[type.Value] = type;
+		}
+
+		return found.ToDictionary(kv => kv.Key, kv => kv.Value!);
+	}
+
+	// TODO: доработать работу с эмбеддингами, которых нет в таблице.
+	// это должен быть background процесс.
+	private async Task SaveMany(IEnumerable<SpareType> types, CancellationToken ct = default)
+	{
+		const string sql = """ 
+			INSERT INTO spares_module.types (id, type)
+			VALUES (@id, @type)			
+			""";
+
+		var parameters = types.Select(t => new { id = t.Id.Value, type = t.Value }).ToArray();
+
+		CommandDefinition command = session.FormCommand(sql, parameters, ct);
+		await session.Execute(command);
+	}
+
+	private static List<SpareType> FilterFromNotAdded(
+		Dictionary<string, SpareType?> destination,
+		Dictionary<string, SpareType> source
+	)
+	{
+		IEnumerable<KeyValuePair<string, SpareType?>> notAdded = destination.Where(kv => kv.Value is null);
+		List<SpareType> toAdd = [];
+		foreach (KeyValuePair<string, SpareType?> kv in notAdded)
+		{
+			SpareType typeToAdd = source[kv.Key];
+			toAdd.Add(typeToAdd);
+		}
+
+		return toAdd;
+	}
+
+	private async Task FillWithSimilarTypes(
+		SpareType[] origins,
+		Dictionary<string, SpareType?> destination,
+		CancellationToken ct = default
+	)
+	{
+		Guid[] inputIdentifiers = [.. origins.Select(o => o.Id.Value)];
+		string[] inputTexts = [.. origins.Select(o => o.Value)];
+		Vector[] vectors =
+		[
+			.. embeddings.GenerateBatch([.. origins.Select(PrepareTypeEmbeddingText)]).Select(e => new Vector(e)),
+		];
+
+		const string sql = """			
+			WITH input_oems AS (
+				SELECT UNNEST(@input_ids) AS input_id, 
+					   UNNEST(@input_texts) AS input_texts,
+					   UNNEST(@input_embeddings) AS input_embeddings
+			)
+			SELECT 
+				io.input_id, 
+				io.input_texts,
+				fo.id AS found_id,
+				fo.type AS found_type
+			FROM input_oems io
+			INNER JOIN LATERAL (
+				SELECT id, oem FROM spares_module.types t
+				WHERE type = io.input_texts
+				OR pg_trgm.similarity(t.type, io.input_texts) > 0.9
+				OR (t.embedding IS NOT NULL AND t.embedding <=> io.input_embeddings < 0.18)
+				ORDER BY
+					CASE
+						WHEN t.type = io.input_texts THEN 0
+						WHEN pg_trgm.similarity(t.type, io.input_texts) > 0.9 THEN 1
+						WHEN t.embedding IS NOT NULL AND t.embedding <=> io.input_embeddings < 0.18 THEN 2
+						ELSE 3
+					END
+				LIMIT 1
+			) fo ON TRUE;
+			""";
+
+		DynamicParameters parameters = new();
+		parameters.Add("@input_ids", inputIdentifiers);
+		parameters.Add("@input_texts", inputTexts);
+		parameters.Add("@input_embeddings", vectors);
+		CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+		NpgsqlConnection connection = await session.GetConnection(ct);
+
+		await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+		while (await reader.ReadAsync(ct))
+		{
+			Guid id = reader.GetGuid(reader.GetOrdinal("found_id"));
+			string value = reader.GetString(reader.GetOrdinal("found_type"));
+			string input = reader.GetString(reader.GetOrdinal("input_texts"));
+			SpareType existing = SpareType.Create(value, id).Value;
+			destination[input] = existing;
+		}
+	}
+
 	private async Task Save(SpareType type, CancellationToken ct)
 	{
 		const string sql = """ 
