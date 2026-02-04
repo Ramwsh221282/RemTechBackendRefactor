@@ -1,5 +1,5 @@
 ﻿using Identity.Domain.Accounts.Features.Authenticate;
-using Identity.WebApi.Options;
+using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Tests;

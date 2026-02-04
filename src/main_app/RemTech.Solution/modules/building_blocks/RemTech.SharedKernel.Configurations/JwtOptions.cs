@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.Common;
+﻿namespace RemTech.SharedKernel.Configurations;
 
 /// <summary>
 /// Настройки для JWT.

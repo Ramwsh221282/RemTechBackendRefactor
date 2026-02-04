@@ -1,7 +1,6 @@
 ﻿using DromVehiclesParser.Parsing.ParsingStages;
 using DromVehiclesParser.Shared.NpgSql;
 using Quartz;
-using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.Quartz;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
@@ -14,11 +13,6 @@ public static class InfrastructureInjection
     {
         public void RegisterInfrastructureDependencies(bool isDevelopment)
         {
-            if (isDevelopment)
-            {
-                services.AddNpgSqlOptionsFromAppsettings();
-                services.AddRabbitMqOptionsFromAppsettings();
-            }
             services.AddMigrations([typeof(WorkStagesMigration).Assembly]);
             services.AddPostgres();
             services.AddRabbitMq();
@@ -30,7 +24,7 @@ public static class InfrastructureInjection
                 c.StartDelay = TimeSpan.FromSeconds(10);
                 c.WaitForJobsToComplete = true;
             });
-            
+            services.RegisterDependenciesForParsing(isDevelopment);
         }
     }
 }

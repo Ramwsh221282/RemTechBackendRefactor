@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.Common;
+namespace RemTech.SharedKernel.Configurations;
 
 /// <summary>
 /// Настройки для работы с Bcrypt.
@@ -16,7 +16,7 @@ public sealed class BcryptWorkFactorOptions
 	/// <exception cref="InvalidOperationException">Выбрасывается, если фактор работы находится вне допустимого диапазона.</exception>
 	public void Validate()
 	{
-		if (WorkFactor < 4 || WorkFactor > 31)
+		if (WorkFactor is < 4 or > 31)
 		{
 			throw new InvalidOperationException("Work factor must be between 4 and 31.");
 		}

@@ -17,36 +17,49 @@ public static class AdvertisementsExtactingFromitsPageStage
 {
     extension(ParsingStage)
     {
-        public static ParsingStage ExtractAdvertisementsFromItsPage => async (deps, ct) =>
-        {
-            
-            deps.Deconstruct(out BrowserFactory factory, out NpgSqlConnectionFactory npgSql, out Serilog.ILogger dLogger, out _, out _);
-            Serilog.ILogger logger = dLogger.ForContext<ParsingStage>();
-            await using NpgSqlSession session = new(npgSql);
-            NpgSqlTransactionSource transactionSource = new(session, logger);
-            await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
-            
-            Maybe<ParserWorkStage> stage = await GetConcreteStage(session);
-            if (!stage.HasValue) return;
-            
-            DromCatalogueAdvertisement[] advertisements = await GetCatalogueAdvertisementsForProcessing(session);
-            if (CanSwitchNextStage(advertisements))
+        public static ParsingStage ExtractAdvertisementsFromItsPage =>
+            async (deps, ct) =>
             {
-                await SwitchNextStage(stage, session, logger, ct);
+                deps.Deconstruct(
+                    out BrowserFactory factory,
+                    out NpgSqlConnectionFactory npgSql,
+                    out Serilog.ILogger dLogger,
+                    out _,
+                    out _
+                );
+                Serilog.ILogger logger = dLogger.ForContext<ParsingStage>();
+                await using NpgSqlSession session = new(npgSql);
+                NpgSqlTransactionSource transactionSource = new(session);
+
+                await using ITransactionScope transaction =
+                    await transactionSource.BeginTransaction(ct);
+
+                Maybe<ParserWorkStage> stage = await GetConcreteStage(session);
+                if (!stage.HasValue)
+                {
+                    return;
+                }
+
+                DromCatalogueAdvertisement[] advertisements =
+                    await GetCatalogueAdvertisementsForProcessing(session);
+                if (CanSwitchNextStage(advertisements))
+                {
+                    await SwitchNextStage(stage, session, logger, ct);
+                    await FinishTransaction(transaction, logger, ct);
+                    return;
+                }
+
+                await ExtractAdvertisementsFromItsPage(advertisements, factory, session, logger);
                 await FinishTransaction(transaction, logger, ct);
-                return;
-            }
-            
-            await ExtractAdvertisementsFromItsPage(advertisements, factory, session, logger);
-            await FinishTransaction(transaction, logger, ct);
-        };
+            };
     }
 
     private static async Task ExtractAdvertisementsFromItsPage(
-        DromCatalogueAdvertisement[] advertisements, 
-        BrowserFactory browsers, 
-        NpgSqlSession session, 
-        Serilog.ILogger logger)
+        DromCatalogueAdvertisement[] advertisements,
+        BrowserFactory browsers,
+        NpgSqlSession session,
+        Serilog.ILogger logger
+    )
     {
         IBrowser browser = await browsers.ProvideBrowser();
         List<DromAdvertisementFromPage> results = [];
@@ -56,11 +69,9 @@ public static class AdvertisementsExtactingFromitsPageStage
 
             try
             {
-                Func<Task<IPage>> pageSource = () => browser.GetPage();
-
+                Func<Task<IPage>> pageSource = browser.GetPage;
                 IExtractAdvertisementFromItsPageCommand extractCommand =
-                    new ExtractAdvertisementFromItsPageCommand(pageSource)
-                        .UseLogging(logger);
+                    new ExtractAdvertisementFromItsPageCommand(pageSource).UseLogging(logger);
 
                 DromAdvertisementFromPage result = await extractCommand.Extract(advertisement);
                 results.Add(result);
@@ -68,14 +79,18 @@ public static class AdvertisementsExtactingFromitsPageStage
                 await advertisement.Update(session);
                 logger.Information("Extracted advertisement from page {Url}", advertisement.Url);
             }
-            catch(WithdrawException)
+            catch (WithdrawException)
             {
                 logger.Information("Advertisement {Url} withdrawn from sale", advertisement.Url);
                 await advertisement.Remove(session);
             }
             catch (EvaluationFailedException ex)
             {
-                logger.Fatal(ex, "Failed to extract advertisement from page {Url}", advertisement.Url);
+                logger.Fatal(
+                    ex,
+                    "Failed to extract advertisement from page {Url}",
+                    advertisement.Url
+                );
             }
             catch (Exception)
             {
@@ -88,12 +103,16 @@ public static class AdvertisementsExtactingFromitsPageStage
                 await Task.Delay(TimeSpan.FromSeconds(5)); // forced delay to avoid get blocked.
             }
         }
-        
+
         await browser.DestroyAsync();
         await results.PersistMany(session);
     }
-    
-    private static async Task FinishTransaction(ITransactionScope transaction, Serilog.ILogger logger, CancellationToken ct)
+
+    private static async Task FinishTransaction(
+        ITransactionScope transaction,
+        Serilog.ILogger logger,
+        CancellationToken ct
+    )
     {
         Result result = await transaction.Commit(ct);
         if (result.IsFailure)
@@ -101,32 +120,43 @@ public static class AdvertisementsExtactingFromitsPageStage
             logger.Fatal(result.Error, "Failed to commit transaction");
         }
     }
-    
+
     private static async Task SwitchNextStage(
-        Maybe<ParserWorkStage> stage, 
-        NpgSqlSession session, 
-        Serilog.ILogger logger, 
-        CancellationToken ct)
+        Maybe<ParserWorkStage> stage,
+        NpgSqlSession session,
+        Serilog.ILogger logger,
+        CancellationToken ct
+    )
     {
         ParserWorkStage concreteAdvertisementsStage = stage.Value.FinalizationStage();
         await concreteAdvertisementsStage.Update(session, ct);
-        logger.Information("Switched to stage: {Name}", concreteAdvertisementsStage.StageName);        
+        logger.Information("Switched to stage: {Name}", concreteAdvertisementsStage.StageName);
     }
-    
+
     private static bool CanSwitchNextStage(DromCatalogueAdvertisement[] advertisements)
     {
         return advertisements.Length == 0;
     }
-    
-    private static async Task<DromCatalogueAdvertisement[]> GetCatalogueAdvertisementsForProcessing(NpgSqlSession session)
+
+    private static async Task<DromCatalogueAdvertisement[]> GetCatalogueAdvertisementsForProcessing(
+        NpgSqlSession session
+    )
     {
-        DromCatalogueAdvertisementQuery query = new(UnprocessedOnly: true, WithLock: true, RetryLimit: 10, Limit: 20);
+        DromCatalogueAdvertisementQuery query = new(
+            UnprocessedOnly: true,
+            WithLock: true,
+            RetryLimit: 10,
+            Limit: 20
+        );
         return await DromCatalogueAdvertisement.GetMany(session, query, CancellationToken.None);
     }
-    
+
     private static async Task<Maybe<ParserWorkStage>> GetConcreteStage(NpgSqlSession session)
     {
-        ParserWorkStageStoringImplementation.ParserWorkStageQuery query = new(Name: ParserWorkStageConstants.CONCRETE, WithLock: true);
+        ParserWorkStageStoringImplementation.ParserWorkStageQuery query = new(
+            Name: ParserWorkStageConstants.CONCRETE,
+            WithLock: true
+        );
         Maybe<ParserWorkStage> stage = await ParserWorkStage.FromDb(session, query);
         return stage;
     }

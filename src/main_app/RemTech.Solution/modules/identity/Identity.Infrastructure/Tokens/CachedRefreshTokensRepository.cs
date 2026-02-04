@@ -116,23 +116,18 @@ public sealed class CachedRefreshTokensRepository : IRefreshTokensRepository
 	private async Task<CachedRefreshToken?> GetFromCacheByTokenValue(string tokenValue, CancellationToken ct)
 	{
 		string key = CreateCacheKeyForRawToken(tokenValue);
-		return await _cache.GetOrCreateAsync<CachedRefreshToken?>(
-			key,
-			async (ct) => null,
-			_options,
-			cancellationToken: ct
-		);
+		return await _cache.GetOrCreateAsync<CachedRefreshToken?>(key, NoToken, _options, cancellationToken: ct);
 	}
 
 	private async Task<CachedRefreshToken?> GetFromCacheByAccountId(Guid accountId, CancellationToken ct)
 	{
 		string key = CreateCacheKeyWithAccountId(accountId);
-		return await _cache.GetOrCreateAsync<CachedRefreshToken?>(
-			key,
-			async (ct) => null,
-			_options,
-			cancellationToken: ct
-		);
+		return await _cache.GetOrCreateAsync<CachedRefreshToken?>(key, NoToken, _options, cancellationToken: ct);
+	}
+
+	private static ValueTask<CachedRefreshToken?> NoToken(CancellationToken ct)
+	{
+		return ValueTask.FromResult<CachedRefreshToken?>(null);
 	}
 
 	private static string CreateCacheKeyWithAccountId(RefreshToken token)

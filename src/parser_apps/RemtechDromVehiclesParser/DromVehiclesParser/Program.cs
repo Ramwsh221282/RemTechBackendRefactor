@@ -1,36 +1,91 @@
+using DotNetEnv.Configuration;
 using DromVehiclesParser.DependencyInjection;
 using DromVehiclesParser.RabbitMq.Consumers;
 using ParserSubscriber.SubscribtionContext;
+using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
+using Serilog;
+using Serilog.Core;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-bool isDevelopment = builder.Environment.IsDevelopment();
-builder.Services.RegisterLogging();
-builder.Services.RegisterParserSubscription();
-builder.Services.AddTransient<IConsumer, StartParserConsumer>();
-builder.Services.AddHostedService<AggregatedConsumersHostedService>();
-builder.Services.RegisterDependenciesForParsing(isDevelopment);
-builder.Services.RegisterInfrastructureDependencies(isDevelopment);
+Logger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+logger.Information("Запуск Drom Vehicles Parser");
 
-WebApplication app = builder.Build();
-
-app.Lifetime.ApplicationStarted.Register(() =>
+try
 {
-    _ = Task.Run(async () =>
+    WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+    bool isDevelopment = builder.Environment.IsDevelopment();
+    if (isDevelopment)
     {
-        await app.Services.RunParserSubscription();
-    });
-});
+        if (!File.Exists("appsettings.json"))
+        {
+            throw new ApplicationException("Файл конфигурации appsettings.json не найден");
+        }
 
-app.Services.ApplyModuleMigrations();
-app.Run();
+        logger.Information("Среда разработки");
+    }
+    else
+    {
+        if (!File.Exists(".env"))
+        {
+            throw new ApplicationException("Файл конфигурации .env не найден");
+        }
+
+        logger.Information("Работа в продакшн среде");
+
+        builder.Configuration.AddDotNetEnv(".env");
+        builder.Configuration.AddEnvironmentVariables();
+    }
+
+    builder.Configuration.Register(builder.Services, isDevelopment);
+    logger.Information("Конфигурация зарегистрирована");
+
+    builder.Services.RegisterLogging();
+    logger.Information("Логгирование зарегистрировано");
+
+    builder.Services.RegisterParserSubscription();
+    logger.Information("Подписка на парсер зарегистрирована");
+
+    builder.Services.AddTransient<IConsumer, StartParserConsumer>();
+    builder.Services.AddHostedService<AggregatedConsumersHostedService>();
+    logger.Information("RabbitMq потребители зарегистрированы");
+
+    builder.Services.RegisterDependenciesForParsing(isDevelopment);
+    logger.Information("Зависимости для парсинга зарегистрированы");
+
+    builder.Services.RegisterInfrastructureDependencies(isDevelopment);
+    logger.Information("Инфраструктурные зависимости зарегистрированы");
+
+    WebApplication app = builder.Build();
+
+    logger.Information("Запуск подписки/повторной подписки на основной бекенд. Fire And Forget.");
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        _ = Task.Run(async () =>
+        {
+            await app.Services.RunParserSubscription();
+        });
+    });
+
+    app.Services.ApplyModuleMigrations();
+    logger.Information("Миграции применены");
+
+    logger.Information("Запуск приложения");
+    app.Run();
+}
+catch (Exception ex)
+{
+    logger.Fatal(ex, "Ошибка при старте приложения");
+    throw;
+}
+finally
+{
+    logger.Information("Окончание работы логгера стартапа");
+    await logger.DisposeAsync();
+}
 
 namespace DromVehiclesParser
 {
-    public partial class Program
-    {
-        
-    }
+    public partial class Program { }
 }

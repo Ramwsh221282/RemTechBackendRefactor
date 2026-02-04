@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-
-namespace Identity.WebApi.Options;
+﻿namespace RemTech.SharedKernel.Configurations;
 
 /// <summary>
 /// Настройки учетных данных суперпользователя.
@@ -21,19 +19,6 @@ public sealed class SuperUserCredentialsOptions
 	/// Пароль суперпользователя.
 	/// </summary>
 	public string Password { get; set; } = string.Empty;
-
-	/// <summary>
-	/// Регистрация SuperUserCredentialsOptions из appsettings в контейнере служб.
-	/// </summary>
-	/// <param name="services">Контейнер служб для регистрации настроек.</param>
-	/// <param name="section">Имя секции в файле конфигурации.</param>
-	public static void AddFromAppsettings(
-		IServiceCollection services,
-		string section = nameof(SuperUserCredentialsOptions)
-	)
-	{
-		services.AddOptions<IOptions<SuperUserCredentialsOptions>>().BindConfiguration(section);
-	}
 
 	/// <summary>
 	/// Валидирует настройки учетных данных суперпользователя.

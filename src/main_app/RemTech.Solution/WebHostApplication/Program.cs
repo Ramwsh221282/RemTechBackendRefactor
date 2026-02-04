@@ -2,7 +2,10 @@ using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Configurations;
+using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
+using Serilog;
+using Serilog.Core;
 using SwaggerThemes;
 using WebHostApplication.Injection;
 using WebHostApplication.Middlewares;
@@ -11,31 +14,42 @@ using WebHostApplication.Middlewares.Telemetry;
 // TODO: Add rate limiters.
 // TODO: Add response compression.
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-builder.Services.RegisterApplicationModules();
-if (builder.Environment.IsDevelopment())
+Logger logger = new LoggerConfiguration().Enrich.With(new ClassNameLogEnricher()).WriteTo.Console().CreateLogger();
+logger.Information("Запуск веб-приложения.");
+
+try
 {
 	builder.InvokeTestEnv();
 	builder.Services.RegisterConfigurationFromAppsettings();
 }
 
-builder.Services.RegisterSharedDependencies(builder.Configuration);
-builder.Services.RegisterModuleMigrations();
-builder.Services.AddSwaggerGen();
-builder
-	.Services.AddControllers()
-	.AddJsonOptions(options => options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All));
-builder.Services.AddEndpointsApiExplorer();
+	builder.Services.RegisterSharedDependencies(builder.Configuration);
+	logger.Information("Общие зависимости зарегистрированы.");
 
-builder.Services.AddCors(options =>
-{
-	IConfigurationSection section = builder.Configuration.GetSection(nameof(FrontendOptions));
-	string? url = section["Url"] ?? throw new InvalidOperationException("Frontend URL option is empty.");
-	options.AddPolicy(
-		"frontend",
-		policy => policy.WithOrigins(url).AllowCredentials().AllowAnyMethod().AllowAnyHeader()
-	);
-});
+	builder.Services.RegisterApplicationModules();
+	logger.Information("Модули приложения зарегистрированы.");
+
+	builder.Services.RegisterModuleMigrations();
+	logger.Information("Миграции модулей зарегистрированы.");
+
+	builder.Services.AddSwaggerGen();
+
+	builder
+		.Services.AddControllers()
+		.AddJsonOptions(options => options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All));
+	builder.Services.AddEndpointsApiExplorer();
+	logger.Information("Контроллеры зарегистрированы.");
+
+	builder.Services.AddCors(options =>
+	{
+		IConfigurationSection section = builder.Configuration.GetSection(nameof(FrontendOptions));
+		string? url = section["Url"] ?? throw new InvalidOperationException("Frontend URL option is empty.");
+		options.AddPolicy(
+			"frontend",
+			policy => policy.WithOrigins(url).AllowCredentials().AllowAnyMethod().AllowAnyHeader()
+		);
+	});
+	logger.Information("CORS политика зарегистрирована.");
 
 WebApplication app = builder.Build();
 
@@ -49,12 +63,30 @@ app.UseCors("frontend");
 app.MapControllers();
 app.UseSwagger();
 
-app.UseSwaggerUI(Theme.UniversalDark);
+	app.UseHttpsRedirection();
 
-app.UseMiddleware<ExceptionMiddleware>();
-app.UseMiddleware<TelemetryRecordWritingMiddleware>();
+	logger.Information("Настройка middleware...");
+	app.UseCors("frontend");
+	app.MapControllers();
+	app.UseSwagger();
 
-app.Run();
+	app.UseSwaggerUI(Theme.UniversalDark);
+	app.UseMiddleware<ExceptionMiddleware>();
+	app.UseMiddleware<TelemetryRecordWritingMiddleware>();
+
+	logger.Information("Запуск приложения...");
+	app.Run();
+}
+catch (Exception ex)
+{
+	logger.Fatal(ex, "Host terminated unexpectedly.");
+	return;
+}
+finally
+{
+	logger.Information("Завершение работы логгера старта...");
+	await logger.DisposeAsync();
+}
 
 namespace WebHostApplication
 {

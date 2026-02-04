@@ -7,7 +7,6 @@ using Identity.Domain.PasswordRequirements;
 using Identity.Infrastructure.Accounts;
 using Identity.Infrastructure.Common;
 using Identity.Infrastructure.Common.BackgroundServices;
-using Identity.Infrastructure.Common.Migrations;
 using Identity.Infrastructure.Common.UnitOfWork;
 using Identity.Infrastructure.Permissions;
 using Identity.Infrastructure.RabbitMq.Producers;
@@ -15,8 +14,6 @@ using Identity.Infrastructure.Tickets;
 using Identity.Infrastructure.Tokens;
 using Identity.Infrastructure.Tokens.BackgroundServices;
 using Identity.WebApi.BackgroundServices;
-using Identity.WebApi.Options;
-using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
@@ -37,29 +34,17 @@ public static class IdentityModuleInjection
 			services.AddInfrastructure();
 		}
 
-		public void RegisterIdentityModule(bool isDevelopment)
+		public void RegisterIdentityModule(IConfigurationManager configuration)
 		{
-			services.AddSharedDependencies(isDevelopment);
+			services.AddSharedDependencies(configuration);
 			services.AddDomain();
 			services.AddInfrastructure();
 		}
 
-		private void AddSharedDependencies(bool isDevelopment)
+		private void AddSharedDependencies(IConfigurationManager configuration)
 		{
 			services.RegisterLogging();
-			if (isDevelopment)
-			{
-				services.AddMigrations([typeof(IdentityModuleSchemaMigration).Assembly]);
-				services.AddOptions<NpgSqlOptions>().BindConfiguration(nameof(NpgSqlOptions));
-				services.AddOptions<RabbitMqOptions>().BindConfiguration(nameof(RabbitMqOptions));
-				services.AddOptions<AesEncryptionOptions>().BindConfiguration(nameof(AesEncryptionOptions));
-				SuperUserCredentialsOptions.AddFromAppsettings(services);
-				services.AddBcryptWorkFactorOptionsFromAppsettings();
-				services.AddJwtOptionsFromAppsettings();
-				services.AddCachingOptionsFromAppsettings();
-			}
-
-			services.RegisterHybridCache();
+			CacheInjection.RegisterHybridCache(services, configuration);
 			services.AddPostgres();
 			services.AddRabbitMq();
 			RemTech.SharedKernel.Infrastructure.AesEncryption.AesCryptographyExtensions.AddAesCryptography(services);

@@ -13,6 +13,7 @@ using Notifications.WebApi.Extensions;
 using ParsersControl.Core.Parsers.Models;
 using ParsersControl.Infrastructure.Parsers.Repository;
 using ParsersControl.WebApi.Extensions;
+using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Handlers.Decorators.DomainEvents;
 using RemTech.SharedKernel.Core.Handlers.Decorators.Logging;
@@ -50,7 +51,7 @@ public static class ModulesInjection
 			services.RegisterLogging();
 			services.AddPostgres();
 			services.AddRabbitMq();
-			services.RegisterHybridCache(configuration);
+			CacheInjection.RegisterHybridCache(services, configuration);
 			RemTech.SharedKernel.Infrastructure.AesEncryption.AesCryptographyExtensions.AddAesCryptography(services);
 			services.TryAddSingleton<EmbeddingsProvider>();
 			services.AddTelemetryModule();

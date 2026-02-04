@@ -1,8 +1,8 @@
 ﻿using Identity.Domain.Accounts.Models;
 using Identity.Domain.Permissions;
-using Identity.WebApi.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Tests;

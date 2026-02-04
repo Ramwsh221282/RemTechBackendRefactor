@@ -2,8 +2,8 @@
 using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.Permissions;
-using Identity.WebApi.Options;
 using Microsoft.Extensions.Options;
+using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 

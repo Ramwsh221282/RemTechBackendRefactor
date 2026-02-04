@@ -1,30 +1,84 @@
 using AvitoSparesParser.Extensions;
 using AvitoSparesParser.RabbitMq.Consumers;
+using DotNetEnv.Configuration;
 using ParserSubscriber.SubscribtionContext;
+using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
+using Serilog;
+using Serilog.Core;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-bool isDevelopment = builder.Environment.IsDevelopment();
+Logger logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+logger.Information("Запуск парсера автозапчастей AvitoSparesParser...");
 
-builder.Services.RegisterLogging();
-builder.Services.RegisterDependenciesForParsing(isDevelopment);
-builder.Services.AddTransient<IConsumer, StartParserConsumer>();
-builder.Services.AddHostedService<AggregatedConsumersHostedService>();
-builder.Services.RegisterInfrastructureDependencies(isDevelopment);
-WebApplication app = builder.Build();
-
-app.Lifetime.ApplicationStarted.Register(() =>
+try
 {
-    _ = Task.Run(async () =>
-    {
-        await app.Services.RunParserSubscription();
-    });
-});
+    WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+    bool isDevelopment = builder.Environment.IsDevelopment();
+    logger.Information("Продакшн - {IsProduction}", !isDevelopment);
 
-app.Services.ApplyModuleMigrations();
-app.Run();
+    if (!isDevelopment)
+    {
+        const string envFile = ".env";
+        if (!File.Exists(envFile))
+        {
+            logger.Fatal("Файл конфигурации окружения '{EnvFile}' отсутствует.", envFile);
+            throw new ApplicationException($"Файл конфигурации окружения '{envFile}' отсутствует.");
+        }
+
+        builder.Configuration.AddDotNetEnv(envFile);
+        builder.Configuration.AddEnvironmentVariables();
+        logger.Information("Файл конфигурации окружения '{EnvFile}' загружен.", envFile);
+    }
+
+    builder.Configuration.Register(builder.Services, isDevelopment);
+    logger.Information("Конфигурация зарегистрирована.");
+
+    builder.Services.RegisterLogging();
+    logger.Information("Логгер настроен.");
+
+    builder.Services.RegisterDependenciesForParsing(isDevelopment);
+    logger.Information("Зависимости для парсинга зарегистрированы.");
+
+    builder.Services.AddTransient<IConsumer, StartParserConsumer>();
+    builder.Services.AddHostedService<AggregatedConsumersHostedService>();
+    logger.Information("Регистрация сервиса агрегированных слушателей RabbitMQ...");
+
+    builder.Services.RegisterInfrastructureDependencies();
+    logger.Information("Инфраструктурные зависимости зарегистрированы.");
+
+    WebApplication app = builder.Build();
+
+    logger.Information("Запуск подписки/повторной подписки на основное бекенд...");
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        _ = Task.Run(async () =>
+        {
+            await app.Services.RunParserSubscription();
+        });
+    });
+
+    logger.Information("Применение миграций модулей базы данных...");
+    app.Services.ApplyModuleMigrations();
+    logger.Information("Миграции модулей базы данных применены.");
+
+    logger.Information("Запуск парсера автозапчастей AvitoSparesParser...");
+    app.Run();
+}
+catch (Exception ex)
+{
+    logger.Fatal(
+        ex,
+        "Необработанное исключение при запуске парсера автозапчастей AvitoSparesParser."
+    );
+    throw;
+}
+finally
+{
+    logger.Information("Выключение логгера запуска парсера автозапчастей AvitoSparesParser...");
+    await logger.DisposeAsync();
+}
 
 namespace AvitoSparesParser
 {
