@@ -17,34 +17,17 @@ public static class DependencyInjectionExtensions
     {
         public void RegisterDependenciesForParsing(bool isDevelopment)
         {
-            if (isDevelopment)
-            {
-                services.RegisterParserDependencies(conf =>
-                {
-                    conf.AddSingleton(_ =>
-                        Options.Create(
-                            new ScrapingBrowserOptions { Headless = false, DevelopmentMode = true }
-                        )
-                    );
-                });
-
-                services.AddContainedItemsProducer();
-                services.AddFinishParserProducer();
-                services.RegisterAvitoFirewallBypass();
-                services.RegisterParserSubscriptionProcess();
-                services.RegisterParserWorkStages();
-                services.RegisterTextTransformerBuilder();
-            }
+            services.RegisterParserDependencies(isDevelopment);
+            services.AddContainedItemsProducer();
+            services.AddFinishParserProducer();
+            services.RegisterAvitoFirewallBypass();
+            services.RegisterParserSubscriptionProcess();
+            services.RegisterParserWorkStages();
+            services.RegisterTextTransformerBuilder();
         }
 
-        public void RegisterInfrastructureDependencies(bool isDevelopment)
+        public void RegisterInfrastructureDependencies()
         {
-            if (isDevelopment)
-            {
-                services.AddNpgSqlOptionsFromAppsettings();
-                services.AddRabbitMqOptionsFromAppsettings();
-            }
-
             services.AddPostgres();
             services.AddMigrations([typeof(SchemaMigrations).Assembly]);
             services.AddRabbitMq();

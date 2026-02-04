@@ -8,10 +8,10 @@
 		<ProjectReference Include="..\Vehicles.Domain\Vehicles.Domain.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="2.*" />
-		<PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="2.*" />
-		<PackageReference Include="RemTech.SharedKernel.Infrastructure.Redis" Version="2.*" />
-		<PackageReference Include="RemTech.SharedKernel.NN" Version="2.*" />
+		<PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="3.*" />
+		<PackageReference Include="RemTech.SharedKernel.Infrastructure.RabbitMq" Version="3.*" />
+		<PackageReference Include="RemTech.SharedKernel.Infrastructure.Redis" Version="3.*" />
+		<PackageReference Include="RemTech.SharedKernel.NN" Version="3.*" />
 	</ItemGroup>
 	<ItemGroup>
 		<Folder Include="Brands\SeedingImplementation\Scripts\" />

@@ -2,6 +2,7 @@
 using Identity.Domain.Accounts.Models;
 using Identity.Domain.Contracts.Cryptography;
 using Microsoft.Extensions.Options;
+using RemTech.SharedKernel.Configurations;
 
 namespace Identity.Infrastructure.Common;
 

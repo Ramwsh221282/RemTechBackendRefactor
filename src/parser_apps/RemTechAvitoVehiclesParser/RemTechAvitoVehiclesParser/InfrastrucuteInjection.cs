@@ -10,11 +10,6 @@ public static class InfrastrucuteInjection
     {
         public void RegisterInfrastructureDependencies(bool isDevelopment)
         {
-            if (isDevelopment)
-            {
-                services.AddNpgSqlOptionsFromAppsettings();
-                services.AddRabbitMqOptionsFromAppsettings();
-            }
             services.AddMigrations([typeof(InfrastrucuteInjection).Assembly]);
             services.AddPostgres();
             services.AddRabbitMq();

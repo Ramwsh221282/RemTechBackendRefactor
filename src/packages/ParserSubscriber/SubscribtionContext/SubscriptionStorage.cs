@@ -40,7 +40,7 @@ public sealed class SubscriptionStorage(NpgSqlConnectionFactory connectionFactor
     {
         Logger?.Information("Initializing parsers subscription storage.");
         await using NpgSqlSession session = new(connectionFactory);
-        NpgSqlTransactionSource transactionSource = new(session, logger);
+        NpgSqlTransactionSource transactionSource = new(session);        
         await using ITransactionScope transaction = await transactionSource.BeginTransaction();
 
         try
@@ -91,7 +91,7 @@ public sealed class SubscriptionStorage(NpgSqlConnectionFactory connectionFactor
             created = subscribtion.Subscribed
         };
         await using NpgSqlSession session = new(connectionFactory);
-        NpgSqlTransactionSource transactionSource = new(session, Logger);
+        NpgSqlTransactionSource transactionSource = new(session);
         await using ITransactionScope transaction = await transactionSource.BeginTransaction();
 
         try

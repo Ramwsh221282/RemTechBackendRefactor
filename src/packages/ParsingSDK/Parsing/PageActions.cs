@@ -60,10 +60,9 @@ public static class PageActions
         }
 
         public async Task<Maybe<IElementHandle>> ResilientWaitForSelectorWithReturn(string selector, int attempts = 5, int timeout = 5000)
-        {
-            int waitAttempts = 5;
+        {            
             int currentAttempt = 0;
-            while (currentAttempt < waitAttempts)
+            while (currentAttempt < attempts)
             {
                 IElementHandle? maybe = await page.WaitForSelectorAsync(selector, new WaitForSelectorOptions() { Timeout = timeout });
                 if (maybe != null) return Maybe<IElementHandle>.Some(maybe);
@@ -73,10 +72,9 @@ public static class PageActions
         }
         
         public async Task ResilientWaitForSelector(string selector, int attempts = 5)
-        {
-            int waitAttempts = 5;
+        {            
             int currentAttempt = 0;
-            while (currentAttempt < waitAttempts)
+            while (currentAttempt < attempts)
             {
                 try
                 { 

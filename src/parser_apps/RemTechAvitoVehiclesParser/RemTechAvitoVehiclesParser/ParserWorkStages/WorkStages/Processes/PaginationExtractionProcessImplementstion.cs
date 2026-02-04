@@ -22,7 +22,7 @@ public static class PaginationExtractionProcessImplementation
             {
                 Serilog.ILogger logger = deps.Logger.ForContext<WorkStageProcess>();
                 await using NpgSqlSession session = new(deps.NpgSql);
-                NpgSqlTransactionSource transactionSource = new(session, logger);
+                NpgSqlTransactionSource transactionSource = new(session);
                 await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
                 WorkStageQuery stageQuery = new(
                     Name: WorkStageConstants.EvaluationStageName,
@@ -100,7 +100,6 @@ public static class PaginationExtractionProcessImplementation
             };
     }
 
-    // todo move this into shared avito library.
     private static async Task<CataloguePageUrl[]> ExtractPagination(
         IPage page,
         AvitoBypassFactory factory,

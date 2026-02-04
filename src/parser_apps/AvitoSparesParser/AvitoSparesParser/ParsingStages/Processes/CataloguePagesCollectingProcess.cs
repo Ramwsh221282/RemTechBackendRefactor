@@ -1,6 +1,5 @@
 using AvitoSparesParser.CatalogueParsing;
 using AvitoSparesParser.CatalogueParsing.Extensions;
-using AvitoSparesParser.Commands.ExtractPagedUrls;
 using AvitoSparesParser.ParserStartConfiguration;
 using AvitoSparesParser.ParserStartConfiguration.Extensions;
 using AvitoSparesParser.ParsingStages.Extensions;
@@ -31,7 +30,7 @@ public static class CataloguePagesCollectingProcess
 
                 Serilog.ILogger logger = dLogger.ForContext<ParserStageProcess>();
                 await using NpgSqlSession session = new(npgSql);
-                NpgSqlTransactionSource source = new(session, logger);
+                NpgSqlTransactionSource source = new(session);
                 await using ITransactionScope scope = await source.BeginTransaction(ct);
 
                 Maybe<ParsingStage> stage = await GetPaginationStage(session, ct);
@@ -103,7 +102,8 @@ public static class CataloguePagesCollectingProcess
         ProcessingParserLink[] links,
         BrowserFactory browsers,
         AvitoBypassFactory bypassFactory,
-        NpgSqlSession session
+        NpgSqlSession session,
+        Serilog.ILogger logger
     )
     {
         IBrowser browser = await browsers.ProvideBrowser();
@@ -116,7 +116,8 @@ public static class CataloguePagesCollectingProcess
                 link,
                 page,
                 bypassFactory,
-                session
+                session,
+                logger
             );
         }
 
@@ -128,12 +129,13 @@ public static class CataloguePagesCollectingProcess
         ProcessingParserLink link,
         IPage page,
         AvitoBypassFactory bypass,
-        NpgSqlSession session
+        NpgSqlSession session,
+        Serilog.ILogger logger
     )
     {
         try
         {
-            AvitoCataloguePage[] pages = await ExtractPagination(page, bypass, link.Url);
+            AvitoCataloguePage[] pages = await ExtractPagination(page, bypass, link.Url, logger);
             await pages.AddMany(session);
             link.Marker.MarkProcessed();
         }
@@ -151,14 +153,13 @@ public static class CataloguePagesCollectingProcess
         CancellationToken ct
     )
     {
-        Result commit = await scope.Commit();
+        Result commit = await scope.Commit(ct);
         if (commit.IsFailure)
         {
             logger.Error(commit.Error, "Failed to commit transaction.");
         }
     }
 
-    // todo move this into shared avito library.
     private static async Task<AvitoCataloguePage[]> ExtractPagination(
         IPage page,
         AvitoBypassFactory factory,

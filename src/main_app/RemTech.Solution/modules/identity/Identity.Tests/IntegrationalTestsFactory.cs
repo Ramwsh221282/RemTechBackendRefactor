@@ -1,7 +1,5 @@
-﻿using Identity.Infrastructure.Common;
-using Identity.Tests.Fakes;
+﻿using Identity.Tests.Fakes;
 using Identity.WebApi.BackgroundServices;
-using Identity.WebApi.Options;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +8,6 @@ using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;
-using RemTech.SharedKernel.Infrastructure.Redis;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using ParsingSDK.Parsing;
 
 namespace ParsingSDK;
@@ -7,25 +6,33 @@ namespace ParsingSDK;
 public static class ParsingDependencyInjection
 {
     extension(IServiceCollection services)
-    {
-        public void RegisterParserDependencies(Action<IServiceCollection>? scrapingOptionsConfiguration = null)
-        {
-            scrapingOptionsConfiguration?.Invoke(services);
-            services.AddBrowserFactory();
+    {    
+        public void RegisterParserDependencies(bool isDevelopment)
+        {                            
+            services.RegisterBrowserOptionsByEnvironment(isDevelopment);
+            services.AddSingleton<BrowserFactory>();                                                   
+        }        
+
+        private void RegisterBrowserOptionsByEnvironment(bool isDevelopment)
+        {            
+            if (isDevelopment)
+            {
+                services.RegisterConfig();
+                return;
+            }
+            
+            RegisterFromEnv();
+            services.RegisterConfig();
         }
 
-        public void RegisterParserDependencies(Action<ScrapingBrowserOptions> optionsConfiguration)
+        private void RegisterConfig()
         {
-            ScrapingBrowserOptions options = new ScrapingBrowserOptions();
-            optionsConfiguration(options);
-            IOptions<ScrapingBrowserOptions> ioptions = Options.Create(options);
-            services.AddSingleton(ioptions);
-            services.AddSingleton<BrowserFactory>();
-        }
-        
-        public void AddBrowserFactory()
-        {
-            services.AddSingleton<BrowserFactory>();
-        }
+            services.AddOptions<ScrapingBrowserOptions>().BindConfiguration(nameof(ScrapingBrowserOptions));
+        }        
+    }
+
+    private static void RegisterFromEnv()
+    {
+        DotNetEnv.Env.Load();
     }
 }
