@@ -6,6 +6,9 @@ namespace RemTech.SharedKernel.Configurations;
 
 public static class ConfigurationDependencyInjection
 {
+	private const string DEFAULT_APPSETTINGS_FILE_PATH = "appsettings.json";
+	private const string DEFAULT_ENV_FILE_PATH = ".env";
+
 	public static void Register(this IConfigurationManager manager, IServiceCollection services, bool isDevelopment)
 	{
 		ReadConfigurationSource(manager, isDevelopment);
@@ -16,32 +19,32 @@ public static class ConfigurationDependencyInjection
 	{
 		if (isDevelopment)
 		{
-			ReadEnvironmentVariablesFile(manager);
+			RegisterAppsettingsFile(manager);
 		}
 		else
 		{
-			RegisterAppsettingsFile(manager);
+			ReadEnvironmentVariablesFile(manager);
 		}
 	}
 
 	private static void RegisterAppsettingsFile(IConfigurationManager manager)
 	{
-		if (!File.Exists("appsettings.json"))
+		if (!File.Exists(DEFAULT_APPSETTINGS_FILE_PATH))
 		{
-			throw new FileNotFoundException("The appsettings.json file was not found.");
+			throw new FileNotFoundException($"The {DEFAULT_APPSETTINGS_FILE_PATH} file was not found.");
 		}
 
-		manager.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+		manager.AddJsonFile(DEFAULT_APPSETTINGS_FILE_PATH, optional: false, reloadOnChange: true);
 	}
 
 	private static void ReadEnvironmentVariablesFile(IConfigurationManager manager)
 	{
-		if (!File.Exists(".env"))
+		if (!File.Exists(DEFAULT_ENV_FILE_PATH))
 		{
-			throw new FileNotFoundException("The .env file was not found.");
+			throw new FileNotFoundException($"The {DEFAULT_ENV_FILE_PATH} file was not found.");
 		}
 
-		manager.AddDotNetEnv();
+		manager.AddDotNetEnv(path: DEFAULT_ENV_FILE_PATH);
 	}
 
 	private static void BindConfigurationOptions(IServiceCollection services)

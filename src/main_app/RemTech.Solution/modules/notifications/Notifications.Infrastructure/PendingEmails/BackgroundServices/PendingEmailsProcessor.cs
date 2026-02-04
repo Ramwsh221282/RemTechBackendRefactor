@@ -90,14 +90,14 @@ public sealed class PendingEmailsProcessor(
 			Mailer[] mailers = await GetMailers(mailersRepository, ct);
 			if (mailers.Length == 0)
 			{
-				Logger.Warning("No mailers found.");
+				Logger.Warning("No mailers found. Cannot process pending emails.");
 				return;
 			}
 
 			PendingEmailNotification[] pendingEmails = await GetPendingEmails(pendingEmailsRepostiory, ct);
 			if (pendingEmails.Length == 0)
 			{
-				Logger.Warning("No pending emails found.");
+				Logger.Information("No pending emails found.");
 				return;
 			}
 

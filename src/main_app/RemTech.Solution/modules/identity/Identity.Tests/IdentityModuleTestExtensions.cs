@@ -10,9 +10,9 @@ using Identity.Domain.Contracts.Persistence;
 using Identity.Domain.Permissions;
 using Identity.Domain.Permissions.Features.AddPermissions;
 using Identity.Domain.Tickets;
-using Identity.WebApi.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 

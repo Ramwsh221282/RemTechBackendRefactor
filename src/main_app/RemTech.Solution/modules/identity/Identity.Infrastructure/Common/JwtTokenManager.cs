@@ -6,6 +6,7 @@ using Identity.Domain.Contracts.Jwt;
 using Identity.Domain.Tokens;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace Identity.Infrastructure.Common;
@@ -77,9 +78,7 @@ public sealed class JwtTokenManager(IOptions<JwtOptions> options, Serilog.ILogge
 
 			TokenValidationParameters parameters = CreateValidationParameters();
 			TokenValidationResult validationResult = await handler.ValidateTokenAsync(jwtToken, parameters);
-			return !validationResult.IsValid
-				? (Result<TokenValidationResult>)Error.Unauthorized("Invalid token")
-				: (Result<TokenValidationResult>)validationResult;
+			return !validationResult.IsValid ? Error.Unauthorized("Invalid token") : validationResult;
 		}
 		catch (Exception ex)
 		{

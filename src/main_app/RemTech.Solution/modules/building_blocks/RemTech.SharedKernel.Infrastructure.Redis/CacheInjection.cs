@@ -15,54 +15,35 @@ public static class CacheInjection
 	{
 		public void RegisterHybridCache(IConfigurationManager configuration)
 		{
-			CachingOptions? cacheOptions =
-				configuration.GetSection(nameof(CachingOptions)).Get<CachingOptions>()
-				?? throw new InvalidOperationException(
-					"CachingOptions was not registered. Please register it using before calling AddHybridCache()."
-				);
-
-			cacheOptions.Validate();
-			RegisterCachingOptions(services, cacheOptions);
+			RegisterCachingOptions(services, configuration);
 		}
+	}
 
-		public void RegisterHybridCache()
+	private static void RegisterCachingOptions(IServiceCollection services, IConfigurationManager configuration)
+	{
+		RemTech.SharedKernel.Configurations.CachingOptions cacheOpts = configuration
+			.GetSection(nameof(CachingOptions))
+			.Get<CachingOptions>();
+		configuration.Bind(cacheOpts);
+
+		if (cacheOpts is null)
 		{
-			CachingOptions? cacheOptions = GetCachingOptions(services);
-			if (cacheOptions is null)
-			{
-				throw new InvalidOperationException(
-					"CachingOptions was not registered. Please register it using before calling AddHybridCache()."
-				);
-			}
-
-			RegisterCachingOptions(services, cacheOptions);
+			throw new InvalidOperationException("CachingOptions не зарегистрирован в IConfigurationManager.");
 		}
-	}
 
-	private static CachingOptions? GetCachingOptions(IServiceCollection services)
-	{
-		ServiceDescriptor? descriptor = services.FirstOrDefault(s =>
-			s.ImplementationInstance != null
-			&& s.ImplementationInstance.GetType() == typeof(OptionsWrapper<CachingOptions>)
-		);
+		cacheOpts.Validate();
 
-		return descriptor is null ? null : ((OptionsWrapper<CachingOptions>)descriptor.ImplementationInstance!).Value;
-	}
-
-	private static void RegisterCachingOptions(IServiceCollection services, CachingOptions cacheOptions)
-	{
-		cacheOptions.Validate();
 		services.AddStackExchangeRedisCache(options =>
 		{
-			options.Configuration = cacheOptions.RedisConnectionString;
+			options.Configuration = cacheOpts.RedisConnectionString;
 		});
 
 		services.AddHybridCache(options =>
 		{
 			options.DefaultEntryOptions = new HybridCacheEntryOptions()
 			{
-				LocalCacheExpiration = TimeSpan.FromMinutes(cacheOptions.LocalCacheExpirationMinutes),
-				Expiration = TimeSpan.FromMinutes(cacheOptions.CacheExpirationMinutes),
+				LocalCacheExpiration = TimeSpan.FromMinutes(cacheOpts.LocalCacheExpirationMinutes),
+				Expiration = TimeSpan.FromMinutes(cacheOpts.CacheExpirationMinutes),
 			};
 		});
 	}
