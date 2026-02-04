@@ -1,5 +1,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -18,9 +19,9 @@ logger.Information("Запуск веб-приложения.");
 
 try
 {
-	WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-	builder.Configuration.Register(builder.Services, builder.Environment.IsDevelopment());
-	logger.Information("Конфигурация зарегистрирована.");
+	builder.InvokeTestEnv();
+	builder.Services.RegisterConfigurationFromAppsettings();
+}
 
 	builder.Services.RegisterSharedDependencies(builder.Configuration);
 	logger.Information("Общие зависимости зарегистрированы.");
@@ -50,14 +51,17 @@ try
 	});
 	logger.Information("CORS политика зарегистрирована.");
 
-	logger.Information("Построение приложения...");
-	WebApplication app = builder.Build();
+WebApplication app = builder.Build();
 
-	await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
-	IServiceProvider sp = scope.ServiceProvider;
+await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
+IServiceProvider sp = scope.ServiceProvider;
+IOptions<TestEnv> env = sp.GetRequiredService<IOptions<TestEnv>>();
 
-	logger.Information("Применение миграций модулей...");
-	app.Services.ApplyModuleMigrations();
+app.Services.ApplyModuleMigrations();
+app.UseHttpsRedirection();
+app.UseCors("frontend");
+app.MapControllers();
+app.UseSwagger();
 
 	app.UseHttpsRedirection();
 

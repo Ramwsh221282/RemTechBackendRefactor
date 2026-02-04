@@ -2,7 +2,6 @@ using Identity.Domain.Tokens;
 using Identity.Infrastructure.Common;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
-using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 
 namespace WebHostApplication.Middlewares.Telemetry;
