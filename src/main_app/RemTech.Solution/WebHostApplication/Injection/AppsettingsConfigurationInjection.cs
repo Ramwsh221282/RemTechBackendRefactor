@@ -1,9 +1,5 @@
-﻿using Identity.Infrastructure.Common;
-using Identity.WebApi.Options;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Configurations;
-using Sprache;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace WebHostApplication.Injection;
 
@@ -22,24 +18,34 @@ public static class AppsettingsConfigurationInjection
 				? builder.RegisterEnvironmentVariablesConfigurationSource
 				: builder.RegisterAppsettingsConfigurationSource;
 
-			builder.Services.RegisterConfiguration();
+			sourceRegistration();
 		}
 
 		private void RegisterAppsettingsConfigurationSource()
 		{
+			if (!File.Exists("appsettings.json"))
+			{
+				throw new FileNotFoundException("Файл appsettings.json не найден.");
+			}
+
 			builder.Configuration.AddJsonFile("appsettings.json");
 		}
 
 		private void RegisterEnvironmentVariablesConfigurationSource()
 		{
+			if (!File.Exists(".env"))
+			{
+				throw new FileNotFoundException("Файл .env не найден.");
+			}
+
 			DotNetEnv.Env.Load();
 			builder.Configuration.AddEnvironmentVariables();
 		}
 	}
 
-	extension(IServiceCollection services)
+	extension(WebApplication app)
 	{
-		private void RegisterConfiguration()
+		public async Task ValidateConfigurations()
 		{
 			await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
 			IServiceProvider sp = scope.ServiceProvider;
@@ -65,6 +71,8 @@ public static class AppsettingsConfigurationInjection
 			ValidateBcryptOptions(errors, bcrypt);
 			ValidateRabbitMqOptions(errors, rabbitMq);
 			ValidateNpgSqlOptions(errors, npgSql);
+
+			ThrowIfContainsErrors(errors);
 		}
 	}
 
@@ -213,155 +221,6 @@ public static class AppsettingsConfigurationInjection
 		if (caching.CacheExpirationMinutes == 0)
 		{
 			errors.Add("CachingOptions.CacheExpirationMinutes не задан.");
-		}
-	}
-
-	private static T GetConfiguration<T>(IServiceProvider services)
-		where T : class
-	{
-		return services.GetRequiredService<IOptions<T>>().Value;
-	}
-
-	extension(WebApplication app)
-	{
-		public async Task ValidateConfigurations()
-		{
-			await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
-			IServiceProvider sp = scope.ServiceProvider;
-
-			AesEncryptionOptions aesOptions = GetConfiguration<AesEncryptionOptions>(sp);
-			if (string.IsNullOrWhiteSpace(aesOptions.PlainKey))
-			{
-				throw new ApplicationException("AesEncryptionOptions.PlainKey is empty.");
-			}
-
-			EmbeddingsProviderOptions embeddings = GetConfiguration<EmbeddingsProviderOptions>(sp);
-			if (string.IsNullOrWhiteSpace(embeddings.ModelPath))
-			{
-				throw new ApplicationException("EmbeddingsProviderOptions.ModelPath is empty.");
-			}
-			if (!File.Exists(embeddings.ModelPath))
-			{
-				throw new ApplicationException(
-					$"EmbeddingsProviderOptions.ModelPath file not found: {embeddings.ModelPath}"
-				);
-			}
-			if (string.IsNullOrWhiteSpace(embeddings.TokenizerPath))
-			{
-				throw new ApplicationException("EmbeddingsProviderOptions.TokenizerPath is empty.");
-			}
-
-			FrontendOptions frontend = GetConfiguration<FrontendOptions>(sp);
-			if (string.IsNullOrWhiteSpace(frontend.Url))
-			{
-				throw new ApplicationException("FrontendOptions.Url is empty.");
-			}
-
-			NpgSqlOptions npgSql = GetConfiguration<NpgSqlOptions>(sp);
-			if (string.IsNullOrWhiteSpace(npgSql.Database))
-			{
-				throw new ApplicationException("NpgSqlOptions.Database is empty.");
-			}
-			if (string.IsNullOrWhiteSpace(npgSql.Username))
-			{
-				throw new ApplicationException("NpgSqlOptions.Username is empty.");
-			}
-			if (string.IsNullOrWhiteSpace(npgSql.Password))
-			{
-				throw new ApplicationException("NpgSqlOptions.Password is empty.");
-			}
-			if (string.IsNullOrWhiteSpace(npgSql.Host))
-			{
-				throw new ApplicationException("NpgSqlOptions.Host is empty.");
-			}
-			if (string.IsNullOrWhiteSpace(npgSql.Port))
-			{
-				throw new ApplicationException("NpgSqlOptions.Port is empty.");
-			}
-
-			RabbitMqOptions rabbitMq = GetConfiguration<RabbitMqOptions>(sp);
-			if (string.IsNullOrWhiteSpace(rabbitMq.Hostname))
-			{
-				throw new ApplicationException("RabbitMqOptions.HostName is empty.");
-			}
-			if (string.IsNullOrWhiteSpace(rabbitMq.Username))
-			{
-				throw new ApplicationException("RabbitMqOptions.Username is empty.");
-			}
-			if (string.IsNullOrWhiteSpace(rabbitMq.Password))
-			{
-				throw new ApplicationException("RabbitMqOptions.Password is empty.");
-			}
-			if (rabbitMq.Port == default)
-			{
-				throw new ApplicationException("RabbitMqOptions.Port is empty.");
-			}
-
-			SuperUserCredentialsOptions superUser = GetConfiguration<SuperUserCredentialsOptions>(sp);
-			if (string.IsNullOrWhiteSpace(superUser.Email))
-			{
-				throw new ApplicationException("SuperUserCredentialsOptions.Email is empty.");
-			}
-			if (string.IsNullOrWhiteSpace(superUser.Password))
-			{
-				throw new ApplicationException("SuperUserCredentialsOptions.Password is empty.");
-			}
-			if (string.IsNullOrWhiteSpace(superUser.Login))
-			{
-				throw new ApplicationException("SuperUserCredentialsOptions.Login is empty.");
-			}
-
-			BcryptWorkFactorOptions bcrypt = GetConfiguration<BcryptWorkFactorOptions>(sp);
-			if (bcrypt.WorkFactor == default)
-			{
-				throw new ApplicationException("BcryptWorkFactorOptions.WorkFactor is empty.");
-			}
-
-			JwtOptions jwt = GetConfiguration<JwtOptions>(sp);
-			if (string.IsNullOrWhiteSpace(jwt.Issuer))
-			{
-				throw new ApplicationException("JwtOptions.Issuer is empty.");
-			}
-			if (string.IsNullOrWhiteSpace(jwt.SecretKey))
-			{
-				throw new ApplicationException("JwtOptions.SecretKey is empty.");
-			}
-			if (string.IsNullOrWhiteSpace(jwt.Audience))
-			{
-				throw new ApplicationException("JwtOptions.Audience is empty.");
-			}
-		}
-	}
-
-	private static void ValidateJwtOptions(JwtOptions options)
-	{
-		if (string.IsNullOrWhiteSpace(options.Issuer))
-		{
-			throw new ApplicationException("JwtOptions.Issuer is empty.");
-		}
-		if (string.IsNullOrWhiteSpace(options.SecretKey))
-		{
-			throw new ApplicationException("JwtOptions.SecretKey is empty.");
-		}
-		if (string.IsNullOrWhiteSpace(options.Audience))
-		{
-			throw new ApplicationException("JwtOptions.Audience is empty.");
-		}
-	}
-
-	private static void ValidateCacheOptions(CachingOptions caching)
-	{
-		if (string.IsNullOrWhiteSpace(caching.RedisConnectionString))
-		{
-			throw new ApplicationException("CachingOptions.RedisConnectionString is empty.");
-		}
-		if (caching.LocalCacheExpirationMinutes == default)
-		{
-			throw new ApplicationException("CachingOptions.LocalCacheExpirationMinutes is empty.");
-		}
-		if (caching.CacheExpirationMinutes == default)
-		{
-			throw new ApplicationException("CachingOptions.CacheExpirationMinutes is empty.");
 		}
 	}
 

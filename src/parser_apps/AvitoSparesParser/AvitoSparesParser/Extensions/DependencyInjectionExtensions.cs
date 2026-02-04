@@ -1,10 +1,8 @@
 ﻿using AvitoSparesParser.Database;
 using AvitoSparesParser.ParserSubscription;
 using AvitoSparesParser.ParsingStages;
-using Microsoft.Extensions.Options;
 using ParsingSDK.RabbitMq;
 using Quartz;
-using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.Quartz;
 using RemTech.SharedKernel.Infrastructure.RabbitMq;

@@ -8,9 +8,10 @@ using Spares.Domain.Contracts;
 using Spares.Domain.Features;
 using Spares.Infrastructure.BackgroundServices;
 using Spares.Infrastructure.Migrations;
-using Spares.Infrastructure.Queries.GetSpares;
+using Spares.Infrastructure.Oems;
 using Spares.Infrastructure.RabbitMq.Producers;
 using Spares.Infrastructure.Repository;
+using Spares.Infrastructure.Types;
 
 namespace Spares.WebApi.Extensions;
 
@@ -64,6 +65,8 @@ public static class SparesModuleInjection
 		private void RegisterRepositories()
 		{
 			services.AddScoped<ISparesRepository, SparesRepository>();
+			services.AddScoped<ISpareOemsRepository, SparesOemRepository>();
+			services.AddScoped<ISpareTypesRepository, SpareTypesRepository>();
 		}
 
 		private void RegisterRegionProvider()

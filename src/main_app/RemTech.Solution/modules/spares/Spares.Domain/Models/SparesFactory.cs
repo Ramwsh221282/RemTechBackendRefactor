@@ -1,4 +1,6 @@
 ﻿using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using Spares.Domain.Oems;
+using Spares.Domain.Types;
 
 namespace Spares.Domain.Models;
 
@@ -7,6 +9,34 @@ namespace Spares.Domain.Models;
 /// </summary>
 public static class SparesFactory
 {
+	/// <summary>
+	/// Создаёт OEM запчасти из строки, где строка - какой-то артикул.
+	/// </summary>
+	public static Result<SpareOem> CreateSpareOem(string value)
+	{
+		Result<SpareOem> oem = SpareOem.Create(value);
+		if (oem.IsFailure)
+		{
+			return oem.Error;
+		}
+
+		return oem.Value;
+	}
+
+	/// <summary>
+	/// Создаёт тип запчасти из строки, где строка - какой-то тип запчасти.
+	/// </summary>
+	public static Result<SpareType> CreateSpareType(string value)
+	{
+		Result<SpareType> type = SpareType.Create(value);
+		if (type.IsFailure)
+		{
+			return type.Error;
+		}
+
+		return type.Value;
+	}
+
 	/// <summary>
 	/// Создаёт экземпляр запчасти на основе переданных параметров.
 	/// </summary>
@@ -21,13 +51,13 @@ public static class SparesFactory
 	/// <param name="photoPaths">Коллекция фото запчасти.</param>
 	/// <returns>Результат создания запчасти.</returns>
 	public static Result<Spare> Create(
+		SpareOem oem,
+		SpareType type,
 		Guid containedItemId,
 		string source,
-		string oem,
 		string title,
 		long price,
 		bool isNds,
-		string type,
 		string address,
 		IEnumerable<string> photoPaths
 	)
@@ -36,12 +66,6 @@ public static class SparesFactory
 		if (itemId.IsFailure)
 		{
 			return itemId.Error;
-		}
-
-		Result<SpareOem> oemResult = SpareOem.Create(oem);
-		if (oemResult.IsFailure)
-		{
-			return oemResult.Error;
 		}
 
 		Result<SpareTextInfo> textResult = SpareTextInfo.Create(title);
@@ -68,26 +92,25 @@ public static class SparesFactory
 			return sourceResult.Error;
 		}
 
-		Result<SpareType> typeResult = SpareType.Create(type);
-		if (typeResult.IsFailure)
+		Result<SpareAddress> addressResult = SpareAddress.Create(address);
+		if (addressResult.IsFailure)
 		{
-			return typeResult.Error;
+			return addressResult.Error;
 		}
 
-		Result<SpareAddress> addressResult = SpareAddress.Create(address);
-		return addressResult.IsFailure
-			? addressResult.Error
-			: new Spare(
-				Id: itemId.Value,
-				Details: new SpareDetails(
-					Oem: oemResult.Value,
-					Text: textResult.Value,
-					Price: priceResult.Value,
-					Type: typeResult.Value,
-					Address: addressResult.Value,
-					Photos: photosResult.Value
-				),
-				Source: sourceResult.Value
-			);
+		SpareDetails details = new(
+			Text: textResult.Value,
+			Price: priceResult.Value,
+			Address: addressResult.Value,
+			Photos: photosResult.Value
+		);
+
+		return new Spare(
+			Id: itemId.Value,
+			OemId: oem.Id,
+			TypeId: type.Id,
+			Details: details,
+			Source: sourceResult.Value
+		);
 	}
 }

@@ -8,5 +8,10 @@ public static class ExtractPagedUrlsCommandDecorating
         {
             return new ExtractPagedUrlsCommandLogging(logger, command);
         }
+
+        public IExtractPagedUrlsCommand UseResilience(Serilog.ILogger logger, int attemptsCount = 5)
+        {
+            return new ResilientExtractPagedUrlsCommand(logger, command, attemptsCount);
+        }
     }
 }

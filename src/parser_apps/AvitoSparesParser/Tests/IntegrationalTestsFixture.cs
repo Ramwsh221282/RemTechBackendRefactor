@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
-using ParsingSDK;
 using ParsingSDK.ParserInvokingContext;
 using RemTech.Tests.Shared;
 using Testcontainers.PostgreSql;
@@ -12,9 +9,12 @@ using Tests.StartParserTests;
 
 namespace Tests;
 
-public sealed class IntegrationalTestsFixture : WebApplicationFactory<AvitoSparesParser.Program>, IAsyncLifetime
+public sealed class IntegrationalTestsFixture
+    : WebApplicationFactory<AvitoSparesParser.Program>,
+        IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().BuildPgVectorContainer();
+    private readonly PostgreSqlContainer _dbContainer =
+        new PostgreSqlBuilder().BuildPgVectorContainer();
     private readonly RabbitMqContainer _rabbitMq = new RabbitMqBuilder().BuildRabbitMqContainer();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

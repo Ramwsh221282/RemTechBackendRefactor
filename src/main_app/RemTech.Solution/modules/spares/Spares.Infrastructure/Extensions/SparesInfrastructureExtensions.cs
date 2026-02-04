@@ -20,11 +20,11 @@ public static class SparesInfrastructureExtensions
 				content = JsonSerializer.Serialize(
 					new
 					{
-						oem = spare.Details.Oem.Value,
+						oem_id = spare.Oem.Id.Value,
 						title = spare.Details.Text.Value,
 						price = spare.Details.Price.Value,
 						is_nds = spare.Details.Price.IsNds,
-						type = spare.Details.Type.Value,
+						type_id = spare.Type.Id.Value,
 						address = spare.Details.Address.Value,
 						photos = spare.Details.Photos.Value.Select(p => p.Value).ToArray(),
 					}

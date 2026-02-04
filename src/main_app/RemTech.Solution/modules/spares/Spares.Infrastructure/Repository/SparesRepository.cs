@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Text.Json;
 using Dapper;
 using Npgsql;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -25,9 +26,9 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 	{
 		DynamicParameters parameters = new();
 		List<string> insertClauses = [];
-		IEnumerable<Spare> filtered = await FilterFromExisting(spares);
+		IEnumerable<Spare> filtered = await FilterFromExisting(spares, ct);
 		await FillParameters(parameters, insertClauses, filtered, ct);
-		CommandDefinition command = CreateInsertCommand(parameters, insertClauses);
+		CommandDefinition command = CreateInsertCommand(parameters, insertClauses, ct);
 		return await ExecuteCommand(command, ct);
 	}
 
@@ -37,7 +38,7 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 		return await connection.ExecuteAsync(command);
 	}
 
-	private async Task<IEnumerable<Spare>> FilterFromExisting(IEnumerable<Spare> spares)
+	private async Task<IEnumerable<Spare>> FilterFromExisting(IEnumerable<Spare> spares, CancellationToken ct)
 	{
 		const string sql = """
 			SELECT id FROM spares_module.spares
@@ -50,18 +51,22 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 		string[] urls = [.. array.Select(s => s.Source.Url)];
 		parameters.Add("@ids", ids);
 		parameters.Add("@urls", urls);
-		CommandDefinition command = new(sql, parameters, transaction: session.Transaction);
-		NpgsqlConnection connection = await session.GetConnection(CancellationToken.None);
+		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
+		NpgsqlConnection connection = await session.GetConnection(ct);
 		IEnumerable<Guid> existing = await connection.QueryAsync<Guid>(command);
 		return spares.Where(s => !existing.Contains(s.Id.Value));
 	}
 
-	private CommandDefinition CreateInsertCommand(DynamicParameters parameters, List<string> insertClauses)
+	private CommandDefinition CreateInsertCommand(
+		DynamicParameters parameters,
+		List<string> insertClauses,
+		CancellationToken ct
+	)
 	{
 		string insertClause = string.Join(", ", insertClauses);
 		string insertSql =
-			$"INSERT INTO spares_module.spares (url, id, price, is_nds, oem, text, region_id, type) VALUES {insertClause}";
-		return new(insertSql, parameters, transaction: session.Transaction);
+			$"INSERT INTO spares_module.spares (url, id, price, is_nds, oem_id, text, region_id, type_id, photos, ts_vector_field) VALUES {insertClause}";
+		return new(insertSql, parameters, transaction: session.Transaction, cancellationToken: ct);
 	}
 
 	private async Task FillParameters(
@@ -80,13 +85,15 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 				continue;
 			}
 
-			string url = spare.Source.Url;
 			Guid id = spare.Id.Value;
+			Guid oemId = spare.Oem.Id.Value;
+			Guid typeId = spare.Type.Id.Value;
+			string url = spare.Source.Url;
 			long price = spare.Details.Price.Value;
 			bool isNds = spare.Details.Price.IsNds;
-			string oem = spare.Details.Oem.Value;
 			string text = spare.Details.Text.Value;
-			string type = spare.Details.Type.Value;
+			string? photos =
+				spare.Details.Photos.Value.Count == 0 ? null : JsonSerializer.Serialize(spare.Details.Photos.Value);
 
 			string urlParam = $"@url_{index}";
 			string idParam = $"@id_{index}";
@@ -96,20 +103,27 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 			string textParam = $"@text_{index}";
 			string regionIdParam = $"@region_id_{index}";
 			string typeParam = $"@type_{index}";
+			string photosParam = $"@photos_{index}";
 
 			parameters.Add(urlParam, url, DbType.String);
 			parameters.Add(idParam, id, DbType.Guid);
 			parameters.Add(priceParam, price, DbType.Int64);
 			parameters.Add(isNdsParam, isNds, DbType.Boolean);
-			parameters.Add(oemParam, oem, DbType.String);
+			parameters.Add(oemParam, oemId, DbType.Guid);
 			parameters.Add(textParam, text, DbType.String);
 			parameters.Add(regionIdParam, regionId.Value, DbType.Guid);
-			parameters.Add(typeParam, type, DbType.String);
+			parameters.Add(typeParam, typeId, DbType.Guid);
+			parameters.Add(photosParam, photos, DbType.String);
 
 			string insertClause =
-				$"({urlParam}, {idParam}, {priceParam}, {isNdsParam}, {oemParam}, {textParam}, {regionIdParam}, {typeParam})";
+				$"({urlParam}, {idParam}, {priceParam}, {isNdsParam}, {oemParam}, {textParam}, {regionIdParam}, {typeParam}, {photosParam}::jsonb, plain_to_tsquery('russian', {CreateTextForTsVector(spare)}))";
 			insertClauses.Add(insertClause);
 			index++;
 		}
+	}
+
+	private static string CreateTextForTsVector(Spare spare)
+	{
+		return $"{spare.Type.Value} {spare.Oem.Value} {spare.Details.Text.Value}";
 	}
 }
