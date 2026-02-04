@@ -2,8 +2,6 @@
 using Identity.WebApi.Options;
 using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Configurations;
-using Sprache;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace WebHostApplication.Injection;
 

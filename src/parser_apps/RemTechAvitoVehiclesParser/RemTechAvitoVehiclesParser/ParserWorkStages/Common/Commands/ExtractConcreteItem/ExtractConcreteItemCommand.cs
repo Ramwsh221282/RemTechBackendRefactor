@@ -63,8 +63,7 @@ public sealed class ExtractConcreteItemCommand(
         if (!json.AllPropertiesSet())
             throw new InvalidOperationException("Unable to extract concrete item data");
 
-        json.Characteristics = json.Characteristics!.Where(NotBelongsToIgnoredCharacteristics)
-            .ToArray();
+        json.Characteristics = [.. json.Characteristics!.Where(NotBelongsToIgnoredCharacteristics)];
         AvitoVehicleConcretePageRepresentation representation = new(
             json.Title!,
             json.CharacteristicsDictionary()
@@ -97,7 +96,7 @@ public sealed class ExtractConcreteItemCommand(
 
         public Dictionary<string, string> CharacteristicsDictionary()
         {
-            Dictionary<string, string> result = new();
+            Dictionary<string, string> result = [];
             foreach (JsonCharacteristic characteristic in Characteristics!)
                 result.Add(characteristic.Name, characteristic.Value);
             return result;

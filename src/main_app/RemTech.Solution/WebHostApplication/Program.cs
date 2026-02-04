@@ -12,6 +12,7 @@ using WebHostApplication.Middlewares.Telemetry;
 // TODO: Add response compression.
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
 builder.Services.RegisterApplicationModules();
 if (builder.Environment.IsDevelopment())
 {

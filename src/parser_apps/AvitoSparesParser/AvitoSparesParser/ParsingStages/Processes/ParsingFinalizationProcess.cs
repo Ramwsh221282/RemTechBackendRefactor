@@ -28,7 +28,7 @@ public static class ParsingFinalizationProcess
                 AddContainedItemProducer addProducer = deps.AddContainedItem;
 
                 await using NpgSqlSession session = new(npgSql);
-                NpgSqlTransactionSource source = new(session, logger);
+                NpgSqlTransactionSource source = new(session);
                 await using ITransactionScope scope = await source.BeginTransaction(ct);
 
                 Maybe<ParsingStage> finalization = await GetFinalizationStage(session, ct);

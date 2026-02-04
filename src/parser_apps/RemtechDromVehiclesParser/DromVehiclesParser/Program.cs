@@ -29,8 +29,5 @@ app.Run();
 
 namespace DromVehiclesParser
 {
-    public partial class Program
-    {
-        
-    }
+    public partial class Program { }
 }

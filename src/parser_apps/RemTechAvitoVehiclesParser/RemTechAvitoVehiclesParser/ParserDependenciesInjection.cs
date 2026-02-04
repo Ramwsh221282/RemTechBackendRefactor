@@ -19,19 +19,7 @@ public static class ParserDependenciesInjection
             services.RegisterAvitoFirewallBypass();
             services.AddFinishParserProducer();
             services.AddContainedItemsProducer();
-            
-            if (isDevelopment)
-            {
-                services.RegisterParserDependencies(conf =>
-                {
-                    IOptions<ScrapingBrowserOptions> options = Options.Create(new ScrapingBrowserOptions()
-                    {
-                        DevelopmentMode = true,
-                        Headless = true,
-                    });
-                    conf.AddSingleton(options);
-                });
-            }
+            services.RegisterDependenciesForParsing(isDevelopment);
         }
     }
 }
