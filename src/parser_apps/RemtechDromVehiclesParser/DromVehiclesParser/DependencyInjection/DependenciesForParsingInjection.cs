@@ -1,5 +1,6 @@
 ﻿using DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
 using DromVehiclesParser.ResultsExporing.TextFileExporting;
+using ParsingSDK;
 using ParsingSDK.RabbitMq;
 using ParsingSDK.TextProcessing;
 
@@ -16,7 +17,7 @@ public static class DependenciesForParsingInjection
             services.RegisterTextTransformerBuilder();
             services.AddSingleton<IExporter<TextFile>, TextFileExporter>();
             services.AddSingleton<ParsingStageDependencies>();
-            services.RegisterDependenciesForParsing(isDevelopment);
+            ParsingDependencyInjection.RegisterParserDependencies(services, isDevelopment);
         }
     }
 }

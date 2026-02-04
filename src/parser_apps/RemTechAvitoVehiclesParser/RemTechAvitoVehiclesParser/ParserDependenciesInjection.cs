@@ -1,5 +1,4 @@
 ﻿using AvitoFirewallBypass;
-using Microsoft.Extensions.Options;
 using ParsingSDK;
 using ParsingSDK.RabbitMq;
 using ParsingSDK.TextProcessing;
@@ -13,13 +12,13 @@ public static class ParserDependenciesInjection
     {
         public void RegisterDependenciesForParsing(bool isDevelopment)
         {
+            services.RegisterParserDependencies(isDevelopment);
             services.RegisterParserWorkStagesContext();
             services.RegisterParserSubscription();
             services.RegisterTextTransformerBuilder();
             services.RegisterAvitoFirewallBypass();
             services.AddFinishParserProducer();
             services.AddContainedItemsProducer();
-            services.RegisterDependenciesForParsing(isDevelopment);
         }
     }
 }

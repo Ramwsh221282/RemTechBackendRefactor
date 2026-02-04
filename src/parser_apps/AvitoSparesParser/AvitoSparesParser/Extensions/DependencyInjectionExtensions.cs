@@ -26,7 +26,7 @@ public static class DependencyInjectionExtensions
             services.RegisterTextTransformerBuilder();
         }
 
-        public void RegisterInfrastructureDependencies(bool isDevelopment)
+        public void RegisterInfrastructureDependencies()
         {
             services.AddPostgres();
             services.AddMigrations([typeof(SchemaMigrations).Assembly]);

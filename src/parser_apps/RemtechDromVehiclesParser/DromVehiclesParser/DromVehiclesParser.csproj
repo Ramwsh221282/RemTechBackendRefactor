@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ParserSubscriber" Version="2.0.0" />
-    <PackageReference Include="ParsingSDK" Version="1.1.0" />
+    <PackageReference Include="ParserSubscriber" Version="3.*" />
+    <PackageReference Include="ParsingSDK" Version="3.*" />
   </ItemGroup>
 
   <ItemGroup>

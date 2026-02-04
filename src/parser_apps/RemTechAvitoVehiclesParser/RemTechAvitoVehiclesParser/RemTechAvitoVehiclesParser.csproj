@@ -10,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AvitoFirewallBypass" Version="1.0.5" />
-    <PackageReference Include="ParserSubscriber" Version="2.*" />
-    <PackageReference Include="ParsingSDK" Version="1.1.0" />
+    <PackageReference Include="AvitoFirewallBypass" Version="3.*" />
+    <PackageReference Include="ParserSubscriber" Version="3.*" />
+    <PackageReference Include="ParsingSDK" Version="3.*" />
   </ItemGroup>
 </Project>
