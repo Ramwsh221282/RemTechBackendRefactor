@@ -26,6 +26,11 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 	{
 		DynamicParameters parameters = new();
 		List<string> insertClauses = [];
+		if (insertClauses.Count == 0)
+		{
+			return 0;
+		}
+
 		IEnumerable<Spare> filtered = await FilterFromExisting(spares, ct);
 		await FillParameters(parameters, insertClauses, filtered, ct);
 		CommandDefinition command = CreateInsertCommand(parameters, insertClauses, ct);
