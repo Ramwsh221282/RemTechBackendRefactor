@@ -105,12 +105,6 @@ public static class SparesFactory
 			Photos: photosResult.Value
 		);
 
-		return new Spare(
-			Id: itemId.Value,
-			OemId: oem.Id,
-			TypeId: type.Id,
-			Details: details,
-			Source: sourceResult.Value
-		);
+		return new Spare(Id: itemId.Value, Oem: oem, Type: type, Details: details, Source: sourceResult.Value);
 	}
 }

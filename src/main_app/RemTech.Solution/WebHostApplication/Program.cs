@@ -11,7 +11,10 @@ using WebHostApplication.Middlewares;
 using WebHostApplication.Middlewares.Telemetry;
 
 // TODO: Add rate limiters.
+
 // TODO: Add response compression.
+
+// TODO: Исправить проблему работы с .env и appsettings. Почему-то в дев режиме используется .env, а не appsettings.
 
 Logger logger = new LoggerConfiguration().Enrich.With(new ClassNameLogEnricher()).WriteTo.Console().CreateLogger();
 logger.Information("Запуск веб-приложения.");
@@ -86,7 +89,7 @@ try
 catch (Exception ex)
 {
 	logger.Fatal(ex, "Host terminated unexpectedly.");
-	return;
+	throw;
 }
 finally
 {

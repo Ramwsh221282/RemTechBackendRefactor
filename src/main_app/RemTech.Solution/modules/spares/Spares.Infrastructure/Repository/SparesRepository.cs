@@ -116,7 +116,7 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 			parameters.Add(photosParam, photos, DbType.String);
 
 			string insertClause =
-				$"({urlParam}, {idParam}, {priceParam}, {isNdsParam}, {oemParam}, {textParam}, {regionIdParam}, {typeParam}, {photosParam}::jsonb, plain_to_tsquery('russian', {CreateTextForTsVector(spare)}))";
+				$"({urlParam}, {idParam}, {priceParam}, {isNdsParam}, {oemParam}, {textParam}, {regionIdParam}, {typeParam}, {photosParam}::jsonb, plainto_tsquery('russian', {CreateTextForTsVector(spare)}))";
 			insertClauses.Add(insertClause);
 			index++;
 		}
