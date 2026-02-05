@@ -1,6 +1,7 @@
 using AvitoSparesParser.Extensions;
 using AvitoSparesParser.RabbitMq.Consumers;
 using DotNetEnv.Configuration;
+using Microsoft.Extensions.Options;
 using ParserSubscriber.SubscribtionContext;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
@@ -49,8 +50,7 @@ try
     logger.Information("Инфраструктурные зависимости зарегистрированы.");
 
     WebApplication app = builder.Build();
-
-    logger.Information("Запуск подписки/повторной подписки на основное бекенд...");
+    
     app.Lifetime.ApplicationStarted.Register(() =>
     {
         _ = Task.Run(async () =>
