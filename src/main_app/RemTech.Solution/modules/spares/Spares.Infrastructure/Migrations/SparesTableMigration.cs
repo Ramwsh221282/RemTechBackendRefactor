@@ -33,7 +33,7 @@ public sealed class SparesTableMigration : Migration
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_spares_unique_url ON spares_module.spares(url);
 			CREATE INDEX IF NOT EXISTS idx_spares_price ON spares_module.spares(price);
 			CREATE INDEX IF NOT EXISTS idx_spares_region_id ON spares_module.spares(region_id);
-			CREATE INDEX IF NOT EXISTS idx_spares_trgm ON spares_module.spares USING GIN (text, gin_trgm_ops);
+			CREATE INDEX IF NOT EXISTS idx_spares_trgm ON spares_module.spares USING GIN (text gin_trgm_ops);
 			CREATE INDEX IF NOT EXISTS idx_spares_hnsw ON spares_module.spares USING hnsw (embedding vector_cosine_ops);
 			CREATE INDEX IF NOT EXISTS idx_spares_tsvector ON spares_module.spares USING GIN (ts_vector_field);			
 			"""
