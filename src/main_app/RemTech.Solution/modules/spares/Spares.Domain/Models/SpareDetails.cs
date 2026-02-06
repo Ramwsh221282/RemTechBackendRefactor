@@ -1,4 +1,7 @@
-﻿namespace Spares.Domain.Models;
+﻿using Spares.Domain.Oems;
+using Spares.Domain.Types;
+
+namespace Spares.Domain.Models;
 
 // TODO: Вынести Spare Type в отдельную сущность (в дальнейшем это будет справочник всех типов запчастей, чтобы избежать дублирования).
 // TODO: Вынести Spare Oem в отдельную сущность (в дальнейшем это будет справочник всех oem, чтобы избежать дублирования).
@@ -8,17 +11,13 @@
 /// <summary>
 /// Детали запчасти.
 /// </summary>
-/// <param name="Oem">OEM запчасти (артикул).</param>
 /// <param name="Text">Текстовая информация о запчасти.</param>
 /// <param name="Price">Цена запчасти.</param>
-/// <param name="Type">Тип запчасти.</param>
 /// <param name="Address">Адрес запчасти.</param>
 /// <param name="Photos">Коллекция фотографий запчасти.</param>
 public sealed record SpareDetails(
-	SpareOem Oem,
 	SpareTextInfo Text,
 	SparePrice Price,
-	SpareType Type,
 	SpareAddress Address,
 	SparePhotoCollection Photos
 );

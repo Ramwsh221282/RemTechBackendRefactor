@@ -1,4 +1,4 @@
-namespace ParsingSDK.RabbitMq;
+﻿namespace ParsingSDK.RabbitMq;
 
 public sealed class AddContainedItemsMessagePayload
 {

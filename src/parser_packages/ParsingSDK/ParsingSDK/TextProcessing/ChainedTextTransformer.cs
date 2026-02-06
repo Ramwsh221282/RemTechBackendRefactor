@@ -8,3 +8,4 @@ public sealed class ChainedTextTransformer(ITextTransformer current, ITextTransf
         return next == null ? transformed : next.TransformText(transformed);
     }
 }
+

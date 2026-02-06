@@ -4,12 +4,3 @@ public interface ITextTransformer
 {
     string TransformText(string text);
 }
-
-
-
-
-
-
-
-
-

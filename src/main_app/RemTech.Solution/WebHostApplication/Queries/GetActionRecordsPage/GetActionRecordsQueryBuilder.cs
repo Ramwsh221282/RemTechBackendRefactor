@@ -28,137 +28,155 @@ internal static class GetActionRecordsQueryBuilder
 		return BuildPaginationQueryPart(query, parameters);
 	}
 
-	private static string UseLoginSearch(GetActionRecordsQuery query, DynamicParameters parameters)
-	{
-		if (string.IsNullOrWhiteSpace(query.LoginSearch))
-		{
-			return string.Empty;
-		}
+    private static WhereClauseBuilderDelegate<GetActionRecordsQuery> LoginSearch()
+    {
+        return (query, parameters) =>
+        {
+            if (string.IsNullOrWhiteSpace(query.LoginSearch))
+            {
+                return string.Empty;
+            }
 
-		parameters.Add("@I_LoginSearch", query.LoginSearch, DbType.String);
-		return "a.login ILIKE '%' || @I_LoginSearch || '%'";
-	}
+            parameters.Add("@I_LoginSearch", query.LoginSearch, DbType.String);
+            return "a.login ILIKE '%' || @I_LoginSearch || '%'";
+        };
+    }
 
-	private static string UseEmailSearch(GetActionRecordsQuery query, DynamicParameters parameters)
-	{
-		if (string.IsNullOrWhiteSpace(query.EmailSearch))
-		{
-			return string.Empty;
-		}
+    private static WhereClauseBuilderDelegate<GetActionRecordsQuery> EmailSearch()
+    {
+        return (query, parameters) =>
+        {
+            if (string.IsNullOrWhiteSpace(query.EmailSearch))
+            {
+                return string.Empty;
+            }
 
-		parameters.Add("@I_EmailSearch", query.EmailSearch, DbType.String);
-		return "a.email ILIKE '%' || @I_EmailSearch || '%'";
-	}
+            parameters.Add("@I_EmailSearch", query.EmailSearch, DbType.String);
+            return "a.email ILIKE '%' || @I_EmailSearch || '%'";
+        };
+    }
 
-	private static string UseActionNameSearch(
-		GetActionRecordsQuery query,
-		DynamicParameters parameters,
-		EmbeddingsProvider provider
-	)
-	{
-		if (string.IsNullOrWhiteSpace(query.ActionNameSearch))
-		{
-			return string.Empty;
-		}
+    private static WhereClauseBuilderDelegate<GetActionRecordsQuery> ActionNameSearch(EmbeddingsProvider provider)
+    {
+        return (source, parameters) =>
+        {
+            if (string.IsNullOrWhiteSpace(source.ActionNameSearch))
+            {
+                return string.Empty;
+            }
+            
+            Vector vector = new(provider.Generate(source.ActionNameSearch));
+            parameters.Add("@I_ActionNameSearchEmbedding", vector);
+            parameters.Add("@I_ActionNameSearch", source.ActionNameSearch, DbType.String);
 
-		Vector vector = new(provider.Generate(query.ActionNameSearch));
-		parameters.Add("@I_ActionNameSearchEmbedding", vector);
-		parameters.Add("@I_ActionNameSearch", query.ActionNameSearch, DbType.String);
+            return """
+                   (
+                   	ar.name ILIKE '%' || @I_ActionNameSearch || '%' OR
+                   	ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @I_ActionNameSearch)) > 0 OR
+                   	(ar.embedding <=> @I_ActionNameSearchEmbedding) < 0.5
+                   )
+                   """;
+        };
+    }
 
-		return """
-			(
-				ar.name ILIKE '%' || @I_ActionNameSearch || '%' OR
-				ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @I_ActionNameSearch)) > 0 OR
-				(ar.embedding <=> @I_ActionNameSearchEmbedding) < 0.5
-			)
-			""";
-	}
+    private static WhereClauseBuilderDelegate<GetActionRecordsQuery> DateRangeFilter()
+    {
+        return (query, parameters) =>
+        {
+            if (query.StartDate == null || query.EndDate == null)
+            {
+                return string.Empty;
+            }
 
-	private static string UseDateRangeFilter(GetActionRecordsQuery query, DynamicParameters parameters)
-	{
-		if (query.StartDate == null || query.EndDate == null)
-		{
-			return string.Empty;
-		}
+            parameters.Add("@I_StartDate", query.StartDate.Value, DbType.DateTime);
+            parameters.Add("@I_EndDate", query.EndDate.Value, DbType.DateTime);
+            return "ar.created_at BETWEEN @I_StartDate AND @I_EndDate";
+        };
+    }
+    
 
-		parameters.Add("@I_StartDate", query.StartDate.Value, DbType.DateTime);
-		parameters.Add("@I_EndDate", query.EndDate.Value, DbType.DateTime);
-		return "ar.created_at BETWEEN @I_StartDate AND @I_EndDate";
-	}
+    private static WhereClauseBuilderDelegate<GetActionRecordsQuery> OperationStatusesFilter()
+    {
+        return (query, parameters) =>
+        {
+            if (string.IsNullOrWhiteSpace(query.Status))
+            {
+                return string.Empty;
+            }
 
-	private static string UseOperationStatusesFilter(GetActionRecordsQuery query, DynamicParameters parameters)
-	{
-		if (string.IsNullOrWhiteSpace(query.Status))
-		{
-			return string.Empty;
-		}
+            parameters.Add("@I_StatusName", query.Status, DbType.String);
+            return "ar.severity = @I_StatusName";
+        };
+    }
 
-		parameters.Add("@I_StatusName", query.Status, DbType.String);
-		return "ar.severity = @I_StatusName";
-	}
+    private static WhereClauseBuilderDelegate<GetActionRecordsQuery> IgnoreSelfFilter()
+    {
+        return (query, parameters) =>
+        {
+            if (query.IdOfRequestInvoker == null)
+            {
+                return string.Empty;
+            }
 
-	private static string UseIgnoreSelfFilter(GetActionRecordsQuery query, DynamicParameters parameters)
-	{
-		if (query.IdOfRequestInvoker == null)
-		{
-			return string.Empty;
-		}
+            parameters.Add("@I_InvokerId", query.IdOfRequestInvoker.Value, DbType.Guid);
+            return "ar.invoker_id <> @I_InvokerId";
+        };
+    }
 
-		parameters.Add("@I_InvokerId", query.IdOfRequestInvoker.Value, DbType.Guid);
-		return "ar.invoker_id <> @I_InvokerId";
-	}
+    private static WhereClauseBuilderDelegate<GetActionRecordsQuery> IgnoreAnonymousFilter()
+    {
+        return (source, _) => source.IgnoreAnonymous is null ? string.Empty
+            : source.IgnoreAnonymous.Value ? "a.id IS NOT NULL"
+            : string.Empty; 
+    }
 
-	private static string UseIgnoreAnonymousFilter(GetActionRecordsQuery query)
-	{
-		return query.IgnoreAnonymous is null ? string.Empty
-			: query.IgnoreAnonymous.Value ? "a.id IS NOT NULL"
-			: string.Empty;
-	}
+    private static WhereClauseBuilderDelegate<GetActionRecordsQuery> IgnoreErrorsFilter()
+    {
+        return (query, _) => !query.IgnoreErrors ? string.Empty : "ar.error IS NULL";
+    }
 
-	private static string UseIgnoreErrorsFilter(GetActionRecordsQuery query)
-	{
-		return !query.IgnoreErrors ? string.Empty : "ar.error IS NULL";
-	}
+    private static WhereClauseBuilderDelegate<GetActionRecordsQuery> PermissionsFilter()
+    {
+        return (query, parameters) =>
+        {
+            Guid[] ids = query.PermissionIdentifiers is null ? [] : [.. query.PermissionIdentifiers];
+            if (ids.Length == 0)
+            {
+                return string.Empty;
+            }
 
-	private static string UsePermissionsFilter(GetActionRecordsQuery query, DynamicParameters parameters)
-	{
-		Guid[] ids = query.PermissionIdentifiers is null ? [] : [.. query.PermissionIdentifiers];
-		if (ids.Length == 0)
-		{
-			return string.Empty;
-		}
-
-		parameters.Add("@I_PermissionIds", ids);
-		return """
-			EXISTS 
-				(
-					SELECT 1 FROM jsonb_array_elements(up.permissions) AS perm
-				 	WHERE (perm->>'Id')::uuid = ANY(@I_PermissionIds)
-				)
-			""";
-	}
+            parameters.Add("@I_PermissionIds", ids);
+            return """
+                   EXISTS 
+                   	(
+                   		SELECT 1 FROM jsonb_array_elements(up.permissions) AS perm
+                   	 	WHERE (perm->>'Id')::uuid = ANY(@I_PermissionIds)
+                   	)
+                   """;
+        };
+    }
 
 	private static string BuildMainQuerySqlFilter(
 		DynamicParameters parameters,
 		GetActionRecordsQuery query,
 		EmbeddingsProvider provider
 	)
-	{
-		return SqlBuilderDelegate.CombineWhereClauses(
-			query,
-			parameters,
-			[
-				(quer, param) => UseActionNameSearch(quer, param, provider),
-				(quer, _) => UseIgnoreErrorsFilter(quer),
-				(quer, _) => UseIgnoreAnonymousFilter(quer),
-				UseLoginSearch,
-				UseEmailSearch,
-				UseDateRangeFilter,
-				UseOperationStatusesFilter,
-				UsePermissionsFilter,
-				UseIgnoreSelfFilter,
-			]
-		);
+    {
+        return SqlBuilderDelegate.CombineWhereClauses(
+            query,
+            parameters,
+            [
+                ActionNameSearch(provider), 
+                IgnoreErrorsFilter(),
+                IgnoreAnonymousFilter(),
+                LoginSearch(),
+                EmailSearch(),
+                DateRangeFilter(),
+                OperationStatusesFilter(),
+                PermissionsFilter(),
+                IgnoreSelfFilter(),
+            ]
+        );
 	}
 
 	private static string BuildPaginationQueryPart(GetActionRecordsQuery query, DynamicParameters parameters)

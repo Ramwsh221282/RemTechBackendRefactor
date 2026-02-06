@@ -90,11 +90,7 @@ public sealed class AddSparesProducer(RabbitMqProducer producer, Serilog.ILogger
 				ContainedItemId = i.Id.Value,
 				IsNds = document.RootElement.GetProperty("is_nds").GetBoolean(),
 				Oem = document.RootElement.GetProperty("oem").GetString()!,
-				Photos = document
-					.RootElement.GetProperty("photos")
-					.EnumerateArray()
-					.Select(p => p.GetString()!)
-					.ToArray(),
+				Photos = [.. document.RootElement.GetProperty("photos").EnumerateArray().Select(p => p.GetString()!)],
 				Price = document.RootElement.GetProperty("price").GetInt64(),
 				Title = document.RootElement.GetProperty("title").GetString()!,
 				Type = document.RootElement.GetProperty("type").GetString()!,

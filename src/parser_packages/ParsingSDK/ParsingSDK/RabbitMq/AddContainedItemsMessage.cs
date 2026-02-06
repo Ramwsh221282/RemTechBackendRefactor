@@ -1,4 +1,4 @@
-namespace ParsingSDK.RabbitMq;
+﻿namespace ParsingSDK.RabbitMq;
 
 
 
@@ -9,4 +9,4 @@ public sealed class AddContainedItemsMessage
     public required string CreatorDomain { get; set; } = string.Empty;
     public required string ItemType { get; set; } = string.Empty;
     public required AddContainedItemsMessagePayload[] Items { get; set; } = [];
-}   
+}

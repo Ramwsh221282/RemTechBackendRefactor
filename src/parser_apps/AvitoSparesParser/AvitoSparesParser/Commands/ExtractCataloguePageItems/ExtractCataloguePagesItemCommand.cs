@@ -1,17 +1,76 @@
-﻿using AvitoSparesParser.AvitoSpareContext;
+﻿using System.Text.RegularExpressions;
+using AvitoSparesParser.AvitoSpareContext;
 using AvitoSparesParser.CatalogueParsing;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 
 namespace AvitoSparesParser.Commands.ExtractCataloguePageItems;
 
-public sealed class ExtractCataloguePagesItemCommand(
-    Func<Task<IPage>> pageSource, 
-    AvitoBypassFactory bypassFactory) : IExtractCataloguePagesItemCommand
+public sealed class ResilientCataloguePagesItemCommand : IExtractCataloguePagesItemCommand
 {
+    private readonly Serilog.ILogger _logger;
+    private readonly IExtractCataloguePagesItemCommand _inner;
+    private readonly int _attemptsCount;
+
+    public ResilientCataloguePagesItemCommand(
+        Serilog.ILogger logger,
+        IExtractCataloguePagesItemCommand inner,
+        int attemptsCount = 5
+    )
+    {
+        _logger = logger;
+        _inner = inner;
+        _attemptsCount = attemptsCount;
+    }
+
     public async Task<AvitoSpare[]> Extract(AvitoCataloguePage page)
     {
-        const string javaScript = @"() => {                    
+        int currentAttempt = 0;
+        while (currentAttempt < _attemptsCount)
+        {
+            try
+            {
+                return await _inner.Extract(page);
+            }
+            catch (Exception ex)
+            {
+                if (currentAttempt == _attemptsCount)
+                {
+                    _logger.Error(
+                        ex,
+                        "Failed to extract catalogue page items from url: {Url} after {Attempts} attempts.",
+                        page.Url,
+                        _attemptsCount
+                    );
+                    throw;
+                }
+
+                currentAttempt++;
+                _logger.Warning(
+                    ex,
+                    "Attempt {Attempt} to extract catalogue page items from url: {Url} failed. Retrying...",
+                    currentAttempt,
+                    page.Url
+                );
+            }
+        }
+
+        // в while true уже есть выход.
+        throw new InvalidOperationException("Unreachable code.");
+    }
+}
+
+public sealed partial class ExtractCataloguePagesItemCommand(
+    Func<Task<IPage>> pageSource,
+    AvitoBypassFactory bypassFactory
+) : IExtractCataloguePagesItemCommand
+{
+    private const int TIME_OUT_MS = 5000;
+
+    public async Task<AvitoSpare[]> Extract(AvitoCataloguePage page)
+    {
+        const string javaScript =
+            @"() => {                    
                                 const photoExtractFn = (item) => {
                                     const photoListSelector = item.querySelector('div[data-marker=""item-image""]') 
                                     ?.querySelector('div[data-marker=""item-photo""]')
@@ -51,21 +110,45 @@ public sealed class ExtractCataloguePagesItemCommand(
                                   return data; 
                             }
 ";
-        
+
         string url = page.Url;
         IPage pageInstance = await pageSource();
-        await pageInstance.PerformQuickNavigation(url, timeout: 2000);
-        
+        await pageInstance.PerformQuickNavigation(url, timeout: TIME_OUT_MS);
+
         if (!await bypassFactory.Create(pageInstance).Bypass())
             throw new InvalidOperationException("Bypass failed.");
-        
+
         await pageInstance.ScrollBottom();
         await new AvitoImagesHoverer(pageInstance).Invoke();
-        
+
         JsonData[] data = await pageInstance.EvaluateFunctionAsync<JsonData[]>(javaScript);
-        return [..data.Where(d => d.AllPropertiesSet()).Select(d => d.ToAvitoSpareCatalogueRepresentation())];
+        return
+        [
+            .. data.Where(d => d.AllPropertiesSet() && SatisfiesOemFilter(d))
+                .Select(d => d.ToAvitoSpareCatalogueRepresentation()),
+        ];
     }
-    
+
+    private static bool SatisfiesOemFilter(JsonData data)
+    {
+        if (string.IsNullOrWhiteSpace(data.Oem))
+        {
+            return false;
+        }
+
+        if (!data.Oem.Any(char.IsDigit))
+        {
+            return false;
+        }
+
+        if (data.Oem.Trim() == "0")
+        {
+            return false;
+        }
+
+        return OEM_FILTER_REGEX().IsMatch(data.Oem);
+    }
+
     private sealed class JsonData
     {
         public string? Url { get; set; }
@@ -79,18 +162,25 @@ public sealed class ExtractCataloguePagesItemCommand(
         public AvitoSpare ToAvitoSpareCatalogueRepresentation()
         {
             var representation = new AvitoSpareCatalogueRepresentation(
-                Url!, long.Parse(Price!), IsNds, Address!, Photos!, Oem!);
+                Url!,
+                long.Parse(Price!),
+                IsNds,
+                Address!,
+                Photos!,
+                Oem!
+            );
             return AvitoSpare.CatalogueRepresented(Id!, representation);
         }
-        
+
         public bool AllPropertiesSet()
         {
-            return !string.IsNullOrWhiteSpace(Url) &&
-                   PriceIsNotZero() &&
-                   !string.IsNullOrWhiteSpace(Id) &&
-                   !string.IsNullOrWhiteSpace(Address) &&
-                   Photos != null &&
-                   !string.IsNullOrWhiteSpace(Oem) && Photos != null && Photos.Length > 0;
+            return !string.IsNullOrWhiteSpace(Url)
+                && PriceIsNotZero()
+                && !string.IsNullOrWhiteSpace(Id)
+                && !string.IsNullOrWhiteSpace(Address)
+                && !string.IsNullOrWhiteSpace(Oem)
+                && Photos != null
+                && Photos.Length > 0;
         }
 
         private bool PriceIsNotZero()
@@ -98,4 +188,10 @@ public sealed class ExtractCataloguePagesItemCommand(
             return !string.IsNullOrWhiteSpace(Price) && Price != "0";
         }
     }
+
+    // фильтрует OEM номера от лишних OEM.
+    // То бишь, если нет как минимум 4 символа цифры подряд, то такой OEM не рассматривается.
+    // Потому что могут быть просто какие-то рандомные названия, а не артикулы.
+    [GeneratedRegex(@"(\d+){4,}")]
+    private static partial Regex OEM_FILTER_REGEX();
 }

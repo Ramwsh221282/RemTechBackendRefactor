@@ -1,4 +1,4 @@
-using PuppeteerSharp;
+﻿using PuppeteerSharp;
 
 namespace ParsingSDK;
 

@@ -8,5 +8,13 @@ public static class ExtractConcretePageItemCommandDecorating
         {
             return new ExtractConcretePageItemLogging(logger, command);
         }
+
+        public IExtractConcretePageItemCommand UseResilience(
+            Serilog.ILogger logger,
+            int attemptsCount = 5
+        )
+        {
+            return new ResilientExtractConcretePageItemCommand(logger, command, attemptsCount);
+        }
     }
 }

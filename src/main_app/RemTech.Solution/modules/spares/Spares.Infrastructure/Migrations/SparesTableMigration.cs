@@ -5,7 +5,7 @@ namespace Spares.Infrastructure.Migrations;
 /// <summary>
 ///     Миграция для создания таблицы запчастей.
 /// </summary>
-[Migration(1766981273)]
+[Migration(1770229800)]
 public sealed class SparesTableMigration : Migration
 {
 	/// <summary>
@@ -13,39 +13,29 @@ public sealed class SparesTableMigration : Migration
 	/// </summary>
 	public override void Up()
 	{
-		Create
-			.Table("spares")
-			.InSchema("spares_module")
-			.WithColumn("id")
-			.AsGuid()
-			.PrimaryKey()
-			.WithColumn("url")
-			.AsString()
-			.NotNullable()
-			.WithColumn("price")
-			.AsInt64()
-			.NotNullable()
-			.WithColumn("oem")
-			.AsString(256)
-			.NotNullable()
-			.WithColumn("text")
-			.AsString()
-			.NotNullable()
-			.WithColumn("is_nds")
-			.AsBoolean()
-			.NotNullable()
-			.WithColumn("region_id")
-			.AsGuid()
-			.NotNullable()
-			.WithColumn("type")
-			.AsString(256)
-			.NotNullable()
-			.WithColumn("embedding")
-			.AsCustom("vector(1024)")
-			.Nullable();
-		Execute.Sql("CREATE UNIQUE INDEX IF NOT EXISTS idx_spares_unique_url ON spares_module.spares(url)");
 		Execute.Sql(
-			"CREATE INDEX IF NOT EXISTS idx_spares_hnsw ON spares_module.spares USING hnsw (embedding vector_cosine_ops)"
+			""" 
+			CREATE TABLE IF NOT EXISTS spares_module.spares
+			(
+				id UUID PRIMARY KEY,
+				oem_id UUID NOT NULL REFERENCES spares_module.oems(id),
+				type_id UUID NOT NULL REFERENCES spares_module.types(id),				
+				url TEXT NOT NULL,
+				price BIGINT NOT NULL,				
+				text TEXT NOT NULL,
+				is_nds BOOLEAN NOT NULL,
+				region_id UUID NOT NULL,				
+				ts_vector_field tsvector NOT NULL,
+				photos jsonb,
+				embedding VECTOR(1024)
+			);
+
+			CREATE UNIQUE INDEX IF NOT EXISTS idx_spares_unique_url ON spares_module.spares(url);
+			CREATE INDEX IF NOT EXISTS idx_spares_price ON spares_module.spares(price);
+			CREATE INDEX IF NOT EXISTS idx_spares_region_id ON spares_module.spares(region_id);
+			CREATE INDEX IF NOT EXISTS idx_spares_trgm ON spares_module.spares USING GIN (text gin_trgm_ops);
+			CREATE INDEX IF NOT EXISTS idx_spares_tsvector ON spares_module.spares USING GIN (ts_vector_field);			
+			"""
 		);
 	}
 
@@ -54,6 +44,6 @@ public sealed class SparesTableMigration : Migration
 	/// </summary>
 	public override void Down()
 	{
-		Delete.Table("spares").InSchema("spares_module");
+		Execute.Sql("DROP TABLE IF EXISTS spares_module.spares;");
 	}
 }

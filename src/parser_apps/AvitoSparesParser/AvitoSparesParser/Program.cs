@@ -1,7 +1,6 @@
 using AvitoSparesParser.Extensions;
 using AvitoSparesParser.RabbitMq.Consumers;
 using DotNetEnv.Configuration;
-using ParserSubscriber.SubscribtionContext;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -49,16 +48,7 @@ try
     logger.Information("Инфраструктурные зависимости зарегистрированы.");
 
     WebApplication app = builder.Build();
-
-    logger.Information("Запуск подписки/повторной подписки на основное бекенд...");
-    app.Lifetime.ApplicationStarted.Register(() =>
-    {
-        _ = Task.Run(async () =>
-        {
-            await app.Services.RunParserSubscription();
-        });
-    });
-
+    
     logger.Information("Применение миграций модулей базы данных...");
     app.Services.ApplyModuleMigrations();
     logger.Information("Миграции модулей базы данных применены.");

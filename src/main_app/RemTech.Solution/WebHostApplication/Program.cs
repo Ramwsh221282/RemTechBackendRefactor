@@ -1,6 +1,5 @@
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
-using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -12,16 +11,29 @@ using WebHostApplication.Middlewares;
 using WebHostApplication.Middlewares.Telemetry;
 
 // TODO: Add rate limiters.
+
 // TODO: Add response compression.
+
+// TODO: Исправить проблему работы с .env и appsettings. Почему-то в дев режиме используется .env, а не appsettings.
 
 Logger logger = new LoggerConfiguration().Enrich.With(new ClassNameLogEnricher()).WriteTo.Console().CreateLogger();
 logger.Information("Запуск веб-приложения.");
 
 try
 {
-	builder.InvokeTestEnv();
-	builder.Services.RegisterConfigurationFromAppsettings();
-}
+	WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+	bool isDevelopment = builder.Environment.IsDevelopment();
+	if (isDevelopment)
+	{
+		logger.Information("Режим разработки включен.");
+	}
+	else
+	{
+		logger.Information("Режим разработки отключен (production).");
+	}
+
+	builder.Configuration.Register(builder.Services, isDevelopment);
+	logger.Information("Конфигурация зарегистрирована.");
 
 	builder.Services.RegisterSharedDependencies(builder.Configuration);
 	logger.Information("Общие зависимости зарегистрированы.");
@@ -51,17 +63,14 @@ try
 	});
 	logger.Information("CORS политика зарегистрирована.");
 
-WebApplication app = builder.Build();
+	WebApplication app = builder.Build();
+	await app.ValidateConfigurations();
 
-await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
-IServiceProvider sp = scope.ServiceProvider;
-IOptions<TestEnv> env = sp.GetRequiredService<IOptions<TestEnv>>();
-
-app.Services.ApplyModuleMigrations();
-app.UseHttpsRedirection();
-app.UseCors("frontend");
-app.MapControllers();
-app.UseSwagger();
+	app.Services.ApplyModuleMigrations();
+	app.UseHttpsRedirection();
+	app.UseCors("frontend");
+	app.MapControllers();
+	app.UseSwagger();
 
 	app.UseHttpsRedirection();
 
@@ -80,7 +89,7 @@ app.UseSwagger();
 catch (Exception ex)
 {
 	logger.Fatal(ex, "Host terminated unexpectedly.");
-	return;
+	throw;
 }
 finally
 {

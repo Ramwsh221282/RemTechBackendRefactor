@@ -17,6 +17,11 @@ namespace AvitoSparesParser.ParsingStages.Processes;
 
 public static class ParsingFinalizationProcess
 {
+    private static JsonSerializerOptions _jsonOptions = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+
     extension(ParserStageProcess)
     {
         public static ParserStageProcess Finalization =>
@@ -93,12 +98,7 @@ public static class ParsingFinalizationProcess
             type = spare.ConcreteRepresentation.Type.Replace('\u00A0', ' '),
         };
 
-        JsonSerializerOptions options = new()
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        };
-
-        string content = JsonSerializer.Serialize(payload, options);
+        string content = JsonSerializer.Serialize(payload, _jsonOptions);
         return new AddContainedItemsMessagePayload() { ItemId = id, Content = content };
     }
 
