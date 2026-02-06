@@ -1,0 +1,24 @@
+<h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Подключение</h2>
+<form class="space-y-6" [formGroup]="createEmailSenderForm" (ngSubmit)="sumbit()">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Адрес почтового
+      ящика</label>
+    <input type="text" [formControlName]="'senderEmail'"
+           class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 dark:text-gray-100">
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Пароль
+      приложения</label>
+    <input type="password" [formControlName]="'senderPassword'"
+           class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 dark:text-gray-100">
+  </div>
+  <div class="flex items-center justify-end mt-6">
+    <button type="submit"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+      Сохранить
+    </button>
+  </div>
+</form>
+<p-toast [position]="'bottom-right'" />
+
+

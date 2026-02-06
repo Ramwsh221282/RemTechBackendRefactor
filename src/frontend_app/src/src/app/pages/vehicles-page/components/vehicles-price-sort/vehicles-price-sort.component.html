@@ -1,0 +1,8 @@
+<div class="sm:w-48">
+  <select [(ngModel)]="mode" (ngModelChange)="changeSort($event)"
+          class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+    <option value="">Сортировка</option>
+    <option value="ASC">Цена: возрастание</option>
+    <option value="DESC">Цена: убывание</option>
+  </select>
+</div>

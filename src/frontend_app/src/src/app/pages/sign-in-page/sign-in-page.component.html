@@ -1,0 +1,25 @@
+<p-tabs value="0">
+  <p-tablist>
+    <p-tab value="0">Авторизация</p-tab>
+    <p-tab value="1">Регистрация</p-tab>
+  </p-tablist>
+  <p-tabpanels>
+    <p-tabpanel value="0">
+      <div class="max-w-4xl mx-auto p-6 space-y-8">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">Авторизация</h1>
+        </div>
+        <app-sign-in-form />
+      </div>
+
+    </p-tabpanel>
+    <p-tabpanel value="1">
+      <div class="max-w-4xl mx-auto p-6 space-y-8">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">Регистрация</h1>
+        </div>
+        <app-sign-up-form />
+      </div>
+    </p-tabpanel>
+  </p-tabpanels>
+</p-tabs>

@@ -1,0 +1,56 @@
+﻿version: "3.8"
+
+services:
+  database:
+    image: pgvector/pgvector:0.8.0-pg17-bookworm
+    restart: always
+    container_name: database
+    environment:
+      POSTGRES_DB: remtech_db
+      POSTGRES_USER: remtech_user
+      POSTGRES_PASSWORD: remtech_password
+      PGPORT: 5435
+    ports:
+      - "5535:5435"
+    volumes:
+      - remtech_data:/var/lib/postgresql/data
+  
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_ADMINUSERNAME: remtech_user
+      SEQ_FIRSTRUN_ADMINPASSWORD: remtech_password
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    volumes:
+      - seq_data:/data
+  
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data    
+
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password    
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: always
+
+volumes:
+  remtech_data:
+  seq_data:
+  redis_data:

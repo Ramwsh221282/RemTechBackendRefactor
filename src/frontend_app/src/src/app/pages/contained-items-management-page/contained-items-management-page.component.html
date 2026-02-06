@@ -1,0 +1,118 @@
+<div class="max-w-4xl mx-auto p-6 space-y-8">
+  <div class="text-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">Управление хранением данных</h1>
+    <p class="text-gray-600 dark:text-gray-400">Выберите действие для управления данными системы</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+      <div class="flex flex-col items-center space-y-4">
+        <div class="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          </svg>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Удалить запчасти</h2>
+        <p class="text-gray-600 dark:text-gray-400 text-center">Удаление данных о запчастях из системы</p>
+        <button
+          (click)="confirmSpares($event)"
+          class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+          Удалить запчасти
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+      <div class="flex flex-col items-center space-y-4">
+        <div class="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          </svg>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Удалить технику</h2>
+        <p class="text-gray-600 dark:text-gray-400 text-center">Удаление данных о технике из системы</p>
+        <button
+          (click)="confirmVehicles($event)"
+          class="w-full bg-red-600 cursor-pointer hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+          Удалить технику
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+    <div class="flex items-start">
+      <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3 flex-shrink-0" fill="currentColor"
+           viewBox="0 0 20 20">
+        <path fill-rule="evenodd"
+              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd"></path>
+      </svg>
+      <div class="text-sm text-yellow-700 dark:text-yellow-300">
+        <p class="font-medium">Внимание!</p>
+        <p>Удаление данных является необратимой операцией.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<p-toast [position]="'bottom-right'"/>
+<p-confirm-dialog/>
+<p-dialog header="Необходимо авторизоваться." [modal]="true" [visible]="vehiclesConfirmed" [style]="{ width: '25rem' }">
+  <form [formGroup]="vehicleAuthForm" (ngSubmit)="submitVehicles()">
+
+    <div class="flex items-center gap-4 mb-4">
+      <label for="email" class="font-semibold w-24">Email</label>
+      <input id="email" formControlName="email" pInputText class="flex-auto" autocomplete="off"/>
+    </div>
+
+    <div class="flex items-center gap-4 mb-8">
+      <label for="name" class="font-semibold w-24">Псевдоним</label>
+      <input id="name" formControlName="name" pInputText class="flex-auto" autocomplete="off"/>
+    </div>
+
+    <div class="flex items-center gap-4 mb-8">
+      <label for="password" class="font-semibold w-24">Пароль</label>
+      <input id="password"
+             formControlName="password"
+             pInputText
+             type="password"
+             class="flex-auto"
+             autocomplete="off"/>
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <p-button (click)="cancelVehicles()" label="Отменить" severity="secondary" type="button"/>
+      <p-button label="Подтвердить" type="submit"/>
+    </div>
+  </form>
+</p-dialog>
+<p-dialog header="Необходимо авторизоваться." [modal]="true" [visible]="sparesConfirmed" [style]="{ width: '25rem' }">
+  <form [formGroup]="sparesAuthForm" (ngSubmit)="submitSpares()">
+    <div class="flex items-center gap-4 mb-4">
+      <label for="email" class="font-semibold w-24">Email</label>
+      <input id="email" formControlName="email" pInputText class="flex-auto" autocomplete="off"/>
+    </div>
+
+    <div class="flex items-center gap-4 mb-8">
+      <label for="name" class="font-semibold w-24">Псевдоним</label>
+      <input id="name" formControlName="name" pInputText class="flex-auto" autocomplete="off"/>
+    </div>
+
+    <div class="flex items-center gap-4 mb-8">
+      <label for="password" class="font-semibold w-24">Пароль</label>
+      <input id="password"
+             formControlName="password"
+             pInputText
+             type="password"
+             class="flex-auto"
+             autocomplete="off"/>
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <p-button (click)="cancelSpares()" label="Отменить" severity="secondary" type="button"/>
+      <p-button label="Подтвердить" type="submit"/>
+    </div>
+  </form>
+</p-dialog>

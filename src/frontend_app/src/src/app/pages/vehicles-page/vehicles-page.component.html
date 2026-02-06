@@ -1,0 +1,82 @@
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+	<div class="container mx-auto px-4 py-8">
+		<div class="text-center mb-8">
+			<h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Каталог техники</h1>
+		</div>
+
+		<div class="max-w-7xl mx-auto">
+			<!-- Блок поиска для md и меньше -->
+			<div class="block lg:hidden mb-6">
+				<app-vehicles-text-search (textSearchSubmit)="handleUserVehiclesTextSearchSubmit($event)">
+					<app-vehicles-price-sort (sortChange)="handleUserVehiclePriceSortModeChange($event)" />
+				</app-vehicles-text-search>
+			</div>
+			<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+				<aside class="lg:col-span-1">
+					<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 sticky top-4">
+						<h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Фильтры</h2>
+						<app-vehicle-price-filter-form-part (priceChanged)="handleUserPriceFilterInput($event)" />
+						<div class="flex flex-col gap-2">
+							<app-vehicle-category-filter-form-part
+								[categories]="categories()"
+								[currentCategory]="selectFilterParameters().category"
+								(categorySelected)="handleUserCategorySelect($event)"
+							/>
+							<app-vehicle-brand-filter-form-part
+								[brands]="brands()"
+								[disabled]="!selectFilterParameters().category"
+								[currentBrand]="selectFilterParameters().brand"
+								(brandChange)="handleUserBrandSelect($event)"
+							/>
+							<app-vehicle-model-filter-form-part
+								[models]="models()"
+								[disabled]="!selectFilterParameters().brand"
+								[currentModel]="selectFilterParameters().model"
+								(modelSelected)="handleUserModelSelect($event)"
+							/>
+							<app-vehicle-regions-filter-form-part
+								[locations]="locations()"
+								[disabled]="
+									!selectFilterParameters().model && !selectFilterParameters().category && !selectFilterParameters().brand
+								"
+								[selectedLocation]="selectFilterParameters().location"
+								(locationSelected)="handleUserLocationSelect($event)"
+							/>
+						</div>
+					</div>
+				</aside>
+
+				<div class="lg:col-span-3 flex flex-col">
+					<!-- Блок поиска для lg+ -->
+					<div class="hidden lg:block sticky p-4 top-4 bg-gray-50 dark:bg-gray-900">
+						<app-vehicles-text-search (textSearchSubmit)="handleUserVehiclesTextSearchSubmit($event)">
+							<app-vehicles-price-sort (sortChange)="handleUserVehiclePriceSortModeChange($event)" />
+						</app-vehicles-text-search>
+					</div>
+					<div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+						Найдено:
+						<span class="font-semibold">{{ vehicles().TotalCount }}</span> объявлений
+					</div>
+
+					<div class="space-y-4">
+						@for (vehicle of vehicles().Vehicles; track vehicle.VehicleId) {
+							<article
+								class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow duration-200 overflow-hidden"
+							>
+								<app-vehicle-card [vehicle]="vehicle" />
+							</article>
+						}
+					</div>
+					@if (vehicles().TotalCount > vehiclesPageSize) {
+						<app-pagination
+							(pageChanged)="changePage($event)"
+							[current_page]="currentPage()"
+							[total_count]="vehicles().TotalCount"
+							[page_size]="vehiclesPageSize"
+						/>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

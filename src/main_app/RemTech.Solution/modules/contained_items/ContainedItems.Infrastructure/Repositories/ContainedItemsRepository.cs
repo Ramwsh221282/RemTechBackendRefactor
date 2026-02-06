@@ -1,0 +1,146 @@
+﻿using System.Data;
+using ContainedItems.Domain.Contracts;
+using ContainedItems.Domain.Models;
+using ContainedItems.Infrastructure.Extensions;
+using Dapper;
+using RemTech.SharedKernel.Infrastructure.Database;
+
+namespace ContainedItems.Infrastructure.Repositories;
+
+/// <summary>
+/// Репозиторий для работы с содержащимися элементами.
+/// </summary>
+/// <param name="session">Сессия базы данных PostgreSQL.</param>
+public sealed class ContainedItemsRepository(NpgSqlSession session) : IContainedItemsRepository
+{
+	/// <summary>
+	/// Выполняет запрос для получения содержащихся элементов.
+	/// </summary>
+	/// <param name="query">Параметры запроса для фильтрации содержащихся элементов.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Массив содержащихся элементов, соответствующих параметрам запроса.</returns>
+	public Task<ContainedItem[]> Query(ContainedItemsQuery query, CancellationToken ct = default)
+	{
+		(DynamicParameters parameters, string filterSql) = WhereClause(query);
+		string lockClause = LockClause(query);
+		string limitClause = LimitClause(query);
+		string sql = $"""
+			SELECT
+			    id as id,
+			    service_item_id as service_item_id,
+			    creator_id as creator_id,
+			    creator_type as creator_type,
+			    creator_domain as creator_domain,
+			    content as content,
+			    created_at as created_at,
+			    deleted_at as deleted_at,
+			    status as status
+			FROM contained_items_module.contained_items
+			{filterSql}
+			{lockClause}
+			{limitClause}
+			""";
+		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
+		return session.QueryMultipleUsingReader(command, MapFromReader);
+	}
+
+	/// <summary>
+	/// Добавляет множество содержащихся элементов в репозиторий.
+	/// </summary>
+	/// <param name="items">Коллекция содержащихся элементов для добавления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Количество добавленных элементов.</returns>
+	public Task<int> AddMany(IEnumerable<ContainedItem> items, CancellationToken ct = default)
+	{
+		const string sql = """
+			INSERT INTO contained_items_module.contained_items 
+			    (id, service_item_id, creator_id, creator_type, creator_domain, content, created_at, deleted_at, status)
+			VALUES
+			    (@id, @service_item_id, @creator_id, @creator_type, @creator_domain, @content::jsonb, @created_at, @deleted_at, @status)
+			ON CONFLICT (service_item_id) DO NOTHING 
+			""";
+		object[] parameters = items.ExtractForParameters();
+		return session.ExecuteBulkWithAffectedCount(sql, parameters);
+	}
+
+	/// <summary>
+	/// Обновляет множество содержащихся элементов в репозитории.
+	/// </summary>
+	/// <param name="items">Коллекция содержащихся элементов для обновления.</param>
+	/// <param name="ct">Токен отмены операции.</param>
+	/// <returns>Задача, представляющая асинхронную операцию обновления.</returns>
+	public Task UpdateMany(IEnumerable<ContainedItem> items, CancellationToken ct = default)
+	{
+		const string sql = """
+			UPDATE contained_items_module.contained_items
+			set deleted_at = @deleted_at,
+			    status = @status
+			WHERE id = @id    
+			""";
+		object[] parameters = items.ExtractForParameters();
+		return session.ExecuteBulk(sql, parameters);
+	}
+
+	private static (DynamicParameters Parameters, string FilterSql) WhereClause(ContainedItemsQuery query)
+	{
+		List<string> filters = [];
+		DynamicParameters parameters = new();
+
+		if (!string.IsNullOrWhiteSpace(query.Status))
+		{
+			filters.Add("status = @status");
+			parameters.Add("@status", query.Status, DbType.String);
+		}
+
+		if (!string.IsNullOrWhiteSpace(query.ItemType))
+		{
+			filters.Add("item_type = @item_type");
+			parameters.Add("@item_type", query.ItemType, DbType.String);
+		}
+
+		return filters.Count == 0 ? (parameters, string.Empty) : (parameters, $"WHERE {string.Join(" AND ", filters)}");
+	}
+
+	private static string LimitClause(ContainedItemsQuery query)
+	{
+		return query.Limit.HasValue ? $"LIMIT {query.Limit.Value}" : string.Empty;
+	}
+
+	private static string LockClause(ContainedItemsQuery query)
+	{
+		return query.WithLock ? "FOR UPDATE" : string.Empty;
+	}
+
+	private static ContainedItem MapFromReader(IDataReader reader)
+	{
+		Guid id = reader.GetValue<Guid>("id");
+		string itemId = reader.GetValue<string>("service_item_id");
+		Guid creatorId = reader.GetValue<Guid>("creator_id");
+		string creatorType = reader.GetValue<string>("creator_type");
+		string creatorDomain = reader.GetValue<string>("creator_domain");
+		string content = reader.GetValue<string>("content");
+		DateTime createdAt = reader.GetValue<DateTime>("created_at");
+		DateTime? deletedAt = reader.GetNullable<DateTime>("deleted_at");
+		string status = reader.GetValue<string>("status");
+		ContainedItemId idVo = ContainedItemId.Create(id);
+		ServiceItemId itemIdVo = ServiceItemId.Create(itemId);
+		ServiceCreatorInfo creatorInfo = ServiceCreatorInfo.Create(
+			creatorId: creatorId,
+			type: creatorType,
+			domain: creatorDomain
+		);
+		ContainedItemInfo itemInfo = ContainedItemInfo.Create(
+			content: content,
+			createdAt: createdAt,
+			deletedAt: deletedAt
+		);
+		ContainedItemStatus statusVo = ContainedItemStatus.CreateFromString(status);
+		return new ContainedItem(
+			id: idVo,
+			serviceItemId: itemIdVo,
+			creatorInfo: creatorInfo,
+			info: itemInfo,
+			status: statusVo
+		);
+	}
+}

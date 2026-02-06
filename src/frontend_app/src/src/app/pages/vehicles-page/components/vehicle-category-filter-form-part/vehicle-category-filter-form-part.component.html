@@ -1,0 +1,15 @@
+<p-select
+	(onChange)="onChange($event)"
+	[fluid]="true"
+	[options]="categories()"
+	[ngModel]="currentCategory()"
+	[filter]="true"
+	[showClear]="true"
+	[ariaSelected]="'Name'"
+	[optionLabel]="'Name'"
+	[filterBy]="'Name'"
+	[emptyMessage]="'Нет доступных категорий'"
+	[emptyFilterMessage]="'Нет совпадений'"
+	[placeholder]="placeHolderText"
+	class="w-full md:w-56"
+/>

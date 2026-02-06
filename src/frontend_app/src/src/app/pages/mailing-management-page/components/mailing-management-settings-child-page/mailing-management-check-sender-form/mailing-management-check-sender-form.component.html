@@ -1,0 +1,8 @@
+<p-dialog [(visible)]="visible" (onHide)="closeClick()" [modal]="true" [draggable]="false"
+          [header]="`Проверка отправки почты: ${sender().Email}`">
+  <form [formGroup]="checkSenderForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-3">
+    <input pInputText [formControlName]="'sendTo'" [placeholder]="'Почта куда нужно отправить тестовое письмо'">
+    <p-button [type]="'submit'" [label]="'Проверить'"/>
+  </form>
+</p-dialog>
+<p-toast [position]="'bottom-right'"/>

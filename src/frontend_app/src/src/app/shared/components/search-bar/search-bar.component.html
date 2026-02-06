@@ -1,0 +1,6 @@
+<div class="flex flex-row w-full justify-between items-center gap-2">
+  <input [(ngModel)]="input" type="text" pInputText [placeholder]="placeHolderText" [fluid]="'true'"
+    (keydown)="submitByEnterKey($event)" />
+  <p-button [size]="'small'" [icon]="'pi pi-search'" (onClick)="submitByButton($event)" />
+  <p-button [size]="'small'" [icon]="'pi pi-times'" (onClick)="flushTextSearch($event)" />
+</div>
