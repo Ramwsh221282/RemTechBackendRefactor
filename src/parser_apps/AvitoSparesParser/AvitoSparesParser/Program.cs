@@ -1,8 +1,6 @@
 using AvitoSparesParser.Extensions;
 using AvitoSparesParser.RabbitMq.Consumers;
 using DotNetEnv.Configuration;
-using Microsoft.Extensions.Options;
-using ParserSubscriber.SubscribtionContext;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -51,14 +49,6 @@ try
 
     WebApplication app = builder.Build();
     
-    app.Lifetime.ApplicationStarted.Register(() =>
-    {
-        _ = Task.Run(async () =>
-        {
-            await app.Services.RunParserSubscription();
-        });
-    });
-
     logger.Information("Применение миграций модулей базы данных...");
     app.Services.ApplyModuleMigrations();
     logger.Information("Миграции модулей базы данных применены.");
