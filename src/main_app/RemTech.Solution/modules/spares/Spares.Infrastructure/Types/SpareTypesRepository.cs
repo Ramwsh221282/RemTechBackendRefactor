@@ -263,7 +263,8 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 
 	private async Task SetHnswlSimilarityCountForCurrentSession(int count, CancellationToken ct)
 	{
-		const string sql = "SET LOCAL hnsw.ef_search = @count;";
+		//const string sql = "SET LOCAL hnsw.ef_search = @count;";
+        const string sql = "SELECT set_config('hnsw.ef_search', @count::text, true);";
 		CommandDefinition command = new(sql, new { count }, cancellationToken: ct, transaction: session.Transaction);
 		await session.Execute(command);
 	}
