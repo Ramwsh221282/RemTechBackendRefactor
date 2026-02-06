@@ -108,21 +108,28 @@ public static class CataloguePagesCollectingProcess
     {
         IBrowser browser = await browsers.ProvideBrowser();
 
-        for (int i = 0; i < links.Length; i++)
+        try
         {
-            ProcessingParserLink link = links[i];
-            IPage page = await browser.GetPage();
-            links[i] = await ProcessPagedUrlExtractionFromParserLink(
-                link,
-                page,
-                bypassFactory,
-                session,
-                logger
-            );
-        }
+            for (int i = 0; i < links.Length; i++)
+            {
+                ProcessingParserLink link = links[i];
+                IPage page = await browser.GetPage();
+                links[i] = await ProcessPagedUrlExtractionFromParserLink(
+                    link,
+                    page,
+                    bypassFactory,
+                    session,
+                    logger
+                );
+            }
 
-        await links.UpdateMany(session);
-        await browser.DestroyAsync();
+            await links.UpdateMany(session);
+        }
+        finally
+        {
+            await browser.DestroyAsync();
+            BrowserFactory.KillBrowserProcess();   
+        }
     }
 
     private static async Task<ProcessingParserLink> ProcessPagedUrlExtractionFromParserLink(

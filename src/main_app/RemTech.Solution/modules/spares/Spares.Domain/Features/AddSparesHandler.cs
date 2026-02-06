@@ -17,8 +17,7 @@ namespace Spares.Domain.Features;
 public sealed class AddSparesHandler(
 	ISparesRepository sparesRepository,
 	ISpareOemsRepository oemsRepository,
-	ISpareTypesRepository typesRepository,
-	ITransactionSource txnSource
+	ISpareTypesRepository typesRepository
 ) : ICommandHandler<AddSparesCommand, (Guid, int)>
 {
 	/// <summary>
@@ -45,7 +44,7 @@ public sealed class AddSparesHandler(
 		{
 			return [];
 		}
-
+        
 		Dictionary<string, SpareType> types = [];
 		Dictionary<string, SpareOem> oems = [];
 		FillSparesAndOemsWithValidData(types, oems, validInfos);
@@ -65,10 +64,7 @@ public sealed class AddSparesHandler(
 	)
 	{
 		SpareOem[] originArray = [.. oems.Values];
-		await using ITransactionScope scope = await txnSource.BeginTransaction(ct);
-		Dictionary<string, SpareOem> foundOems = await oemsRepository.SaveOrFindManySimilar(originArray, ct);
-		Result commit = await scope.Commit(ct);
-		return commit.IsFailure ? [] : foundOems;
+		return await oemsRepository.SaveOrFindManySimilar(originArray, ct);
 	}
 
 	private async Task<Dictionary<string, SpareType>> GetOrAddOems(
@@ -77,10 +73,7 @@ public sealed class AddSparesHandler(
 	)
 	{
 		SpareType[] originArray = [.. types.Values];
-		await using ITransactionScope scope = await txnSource.BeginTransaction(ct);
-		Dictionary<string, SpareType> foundTypes = await typesRepository.SaveOrFindManySimilar(originArray, ct);
-		Result commit = await scope.Commit(ct);
-		return commit.IsFailure ? [] : foundTypes;
+		return await typesRepository.SaveOrFindManySimilar(originArray, ct);
 	}
 
 	private static List<AddSpareCommandPayload> FilterFromInvalid(IEnumerable<AddSpareCommandPayload> spares)
@@ -99,6 +92,8 @@ public sealed class AddSparesHandler(
 			{
 				continue;
 			}
+            
+            results.Add(info);
 		}
 
 		return results;

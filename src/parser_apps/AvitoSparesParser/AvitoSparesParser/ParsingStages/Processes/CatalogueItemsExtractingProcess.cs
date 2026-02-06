@@ -53,7 +53,7 @@ public static class CatalogueItemsExtractingProcess
         CancellationToken ct
     )
     {
-        Result commit = await scope.Commit();
+        Result commit = await scope.Commit(ct);
         if (commit.IsFailure)
         {
             logger.Error(commit.Error, "Failed to commit transaction.");
@@ -70,18 +70,25 @@ public static class CatalogueItemsExtractingProcess
     {
         IBrowser browser = await browsers.ProvideBrowser();
 
-        for (int i = 0; i < pages.Length; i++)
+        try
         {
-            AvitoCataloguePage page = pages[i];
-            IExtractCataloguePagesItemCommand command = new ExtractCataloguePagesItemCommand(
-                () => browser.GetPage(),
-                bypass
-            ).UseLogging(logger);
-            pages[i] = await ProcessExtraction(command, logger, page, session);
+            for (int i = 0; i < pages.Length; i++)
+            {
+                AvitoCataloguePage page = pages[i];
+                IExtractCataloguePagesItemCommand command = new ExtractCataloguePagesItemCommand(
+                    () => browser.GetPage(),
+                    bypass
+                ).UseLogging(logger);
+                pages[i] = await ProcessExtraction(command, logger, page, session);
+            }
+            
+            await pages.UpdateMany(session);
         }
-
-        await pages.UpdateMany(session);
-        await browser.DestroyAsync();
+        finally
+        {
+            
+            await browser.DestroyAsync();   
+        }
     }
 
     private static async Task<AvitoCataloguePage> ProcessExtraction(

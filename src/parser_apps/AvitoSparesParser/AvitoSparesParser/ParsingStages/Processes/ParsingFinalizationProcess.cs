@@ -123,7 +123,7 @@ public static class ParsingFinalizationProcess
         CancellationToken ct
     )
     {
-        Result commit = await scope.Commit();
+        Result commit = await scope.Commit(ct);
         if (commit.IsFailure)
         {
             logger.Error(commit.Error, "Failed to commit transaction.");
@@ -164,7 +164,7 @@ public static class ParsingFinalizationProcess
         await ProcessingParser.DeleteAllParsers(session, ct);
         await ProcessingParserLink.DeleteAllLinks(session, ct);
         await AvitoCataloguePage.DeleteAll(session, ct);
-        logger.Information("Finalized {Stage}");
+        logger.Information("Finalized.");
     }
 
     private static bool CanSwitchNextStage(AvitoSpare[] spares)

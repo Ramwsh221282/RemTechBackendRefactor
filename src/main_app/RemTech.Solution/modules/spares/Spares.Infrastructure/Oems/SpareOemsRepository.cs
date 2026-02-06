@@ -133,12 +133,12 @@ public sealed class SparesOemRepository(NpgSqlSession session, EmbeddingsProvide
 			INNER JOIN LATERAL (
 				SELECT id, oem FROM spares_module.oems o
 				WHERE oem = io.input_texts
-				OR pg_trgm.similarity(o.oem, io.input_texts) > 0.9
+				OR similarity(o.oem, io.input_texts) > 0.9
 				OR (o.embedding IS NOT NULL AND o.embedding <=> io.input_embeddings < 0.18)
 				ORDER BY
 					CASE
 						WHEN o.oem = io.input_texts THEN 0
-						WHEN pg_trgm.similarity(o.oem, io.input_texts) > 0.9 THEN 1
+						WHEN similarity(o.oem, io.input_texts) > 0.9 THEN 1
 						WHEN o.embedding IS NOT NULL AND o.embedding <=> io.input_embeddings < 0.18 THEN 2
 						ELSE 3
 					END
@@ -266,8 +266,12 @@ public sealed class SparesOemRepository(NpgSqlSession session, EmbeddingsProvide
 
 	private async Task SetHnswlSimilarityCountForCurrentSession(int count, CancellationToken ct)
 	{
-		const string sql = "SET LOCAL hnsw.ef_search = @count;";
-		CommandDefinition command = new(sql, new { count }, cancellationToken: ct, transaction: session.Transaction);
+        
+		//const string sql = "SET LOCAL hnsw.ef_search = @count::text";
+		const string sql = "SELECT set_config('hnsw.ef_search', @count::text, true);";
+        DynamicParameters parameters = new();
+        parameters.Add("@count", count, DbType.Int32);
+		CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
 		await session.Execute(command);
 	}
 
