@@ -31,7 +31,7 @@ public sealed class SparesOemRepository(NpgSqlSession session, EmbeddingsProvide
 		return oem;
 	}
 
-	// TODO: результат этого метода в AddSparesHandler нужно обрабатывать и мэтчить по артикулу запчастей, которые мы пытались добавить.
+	
 	public async Task<Dictionary<string, SpareOem>> SaveOrFindManySimilar(
 		IEnumerable<SpareOem> oems,
 		CancellationToken ct = default
