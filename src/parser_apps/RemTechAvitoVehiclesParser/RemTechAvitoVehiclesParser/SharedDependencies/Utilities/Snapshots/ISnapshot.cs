@@ -1,3 +1,0 @@
-﻿namespace RemTechAvitoVehiclesParser.SharedDependencies.Utilities.Snapshots;
-
-public interface ISnapshot;

@@ -1,7 +1,0 @@
-<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Последняя дата запуска</p>
-@if (lastRunStarted) {
-  <p class="mt-1 font-semibold text-gray-900 dark:text-white">{{ lastRunStarted | date:'short' }}</p>
-}
-@else {
-  <p class="mt-1 font-semibold text-gray-900 dark:text-white">{{ 'Парсер еще не запускался' }}</p>
-}
