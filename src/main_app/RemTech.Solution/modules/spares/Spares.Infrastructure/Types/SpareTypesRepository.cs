@@ -127,35 +127,46 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 		string[] inputTexts = [.. origins.Select(o => o.Value)];
 		Vector[] vectors =
 		[
-			.. embeddings.GenerateBatch([.. origins.Select(PrepareTypeEmbeddingText)]).Select(e => new Vector(e)),
+			.. embeddings.GenerateBatch([.. origins.Select(type => type.Value.Trim())]).Select(e => new Vector(e)),
 		];
 
 		const string sql = """			
 			WITH input_types AS (
-				SELECT UNNEST(@input_ids) AS input_id, 
-					   UNNEST(@input_texts) AS input_texts,
-					   UNNEST(@input_embeddings) AS input_embeddings
+			    SELECT UNNEST(@input_ids) AS input_id,
+			           UNNEST(@input_texts) AS input_texts,
+			           UNNEST(@input_embeddings) AS input_embeddings
 			)
-			SELECT 
-				io.input_id, 
-				io.input_texts,
-				fo.id AS found_id,
-				fo.type AS found_type
+			SELECT
+			    io.input_id,
+			    io.input_texts,
+			    fo.id AS found_id,
+			    fo.type AS found_type
 			FROM input_types io
-			INNER JOIN LATERAL (
-				SELECT id, type FROM spares_module.types t
-				WHERE type = io.input_texts
-				OR similarity(t.type, io.input_texts) > 0.9
-				OR (t.embedding IS NOT NULL AND t.embedding <=> io.input_embeddings < 0.18)
-				ORDER BY
-					CASE
-						WHEN t.type = io.input_texts THEN 0
-						WHEN similarity(t.type, io.input_texts) > 0.9 THEN 1
-						WHEN t.embedding IS NOT NULL AND t.embedding <=> io.input_embeddings < 0.18 THEN 2
-						ELSE 3
-					END
-				LIMIT 1
-			) fo ON TRUE;
+			         INNER JOIN LATERAL (
+			    WITH filtered_by_vector AS (
+			        SELECT id, type FROM spares_module.types t
+			        WHERE 
+			            t.embedding IS NOT NULL
+			            AND 1 - (t.embedding <=> io.input_embeddings) >= 0.4
+			        ORDER BY (t.embedding <=> io.input_embeddings)
+			        LIMIT 20
+			    )
+			    SELECT 
+			        filtered_by_vector.id, 
+			        filtered_by_vector.type 
+			    FROM 
+			        filtered_by_vector
+			    WHERE
+			        filtered_by_vector.type = io.input_texts
+			        OR similarity(filtered_by_vector.type, io.input_texts) > 0.8       
+			    ORDER BY
+			        CASE
+			            WHEN filtered_by_vector.type = io.input_texts THEN 0
+			            WHEN similarity(filtered_by_vector.type, io.input_texts) > 0.9 THEN 1            
+			            ELSE 2
+			            END
+			    LIMIT 1
+			    ) fo ON TRUE;
 			""";
 
 		DynamicParameters parameters = new();
@@ -212,7 +223,7 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 		DynamicParameters parameters = new();
 		parameters.Add("@id", type.Id.Value, DbType.Guid);
 		parameters.Add("@type", type.Value, DbType.String);
-		parameters.Add("@embedding", new Vector(embeddings.Generate(PrepareTypeEmbeddingText(type))));
+		parameters.Add("@embedding", new Vector(embeddings.Generate(type.Value.Trim())));
 
 		CommandDefinition command = session.FormCommand(sql, parameters, ct);
 		await session.Execute(command);
@@ -249,7 +260,7 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 			""";
 
 		string typeText = type.Value;
-		Vector typeEmbedding = new(embeddings.Generate(PrepareTypeEmbeddingText(type)));
+		Vector typeEmbedding = new(embeddings.Generate(type.Value.Trim()));
 		DynamicParameters parameters = new();
 		parameters.Add("@type_text", typeText, DbType.String);
 		parameters.Add("@type_embedding", typeEmbedding);
@@ -306,10 +317,5 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
         const string sql = "SELECT set_config('hnsw.ef_search', @count::text, true);";
 		CommandDefinition command = new(sql, new { count }, cancellationToken: ct, transaction: session.Transaction);
 		await session.Execute(command);
-	}
-
-	private static string PrepareTypeEmbeddingText(SpareType type)
-	{
-		return $"Тип запчасти: {type.Value.Trim()}";
 	}
 }
