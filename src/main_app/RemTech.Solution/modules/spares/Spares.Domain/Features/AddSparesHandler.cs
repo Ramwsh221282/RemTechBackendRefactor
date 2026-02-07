@@ -57,7 +57,7 @@ public sealed class AddSparesHandler(
 		Dictionary<string, SpareType> resolvedTypes = await GetOrAddOems(types, ct);
 		List<Spare> spares = ConstructValidSparesForSaving(validInfos, resolvedOems, resolvedTypes);
         IReadOnlyList<Spare> sparesWithAddress = await addressProvider.SearchAddressesForEachSpare(spares, ct);
-        return sparesWithAddress;
+        return sparesWithAddress.Where(s => s.AddressId is not null);
     }
 
 	private async Task<Dictionary<string, SpareOem>> GetOrAddOems(
@@ -147,13 +147,15 @@ public sealed class AddSparesHandler(
 				isNds: info.IsNds,
 				type: type,
 				address: info.Address,
-				photoPaths: info.PhotoPaths
+				photoPaths: info.PhotoPaths.Where(p => !string.IsNullOrWhiteSpace(p))
 			);
 
-			if (spareResult.IsSuccess)
-			{
-				results.Add(spareResult.Value);
-			}
+            if (spareResult.IsFailure)
+            {
+                continue;
+            }
+
+            results.Add(spareResult.Value);
 		}
 
 		return results;

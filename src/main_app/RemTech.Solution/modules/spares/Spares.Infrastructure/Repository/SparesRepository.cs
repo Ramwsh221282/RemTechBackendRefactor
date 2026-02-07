@@ -26,6 +26,11 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 	public async Task<int> AddMany(IEnumerable<Spare> spares, CancellationToken ct = default)
 	{
         IEnumerable<Spare> filtered = await FilterFromExisting(spares, ct);
+        if (!filtered.Any())
+        {
+            return 0;
+        }
+        
 		CommandDefinition command = CreateInsertCommand(filtered, ct);
         NpgsqlConnection connection = await session.GetConnection(ct);
         return await connection.ExecuteAsync(command);
@@ -37,7 +42,7 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
                            INSERT INTO spares_module.spares 
                            (id, oem_id, type_id, url, price, text, is_nds, region_id, ts_vector_field, photos)  
                            VALUES
-                           (@id, @oem_id, @type_id, @url, @price, @text, @is_nds, @region_id, plainto_tsquery('russian', @tsvector_text), @photos)
+                           (@id, @oem_id, @type_id, @url, @price, @text, @is_nds, @region_id, to_tsvector('russian', @tsvector_text), @photos::jsonb)
                            """;
 
         var parameters = spares.Select(s =>
@@ -53,7 +58,7 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
                 url = s.Source.Url,
                 price = s.Details.Price.Value,
                 text = spareText,
-                is_nds = s.Details.Price.Value,
+                is_nds = s.Details.Price.IsNds,
                 region_id = s.AddressId!.Value,
                 tsvector_text = spareText,
                 photos = photosJson,

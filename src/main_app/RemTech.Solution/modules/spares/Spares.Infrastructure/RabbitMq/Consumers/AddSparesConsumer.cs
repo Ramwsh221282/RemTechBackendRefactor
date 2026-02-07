@@ -52,7 +52,7 @@ public sealed class AddSparesConsumer(
 			}
 			finally
 			{
-				// await Channel.BasicAckAsync(@event.DeliveryTag, false);
+				await Channel.BasicAckAsync(@event.DeliveryTag, false);
 			}
 		};
 
