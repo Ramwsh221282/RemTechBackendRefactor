@@ -33,22 +33,21 @@ public sealed class SparesEmbeddingUpdaterService(
 	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Task.CompletedTask;
-        // while (!stoppingToken.IsCancellationRequested)
-        // {
-        // 	try
-        // 	{
-        // 		await Execute(stoppingToken);
-        // 	}
-        // 	catch (Exception e)
-        // 	{
-        // 		Logger.Fatal(e, "Error updating spare embeddings.");
-        // 	}
-        // 	finally
-        // 	{
-        // 		await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-        // 	}
-        // }
+        while (!stoppingToken.IsCancellationRequested)
+        {
+        	try
+        	{
+        		await Execute(stoppingToken);
+        	}
+        	catch (Exception e)
+        	{
+        		Logger.Fatal(e, "Error updating spare embeddings.");
+        	}
+        	finally
+        	{
+        		await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+        	}
+        }
     }
 
 	private static SpareWithoutEmbedding MapFromReader(IDataReader reader)
@@ -115,12 +114,14 @@ public sealed class SparesEmbeddingUpdaterService(
 		const string sql = """
 			SELECT
 			    s.id as id,
-			    (s.text || ' ' || s.type || ' ' || s.oem || ' ' || r.name || ' ' || r.kind) as text
+			    (s.text || ' ' || t.type || ' ' || o.oem || ' ' || r.name || ' ' || r.kind) as text
 			FROM spares_module.spares s
-			JOIN vehicles_module.regions r ON s.region_id = r.id
+			         JOIN spares_module.types t ON s.type_id = t.id
+			         JOIN spares_module.oems o ON s.oem_id = o.id
+			         JOIN vehicles_module.regions r ON s.region_id = r.id
 			WHERE s.embedding IS NULL
 			LIMIT 50
-			FOR UPDATE OF s;
+			    FOR UPDATE OF s;
 			""";
 		CommandDefinition command = new(sql, transaction: session.Transaction, cancellationToken: ct);
 		SpareWithoutEmbedding[] spares = await session.QueryMultipleUsingReader(command, MapFromReader);
