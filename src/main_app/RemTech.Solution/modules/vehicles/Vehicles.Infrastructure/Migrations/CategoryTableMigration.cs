@@ -20,7 +20,7 @@ public sealed class CategoryTableMigration : Migration
 			    name VARCHAR(255) NOT NULL,
 			    embedding VECTOR(1024)
 			);
-			CREATE INDEX IF NOT EXISTS idx_categories_embedding ON vehicles_module.categories USING hnsw (embedding vector_cosine_ops);
+			
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_categories_name ON vehicles_module.categories(name);
 			"""
 		);

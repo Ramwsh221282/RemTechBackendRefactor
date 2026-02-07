@@ -24,7 +24,6 @@ public sealed class SparesOemMigration : Migration
 
 			CREATE INDEX IF NOT EXISTS idx_spares_oem ON spares_module.oems(oem);
 			CREATE INDEX IF NOT EXISTS idx_spares_oem_trgm ON spares_module.oems USING GIN (oem gin_trgm_ops);
-			CREATE INDEX IF NOT EXISTS idx_spares_hnsw_oem ON spares_module.oems USING hnsw (embedding vector_cosine_ops);
 			"""
 		);
 	}

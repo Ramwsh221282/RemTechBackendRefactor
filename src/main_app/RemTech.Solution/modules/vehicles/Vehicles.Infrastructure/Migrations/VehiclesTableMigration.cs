@@ -52,9 +52,6 @@ public sealed class VehiclesTableMigration : Migration
 			.WithColumn("embedding")
 			.AsCustom("vector(1024)")
 			.Nullable();
-		Execute.Sql(
-			"CREATE INDEX IF NOT EXISTS idx_vehicles_hnsw ON vehicles_module.vehicles USING hnsw (embedding vector_cosine_ops)"
-		);
 	}
 
 	/// <summary>

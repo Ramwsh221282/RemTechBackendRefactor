@@ -33,9 +33,6 @@ public sealed class SparesEmbeddingUpdaterService(
 	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
-		await Task.CompletedTask;
-		// TODO: uncomment once tested with adding spares from parsing.
-
 		while (!stoppingToken.IsCancellationRequested)
 		{
 			try
