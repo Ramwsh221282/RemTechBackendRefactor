@@ -36,21 +36,21 @@ public sealed class SparesEmbeddingUpdaterService(
 		await Task.CompletedTask;
 		// TODO: uncomment once tested with adding spares from parsing.
 
-		// while (!stoppingToken.IsCancellationRequested)
-		// {
-		// 	try
-		// 	{
-		// 		await Execute(stoppingToken);
-		// 	}
-		// 	catch (Exception e)
-		// 	{
-		// 		Logger.Fatal(e, "Error updating spare embeddings.");
-		// 	}
-		// 	finally
-		// 	{
-		// 		await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-		// 	}
-		// }
+		while (!stoppingToken.IsCancellationRequested)
+		{
+			try
+			{
+				await Execute(stoppingToken);
+			}
+			catch (Exception e)
+			{
+				Logger.Fatal(e, "Error updating spare embeddings.");
+			}
+			finally
+			{
+				await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+			}
+		}
 	}
 
 	private static SpareWithoutEmbedding MapFromReader(IDataReader reader)

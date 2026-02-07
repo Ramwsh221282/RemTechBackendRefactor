@@ -130,9 +130,11 @@ public sealed class AddSparesHandler(
 	{
 		List<Spare> results = [];
 		foreach (AddSpareCommandPayload info in validInfos)
-		{
-			SpareOem oem = resolvedOems[info.Oem];
-			SpareType type = resolvedTypes[info.Type];
+        {
+            string key = info.Oem;
+			SpareOem oem = resolvedOems[key];
+            SpareType type = resolvedTypes[info.Type];
+            resolvedOems[key] = oem.MakeWordCharactersUpper();
 
 			Result<Spare> spareResult = SparesFactory.Create(
 				containedItemId: info.ContainedItemId,

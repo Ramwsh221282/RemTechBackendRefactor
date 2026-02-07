@@ -30,11 +30,8 @@ public sealed class SpareOem
 	/// <returns>Результат создания OEM-номера.</returns>
 	public static Result<SpareOem> Create(string value)
 	{
-		SpareOemId id = SpareOemId.New();
-		return string.IsNullOrWhiteSpace(value)
-			? Error.Validation("OEM-номер запчасти не может быть пустым.")
-			: Result.Success(new SpareOem(value, id));
-	}
+        return Create(value, Guid.NewGuid());
+    }
 
 	public static Result<SpareOem> Create(string value, Guid id)
 	{
@@ -44,8 +41,29 @@ public sealed class SpareOem
 			return spareOemIdResult.Error;
 		}
 
-		return string.IsNullOrWhiteSpace(value)
-			? Error.Validation("OEM-номер запчасти не может быть пустым.")
-			: Result.Success(new SpareOem(value, spareOemIdResult.Value));
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return Error.Validation("OEM-номер запчасти не может быть пустым.");
+        }
+        
+        return new SpareOem(value, spareOemIdResult.Value);
 	}
+
+    public SpareOem MakeWordCharactersUpper()
+    {
+        Span<char> upperCased = new Span<char>(new char[Value.Length]);
+        Value.AsSpan().CopyTo(upperCased);
+        
+        for (int i = 0; i < upperCased.Length; i++)
+        {
+            char character = upperCased[i];
+            if (char.IsLetter(character))
+            {
+                character = char.ToUpperInvariant(character);
+                upperCased[i] = character;
+            }
+        }
+        
+        return new SpareOem(new string(upperCased), Id);
+    }
 }

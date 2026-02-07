@@ -37,10 +37,23 @@ public sealed class SparesOemRepository(NpgSqlSession session, EmbeddingsProvide
 		CancellationToken ct = default
 	)
 	{
-		int count = await GetAppropriateEfSearchValue(ct);
-		Logger.Information("Appropriate hnsw.ef_search value for SpareOem embeddings: {Count}", count);
-		await SetHnswlSimilarityCountForCurrentSession(count, ct);
-		return await FindManySimilarOrNewlyAdded(oems, ct);
+        int amountToAdd = oems.ToArray().Length;
+        Logger.Information("Adding {Amount} oems to the database.", amountToAdd);
+        
+        try
+        {
+            int count = await GetAppropriateEfSearchValue(ct);
+            Logger.Information("Appropriate hnsw.ef_search value for SpareOem embeddings: {Count}", count);
+            await SetHnswlSimilarityCountForCurrentSession(count, ct);
+            Dictionary<string, SpareOem> added = await FindManySimilarOrNewlyAdded(oems, ct);
+            Logger.Information("{Amount} types have been added.", added.Count);
+            return added;
+        }
+        catch(Exception ex)
+        {
+            Logger.Error(ex, "Error at persisting oems.");
+            throw;
+        }
 	}
 
 	private async Task<Dictionary<string, SpareOem>> FindManySimilarOrNewlyAdded(
@@ -164,15 +177,42 @@ public sealed class SparesOemRepository(NpgSqlSession session, EmbeddingsProvide
 		}
 	}
 
+    private async Task<IEnumerable<SpareOem>> ExcludeExisting(IEnumerable<SpareOem> oems, CancellationToken token)
+    {
+        string[] oemsValues = oems.Select(o => o.Value).ToArray();
+        const string sql = """
+                           SELECT o.oem FROM spares_module.oems o
+                           WHERE o.oem = ANY(@oems_values)
+                           """;
+        
+        DynamicParameters parameters = new DynamicParameters();
+        parameters.Add("@oem_values", oemsValues);
+        CommandDefinition command = session.FormCommand(sql, parameters, token);
+        NpgsqlConnection connection = await session.GetConnection(token);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+        List<string> existing = [];
+        while (await reader.ReadAsync(token))
+        {
+            string value = reader.GetString(reader.GetOrdinal("oem"));
+            existing.Add(value);
+        }
+
+        return oems.ExceptBy(existing, e => e.Value);
+    }
+    
 	private async Task SaveMany(IEnumerable<SpareOem> oems, CancellationToken ct)
 	{
+        SpareOem[] itemsToAdd = [.. await ExcludeExisting(oems, ct) ];
+        string[] texts = [.. itemsToAdd.Select(i => i.Value)];
+        IReadOnlyList<ReadOnlyMemory<float>> vectors = embeddings.GenerateBatch(texts);
+        var parameters = itemsToAdd.Select((o, i) => new { id = o.Id.Value, oem = o.Value, embedding = new Vector(vectors[i]) });
+        
 		const string sql = """
-			INSERT INTO spares_module.oems (id, oem)
-			VALUES (@id, @oem)
-			""";
-
-		var parameters = oems.Select(o => new { id = o.Id.Value, oem = o.Value }).ToArray();
-		CommandDefinition command = new(sql, parameters, cancellationToken: ct, transaction: session.Transaction);
+                           INSERT INTO spares_module.oems (id, oem, embedding)
+                           VALUES (@id, @oem, @embedding)
+                           """;
+        
+		CommandDefinition command = session.FormCommand(sql, parameters, ct);
 		await session.Execute(command);
 	}
 
