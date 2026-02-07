@@ -1,7 +1,6 @@
 ﻿using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using Spares.Domain.Contracts;
 using Spares.Domain.Models;
 using Spares.Domain.Oems;
@@ -17,7 +16,8 @@ namespace Spares.Domain.Features;
 public sealed class AddSparesHandler(
 	ISparesRepository sparesRepository,
 	ISpareOemsRepository oemsRepository,
-	ISpareTypesRepository typesRepository
+	ISpareTypesRepository typesRepository,
+    ISpareAddressProvider addressProvider
 ) : ICommandHandler<AddSparesCommand, (Guid, int)>
 {
 	/// <summary>
@@ -55,8 +55,10 @@ public sealed class AddSparesHandler(
 
 		Dictionary<string, SpareOem> resolvedOems = await GetOrAddOems(oems, ct);
 		Dictionary<string, SpareType> resolvedTypes = await GetOrAddOems(types, ct);
-		return ConstructValidSparesForSaving(validInfos, resolvedOems, resolvedTypes);
-	}
+		List<Spare> spares = ConstructValidSparesForSaving(validInfos, resolvedOems, resolvedTypes);
+        IReadOnlyList<Spare> sparesWithAddress = await addressProvider.SearchAddressesForEachSpare(spares, ct);
+        return sparesWithAddress;
+    }
 
 	private async Task<Dictionary<string, SpareOem>> GetOrAddOems(
 		Dictionary<string, SpareOem> oems,
@@ -121,7 +123,7 @@ public sealed class AddSparesHandler(
 			}
 		}
 	}
-
+    
 	private static List<Spare> ConstructValidSparesForSaving(
 		List<AddSpareCommandPayload> validInfos,
 		Dictionary<string, SpareOem> resolvedOems,

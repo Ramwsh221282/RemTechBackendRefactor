@@ -32,23 +32,24 @@ public sealed class SparesEmbeddingUpdaterService(
 	/// <param name="stoppingToken">Токен отмены для остановки сервиса.</param>
 	/// <returns>Задача, представляющая асинхронную операцию.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-	{
-		while (!stoppingToken.IsCancellationRequested)
-		{
-			try
-			{
-				await Execute(stoppingToken);
-			}
-			catch (Exception e)
-			{
-				Logger.Fatal(e, "Error updating spare embeddings.");
-			}
-			finally
-			{
-				await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-			}
-		}
-	}
+    {
+        await Task.CompletedTask;
+        // while (!stoppingToken.IsCancellationRequested)
+        // {
+        // 	try
+        // 	{
+        // 		await Execute(stoppingToken);
+        // 	}
+        // 	catch (Exception e)
+        // 	{
+        // 		Logger.Fatal(e, "Error updating spare embeddings.");
+        // 	}
+        // 	finally
+        // 	{
+        // 		await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+        // 	}
+        // }
+    }
 
 	private static SpareWithoutEmbedding MapFromReader(IDataReader reader)
 	{

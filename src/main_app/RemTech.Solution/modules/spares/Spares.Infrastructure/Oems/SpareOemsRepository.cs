@@ -146,14 +146,16 @@ public sealed class SparesOemRepository(NpgSqlSession session, EmbeddingsProvide
 			INNER JOIN LATERAL (
 				SELECT id, oem FROM spares_module.oems o
 				WHERE oem = io.input_texts
-				OR similarity(o.oem, io.input_texts) > 0.9
-				OR (o.embedding IS NOT NULL AND o.embedding <=> io.input_embeddings < 0.18)
+				OR similarity(o.oem, io.input_texts) >= 0.9
+				OR (o.embedding IS NOT NULL AND o.embedding <=> io.input_embeddings <= 0.18)
+				OR ts_rank_cd(to_tsvector('russian', o.oem), plainto_tsquery('russian', io.input_texts)) > 0
 				ORDER BY
 					CASE
 						WHEN o.oem = io.input_texts THEN 0
-						WHEN similarity(o.oem, io.input_texts) > 0.9 THEN 1
-						WHEN o.embedding IS NOT NULL AND o.embedding <=> io.input_embeddings < 0.18 THEN 2
-						ELSE 3
+						WHEN similarity(o.oem, io.input_texts) >= 0.9 THEN 1
+						WHEN o.embedding IS NOT NULL AND o.embedding <=> io.input_embeddings <= 0.18 THEN 2
+						WHEN ts_rank_cd(to_tsvector('russian', o.oem), plainto_tsquery('russian', io.input_texts)) > 0 THEN 3
+						ELSE 4
 					END
 				LIMIT 1
 			) fo ON TRUE;
@@ -186,7 +188,7 @@ public sealed class SparesOemRepository(NpgSqlSession session, EmbeddingsProvide
                            """;
         
         DynamicParameters parameters = new DynamicParameters();
-        parameters.Add("@oem_values", oemsValues);
+        parameters.Add("@oems_values", oemsValues);
         CommandDefinition command = session.FormCommand(sql, parameters, token);
         NpgsqlConnection connection = await session.GetConnection(token);
         await using DbDataReader reader = await connection.ExecuteReaderAsync(command);

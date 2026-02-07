@@ -4,6 +4,7 @@ using Dapper;
 using Npgsql;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Infrastructure.Database;
+using RemTech.SharedKernel.NN;
 using Spares.Domain.Contracts;
 using Spares.Domain.Models;
 
@@ -17,32 +18,51 @@ namespace Spares.Infrastructure.Repository;
 public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvider addressProvider) : ISparesRepository
 {
 	/// <summary>
-	/// Сессия базы данных PostgreSQL.
+	/// Сохранить много запчастей в базу данных за 1 запрос.
 	/// </summary>
 	/// <param name="spares">Коллекция запчастей для добавления.</param>
 	/// <param name="ct">Токен отмены операции.</param>
 	/// <returns>Количество добавленных запчастей.</returns>
 	public async Task<int> AddMany(IEnumerable<Spare> spares, CancellationToken ct = default)
 	{
-		DynamicParameters parameters = new();
-		List<string> insertClauses = [];
-		if (insertClauses.Count == 0)
-		{
-			return 0;
-		}
-
-		IEnumerable<Spare> filtered = await FilterFromExisting(spares, ct);
-		await FillParameters(parameters, insertClauses, filtered, ct);
-		CommandDefinition command = CreateInsertCommand(parameters, insertClauses, ct);
-		return await ExecuteCommand(command, ct);
+        IEnumerable<Spare> filtered = await FilterFromExisting(spares, ct);
+		CommandDefinition command = CreateInsertCommand(filtered, ct);
+        NpgsqlConnection connection = await session.GetConnection(ct);
+        return await connection.ExecuteAsync(command);
 	}
 
-	private async Task<int> ExecuteCommand(CommandDefinition command, CancellationToken ct)
-	{
-		NpgsqlConnection connection = await session.GetConnection(ct);
-		return await connection.ExecuteAsync(command);
-	}
+    private CommandDefinition CreateInsertCommand(IEnumerable<Spare> spares, CancellationToken ct)
+    {
+        const string sql = """
+                           INSERT INTO spares_module.spares 
+                           (id, oem_id, type_id, url, price, text, is_nds, region_id, ts_vector_field, photos)  
+                           VALUES
+                           (@id, @oem_id, @type_id, @url, @price, @text, @is_nds, @region_id, plainto_tsquery('russian', @tsvector_text), @photos)
+                           """;
 
+        var parameters = spares.Select(s =>
+        {
+            string spareText = $"{s.Type.Value} {s.Details.Text.Value} {s.Oem.Value} {s.Details.Address.Value}";
+            string photosJson = JsonSerializer.Serialize(s.Details.Photos.Value);
+            
+            return new
+            {
+                id = s.Id.Value,
+                oem_id = s.Oem.Id.Value,
+                type_id = s.Type.Id.Value,
+                url = s.Source.Url,
+                price = s.Details.Price.Value,
+                text = spareText,
+                is_nds = s.Details.Price.Value,
+                region_id = s.AddressId!.Value,
+                tsvector_text = spareText,
+                photos = photosJson,
+            };
+        });
+
+        return session.FormCommand(sql, parameters, ct);
+    }
+    
 	private async Task<IEnumerable<Spare>> FilterFromExisting(IEnumerable<Spare> spares, CancellationToken ct)
 	{
 		const string sql = """
@@ -70,7 +90,7 @@ public sealed class SparesRepository(NpgSqlSession session, ISpareAddressProvide
 	{
 		string insertClause = string.Join(", ", insertClauses);
 		string insertSql =
-			$"INSERT INTO spares_module.spares (url, id, price, is_nds, oem_id, text, region_id, type_id, photos, ts_vector_field) VALUES {insertClause}";
+			$"INSERT INTO spares_module.spares (url, id, price, is_nds, oem_id, text, region_id, type_id, photos, ts_vector_field) VALUES {insertClause})";
 		return new(insertSql, parameters, transaction: session.Transaction, cancellationToken: ct);
 	}
 
