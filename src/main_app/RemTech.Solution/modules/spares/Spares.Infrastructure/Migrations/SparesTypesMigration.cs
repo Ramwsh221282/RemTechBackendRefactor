@@ -24,7 +24,6 @@ public sealed class SparesTypesMigration : Migration
 
 			CREATE INDEX IF NOT EXISTS idx_spares_type ON spares_module.types(type);
 			CREATE INDEX IF NOT EXISTS idx_spares_type_trgm ON spares_module.types USING GIN (type gin_trgm_ops);
-			CREATE INDEX IF NOT EXISTS idx_spares_hnsw_type ON spares_module.types USING hnsw (embedding vector_cosine_ops);
 			"""
 		);
 	}

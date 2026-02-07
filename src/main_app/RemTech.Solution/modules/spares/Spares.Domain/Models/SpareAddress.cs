@@ -29,3 +29,22 @@ public sealed record SpareAddress
 			: new SpareAddress(value);
 	}
 }
+
+public sealed record SpareAddressId
+{
+    public Guid Value { get; }
+    private SpareAddressId(Guid id)
+    {
+        Value = id;
+    }
+
+    public static Result<SpareAddressId> Create(Guid id)
+    {
+        if (id == Guid.Empty)
+        {
+            return Error.Validation("Идентификатор адреса не может быть пустым");
+        }
+    
+        return new SpareAddressId(id);
+    }
+}

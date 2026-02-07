@@ -136,23 +136,23 @@ public sealed class AddSparesConsumer(
 		List<string> errors = [];
 		if (message.CreatorId == Guid.Empty)
 		{
-			errors.Add("Идентификатор создателя пуст");
+			errors.Add("Идентификатор создателя пуст.");
 		}
 
 		if (string.IsNullOrWhiteSpace(message.CreatorType))
 		{
-			errors.Add("Тип создателя пуст");
+			errors.Add("Тип создателя пуст.");
 		}
 
 		if (string.IsNullOrWhiteSpace(message.CreatorDomain))
 		{
-			errors.Add("Домен создателя пуст");
+			errors.Add("Домен создателя пуст.");
 		}
 
-		if (message.Payload?.Any() != true)
-		{
-			errors.Add("Список запчастей пуст");
-		}
+        if (!message.Payload.Any())
+        {
+            errors.Add("Список запчастей пуст.");
+        }
 
 		error = string.Join(", ", errors);
 		return errors.Count == 0;

@@ -19,6 +19,7 @@ public sealed class PgVectorMigration : Migration
 	public override void Up()
 	{
 		Execute.Sql("CREATE EXTENSION IF NOT EXISTS vector;");
+        Execute.Sql("CREATE EXTENSION IF NOT EXISTS pg_trgm;");
 	}
 
 	/// <summary>

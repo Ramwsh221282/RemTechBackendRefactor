@@ -71,7 +71,7 @@ public static class SparesModuleInjection
 
 		private void RegisterRegionProvider()
 		{
-			services.AddScoped<ISpareAddressProvider, EmbeddingSearchAddressProvider>();
+			services.AddScoped<ISpareAddressProvider, HybridSpareAddressProvider>();
 		}
 
 		private void RegisterProducers()

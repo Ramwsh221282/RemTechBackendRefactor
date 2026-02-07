@@ -29,6 +29,8 @@ dotnet_diagnostic.RCS1001.severity = none
 dotnet_diagnostic.RCS1041.severity = error
 dotnet_diagnostic.RCS1202.severity = warning
 
+dotnet_diagnostic.CA1308.severity = none
+
 dotnet_diagnostic.IDE0058.severity = none
 dotnet_diagnostic.IDE0160.severity = none
 dotnet_diagnostic.IDE0290.severity = none

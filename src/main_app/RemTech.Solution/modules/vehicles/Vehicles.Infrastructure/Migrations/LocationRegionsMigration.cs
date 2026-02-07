@@ -21,7 +21,7 @@ public sealed class LocationRegionsMigration : Migration
 			    kind VARCHAR(128) NOT NULL,
 			    embedding VECTOR(1024)
 			);
-			CREATE INDEX IF NOT EXISTS idx_regions_embedding ON vehicles_module.regions USING hnsw (embedding vector_l2_ops);
+			
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_regions_name ON vehicles_module.regions(name);
 			"""
 		);

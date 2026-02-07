@@ -88,19 +88,26 @@ public static class ConcreteItemExtractingProcess
     )
     {
         IBrowser browser = await deps.Browsers.ProvideBrowser();
-        for (int i = 0; i < spares.Length; i++)
+
+        try
         {
-            AvitoSpare spare = spares[i];
+            for (int i = 0; i < spares.Length; i++)
+            {
+                AvitoSpare spare = spares[i];
 
-            IExtractConcretePageItemCommand command = new ExtractConcretePageItemCommand(
-                browser.GetPage,
-                deps.Bypasses
-            ).UseLogging(deps.Logger);
+                IExtractConcretePageItemCommand command = new ExtractConcretePageItemCommand(
+                    browser.GetPage,
+                    deps.Bypasses
+                ).UseLogging(deps.Logger);
 
-            spares[i] = await ExtractConcreteSpareFromCatalogueSpare(command, spare);
+                spares[i] = await ExtractConcreteSpareFromCatalogueSpare(command, spare);
+            }
         }
-        await spares.PersistAsConcreteRepresentationMany(session);
-        await browser.DestroyAsync();
+        finally
+        {
+            await spares.PersistAsConcreteRepresentationMany(session);
+            await browser.DestroyAsync();
+        }
     }
 
     private static async Task<AvitoSpare> ExtractConcreteSpareFromCatalogueSpare(

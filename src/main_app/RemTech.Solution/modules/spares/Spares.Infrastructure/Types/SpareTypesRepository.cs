@@ -35,11 +35,23 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 		IEnumerable<SpareType> types,
 		CancellationToken ct = default
 	)
-	{
-		int count = await GetAppropriateEfSearchValue(ct);
-		Logger.Information("Appropriate hnsw.ef_search value for SpareType embeddings: {Count}", count);
-		await SetHnswlSimilarityCountForCurrentSession(count, ct);
-		return await FindManySimilarOrNewlyAdded(types, ct);
+    {
+        int amountToAdd = types.ToArray().Length;
+        Logger.Information("Adding {Amount} types to the database.", amountToAdd);
+        try
+        {
+            int count = await GetAppropriateEfSearchValue(ct);
+            Logger.Information("Appropriate hnsw.ef_search value for SpareType embeddings: {Count}", count);
+            await SetHnswlSimilarityCountForCurrentSession(count, ct);
+            Dictionary<string, SpareType> added = await FindManySimilarOrNewlyAdded(types, ct);
+            Logger.Information("{Amount} types have been added.", added.Count);
+            return added;
+        }
+        catch(Exception ex)
+        {
+            Logger.Error(ex, "Error at perstisting types");
+            throw;
+        }
 	}
 
 	private async Task<Dictionary<string, SpareType>> FindManySimilarOrNewlyAdded(
@@ -49,9 +61,9 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 	{
 		SpareType[] origins = [.. types];
 		Dictionary<string, SpareType> source = origins.ToDictionary(t => t.Value, t => t);
-		Dictionary<string, SpareType?> found = origins.ToDictionary(t => t.Value, t => (SpareType?)null);
+		Dictionary<string, SpareType?> found = origins.ToDictionary(t => t.Value, _ => (SpareType?)null);
 		await FillWithSimilarTypes(origins, found, ct);
-		List<SpareType> toAdd = FilterFromNotAdded(found, source);
+		List<SpareType> toAdd = CreateListOfNotExistingTypes(found, source);
 		if (toAdd.Count != 0)
 		{
 			await SaveMany(toAdd, ct);
@@ -72,23 +84,24 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 
 		return found.ToDictionary(kv => kv.Key, kv => kv.Value!);
 	}
-
-	// TODO: доработать работу с эмбеддингами, которых нет в таблице.
-	// это должен быть background процесс.
+    
 	private async Task SaveMany(IEnumerable<SpareType> types, CancellationToken ct = default)
-	{
+    {
+        SpareType[] onlyNew = [..await FilterTypesFromExisting(types, ct)];
+        string[] texts = [..types.Select(t => t.Value)];
+        IReadOnlyList<ReadOnlyMemory<float>> vectors = embeddings.GenerateBatch(texts);
+        var parameters = onlyNew.Select((t, i) => new { id = t.Id.Value, type = t.Value, embedding = new Vector(vectors[i]) });
+        
 		const string sql = """ 
-			INSERT INTO spares_module.types (id, type)
-			VALUES (@id, @type)			
+			INSERT INTO spares_module.types (id, type, embedding)
+			VALUES (@id, @type, @embedding)			
 			""";
-
-		var parameters = types.Select(t => new { id = t.Id.Value, type = t.Value }).ToArray();
-
+        
 		CommandDefinition command = session.FormCommand(sql, parameters, ct);
 		await session.Execute(command);
 	}
 
-	private static List<SpareType> FilterFromNotAdded(
+	private static List<SpareType> CreateListOfNotExistingTypes(
 		Dictionary<string, SpareType?> destination,
 		Dictionary<string, SpareType> source
 	)
@@ -114,35 +127,46 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 		string[] inputTexts = [.. origins.Select(o => o.Value)];
 		Vector[] vectors =
 		[
-			.. embeddings.GenerateBatch([.. origins.Select(PrepareTypeEmbeddingText)]).Select(e => new Vector(e)),
+			.. embeddings.GenerateBatch([.. origins.Select(type => type.Value.Trim())]).Select(e => new Vector(e)),
 		];
 
 		const string sql = """			
-			WITH input_oems AS (
-				SELECT UNNEST(@input_ids) AS input_id, 
-					   UNNEST(@input_texts) AS input_texts,
-					   UNNEST(@input_embeddings) AS input_embeddings
+			WITH input_types AS (
+			    SELECT UNNEST(@input_ids) AS input_id,
+			           UNNEST(@input_texts) AS input_texts,
+			           UNNEST(@input_embeddings) AS input_embeddings
 			)
-			SELECT 
-				io.input_id, 
-				io.input_texts,
-				fo.id AS found_id,
-				fo.type AS found_type
-			FROM input_oems io
-			INNER JOIN LATERAL (
-				SELECT id, oem FROM spares_module.types t
-				WHERE type = io.input_texts
-				OR pg_trgm.similarity(t.type, io.input_texts) > 0.9
-				OR (t.embedding IS NOT NULL AND t.embedding <=> io.input_embeddings < 0.18)
-				ORDER BY
-					CASE
-						WHEN t.type = io.input_texts THEN 0
-						WHEN pg_trgm.similarity(t.type, io.input_texts) > 0.9 THEN 1
-						WHEN t.embedding IS NOT NULL AND t.embedding <=> io.input_embeddings < 0.18 THEN 2
-						ELSE 3
-					END
-				LIMIT 1
-			) fo ON TRUE;
+			SELECT
+			    io.input_id,
+			    io.input_texts,
+			    fo.id AS found_id,
+			    fo.type AS found_type
+			FROM input_types io
+			         INNER JOIN LATERAL (
+			    WITH filtered_by_vector AS (
+			        SELECT id, type FROM spares_module.types t
+			        WHERE 
+			            t.embedding IS NOT NULL
+			            AND 1 - (t.embedding <=> io.input_embeddings) >= 0.4
+			        ORDER BY (t.embedding <=> io.input_embeddings)
+			        LIMIT 20
+			    )
+			    SELECT 
+			        filtered_by_vector.id, 
+			        filtered_by_vector.type 
+			    FROM 
+			        filtered_by_vector
+			    WHERE
+			        filtered_by_vector.type = io.input_texts
+			        OR similarity(filtered_by_vector.type, io.input_texts) > 0.8       
+			    ORDER BY
+			        CASE
+			            WHEN filtered_by_vector.type = io.input_texts THEN 0
+			            WHEN similarity(filtered_by_vector.type, io.input_texts) > 0.9 THEN 1            
+			            ELSE 2
+			            END
+			    LIMIT 1
+			    ) fo ON TRUE;
 			""";
 
 		DynamicParameters parameters = new();
@@ -163,6 +187,32 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 		}
 	}
 
+    private async Task<IEnumerable<SpareType>> FilterTypesFromExisting(
+        IEnumerable<SpareType> types,
+        CancellationToken ct)
+    {
+        SpareType[] originArray = [..types];
+        string[] typeTexts = [.. originArray.Select(t => t.Value)];
+        const string sql = """
+                           SELECT t.type FROM spares_module.types t 
+                           WHERE t.type = ANY(@type_texts)
+                           """;
+
+        DynamicParameters parameters = new();
+        parameters.Add("@type_texts", typeTexts);
+        CommandDefinition command = session.FormCommand(sql, parameters, ct);
+        NpgsqlConnection connection = await session.GetConnection(ct);
+        await using DbDataReader reader = await connection.ExecuteReaderAsync(command);
+        List<string> existingTypes = [];
+        while (await reader.ReadAsync(ct))
+        {
+            string type = reader.GetString(reader.GetOrdinal("type"));
+            existingTypes.Add(type);
+        }
+
+        return originArray.ExceptBy(existingTypes, t => t.Value);
+    }
+
 	private async Task Save(SpareType type, CancellationToken ct)
 	{
 		const string sql = """ 
@@ -173,7 +223,7 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 		DynamicParameters parameters = new();
 		parameters.Add("@id", type.Id.Value, DbType.Guid);
 		parameters.Add("@type", type.Value, DbType.String);
-		parameters.Add("@embedding", new Vector(embeddings.Generate(PrepareTypeEmbeddingText(type))));
+		parameters.Add("@embedding", new Vector(embeddings.Generate(type.Value.Trim())));
 
 		CommandDefinition command = session.FormCommand(sql, parameters, ct);
 		await session.Execute(command);
@@ -210,7 +260,7 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 			""";
 
 		string typeText = type.Value;
-		Vector typeEmbedding = new(embeddings.Generate(PrepareTypeEmbeddingText(type)));
+		Vector typeEmbedding = new(embeddings.Generate(type.Value.Trim()));
 		DynamicParameters parameters = new();
 		parameters.Add("@type_text", typeText, DbType.String);
 		parameters.Add("@type_embedding", typeEmbedding);
@@ -263,13 +313,9 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 
 	private async Task SetHnswlSimilarityCountForCurrentSession(int count, CancellationToken ct)
 	{
-		const string sql = "SET LOCAL hnsw.ef_search = @count;";
+		//const string sql = "SET LOCAL hnsw.ef_search = @count;";
+        const string sql = "SELECT set_config('hnsw.ef_search', @count::text, true);";
 		CommandDefinition command = new(sql, new { count }, cancellationToken: ct, transaction: session.Transaction);
 		await session.Execute(command);
-	}
-
-	private static string PrepareTypeEmbeddingText(SpareType type)
-	{
-		return $"Тип запчасти: {type.Value.Trim()}";
 	}
 }

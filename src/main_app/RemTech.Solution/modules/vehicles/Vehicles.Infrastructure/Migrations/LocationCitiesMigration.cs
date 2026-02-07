@@ -20,7 +20,7 @@ public sealed class LocationCitiesMigration : Migration
 			    name VARCHAR(256) NOT NULL,
 			    embedding VECTOR(1024)
 			);
-			CREATE INDEX IF NOT EXISTS idx_cities_embedding ON vehicles_module.cities USING hnsw (embedding vector_l2_ops);
+			
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_cities_name ON vehicles_module.cities(name);
 			"""
 		);

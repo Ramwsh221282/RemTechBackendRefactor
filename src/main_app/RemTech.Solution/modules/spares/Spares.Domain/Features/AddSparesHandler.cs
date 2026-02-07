@@ -1,7 +1,6 @@
 ﻿using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Handlers.Decorators.Transactions;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using Spares.Domain.Contracts;
 using Spares.Domain.Models;
 using Spares.Domain.Oems;
@@ -18,7 +17,7 @@ public sealed class AddSparesHandler(
 	ISparesRepository sparesRepository,
 	ISpareOemsRepository oemsRepository,
 	ISpareTypesRepository typesRepository,
-	ITransactionSource txnSource
+    ISpareAddressProvider addressProvider
 ) : ICommandHandler<AddSparesCommand, (Guid, int)>
 {
 	/// <summary>
@@ -45,7 +44,7 @@ public sealed class AddSparesHandler(
 		{
 			return [];
 		}
-
+        
 		Dictionary<string, SpareType> types = [];
 		Dictionary<string, SpareOem> oems = [];
 		FillSparesAndOemsWithValidData(types, oems, validInfos);
@@ -56,8 +55,10 @@ public sealed class AddSparesHandler(
 
 		Dictionary<string, SpareOem> resolvedOems = await GetOrAddOems(oems, ct);
 		Dictionary<string, SpareType> resolvedTypes = await GetOrAddOems(types, ct);
-		return ConstructValidSparesForSaving(validInfos, resolvedOems, resolvedTypes);
-	}
+		List<Spare> spares = ConstructValidSparesForSaving(validInfos, resolvedOems, resolvedTypes);
+        IReadOnlyList<Spare> sparesWithAddress = await addressProvider.SearchAddressesForEachSpare(spares, ct);
+        return sparesWithAddress.Where(s => s.AddressId is not null);
+    }
 
 	private async Task<Dictionary<string, SpareOem>> GetOrAddOems(
 		Dictionary<string, SpareOem> oems,
@@ -65,10 +66,7 @@ public sealed class AddSparesHandler(
 	)
 	{
 		SpareOem[] originArray = [.. oems.Values];
-		await using ITransactionScope scope = await txnSource.BeginTransaction(ct);
-		Dictionary<string, SpareOem> foundOems = await oemsRepository.SaveOrFindManySimilar(originArray, ct);
-		Result commit = await scope.Commit(ct);
-		return commit.IsFailure ? [] : foundOems;
+		return await oemsRepository.SaveOrFindManySimilar(originArray, ct);
 	}
 
 	private async Task<Dictionary<string, SpareType>> GetOrAddOems(
@@ -77,10 +75,7 @@ public sealed class AddSparesHandler(
 	)
 	{
 		SpareType[] originArray = [.. types.Values];
-		await using ITransactionScope scope = await txnSource.BeginTransaction(ct);
-		Dictionary<string, SpareType> foundTypes = await typesRepository.SaveOrFindManySimilar(originArray, ct);
-		Result commit = await scope.Commit(ct);
-		return commit.IsFailure ? [] : foundTypes;
+		return await typesRepository.SaveOrFindManySimilar(originArray, ct);
 	}
 
 	private static List<AddSpareCommandPayload> FilterFromInvalid(IEnumerable<AddSpareCommandPayload> spares)
@@ -99,6 +94,8 @@ public sealed class AddSparesHandler(
 			{
 				continue;
 			}
+            
+            results.Add(info);
 		}
 
 		return results;
@@ -126,7 +123,7 @@ public sealed class AddSparesHandler(
 			}
 		}
 	}
-
+    
 	private static List<Spare> ConstructValidSparesForSaving(
 		List<AddSpareCommandPayload> validInfos,
 		Dictionary<string, SpareOem> resolvedOems,
@@ -135,9 +132,11 @@ public sealed class AddSparesHandler(
 	{
 		List<Spare> results = [];
 		foreach (AddSpareCommandPayload info in validInfos)
-		{
-			SpareOem oem = resolvedOems[info.Oem];
-			SpareType type = resolvedTypes[info.Type];
+        {
+            string key = info.Oem;
+			SpareOem oem = resolvedOems[key];
+            SpareType type = resolvedTypes[info.Type];
+            resolvedOems[key] = oem.MakeWordCharactersUpper();
 
 			Result<Spare> spareResult = SparesFactory.Create(
 				containedItemId: info.ContainedItemId,
@@ -148,13 +147,15 @@ public sealed class AddSparesHandler(
 				isNds: info.IsNds,
 				type: type,
 				address: info.Address,
-				photoPaths: info.PhotoPaths
+				photoPaths: info.PhotoPaths.Where(p => !string.IsNullOrWhiteSpace(p))
 			);
 
-			if (spareResult.IsSuccess)
-			{
-				results.Add(spareResult.Value);
-			}
+            if (spareResult.IsFailure)
+            {
+                continue;
+            }
+
+            results.Add(spareResult.Value);
 		}
 
 		return results;

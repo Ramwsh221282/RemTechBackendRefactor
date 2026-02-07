@@ -1,6 +1,7 @@
 using AvitoSparesParser.Extensions;
 using AvitoSparesParser.RabbitMq.Consumers;
 using DotNetEnv.Configuration;
+using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;

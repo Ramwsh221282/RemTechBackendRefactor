@@ -20,7 +20,7 @@ public sealed class BrandTableMigration : Migration
 			    name VARCHAR(255) NOT NULL,
 			    embedding VECTOR(1024)
 			);
-			CREATE INDEX IF NOT EXISTS idx_brands_embedding ON vehicles_module.brands USING hnsw (embedding vector_cosine_ops);
+			
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_brands_name ON vehicles_module.brands(name);
 			"""
 		);

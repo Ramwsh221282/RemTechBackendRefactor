@@ -20,7 +20,7 @@ public sealed class CharacteristicTableMigration : Migration
 			    name VARCHAR(255) NOT NULL,
 			    embedding VECTOR(1024)
 			);
-			CREATE INDEX IF NOT EXISTS idx_characteristics_embedding ON vehicles_module.characteristics USING hnsw (embedding vector_cosine_ops);
+			
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_characteristics_name ON vehicles_module.characteristics(name);
 			"""
 		);

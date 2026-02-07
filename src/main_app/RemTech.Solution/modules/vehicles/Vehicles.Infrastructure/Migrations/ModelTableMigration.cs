@@ -20,7 +20,7 @@ public sealed class ModelTableMigration : Migration
 			    name VARCHAR(255) NOT NULL,
 			    embedding VECTOR(1024)
 			);
-			CREATE INDEX IF NOT EXISTS idx_models_embedding ON vehicles_module.models USING hnsw (embedding vector_cosine_ops);
+			
 			CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_models_name ON vehicles_module.models(name);
 			"""
 		);
