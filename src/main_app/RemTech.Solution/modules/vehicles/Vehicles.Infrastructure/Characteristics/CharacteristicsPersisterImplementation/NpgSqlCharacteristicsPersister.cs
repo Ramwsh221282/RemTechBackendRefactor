@@ -26,88 +26,55 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 	/// <param name="ct">Токен отмены.</param>
 	/// <returns>Результат операции сохранения характеристики.</returns>
 	public async Task<Result<Characteristic>> Save(Characteristic characteristic, CancellationToken ct = default)
-	{
-		const string sql = """
-			WITH exact_match AS (
-			 SELECT id, name FROM vehicles_module.characteristics WHERE name = @name
-			 LIMIT 1
-			),
-			embedding_match AS (
-			 SELECT id, name, embedding <=> @input_embedding AS distance
-			 FROM vehicles_module.characteristics
-			 WHERE embedding <=> @input_embedding < @max_distance
-			 ORDER BY distance
-			 LIMIT 1
-			)
-			SELECT 
-			 exact_match.id as exact_id, 
-			 exact_match.name as exact_name,
-			 embedding_match.id as embedding_id, 
-			 embedding_match.name as embedding_name
-			FROM (SELECT 1) dummy
-			LEFT JOIN exact_match ON true 
-			LEFT JOIN embedding_match ON true;
-			""";
+    {
+        const string sql = """
+                            WITH vector_filtered AS (
+                                SELECT id as id, name as name FROM vehicles_module.characteristics
+                            WHERE
+                                1 - (embedding <=> @input_embedding) >= 0.4
+                            ORDER BY (embedding <=> @input_embedding)
+                            LIMIT 15
+                            ) 
+                            SELECT * FROM vector_filtered
+                            JOIN LATERAL (
+                                SELECT
+                                    vector_filtered.id as id,
+                                    vector_filtered.name as name,
+                                    word_similarity(vector_filtered.name, @name) as sml
+                                FROM 
+                                    vector_filtered
+                                WHERE
+                                    vector_filtered.name = @name
+                                    OR word_similarity(vector_filtered.name, @name) > 0.8
+                                ORDER BY
+                                    CASE
+                                        WHEN vector_filtered.name = @name THEN 0
+                                        when word_similarity(vector_filtered.name, @name) > 0.8 THEN 1
+                                        ELSE 2
+                                    END,
+                                    sml DESC
+                                    LIMIT 1
+                            ) AS trgrm_filtered ON TRUE
+                            """;
 
 		Vector vector = new(embeddings.Generate(characteristic.Name.Value));
 		DynamicParameters parameters = BuildParameters(characteristic, vector);
 		CommandDefinition command = session.FormCommand(sql, parameters, ct);
-
-		NpgSqlSearchResult? result = await session.QuerySingleUsingReader(command, MapFromReader);
-		if (result is not null)
+		NpgSqlSearchResult? result = await session.QueryMaybeRow<NpgSqlSearchResult?>(command);
+		if (result is null)
 		{
-			if (HasFromExactSearch(result))
-			{
-				return MapToCharacteristicFromExactSearch(result);
-			}
-
-			if (HasFromEmbeddingSearch(result))
-			{
-				return MapToCharacteristicFromEmbeddingSearch(result);
-			}
+            await SaveAsNewCharacteristic(characteristic, vector, ct);
+            return characteristic;
 		}
 
-		await SaveAsNewCharacteristic(characteristic, vector, ct);
-		return characteristic;
-	}
-
-	private static bool HasFromEmbeddingSearch(NpgSqlSearchResult result)
-	{
-		return result.EmbeddingId.HasValue && result.EmbeddingName is not null;
-	}
-
-	private static Characteristic MapToCharacteristicFromEmbeddingSearch(NpgSqlSearchResult result)
-	{
-		CharacteristicId id = CharacteristicId.Create(result.EmbeddingId!.Value);
-		CharacteristicName name = CharacteristicName.Create(result.EmbeddingName!);
-		return new Characteristic(id, name);
-	}
-
-	private static bool HasFromExactSearch(NpgSqlSearchResult result)
-	{
-		return result.ExactId.HasValue && result.ExactName is not null;
+		return MapToCharacteristicFromExactSearch(result);
 	}
 
 	private static Characteristic MapToCharacteristicFromExactSearch(NpgSqlSearchResult result)
 	{
-		CharacteristicId id = CharacteristicId.Create(result.ExactId!.Value);
-		CharacteristicName name = CharacteristicName.Create(result.ExactName!);
+		CharacteristicId id = CharacteristicId.Create(result.Id);
+		CharacteristicName name = CharacteristicName.Create(result.Name);
 		return new Characteristic(id, name);
-	}
-
-	private static NpgSqlSearchResult MapFromReader(IDataReader reader)
-	{
-		Guid? exactId = reader.GetNullable<Guid>("exact_id");
-		string? exactName = reader.GetNullableReferenceType<string>("exact_name");
-		Guid? embeddingId = reader.GetNullable<Guid>("embedding_id");
-		string? embeddingName = reader.GetNullableReferenceType<string>("embedding_name");
-		return new NpgSqlSearchResult
-		{
-			ExactId = exactId,
-			ExactName = exactName,
-			EmbeddingId = embeddingId,
-			EmbeddingName = embeddingName,
-		};
 	}
 
 	private static DynamicParameters BuildParameters(Characteristic characteristic, Vector vector)
@@ -115,7 +82,6 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 		DynamicParameters parameters = new();
 		parameters.Add("@name", characteristic.Name.Value, DbType.String);
 		parameters.Add("@input_embedding", vector);
-		parameters.Add("@max_distance", MAX_DISTANCE, DbType.Double);
 		return parameters;
 	}
 
@@ -133,9 +99,7 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 
 	private sealed class NpgSqlSearchResult
 	{
-		public required Guid? ExactId { get; init; }
-		public required string? ExactName { get; init; }
-		public required Guid? EmbeddingId { get; init; }
-		public required string? EmbeddingName { get; init; }
+		public required Guid Id { get; init; }
+		public required string Name { get; init; }
 	}
 }

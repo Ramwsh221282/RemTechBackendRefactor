@@ -12,114 +12,87 @@ namespace Vehicles.Infrastructure.Categories.CategoriesPersisterImplementation;
 /// <summary>
 /// Реализация персистера категорий на основе NpgSql и векторных представлений.
 /// </summary>
-/// <param name="session">Сессия для работы с базой данных NpgSql.</param>
-/// <param name="embeddings">Провайдер векторных представлений.</param>
 public sealed class NpgSqlCategoriesPersisterImplementation(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: ICategoryPersister
 {
-	private const double MAX_DISTANCE = 0.6;
-
 	/// <summary>
 	/// Сохраняет категорию в базе данных.
 	/// </summary>
-	/// <param name="category">Категория для сохранения.</param>
-	/// <param name="ct">Токен отмены.</param>
-	/// <returns>Результат операции сохранения категории.</returns>
 	public async Task<Result<Category>> Save(Category category, CancellationToken ct = default)
-	{
-		const string sql = """
-			WITH exact_match AS (
-			 SELECT id, name FROM vehicles_module.categories WHERE name = @name
-			 LIMIT 1
-			),
-			embedding_match AS (
-			 SELECT id, name, embedding <=> @input_embedding AS distance
-			 FROM vehicles_module.categories
-			 WHERE embedding <=> @input_embedding < @max_distance
-			 ORDER BY distance
-			 LIMIT 1
-			)
-			SELECT 
-			 exact_match.id as exact_id, 
-			 exact_match.name as exact_name,
-			 embedding_match.id as embedding_id, 
-			 embedding_match.name as embedding_name 
-			FROM (SELECT 1) dummy
-			LEFT JOIN exact_match ON true 
-			LEFT JOIN embedding_match ON true; 
-			""";
+    {
+        const string sql = """
+                           WITH vector_filtered AS (
+                                SELECT c.id as id, c.name as c.name
+                                FROM vehicles_module.categories c
+                                WHERE
+                                1 - (c.embedding <=> @input_embedding) >= 0.4
+                                ORDER BY (c.embedding <=> @input_embedding)
+                                LIMIT 20
+                           )
+                           SELECT
+                           trgrm_filtered.id as id,
+                           trgrm_filtered.name as name
+                           FROM vector_filtered
+                           JOIN LATERAL
+                           (
+                                SELECT 
+                                    vector_filtered.id as id,
+                                    vector_filtered.name as name,
+                                    word_similarity(vector_filtered.name, @name) as sml
+                                FROM vector_filtered
+                                WHERE
+                                    vector_filtered.name = @name
+                                    OR word_similarity(vector_filtered.name, @name) > 0.8
+                                ORDER BY
+                                    CASE
+                                        WHEN vector_filtered.name = @name THEN 0
+                                        WHEN word_similarity(vector_filtered.name, @name) > 0.8 THEN 1
+                                        ELSE 2
+                                    END,
+                                    sml DESC
+                                    LIMIT 1
+                           ) AS trgrm_filtered ON TRUE
+                           """;
 
 		Vector vector = new(embeddings.Generate(category.Name.Value));
 		DynamicParameters parameters = BuildParameters(category, vector);
 		CommandDefinition command = session.FormCommand(sql, parameters, ct);
-		NpgSqlSearchResult[] result = await session.QueryMultipleUsingReader(command, MapFromReader);
-		NpgSqlSearchResult? found = result.FirstOrDefault();
-		if (found is null)
-		{
-			return Error.Conflict("Unable to resolve category.");
-		}
-		if (HasFromExactSearch(found))
-		{
-			return MapToCategoryFromExactSearch(found);
-		}
-		return HasFromEmbeddingSearch(found)
-			? (Result<Category>)MapToCategoryFromEmbeddingSearch(found)
-			: (Result<Category>)Error.Conflict("Unable to resolve category.");
-	}
+        NpgSqlSearchResult? existing = await session.QuerySingleRow<NpgSqlSearchResult?>(command);
+        if (existing is null)
+        {
+            await SaveAsNewCategory(category, vector, ct);
+            return category;
+        }
+
+        return new Category(CategoryId.Create(existing.Id), CategoryName.Create(existing.Name));
+    }
 
 	private static DynamicParameters BuildParameters(Category category, Vector vector)
 	{
 		DynamicParameters parameters = new();
 		parameters.Add("@name", category.Name.Value, DbType.String);
 		parameters.Add("@input_embedding", vector);
-		parameters.Add("@max_distance", MAX_DISTANCE, DbType.Double);
 		return parameters;
 	}
 
-	private static bool HasFromEmbeddingSearch(NpgSqlSearchResult result)
-	{
-		return result.EmbeddingId.HasValue && result.EmbeddingName is not null;
-	}
-
-	private static Category MapToCategoryFromEmbeddingSearch(NpgSqlSearchResult result)
-	{
-		CategoryId id = CategoryId.Create(result.EmbeddingId!.Value);
-		CategoryName name = CategoryName.Create(result.EmbeddingName!);
-		return new Category(id, name);
-	}
-
-	private static bool HasFromExactSearch(NpgSqlSearchResult result)
-	{
-		return result.ExactId.HasValue && result.ExactName is not null;
-	}
-
-	private static Category MapToCategoryFromExactSearch(NpgSqlSearchResult result)
-	{
-		CategoryId id = CategoryId.Create(result.ExactId!.Value);
-		CategoryName name = CategoryName.Create(result.ExactName!);
-		return new Category(id, name);
-	}
-
-	private static NpgSqlSearchResult MapFromReader(IDataReader reader)
-	{
-		Guid? exactId = reader.GetNullable<Guid>("exact_id");
-		string? exactName = reader.GetNullableReferenceType<string>("exact_name");
-		Guid? embeddingId = reader.GetNullable<Guid>("embedding_id");
-		string? embeddingName = reader.GetNullableReferenceType<string>("embedding_name");
-		return new NpgSqlSearchResult
-		{
-			ExactId = exactId,
-			ExactName = exactName,
-			EmbeddingId = embeddingId,
-			EmbeddingName = embeddingName,
-		};
-	}
+    private async Task SaveAsNewCategory(Category category, Vector vector, CancellationToken ct)
+    {
+        const string sql = """
+                           INSERT INTO vehicles_module.categories 
+                               (id, name, embedding) 
+                           VALUES (@id, @name, @input_embedding) 
+                           """;
+        DynamicParameters parameters = new();
+        parameters.Add("@id", category.Id.Id, DbType.Guid);
+        parameters.Add("@name", category.Name.Value, DbType.String);
+        parameters.Add("@input_embedding", vector);
+        CommandDefinition command = session.FormCommand(sql, parameters, ct);
+        await session.Execute(command);
+    }
 
 	private sealed class NpgSqlSearchResult
 	{
-		public required Guid? ExactId { get; init; }
-		public required string? ExactName { get; init; }
-		public required Guid? EmbeddingId { get; init; }
-		public required string? EmbeddingName { get; init; }
+		public required Guid Id { get; init; }
+		public required string Name { get; init; }
 	}
 }

@@ -152,7 +152,8 @@ public sealed class SparesOemRepository(NpgSqlSession session, EmbeddingsProvide
 			    )
 			    SELECT
 			        filtered_by_vector.id,
-			        filtered_by_vector.oem
+			        filtered_by_vector.oem,
+			        similarity(filtered_by_vector.oem, io.input_texts) as sml
 			    FROM
 			        filtered_by_vector
 			    WHERE oem = io.input_texts
@@ -162,7 +163,8 @@ public sealed class SparesOemRepository(NpgSqlSession session, EmbeddingsProvide
 			            WHEN filtered_by_vector.oem = io.input_texts THEN 0
 			            WHEN similarity(filtered_by_vector.oem, io.input_texts) >= 0.9 THEN 1
 			            ELSE 2
-			            END
+			            END,
+			            sml DESC
 			    LIMIT 1
 			    ) fo ON TRUE;
 			""";

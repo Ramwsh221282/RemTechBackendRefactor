@@ -153,7 +153,8 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 			    )
 			    SELECT 
 			        filtered_by_vector.id, 
-			        filtered_by_vector.type 
+			        filtered_by_vector.type,
+			        similarity(filtered_by_vector.type, io.input_texts) as sml
 			    FROM 
 			        filtered_by_vector
 			    WHERE
@@ -164,7 +165,8 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 			            WHEN filtered_by_vector.type = io.input_texts THEN 0
 			            WHEN similarity(filtered_by_vector.type, io.input_texts) > 0.9 THEN 1            
 			            ELSE 2
-			            END
+			            END,
+			        sml DESC
 			    LIMIT 1
 			    ) fo ON TRUE;
 			""";

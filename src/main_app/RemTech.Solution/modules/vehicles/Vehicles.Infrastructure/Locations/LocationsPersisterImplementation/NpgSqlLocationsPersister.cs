@@ -1,5 +1,4 @@
-﻿using System.Data;
-using Dapper;
+﻿using Dapper;
 using Pgvector;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -12,160 +11,64 @@ namespace Vehicles.Infrastructure.Locations.LocationsPersisterImplementation;
 /// <summary>
 /// Реализация персистера для локаций на PostgreSQL.
 /// </summary>
-/// <param name="session">Сессия для работы с базой данных PostgreSQL.</param>
-/// <param name="embeddings">Провайдер для работы с векторными представлениями.</param>
 public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsProvider embeddings) : ILocationsPersister
 {
 	/// <summary>
 	/// Сохраняет локацию.
 	/// </summary>
-	/// <param name="location">Локация для сохранения.</param>
-	/// <param name="ct">Токен отмены операции.</param>
-	/// <returns>Результат операции сохранения локации.</returns>
 	public async Task<Result<Location>> Save(Location location, CancellationToken ct = default)
-	{
-		Result<NpgSqlSearchResult> fullResult = await TrySearchFullInfo(location.Name.Value, ct);
-		if (fullResult.IsFailure)
-		{
-			return fullResult.Error;
-		}
-
-		if (fullResult.Value.Region is null)
-		{
-			return Error.NotFound("Unable to resolve location.");
-		}
-
-		return fullResult.IsFailure
-			? (Result<Location>)Error.NotFound("Unable to resolve location.")
-			: (Result<Location>)CreateLocationFromSearchResult(fullResult);
-	}
-
-	private static Location CreateLocationFromSearchResult(NpgSqlSearchResult result)
-	{
-		List<string> locationParts = [];
-		Guid locationId = result.Region!.RegionId;
-		locationParts.Add(result.Region.RegionName);
-		locationParts.Add(result.Region.RegionKind);
-
-		if (result.City is not null && !string.IsNullOrWhiteSpace(result.City.CityName))
-		{
-			locationParts.Add(result.City.CityName);
-		}
-
-		string fullName = string.Join(", ", locationParts);
-		return new Location(LocationId.Create(locationId), LocationName.Create(fullName));
-	}
-
-	private static RegionSearchResult? MapRegionFromReader(IDataReader reader)
-	{
-		Guid? regionId = reader.GetNullable<Guid>("region_id");
-		if (regionId is null)
-		{
-			return null;
-		}
-
-		string regionName = reader.GetValue<string>("region_name");
-		string regionKind = reader.GetValue<string>("region_kind");
-		return new RegionSearchResult
-		{
-			RegionId = regionId.Value,
-			RegionName = regionName,
-			RegionKind = regionKind,
-		};
-	}
-
-	private static CitySearchResult? MapCityFromReader(IDataReader reader)
-	{
-		Guid? cityId = reader.GetNullable<Guid>("city_id");
-		if (cityId is null)
-		{
-			return null;
-		}
-
-		string? cityName = reader.GetNullableReferenceType<string>("city_name");
-		return new CitySearchResult { CityId = cityId.Value, CityName = cityName! };
-	}
-
-	private static NpgSqlSearchResult MapFullFromReader(IDataReader reader)
-	{
-		RegionSearchResult? region = MapRegionFromReader(reader);
-		CitySearchResult? city = MapCityFromReader(reader);
-		return new NpgSqlSearchResult() { Region = region, City = city };
-	}
-
-	private async Task<Result<NpgSqlSearchResult>> TrySearchFullInfo(string rawText, CancellationToken ct)
-	{
-		const string sql = """
-			WITH region_search AS (
-			 SELECT id as region_id, name as region_name, kind as region_kind, distance
-			                           FROM (
-			                               SELECT r.id, r.name, r.kind, r.embedding <-> v.val AS distance,
-			                                      ROW_NUMBER() OVER (ORDER BY r.embedding <-> v.val) as rank
-			                               FROM UNNEST(@embeddings) AS v(val)
-			                               CROSS JOIN LATERAL (
-			                                   SELECT id, name, kind, embedding
-			                                   FROM vehicles_module.regions
-			                                   WHERE embedding <=> v.val < @region_max_distance
-			                                   ORDER BY embedding <=> v.val
-			                                   LIMIT 1
-			                               ) r
-			                           ) ranked
-			                           WHERE rank = 1
-			),
-			    city_search AS (
-			        SELECT name as city_name, id as city_id, distance FROM (
-			            SELECT c.name, c.id, c.embedding <-> v.val as distance,
-			                   ROW_NUMBER() OVER (ORDER BY c.embedding <-> v.val) as rank
-			            FROM UNNEST(@embeddings) AS v(val)
-			            CROSS JOIN LATERAL (
-			                SELECT name, id, embedding
-			                FROM vehicles_module.cities
-			                WHERE embedding <=> v.val < @city_max_distance
-			                ORDER BY embedding <=> v.val
-			                LIMIT 1
-			                ) c
-			        ) ranked
-			        WHERE rank = 1
-			    )
-			SELECT 
-			    region_id, 
-			    region_name, 
-			    region_kind,
-			    city_search.city_name as city_name,
-			    city_search.city_id as city_id
-			FROM region_search
-			FULL JOIN city_search ON true;
-			""";
-
-		string[] parts = rawText.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-		Vector[] vectors = [.. parts.Select(part => new Vector(embeddings.Generate(part)))];
-
-		DynamicParameters parameters = new();
-		parameters.Add("@embeddings", vectors);
-		parameters.Add("@region_max_distance", 0.4);
-		parameters.Add("@city_max_distance", 0.5);
-
-		CommandDefinition command = new(sql, parameters, transaction: session.Transaction, cancellationToken: ct);
-		NpgSqlSearchResult? result = await session.QuerySingleUsingReader(command, MapFullFromReader);
-		return result is null ? Error.NotFound("Unable to resolve location") : Result.Success(result);
-	}
-
-	private sealed class RegionSearchResult
-	{
-		public required Guid RegionId { get; init; }
-		public required string RegionName { get; init; }
-		public required string RegionKind { get; init; }
-	}
-
-	private sealed class CitySearchResult
-	{
-		public required Guid CityId { get; init; }
-		public required string CityName { get; init; }
-	}
+    {
+        const string sql = """
+                           WITH vector_filtered AS (
+                            SELECT 
+                                r.id as id, 
+                                (r.name || ' ' || r.kind) as location_text
+                            FROM vehicles_module.regions r
+                            WHERE 1 - (embedding <=> @input_embedding) >= 0.4
+                            ORDER BY (embedding <=> @input_embedding)
+                            LIMIT 20
+                           )
+                           SELECT 
+                           vector_filtered.id as Id, 
+                           vector_filtered.location_text as LocationText
+                           FROM vector_filtered
+                           JOIN LATERAL (
+                                SELECT 
+                                    vector_filtered.id as Id,
+                                    vector_filtered.location_text as LocationText,
+                                    word_similarity(vector_filtered.location_text, @location_text) as sml
+                                FROM vector_filtered
+                                WHERE 
+                                    vector_filtered.location_text = @location_text
+                                    OR word_similarity(vector_filtered.location_text, @location_text) > 0.8
+                                ORDER BY
+                                    CASE
+                                        WHEN vector_filtered.location_text = @location_text THEN 0
+                                        WHEN word_similarity(vector_filtered.location_text, @location_text) > 0.8 THEN 1
+                                        ELSE 2
+                                    END,
+                                    sml DESC
+                                LIMIT 1
+                           ) trgm_filtered ON true
+                           """;
+        
+        Vector vector = new(embeddings.Generate(location.Name.Value));
+        DynamicParameters parameters = new();
+        parameters.Add("input_embedding", vector);
+        parameters.Add("location_text", location.Name.Value);
+        CommandDefinition command = session.FormCommand(sql, parameters, ct);
+        NpgSqlSearchResult? result = await session.QueryMaybeRow<NpgSqlSearchResult?>(command);
+        if (result is null)
+        {
+            return Error.NotFound("Unable to resolve location");
+        }
+        
+        return new Location(LocationId.Create(result.Id), LocationName.Create(result.LocationText));
+    }
 
 	private sealed class NpgSqlSearchResult
 	{
-		public required RegionSearchResult? Region { get; init; }
-		public required CitySearchResult? City { get; init; }
+		public required Guid Id { get; init; }
+		public required string LocationText { get; init; }
 	}
 }
