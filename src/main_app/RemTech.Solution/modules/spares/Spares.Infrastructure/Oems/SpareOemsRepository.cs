@@ -133,32 +133,38 @@ public sealed class SparesOemRepository(NpgSqlSession session, EmbeddingsProvide
 
 		const string sql = """			
 			WITH input_oems AS (
-				SELECT UNNEST(@input_ids) AS input_id, 
-					   UNNEST(@input_texts) AS input_texts,
-					   UNNEST(@input_embeddings) AS input_embeddings
+			    SELECT UNNEST(@input_ids) AS input_id,
+			           UNNEST(@input_texts) AS input_texts,
+			           UNNEST(@input_embeddings) AS input_embeddings
 			)
-			SELECT 
-				io.input_id, 
-				io.input_texts,
-				fo.id AS found_id,
-				fo.oem AS found_oem
+			SELECT
+			    io.input_id,
+			    io.input_texts,
+			    fo.id AS found_id,
+			    fo.oem AS found_oem
 			FROM input_oems io
-			INNER JOIN LATERAL (
-				SELECT id, oem FROM spares_module.oems o
-				WHERE oem = io.input_texts
-				OR similarity(o.oem, io.input_texts) >= 0.9
-				OR (o.embedding IS NOT NULL AND o.embedding <=> io.input_embeddings <= 0.18)
-				OR ts_rank_cd(to_tsvector('russian', o.oem), plainto_tsquery('russian', io.input_texts)) > 0
-				ORDER BY
-					CASE
-						WHEN o.oem = io.input_texts THEN 0
-						WHEN similarity(o.oem, io.input_texts) >= 0.9 THEN 1
-						WHEN o.embedding IS NOT NULL AND o.embedding <=> io.input_embeddings <= 0.18 THEN 2
-						WHEN ts_rank_cd(to_tsvector('russian', o.oem), plainto_tsquery('russian', io.input_texts)) > 0 THEN 3
-						ELSE 4
-					END
-				LIMIT 1
-			) fo ON TRUE;
+			    INNER JOIN LATERAL (
+			    WITH filtered_by_vector AS (
+			        SELECT o.id as id, o.oem as oem FROM spares_module.oems o
+			        WHERE 1 - (o.embedding <=> io.input_embeddings) >= 0.4
+			        ORDER BY (o.embedding <=> io.input_embeddings)
+			        LIMIT 30
+			    )
+			    SELECT
+			        filtered_by_vector.id,
+			        filtered_by_vector.oem
+			    FROM
+			        filtered_by_vector
+			    WHERE oem = io.input_texts
+			       OR similarity(filtered_by_vector.oem, io.input_texts) >= 0.9
+			    ORDER BY
+			        CASE
+			            WHEN filtered_by_vector.oem = io.input_texts THEN 0
+			            WHEN similarity(filtered_by_vector.oem, io.input_texts) >= 0.9 THEN 1
+			            ELSE 2
+			            END
+			    LIMIT 1
+			    ) fo ON TRUE;
 			""";
 
 		DynamicParameters parameters = new();
