@@ -8,7 +8,6 @@ using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.NN;
-using Serilog;
 using Telemetry.Core.ActionRecords;
 using Telemetry.Core.ActionRecords.ValueObjects;
 

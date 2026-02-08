@@ -53,17 +53,18 @@ function mapSparesResponseToStatistics(response: GetSparesQueryResponse): Aggreg
 
 @Component({
 	selector: 'app-spares-page',
-	imports: [
-		SparesSearchInputComponent,
-		SpareContentComponent,
-		SpareTitleComponent,
-		SpareDetailsComponent,
-		SpareSourceComponent,
-		PaginationComponent,
-		VehiclePriceFilterFormPartComponent,
-		SpareTypesSelectComponent,
-		SpareLocationsSelectComponent,
-	],
+  imports: [
+    SparesSearchInputComponent,
+    SpareContentComponent,
+    SpareTitleComponent,
+    SpareDetailsComponent,
+    SpareSourceComponent,
+    PaginationComponent,
+    VehiclePriceFilterFormPartComponent,
+    SpareTypesSelectComponent,
+    SpareLocationsSelectComponent,
+    SparePhotoComponent,
+  ],
 	templateUrl: './spares-page.component.html',
 	styleUrl: './spares-page.component.scss',
 })

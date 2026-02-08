@@ -1,56 +1,179 @@
-<!-- TODO: add photos for spares list -->
+<!--<div class="max-w-6xl mx-auto p-6 space-y-8">-->
+<!--	<div class="text-center mb-8">-->
+<!--		<h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">Каталог запчастей</h1>-->
+<!--	</div>-->
+<!--	<div class="grid grid-cols-2 gap-4">-->
+<!--		<aside class="col-span-1">-->
+<!--			<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 sticky top-4">-->
+<!--				<h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Фильтры</h2>-->
+<!--				<app-vehicle-price-filter-form-part-->
+<!--					[showSorting]="true"-->
+<!--					(priceChanged)="handlePriceRangeFilterChange($event)"-->
+<!--					(sortModeChanged)="handleSortModeChange($event)"-->
+<!--				/>-->
+<!--				<div class="flex flex-col gap-2">-->
+<!--					<app-spare-locations-select-->
+<!--						(locationsFetched)="locations.set($event)"-->
+<!--						(locationSelected)="currentLocation.set($event)"-->
+<!--					/>-->
+<!--					<app-spare-types-select (sparesFetched)="spareTypes.set($event)" (spareSelected)="currentSpareType.set($event)" />-->
+<!--					<app-spares-search-input (onTextSearchSubmit)="acceptTextSearch($event)" />-->
+<!--				</div>-->
+<!--			</div>-->
+<!--		</aside>-->
+<!--		<section class="col-span-1">-->
+<!--			<div class="space-y-4">-->
+<!--				@for (spare of spares(); track spare.Id) {-->
+<!--					<div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition duration-200">-->
+<!--						<div class="flex flex-col md:flex-row md:items-start gap-4">-->
+<!--							<app-spare-content>-->
+<!--                                <section class="grid grid-cols-2 gap-1">-->
+<!--                                  <div class="flex items-center">-->
+<!--                                    <app-spare-photo [photos]="spare.Photos" />-->
+<!--                                  </div>-->
+<!--                                  <div>-->
+<!--                                    <app-spare-title [title]="spare.Text" [description]="spare.Text" />-->
+<!--                                    <app-spare-details-->
+<!--                                      [isNds]="spare.IsNds"-->
+<!--                                      [location]="spare.Location"-->
+<!--                                      [oem]="spare.Oem"-->
+<!--                                      [price]="spare.Price"-->
+<!--                                    />-->
+<!--                                    <app-spare-source [source]="spare.Url" />-->
+<!--                                  </div>-->
+<!--                                </section>-->
+<!--							</app-spare-content>-->
+<!--						</div>-->
+<!--					</div>-->
+<!--				}-->
+<!--			</div>-->
+<!--		</section>-->
+<!--	</div>-->
+<!--	@if (statistics().totalCount > pageSize) {-->
+<!--		<app-pagination-->
+<!--			[total_count]="statistics().totalCount"-->
+<!--			[page_size]="pageSize"-->
+<!--			[current_page]="query().Page ?? 1"-->
+<!--			(pageChanged)="acceptPageChange($event)"-->
+<!--		/>-->
+<!--	}-->
+<!--</div>-->
 
-<div class="max-w-6xl mx-auto p-6 space-y-8">
-	<div class="text-center mb-8">
-		<h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">Каталог запчастей</h1>
-	</div>
-	<div class="grid grid-cols-2 gap-4">
-		<aside class="col-span-1">
-			<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 sticky top-4">
-				<h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Фильтры</h2>
-				<app-vehicle-price-filter-form-part
-					[showSorting]="true"
-					(priceChanged)="handlePriceRangeFilterChange($event)"
-					(sortModeChanged)="handleSortModeChange($event)"
-				/>
-				<div class="flex flex-col gap-2">
-					<app-spare-locations-select
-						(locationsFetched)="locations.set($event)"
-						(locationSelected)="currentLocation.set($event)"
-					/>
-					<app-spare-types-select (sparesFetched)="spareTypes.set($event)" (spareSelected)="currentSpareType.set($event)" />
-					<app-spares-search-input (onTextSearchSubmit)="acceptTextSearch($event)" />
-				</div>
-			</div>
-		</aside>
-		<section class="col-span-1">
-			<div class="space-y-4">
-				@for (spare of spares(); track spare.Id) {
-					<div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition duration-200">
-						<div class="flex flex-col md:flex-row md:items-start gap-4">
-							<!-- <app-spare-photo [photos]="spare" /> -->
-							<app-spare-content>
-								<app-spare-title [title]="spare.Text" [description]="spare.Text" />
-								<app-spare-details
-									[isNds]="spare.IsNds"
-									[location]="spare.Location"
-									[oem]="spare.Oem"
-									[price]="spare.Price"
-								/>
-								<app-spare-source [source]="spare.Url" />
-							</app-spare-content>
-						</div>
-					</div>
-				}
-			</div>
-		</section>
-	</div>
-	@if (statistics().totalCount > pageSize) {
-		<app-pagination
-			[total_count]="statistics().totalCount"
-			[page_size]="pageSize"
-			[current_page]="query().Page ?? 1"
-			(pageChanged)="acceptPageChange($event)"
-		/>
-	}
+<div class="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 space-y-4 sm:space-y-6 md:space-y-8">
+  <!-- Header -->
+  <div class="text-center mb-4 sm:mb-6 md:mb-8">
+    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+      Каталог запчастей
+    </h1>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+    <!-- Sidebar Filters -->
+    <aside class="lg:col-span-1">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-5 md:p-6 lg:sticky lg:top-4">
+        <h2 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">
+          Фильтры
+        </h2>
+
+        <!-- Price Filter & Sort -->
+        <div class="mb-4">
+          <app-vehicle-price-filter-form-part
+            [showSorting]="true"
+            (priceChanged)="handlePriceRangeFilterChange($event)"
+            (sortModeChanged)="handleSortModeChange($event)"
+          />
+        </div>
+
+        <!-- Other Filters -->
+        <div class="flex flex-col gap-3 sm:gap-2">
+          <app-spare-locations-select
+            (locationsFetched)="locations.set($event)"
+            (locationSelected)="currentLocation.set($event)"
+          />
+          <app-spare-types-select
+            (sparesFetched)="spareTypes.set($event)"
+            (spareSelected)="currentSpareType.set($event)"
+          />
+          <app-spares-search-input (onTextSearchSubmit)="acceptTextSearch($event)" />
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="lg:col-span-2">
+      <!-- Results Count -->
+      <div class="mb-3 sm:mb-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400 px-1">
+        Найдено:
+        <span class="font-semibold">{{ statistics().totalCount }}</span>
+        <span class="hidden sm:inline">запчастей</span>
+        <span class="inline sm:hidden">шт.</span>
+      </div>
+
+      <!-- Spares List -->
+      <div class="space-y-3 sm:space-y-4">
+        @for (spare of spares(); track spare.Id) {
+          <div class="p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition duration-200">
+            <app-spare-content>
+              <section class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <!-- Photo Section -->
+                <div class="flex items-center justify-center sm:justify-start">
+                  <app-spare-photo [photos]="spare.Photos" />
+                </div>
+
+                <!-- Details Section -->
+                <div class="space-y-2 sm:space-y-3">
+                  <app-spare-title
+                    [title]="spare.Text"
+                    [description]="spare.Text"
+                  />
+                  <app-spare-details
+                    [isNds]="spare.IsNds"
+                    [location]="spare.Location"
+                    [oem]="spare.Oem"
+                    [price]="spare.Price"
+                  />
+                  <app-spare-source [source]="spare.Url" />
+                </div>
+              </section>
+            </app-spare-content>
+          </div>
+        } @empty {
+          <!-- Empty State -->
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 sm:p-12 text-center">
+            <svg
+              class="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mb-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+              />
+            </svg>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Запчасти не найдены
+            </h3>
+            <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400">
+              Попробуйте изменить параметры поиска или фильтрации
+            </p>
+          </div>
+        }
+      </div>
+
+      <!-- Pagination -->
+      @if (statistics().totalCount > pageSize) {
+        <div class="mt-6 sm:mt-8">
+          <app-pagination
+            [total_count]="statistics().totalCount"
+            [page_size]="pageSize"
+            [current_page]="query().Page ?? 1"
+            (pageChanged)="acceptPageChange($event)"
+          />
+        </div>
+      }
+    </section>
+  </div>
 </div>

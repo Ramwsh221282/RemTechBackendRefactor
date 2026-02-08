@@ -2,7 +2,6 @@
 using ContainedItems.Domain.Models;
 using ContainedItems.Infrastructure.Repositories;
 using ContainedItems.Worker.Extensions;
-using FluentMigrator.Runner;
 using Identity.Domain.Accounts.Models;
 using Identity.Infrastructure.Accounts;
 using Identity.WebApi.Extensions;
@@ -13,7 +12,6 @@ using Notifications.WebApi.Extensions;
 using ParsersControl.Core.Parsers.Models;
 using ParsersControl.Infrastructure.Parsers.Repository;
 using ParsersControl.WebApi.Extensions;
-using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Core.Handlers.Decorators.DomainEvents;
 using RemTech.SharedKernel.Core.Handlers.Decorators.Logging;

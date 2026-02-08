@@ -26,82 +26,95 @@ public sealed class GetMainPageItemStatsQueryHandler(NpgSqlSession session)
 	{
 		const string sql = """
 			WITH
-			item_counts as (
-			SELECT
-			    jsonb_agg (r) as item_counts
-			FROM
-			    (
+			    item_counts as (
 			        SELECT
-			            jsonb_build_object ('item_type', ci.creator_type, 'count', COUNT(*)) AS item_stat
+			            jsonb_agg (r) as item_counts
 			        FROM
-			            contained_items_module.contained_items ci
-			        WHERE
-			            ci.deleted_at IS NULL
-			        GROUP BY
-			            ci.creator_type
-			    ) r
-			),
-			brands_popularity as (
-			SELECT
-			    jsonb_agg (r) popular_brands
-			FROM
-			    (
+			            (
+			                SELECT
+			                    jsonb_build_object ('item_type', ci.creator_type, 'count', COUNT(*)) AS item_stat
+			                FROM
+			                    contained_items_module.contained_items ci
+			                JOIN vehicles_module.vehicles v ON ci.id = v.id
+			                WHERE
+			                    ci.deleted_at IS NULL
+			                GROUP BY
+			                    ci.creator_type
+			
+			                UNION ALL
+			
+			                SELECT
+			                    jsonb_build_object ('item_type', ci.creator_type, 'count', COUNT(*)) AS item_stat
+			                FROM
+			                    contained_items_module.contained_items ci
+			                        JOIN spares_module.spares s ON ci.id = s.id
+			                WHERE
+			                    ci.deleted_at IS NULL
+			                GROUP BY
+			                    ci.creator_type
+			            ) r
+			    ),
+			    brands_popularity as (
 			        SELECT
-			            jsonb_build_object ('id', b.id, 'name', b.name, 'count', COUNT(v.id)) as brands_stat
+			            jsonb_agg (r) popular_brands
 			        FROM
-			            vehicles_module.vehicles v
-			            LEFT JOIN vehicles_module.brands b ON v.brand_id = b.id
-			        GROUP BY
-			            b.id, b.name
-			        HAVING
-			            COUNT(v.id) > 0
-			        ORDER BY
-			            COUNT(v.id) DESC
-			    ) r
-			),
-			categories_popularity as (
-			SELECT
-			    jsonb_agg (r) popular_categories
-			FROM
-			    (
+			            (
+			                SELECT
+			                    jsonb_build_object ('id', b.id, 'name', b.name, 'count', COUNT(v.id)) as brands_stat
+			                FROM
+			                    vehicles_module.vehicles v
+			                        LEFT JOIN vehicles_module.brands b ON v.brand_id = b.id
+			                GROUP BY
+			                    b.id, b.name
+			                HAVING
+			                    COUNT(v.id) > 0
+			                ORDER BY
+			                    COUNT(v.id) DESC
+			            ) r
+			    ),
+			    categories_popularity as (
 			        SELECT
-			            jsonb_build_object ('id', c.id, 'name', c.name, 'count', COUNT(v.id)) as categories_stat
+			            jsonb_agg (r) popular_categories
 			        FROM
-			            vehicles_module.vehicles v
-			            LEFT JOIN vehicles_module.categories c ON v.category_id = c.id
-			        GROUP BY
-			            c.id, c.name
-			        HAVING
-			            COUNT(v.id) > 0
-			        ORDER BY
-			            COUNT(v.id) DESC
-			    ) r
-			),
-			models_popularity as (
-			 SELECT jsonb_agg(r) popular_models
-			 FROM (
-			     SELECT jsonb_build_object(
-			            'id', m.id,
-			            'name', m.name,
-			            'count', COUNT(v.id)
-			            ) as models_stat
-			     FROM vehicles_module.vehicles v
-			     LEFT JOIN vehicles_module.models m ON v.model_id = m.id
-			     GROUP BY m.id, m.name
-			     HAVING (COUNT(v.id)) > 0
-			     ORDER BY
-			         COUNT(v.id) DESC
-			      ) r
-			)
+			            (
+			                SELECT
+			                    jsonb_build_object ('id', c.id, 'name', c.name, 'count', COUNT(v.id)) as categories_stat
+			                FROM
+			                    vehicles_module.vehicles v
+			                        LEFT JOIN vehicles_module.categories c ON v.category_id = c.id
+			                GROUP BY
+			                    c.id, c.name
+			                HAVING
+			                    COUNT(v.id) > 0
+			                ORDER BY
+			                    COUNT(v.id) DESC
+			            ) r
+			    ),
+			    models_popularity as (
+			        SELECT jsonb_agg(r) popular_models
+			        FROM (
+			                 SELECT jsonb_build_object(
+			                                'id', m.id,
+			                                'name', m.name,
+			                                'count', COUNT(v.id)
+			                        ) as models_stat
+			                 FROM vehicles_module.vehicles v
+			                          LEFT JOIN vehicles_module.models m ON v.model_id = m.id
+			                 GROUP BY m.id, m.name
+			                 HAVING (COUNT(v.id)) > 0
+			                 ORDER BY
+			                     COUNT(v.id) DESC
+			             ) r
+			    )
 			SELECT
 			    ic.item_counts as item_stat,
 			    cp.popular_categories as category_stat,
 			    bp.popular_brands as brand_stat,
 			    mp.popular_models as model_stat
 			FROM item_counts ic
-			FULL JOIN categories_popularity cp ON TRUE
-			FULL JOIN brands_popularity bp ON TRUE
-			FULL JOIN models_popularity mp ON TRUE;
+			         FULL JOIN categories_popularity cp ON TRUE
+			         FULL JOIN brands_popularity bp ON TRUE
+			         FULL JOIN models_popularity mp ON TRUE;
 			""";
 
 		CommandDefinition command = new(sql, cancellationToken: ct);

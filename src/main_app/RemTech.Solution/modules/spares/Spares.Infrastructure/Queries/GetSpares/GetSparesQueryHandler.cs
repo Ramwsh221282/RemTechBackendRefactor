@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.Common;
+using System.Text.Json;
 using Dapper;
 using Npgsql;
 using Pgvector;
@@ -12,18 +13,12 @@ namespace Spares.Infrastructure.Queries.GetSpares;
 /// <summary>
 /// Обработчик запроса на получение запчастей.
 /// </summary>
-/// <param name="session">Сессия базы данных для выполнения запросов.</param>
-/// <param name="embeddings">Провайдер эмбеддингов для обработки текстового поиска.</param>
-/// <param name="textSearchConstants">Константы пороговых значений для текстового поиска.</param>
 public sealed class GetSparesQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: IQueryHandler<GetSparesQuery, GetSparesQueryResponse>
 {
 	/// <summary>
 	/// Обрабатывает запрос на получение запчастей.
 	/// </summary>
-	/// <param name="query">Запрос на получение запчастей.</param>
-	/// <param name="ct">Токен отмены операции.</param>
-	/// <returns>Ответ с результатами запроса на получение запчастей.</returns>
 	public async Task<GetSparesQueryResponse> Handle(GetSparesQuery query, CancellationToken ct = default)
 	{
 		CommandDefinition command = CreateCommand(query);
@@ -44,6 +39,11 @@ public sealed class GetSparesQueryHandler(NpgSqlSession session, EmbeddingsProvi
 
 	private static void ApplyOrderBy(GetSparesQuery query, List<string> orderBySql)
 	{
+        if (!string.IsNullOrWhiteSpace(query.TextSearch))
+        {
+            orderBySql.Add("vector_score DESC");
+        }
+        
 		string orderMode = query.OrderMode;
 		if (orderMode == "DESC" || orderMode == "ASC")
 		{
@@ -67,6 +67,10 @@ public sealed class GetSparesQueryHandler(NpgSqlSession session, EmbeddingsProvi
 				aggregatedInfoSet = true;
 			}
 
+            string photosJson = reader.GetString(reader.GetOrdinal("spare_photos"));
+            IReadOnlyList<SparePhotoResponse> photosDeserialized = JsonSerializer.Deserialize<IReadOnlyList<SparePhotoResponse>>(photosJson)!;
+            IReadOnlyList<string> photosUrlRaw = photosDeserialized.Select(p => p.Value).ToList();
+            
 			spares.Add(
 				new SpareResponse()
 				{
@@ -78,6 +82,7 @@ public sealed class GetSparesQueryHandler(NpgSqlSession session, EmbeddingsProvi
 					Type = reader.GetString(reader.GetOrdinal("spare_type")),
 					IsNds = reader.GetBoolean(reader.GetOrdinal("spare_is_nds")),
 					Location = reader.GetString(reader.GetOrdinal("location")),
+                    Photos = photosUrlRaw
 				}
 			);
 		}
@@ -99,31 +104,36 @@ public sealed class GetSparesQueryHandler(NpgSqlSession session, EmbeddingsProvi
 		string whereClause = filters.Count == 0 ? string.Empty : $" WHERE {string.Join(" AND ", filters)}";
 		string orderByClause = orderBy.Count == 0 ? string.Empty : $" ORDER BY {string.Join(", ", orderBy)}";
 		string paginationClause = pagination.Count == 0 ? string.Empty : $" {string.Join(" ", pagination)}";
-
+        
+        string includeVectorSearchScore = string.IsNullOrWhiteSpace(query.TextSearch)
+            ? string.Empty
+            : "1 - (s.embedding <=> @embedding_search) as vector_score,";
+        
 		string sql = $"""
-			WITH spares AS (
-			    SELECT
-			        s.id as spare_id,
-			        s.url as spare_url,
-			        s.price as spare_price,
-			        s.oem as spare_oem,
-			        s.text as spare_text,
-			        s.type as spare_type,
-			        s.is_nds as spare_is_nds,
-			        s.region_id as spare_region_id,
-			        count(*) over() as total_count,
-			        avg(s.price) over() as average_price,
-			        max(s.price) over() as maximal_price,
-			        min(s.price) over() as minimal_price
-			    FROM spares_module.spares s
-			    {whereClause}
-			    {orderByClause}
-			    {paginationClause}
-			)
-			SELECT s.*, (r.name || ' ' || r.kind) as location FROM spares s
-			JOIN vehicles_module.regions r ON s.spare_region_id = r.id
-			JOIN contained_items_module.contained_items ci ON s.spare_id = ci.id
-			WHERE ci.deleted_at IS NULL			
+			SELECT
+			    {includeVectorSearchScore}
+			    s.id as spare_id,
+			    s.url as spare_url,
+			    s.price as spare_price,
+			    o.oem as spare_oem,
+			    s.text as spare_text,
+			    t.type as spare_type,
+			    s.is_nds as spare_is_nds,
+			    s.region_id as spare_region_id,
+			    s.photos as spare_photos,
+			    count(*) over() as total_count,
+			    avg(s.price) over() as average_price,
+			    max(s.price) over() as maximal_price,
+			    min(s.price) over() as minimal_price,
+			    (r.name || ' ' || r.kind) as location
+			FROM spares_module.spares s
+			JOIN spares_module.oems o ON s.oem_id = o.id
+			JOIN spares_module.types t ON s.type_id = t.id
+			JOIN vehicles_module.regions r ON s.region_id = r.id
+			JOIN contained_items_module.contained_items ci ON s.id = ci.id
+			{whereClause}
+			{orderByClause}
+			{paginationClause}
 			""";
 
 		return new CommandDefinition(sql, parameters, transaction: session.Transaction);
@@ -131,6 +141,8 @@ public sealed class GetSparesQueryHandler(NpgSqlSession session, EmbeddingsProvi
 
 	private void ApplyFilters(GetSparesQuery query, DynamicParameters parameters, List<string> filters)
 	{
+        filters.Add("ci.deleted_at IS NULL");
+        
 		if (!string.IsNullOrWhiteSpace(query.Type))
 		{
 			filters.Add("s.type=@spare_type");
@@ -157,7 +169,9 @@ public sealed class GetSparesQueryHandler(NpgSqlSession session, EmbeddingsProvi
 
 		if (!string.IsNullOrWhiteSpace(query.TextSearch))
 		{
-			ApplyTextSearch(query.TextSearch, parameters, filters);
+			filters.Add("1 - (s.embedding <=> @embedding_search) >= 0.4");
+            Vector vector = new(embeddings.Generate(query.TextSearch));
+            parameters.Add("@embedding_search", vector);
 		}
 
 		if (!string.IsNullOrWhiteSpace(query.Oem))
@@ -186,41 +200,5 @@ public sealed class GetSparesQueryHandler(NpgSqlSession session, EmbeddingsProvi
 
 		filters.Add(sql);
 		parameters.Add("@oem", oem, DbType.String);
-	}
-
-	private void ApplyTextSearch(string text, DynamicParameters parameters, List<string> filters)
-	{
-		const string sql = """
-			s.id IN (
-			WITH embedding_search AS (
-			    SELECT
-			        id,			        
-			        (esv.embedding <-> @embedding_search) AS distance
-			    FROM spares_module.spares esv
-			    WHERE esv.embedding <-> @embedding_search <= 0.8
-			    ORDER BY distance			    
-			),
-			keyword_search AS (
-				SELECT
-			    id,
-			    text,
-			    ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @text_search_parameter)) as ts_rank
-			    FROM spares_module.spares ksv
-			    WHERE ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @text_search_parameter)) >= 0 OR ksv.text ILIKE '%' || @text_search_parameter || '%'			    
-			),
-			merged as (
-			        SELECT COALESCE(e.id, k.id) as id			            
-			        FROM embedding_search e
-			        FULL OUTER JOIN keyword_search k ON e.id = k.id
-			    )			    
-			SELECT id
-			FROM merged			
-			)
-			""";
-
-		filters.Add(sql);
-		Vector embedding = new(embeddings.Generate(text));
-		parameters.Add("@embedding_search", embedding);
-		parameters.Add("@text_search_parameter", text, DbType.String);
 	}
 }

@@ -48,49 +48,51 @@ public sealed class GetMainPageLastAddedItemsQueryHandler(NpgSqlSession session)
 	)
 	{
 		const string sql = """
-			    WITH vehicle_items AS (
+			   WITH vehicle_items AS (
 			    SELECT
 			        jsonb_build_object(
-			            'id', v.id,
-			            'title', c.name || ' ' || b.name || ' ' || m.name,
-			            'photos', v.photos,
-			            'characteristics', (
-			                SELECT jsonb_agg(
-			                    jsonb_build_object('characteristic', ch.name, 'value', vc."value")
-			                )
-			                FROM vehicles_module.vehicle_characteristics vc
-			                LEFT JOIN vehicles_module.characteristics ch ON ch.id = vc.characteristic_id
-			                WHERE vc.vehicle_id = v.id
-			            ),
-			            'type', 'vehicle'
+			                'id', v.id,
+			                'title', c.name || ' ' || b.name || ' ' || m.name,
+			                'photos', v.photos,
+			                'characteristics', (
+			                    SELECT jsonb_agg(
+			                                   jsonb_build_object('characteristic', ch.name, 'value', vc."value")
+			                           )
+			                    FROM vehicles_module.vehicle_characteristics vc
+			                             LEFT JOIN vehicles_module.characteristics ch ON ch.id = vc.characteristic_id
+			                    WHERE vc.vehicle_id = v.id
+			                ),
+			                'type', 'vehicle'
 			        ) AS item,
 			        ci.created_at as created_at
 			    FROM contained_items_module.contained_items ci
-			    LEFT JOIN vehicles_module.vehicles v ON v.id = ci.id
-			    LEFT JOIN vehicles_module.brands b ON b.id = v.brand_id
-			    LEFT JOIN vehicles_module.categories c ON c.id = v.category_id
-			    LEFT JOIN vehicles_module.models m ON m.id = v.model_id
+			             LEFT JOIN vehicles_module.vehicles v ON v.id = ci.id
+			             LEFT JOIN vehicles_module.brands b ON b.id = v.brand_id
+			             LEFT JOIN vehicles_module.categories c ON c.id = v.category_id
+			             LEFT JOIN vehicles_module.models m ON m.id = v.model_id
 			    WHERE ci.deleted_at IS NULL
-			    AND v.id IS NOT NULL
+			      AND v.id IS NOT NULL
 			    ORDER BY ci.created_at DESC
 			    LIMIT 25
 			),
-			spare_items AS (
-			    SELECT
-			        jsonb_build_object(
-			            'id', s.id,
-			            'title', s."type" || ' ' || s.oem || ' ' || s.text,
-			            'type', 'spare'
-			        ) AS item,
-			        ci.created_at as created_at
-			    FROM contained_items_module.contained_items ci
-			    LEFT JOIN spares_module.spares s ON s.id = ci.id
-			    WHERE ci.deleted_at IS NULL
-			    AND s.id IS NOT NULL
-			    ORDER BY ci.created_at DESC
-			    LIMIT 25
-			)
-
+			     spare_items AS (
+			         SELECT
+			             jsonb_build_object(
+			                     'id', s.id,
+			                     'title', t."type" || ' ' || o.oem || ' ' || s.text,
+			                     'type', 'spare'
+			             ) AS item,
+			             ci.created_at as created_at
+			         FROM contained_items_module.contained_items ci
+			                  LEFT JOIN spares_module.spares s ON s.id = ci.id
+			                  JOIN spares_module.types t ON s.type_id = t.id
+			                  JOIN spares_module.oems o ON o.id = s.oem_id
+			         WHERE ci.deleted_at IS NULL
+			           AND s.id IS NOT NULL
+			         ORDER BY ci.created_at DESC
+			         LIMIT 25
+			     )
+			
 			SELECT NULL::jsonb as vehicle, NULL::jsonb as spare
 			UNION ALL
 			SELECT item as vehicle, NULL::jsonb as spare
@@ -98,7 +100,7 @@ public sealed class GetMainPageLastAddedItemsQueryHandler(NpgSqlSession session)
 			UNION ALL
 			SELECT NULL::jsonb as vehicle, item as spare
 			FROM spare_items
-			OFFSET 1           
+			OFFSET 1   
 			""";
 
 		CommandDefinition command = new(sql, cancellationToken: ct);

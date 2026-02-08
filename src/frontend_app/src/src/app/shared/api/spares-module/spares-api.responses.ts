@@ -9,6 +9,7 @@ export type SpareResponse = {
 	Type: string;
 	IsNds: boolean;
 	Location: string;
+  Photos: string[]
 };
 
 export type GetSparesQueryResponse = {
