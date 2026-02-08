@@ -1,8 +1,8 @@
 services:
-  database:
+  remtech_database:
     image: pgvector/pgvector:0.8.1-pg18-trixie
     restart: always
-    container_name: database
+    container_name: remtech_database
     environment:
       POSTGRES_DB: ${NpgSqlOptions__Database}
       POSTGRES_USER: ${NpgSqlOptions__Username}
@@ -13,18 +13,18 @@ services:
     volumes:
       - remtech_data:/var/lib/postgresql
 
-  redis:
+  remtech_redis:
     image: redis:alpine
-    container_name: redis
+    container_name: remtech_redis
     restart: always
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
 
-  rabbitmq:
+  remtech_rabbitmq:
     image: rabbitmq:alpine
-    container_name: rabbitmq
+    container_name: remtech_rabbitmq
     hostname: rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: ${RabbitMqOptions__Username}
@@ -45,9 +45,9 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:5185
     depends_on:
-      - database
-      - redis
-      - rabbitmq
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
     restart: always
 
   avito-vehicles:
@@ -57,9 +57,9 @@ services:
       dockerfile: ./parser_apps/RemTechAvitoVehiclesParser/Dockerfile
     depends_on:
       - backend
-      - database
-      - redis
-      - rabbitmq
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
     restart: always
 
   drom-vehicles:
@@ -69,9 +69,9 @@ services:
       dockerfile: ./parser_apps/RemtechDromVehiclesParser/Dockerfile
     depends_on:
       - backend
-      - database
-      - redis
-      - rabbitmq
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
     restart: always
 
   avito-spares:
@@ -81,9 +81,9 @@ services:
       dockerfile: ./parser_apps/AvitoSparesParser/Dockerfile
     depends_on:
       - backend
-      - database
-      - redis
-      - rabbitmq
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
     restart: always
 
   frontend:
@@ -97,9 +97,9 @@ services:
       - DISABLE_IPV6=1
     depends_on:
       - backend
-      - database
-      - redis
-      - rabbitmq
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
     restart: always
 
 volumes:
