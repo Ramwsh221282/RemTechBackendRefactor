@@ -19,6 +19,15 @@ nuget.config
 .angular/
 .angular
 
+appsettings*.json
+appsettings.*.json
+/appsettings*.json
+/appsettings.*.json
+**/appsettings*.json
+**/appsettings.*.json
+*/appsettings*.json
+*/appsettings.*.json
+
 .DS_STORE
 
 /dist/
