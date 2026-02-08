@@ -55,8 +55,9 @@ public sealed class VehicleEmbeddingsUpdaterService(
 		await using NpgSqlSession session = new(NpgSql);
 		NpgSqlTransactionSource transactionSource = new(session);
 		await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
+        
         IReadOnlyList<VehicleWithoutEmbedding> vehicles = await GetVehiclesWithoutEmbeddings(session, ct);
-		if (vehicles.Count == 0)
+        if (vehicles.Count == 0)
 		{
 			return;
 		}

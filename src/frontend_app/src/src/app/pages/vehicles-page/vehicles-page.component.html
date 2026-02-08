@@ -5,7 +5,6 @@
 		</div>
 
 		<div class="max-w-7xl mx-auto">
-			<!-- Блок поиска для md и меньше -->
 			<div class="block lg:hidden mb-6">
 				<app-vehicles-text-search (textSearchSubmit)="handleUserVehiclesTextSearchSubmit($event)">
 					<app-vehicles-price-sort (sortChange)="handleUserVehiclePriceSortModeChange($event)" />
@@ -47,7 +46,6 @@
 				</aside>
 
 				<div class="lg:col-span-3 flex flex-col">
-					<!-- Блок поиска для lg+ -->
 					<div class="hidden lg:block sticky p-4 top-4 bg-gray-50 dark:bg-gray-900">
 						<app-vehicles-text-search (textSearchSubmit)="handleUserVehiclesTextSearchSubmit($event)">
 							<app-vehicles-price-sort (sortChange)="handleUserVehiclePriceSortModeChange($event)" />

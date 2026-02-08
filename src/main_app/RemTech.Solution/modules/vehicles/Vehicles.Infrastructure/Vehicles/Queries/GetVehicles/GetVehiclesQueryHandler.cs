@@ -14,9 +14,7 @@ namespace Vehicles.Infrastructure.Vehicles.Queries.GetVehicles;
 /// <summary>
 /// Обработчик запроса на получение транспортных средств.
 /// </summary>
-/// <param name="session">Сессия для работы с базой данных PostgreSQL.</param>
-/// <param name="embeddings">Провайдер для работы с векторными представлениями.</param>
-[UseCache]
+// [UseCache]
 public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: IQueryHandler<GetVehiclesQuery, GetVehiclesQueryResponse>
 {
@@ -26,9 +24,6 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 	/// <summary>
 	/// Обрабатывает запрос на получение транспортных средств.
 	/// </summary>
-	/// <param name="query">Запрос на получение транспортных средств.</param>
-	/// <param name="ct">Токен отмены операции.</param>
-	/// <returns>Ответ с транспортными средствами.</returns>
 	public async Task<GetVehiclesQueryResponse> Handle(GetVehiclesQuery query, CancellationToken ct = default)
 	{
 		(DynamicParameters parameters, string sql) = FormSqlQuery(query, Embeddings);
@@ -44,16 +39,7 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 	)
 	{
 		DynamicParameters parameters = new();
-		(parameters, string filterSql) = FormVehiclesQuery(query.Parameters, parameters, embeddings);
-
-		string sql = $"""
-			WITH vehicles AS (
-			    {filterSql}
-			)
-			SELECT v.*
-			FROM vehicles v
-			""";
-
+		(parameters, string sql) = FormVehiclesQuery(query.Parameters, parameters, embeddings);
 		return (parameters, sql);
 	}
 
@@ -107,14 +93,18 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 	private static (DynamicParameters Parameters, string VehiclesCTEQuery) FormVehiclesQuery(
 		GetVehiclesQueryParameters queryParameters,
 		DynamicParameters parameters,
-		EmbeddingsProvider embeddings
+        EmbeddingsProvider embeddingsProvider
 	)
 	{
-		(parameters, string filterSql) = FormVehiclesFilterSql(queryParameters, parameters, embeddings);
+		(parameters, string filterSql) = FormVehiclesFilterSql(queryParameters, parameters, embeddingsProvider);
 		(parameters, string orderBySql) = FormVehiclesSortSql(queryParameters, parameters);
 		(parameters, string paginationSql) = FormPaginationSql(queryParameters, parameters);
+        
+        string textSearchInclude = string.IsNullOrWhiteSpace(queryParameters.TextSearch) ? string.Empty : "1 - (v.embedding <=> @embedding_search) as vector_score,";
+        
 		string sql = $"""
 			SELECT
+			{textSearchInclude}
 			v.id as vehicle_id,
 			v.brand_id as brand_id,
 			b.name as brand_name,
@@ -148,61 +138,14 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 			""";
 		return (parameters, sql);
 	}
-
-	private static void ApplySemanticSearchFilter(
-		GetVehiclesQueryParameters queryParameters,
-		List<string> filterSql,
-		EmbeddingsProvider provider,
-		DynamicParameters parameters
-	)
-	{
-		if (string.IsNullOrWhiteSpace(queryParameters.TextSearch))
-		{
-			return;
-		}
-
-		const string sql = """
-			v.id IN (
-			WITH embedding_search AS (
-			    SELECT id, esv.embedding <-> @embedding_search as distance
-			    FROM vehicles_module.vehicles esv
-			    WHERE esv.embedding <-> @embedding_search <= 0.8
-			    ORDER BY distance			    
-			),
-			keyword_search AS (
-			    SELECT id			    
-			    FROM vehicles_module.vehicles ksv
-			    WHERE ts_rank_cd(ts_vector_field, plainto_tsquery('russian', @text_search_parameter)) > 0),
-			ilike_search AS (
-				SELECT id
-				FROM vehicles_module.vehicles ilv
-				WHERE ilv.text ILIKE '%' || @text_search_parameter || '%'
-			),
-			merged AS (
-			        SELECT COALESCE(e.id, k.id, i.id) as id			            
-			        FROM embedding_search e
-			        FULL OUTER JOIN keyword_search k ON e.id = k.id
-					FULL OUTER JOIN ilike_search i ON COALESCE(e.id, k.id) = i.id
-			    )				
-			SELECT id
-			FROM merged			
-			)
-			""";
-
-		filterSql.Add(sql);
-		Vector embedding = new(provider.Generate(queryParameters.TextSearch));
-		parameters.Add("@embedding_search", embedding);
-		parameters.Add("@text_search_parameter", queryParameters.TextSearch, DbType.String);
-	}
-
+    
 	private static (DynamicParameters Parameters, string PaginationSql) FormPaginationSql(
 		GetVehiclesQueryParameters queryParameters,
 		DynamicParameters parameters
 	)
 	{
 		int limit = queryParameters.PageSize;
-		int offset = (queryParameters.Page - 1) * limit;
-		parameters.Add("@limit", limit, DbType.Int32);
+		int offset = (queryParameters.Page - 1) * limit; parameters.Add("@limit", limit, DbType.Int32);
 		parameters.Add("@offset", offset, DbType.Int32);
 		return (parameters, "LIMIT @limit OFFSET @offset");
 	}
@@ -213,45 +156,36 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 	)
 	{
 		List<string> orderBySql = [];
-		if (queryParameters.Sort == "NONE")
-		{
-			return (parameters, string.Empty);
-		}
 
-		if (queryParameters.SortFields is null)
-		{
-			return (parameters, string.Empty);
-		}
+        if (!string.IsNullOrWhiteSpace(queryParameters.TextSearch))
+        {
+            orderBySql.Add("vector_score DESC");
+        }
 
-		if (!queryParameters.SortFields.Any())
-		{
-			return (parameters, string.Empty);
-		}
-		string? sortMode = queryParameters.Sort switch
-		{
-			"DESC" => "DESC",
-			"ASC" => "ASC",
-			_ => null,
-		};
-
-		if (sortMode is null)
-		{
-			return (parameters, string.Empty);
-		}
-
-		foreach (string field in queryParameters.SortFields)
-		{
-			string? orderByClause = field switch
-			{
-				"price" => $" v.price {sortMode}",
-				"release_year" => $" release_year {OrderByForReleaseYear(sortMode)}",
-				_ => null,
-			};
-			if (orderByClause is not null)
-			{
-				orderBySql.Add(orderByClause);
-			}
-		}
+        if (queryParameters.SortFields is not null && queryParameters.SortFields.Any())
+        {
+            string sortMode = queryParameters.Sort switch
+            {
+                "DESC" => "DESC",
+                "ASC" => "ASC",
+                _ => string.Empty,
+            };
+            
+            foreach (string field in queryParameters.SortFields)
+            {
+                string? orderByClause = field switch
+                {
+                    "price" => $" v.price {sortMode}",
+                    "release_year" => $" release_year {OrderByForReleaseYear(sortMode)}",
+                    _ => null,
+                };
+            
+                if (orderByClause is not null)
+                {
+                    orderBySql.Add(orderByClause);
+                }
+            }
+        }
 
 		return orderBySql.Count == 0
 			? (parameters, string.Empty)
@@ -264,15 +198,13 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 	}
 
 	private static (DynamicParameters Parameters, string VehiclesFilterSql) FormVehiclesFilterSql(
-		GetVehiclesQueryParameters queryParameters,
-		DynamicParameters parameters,
-		EmbeddingsProvider embeddings
-	)
+        GetVehiclesQueryParameters queryParameters, 
+        DynamicParameters parameters,
+        EmbeddingsProvider embeddingsProvider)
 	{
 		List<string> filters = [];
-		ApplyVehicleFilters(queryParameters, filters, parameters);
+		ApplyVehicleFilters(queryParameters, filters, parameters, embeddingsProvider);
 		ApplyCharacteristicsFilter(queryParameters, parameters, filters);
-		ApplySemanticSearchFilter(queryParameters, filters, embeddings, parameters);
 		return filters.Count == 0
 			? (parameters, string.Empty)
 			: (parameters, $" WHERE {string.Join(" AND ", filters)}");
@@ -281,9 +213,17 @@ public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsPro
 	private static void ApplyVehicleFilters(
 		GetVehiclesQueryParameters queryParameters,
 		List<string> filters,
-		DynamicParameters parameters
+		DynamicParameters parameters,
+        EmbeddingsProvider embeddingsProvider
 	)
 	{
+        if (!string.IsNullOrWhiteSpace(queryParameters.TextSearch))
+        {
+            Vector vector = new(embeddingsProvider.Generate(queryParameters.TextSearch));
+            filters.Add("1 - (v.embedding <=> @embedding_search) >= 0.4");
+            parameters.Add("@embedding_search", vector);
+        }
+        
 		if (queryParameters.BrandId.HasValue)
 		{
 			filters.Add("v.brand_id=@brandId");
