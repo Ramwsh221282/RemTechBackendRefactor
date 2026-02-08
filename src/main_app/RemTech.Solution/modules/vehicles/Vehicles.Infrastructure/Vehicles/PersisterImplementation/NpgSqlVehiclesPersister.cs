@@ -83,33 +83,21 @@ public sealed class NpgSqlVehiclesPersister(NpgSqlSession session, EmbeddingsPro
 		Vehicle vehicle,
 		CancellationToken ct
 	)
-	{
-		List<string> insertClauses = [];
-		DynamicParameters parameters = new();
-		int index = 0;
-		foreach (VehicleCharacteristic characteristic in vehicle.Characteristics)
-		{
-			string vehicleIdParam = $"vehicle_id_{index}";
-			string characteristicIdParam = $"characteristic_id_{index}";
-			string valueParam = $"value_{index}";
-			string nameParam = $"name_{index}";
-			insertClauses.Add($"(@{vehicleIdParam}, @{characteristicIdParam}, @{valueParam}, @{nameParam})");
+    {
+        const string sql = """
+                           INSERT INTO vehicles_module.vehicle_characteristics (vehicle_id, characteristic_id, value, name) 
+                           VALUES (@vehicle_id, @characteristic_id, @value, @name)
+                           """;
 
-			parameters.Add(vehicleIdParam, vehicle.Id.Value, DbType.Guid);
-			parameters.Add(characteristicIdParam, characteristic.CharacteristicId.Value, DbType.Guid);
-			parameters.Add(valueParam, characteristic.Value.Value, DbType.String);
-			parameters.Add(nameParam, characteristic.Name.Value, DbType.String);
-			index++;
-		}
+        var parameters = vehicle.Characteristics.Select(c => new
+        {
+            vehicle_id = c.VehicleId.Value,
+            characteristic_id = c.CharacteristicId.Value,
+            value = c.Value.Value,
+            name = c.Name.Value
+        });
 
-		string insertClause =
-			$"INSERT INTO vehicles_module.vehicle_characteristics (vehicle_id, characteristic_id, value, name) VALUES {string.Join(",", insertClauses)} ON CONFLICT DO NOTHING;";
-		CommandDefinition command = new(
-			insertClause,
-			parameters,
-			transaction: session.Transaction,
-			cancellationToken: ct
-		);
-		return connection.ExecuteAsync(command);
-	}
+        CommandDefinition command = session.FormCommand(sql, parameters, ct);
+        return connection.ExecuteAsync(command);
+    }
 }

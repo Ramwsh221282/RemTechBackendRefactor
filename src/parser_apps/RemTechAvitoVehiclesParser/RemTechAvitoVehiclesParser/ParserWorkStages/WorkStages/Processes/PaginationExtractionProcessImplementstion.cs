@@ -56,47 +56,54 @@ public static class PaginationExtractionProcessImplementation
                 }
 
                 logger.Information("Starting extracting pagination for links.");
-                IBrowser browser = await deps.Browsers.ProvideBrowser();
 
-                for (int i = 0; i < links.Length; i++)
+                try
                 {
-                    ProcessingParserLink link = links[i];
-                    try
+                    IBrowser browser = await deps.Browsers.ProvideBrowser();
+                    for (int i = 0; i < links.Length; i++)
                     {
-                        IPage page = await browser.GetPage();
+                        ProcessingParserLink link = links[i];
+                        try
+                        {
+                            IPage page = await browser.GetPage();
 
-                        CataloguePageUrl[] results = await ExtractPagination(
-                            page,
-                            deps.Bypasses,
-                            link.Url,
-                            logger
-                        );
+                            CataloguePageUrl[] results = await ExtractPagination(
+                                page,
+                                deps.Bypasses,
+                                link.Url,
+                                logger
+                            );
 
-                        await results.PersistMany(session);
-                        link = link.MarkProcessed();
+                            await results.PersistMany(session);
+                            link = link.MarkProcessed();
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Error(ex, "Error at extracting pagination for: {Url}", link.Url);
+                            link = link.IncreaseRetryCount();
+                            browser = await deps.Browsers.Recreate(browser);
+                        }
+                        finally
+                        {
+                            links[i] = link;
+                        }
                     }
-                    catch (EvaluationFailedException)
+                    
+                    await browser.DestroyAsync();
+                    await links.UpdateMany(session);
+
+                    Result commit = await txn.Commit(ct);
+                    if (commit.IsFailure)
                     {
-                        browser = await deps.Browsers.Recreate(browser);
+                        logger.Error(commit.Error, "Error at committing transaction");
                     }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex, "Error at extracting pagination for: {Url}", link.Url);
-                        link = link.IncreaseRetryCount();
-                    }
-                    finally
-                    {
-                        links[i] = link;
-                    }
+                    
+                    logger.Information("Pagination extracting finished.");
                 }
-
-                await browser.DestroyAsync();
-                await links.UpdateMany(session);
-
-                Result commit = await txn.Commit(ct);
-                if (commit.IsFailure)
-                    logger.Error(commit.Error, "Error at committing transaction");
-                logger.Information("Pagination extracting finished.");
+                finally
+                {
+                    BrowserFactory.KillBrowserProcess();
+                }
             };
     }
 

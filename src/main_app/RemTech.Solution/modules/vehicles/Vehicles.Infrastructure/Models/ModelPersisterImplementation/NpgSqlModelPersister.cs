@@ -21,14 +21,18 @@ public sealed class NpgSqlModelPersister(NpgSqlSession session, EmbeddingsProvid
     {
         const string sql = """
                             WITH vector_filtered AS (
-                                SELECT id as id, name as name FROM vehicles_module.models
+                                SELECT 
+                                    id as id, 
+                                    name as name,
+                                    1 - (embedding <=> @input_embedding) as score 
+                                    FROM vehicles_module.models
                                 WHERE 1 - (embedding <=> @input_embedding) >= 0.4
-                                ORDER BY (embedding <=> @input_embedding)
+                                ORDER BY score DESC
                                 LIMIT 15
                             ) 
                             SELECT
-                                trgrm_filtered.id as id,
-                                trgrm_filtered.name as name 
+                                trgrm_filtered.id as Id,
+                                trgrm_filtered.name as Name 
                             FROM vector_filtered
                             JOIN LATERAL (
                             SELECT 
@@ -38,16 +42,17 @@ public sealed class NpgSqlModelPersister(NpgSqlSession session, EmbeddingsProvid
                                 FROM vector_filtered
                                 WHERE 
                                 vector_filtered.name = @name 
-                                OR word_similarity(vector_filtered.name, @name) > 0.8
+                                OR word_similarity(vector_filtered.name, @name) >= 0.4
                                 ORDER BY 
                                     CASE
                                         WHEN vector_filtered.name = @name THEN 0
-                                        WHEN word_similarity(vector_filtered.name, @name) > 0.8 THEN 1
+                                        WHEN word_similarity(vector_filtered.name, @name) >= 0.4 THEN 1
                                         ELSE 2
                                     END,
                                     sml DESC
                                     LIMIT 1
                             ) trgrm_filtered ON TRUE
+                            LIMIT 1
                             """;
 
 		Vector vector = new(embeddings.Generate(model.Name.Value));

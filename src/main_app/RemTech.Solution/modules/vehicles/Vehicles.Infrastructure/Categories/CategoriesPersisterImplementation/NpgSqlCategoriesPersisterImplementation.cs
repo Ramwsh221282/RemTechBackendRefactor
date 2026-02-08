@@ -22,11 +22,14 @@ public sealed class NpgSqlCategoriesPersisterImplementation(NpgSqlSession sessio
     {
         const string sql = """
                            WITH vector_filtered AS (
-                                SELECT c.id as id, c.name as c.name
+                                SELECT 
+                                    c.id as id, 
+                                    c.name as name,
+                                    1 - (c.embedding <=> @input_embedding) as score
                                 FROM vehicles_module.categories c
                                 WHERE
                                 1 - (c.embedding <=> @input_embedding) >= 0.4
-                                ORDER BY (c.embedding <=> @input_embedding)
+                                ORDER BY score DESC
                                 LIMIT 20
                            )
                            SELECT
@@ -36,32 +39,32 @@ public sealed class NpgSqlCategoriesPersisterImplementation(NpgSqlSession sessio
                            JOIN LATERAL
                            (
                                 SELECT 
-                                    vector_filtered.id as id,
-                                    vector_filtered.name as name,
+                                    vector_filtered.id as Id,
+                                    vector_filtered.name as Name,
                                     word_similarity(vector_filtered.name, @name) as sml
                                 FROM vector_filtered
                                 WHERE
                                     vector_filtered.name = @name
-                                    OR word_similarity(vector_filtered.name, @name) > 0.8
+                                    OR word_similarity(vector_filtered.name, @name) >= 0.4
                                 ORDER BY
                                     CASE
                                         WHEN vector_filtered.name = @name THEN 0
-                                        WHEN word_similarity(vector_filtered.name, @name) > 0.8 THEN 1
+                                        WHEN word_similarity(vector_filtered.name, @name) >= 0.4 THEN 1
                                         ELSE 2
                                     END,
                                     sml DESC
                                     LIMIT 1
                            ) AS trgrm_filtered ON TRUE
+                           LIMIT 1
                            """;
 
 		Vector vector = new(embeddings.Generate(category.Name.Value));
 		DynamicParameters parameters = BuildParameters(category, vector);
 		CommandDefinition command = session.FormCommand(sql, parameters, ct);
-        NpgSqlSearchResult? existing = await session.QuerySingleRow<NpgSqlSearchResult?>(command);
+        NpgSqlSearchResult? existing = await session.QueryMaybeRow<NpgSqlSearchResult?>(command);
         if (existing is null)
         {
-            await SaveAsNewCategory(category, vector, ct);
-            return category;
+            return Error.NotFound("Unable to resolve category.");
         }
 
         return new Category(CategoryId.Create(existing.Id), CategoryName.Create(existing.Name));

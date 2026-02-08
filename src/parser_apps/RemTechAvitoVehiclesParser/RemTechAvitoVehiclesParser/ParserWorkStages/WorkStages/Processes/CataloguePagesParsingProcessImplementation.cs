@@ -35,17 +35,12 @@ public static class CataloguePagesParsingProcessImplementation
                 NpgSqlTransactionSource transactionSource = new(session);
                 await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
 
-                WorkStageQuery stageQuery = new(
-                    Name: WorkStageConstants.CatalogueStageName,
-                    WithLock: true
-                );
-                Maybe<ParserWorkStage> stage = await ParserWorkStage.GetSingle(
-                    session,
-                    stageQuery,
-                    ct
-                );
+                WorkStageQuery stageQuery = new(Name: WorkStageConstants.CatalogueStageName, WithLock: true);
+                Maybe<ParserWorkStage> stage = await ParserWorkStage.GetSingle(session, stageQuery, ct);
                 if (!stage.HasValue)
+                {
                     return;
+                }
 
                 CataloguePageUrlQuery pageUrlQuery = new(
                     UnprocessedOnly: true,
@@ -63,44 +58,47 @@ public static class CataloguePagesParsingProcessImplementation
                     return;
                 }
 
-                IBrowser browser = await deps.Browsers.ProvideBrowser();
-
-                for (int i = 0; i < urls.Length; i++)
+                try
                 {
-                    CataloguePageUrl url = urls[i];
-                    logger.Information("Processing page: {Url}", url.Url);
+                    IBrowser browser = await deps.Browsers.ProvideBrowser();
+                    for (int i = 0; i < urls.Length; i++)
+                    {
+                        CataloguePageUrl url = urls[i];
+                        logger.Information("Processing page: {Url}", url.Url);
 
-                    try
-                    {
-                        AvitoVehicle[] items = await new ExtractCatalogueItemDataCommand(
-                            () => browser.GetPage(),
-                            url,
-                            bypasses
-                        )
-                            .UseLogging(dLogger)
-                            .Handle();
-                        url = url.MarkProcessed();
-                        await items.PersistAsCatalogueRepresentation(session);
+                        try
+                        {
+                            AvitoVehicle[] items = await new ExtractCatalogueItemDataCommand(
+                                    () => browser.GetPage(),
+                                    url,
+                                    bypasses
+                                )
+                                .UseLogging(dLogger)
+                                .Handle();
+                            url = url.MarkProcessed();
+                            await items.PersistAsCatalogueRepresentation(session);
+                        }
+                        catch (Exception)
+                        {
+                            url = url.IncrementRetryCount();
+                            browser = await browsers.Recreate(browser);
+                        }
+                        finally
+                        {
+                            urls[i] = url;
+                        }
                     }
-                    catch (EvaluationFailedException)
-                    {
-                        browser = await browsers.Recreate(browser);
-                    }
-                    catch (Exception)
-                    {
-                        url = url.IncrementRetryCount();
-                    }
-                    finally
-                    {
-                        urls[i] = url;
-                    }
+                    
+                    await browser.DestroyAsync();
+                    await urls.UpdateMany(session);
+                    Result commit = await txn.Commit(ct);
+                    if (commit.IsFailure)
+                        logger.Error(commit.Error, "Error at committing transaction");
                 }
-
-                await browser.DestroyAsync();
-                await urls.UpdateMany(session);
-                Result commit = await txn.Commit(ct);
-                if (commit.IsFailure)
-                    logger.Error(commit.Error, "Error at committing transaction");
+                finally
+                {
+                    BrowserFactory.KillBrowserProcess();
+                }
             };
     }
 }

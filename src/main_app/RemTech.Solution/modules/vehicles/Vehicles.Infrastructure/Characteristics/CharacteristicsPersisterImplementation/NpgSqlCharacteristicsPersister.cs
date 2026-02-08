@@ -29,13 +29,20 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
     {
         const string sql = """
                             WITH vector_filtered AS (
-                                SELECT id as id, name as name FROM vehicles_module.characteristics
+                                SELECT 
+                                    id as id, 
+                                    name as name,
+                                    1 - (embedding <=> @input_embedding) as score     
+                            FROM vehicles_module.characteristics
                             WHERE
                                 1 - (embedding <=> @input_embedding) >= 0.4
-                            ORDER BY (embedding <=> @input_embedding)
+                            ORDER BY score DESC
                             LIMIT 15
                             ) 
-                            SELECT * FROM vector_filtered
+                            SELECT
+                            trgrm_filtered.id as Id,
+                            trgrm_filtered.name as Name
+                            FROM vector_filtered
                             JOIN LATERAL (
                                 SELECT
                                     vector_filtered.id as id,
@@ -45,16 +52,17 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
                                     vector_filtered
                                 WHERE
                                     vector_filtered.name = @name
-                                    OR word_similarity(vector_filtered.name, @name) > 0.8
+                                    OR word_similarity(vector_filtered.name, @name) >= 0.4
                                 ORDER BY
                                     CASE
                                         WHEN vector_filtered.name = @name THEN 0
-                                        when word_similarity(vector_filtered.name, @name) > 0.8 THEN 1
+                                        when word_similarity(vector_filtered.name, @name) >= 0.4 THEN 1
                                         ELSE 2
                                     END,
                                     sml DESC
                                     LIMIT 1
                             ) AS trgrm_filtered ON TRUE
+                            LIMIT 1
                             """;
 
 		Vector vector = new(embeddings.Generate(characteristic.Name.Value));
@@ -63,8 +71,7 @@ public sealed class NpgSqlCharacteristicsPersister(NpgSqlSession session, Embedd
 		NpgSqlSearchResult? result = await session.QueryMaybeRow<NpgSqlSearchResult?>(command);
 		if (result is null)
 		{
-            await SaveAsNewCharacteristic(characteristic, vector, ct);
-            return characteristic;
+            return Error.NotFound("Unable to resolve characteristic");
 		}
 
 		return MapToCharacteristicFromExactSearch(result);

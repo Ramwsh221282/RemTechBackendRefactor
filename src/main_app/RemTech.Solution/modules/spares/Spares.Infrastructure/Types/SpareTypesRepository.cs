@@ -144,11 +144,15 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 			FROM input_types io
 			         INNER JOIN LATERAL (
 			    WITH filtered_by_vector AS (
-			        SELECT id, type FROM spares_module.types t
+			        SELECT 
+			            id, 
+			            type,
+			            1 - (t.embedding <=> io.input_embeddings) as score
+			            FROM spares_module.types t
 			        WHERE 
 			            t.embedding IS NOT NULL
 			            AND 1 - (t.embedding <=> io.input_embeddings) >= 0.4
-			        ORDER BY (t.embedding <=> io.input_embeddings)
+			        ORDER BY score DESC
 			        LIMIT 20
 			    )
 			    SELECT 
@@ -159,11 +163,11 @@ public sealed class SpareTypesRepository(NpgSqlSession session, EmbeddingsProvid
 			        filtered_by_vector
 			    WHERE
 			        filtered_by_vector.type = io.input_texts
-			        OR similarity(filtered_by_vector.type, io.input_texts) > 0.8       
+			        OR similarity(filtered_by_vector.type, io.input_texts) >= 0.8       
 			    ORDER BY
 			        CASE
 			            WHEN filtered_by_vector.type = io.input_texts THEN 0
-			            WHEN similarity(filtered_by_vector.type, io.input_texts) > 0.9 THEN 1            
+			            WHEN similarity(filtered_by_vector.type, io.input_texts) >= 0.8 THEN 1            
 			            ELSE 2
 			            END,
 			        sml DESC

@@ -26,13 +26,14 @@ public sealed class NpgSqlBrandPersisterImplementation(EmbeddingsProvider embedd
             WITH vector_filtered AS (
                 SELECT 
                     id as id, 
-                    name as name 
+                    name as name,
+                    1 - (b.embedding <=> @input_embedding) as score 
                 FROM 
                     vehicles_module.brands b
                 WHERE
                     1 - (b.embedding <=> @input_embedding) >= 0.5
                 ORDER BY 
-                    (b.embedding <=> @input_embedding)
+                    score DESC
                 LIMIT 10                    
                 )       
             SELECT
@@ -47,26 +48,26 @@ public sealed class NpgSqlBrandPersisterImplementation(EmbeddingsProvider embedd
                 FROM vector_filtered
                 WHERE
                 vector_filtered.name = @name
-                OR word_similarity(vector_filtered.name, @name) > 0.8
+                OR word_similarity(vector_filtered.name, @name) >= 0.4
                 ORDER BY
                     CASE
                         WHEN vector_filtered.name = @name THEN 0
-                        WHEN word_similarity(vector_filtered.name, @name) > 0.8 THEN 1
+                        WHEN word_similarity(vector_filtered.name, @name) >= 0.4 THEN 1
                         ELSE 2
                     END,
                 sml DESC
                 LIMIT 1
             ) AS trgrm_filtered ON TRUE
+            LIMIT 1
             """;
 
 		Vector vector = new(embeddings.Generate(brand.Name.Name));
 		DynamicParameters parameters = BuildParameters(brand, vector);
 		CommandDefinition command = session.FormCommand(sql, parameters, ct);
-        NpgSqlSearchResult? existing = await session.QuerySingleRow<NpgSqlSearchResult?>(command);
+        NpgSqlSearchResult? existing = await session.QueryMaybeRow<NpgSqlSearchResult?>(command);
         if (existing is null)
         {
-            await SaveAsNew(brand, vector, ct);
-            return Result.Success(brand);
+            return Error.NotFound("Unable to resolve brand.");
         }
 
         return new Brand(BrandId.Create(existing.Id), BrandName.Create(existing.Name));

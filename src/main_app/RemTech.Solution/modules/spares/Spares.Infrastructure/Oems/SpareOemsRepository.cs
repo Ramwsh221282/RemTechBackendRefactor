@@ -145,9 +145,13 @@ public sealed class SparesOemRepository(NpgSqlSession session, EmbeddingsProvide
 			FROM input_oems io
 			    INNER JOIN LATERAL (
 			    WITH filtered_by_vector AS (
-			        SELECT o.id as id, o.oem as oem FROM spares_module.oems o
+			        SELECT 
+			            o.id as id, 
+			            o.oem as oem,
+			            1 - (o.embedding <=> io.input_embeddings) as score 
+			        FROM spares_module.oems o
 			        WHERE 1 - (o.embedding <=> io.input_embeddings) >= 0.4
-			        ORDER BY (o.embedding <=> io.input_embeddings)
+			        ORDER BY score DESC
 			        LIMIT 30
 			    )
 			    SELECT
@@ -157,11 +161,11 @@ public sealed class SparesOemRepository(NpgSqlSession session, EmbeddingsProvide
 			    FROM
 			        filtered_by_vector
 			    WHERE oem = io.input_texts
-			       OR similarity(filtered_by_vector.oem, io.input_texts) >= 0.9
+			       OR similarity(filtered_by_vector.oem, io.input_texts) >= 0.8
 			    ORDER BY
 			        CASE
 			            WHEN filtered_by_vector.oem = io.input_texts THEN 0
-			            WHEN similarity(filtered_by_vector.oem, io.input_texts) >= 0.9 THEN 1
+			            WHEN similarity(filtered_by_vector.oem, io.input_texts) >= 0.8 THEN 1
 			            ELSE 2
 			            END,
 			            sml DESC

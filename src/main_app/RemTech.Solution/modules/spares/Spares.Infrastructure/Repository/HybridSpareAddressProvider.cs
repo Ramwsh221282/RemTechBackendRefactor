@@ -74,10 +74,11 @@ public sealed class HybridSpareAddressProvider(NpgSqlSession session, Embeddings
                                    WITH regions_vector_filter AS (
                                        SELECT
                                            r.id as region_id,
-                                           (r.name || ' ' || r.kind) as region_text
+                                           (r.name || ' ' || r.kind) as region_text,
+                                           1 - (r.embedding <=> spare_input_values.original_spare_address_vector) as score
                                        FROM vehicles_module.regions r
                                        WHERE 1 - (r.embedding <=> spare_input_values.original_spare_address_vector) >= 0.4
-                                       ORDER BY r.embedding <=> spare_input_values.original_spare_address_vector
+                                       ORDER BY score DESC
                                        LIMIT 5
                                    )
                                    SELECT * FROM regions_vector_filter

@@ -13,9 +13,6 @@ namespace Vehicles.Infrastructure.BackgroundServices;
 /// <summary>
 /// Сервис обновления эмбеддингов транспортных средств.
 /// </summary>
-/// <param name="npgSql">Фабрика подключения к базе данных PostgreSQL.</param>
-/// <param name="logger">Логгер для записи информации и ошибок.</param>
-/// <param name="provider">Провайдер для генерации эмбеддингов.</param>
 public sealed class VehicleEmbeddingsUpdaterService(
 	NpgSqlConnectionFactory npgSql,
 	Serilog.ILogger logger,
@@ -29,26 +26,24 @@ public sealed class VehicleEmbeddingsUpdaterService(
 	/// <summary>
 	/// Запускает фоновую задачу для обновления эмбеддингов транспортных средств.
 	/// </summary>
-	/// <param name="stoppingToken">Токен отмены для остановки фоновой задачи.</param>
-	/// <returns>Задача, представляющая выполнение фоновой операции.</returns>
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
-		while (!stoppingToken.IsCancellationRequested)
-		{
-			try
-			{
-				await Execute(stoppingToken);
-			}
-			catch (Exception e)
-			{
-				Logger.Fatal(e, "Error updating vehicle embeddings.");
-			}
-			finally
-			{
-				await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-			}
-		}
-	}
+        while (!stoppingToken.IsCancellationRequested)
+        {
+        	try
+        	{
+        		await Execute(stoppingToken);
+        	}
+        	catch (Exception e)
+        	{
+        		Logger.Fatal(e, "Error updating vehicle embeddings.");
+        	}
+        	finally
+        	{
+        		await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+        	}
+        }
+    }
 
 	private static VehicleWithoutEmbedding MapFromReader(IDataReader reader)
 	{
@@ -60,8 +55,8 @@ public sealed class VehicleEmbeddingsUpdaterService(
 		await using NpgSqlSession session = new(NpgSql);
 		NpgSqlTransactionSource transactionSource = new(session);
 		await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
-		VehicleWithoutEmbedding[] vehicles = await GetVehiclesWithoutEmbeddings(session, ct);
-		if (vehicles.Length == 0)
+        IReadOnlyList<VehicleWithoutEmbedding> vehicles = await GetVehiclesWithoutEmbeddings(session, ct);
+		if (vehicles.Count == 0)
 		{
 			return;
 		}
@@ -78,15 +73,15 @@ public sealed class VehicleEmbeddingsUpdaterService(
 
 	private async Task UpdateVehicleEmbeddings(
 		NpgSqlSession session,
-		VehicleWithoutEmbedding[] vehicles,
+		IReadOnlyList<VehicleWithoutEmbedding> vehicles,
 		IReadOnlyList<ReadOnlyMemory<float>> embeddings,
 		CancellationToken ct
 	)
 	{
 		List<string> updateClauses = [];
 		DynamicParameters parameters = new();
-		Guid[] ids = new Guid[vehicles.Length];
-		for (int i = 0; i < vehicles.Length; i++)
+		Guid[] ids = new Guid[vehicles.Count];
+		for (int i = 0; i < vehicles.Count; i++)
 		{
 			ids[i] = vehicles[i].Id;
 			string idParam = $"@id_{i}";
@@ -109,29 +104,37 @@ public sealed class VehicleEmbeddingsUpdaterService(
 		Logger.Information("Updated {Count} vehicles", updated);
 	}
 
-	private async Task<VehicleWithoutEmbedding[]> GetVehiclesWithoutEmbeddings(
+	private async Task<IReadOnlyList<VehicleWithoutEmbedding>> GetVehiclesWithoutEmbeddings(
 		NpgSqlSession session,
 		CancellationToken ct
 	)
 	{
 		const string sql = """
 			SELECT
-			    v.id as id,
-			    (c.name || ' ' || b.name || ' ' || m.name || ' ' || r.name || ' ' || r.kind) as text
+			    v.id as Id,
+			    (c.name || ' ' || b.name || ' ' || m.name || ' ' || r.name || ' ' || r.kind || ' ' || 'Характеристики: ' || characteristics.ctx_name) as TextForEmbedding
 			FROM vehicles_module.vehicles v
-			JOIN vehicles_module.categories c ON v.category_id = c.id
-			JOIN vehicles_module.brands b ON v.brand_id = b.id
-			JOIN vehicles_module.models m ON v.model_id = m.id
-			JOIN vehicles_module.regions r ON v.region_id = r.id
+			         JOIN vehicles_module.categories c ON v.category_id = c.id
+			         JOIN vehicles_module.brands b ON v.brand_id = b.id
+			         JOIN vehicles_module.models m ON v.model_id = m.id
+			         JOIN vehicles_module.regions r ON v.region_id = r.id
+			         JOIN LATERAL (
+			             SELECT string_agg((ctx.name || ': ' || vc.value), ' ') as ctx_name FROM vehicles_module.vehicle_characteristics vc
+			             JOIN vehicles_module.characteristics ctx ON vc.characteristic_id = ctx.id
+			             WHERE vc.vehicle_id = v.id
+			
+			         ) AS characteristics ON true
 			WHERE v.embedding IS NULL
-			LIMIT 50
-			FOR UPDATE OF v;
+			LIMIT 50;
 			""";
 		CommandDefinition command = new(sql, transaction: session.Transaction, cancellationToken: ct);
-		VehicleWithoutEmbedding[] vehicles = await session.QueryMultipleUsingReader(command, MapFromReader);
-		Logger.Information("Found {Count} vehicles without embedding", vehicles.Length);
-		return vehicles;
-	}
+        NpgsqlConnection connection = await session.GetConnection(ct);
+        IEnumerable<VehicleWithoutEmbedding> vehicles = await connection.QueryAsync<VehicleWithoutEmbedding>(command);
+
+        List<VehicleWithoutEmbedding> list = vehicles.ToList();
+		Logger.Information("Found {Count} vehicles without embedding", list.Count);
+        return list;
+    }
 
 	private sealed class VehicleWithoutEmbedding
 	{

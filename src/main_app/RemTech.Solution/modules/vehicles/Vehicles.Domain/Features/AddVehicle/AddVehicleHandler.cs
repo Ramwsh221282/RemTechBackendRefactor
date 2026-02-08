@@ -57,13 +57,8 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 			Dictionary<Characteristic, VehicleCharacteristicValue> characteristics = CreateCharacteristicsDictionary(
 				payload
 			);
-			Dictionary<Characteristic, VehicleCharacteristicValue> savedCharacteristics = await SaveCharacteristics(
-				characteristics,
-				ct
-			);
-			IEnumerable<VehicleCharacteristicToAdd> ctxToAdd = savedCharacteristics.Select(
-				kvp => new VehicleCharacteristicToAdd(kvp.Key, kvp.Value)
-			);
+
+            IReadOnlyList<VehicleCharacteristicToAdd> savedCharacteristics = await SaveCharacteristics(characteristics, ct);
 
 			Result<Brand> savedBrand = await brand.Value.SaveBy(persister, ct);
 			if (savedBrand.IsFailure)
@@ -94,7 +89,7 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 				savedCategory.Value,
 				savedModel.Value,
 				savedLocation.Value,
-				ctxToAdd,
+				savedCharacteristics,
 				payload
 			);
 			VehiclePersistInfo persistInfo = new(vehicle, savedLocation.Value);
@@ -115,7 +110,7 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 	{
 		Result<LocationName> locationName = LocationName.Create(payload.Address);
 		return locationName.IsFailure
-			? (Result<Location>)locationName.Error
+			? locationName.Error
 			: new Location(LocationId.Create(Guid.NewGuid()), locationName);
 	}
 
@@ -123,16 +118,16 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 	{
 		Result<BrandName> brandName = BrandName.Create(payload.Title);
 		return brandName.IsFailure
-			? (Result<Brand>)brandName.Error
-			: (Result<Brand>)new Brand(BrandId.Create(Guid.NewGuid()), brandName);
+			? brandName.Error
+			: new Brand(BrandId.Create(Guid.NewGuid()), brandName);
 	}
 
 	private static Result<Category> CreateValidCategory(AddVehicleVehiclesCommandPayload payload)
 	{
 		Result<CategoryName> categoryName = CategoryName.Create(payload.Title);
 		return categoryName.IsFailure
-			? (Result<Category>)categoryName.Error
-			: (Result<Category>)new Category(CategoryId.Create(Guid.NewGuid()), categoryName);
+			? categoryName.Error
+			: new Category(CategoryId.Create(Guid.NewGuid()), categoryName);
 	}
 
 	private static Vehicle CreateVehicle(
@@ -149,7 +144,7 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 		VehicleSource source = VehicleSource.Create(payload.Url);
 		VehiclePriceInformation price = VehiclePriceInformation.Create(payload.Price, payload.IsNds);
 		VehicleTextInformation text = VehicleTextInformation.Create(payload.Title);
-		IReadOnlyList<VehiclePhoto> photos = [.. payload.Photos.Select(p => VehiclePhoto.Create(p).Value)];
+		IReadOnlyList<VehiclePhoto> photos = [.. payload.Photos.Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => VehiclePhoto.Create(p).Value)];
 		return factory.Construct(id, source, price, text, VehiclePhotosGallery.Create(photos));
 	}
 
@@ -157,14 +152,18 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 		AddVehicleVehiclesCommandPayload payload
 	)
 	{
-		CharacteristicByNameComparer comparer = new();
-		Dictionary<Characteristic, VehicleCharacteristicValue> result = new(comparer);
+		Dictionary<Characteristic, VehicleCharacteristicValue> result = new(CharacteristicByNameComparer);
+        
 		foreach (AddVehicleCommandCharacteristics characteristic in payload.Characteristics)
 		{
-			Characteristic ctx = new(
-				CharacteristicId.Create(Guid.NewGuid()),
-				CharacteristicName.Create(characteristic.Name)
-			);
+            Result<CharacteristicName> name = CharacteristicName.Create(characteristic.Name);
+            if (name.IsFailure)
+            {
+                continue;
+            }
+            
+            CharacteristicId id = CharacteristicId.Create(Guid.NewGuid());
+			Characteristic ctx = new(id, name);
 			if (result.ContainsKey(ctx))
 			{
 				continue;
@@ -177,39 +176,54 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 		return result;
 	}
 
-	private async Task<Dictionary<Characteristic, VehicleCharacteristicValue>> SaveCharacteristics(
+	private async Task<IReadOnlyList<VehicleCharacteristicToAdd>> SaveCharacteristics(
 		Dictionary<Characteristic, VehicleCharacteristicValue> existing,
 		CancellationToken ct
 	)
-	{
-		CharacteristicByNameComparer comparer = new();
-		Dictionary<Characteristic, VehicleCharacteristicValue> result = new(comparer);
-
+    {
+        Dictionary<Characteristic, VehicleCharacteristicToAdd> result = new(CharacteristicByNameComparer);
 		foreach (KeyValuePair<Characteristic, VehicleCharacteristicValue> kvp in existing)
 		{
 			Characteristic ctx = kvp.Key;
-			ctx = await ctx.SaveBy(persister, ct);
-			if (result.ContainsKey(ctx))
-			{
-				continue;
-			}
+            
+            Result<Characteristic> resolved = await ctx.SaveBy(persister, ct);
+            if (resolved.IsFailure)
+            {
+                continue;
+            }
 
-			result.Add(ctx, kvp.Value);
+            if (result.ContainsKey(resolved.Value))
+            {
+                continue;
+            }
+
+            Characteristic existingCharacterstic = new(resolved.Value.Id, resolved.Value.Name);
+            result.Add(resolved.Value, new VehicleCharacteristicToAdd(existingCharacterstic, kvp.Value));
 		}
 
-		return result;
-	}
+        return result.Select(r => r.Value).ToList();
+    }
 
-	private sealed class CharacteristicByNameComparer : IEqualityComparer<Characteristic>
-	{
-		public bool Equals(Characteristic? x, Characteristic? y)
-		{
-			return x is null || y is null ? false : x.Name == y.Name;
-		}
+    private static readonly EqualityComparer<Characteristic> CharacteristicByNameComparer =
+        EqualityComparer<Characteristic>.Create(NamesEqual, HashCodeForNameComparison);
 
-		public int GetHashCode(Characteristic obj)
-		{
-			return HashCode.Combine(obj.Name);
-		}
-	}
+    private static bool NamesEqual(Characteristic? first, Characteristic? second)
+    {
+        if (first == null)
+        {
+            return false;
+        }
+
+        if (second is null)
+        {
+            return false;
+        }
+
+        return second.Name == first.Name;
+    }
+    
+    private static int HashCodeForNameComparison(Characteristic? ctx)
+    {
+        return ctx is null ? 0 : ctx.Name.GetHashCode();
+    }
 }

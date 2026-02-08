@@ -22,10 +22,11 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
                            WITH vector_filtered AS (
                             SELECT 
                                 r.id as id, 
-                                (r.name || ' ' || r.kind) as location_text
+                                (r.name || ' ' || r.kind) as location_text,
+                                1 - (embedding <=> @input_embedding) as score
                             FROM vehicles_module.regions r
                             WHERE 1 - (embedding <=> @input_embedding) >= 0.4
-                            ORDER BY (embedding <=> @input_embedding)
+                            ORDER BY score DESC
                             LIMIT 20
                            )
                            SELECT 
@@ -40,16 +41,17 @@ public sealed class NpgSqlLocationsPersister(NpgSqlSession session, EmbeddingsPr
                                 FROM vector_filtered
                                 WHERE 
                                     vector_filtered.location_text = @location_text
-                                    OR word_similarity(vector_filtered.location_text, @location_text) > 0.8
+                                    OR word_similarity(vector_filtered.location_text, @location_text) >= 0.4
                                 ORDER BY
                                     CASE
                                         WHEN vector_filtered.location_text = @location_text THEN 0
-                                        WHEN word_similarity(vector_filtered.location_text, @location_text) > 0.8 THEN 1
+                                        WHEN word_similarity(vector_filtered.location_text, @location_text) >= 0.4 THEN 1
                                         ELSE 2
                                     END,
                                     sml DESC
                                 LIMIT 1
                            ) trgm_filtered ON true
+                           LIMIT 1
                            """;
         
         Vector vector = new(embeddings.Generate(location.Name.Value));
