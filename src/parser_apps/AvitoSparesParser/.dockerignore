@@ -1,0 +1,4 @@
+**/main_app/*.json
+**/parser_apps/*.json
+main_app/*.json
+parser_apps/*.json

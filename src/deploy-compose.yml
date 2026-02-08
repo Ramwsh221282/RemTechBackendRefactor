@@ -1,48 +1,34 @@
-﻿version: "3.8"
-
 services:
-  database:
-    image: pgvector/pgvector:0.8.0-pg17-bookworm
+  remtech_database:
+    image: pgvector/pgvector:0.8.1-pg18-trixie
     restart: always
-    container_name: database
+    container_name: remtech_database
     environment:
-      POSTGRES_DB: ${PG_DATABASE_NAME}
-      POSTGRES_USER: ${PG_USER_NAME}
-      POSTGRES_PASSWORD: ${PG_PASSWORD}
-      PGPORT: 5435
+      POSTGRES_DB: ${NpgSqlOptions__Database}
+      POSTGRES_USER: ${NpgSqlOptions__Username}
+      POSTGRES_PASSWORD: ${NpgSqlOptions__Password}
+      PGPORT: ${NpgSqlOptions__InnerPort}
     ports:
-      - "5535:5435"
+      - "${NpgSqlOptions__ExternalPort}:${NpgSqlOptions__InnerPort}"
     volumes:
-      - remtech_data:/var/lib/postgresql/data
+      - remtech_data:/var/lib/postgresql
 
-  seq:
-    image: datalust/seq:latest
-    container_name: seq
-    restart: always
-    environment:
-      ACCEPT_EULA: "Y"
-      SEQ_FIRSTRUN_ADMINUSERNAME: ${PG_USER_NAME}
-      SEQ_FIRSTRUN_ADMINPASSWORD: ${PG_PASSWORD}
-    ports:
-      - "5341:5341"
-      - "8081:80"
-    volumes:
-      - seq_data:/data
-
-  redis:
-    image: redis:latest
-    container_name: redis
+  remtech_redis:
+    image: redis:alpine
+    container_name: remtech_redis
     restart: always
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
 
-  rabbitmq:
-    image: rabbitmq:management-alpine
-    container_name: rabbitmq
+  remtech_rabbitmq:
+    image: rabbitmq:alpine
+    container_name: remtech_rabbitmq
     hostname: rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBIT_USER_NAME}
-      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
+      RABBITMQ_DEFAULT_USER: ${RabbitMqOptions__Username}
+      RABBITMQ_DEFAULT_PASS: ${RabbitMqOptions__Password}
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -52,155 +38,70 @@ services:
     container_name: backend
     build:
       context: .
-      dockerfile: DockerfileBackend
+      dockerfile: ./main_app/Dockerfile
     ports:
       - "5185:5185"
       - "5238:5238"
     environment:
       - ASPNETCORE_URLS=http://+:5185
-      - RABBIT_HOST_NAME=${RABBIT_HOST_NAME}
-      - RABBIT_USER_NAME=${RABBIT_USER_NAME}
-      - RABBIT_PASSWORD=${RABBIT_PASSWORD}
-      - RABBIT_PORT=${RABBIT_PORT}
-      - PG_HOST_NAME=${PG_HOST_NAME}
-      - PG_PORT=${PG_PORT}
-      - PG_DATABASE_NAME=${PG_DATABASE_NAME}
-      - PG_USER_NAME=${PG_USER_NAME}
-      - PG_PASSWORD=${PG_PASSWORD}
-      - REDIS_HOST=${REDIS_HOST}
-      - SEQ_HOST=${SEQ_HOST}
-      - FRONTEND_URL=${FRONTEND_URL}
     depends_on:
-      - database
-      - redis
-      - rabbitmq
-      - seq
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
     restart: always
 
   avito-vehicles:
     container_name: avito-vehicles
     build:
       context: .
-      dockerfile: DockerfileAvitoVehicles
-    environment:
-      - RABBIT_HOST_NAME=${RABBIT_HOST_NAME}
-      - RABBIT_USER_NAME=${RABBIT_USER_NAME}
-      - RABBIT_PASSWORD=${RABBIT_PASSWORD}
-      - RABBIT_PORT=${RABBIT_PORT}
-      - PG_HOST_NAME=${PG_HOST_NAME}
-      - PG_PORT=${PG_PORT}
-      - PG_DATABASE_NAME=${PG_DATABASE_NAME}
-      - PG_USER_NAME=${PG_USER_NAME}
-      - PG_PASSWORD=${PG_PASSWORD}
-      - REDIS_HOST=${REDIS_HOST}
-      - SEQ_HOST=${SEQ_HOST}
-      - FRONTEND_URL=${FRONTEND_URL}
-      - MAIN_GRPC_ADDRESS=${MAIN_GRPC_ADDRESS}
+      dockerfile: ./parser_apps/RemTechAvitoVehiclesParser/Dockerfile
     depends_on:
       - backend
-      - database
-      - redis
-      - rabbitmq
-      - seq
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
     restart: always
 
   drom-vehicles:
     container_name: drom-vehicles
     build:
       context: .
-      dockerfile: DockerfileDromVehicles
-    environment:
-      - RABBIT_HOST_NAME=${RABBIT_HOST_NAME}
-      - RABBIT_USER_NAME=${RABBIT_USER_NAME}
-      - RABBIT_PASSWORD=${RABBIT_PASSWORD}
-      - RABBIT_PORT=${RABBIT_PORT}
-      - PG_HOST_NAME=${PG_HOST_NAME}
-      - PG_PORT=${PG_PORT}
-      - PG_DATABASE_NAME=${PG_DATABASE_NAME}
-      - PG_USER_NAME=${PG_USER_NAME}
-      - PG_PASSWORD=${PG_PASSWORD}
-      - REDIS_HOST=${REDIS_HOST}
-      - SEQ_HOST=${SEQ_HOST}
-      - FRONTEND_URL=${FRONTEND_URL}
-      - MAIN_GRPC_ADDRESS=${MAIN_GRPC_ADDRESS}
+      dockerfile: ./parser_apps/RemtechDromVehiclesParser/Dockerfile
     depends_on:
       - backend
-      - database
-      - redis
-      - rabbitmq
-      - seq
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
     restart: always
 
   avito-spares:
     container_name: avito-spares
     build:
       context: .
-      dockerfile: DockerfileAvitoSpares
-    environment:
-      - RABBIT_HOST_NAME=${RABBIT_HOST_NAME}
-      - RABBIT_USER_NAME=${RABBIT_USER_NAME}
-      - RABBIT_PASSWORD=${RABBIT_PASSWORD}
-      - RABBIT_PORT=${RABBIT_PORT}
-      - PG_HOST_NAME=${PG_HOST_NAME}
-      - PG_PORT=${PG_PORT}
-      - PG_DATABASE_NAME=${PG_DATABASE_NAME}
-      - PG_USER_NAME=${PG_USER_NAME}
-      - PG_PASSWORD=${PG_PASSWORD}
-      - REDIS_HOST=${REDIS_HOST}
-      - SEQ_HOST=${SEQ_HOST}
-      - FRONTEND_URL=${FRONTEND_URL}
-      - MAIN_GRPC_ADDRESS=${MAIN_GRPC_ADDRESS}
+      dockerfile: ./parser_apps/AvitoSparesParser/Dockerfile
     depends_on:
       - backend
-      - database
-      - redis
-      - rabbitmq
-      - seq
-    restart: always
-
-  cleaner:
-    container_name: cleaner
-    build:
-      context: .
-      dockerfile: DockerfileCleaner
-    environment:
-      - RABBIT_HOST_NAME=${RABBIT_HOST_NAME}
-      - RABBIT_USER_NAME=${RABBIT_USER_NAME}
-      - RABBIT_PASSWORD=${RABBIT_PASSWORD}
-      - RABBIT_PORT=${RABBIT_PORT}
-      - PG_HOST_NAME=${PG_HOST_NAME}
-      - PG_PORT=${PG_PORT}
-      - PG_DATABASE_NAME=${PG_DATABASE_NAME}
-      - PG_USER_NAME=${PG_USER_NAME}
-      - PG_PASSWORD=${PG_PASSWORD}
-      - REDIS_HOST=${REDIS_HOST}
-      - SEQ_HOST=${SEQ_HOST}
-      - FRONTEND_URL=${FRONTEND_URL}
-    depends_on:
-      - backend
-      - database
-      - redis
-      - rabbitmq
-      - seq
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
     restart: always
 
   frontend:
     container_name: frontend
     build:
       context: .
-      dockerfile: DockerfileFrontend
+      dockerfile: ./frontend_app/Dockerfile
     ports:
       - "80:80"
     environment:
       - DISABLE_IPV6=1
     depends_on:
       - backend
-      - database
-      - redis
-      - rabbitmq
-      - seq
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
     restart: always
 
 volumes:
   remtech_data:
-  seq_data:
+  redis_data:

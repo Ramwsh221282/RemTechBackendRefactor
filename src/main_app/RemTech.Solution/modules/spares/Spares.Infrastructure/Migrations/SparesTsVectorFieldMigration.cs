@@ -5,7 +5,7 @@ namespace Spares.Infrastructure.Migrations;
 /// <summary>
 ///    Миграция для добавления поля tsvector в таблицу запчастей.
 /// </summary>
-[Migration(1767356828)]
+[Migration(1770229900)]
 public sealed class SparesTsVectorFieldMigration : Migration
 {
 	/// <summary>
