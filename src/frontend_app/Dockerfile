@@ -1,0 +1,20 @@
+FROM node:22.14.0-alpine AS build
+
+WORKDIR /app
+
+# COPY ../src/package*.json .
+
+COPY ["../frontend_app/src/package*.json", "."]
+
+RUN npm install
+
+# COPY ../src/ .
+
+COPY ["../frontend_app/src/", "."]
+
+RUN npm run build
+
+FROM nginx:stable
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/app.conf
+COPY --from=build /app/dist/src/browser/. /usr/share/nginx/html

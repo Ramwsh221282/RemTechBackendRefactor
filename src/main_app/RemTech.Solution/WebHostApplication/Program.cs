@@ -1,5 +1,7 @@
+using System.Net;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -20,6 +22,27 @@ logger.Information("Запуск веб-приложения.");
 try
 {
 	WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+	builder.WebHost.ConfigureKestrel(options =>
+	{
+		options.Listen(
+			IPAddress.Any,
+			5185,
+			opts =>
+			{
+				opts.Protocols = HttpProtocols.Http1AndHttp2;
+			}
+		);
+		options.Listen(
+			IPAddress.Any,
+			5238,
+			opts =>
+			{
+				opts.Protocols = HttpProtocols.Http2;
+			}
+		);
+	});
+
 	bool isDevelopment = builder.Environment.IsDevelopment();
 	if (isDevelopment)
 	{
