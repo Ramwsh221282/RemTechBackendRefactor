@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Data.Common;
 using Dapper;
 using Pgvector;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;

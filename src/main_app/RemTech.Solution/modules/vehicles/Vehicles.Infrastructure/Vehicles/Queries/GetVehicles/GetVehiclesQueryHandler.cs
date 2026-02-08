@@ -14,7 +14,7 @@ namespace Vehicles.Infrastructure.Vehicles.Queries.GetVehicles;
 /// <summary>
 /// Обработчик запроса на получение транспортных средств.
 /// </summary>
-// [UseCache]
+[UseCache]
 public sealed class GetVehiclesQueryHandler(NpgSqlSession session, EmbeddingsProvider embeddings)
 	: IQueryHandler<GetVehiclesQuery, GetVehiclesQueryResponse>
 {

@@ -21,6 +21,7 @@ export function DefaultSpareResponse(): SpareResponse {
 		Type: '',
 		IsNds: false,
 		Location: '',
+    Photos: [],
 	};
 }
 

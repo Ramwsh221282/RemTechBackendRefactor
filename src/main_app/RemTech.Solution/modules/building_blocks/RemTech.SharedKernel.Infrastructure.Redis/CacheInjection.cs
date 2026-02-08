@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Configurations;
 
 namespace RemTech.SharedKernel.Infrastructure.Redis;

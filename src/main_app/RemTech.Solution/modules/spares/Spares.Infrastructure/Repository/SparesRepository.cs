@@ -4,7 +4,6 @@ using Dapper;
 using Npgsql;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
 using RemTech.SharedKernel.Infrastructure.Database;
-using RemTech.SharedKernel.NN;
 using Spares.Domain.Contracts;
 using Spares.Domain.Models;
 

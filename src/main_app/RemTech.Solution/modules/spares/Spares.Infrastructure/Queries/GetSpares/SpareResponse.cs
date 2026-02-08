@@ -44,4 +44,8 @@ public sealed class SpareResponse
 	///     Адрес запчасти.
 	/// </summary>
 	public required string Location { get; set; }
+
+    public IReadOnlyList<string> Photos { get; set; } = [];
 }
+
+public sealed record SparePhotoResponse(string Value);

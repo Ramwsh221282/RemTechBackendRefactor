@@ -8,7 +8,6 @@ using RemTech.SharedKernel.Core.Handlers.Decorators.CacheQuery;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.NN;
 using WebHostApplication.CommonSql;
-using WebHostApplication.Injection;
 using WebHostApplication.Queries.Responses;
 
 namespace WebHostApplication.Queries.GetActionRecords;

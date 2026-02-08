@@ -28,7 +28,9 @@ public static class ContainedItemsInfrastructureInjection
 		private void RegisterBackgroundServices()
 		{
 			services.AddHostedService<PublishContainedItemsToAddBackgroundService>();
-		}
+            services.AddHostedService<MainPageStatsCacheInvalidationBackgroundService>();
+            services.AddHostedService<MainPageLastAddedItemsInvalidationBackgroundService>();
+        }
 
 		private void RegisterProducers()
 		{
