@@ -318,7 +318,7 @@ public sealed class GetVehiclesQueryParameters
 	/// <returns>Объект с обновленными параметрами запроса.</returns>
 	public GetVehiclesQueryParameters ForPageSize(int pageSize)
 	{
-		if (pageSize <= 50)
+		if (pageSize >= 50)
 		{
 			return this;
 		}

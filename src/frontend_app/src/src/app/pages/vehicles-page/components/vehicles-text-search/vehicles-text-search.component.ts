@@ -23,6 +23,7 @@ export class VehiclesTextSearchComponent {
 	}
 
 	public onReset(): void {
+    this.textInput.set('');
 		this._debounce$.trigger();
 	}
 

@@ -15,12 +15,17 @@ export class VehicleCardComponent {
 	vehicle: InputSignal<VehicleResponse> = input(DefaultVehicleResponse());
 
 	openInNewTab(): void {
-		const url: string = this._router
-			.createUrlTree(['/vehicle'], {
-				queryParams: { vehicleId: this.vehicle().VehicleId },
-			})
-			.toString();
+    // TODO: здесь должен быть переход на страницу конкретного объявления.
+		// const url: string = this._router
+		// 	.createUrlTree(['/vehicle'], {
+		// 		queryParams: { vehicleId: this.vehicle().VehicleId },
+		// 	})
+		// 	.toString();
+    //
+		// window.open(url, '_blank', 'noopener,noreferrer');
 
-		window.open(url, '_blank', 'noopener,noreferrer');
-	}
+
+    const sourceUrl: string = this.vehicle().Source;
+    window.open(sourceUrl, '_blank', 'noopener,noreferrer');
+  }
 }
