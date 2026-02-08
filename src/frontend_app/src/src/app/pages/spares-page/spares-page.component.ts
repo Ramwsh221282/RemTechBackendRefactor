@@ -55,12 +55,10 @@ function mapSparesResponseToStatistics(response: GetSparesQueryResponse): Aggreg
 	selector: 'app-spares-page',
 	imports: [
 		SparesSearchInputComponent,
-		SparePhotoComponent,
 		SpareContentComponent,
 		SpareTitleComponent,
 		SpareDetailsComponent,
 		SpareSourceComponent,
-		Paginator,
 		PaginationComponent,
 		VehiclePriceFilterFormPartComponent,
 		SpareTypesSelectComponent,

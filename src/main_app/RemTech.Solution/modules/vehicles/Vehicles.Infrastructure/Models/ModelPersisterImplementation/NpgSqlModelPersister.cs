@@ -12,114 +12,72 @@ namespace Vehicles.Infrastructure.Models.ModelPersisterImplementation;
 /// <summary>
 /// Реализация персистера моделей на основе NpgSql и векторных представлений.
 /// </summary>
-/// <param name="session">Сессия для работы с базой данных NpgSql.</param>
-/// <param name="embeddings">Провайдер векторных представлений.</param>
 public sealed class NpgSqlModelPersister(NpgSqlSession session, EmbeddingsProvider embeddings) : IModelsPersister
 {
-	private const double MAX_DISTANCE = 0.6;
-
 	/// <summary>
 	/// Сохраняет модель в базе данных.
 	/// </summary>
-	/// <param name="model">Модель для сохранения.</param>
-	/// <param name="ct">Токен отмены.</param>
-	/// <returns>Результат операции сохранения модели.</returns>
 	public async Task<Result<Model>> Save(Model model, CancellationToken ct = default)
-	{
-		const string sql = """
-			WITH exact_match AS (
-			 SELECT id, name FROM vehicles_module.models WHERE name = @name
-			 LIMIT 1
-			),
-			embedding_match AS (
-			 SELECT id, name, embedding <=> @input_embedding AS distance
-			 FROM vehicles_module.models
-			 WHERE embedding <=> @input_embedding < @max_distance
-			 ORDER BY distance
-			 LIMIT 1
-			)
-			SELECT 
-			 exact_match.id as exact_id, 
-			 exact_match.name as exact_name,
-			 embedding_match.id as embedding_id, 
-			 embedding_match.name as embedding_name 
-			FROM (SELECT 1) dummy
-			LEFT JOIN exact_match ON true 
-			LEFT JOIN embedding_match ON true;
-			""";
+    {
+        const string sql = """
+                            WITH vector_filtered AS (
+                                SELECT 
+                                    id as id, 
+                                    name as name,
+                                    1 - (embedding <=> @input_embedding) as score 
+                                    FROM vehicles_module.models
+                                WHERE 1 - (embedding <=> @input_embedding) >= 0.4
+                                ORDER BY score DESC
+                                LIMIT 15
+                            ) 
+                            SELECT
+                                trgrm_filtered.id as Id,
+                                trgrm_filtered.name as Name 
+                            FROM vector_filtered
+                            JOIN LATERAL (
+                            SELECT 
+                                vector_filtered.id as id,
+                                vector_filtered.name as name,
+                                word_similarity(vector_filtered.name, @name) as sml
+                                FROM vector_filtered
+                                WHERE 
+                                vector_filtered.name = @name 
+                                OR word_similarity(vector_filtered.name, @name) >= 0.4
+                                ORDER BY 
+                                    CASE
+                                        WHEN vector_filtered.name = @name THEN 0
+                                        WHEN word_similarity(vector_filtered.name, @name) >= 0.4 THEN 1
+                                        ELSE 2
+                                    END,
+                                    sml DESC
+                                    LIMIT 1
+                            ) trgrm_filtered ON TRUE
+                            LIMIT 1
+                            """;
 
 		Vector vector = new(embeddings.Generate(model.Name.Value));
 		DynamicParameters parameters = BuildParameters(model, vector);
 		CommandDefinition command = session.FormCommand(sql, parameters, ct);
-		NpgSqlSearchResult[] result = await session.QueryMultipleUsingReader(command, MapFromReader);
-		NpgSqlSearchResult? found = result.FirstOrDefault();
-		if (found is null)
+        NpgSqlSearchResult? result = await session.QueryMaybeRow<NpgSqlSearchResult?>(command);
+		if (result is null)
 		{
-			return Error.Conflict($"Unable to resolve model from text: {model.Name}");
+            return Error.NotFound("Unable to resolve model");
 		}
 
-		if (HasFromExactSearch(found))
-		{
-			return MapToModelFromExactSearch(found);
-		}
-		return HasFromEmbeddingSearch(found)
-			? (Result<Model>)MapToModelFromEmbeddingSearch(found)
-			: (Result<Model>)Error.Conflict($"Unable to resolve model from text: {model.Name}");
+		return new Model(ModelId.Create(result.Id), ModelName.Create(result.Name));
 	}
-
+    
 	private static DynamicParameters BuildParameters(Model model, Vector vector)
 	{
 		DynamicParameters parameters = new();
 		parameters.Add("@name", model.Name.Value, DbType.String);
 		parameters.Add("@input_embedding", vector);
-		parameters.Add("@max_distance", MAX_DISTANCE, DbType.Double);
 		return parameters;
-	}
-
-	private static bool HasFromEmbeddingSearch(NpgSqlSearchResult result)
-	{
-		return result.EmbeddingId.HasValue && result.EmbeddingName is not null;
-	}
-
-	private static Model MapToModelFromEmbeddingSearch(NpgSqlSearchResult result)
-	{
-		ModelId id = ModelId.Create(result.EmbeddingId!.Value);
-		ModelName name = ModelName.Create(result.EmbeddingName!);
-		return new Model(id, name);
-	}
-
-	private static bool HasFromExactSearch(NpgSqlSearchResult result)
-	{
-		return result.ExactId.HasValue && result.ExactName is not null;
-	}
-
-	private static Model MapToModelFromExactSearch(NpgSqlSearchResult result)
-	{
-		ModelId id = ModelId.Create(result.ExactId!.Value);
-		ModelName name = ModelName.Create(result.ExactName!);
-		return new Model(id, name);
-	}
-
-	private static NpgSqlSearchResult MapFromReader(IDataReader reader)
-	{
-		Guid? exactId = reader.GetNullable<Guid>("exact_id");
-		string? exactName = reader.GetNullableReferenceType<string>("exact_name");
-		Guid? embeddingId = reader.GetNullable<Guid>("embedding_id");
-		string? embeddingName = reader.GetNullableReferenceType<string>("embedding_name");
-		return new NpgSqlSearchResult
-		{
-			ExactId = exactId,
-			ExactName = exactName,
-			EmbeddingId = embeddingId,
-			EmbeddingName = embeddingName,
-		};
 	}
 
 	private sealed class NpgSqlSearchResult
 	{
-		public required Guid? ExactId { get; init; }
-		public required string? ExactName { get; init; }
-		public required Guid? EmbeddingId { get; init; }
-		public required string? EmbeddingName { get; init; }
+		public required Guid Id { get; init; }
+		public required string Name { get; init; }
 	}
 }

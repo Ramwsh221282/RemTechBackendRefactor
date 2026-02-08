@@ -33,17 +33,12 @@ public static class ConcreteItemParsingProcessImplementation
                 NpgSqlTransactionSource transactionSource = new(session);
                 await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
 
-                WorkStageQuery stageQuery = new(
-                    Name: WorkStageConstants.ConcreteItemStageName,
-                    WithLock: true
-                );
-                Maybe<ParserWorkStage> workStage = await ParserWorkStage.GetSingle(
-                    session,
-                    stageQuery,
-                    ct
-                );
+                WorkStageQuery stageQuery = new(Name: WorkStageConstants.ConcreteItemStageName, WithLock: true);
+                Maybe<ParserWorkStage> workStage = await ParserWorkStage.GetSingle(session, stageQuery, ct);
                 if (!workStage.HasValue)
+                {
                     return;
+                }
 
                 AvitoItemQuery itemsQuery = new(
                     UnprocessedOnly: true,
@@ -51,11 +46,7 @@ public static class ConcreteItemParsingProcessImplementation
                     RetryCount: 10,
                     CatalogueOnly: true
                 );
-                AvitoVehicle[] items = await AvitoVehicle.GetAsCatalogueRepresentation(
-                    session,
-                    itemsQuery,
-                    ct: ct
-                );
+                AvitoVehicle[] items = await AvitoVehicle.GetAsCatalogueRepresentation(session, itemsQuery, ct: ct);
                 if (items.Length == 0)
                 {
                     workStage.Value.ToFinalizationStage();
@@ -67,51 +58,54 @@ public static class ConcreteItemParsingProcessImplementation
 
                 IBrowser browser = await browsers.ProvideBrowser();
 
-                for (int i = 0; i < items.Length; i++)
+                try
                 {
-                    AvitoVehicle item = items[i];
-                    logger.Information("Processing item: {Url}", item.CatalogueRepresentation.Url);
+                    for (int i = 0; i < items.Length; i++)
+                    {
+                        AvitoVehicle item = items[i];
+                        logger.Information("Processing item: {Url}", item.CatalogueRepresentation.Url);
 
-                    try
-                    {
-                        item = await new ExtractConcreteItemCommand(
-                            () => browser.GetPage(),
-                            item,
-                            bypasses
-                        )
-                            .UseLogging(dLogger)
-                            .Handle();
-                        item = item.MarkProcessed();
+                        try
+                        {
+                            item = await new ExtractConcreteItemCommand(
+                                    () => browser.GetPage(),
+                                    item,
+                                    bypasses
+                                )
+                                .UseLogging(dLogger)
+                                .Handle();
+                            item = item.MarkProcessed();
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Error(
+                                ex,
+                                "Error at extracting concrete item {Url}.",
+                                item.CatalogueRepresentation.Url
+                            );
+                            item = item.IncreaseRetryCount();
+                            
+                            await browser.DestroyAsync();
+                            BrowserFactory.KillBrowserProcess();
+                            browser = await browsers.ProvideBrowser();
+                        }
+                        finally
+                        {
+                            items[i] = item;
+                        }
                     }
-                    catch (EvaluationFailedException)
-                    {
-                        logger.Error(
-                            "Evaluation failed for item {Url}. Recreating browser",
-                            item.CatalogueRepresentation.Url
-                        );
-                        browser = await browsers.Recreate(browser);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error(
-                            ex,
-                            "Error at extracting concrete item {Url}.",
-                            item.CatalogueRepresentation.Url
-                        );
-                        item = item.IncreaseRetryCount();
-                    }
-                    finally
-                    {
-                        items[i] = item;
-                    }
+
+                    await browser.DestroyAsync();
+                    await items.UpdateFull(session);
+
+                    Result commit = await txn.Commit(ct);
+                    if (commit.IsFailure)
+                        logger.Error(commit.Error, "Error at committing transaction");
                 }
-
-                await browser.DestroyAsync();
-                await items.UpdateFull(session);
-
-                Result commit = await txn.Commit(ct);
-                if (commit.IsFailure)
-                    logger.Error(commit.Error, "Error at committing transaction");
+                finally
+                {
+                    BrowserFactory.KillBrowserProcess();
+                }
             };
     }
 }
