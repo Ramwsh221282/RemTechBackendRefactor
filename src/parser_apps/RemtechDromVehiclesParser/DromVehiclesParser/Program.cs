@@ -60,6 +60,7 @@ try
     WebApplication app = builder.Build();
 
     logger.Information("Запуск подписки/повторной подписки на основной бекенд. Fire And Forget.");
+    await Task.Delay(TimeSpan.FromMinutes(1));
     app.Lifetime.ApplicationStarted.Register(() =>
     {
         _ = Task.Run(async () =>

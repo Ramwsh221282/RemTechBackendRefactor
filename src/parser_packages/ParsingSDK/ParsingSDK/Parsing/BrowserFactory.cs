@@ -24,6 +24,7 @@ public sealed class BrowserFactory
     public async Task<IBrowser> ProvideBrowser()
     {
         LogBrowserOptions();
+        LogBrowserPath();
         if (string.IsNullOrWhiteSpace(_browserPath))
         {
             Logger.Warning("Путь к браузеру пустой.");
@@ -81,6 +82,37 @@ public sealed class BrowserFactory
                            """, External.BrowserPath, External.Headless);
     }
 
+    private void LogBrowserPath()
+    {
+        string path = External.BrowserPath;
+        bool fileExists = File.Exists(path);
+        if (!fileExists)
+        {
+            Logger.Warning("Browser path: {Path}. Browser does not exist.", path);
+            LogAsDirectory();
+            throw new FileNotFoundException($"Browser file not found: {path}");
+        }
+        
+        Logger.Information("Browser path: {Path}. Browser exists.", path);
+        LogAsDirectory();
+    }
+
+    private void LogAsDirectory()
+    {
+        string path = External.BrowserPath;
+        bool isDirectory = Directory.Exists(path);
+        if (isDirectory)
+        {
+            Logger.Information("Path is directory.");
+            string[] directoryData = Directory.GetDirectories(path);
+            Logger.Information("Directory sub folders count: {Count}", directoryData.Length);
+            foreach (string dirPath in directoryData)
+            {
+                Logger.Information("Subdir path: {Path}", dirPath);
+            }
+        }
+    }
+
     private static async Task<IBrowser> InstantiateBrowserWithPath(ScrapingBrowserOptions options)
     {
         ScrapingBrowserOptions withPath = new() { BrowserPath = _browserPath, Headless = options.Headless };
@@ -90,6 +122,7 @@ public sealed class BrowserFactory
             "--no-sandbox", 
             "--disable-gpu", 
             "--disable-dev-shm-usage", 
+            "--disable-setuid-sandbox"
         ];
         
         LaunchOptions launchOptions = new()

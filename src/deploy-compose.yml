@@ -79,6 +79,15 @@ services:
     build:
       context: .
       dockerfile: ./parser_apps/AvitoSparesParser/Dockerfile
+    environment:
+      - SubscriptionStorageOptions__Host=${SubscriptionStorageOptions__Host}
+      - SubscriptionStorageOptions__Port=${SubscriptionStorageOptions__Port}
+      - SubscriptionStorageOptions__Database=${SubscriptionStorageOptions__Database}
+      - SubscriptionStorageOptions__Username=${SubscriptionStorageOptions__Username}
+      - SubscriptionStorageOptions__Password=${SubscriptionStorageOptions__Password}
+      - ScrapingBrowserOptions__BrowserPath=${ScrapingBrowserOptions__BrowserPath}
+      - ScrapingBrowserOptions__Headless=${ScrapingBrowserOptions__Headless}
+      
     depends_on:
       - backend
       - remtech_database

@@ -69,6 +69,7 @@ try
     logger.Information(
         "Попытка/повторная попытка подписки в основной бекенд запущена Fire And Forget."
     );
+    await Task.Delay(TimeSpan.FromMinutes(1));
     app.Lifetime.ApplicationStarted.Register(() =>
     {
         _ = Task.Run(async () =>
