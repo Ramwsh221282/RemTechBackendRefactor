@@ -1,0 +1,15 @@
+<p-select
+	(onChange)="userChangesLocation($event)"
+	[disabled]="disabled()"
+	[fluid]="true"
+	[options]="locations()"
+	[ngModel]="selectedLocation()"
+	[optionLabel]="'Name'"
+	[filter]="true"
+	[filterBy]="'Name'"
+	[showClear]="true"
+	[emptyMessage]="'Локации не найдены'"
+	[emptyFilterMessage]="'Нет совпадений'"
+	[placeholder]="placeHolderText"
+	class="w-full md:w-56"
+/>

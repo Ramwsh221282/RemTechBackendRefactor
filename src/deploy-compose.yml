@@ -1,0 +1,116 @@
+services:
+  remtech_database:
+    image: pgvector/pgvector:0.8.1-pg18-trixie
+    restart: always
+    container_name: remtech_database
+    environment:
+      POSTGRES_DB: ${NpgSqlOptions__Database}
+      POSTGRES_USER: ${NpgSqlOptions__Username}
+      POSTGRES_PASSWORD: ${NpgSqlOptions__Password}
+      PGPORT: ${NpgSqlOptions__InnerPort}
+    ports:
+      - "${NpgSqlOptions__ExternalPort}:${NpgSqlOptions__InnerPort}"
+    volumes:
+      - remtech_data:/var/lib/postgresql
+
+  remtech_redis:
+    image: redis:alpine
+    container_name: remtech_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  remtech_rabbitmq:
+    image: rabbitmq:alpine
+    container_name: remtech_rabbitmq
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RabbitMqOptions__Username}
+      RABBITMQ_DEFAULT_PASS: ${RabbitMqOptions__Password}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: always
+
+  backend:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: ./main_app/Dockerfile
+    ports:
+      - "5185:5185"
+      - "5238:5238"
+    environment:
+      - ASPNETCORE_URLS=http://+:5185
+    depends_on:
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
+    restart: always
+
+  avito-vehicles:
+    container_name: avito-vehicles
+    build:
+      context: .
+      dockerfile: ./parser_apps/RemTechAvitoVehiclesParser/Dockerfile
+    depends_on:
+      - backend
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
+    restart: always
+
+  drom-vehicles:
+    container_name: drom-vehicles
+    build:
+      context: .
+      dockerfile: ./parser_apps/RemtechDromVehiclesParser/Dockerfile
+    depends_on:
+      - backend
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
+    restart: always
+
+  avito-spares:
+    container_name: avito-spares
+    build:
+      context: .
+      dockerfile: ./parser_apps/AvitoSparesParser/Dockerfile
+    environment:
+      - SubscriptionStorageOptions__Host=${SubscriptionStorageOptions__Host}
+      - SubscriptionStorageOptions__Port=${SubscriptionStorageOptions__Port}
+      - SubscriptionStorageOptions__Database=${SubscriptionStorageOptions__Database}
+      - SubscriptionStorageOptions__Username=${SubscriptionStorageOptions__Username}
+      - SubscriptionStorageOptions__Password=${SubscriptionStorageOptions__Password}
+      - ScrapingBrowserOptions__BrowserPath=${ScrapingBrowserOptions__BrowserPath}
+      - ScrapingBrowserOptions__Headless=${ScrapingBrowserOptions__Headless}
+      
+    depends_on:
+      - backend
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
+    restart: always
+
+  frontend:
+    container_name: frontend
+    build:
+      context: .
+      dockerfile: ./frontend_app/Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      - DISABLE_IPV6=1
+    depends_on:
+      - backend
+      - remtech_database
+      - remtech_redis
+      - remtech_rabbitmq
+    restart: always
+
+volumes:
+  remtech_data:
+  redis_data:

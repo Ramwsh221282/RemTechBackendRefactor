@@ -1,0 +1,23 @@
+<div class="space-y-6">
+  <div>
+    <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">Изменение расписания:</h2>
+  </div>
+  <div class="flex flex-col gap-2">
+    <app-gray-text-info-wrapper>
+      <app-gray-text-info
+        [text_setter]="'Изменение расписания парсера пользователем подразумевает редактирование дней ожидания.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'При изменении количества дней ожидания парсера, меняется его следующая дата запуска, начиная от текущей даты.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Если парсер в рабочем состоянии, изменить его дни ожидания не получится.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'При окончании итерации парсинга, парсер увеличивает свою дату следующего запуска, добавляя количество дней ожидания к моменту времени, когда он закончил парсинг.'" />
+    </app-gray-text-info-wrapper>
+  </div>
+</div>

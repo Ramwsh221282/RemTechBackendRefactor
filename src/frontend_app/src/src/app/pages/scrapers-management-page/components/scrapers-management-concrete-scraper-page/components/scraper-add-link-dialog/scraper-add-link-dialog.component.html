@@ -1,0 +1,63 @@
+<!--<p-dialog [header]="'Добавление ссылок'" [(visible)]="visibility" (onHide)="onHide()" [modal]="true"-->
+<!--          [draggable]="false">-->
+<!--  <form class="flex flex-col gap-2" [formGroup]="addLinkForm" (ngSubmit)="onSubmit()">-->
+<!--    <div class="flex flex-row justify-between gap-2">-->
+<!--      <input pInputText [formControlName]="'name'" [fluid]="true" [placeholder]="'Название ссылки'">-->
+<!--      <input pInputText [formControlName]="'url'" [fluid]="true" [placeholder]="'URL ссылки'">-->
+<!--    </div>-->
+<!--    <p-button [label]="'Подтвердить'" [type]="'submit'"/>-->
+<!--  </form>-->
+<!--  <p-table [value]="linksList" [tableStyle]="{ 'min-width': '50rem' }">-->
+<!--    <ng-template #header>-->
+<!--      <tr>-->
+<!--        <th>Название ссылки:</th>-->
+<!--        <th>URL:</th>-->
+<!--      </tr>-->
+<!--    </ng-template>-->
+<!--    <ng-template #body let-link>-->
+<!--      <tr>-->
+<!--        <td>{{ link.UrlName }}</td>-->
+<!--        <td>{{ link.UrlValue }}</td>-->
+<!--      </tr>-->
+<!--    </ng-template>-->
+<!--  </p-table>-->
+<!--</p-dialog>-->
+<!--<p-toast [position]="'bottom-right'"/>-->
+<p-dialog
+  [header]="'Добавление ссылок'"
+  [(visible)]="visibility"
+  (onHide)="onHide()"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '90vw', maxWidth: '50%' }"
+  [breakpoints]="{ '960px': '75vw', '640px': '90vw' }"
+>
+  <form class="flex flex-col gap-2 w-full" [formGroup]="addLinkForm">
+    <div class="flex justify-between flex-col sm:flex-row gap-2 w-full">
+      <input pInputText class="w-full" [formControlName]="'name'" [placeholder]="'Название ссылки'" />
+      <input pInputText class="w-full" [formControlName]="'url'" [placeholder]="'URL ссылки'" />
+    </div>
+    <div class="flex justify-items-start flex-col sm:flex-row gap-2 w-full">
+      <p-button label="Добавить ссылку в список" type="button" styleClass="w-full sm:w-auto" (click)="submitAdd()" />
+      <p-button label="Подтвердить добавление ссылок" type="button" styleClass="w-full sm:w-auto" (click)="confirmAdd()" />
+    </div>
+  </form>
+
+  <div class="overflow-x-auto mt-4">
+    <p-table [value]="linksList">
+      <ng-template #header>
+        <tr>
+          <th>Название ссылки</th>
+          <th>URL</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-link>
+        <tr>
+          <td>{{ link.UrlName }}</td>
+          <td class="break-all">{{ link.UrlValue }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</p-dialog>
+<p-toast [position]="'bottom-right'"/>

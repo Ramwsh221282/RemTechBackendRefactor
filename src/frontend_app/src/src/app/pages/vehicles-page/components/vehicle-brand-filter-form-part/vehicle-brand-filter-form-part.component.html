@@ -1,0 +1,16 @@
+<p-select
+	(onChange)="onChange($event)"
+	[disabled]="disabled()"
+	[fluid]="true"
+	[options]="brands()"
+	[ngModel]="currentBrand()"
+	[ariaSelected]="'Name'"
+	optionLabel="Name"
+	[filter]="true"
+	filterBy="Name"
+	[showClear]="true"
+	[emptyFilterMessage]="'Нет совпадений'"
+	[emptyMessage]="'Марки не найдены'"
+	[placeholder]="placeHolderText"
+	class="w-full md:w-56"
+/>

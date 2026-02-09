@@ -1,0 +1,8 @@
+<div class="w-full md:w-48 shrink-0">
+	@if (photos().length > 0) {
+		<img [src]="photos()[0]" alt="Фото" class="w-full h-auto max-h-64 object-cover rounded-lg" />
+	}
+  @else {
+    <img [src]="'images/no_photo.png'" alt="Фото" class="w-full h-auto max-h-64 object-cover rounded-lg" />
+  }
+</div>

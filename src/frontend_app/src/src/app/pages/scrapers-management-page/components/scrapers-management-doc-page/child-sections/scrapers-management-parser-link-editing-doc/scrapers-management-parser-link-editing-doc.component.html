@@ -1,0 +1,27 @@
+<div class="space-y-6">
+  <div>
+    <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">Редактирование ссылки у парсера:</h2>
+  </div>
+  <div class="flex flex-col gap-2">
+    <app-gray-text-info-wrapper>
+      <app-gray-text-info
+        [text_setter]="'Редактирование ссылки у парсера предоставляет возможность изменения названия, url и активности ссылки, а так же ее удаление'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'При изменении названия ссылки у парсера, убедитесь, что оно уникально для ссылок внутри парсера.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'При изменении URL ссылки у парсера, убедитесь, что оно уникально для ссылок внутри парсера.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Если парсер работает, изменение активности ссылки у парсера невозможно.'" />
+    </app-gray-text-info-wrapper>
+    <app-gray-text-info-wrapper>
+      <app-blue-info-text
+        [text_setter]="'Если парсер работает, нельзя удалить ссылку у парсера (исключение ссылка неактивна).'" />
+    </app-gray-text-info-wrapper>
+  </div>
+</div>
