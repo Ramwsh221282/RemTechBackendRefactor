@@ -8,7 +8,7 @@ public sealed record ParserStageDependencies(
     NpgSqlConnectionFactory NpgSql,
     Serilog.ILogger Logger,
     AvitoBypassFactory Bypasses,
-    BrowserFactory Browsers,
+    BrowserManagerProvider BrowserProvider,
     TextTransformerBuilder TextTransformerBuilder,
     FinishParserProducer FinishProducer,
     AddContainedItemProducer AddContainedItem

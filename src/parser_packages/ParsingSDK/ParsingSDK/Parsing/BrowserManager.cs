@@ -7,62 +7,38 @@ using Serilog;
 
 namespace ParsingSDK.Parsing;
 
-public sealed class BrowserManager
+public sealed class BrowserManager : IDisposable, IAsyncDisposable
 {
     private const int MAX_CONCURRENT_PAGES = 1;
     
-    private IBrowser? _browser;
+    private static string _browserPath = string.Empty;
     
-    private readonly Channel<IPage> _pages;
+    private IBrowser? _browser;
+    private Channel<IPage>? _pages;
     private ILogger Logger { get; }
     private ScrapingBrowserOptions External { get; }
     
-    private static string _browserPath = string.Empty;
-    
-
     public BrowserManager(IOptions<ScrapingBrowserOptions> options, ILogger logger)
     {
         Logger = logger.ForContext<BrowserManager>();
         External = options.Value;
         _browserPath = External.BrowserPath;
-        _pages = Channel.CreateBounded<IPage>(new BoundedChannelOptions(MAX_CONCURRENT_PAGES)
-        {
-            FullMode = BoundedChannelFullMode.Wait,
-            SingleReader = false,
-            SingleWriter = false
-        });
     }
 
-    internal void ReturnPage(IPage page)
+    public async Task<IPage> RecreatePage(IPage page)
     {
-        Logger.Information("Возвращение страницы в пул.");
-        if (page.IsClosed)
-        {
-            Logger.Warning("Страница закрыта.");
-            page.Dispose();
-            Logger.Warning("Страница удалена из пула.");
-            return;
-        }
-        
-        _pages.Writer.WriteAsync(page);
-        Logger.Information("Страница возвращена в пул.");       
+        await KillPage(page);
+        _browser ??= await InstantiateBrowser();
+        _pages ??= CreatePagesChannel();
+        await PopulatePages(_browser, _pages);
+        return await ProvidePage();
+    }
+
+    public void ReleasePageUsedMemoryResources()
+    {
+        CallFinalizersForMemoryClear();
     }
     
-    internal async Task ReturnPageAsync(IPage page)
-    {
-        Logger.Information("Возвращение страницы в пул.");
-        if (page.IsClosed)
-        {
-            Logger.Warning("Страница закрыта.");
-            await page.DisposeAsync();
-            Logger.Warning("Страница удалена из пула.");
-            return;
-        }
-        
-        await _pages.Writer.WriteAsync(page);
-        Logger.Information("Страница возвращена в пул.");
-    }
-
     public async Task<IBrowser> RecreateBrowser()
     {
         Logger.Information("Пересоздание браузера.");
@@ -84,16 +60,43 @@ public sealed class BrowserManager
     public async Task<IPage> ProvidePage()
     {
         _browser ??= await InstantiateBrowser();
-        IPage page = await _pages.Reader.ReadAsync();
+        IPage page = await InstantiatePagesChannel().Reader.ReadAsync();
         return new PageLease(this, page);
     }
     
     public async Task<IBrowser> ProvideBrowser()
     {
-        return _browser ??= await InstantiateBrowser();
+        _browser ??= await InstantiateBrowser();
+        return _browser;
     }
     
-    public async Task KillBrowserProcess()
+    public void Dispose()
+    {
+        if (_browser is not null)
+        {
+            KillBrowserProcess().Wait();   
+        }
+
+        if (_pages is not null)
+        {
+            CloseChannel().Wait();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_browser is not null)
+        {
+            await KillBrowserProcess();    
+        }
+
+        if (_pages is not null)
+        {
+            await CloseChannel();
+        }
+    }
+
+    private async Task KillBrowserProcess()
     {
         if (_browser is null)
         {
@@ -101,30 +104,82 @@ public sealed class BrowserManager
             return;
         }
         
+        Process process = _browser.Process;
+        string name = process.ProcessName;
+        Logger.Information("Завершение процесса браузера {Name}", name);
+        LogProcessMemory(Logger);
+        
         await KillPages();
+        await _browser.CloseAsync();
         await _browser.DisposeAsync();
+        KillBrowserProcess(process);
+        
         _browser = null;
-        string[] processNames = ["chrome", "chromium"];
-        foreach (string processName in processNames)
+        LogProcessMemory(Logger);
+        await CloseChannel();
+        CallFinalizersForMemoryClear();
+        Logger.Information("Завершен процесс браузера {Name}", name);
+    }
+
+    private async Task CloseChannel()
+    {
+        if (_pages is not null)
         {
-            Process?[] processes = Process.GetProcessesByName(processName);
-            if (processes.Length == 0)
+            _pages.Writer.TryComplete();
+            await _pages.Reader.Completion;
+            _pages = null;
+        }
+    }
+
+    private static Channel<IPage> CreatePagesChannel()
+    {
+        return Channel.CreateBounded<IPage>(new BoundedChannelOptions(MAX_CONCURRENT_PAGES)
+        {
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleReader = false,
+            SingleWriter = false
+        });
+    }
+    
+    private static void LogProcessMemory(ILogger logger)
+    {
+        Process process = Process.GetCurrentProcess();
+        long managed = GC.GetTotalMemory(false) / 1024 / 1024;
+        long workingSet = process.WorkingSet64 / 1024 / 1024;
+        long privateMem = process.PrivateMemorySize64 / 1024 / 1024;
+
+        logger.Information("Управляемая память: {managed} MB", managed);
+        logger.Information("Память закрепленная за процессом: {workingSet} MB", workingSet);
+        logger.Information("Память принадлежащая текущему процессу: {privateMem} MB", privateMem);
+    }
+    
+    private async Task KillPages()
+    {
+        if (_pages is null)
+        {
+            return;
+        }
+        
+        Logger.Information("Завершение всех страниц.");
+        while (_pages.Reader.TryRead(out var page)) 
+        {
+            if (page is null)
             {
                 continue;
             }
             
-            Logger.Information("Завершение процесса {processName}", processName);
-            KillProcesses(Process.GetProcessesByName(processName));
-            Logger.Information("Завершен процесс {processName}", processName);
+            await KillPage(page);
         }
     }
 
-    private async Task KillPages()
+    private static async Task KillPage(IPage page)
     {
-        Logger.Information("Завершение всех страниц.");
-        IPage page = await _pages.Reader.ReadAsync();
-        await page.DisposeAsync();
-        Logger.Information("Завершено все страницы.");       
+        if (page is not null)
+        {
+            await page.DeleteCookieAsync();
+            await page.CloseAsync();
+            await page.DisposeAsync();
+        }
     }
 
     private async Task<IBrowser> InstantiateBrowser()
@@ -139,37 +194,25 @@ public sealed class BrowserManager
                 Logger.Information("Загружается Chromium браузер.");
                 await DownloadBrowser();
                 Logger.Information("Chromium браузер загружен.");
-                _browserPath = GetCurrentBrowserPath();
             }
+            
+            _browserPath = GetCurrentBrowserPath();
         }
         
+        ThrowIfBrowserFileDoesNotExist(_browserPath);
         IBrowser browser =  await InstantiateBrowserWithPath(External);
         Logger.Information("Браузер создан.");
-        await PopulatePages(browser);
+        await PopulatePages(browser, InstantiatePagesChannel());
+        Logger.Information("Страницы созданы.");       
         return browser;
     }
 
-    private async Task PopulatePages(IBrowser browser)
+    private static async Task PopulatePages(IBrowser browser, Channel<IPage> pages)
     {
         for (int i = 0; i < MAX_CONCURRENT_PAGES; i++)
         {
             IPage page = await browser.NewPageAsync();
-            await _pages.Writer.WriteAsync(page);
-        }
-        
-        Logger.Information("Пулы страниц заполнены. Макс число пула: {MaxPoolCount}", MAX_CONCURRENT_PAGES);
-    }
-
-    private static void KillProcesses(IEnumerable<Process?> processes)
-    {
-        foreach (Process? process in processes)
-        {
-            if (process is null)
-            {
-                continue;
-            }
-            
-            process.Kill();
+            await pages.Writer.WriteAsync(page);
         }
     }
     
@@ -190,11 +233,18 @@ public sealed class BrowserManager
         {
             Logger.Warning("Browser path: {Path}. Browser does not exist.", path);
             LogAsDirectory();
-            throw new FileNotFoundException($"Browser file not found: {path}");
         }
         
         Logger.Information("Browser path: {Path}. Browser exists.", path);
         LogAsDirectory();
+    }
+
+    private static void ThrowIfBrowserFileDoesNotExist(string path)
+    {
+        if (!File.Exists(path))
+        {
+            throw new Exception($"Browser file does not exist: {path}");
+        }
     }
 
     private void LogAsDirectory()
@@ -213,6 +263,24 @@ public sealed class BrowserManager
         }
     }
 
+    private static void KillBrowserProcess(Process process)
+    {
+        if (process is not null)
+        {
+            using (process)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+        }
+    }
+
+    private static void CallFinalizersForMemoryClear()
+    {
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
+    }
+    
     private static async Task<IBrowser> InstantiateBrowserWithPath(ScrapingBrowserOptions options)
     {
         ScrapingBrowserOptions withPath = new() { BrowserPath = _browserPath, Headless = options.Headless };
@@ -267,5 +335,42 @@ public sealed class BrowserManager
         BrowserFetcher fetcher = new();
         InstalledBrowser[] browsers = fetcher.GetInstalledBrowsers().ToArray();
         return browsers.Length != 0;
+    }
+    internal void ReturnPage(IPage page)
+    {
+        Logger.Information("Возвращение страницы в пул.");
+        if (page.IsClosed)
+        {
+            Logger.Warning("Страница закрыта.");
+            KillPage(page).Wait();
+            Logger.Warning("Страница удалена из пула.");
+            return;
+        }
+
+        Channel<IPage> pages = InstantiatePagesChannel();
+        pages.Writer.WriteAsync(page);
+        Logger.Information("Страница возвращена в пул.");       
+    }
+    
+    internal async Task ReturnPageAsync(IPage page)
+    {
+        Logger.Information("Возвращение страницы в пул.");
+        if (page.IsClosed)
+        {
+            Logger.Warning("Страница закрыта.");
+            await KillPage(page);
+            Logger.Warning("Страница удалена из пула.");
+            return;
+        }
+        
+        Channel<IPage> pages = InstantiatePagesChannel();
+        await pages.Writer.WriteAsync(page);
+        Logger.Information("Страница возвращена в пул.");
+    }
+
+    private Channel<IPage> InstantiatePagesChannel()
+    {
+        _pages ??= CreatePagesChannel();
+        return _pages;
     }
 }

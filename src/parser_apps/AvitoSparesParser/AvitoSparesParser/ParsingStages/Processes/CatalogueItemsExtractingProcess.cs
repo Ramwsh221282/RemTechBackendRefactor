@@ -3,6 +3,7 @@ using AvitoSparesParser.AvitoSpareContext.Extensions;
 using AvitoSparesParser.CatalogueParsing;
 using AvitoSparesParser.CatalogueParsing.Extensions;
 using AvitoSparesParser.Commands.ExtractCataloguePageItems;
+using AvitoSparesParser.Common;
 using AvitoSparesParser.ParsingStages.Extensions;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
@@ -26,7 +27,9 @@ public static class CatalogueItemsExtractingProcess
 
                 Maybe<ParsingStage> stage = await GetCatalogueStage(session, ct);
                 if (!stage.HasValue)
+                {
                     return;
+                }
 
                 AvitoCataloguePage[] pages = await GetPaginatedUrls(session, ct);
                 if (CanSwitchToNextStage(pages))
@@ -36,13 +39,15 @@ public static class CatalogueItemsExtractingProcess
                     return;
                 }
 
-                await ExtractCataloguePageItems(
-                    pages,
-                    logger,
-                    deps.Browsers,
-                    deps.Bypasses,
-                    session
-                );
+                await using (BrowserManager manager = deps.BrowserProvider.Provide())
+                {
+                    await using (IPage page = await manager.ProvidePage())
+                    {
+                        await ExtractCataloguePageItems(pages, logger, manager, page, deps.Bypasses, session);
+                    }
+                }
+                
+                
                 await FinishTransaction(scope, logger, ct);
             };
     }
@@ -63,57 +68,40 @@ public static class CatalogueItemsExtractingProcess
     private static async Task ExtractCataloguePageItems(
         AvitoCataloguePage[] pages,
         Serilog.ILogger logger,
-        BrowserFactory browsers,
+        BrowserManager manager,
+        IPage browserPage,
         AvitoBypassFactory bypass,
         NpgSqlSession session
     )
     {
-        IBrowser browser = await browsers.ProvideBrowser();
-
-        try
+        foreach (AvitoCataloguePage cataloguePage in pages)
         {
-            for (int i = 0; i < pages.Length; i++)
+            try
             {
-                AvitoCataloguePage page = pages[i];
-                IExtractCataloguePagesItemCommand command = new ExtractCataloguePagesItemCommand(
-                    () => browser.GetPage(),
-                    bypass
-                ).UseLogging(logger);
-                pages[i] = await ProcessExtraction(command, logger, page, session);
+                IExtractCataloguePagesItemCommand command = new ExtractCataloguePagesItemCommand(browserPage, bypass)
+                    .UseLogging(logger);
+                await ProcessExtraction(command, cataloguePage, session);
+                cataloguePage.Marker.MarkProcessed();
             }
-            
-            await pages.UpdateMany(session);
+            catch(Exception)
+            {
+                cataloguePage.Counter.Increase();
+                browserPage = await manager.RecreatePage(browserPage);
+                manager.ReleasePageUsedMemoryResources();
+            }
         }
-        finally
-        {
-            
-            await browser.DestroyAsync();   
-        }
+
+        await pages.UpdateMany(session);
     }
 
-    private static async Task<AvitoCataloguePage> ProcessExtraction(
+    private static async Task ProcessExtraction(
         IExtractCataloguePagesItemCommand command,
-        Serilog.ILogger logger,
         AvitoCataloguePage page,
         NpgSqlSession session
     )
     {
-        try
-        {
-            AvitoSpare[] items = await command.Extract(page);
-            await items.PersistAsCatalogueRepresentationMany(session);
-            page.Marker.MarkProcessed();
-        }
-        catch (EvaluationFailedException ex)
-        {
-            logger.Fatal(ex, "Evaluation exception in url: {Url}", page.Url);
-        }
-        catch (Exception)
-        {
-            page.Counter.Increase();
-        }
-
-        return page;
+        AvitoSpare[] items = await command.Extract(page);
+        await items.PersistAsCatalogueRepresentationMany(session);
     }
 
     private static async Task<Maybe<ParsingStage>> GetCatalogueStage(

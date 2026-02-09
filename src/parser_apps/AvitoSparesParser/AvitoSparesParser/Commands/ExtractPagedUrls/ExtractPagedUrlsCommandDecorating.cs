@@ -1,4 +1,7 @@
-﻿namespace AvitoSparesParser.Commands.ExtractPagedUrls;
+﻿using ParsingSDK.Parsing;
+using PuppeteerSharp;
+
+namespace AvitoSparesParser.Commands.ExtractPagedUrls;
 
 public static class ExtractPagedUrlsCommandDecorating
 {
@@ -9,9 +12,9 @@ public static class ExtractPagedUrlsCommandDecorating
             return new ExtractPagedUrlsCommandLogging(logger, command);
         }
 
-        public IExtractPagedUrlsCommand UseResilience(Serilog.ILogger logger, int attemptsCount = 5)
+        public IExtractPagedUrlsCommand UseResilience(Serilog.ILogger logger, BrowserManager manager, IPage page, int attemptsCount = 5)
         {
-            return new ResilientExtractPagedUrlsCommand(logger, command, attemptsCount);
+            return new ResilientExtractPagedUrlsCommand(logger, page, manager, command, attemptsCount);
         }
     }
 }
