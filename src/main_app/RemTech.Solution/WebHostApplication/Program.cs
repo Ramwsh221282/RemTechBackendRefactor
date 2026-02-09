@@ -84,6 +84,8 @@ try
             policy
                 .WithOrigins(
                     url,
+                    url + ":80",
+                    "http://localhost",
                     "http://localhost:80",
                     "http://frontend:80"
                 )
