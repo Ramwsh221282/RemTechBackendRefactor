@@ -1,11 +1,11 @@
 ﻿using FluentMigrator;
 
-namespace Identity.Infrastructure.Tokens.Migrations;
+namespace Identity.Infrastructure.Migrations;
 
 /// <summary>
 /// Миграция для создания таблицы access_tokens модуля identity.
 /// </summary>
-[Migration(1767696579)]
+[Migration(202501020004)]
 public sealed class AccessTokensTableMigration : Migration
 {
 	/// <summary>

@@ -1,11 +1,11 @@
 ﻿using FluentMigrator;
 
-namespace Notifications.Infrastructure.PendingEmails.Migrations;
+namespace Notifications.Infrastructure.Migrations;
 
 /// <summary>
 /// Миграция для создания таблицы отложенных писем.
 /// </summary>
-[Migration(1767617300)]
+[Migration(202501040002)]
 public sealed class PendingEmailTableMigration : Migration
 {
 	/// <summary>

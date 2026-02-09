@@ -1,11 +1,11 @@
 ﻿using FluentMigrator;
 
-namespace Identity.Infrastructure.Permissions.Migrations;
+namespace Identity.Infrastructure.Migrations;
 
 /// <summary>
 /// Миграция для добавления предопределённых разрешений в таблицу permissions модуля identity.
 /// </summary>
-[Migration(1767457700)]
+[Migration(202501020008)]
 public sealed class PredefinedPermissionsSeeding : Migration
 {
 	/// <summary>
@@ -13,7 +13,7 @@ public sealed class PredefinedPermissionsSeeding : Migration
 	/// </summary>
 	public override void Up()
 	{
-		Execute.EmbeddedScript("Identity.Infrastructure.Permissions.Seeding.predefined-permissions-seeding.sql");
+		Execute.EmbeddedScript("Identity.Infrastructure.Migrations.predefined-permissions-seeding.sql");
 	}
 
 	/// <summary>

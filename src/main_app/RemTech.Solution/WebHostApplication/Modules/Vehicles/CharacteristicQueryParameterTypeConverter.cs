@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Text.Json;
 
-namespace WebHostApplication.Modules.vehicles;
+namespace WebHostApplication.Modules.Vehicles;
 
 /// <summary>
 /// Конвертер для преобразования строки в параметр характеристики транспортного средства.

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace WebHostApplication.Modules.vehicles;
+namespace WebHostApplication.Modules.Vehicles;
 
 /// <summary>
 /// Параметр запроса характеристики транспортного средства.

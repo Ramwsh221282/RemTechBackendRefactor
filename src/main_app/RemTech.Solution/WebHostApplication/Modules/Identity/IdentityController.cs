@@ -19,10 +19,10 @@ using RemTech.SharedKernel.Web;
 using WebHostApplication.ActionFilters.Attributes;
 using WebHostApplication.ActionFilters.Common;
 using WebHostApplication.Common.Envelope;
-using WebHostApplication.Modules.identity.Requests;
-using WebHostApplication.Modules.identity.Responses;
+using WebHostApplication.Modules.Identity.Requests;
+using WebHostApplication.Modules.Identity.Responses;
 
-namespace WebHostApplication.Modules.identity;
+namespace WebHostApplication.Modules.Identity;
 
 /// <summary>
 /// Контроллер для работы с идентификацией и управлением учетными записями.

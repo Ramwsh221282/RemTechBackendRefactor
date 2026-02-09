@@ -5,7 +5,7 @@ namespace Vehicles.Infrastructure.Migrations;
 /// <summary>
 /// Миграция для добавления столбца ts_vector_field в таблицу транспортных средств.
 /// </summary>
-[Migration(1767277993)]
+[Migration(202501080010)]
 public sealed class VehiclesTsVectorFieldColumnMigration : Migration
 {
 	/// <summary>

@@ -5,7 +5,7 @@ namespace Vehicles.Infrastructure.Migrations;
 /// <summary>
 /// Миграция для создания таблицы моделей.
 /// </summary>
-[Migration(1767032601)]
+[Migration(202501080004)]
 public sealed class ModelTableMigration : Migration
 {
 	/// <summary>

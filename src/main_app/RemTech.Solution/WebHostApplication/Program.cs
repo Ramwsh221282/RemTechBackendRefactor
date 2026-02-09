@@ -77,16 +77,27 @@ try
 	{
 		IConfigurationSection section = builder.Configuration.GetSection(nameof(FrontendOptions));
 		string? url = section["Url"] ?? throw new InvalidOperationException("Frontend URL option is empty.");
-		options.AddPolicy(
-			"frontend",
-			policy => policy.WithOrigins(url).AllowCredentials().AllowAnyMethod().AllowAnyHeader()
-		);
+        logger.Information("Регистрация CORS политики для фронтенда с URL: {Url}", url);
+        
+        options.AddPolicy("frontend", policy =>
+        {
+            policy
+                .WithOrigins(
+                    url,
+                    "http://localhost:80",
+                    "http://frontend:80"
+                )
+                .SetIsOriginAllowedToAllowWildcardSubdomains() // Для поддоменов
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        });
 	});
 	logger.Information("CORS политика зарегистрирована.");
 
 	WebApplication app = builder.Build();
 	await app.ValidateConfigurations();
-
+    
 	app.Services.ApplyModuleMigrations();
 	app.UseHttpsRedirection();
 	app.UseCors("frontend");

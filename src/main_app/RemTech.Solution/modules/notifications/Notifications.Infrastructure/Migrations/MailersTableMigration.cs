@@ -1,11 +1,11 @@
 ﻿using FluentMigrator;
 
-namespace Notifications.Infrastructure.Mailers.Migrations;
+namespace Notifications.Infrastructure.Migrations;
 
 /// <summary>
 /// Миграция для создания таблицы почтовых ящиков.
 /// </summary>
-[Migration(1767617200)]
+[Migration(202501040001)]
 public sealed class MailersTableMigration : Migration
 {
 	/// <summary>

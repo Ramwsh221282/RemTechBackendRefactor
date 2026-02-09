@@ -5,7 +5,7 @@ namespace Vehicles.Infrastructure.Migrations;
 /// <summary>
 /// Миграция для создания схемы vehicles_module.
 /// </summary>
-[Migration(1767027778)]
+[Migration(202501080000)]
 public sealed class SchemaMigration : Migration
 {
 	/// <summary>
@@ -13,6 +13,7 @@ public sealed class SchemaMigration : Migration
 	/// </summary>
 	public override void Up()
 	{
+        Execute.Sql("CREATE EXTENSION IF NOT EXISTS pg_trgm;");
 		Execute.Sql("CREATE SCHEMA IF NOT EXISTS vehicles_module;");
 	}
 

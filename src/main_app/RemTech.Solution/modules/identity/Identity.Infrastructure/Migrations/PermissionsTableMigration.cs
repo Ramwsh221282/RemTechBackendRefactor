@@ -1,11 +1,11 @@
 ﻿using FluentMigrator;
 
-namespace Identity.Infrastructure.Permissions.Migrations;
+namespace Identity.Infrastructure.Migrations;
 
 /// <summary>
 /// Миграция для создания таблицы permissions модуля identity.
 /// </summary>
-[Migration(1767457200)]
+[Migration(202501020002)]
 public sealed class PermissionsTableMigration : Migration
 {
 	/// <summary>

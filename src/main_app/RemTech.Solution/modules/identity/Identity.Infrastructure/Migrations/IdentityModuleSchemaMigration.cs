@@ -1,11 +1,11 @@
 ﻿using FluentMigrator;
 
-namespace Identity.Infrastructure.Common.Migrations;
+namespace Identity.Infrastructure.Migrations;
 
 /// <summary>
 /// Миграция для создания схемы модуля идентификации.
 /// </summary>
-[Migration(1767457100)]
+[Migration(202501020000)]
 public sealed class IdentityModuleSchemaMigration : Migration
 {
 	/// <summary>
@@ -13,6 +13,7 @@ public sealed class IdentityModuleSchemaMigration : Migration
 	/// </summary>
 	public override void Up()
 	{
+        Execute.Sql("CREATE EXTENSION IF NOT EXISTS pg_trgm;");
 		Create.Schema("identity_module");
 	}
 

@@ -28,6 +28,7 @@ using Spares.Infrastructure.Repository;
 using Spares.WebApi.Extensions;
 using Telemetry.Core.ActionRecords;
 using Telemetry.Infrastructure;
+using Telemetry.Infrastructure.Migrations;
 using Vehicles.Domain.Vehicles;
 using Vehicles.Infrastructure.BackgroundServices;
 using Vehicles.Infrastructure.Vehicles.PersisterImplementation;

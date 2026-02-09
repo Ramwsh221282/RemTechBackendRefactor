@@ -5,7 +5,7 @@ namespace Vehicles.Infrastructure.Migrations;
 /// <summary>
 /// Миграция для создания индекса по значению цены в таблице транспортных средств.
 /// </summary>
-[Migration(1767278107)]
+[Migration(202501080014)]
 public sealed class VehiclesPriceValueIndex : Migration
 {
 	/// <summary>

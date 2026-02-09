@@ -5,7 +5,7 @@ namespace ParsersControl.Infrastructure.Migrations;
 /// <summary>
 /// Миграция для создания таблицы ссылок парсера.
 /// </summary>
-[Migration(3, description: "Create parser links table")]
+[Migration(202501050001)]
 public sealed class ParserLinksTableMigration : Migration
 {
 	/// <summary>

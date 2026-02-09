@@ -5,7 +5,7 @@ namespace Vehicles.Infrastructure.Migrations;
 /// <summary>
 /// Миграция для начального заполнения таблицы категорий.
 /// </summary>
-[Migration(1767073579)]
+[Migration(202501080012)]
 public sealed class CategorySeedingMigration : Migration
 {
 	/// <summary>

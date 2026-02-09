@@ -4,7 +4,7 @@ using RemTech.SharedKernel.Web;
 using Vehicles.Infrastructure.Models.Queries.GetModels;
 using WebHostApplication.Common.Envelope;
 
-namespace WebHostApplication.Modules.vehicles;
+namespace WebHostApplication.Modules.Vehicles;
 
 /// <summary>
 /// Контроллер для работы с моделями транспортных средств.

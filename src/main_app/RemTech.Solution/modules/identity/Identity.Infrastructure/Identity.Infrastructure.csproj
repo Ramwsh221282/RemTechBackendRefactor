@@ -6,11 +6,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="Permissions\Seeding\predefined-permissions-seeding.sql" />
-		<EmbeddedResource Include="Permissions\Seeding\predefined-permissions-seeding.sql" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 		<PackageReference Include="RemTech.SharedKernel.Infrastructure.AesEncryption" Version="3.*" />
 		<PackageReference Include="RemTech.SharedKernel.Infrastructure.Database" Version="3.*" />
@@ -20,5 +15,9 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Migrations\predefined-permissions-seeding.sql" />
 	</ItemGroup>
 </Project>

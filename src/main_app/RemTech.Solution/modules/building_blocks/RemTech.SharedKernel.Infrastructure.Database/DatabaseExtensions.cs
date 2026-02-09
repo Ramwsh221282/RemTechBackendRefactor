@@ -56,12 +56,6 @@ public static class DatabaseExtensions
 		{
 			using IServiceScope scope = provider.CreateScope();
 			IMigrationRunner runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
-
-			int appliedCount = runner.MigrationLoader.LoadMigrations().Count(m => m.Key > PgVectorMigration.VERSION);
-			if (appliedCount > 0)
-			{
-				runner.Rollback(appliedCount);
-			}
 		}
 	}
 

@@ -5,7 +5,7 @@ namespace Vehicles.Infrastructure.Migrations;
 /// <summary>
 /// Миграция для создания таблицы брендов.
 /// </summary>
-[Migration(1767027875)]
+[Migration(202501080001)]
 public sealed class BrandTableMigration : Migration
 {
 	/// <summary>

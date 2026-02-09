@@ -5,7 +5,7 @@ namespace Spares.Infrastructure.Migrations;
 /// <summary>
 ///     Миграция для создания схемы модуля запчастей.
 /// </summary>
-[Migration(1766980872)]
+[Migration(202501060000)]
 public sealed class SparesSchemaMigration : Migration
 {
 	/// <summary>
@@ -13,6 +13,7 @@ public sealed class SparesSchemaMigration : Migration
 	/// </summary>
 	public override void Up()
 	{
+        Execute.Sql("CREATE EXTENSION IF NOT EXISTS pg_trgm;");
 		Create.Schema("spares_module");
 	}
 

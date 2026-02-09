@@ -13,7 +13,7 @@ using RemTech.SharedKernel.Web;
 using WebHostApplication.ActionFilters.Attributes;
 using WebHostApplication.Common.Envelope;
 
-namespace WebHostApplication.Modules.notifications;
+namespace WebHostApplication.Modules.Notifications;
 
 /// <summary>
 /// Контроллер для работы с уведомлениями.

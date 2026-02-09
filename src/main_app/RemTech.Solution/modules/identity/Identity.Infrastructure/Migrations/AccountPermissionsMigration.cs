@@ -1,11 +1,11 @@
 ﻿using FluentMigrator;
 
-namespace Identity.Infrastructure.Accounts.Migrations;
+namespace Identity.Infrastructure.Migrations;
 
 /// <summary>
 /// Миграция для создания таблицы разрешений аккаунтов.
 /// </summary>
-[Migration(1767457500)]
+[Migration(202501020005)]
 public sealed class AccountPermissionsMigration : Migration
 {
 	/// <summary>

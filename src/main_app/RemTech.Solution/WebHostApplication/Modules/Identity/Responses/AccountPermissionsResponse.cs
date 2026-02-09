@@ -1,6 +1,6 @@
 ﻿using Identity.Domain.Permissions;
 
-namespace WebHostApplication.Modules.identity.Responses;
+namespace WebHostApplication.Modules.Identity.Responses;
 
 /// <summary>
 /// Ответ с информацией о праве пользователя.

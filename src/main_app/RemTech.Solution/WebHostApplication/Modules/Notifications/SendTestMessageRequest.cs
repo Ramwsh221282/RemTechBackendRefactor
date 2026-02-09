@@ -1,4 +1,4 @@
-﻿namespace WebHostApplication.Modules.notifications;
+﻿namespace WebHostApplication.Modules.Notifications;
 
 /// <summary>
 /// Запрос на отправку тестового сообщения.

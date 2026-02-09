@@ -1,11 +1,11 @@
 ﻿using FluentMigrator;
 
-namespace Identity.Infrastructure.Tickets.Migrations;
+namespace Identity.Infrastructure.Migrations;
 
 /// <summary>
 /// Миграция для создания таблицы тикетов модуля identity.
 /// </summary>
-[Migration(1767457300)]
+[Migration(202501020003)]
 public sealed class TicketTableMigration : Migration
 {
 	/// <summary>

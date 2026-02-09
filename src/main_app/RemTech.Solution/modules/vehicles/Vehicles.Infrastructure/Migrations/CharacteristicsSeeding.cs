@@ -5,7 +5,7 @@ namespace Vehicles.Infrastructure.Migrations;
 /// <summary>
 /// Миграция для начального заполнения характеристик транспортных средств.
 /// </summary>
-[Migration(1767097485)]
+[Migration(202501080017)]
 public sealed class CharacteristicsSeeding : Migration
 {
 	/// <summary>

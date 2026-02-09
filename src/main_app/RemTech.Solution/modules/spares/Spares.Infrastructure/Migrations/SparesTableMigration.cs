@@ -5,7 +5,7 @@ namespace Spares.Infrastructure.Migrations;
 /// <summary>
 ///     Миграция для создания таблицы запчастей.
 /// </summary>
-[Migration(1770229800)]
+[Migration(202501060003)]
 public sealed class SparesTableMigration : Migration
 {
 	/// <summary>

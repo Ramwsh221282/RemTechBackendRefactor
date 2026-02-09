@@ -5,7 +5,7 @@ namespace ContainedItems.Infrastructure.Migrations;
 /// <summary>
 /// Миграция для создания схемы и таблицы содержащихся элементов.
 /// </summary>/
-[Migration(1766906341)]
+[Migration(202501030000)]
 public sealed class ContainedItemsMigration : Migration
 {
 	/// <summary>
@@ -13,6 +13,7 @@ public sealed class ContainedItemsMigration : Migration
 	/// </summary>
 	public override void Up()
 	{
+        Execute.Sql("CREATE EXTENSION IF NOT EXISTS pg_trgm;");
 		Create.Schema("contained_items_module");
 		Create
 			.Table("contained_items")

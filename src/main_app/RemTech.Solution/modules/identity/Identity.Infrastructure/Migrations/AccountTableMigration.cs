@@ -1,11 +1,11 @@
 ﻿using FluentMigrator;
 
-namespace Identity.Infrastructure.Accounts.Migrations;
+namespace Identity.Infrastructure.Migrations;
 
 /// <summary>
 /// Миграция для создания таблицы аккаунтов.
 /// </summary>
-[Migration(1767457400)]
+[Migration(202501020001)]
 public sealed class AccountTableMigration : Migration
 {
 	/// <summary>

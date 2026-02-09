@@ -2,7 +2,7 @@ using FluentMigrator;
 
 namespace Spares.Infrastructure.Migrations;
 
-[Migration(1770229700)]
+[Migration(202501060002)]
 public sealed class SparesTypesMigration : Migration
 {
 	public override void Down()

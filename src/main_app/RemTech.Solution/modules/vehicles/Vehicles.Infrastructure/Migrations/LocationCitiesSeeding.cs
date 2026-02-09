@@ -5,7 +5,7 @@ namespace Vehicles.Infrastructure.Migrations;
 /// <summary>
 /// Миграция для начального заполнения городов локаций.
 /// </summary>
-[Migration(1767086400)]
+[Migration(202501080016)]
 public sealed class LocationCitiesSeeding : Migration
 {
 	/// <summary>

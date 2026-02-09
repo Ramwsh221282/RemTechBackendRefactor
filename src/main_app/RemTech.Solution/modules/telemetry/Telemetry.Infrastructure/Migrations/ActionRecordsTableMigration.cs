@@ -1,11 +1,11 @@
 using FluentMigrator;
 
-namespace Telemetry.Infrastructure;
+namespace Telemetry.Infrastructure.Migrations;
 
 /// <summary>
 /// Миграция для создания таблицы записей действий телеметрии.
 /// </summary>
-[Migration(1769588891)]
+[Migration(202501070001)]
 public sealed class ActionRecordsTableMigration : Migration
 {
 	/// <summary>

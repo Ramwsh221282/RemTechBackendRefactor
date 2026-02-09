@@ -3,7 +3,7 @@ using RemTech.SharedKernel.Core.Handlers;
 using RemTech.SharedKernel.Web;
 using Vehicles.Infrastructure.Vehicles.Queries.GetVehicleCharacteristics;
 
-namespace WebHostApplication.Modules.vehicles;
+namespace WebHostApplication.Modules.Vehicles;
 
 /// <summary>
 /// Контроллер для работы с характеристиками транспортных средств.

@@ -1,11 +1,11 @@
 using FluentMigrator;
 
-namespace Telemetry.Infrastructure;
+namespace Telemetry.Infrastructure.Migrations;
 
 /// <summary>
 /// Миграция для создания схемы телеметрии.
 /// </summary>
-[Migration(1769587891)]
+[Migration(202501070000)]
 public sealed class TelemetryModuleSchema : Migration
 {
 	/// <summary>
@@ -13,6 +13,7 @@ public sealed class TelemetryModuleSchema : Migration
 	/// </summary>
 	public override void Up()
 	{
+        Execute.Sql("CREATE EXTENSION IF NOT EXISTS pg_trgm;");
 		Execute.Sql("CREATE SCHEMA IF NOT EXISTS telemetry_module;");
 	}
 

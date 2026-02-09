@@ -5,14 +5,9 @@ namespace RemTech.SharedKernel.Infrastructure.Database;
 /// <summary>
 /// Миграция для добавления расширения PgVector в базу данных PostgreSQL.
 /// </summary>
-[Migration(100)]
+[Migration(202501010000)]
 public sealed class PgVectorMigration : Migration
 {
-	/// <summary>
-	/// Версия миграции.
-	/// </summary>
-	public const long VERSION = 20251201010100;
-
 	/// <summary>
 	/// Применяет миграцию, создавая расширение PgVector, если оно еще не существует.
 	/// </summary>
@@ -28,5 +23,6 @@ public sealed class PgVectorMigration : Migration
 	public override void Down()
 	{
 		Execute.Sql("DROP EXTENSION IF EXISTS vector;");
+        Execute.Sql("DROP EXTENSION IF EXISTS pg_trgm;");
 	}
 }

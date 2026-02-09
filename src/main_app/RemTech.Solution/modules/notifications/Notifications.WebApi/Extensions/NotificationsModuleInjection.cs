@@ -2,9 +2,9 @@
 using Notifications.Core.Mailers.Contracts;
 using Notifications.Core.PendingEmails.Contracts;
 using Notifications.Infrastructure.Common;
-using Notifications.Infrastructure.Common.Migrations;
 using Notifications.Infrastructure.EmailSending;
 using Notifications.Infrastructure.Mailers;
+using Notifications.Infrastructure.Migrations;
 using Notifications.Infrastructure.PendingEmails;
 using Notifications.Infrastructure.PendingEmails.BackgroundServices;
 using RemTech.SharedKernel.Configurations;

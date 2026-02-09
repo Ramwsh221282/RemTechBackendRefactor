@@ -6,7 +6,7 @@ namespace Vehicles.Infrastructure.Migrations;
 /// <summary>
 /// Миграция для создания таблицы характеристик транспортных средств.
 /// </summary>
-[Migration(1767097877)]
+[Migration(202501080009)]
 public sealed class VehicleCharacteristicsMigration : Migration
 {
 	/// <summary>

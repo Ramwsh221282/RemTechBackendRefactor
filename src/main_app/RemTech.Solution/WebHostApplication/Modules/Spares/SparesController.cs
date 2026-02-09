@@ -5,7 +5,7 @@ using Spares.Infrastructure.Queries.GetSpares;
 using Spares.Infrastructure.Queries.GetSparesLocations;
 using Spares.Infrastructure.Queries.GetSpareTypes;
 
-namespace WebHostApplication.Modules.spares;
+namespace WebHostApplication.Modules.Spares;
 
 /// <summary>
 /// Контроллер для работы с запчастями.

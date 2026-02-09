@@ -1,11 +1,11 @@
 ﻿using FluentMigrator;
 
-namespace Identity.Infrastructure.Tokens.Migrations;
+namespace Identity.Infrastructure.Migrations;
 
 /// <summary>
 /// Миграция для создания таблицы refresh_tokens модуля identity.
 /// </summary>
-[Migration(1767695842)]
+[Migration(202501020007)]
 public sealed class RefreshTokensTableMigration : Migration
 {
 	/// <summary>

@@ -5,7 +5,7 @@ namespace ParsersControl.Infrastructure.Migrations;
 /// <summary>
 /// Миграция для создания таблицы парсеров и схемы управления парсерами.
 /// </summary>
-[Migration(2, description: "Create parsers table and parsers control mode schema")]
+[Migration(202501050000)]
 public sealed class ParsersTableMigration : Migration
 {
 	/// <summary>
@@ -13,6 +13,7 @@ public sealed class ParsersTableMigration : Migration
 	/// </summary>
 	public override void Up()
 	{
+        Execute.Sql("CREATE EXTENSION IF NOT EXISTS pg_trgm;");
 		Create.Schema("parsers_control_module");
 		Create
 			.Table("registered_parsers")

@@ -1,4 +1,4 @@
-namespace WebHostApplication.Modules.identity.Requests;
+namespace WebHostApplication.Modules.Identity.Requests;
 
 /// <summary>
 /// Запрос на подтверждение сброса пароля пользователя.

@@ -1,4 +1,4 @@
-﻿namespace WebHostApplication.Modules.notifications;
+﻿namespace WebHostApplication.Modules.Notifications;
 
 /// <summary>
 /// Запрос на добавление почтового ящика для отправки уведомлений.

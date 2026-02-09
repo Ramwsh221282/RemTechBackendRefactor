@@ -5,7 +5,7 @@ namespace Identity.Infrastructure.Common;
 /// <summary>
 /// Миграция для создания таблицы outbox модуля аккаунтов.
 /// </summary>
-[Migration(1767457600)]
+[Migration(202501020006)]
 public sealed class AccountsModuleOutboxMigration : Migration
 {
 	/// <summary>

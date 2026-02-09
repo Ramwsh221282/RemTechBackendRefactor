@@ -1,6 +1,6 @@
 ﻿using Identity.Domain.Accounts.Models;
 
-namespace WebHostApplication.Modules.identity.Responses;
+namespace WebHostApplication.Modules.Identity.Responses;
 
 /// <summary>
 /// Ответ с информацией об учетной записи пользователя.
