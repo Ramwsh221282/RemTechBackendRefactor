@@ -6,62 +6,8 @@ using PuppeteerSharp;
 
 namespace AvitoSparesParser.Commands.ExtractCataloguePageItems;
 
-public sealed class ResilientCataloguePagesItemCommand : IExtractCataloguePagesItemCommand
-{
-    private readonly Serilog.ILogger _logger;
-    private readonly IExtractCataloguePagesItemCommand _inner;
-    private readonly int _attemptsCount;
-
-    public ResilientCataloguePagesItemCommand(
-        Serilog.ILogger logger,
-        IExtractCataloguePagesItemCommand inner,
-        int attemptsCount = 5
-    )
-    {
-        _logger = logger;
-        _inner = inner;
-        _attemptsCount = attemptsCount;
-    }
-
-    public async Task<AvitoSpare[]> Extract(AvitoCataloguePage page)
-    {
-        int currentAttempt = 0;
-        while (currentAttempt < _attemptsCount)
-        {
-            try
-            {
-                return await _inner.Extract(page);
-            }
-            catch (Exception ex)
-            {
-                if (currentAttempt == _attemptsCount)
-                {
-                    _logger.Error(
-                        ex,
-                        "Failed to extract catalogue page items from url: {Url} after {Attempts} attempts.",
-                        page.Url,
-                        _attemptsCount
-                    );
-                    throw;
-                }
-
-                currentAttempt++;
-                _logger.Warning(
-                    ex,
-                    "Attempt {Attempt} to extract catalogue page items from url: {Url} failed. Retrying...",
-                    currentAttempt,
-                    page.Url
-                );
-            }
-        }
-
-        // в while true уже есть выход.
-        throw new InvalidOperationException("Unreachable code.");
-    }
-}
-
 public sealed partial class ExtractCataloguePagesItemCommand(
-    Func<Task<IPage>> pageSource,
+    IPage browserPage,
     AvitoBypassFactory bypassFactory
 ) : IExtractCataloguePagesItemCommand
 {
@@ -112,16 +58,15 @@ public sealed partial class ExtractCataloguePagesItemCommand(
 ";
 
         string url = page.Url;
-        IPage pageInstance = await pageSource();
-        await pageInstance.PerformQuickNavigation(url, timeout: TIME_OUT_MS);
+        await browserPage.PerformQuickNavigation(url, timeout: TIME_OUT_MS);
 
-        if (!await bypassFactory.Create(pageInstance).Bypass())
+        if (!await bypassFactory.Create(browserPage).Bypass())
             throw new InvalidOperationException("Bypass failed.");
 
-        await pageInstance.ScrollBottom();
-        await new AvitoImagesHoverer(pageInstance).Invoke();
+        await browserPage.ScrollBottom();
+        await new AvitoImagesHoverer(browserPage).Invoke();
 
-        JsonData[] data = await pageInstance.EvaluateFunctionAsync<JsonData[]>(javaScript);
+        JsonData[] data = await browserPage.EvaluateFunctionAsync<JsonData[]>(javaScript);
         return
         [
             .. data.Where(d => d.AllPropertiesSet() && SatisfiesOemFilter(d))

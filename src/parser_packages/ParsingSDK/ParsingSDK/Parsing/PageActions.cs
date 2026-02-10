@@ -46,9 +46,8 @@ public static class PageActions
         
         public async Task PerformQuickNavigation(string url, int timeout = 3000)
         {
-            NavigationOptions options = new() { Timeout = timeout, WaitUntil = [WaitUntilNavigation.DOMContentLoaded] };
-            Task<IResponse> navigationTask = page.WaitForNavigationAsync(options);
-            page.GoToAsync(url, options);
+            Task<IResponse> navigationTask = page.WaitForNavigationAsync(_navigationOptions);
+            page.GoToAsync(url, _navigationOptions);
             try
             {
                 await navigationTask;
@@ -59,12 +58,12 @@ public static class PageActions
             }
         }
 
-        public async Task<Maybe<IElementHandle>> ResilientWaitForSelectorWithReturn(string selector, int attempts = 5, int timeout = 5000)
+        public async Task<Maybe<IElementHandle>> ResilientWaitForSelectorWithReturn(string selector, int attempts = 5)
         {            
             int currentAttempt = 0;
             while (currentAttempt < attempts)
             {
-                IElementHandle? maybe = await page.WaitForSelectorAsync(selector, new WaitForSelectorOptions() { Timeout = timeout });
+                IElementHandle? maybe = await page.WaitForSelectorAsync(selector, _waitForSelectorOptions);
                 if (maybe != null) return Maybe<IElementHandle>.Some(maybe);
                 currentAttempt++;
             }
@@ -78,7 +77,7 @@ public static class PageActions
             {
                 try
                 { 
-                    await page.WaitForSelectorAsync(selector, new WaitForSelectorOptions { Timeout = 1000 });
+                    await page.WaitForSelectorAsync(selector, _waitForSelectorOptions);
                     break;
                 }
                 catch
@@ -93,7 +92,7 @@ public static class PageActions
             int timeoutNavigation = 4000;
             try
             {
-                await page.GoToAsync(url, timeout: timeoutNavigation);
+                await page.GoToAsync(url, _navigationOptions);
             }
             catch(NavigationException)
             {
@@ -101,4 +100,15 @@ public static class PageActions
             }
         }
     }
+
+    private static readonly WaitForSelectorOptions _waitForSelectorOptions = new WaitForSelectorOptions()
+    {
+        Timeout = 5000
+    };
+    
+    private static readonly NavigationOptions _navigationOptions = new NavigationOptions()
+    {
+        WaitUntil = [WaitUntilNavigation.Load],
+        Timeout = 30000
+    };
 }

@@ -1,4 +1,7 @@
-﻿namespace AvitoSparesParser.Commands.ExtractCataloguePageItems;
+﻿using ParsingSDK.Parsing;
+using PuppeteerSharp;
+
+namespace AvitoSparesParser.Commands.ExtractCataloguePageItems;
 
 public static class ExtractCataloguePagesItemDecorating
 {
@@ -11,10 +14,12 @@ public static class ExtractCataloguePagesItemDecorating
 
         public IExtractCataloguePagesItemCommand UseResilience(
             Serilog.ILogger logger,
+            BrowserManager manager,
+            IPage page,
             int attemptsCount = 5
         )
         {
-            return new ResilientCataloguePagesItemCommand(logger, inner, attemptsCount);
+            return new ResilientCataloguePagesItemCommand(logger, manager, page, inner, attemptsCount);
         }
     }
 }

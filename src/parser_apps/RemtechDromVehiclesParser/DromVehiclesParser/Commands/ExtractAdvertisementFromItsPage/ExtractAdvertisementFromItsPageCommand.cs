@@ -5,9 +5,7 @@ using PuppeteerSharp;
 
 namespace DromVehiclesParser.Commands.ExtractAdvertisementFromItsPage;
 
-public sealed class WithdrawException : Exception;
-
-public sealed class ExtractAdvertisementFromItsPageCommand(Func<Task<IPage>> pageSource)
+public sealed class ExtractAdvertisementFromItsPageCommand(IPage page)
     : IExtractAdvertisementFromItsPageCommand
 {
     private static readonly Dictionary<string, bool> IgnoredCharacteristics = new()
@@ -17,7 +15,6 @@ public sealed class ExtractAdvertisementFromItsPageCommand(Func<Task<IPage>> pag
     
     public async Task<DromAdvertisementFromPage> Extract(DromCatalogueAdvertisement catalogueAdvertisement)
     {
-        IPage page = await pageSource();
         await NavigateToAdvertisementPage(page, catalogueAdvertisement);
         if (await IsWithdrawFromSale(page))
             throw new WithdrawException(); 

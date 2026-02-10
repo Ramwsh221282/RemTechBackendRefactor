@@ -1,4 +1,7 @@
-﻿namespace AvitoSparesParser.Commands.ExtractConcretePageItem;
+﻿using ParsingSDK.Parsing;
+using PuppeteerSharp;
+
+namespace AvitoSparesParser.Commands.ExtractConcretePageItem;
 
 public static class ExtractConcretePageItemCommandDecorating
 {
@@ -11,10 +14,12 @@ public static class ExtractConcretePageItemCommandDecorating
 
         public IExtractConcretePageItemCommand UseResilience(
             Serilog.ILogger logger,
+            BrowserManager manager,
+            IPage page,
             int attemptsCount = 5
         )
         {
-            return new ResilientExtractConcretePageItemCommand(logger, command, attemptsCount);
+            return new ResilientExtractConcretePageItemCommand(logger, manager, page, command, attemptsCount);
         }
     }
 }

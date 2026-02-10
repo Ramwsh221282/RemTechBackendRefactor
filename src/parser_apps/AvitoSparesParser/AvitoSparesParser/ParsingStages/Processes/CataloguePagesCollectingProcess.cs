@@ -22,7 +22,7 @@ public static class CataloguePagesCollectingProcess
                     out NpgSqlConnectionFactory npgSql,
                     out Serilog.ILogger dLogger,
                     out AvitoBypassFactory factory,
-                    out BrowserFactory browsers,
+                    out BrowserManagerProvider browsers,
                     out _,
                     out _,
                     out _
@@ -48,7 +48,14 @@ public static class CataloguePagesCollectingProcess
                     return;
                 }
 
-                await ProcessPagedUrlExtraction(links, browsers, factory, session, logger);
+                await using (BrowserManager manager = deps.BrowserProvider.Provide())
+                {
+                    await using (IPage page = await manager.ProvidePage())
+                    {
+                        await ProcessPagedUrlExtraction(links, manager, page, factory, session, logger);
+                    }
+                }
+                
                 await FinishTransaction(scope, logger, ct);
             };
     }
@@ -100,39 +107,38 @@ public static class CataloguePagesCollectingProcess
 
     private static async Task ProcessPagedUrlExtraction(
         ProcessingParserLink[] links,
-        BrowserFactory browsers,
+        BrowserManager manager,
+        IPage browserPage,
         AvitoBypassFactory bypassFactory,
         NpgSqlSession session,
         Serilog.ILogger logger
     )
     {
-        IBrowser browser = await browsers.ProvideBrowser();
-
-        try
+        foreach (ProcessingParserLink link in links)
         {
-            for (int i = 0; i < links.Length; i++)
+            try
             {
-                ProcessingParserLink link = links[i];
-                IPage page = await browser.GetPage();
-                links[i] = await ProcessPagedUrlExtractionFromParserLink(
+                await ProcessPagedUrlExtractionFromParserLink(
                     link,
-                    page,
+                    browserPage,
                     bypassFactory,
                     session,
                     logger
                 );
+                link.Marker.MarkProcessed();
             }
+            catch(Exception)
+            {
+                browserPage = await manager.RecreatePage(browserPage);
+                manager.ReleasePageUsedMemoryResources();
+                link.Counter.Increase();
+            }
+        }
 
-            await links.UpdateMany(session);
-        }
-        finally
-        {
-            await browser.DestroyAsync();
-            BrowserFactory.KillBrowserProcess();   
-        }
+        await links.UpdateMany(session);
     }
 
-    private static async Task<ProcessingParserLink> ProcessPagedUrlExtractionFromParserLink(
+    private static async Task ProcessPagedUrlExtractionFromParserLink(
         ProcessingParserLink link,
         IPage page,
         AvitoBypassFactory bypass,
@@ -140,18 +146,8 @@ public static class CataloguePagesCollectingProcess
         Serilog.ILogger logger
     )
     {
-        try
-        {
-            AvitoCataloguePage[] pages = await ExtractPagination(page, bypass, link.Url, logger);
-            await pages.AddMany(session);
-            link.Marker.MarkProcessed();
-        }
-        catch (Exception)
-        {
-            link.Counter.Increase();
-        }
-
-        return link;
+        AvitoCataloguePage[] pages = await ExtractPagination(page, bypass, link.Url, logger);
+        await pages.AddMany(session);
     }
 
     private static async Task FinishTransaction(

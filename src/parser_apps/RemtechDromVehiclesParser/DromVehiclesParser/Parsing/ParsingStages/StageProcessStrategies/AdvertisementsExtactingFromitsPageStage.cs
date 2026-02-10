@@ -18,21 +18,12 @@ public static class AdvertisementsExtactingFromitsPageStage
     extension(ParsingStage)
     {
         public static ParsingStage ExtractAdvertisementsFromItsPage =>
-            async (deps, ct) =>
+            async (ParsingStageDependencies deps, CancellationToken ct) =>
             {
-                deps.Deconstruct(
-                    out BrowserFactory factory,
-                    out NpgSqlConnectionFactory npgSql,
-                    out Serilog.ILogger dLogger,
-                    out _,
-                    out _
-                );
-                Serilog.ILogger logger = dLogger.ForContext<ParsingStage>();
-                await using NpgSqlSession session = new(npgSql);
+                Serilog.ILogger logger = deps.Logger.ForContext<ParsingStage>();
+                await using NpgSqlSession session = new(deps.NpgSql);
                 NpgSqlTransactionSource transactionSource = new(session);
-
-                await using ITransactionScope transaction =
-                    await transactionSource.BeginTransaction(ct);
+                await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
 
                 Maybe<ParserWorkStage> stage = await GetConcreteStage(session);
                 if (!stage.HasValue)
@@ -40,8 +31,7 @@ public static class AdvertisementsExtactingFromitsPageStage
                     return;
                 }
 
-                DromCatalogueAdvertisement[] advertisements =
-                    await GetCatalogueAdvertisementsForProcessing(session);
+                DromCatalogueAdvertisement[] advertisements = await GetCatalogueAdvertisementsForProcessing(session);
                 if (CanSwitchNextStage(advertisements))
                 {
                     await SwitchNextStage(stage, session, logger, ct);
@@ -49,32 +39,31 @@ public static class AdvertisementsExtactingFromitsPageStage
                     return;
                 }
 
-                await ExtractAdvertisementsFromItsPage(advertisements, factory, session, logger);
+                await using BrowserManager manager = deps.Browsers.Provide();
+                await using IPage page = await manager.ProvidePage();
+                
+                await ExtractAdvertisementsFromItsPage(advertisements, manager, page, session, logger);
                 await FinishTransaction(transaction, logger, ct);
             };
     }
 
     private static async Task ExtractAdvertisementsFromItsPage(
         DromCatalogueAdvertisement[] advertisements,
-        BrowserFactory browsers,
+        BrowserManager manager,
+        IPage page,
         NpgSqlSession session,
         Serilog.ILogger logger
     )
     {
-        IBrowser browser = await browsers.ProvideBrowser();
+        
         List<DromAdvertisementFromPage> results = [];
         for (int i = 0; i < advertisements.Length; i++)
         {
             DromCatalogueAdvertisement advertisement = advertisements[i];
-
+            
             try
             {
-                Func<Task<IPage>> pageSource = browser.GetPage;
-                IExtractAdvertisementFromItsPageCommand extractCommand =
-                    new ExtractAdvertisementFromItsPageCommand(pageSource).UseLogging(logger);
-
-                DromAdvertisementFromPage result = await extractCommand.Extract(advertisement);
-                results.Add(result);
+                await ExtractAdvertisementFromItsPage(manager, page, logger, advertisement, results);
                 advertisement = advertisement.MarkProcessed();
                 await advertisement.Update(session);
                 logger.Information("Extracted advertisement from page {Url}", advertisement.Url);
@@ -84,30 +73,34 @@ public static class AdvertisementsExtactingFromitsPageStage
                 logger.Information("Advertisement {Url} withdrawn from sale", advertisement.Url);
                 await advertisement.Remove(session);
             }
-            catch (EvaluationFailedException ex)
-            {
-                logger.Fatal(
-                    ex,
-                    "Failed to extract advertisement from page {Url}",
-                    advertisement.Url
-                );
-            }
             catch (Exception)
             {
                 logger.Fatal("Failed to extract advertisement from page {Url}", advertisement.Url);
                 advertisement = advertisement.IncrementRetryCount();
-                await advertisement.Update(session);
             }
             finally
             {
+                advertisements[i] = advertisement;
+                await advertisement.Update(session);
                 await Task.Delay(TimeSpan.FromSeconds(5)); // forced delay to avoid get blocked.
             }
         }
-
-        await browser.DestroyAsync();
+        
         await results.PersistMany(session);
     }
 
+    private static async Task ExtractAdvertisementFromItsPage(
+        BrowserManager manager, 
+        IPage page, 
+        Serilog.ILogger logger,
+        DromCatalogueAdvertisement advertisement,
+        List<DromAdvertisementFromPage> source)
+    {
+        ExtractAdvertisementFromItsPageCommand command = new(page);
+        DromAdvertisementFromPage result = await command.UseLogging(logger).UseResilience(page, manager).Extract(advertisement);
+        source.Add(result);
+    }
+    
     private static async Task FinishTransaction(
         ITransactionScope transaction,
         Serilog.ILogger logger,

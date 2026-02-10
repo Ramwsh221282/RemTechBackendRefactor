@@ -1,11 +1,14 @@
 ﻿using AvitoSparesParser.CatalogueParsing;
 using AvitoSparesParser.CatalogueParsing.Extensions;
+using ParsingSDK.Parsing;
 using PuppeteerSharp;
 
 namespace AvitoSparesParser.Commands.ExtractPagedUrls;
 
 public sealed class ResilientExtractPagedUrlsCommand(
     Serilog.ILogger logger,
+    IPage page,
+    BrowserManager manager,
     IExtractPagedUrlsCommand inner,
     int attemptsCount = 5
 ) : IExtractPagedUrlsCommand
@@ -39,6 +42,9 @@ public sealed class ResilientExtractPagedUrlsCommand(
                     currentAttempt,
                     initialUrl
                 );
+                
+                page = await manager.RecreatePage(page);
+                manager.ReleasePageUsedMemoryResources();
             }
         }
 
@@ -48,13 +54,12 @@ public sealed class ResilientExtractPagedUrlsCommand(
 }
 
 public sealed class ExtractPagedUrlsCommand(
-    Func<Task<IPage>> pageSource,
+    IPage page,
     AvitoBypassFactory bypassFactory
 ) : IExtractPagedUrlsCommand
 {
     public async Task<AvitoCataloguePage[]> Extract(string initialUrl)
     {
-        IPage page = await pageSource();
         IAvitoBypassFirewall bypass = bypassFactory.Create(page);
         string[] pagedUrls = await new AvitoPagedUrlsExtractor(page, bypass).ExtractUrls(
             initialUrl

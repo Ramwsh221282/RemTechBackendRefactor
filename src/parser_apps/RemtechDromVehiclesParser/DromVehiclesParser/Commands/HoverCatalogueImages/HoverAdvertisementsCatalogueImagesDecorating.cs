@@ -1,4 +1,7 @@
-﻿namespace DromVehiclesParser.Commands.HoverCatalogueImages;
+﻿using ParsingSDK.Parsing;
+using PuppeteerSharp;
+
+namespace DromVehiclesParser.Commands.HoverCatalogueImages;
 
 public static class HoverAdvertisementsCatalogueImagesDecorating
 {
@@ -7,6 +10,11 @@ public static class HoverAdvertisementsCatalogueImagesDecorating
         public IHoverAdvertisementsCatalogueImagesCommand UseLogging(Serilog.ILogger logger)
         {
             return new HoverAdvertisementsCatalogueImagesLogging(logger, command);
+        }
+
+        public IHoverAdvertisementsCatalogueImagesCommand UseResilience(BrowserManager manager, IPage page)
+        {
+            return new HoverAdvertisementsCatalogueImagesResilient(manager, page, command);
         }
     }
 }

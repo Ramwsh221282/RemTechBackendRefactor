@@ -10,7 +10,7 @@ public static class ParsingDependencyInjection
         public void RegisterParserDependencies(bool isDevelopment)
         {                            
             services.RegisterBrowserOptionsByEnvironment(isDevelopment);
-            services.AddSingleton<BrowserFactory>();                                                   
+            services.AddSingleton<BrowserManagerProvider>();                                                   
         }        
 
         private void RegisterBrowserOptionsByEnvironment(bool isDevelopment)

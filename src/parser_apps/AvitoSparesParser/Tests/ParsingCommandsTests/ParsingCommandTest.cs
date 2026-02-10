@@ -13,8 +13,8 @@ namespace Tests.ParsingCommandsTests;
 public sealed class ParsingCommandTest(IntegrationalTestsFixture fixture)
     : IClassFixture<IntegrationalTestsFixture>
 {
-    private BrowserFactory Browsers { get; } =
-        fixture.Services.GetRequiredService<BrowserFactory>();
+    private BrowserManagerProvider BrowserProvider { get; } =
+        fixture.Services.GetRequiredService<BrowserManagerProvider>();
     private AvitoBypassFactory Bypasses { get; } =
         fixture.Services.GetRequiredService<AvitoBypassFactory>();
     private Serilog.ILogger Logger { get; } =
@@ -26,78 +26,87 @@ public sealed class ParsingCommandTest(IntegrationalTestsFixture fixture)
     [Fact]
     private async Task Extract_Catalogue_Paged_Urls()
     {
-        IBrowser browser = await Browsers.ProvideBrowser();
-
-        AvitoCataloguePage[] pages = await new ExtractPagedUrlsCommand(
-            () => browser.GetPage(),
-            Bypasses
-        )
-            .UseLogging(Logger)
-            .Extract(TargetUrl);
-
-        await browser.DisposeAsync();
+        AvitoCataloguePage[] pages = Array.Empty<AvitoCataloguePage>();
+        
+        await using (BrowserManager manager = BrowserProvider.Provide())
+        {
+            await using (IPage page = await manager.ProvidePage())
+            {
+                pages = await new ExtractPagedUrlsCommand(page, Bypasses)
+                    .UseLogging(Logger)
+                    .Extract(TargetUrl);
+            }
+        }
+        
         Assert.NotEmpty(pages);
     }
 
     [Fact]
     private async Task Extract_Catalogue_Page_Items()
     {
-        IBrowser browser = await Browsers.ProvideBrowser();
-        AvitoCataloguePage[] pages = await new ExtractPagedUrlsCommand(
-            () => browser.GetPage(),
-            Bypasses
-        )
-            .UseLogging(Logger)
-            .UseResilience(Logger)
-            .Extract(TargetUrl);
-
-        foreach (AvitoCataloguePage page in pages)
+        List<AvitoSpare> items = [];
+        await using (BrowserManager manager = BrowserProvider.Provide())
         {
-            AvitoSpare[] items = await new ExtractCataloguePagesItemCommand(
-                () => browser.GetPage(),
-                Bypasses
-            )
-                .UseLogging(Logger)
-                .UseResilience(Logger)
-                .Extract(page);
-
-            Assert.NotEmpty(items);
+            await using (IPage page = await manager.ProvidePage())
+            {
+                AvitoCataloguePage[] pages = await new ExtractPagedUrlsCommand(page, Bypasses)
+                    .UseLogging(Logger)
+                    .UseResilience(Logger, manager, page)
+                    .Extract(TargetUrl);
+                
+                foreach (AvitoCataloguePage cataloguePage in pages)
+                {
+                    AvitoSpare[] result = await new ExtractCataloguePagesItemCommand(page, Bypasses)
+                        .UseLogging(Logger)
+                        .UseResilience(Logger, manager, page)
+                        .Extract(cataloguePage);
+                    
+                    items.AddRange(result);
+                }
+            }
         }
+        
+        Assert.NotEmpty(items);
     }
 
     [Fact]
     private async Task Extract_Concrete_Item()
     {
-        IBrowser browser = await Browsers.ProvideBrowser();
-
-        AvitoCataloguePage[] pages = await new ExtractPagedUrlsCommand(
-            () => browser.GetPage(),
-            Bypasses
-        )
-            .UseLogging(Logger)
-            .Extract(TargetUrl);
-
-        foreach (AvitoCataloguePage page in pages)
+        List<AvitoSpare> results = [];
+        
+        await using (BrowserManager manager = BrowserProvider.Provide())
         {
-            AvitoSpare[] items = await new ExtractCataloguePagesItemCommand(
-                () => browser.GetPage(),
-                Bypasses
-            )
-                .UseLogging(Logger)
-                .Extract(page);
-
-            foreach (AvitoSpare cataologueSpare in items)
+            await using (IPage page = await manager.ProvidePage())
             {
-                AvitoSpare concrete = await new ExtractConcretePageItemCommand(
-                    () => browser.GetPage(),
-                    Bypasses
-                )
+                AvitoCataloguePage[] pages = await new ExtractPagedUrlsCommand(page, Bypasses)
                     .UseLogging(Logger)
-                    .UseResilience(Logger)
-                    .Extract(cataologueSpare);
+                    .UseResilience(Logger, manager, page)
+                    .Extract(TargetUrl);
+                
+                List<AvitoSpare> items = [];
+                
+                foreach (AvitoCataloguePage cataloguePage in pages)
+                {
+                    AvitoSpare[] result = await new ExtractCataloguePagesItemCommand(page, Bypasses)
+                        .UseLogging(Logger)
+                        .UseResilience(Logger, manager, page)
+                        .Extract(cataloguePage);
+                    
+                    items.AddRange(result);
+                }
 
-                int a = 0;
+                foreach (AvitoSpare spare in items)
+                {
+                    AvitoSpare result = await new ExtractConcretePageItemCommand(page, Bypasses)
+                        .UseLogging(Logger)
+                        .UseResilience(Logger, manager, page)
+                        .Extract(spare);
+                    
+                    results.Add(result);
+                }
             }
         }
+        
+        Assert.NotEmpty(results);
     }
 }

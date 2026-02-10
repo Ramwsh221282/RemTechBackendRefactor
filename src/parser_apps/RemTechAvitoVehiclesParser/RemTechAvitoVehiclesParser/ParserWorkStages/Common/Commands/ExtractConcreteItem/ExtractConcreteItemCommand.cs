@@ -5,7 +5,7 @@ using PuppeteerSharp;
 namespace RemTechAvitoVehiclesParser.ParserWorkStages.Common.Commands.ExtractConcreteItem;
 
 public sealed class ExtractConcreteItemCommand(
-    Func<Task<IPage>> pageSource,
+    IPage page,
     AvitoVehicle vehicle,
     AvitoBypassFactory bypassFactory
 ) : IExtractConcreteItemCommand
@@ -51,8 +51,7 @@ public sealed class ExtractConcreteItemCommand(
                                   return { title: title, characteristics: characteristics };
                                   }
                                   ";
-
-        IPage page = await pageSource();
+        
         await page.PerformQuickNavigation(vehicle.CatalogueRepresentation.Url, timeout: 1500);
         if (!await bypassFactory.Create(page).Bypass())
             throw new InvalidOperationException("Unable to bypass Avito firewall");

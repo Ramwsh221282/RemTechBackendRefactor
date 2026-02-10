@@ -1,7 +1,6 @@
 using AvitoSparesParser.Extensions;
 using AvitoSparesParser.RabbitMq.Consumers;
 using DotNetEnv.Configuration;
-using Microsoft.Extensions.Options;
 using ParserSubscriber.SubscribtionContext;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
@@ -56,7 +55,11 @@ try
     logger.Information("Миграции модулей базы данных применены.");
     
     logger.Information("Попытка подписки на основной бекенд.");
-    await Task.Delay(TimeSpan.FromMinutes(1));
+    if (!isDevelopment)
+    {
+        await Task.Delay(TimeSpan.FromMinutes(1));
+    }
+    
     app.Lifetime.ApplicationStarted.Register(() =>
     {
         _ = Task.Run(async () =>

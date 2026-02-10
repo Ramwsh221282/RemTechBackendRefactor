@@ -4,11 +4,10 @@ using PuppeteerSharp;
 
 namespace DromVehiclesParser.Commands.ExtractPagedUrls;
 
-public sealed class ExtractPagedUrlsCommandCommand(Func<Task<IPage>> pageSource) : IExtractPagedUrlsCommand
+public sealed class ExtractPagedUrlsCommand(IPage page) : IExtractPagedUrlsCommand
 {
     public async Task<IEnumerable<DromCataloguePage>> Extract(string initialUrl)
     {
-        IPage page = await pageSource();
         await NavigateToInitialUrl(page, initialUrl);
         IReadOnlyList<DromCataloguePage> pages = await CollectCataloguePages(page, initialUrl);
         return pages;

@@ -19,18 +19,18 @@ public static class CatalogueAdvertisementsExtractingStage
         public static ParsingStage CatalogueAdvertisementsExtraction =>
             async (deps, ct) =>
             {
-                BrowserFactory factory = deps.Browsers;
                 NpgSqlConnectionFactory npgSql = deps.NpgSql;
                 Serilog.ILogger logger = deps.Logger;
 
                 await using NpgSqlSession session = new(npgSql);
                 NpgSqlTransactionSource transactionSource = new(session);
-                await using ITransactionScope transaction =
-                    await transactionSource.BeginTransaction(ct);
+                await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
 
                 Maybe<ParserWorkStage> stage = await GetCatalogueStage(session, ct);
                 if (!stage.HasValue)
+                {
                     return;
+                }
 
                 DromCataloguePage[] pages = await GetCataloguePages(session, ct);
                 if (CanSwitchNextStage(pages))
@@ -40,60 +40,53 @@ public static class CatalogueAdvertisementsExtractingStage
                     return;
                 }
 
-                await ExtractCatalogueAdvertisements(pages, factory, session, logger);
+                await using BrowserManager manager = deps.Browsers.Provide();
+                await using IPage page = await manager.ProvidePage();
+                
+                await ExtractCatalogueAdvertisements(pages, manager, page, session, logger);
                 await FinishTransaction(transaction, logger, ct);
             };
     }
 
     private static async Task ExtractCatalogueAdvertisements(
         DromCataloguePage[] pages,
-        BrowserFactory browsers,
+        BrowserManager manager,
+        IPage page,
         NpgSqlSession session,
         Serilog.ILogger logger
     )
     {
-        IBrowser browser = await browsers.ProvideBrowser();
-
         for (int i = 0; i < pages.Length; i++)
         {
-            DromCataloguePage page = pages[i];
-
-            Func<Task<IPage>> pageSource = browser.GetPage;
-
-            IExtractAdvertisementsFromCatalogueCommand extractCommand =
-                new ExtractAdvertisementsFromCatalogueCommand(pageSource).UseLogging(logger);
-
-            IHoverAdvertisementsCatalogueImagesCommand hoverCommand =
-                new HoverAdvertisementsCatalogueImagesCommand(pageSource).UseLogging(logger);
-
-            pages[i] = await ProcessExtraction(extractCommand, hoverCommand, page, session);
-            await Task.Delay(TimeSpan.FromSeconds(5)); // forced delay to avoid get blocked.
+            DromCataloguePage dromCataloguePage = pages[i];
+            pages[i] = await ProcessExtraction(manager, page, logger, dromCataloguePage, session);
+            await Task.Delay(TimeSpan.FromSeconds(5));
         }
-
-        await browser.DestroyAsync();
+        
         await pages.UpdateMany(session);
     }
 
     private static async Task<DromCataloguePage> ProcessExtraction(
-        IExtractAdvertisementsFromCatalogueCommand extranctCommand,
-        IHoverAdvertisementsCatalogueImagesCommand hoverCommand,
+        BrowserManager manager,
+        IPage webPage,
+        Serilog.ILogger logger,
         DromCataloguePage page,
         NpgSqlSession session
     )
     {
+        IExtractAdvertisementsFromCatalogueCommand extractCommand = new ExtractAdvertisementsFromCatalogueCommand(webPage)
+            .UseLogging(logger)
+            .UseResilience(manager, webPage);
+            
+        IHoverAdvertisementsCatalogueImagesCommand hoverCommand = new HoverAdvertisementsCatalogueImagesCommand(webPage)
+            .UseLogging(logger)
+            .UseResilience(manager, webPage);
+        
         try
         {
-            DromCatalogueAdvertisement[] advertisements = await extranctCommand.Extract(
-                page,
-                hoverCommand
-            );
-
+            DromCatalogueAdvertisement[] advertisements = await extractCommand.Extract(page, hoverCommand);
             await advertisements.PersistMany(session);
             return page.MarkProcessed();
-        }
-        catch (EvaluationFailedException)
-        {
-            return page;
         }
         catch (Exception)
         {

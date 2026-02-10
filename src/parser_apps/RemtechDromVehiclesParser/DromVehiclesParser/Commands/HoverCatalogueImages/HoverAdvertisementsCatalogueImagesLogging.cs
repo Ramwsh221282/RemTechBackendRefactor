@@ -7,17 +7,17 @@ public sealed class HoverAdvertisementsCatalogueImagesLogging(Serilog.ILogger lo
 {
     private Serilog.ILogger Logger { get; } = logger.ForContext<IHoverAdvertisementsCatalogueImagesCommand>();
     
-    public async Task Hover(DromCataloguePage page)
+    public async Task Hover(DromCataloguePage dromCataloguePage)
     {
-        Logger.Information("Hovering catalogue images for page {Url}", page.Url);
+        Logger.Information("Hovering catalogue images for page {Url}", dromCataloguePage.Url);
         try
         {
-            await inner.Hover(page);
-            Logger.Information("Catalogue images for page {Url} hovered", page.Url);
+            await inner.Hover(dromCataloguePage);
+            Logger.Information("Catalogue images for page {Url} hovered", dromCataloguePage.Url);
         }
         catch(Exception ex)
         {
-            Logger.Error(ex, "Failed to hover catalogue images for page {Url}", page.Url);
+            Logger.Error(ex, "Failed to hover catalogue images for page {Url}", dromCataloguePage.Url);
             throw;
         }
     }
