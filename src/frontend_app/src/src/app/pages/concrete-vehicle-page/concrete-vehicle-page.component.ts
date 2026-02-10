@@ -3,7 +3,6 @@ import {
   DestroyRef,
   effect,
   inject,
-  OnInit,
   signal,
   WritableSignal,
 } from '@angular/core';
@@ -12,22 +11,6 @@ import { CatalogueVehiclesService } from '../vehicles-page/services/CatalogueVeh
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
-import { UsersService } from '../sign-in-page/services/UsersService';
-import { CookieService } from 'ngx-cookie-service';
-import { TokensService } from '../../shared/services/TokensService';
-import {
-  catchError,
-  defer,
-  filter,
-  forkJoin,
-  map,
-  Observable,
-  of,
-  switchMap,
-  take,
-  timeout,
-  timer,
-} from 'rxjs';
 
 @Component({
   selector: 'app-concrete-vehicle-page',
@@ -52,16 +35,16 @@ export class ConcreteVehiclePageComponent {
     this._vehicle = signal(CatalogueVehiclesService.default());
     this._similar = signal([]);
     effect(() => {
-      activatedRoute.queryParams
-        .pipe(takeUntilDestroyed(this._destroyRef))
-        .subscribe({
-          next: (params: any) => {
-            const id: string | undefined = params['vehicleId'] as string;
-            if (id !== undefined) {
-              this._id.set(id);
-            }
-          },
-        });
+      // activatedRoute.queryParams
+      //   .pipe(takeUntilDestroyed(this._destroyRef))
+      //   .subscribe({
+      //     next: (params: any) => {
+      //       const id: string | undefined = params['vehicleId'] as string;
+      //       if (id !== undefined) {
+      //         this._id.set(id);
+      //       }
+      //     },
+      //   });
     });
     effect(() => {
       const id: string | undefined = this._id();

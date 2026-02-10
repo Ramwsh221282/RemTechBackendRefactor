@@ -24,8 +24,9 @@ export class HeaderComponent {
     return this._authStatusService.isAuthenticated();
   }
 
-  public onMenuButtonClick = (event: MouseEvent) => {
-    event.stopPropagation();
+  public onMenuButtonClick($event: MouseEvent): void {
+    $event.preventDefault();
+    $event.stopPropagation();
     this._appMenuService.turnSideBarVisibility();
-  };
+  }
 }

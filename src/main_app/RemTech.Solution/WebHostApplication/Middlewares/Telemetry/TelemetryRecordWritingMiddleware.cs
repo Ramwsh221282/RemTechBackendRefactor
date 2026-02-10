@@ -111,15 +111,7 @@ public sealed class TelemetryRecordWritingMiddleware(
 
 	private async Task<ActionRecordSeverity> InvokeAndReturnSeverity(HttpContext context)
 	{
-		try
-		{
-			await Next(context);
-			return ResolveSeverityByStatusCode(context);
-		}
-		catch (Exception ex)
-		{
-			Logger.Error(ex, "Ошибка при создании записи действия телеметрии.");
-			return ActionRecordSeverity.Error();
-		}
+        await Next(context);
+        return ResolveSeverityByStatusCode(context);
 	}
 }

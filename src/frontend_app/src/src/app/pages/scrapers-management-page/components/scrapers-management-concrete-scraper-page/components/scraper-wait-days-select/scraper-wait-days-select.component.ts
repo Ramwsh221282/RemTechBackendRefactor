@@ -1,8 +1,6 @@
 import {
   Component,
-  DestroyRef,
   EventEmitter,
-  inject,
   Input,
   OnInit,
   Output,
@@ -10,15 +8,9 @@ import {
   WritableSignal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Scraper } from '../../../scrapers-management-settings-page/types/Scraper';
-import { VehicleScrapersService } from '../../../scrapers-management-settings-page/services/vehicle-scrapers.service';
 import { Select, SelectChangeEvent } from 'primeng/select';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ParserWaitDaysUpdateResult } from '../../../scrapers-management-settings-page/types/ParserWaitDaysUpdateResult';
-import { HttpErrorResponse } from '@angular/common/http';
-import { MessageServiceUtils } from '../../../../../../shared/utils/message-service-utils';
 import {ParserResponse} from '../../../../../../shared/api/parsers-module/parsers-responses';
 import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module/parsers-factory';
 

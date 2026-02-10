@@ -3,7 +3,6 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { apiUrl } from '../../../shared/api/api-endpoint';
 import { Observable } from 'rxjs';
 import { MailingSender } from '../models/MailingSender';
-import { TokensService } from '../../../shared/services/TokensService';
 
 @Injectable({
   providedIn: 'root',

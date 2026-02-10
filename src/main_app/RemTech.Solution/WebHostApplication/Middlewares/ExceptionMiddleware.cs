@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text.Json;
 using RemTech.SharedKernel.Web;
 
 namespace WebHostApplication.Middlewares;
@@ -33,9 +34,18 @@ public sealed class ExceptionMiddleware(RequestDelegate next, Serilog.ILogger lo
 
 	private static Task HandleException(HttpContext context)
 	{
-		Envelope envelope = new((int)HttpStatusCode.InternalServerError, null, "Internal server error");
 		context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-		context.Request.ContentType = "application/json";
+		context.Response.ContentType = "application/json";
+        Dictionary<string, object?> envelope = InternalServerResponseInformation();
 		return context.Response.WriteAsJsonAsync(envelope, context.RequestAborted);
 	}
+
+    private static Dictionary<string, object?> InternalServerResponseInformation()
+    {
+        Dictionary<string, object?> response = new();
+        response.Add("statusCode", (int)HttpStatusCode.InternalServerError);
+        response.Add("message", "Internal server error");
+        response.Add("body", null);
+        return response;
+    }
 }

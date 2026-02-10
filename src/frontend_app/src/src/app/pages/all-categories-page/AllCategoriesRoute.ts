@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { RootExistsGuard } from '../../shared/guards/RootExistsGuard';
 
 export const AllCategoriesRoute: Routes = [
   {
@@ -8,6 +7,5 @@ export const AllCategoriesRoute: Routes = [
       import('./all-categories-page.component').then(
         (c) => c.AllCategoriesPageComponent,
       ),
-    canActivate: [RootExistsGuard],
   },
 ];

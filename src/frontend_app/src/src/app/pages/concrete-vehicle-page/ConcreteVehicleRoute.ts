@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { RootExistsGuard } from '../../shared/guards/RootExistsGuard';
 
 export const ConcreteVehicleRoute: Routes = [
   {
@@ -8,6 +7,5 @@ export const ConcreteVehicleRoute: Routes = [
       import('./concrete-vehicle-page.component').then(
         (c) => c.ConcreteVehiclePageComponent,
       ),
-    canActivate: [RootExistsGuard],
   },
 ];
