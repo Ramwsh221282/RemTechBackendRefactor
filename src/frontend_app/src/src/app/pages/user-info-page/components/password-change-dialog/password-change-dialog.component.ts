@@ -1,8 +1,6 @@
 import {
   Component,
-  DestroyRef,
   EventEmitter,
-  inject,
   Input,
   Output,
   signal,
@@ -15,13 +13,8 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { UsersService } from '../../../sign-in-page/services/UsersService';
-import { TokensService } from '../../../../shared/services/TokensService';
-import { UserInfoService } from '../../../../shared/services/UserInfoService';
 import { StringUtils } from '../../../../shared/utils/string-utils';
 import { MessageServiceUtils } from '../../../../shared/utils/message-service-utils';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';

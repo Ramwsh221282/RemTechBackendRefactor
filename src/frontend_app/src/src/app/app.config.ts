@@ -8,9 +8,7 @@ import { routes } from './app.routes';
 import { AppMenuService } from './shared/components/app-menu/app-menu.service';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { definePreset } from '@primeng/themes';
-import { CookieService } from 'ngx-cookie-service';
 import { MailingManagementService } from './pages/mailing-management-page/services/MailingManagementService';
-import { VehicleScrapersService } from './pages/scrapers-management-page/components/scrapers-management-settings-page/services/vehicle-scrapers.service';
 import { SparesService } from './pages/spares-page/services/SparesService';
 import { ContainedItemsService } from './pages/main-page/services/contained-items-service';
 import { PopularBrandsService } from './pages/main-page/services/popular-brands-service';
@@ -18,8 +16,6 @@ import { PopularCategoriesService } from './pages/main-page/services/popular-cat
 import { AllCategoriesService } from './pages/all-categories-page/services/AllCategoriesService';
 import { AllBrandsService } from './pages/all-brands-page/services/AllBrandsService';
 import { CatalogueVehiclesService } from './pages/vehicles-page/services/CatalogueVehiclesService';
-import { UsersService } from './pages/sign-in-page/services/UsersService';
-import { TokensService } from './shared/services/TokensService';
 import { UserInfoService } from './shared/services/UserInfoService';
 import { authInterceptor } from './shared/middleware/auth-interceptor.interceptor';
 import { OnApplicationStartupAuthVerificationService } from './shared/services/OnApplicationStartupAuthVerification.service';
@@ -104,8 +100,6 @@ export const appConfig: ApplicationConfig = {
 			inject(PermissionsStatusService).ngOnInit();
 		}),
 		UserInfoService,
-		TokensService,
-		UsersService,
 		CatalogueVehiclesService,
 		AllBrandsService,
 		AllCategoriesService,
@@ -113,9 +107,7 @@ export const appConfig: ApplicationConfig = {
 		PopularCategoriesService,
 		ContainedItemsService,
 		SparesService,
-		VehicleScrapersService,
 		MailingManagementService,
 		AppMenuService,
-		CookieService,
 	],
 };

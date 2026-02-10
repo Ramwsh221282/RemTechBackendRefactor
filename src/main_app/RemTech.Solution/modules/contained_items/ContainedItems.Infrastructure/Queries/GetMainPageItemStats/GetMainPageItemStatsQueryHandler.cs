@@ -131,9 +131,20 @@ public sealed class GetMainPageItemStatsQueryHandler(NpgSqlSession session)
 
 		while (await reader.ReadAsync(ct))
 		{
-			string itemStatJson = reader.GetString(reader.GetOrdinal("item_stat"));
-			string brandStatJson = reader.GetString(reader.GetOrdinal("brand_stat"));
-			string categoryStatJson = reader.GetString(reader.GetOrdinal("category_stat"));
+            int itemStatOrdinal = reader.GetOrdinal("item_stat");
+            int brandStatOrdinal = reader.GetOrdinal("brand_stat");
+            int categoryStatOrdinal = reader.GetOrdinal("category_stat");
+
+            if (await reader.IsDBNullAsync(itemStatOrdinal, ct) ||
+                await reader.IsDBNullAsync(brandStatOrdinal, ct) ||
+                await reader.IsDBNullAsync(categoryStatOrdinal, ct))
+            {
+                break;
+            }
+            
+			string itemStatJson = reader.GetString(itemStatOrdinal);
+			string brandStatJson = reader.GetString(brandStatOrdinal);
+			string categoryStatJson = reader.GetString(categoryStatOrdinal);
 
 			ParseItemStatAndFillCollection(itemStatJson, itemStats);
 			ParseBrandStatAndFillCollection(brandStatJson, brandsPopularities);

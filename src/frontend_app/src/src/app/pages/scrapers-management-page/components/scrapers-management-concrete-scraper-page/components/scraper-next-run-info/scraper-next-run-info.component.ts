@@ -1,7 +1,5 @@
 import { Component, Input, signal, WritableSignal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { Scraper } from '../../../scrapers-management-settings-page/types/Scraper';
-import { VehicleScrapersService } from '../../../scrapers-management-settings-page/services/vehicle-scrapers.service';
 import {ParserResponse} from '../../../../../../shared/api/parsers-module/parsers-responses';
 import {DefaultParserResponse} from '../../../../../../shared/api/parsers-module/parsers-factory';
 

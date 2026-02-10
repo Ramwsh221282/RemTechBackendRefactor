@@ -1,7 +1,5 @@
-using System.Net;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -22,27 +20,13 @@ logger.Information("Запуск веб-приложения.");
 try
 {
 	WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+	builder.ConfigureKestrelServer();
 
-	builder.WebHost.ConfigureKestrel(options =>
-	{
-		options.Listen(
-			IPAddress.Any,
-			5185,
-			opts =>
-			{
-				opts.Protocols = HttpProtocols.Http1AndHttp2;
-			}
-		);
-		options.Listen(
-			IPAddress.Any,
-			5238,
-			opts =>
-			{
-				opts.Protocols = HttpProtocols.Http2;
-			}
-		);
-	});
-
+    builder.Services.Configure<HostOptions>(x =>
+    {
+        x.StartupTimeout = TimeSpan.FromMinutes(1);
+    });
+    
 	bool isDevelopment = builder.Environment.IsDevelopment();
 	if (isDevelopment)
 	{
@@ -66,56 +50,39 @@ try
 	logger.Information("Миграции модулей зарегистрированы.");
 
 	builder.Services.AddSwaggerGen();
-
-	builder
-		.Services.AddControllers()
-		.AddJsonOptions(options => options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All));
+    builder.Services.AddControllers();
+    
 	builder.Services.AddEndpointsApiExplorer();
 	logger.Information("Контроллеры зарегистрированы.");
 
-	builder.Services.AddCors(options =>
-	{
-		IConfigurationSection section = builder.Configuration.GetSection(nameof(FrontendOptions));
-		string? url = section["Url"] ?? throw new InvalidOperationException("Frontend URL option is empty.");
-        logger.Information("Регистрация CORS политики для фронтенда с URL: {Url}", url);
-        
-        options.AddPolicy("frontend", policy =>
-        {
-            policy
-                .WithOrigins(
-                    url,
-                    url + ":80",
-                    "http://localhost",
-                    "http://localhost:80",
-                    "http://frontend:80"
-                )
-                .SetIsOriginAllowedToAllowWildcardSubdomains() // Для поддоменов
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-        });
-	});
+	builder.RegisterCors(logger);
 	logger.Information("CORS политика зарегистрирована.");
 
 	WebApplication app = builder.Build();
+
+    IHostApplicationLifetime lifeTime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+    lifeTime.ApplicationStarted.Register(() =>
+    {
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
+    });
+    
 	await app.ValidateConfigurations();
     
+    logger.Information("Применение миграций модулей...");
 	app.Services.ApplyModuleMigrations();
-	app.UseHttpsRedirection();
-	app.UseCors("frontend");
-	app.MapControllers();
-	app.UseSwagger();
-
-	app.UseHttpsRedirection();
-
+    
 	logger.Information("Настройка middleware...");
-	app.UseCors("frontend");
-	app.MapControllers();
-	app.UseSwagger();
+    app.UseHttpsRedirection();
+    app.UseCors("frontend");
+    app.MapControllers();
+    app.UseSwagger();
+    app.UseHttpsRedirection();
 
 	app.UseSwaggerUI(Theme.UniversalDark);
 	app.UseMiddleware<ExceptionMiddleware>();
-	app.UseMiddleware<TelemetryRecordWritingMiddleware>();
+    app.UseMiddleware<TelemetryRecordWritingMiddleware>();
 
 	logger.Information("Запуск приложения...");
 	app.Run();

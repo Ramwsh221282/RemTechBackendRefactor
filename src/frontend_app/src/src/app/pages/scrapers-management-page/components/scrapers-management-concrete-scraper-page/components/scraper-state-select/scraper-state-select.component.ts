@@ -1,6 +1,4 @@
 import { Component, Input, signal, WritableSignal } from '@angular/core';
-import { Scraper } from '../../../scrapers-management-settings-page/types/Scraper';
-import { VehicleScrapersService } from '../../../scrapers-management-settings-page/services/vehicle-scrapers.service';
 import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import {ParserResponse} from '../../../../../../shared/api/parsers-module/parsers-responses';
