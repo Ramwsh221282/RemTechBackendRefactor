@@ -67,13 +67,15 @@ public sealed class ExtractPagedUrlTests(IntegrationalTestsFixture fixture) : IC
 
         foreach (DromCataloguePage dromPages in pages)
         {
-            IHoverAdvertisementsCatalogueImagesCommand hoverCommand = new HoverAdvertisementsCatalogueImagesCommand(page)
-                .UseLogging(Logger)
-                .UseResilience(manager, page);
-            
-            IExtractAdvertisementsFromCatalogueCommand extractCommand = new ExtractAdvertisementsFromCatalogueCommand(page)
-                .UseLogging(Logger)
-                .UseResilience(manager, page);
+            IHoverAdvertisementsCatalogueImagesCommand hoverCommand =
+                new HoverAdvertisementsCatalogueImagesCommand(page)
+                    .UseResilience(manager, page)
+                    .UseLogging(Logger);
+
+            IExtractAdvertisementsFromCatalogueCommand extractCommand =
+                new ExtractAdvertisementsFromCatalogueCommand(page)
+                    .UseResilience(manager, page)
+                    .UseLogging(Logger);
             
             DromCatalogueAdvertisement[] results = await extractCommand.Extract(dromPages, hoverCommand);
             Assert.NotEmpty(results);
@@ -82,8 +84,8 @@ public sealed class ExtractPagedUrlTests(IntegrationalTestsFixture fixture) : IC
             foreach (DromCatalogueAdvertisement advertisement in results)
             {
                 IExtractAdvertisementFromItsPageCommand extractFromItsPageCommand = new ExtractAdvertisementFromItsPageCommand(page)
-                    .UseLogging(Logger)
-                    .UseResilience(page, manager);
+                    .UseResilience(page, manager)
+                    .UseLogging(Logger);
 
                 try
                 {

@@ -22,7 +22,6 @@ public sealed class AvitoParsingTests(IntegrationalTestsFixture fixture) : IClas
     private async Task Test_Extract_Catalogue_Items()
     {
         CataloguePageUrl[] pagedUrls = Array.Empty<CataloguePageUrl>();
-        List<AvitoVehicle> vehicles = [];
         
         await using BrowserManager manager = Provider.Provide();
         await using IPage page = await manager.ProvidePage();
