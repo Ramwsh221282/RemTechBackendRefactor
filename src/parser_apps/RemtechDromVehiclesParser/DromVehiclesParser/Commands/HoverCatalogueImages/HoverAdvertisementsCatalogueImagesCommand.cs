@@ -4,18 +4,17 @@ using PuppeteerSharp;
 
 namespace DromVehiclesParser.Commands.HoverCatalogueImages;
 
-public sealed class HoverAdvertisementsCatalogueImagesCommand(Func<Task<IPage>> pageSource)
+public sealed class HoverAdvertisementsCatalogueImagesCommand(IPage webPage)
     : IHoverAdvertisementsCatalogueImagesCommand
 {
-    public async Task Hover(DromCataloguePage page)
+    public async Task Hover(DromCataloguePage dromCataloguePage)
     {
-        await Invoke(page);
-        await Invoke(page); // Third time invocation, because page updates dom content after hovering and loading images.
+        await Invoke(dromCataloguePage);
+        await Invoke(dromCataloguePage); // Third time invocation, because page updates dom content after hovering and loading images.
     }
 
     private async Task Invoke(DromCataloguePage page)
     {
-        IPage webPage = await pageSource();
         await webPage.ScrollBottom();
         Maybe<IElementHandle> itemsList = await GetCatalogueItemsList(webPage);
         Maybe<IElementHandle[]> items = await GetCatalogueItemsFromList(itemsList);

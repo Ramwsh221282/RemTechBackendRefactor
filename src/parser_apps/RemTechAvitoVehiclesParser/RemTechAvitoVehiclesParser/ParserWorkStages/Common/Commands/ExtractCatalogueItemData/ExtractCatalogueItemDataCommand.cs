@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography.Xml;
+﻿using System.Reflection;
 using AvitoFirewallBypass;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
@@ -7,7 +7,7 @@ using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing;
 namespace RemTechAvitoVehiclesParser.ParserWorkStages.Common.Commands.ExtractCatalogueItemData;
 
 public sealed class ExtractCatalogueItemDataCommand(
-    Func<Task<IPage>> pageSource,
+    IPage page,
     CataloguePageUrl pagedUrl,
     AvitoBypassFactory bypassFactory
 ) : IExtractCatalogueItemDataCommand
@@ -57,11 +57,14 @@ public sealed class ExtractCatalogueItemDataCommand(
                                   });
                                   return data;
                                   }";
-
-        IPage page = await pageSource();
+        
         await page.PerformQuickNavigation(normalized.Url);
-        if (!await bypassFactory.Create(page).Bypass())
-            throw new InvalidOperationException("Unable to bypass Avito firewall");
+        {
+            if (!await bypassFactory.Create(page).Bypass())
+            {
+                throw new InvalidOperationException("Unable to bypass Avito firewall");
+            }
+        }
 
         await new AvitoImagesHoverer(page).Invoke();
         await page.ResilientWaitForSelector("div[id=\"bx_serp-item-list\"]");
@@ -98,7 +101,6 @@ public sealed class ExtractCatalogueItemDataCommand(
         public string? Id { get; set; }
         public string? Address { get; set; }
         public string[]? Photos { get; set; }
-
         public bool AllPropertiesSet() =>
             Url != null && Price != null && Id != null && Address != null && Photos != null;
     }

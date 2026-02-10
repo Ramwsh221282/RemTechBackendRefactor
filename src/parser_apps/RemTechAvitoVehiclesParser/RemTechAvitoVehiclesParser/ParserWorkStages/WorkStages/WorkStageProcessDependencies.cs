@@ -7,7 +7,7 @@ using RemTech.SharedKernel.Infrastructure.Database;
 namespace RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages;
 
 public sealed record WorkStageProcessDependencies(
-    BrowserFactory Browsers,
+    BrowserManagerProvider BrowserManagerProvider,
     AvitoBypassFactory Bypasses,
     TextTransformerBuilder TextTransformerBuilder,
     Serilog.ILogger Logger,

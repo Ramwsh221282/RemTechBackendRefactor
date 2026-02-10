@@ -5,11 +5,10 @@ using PuppeteerSharp;
 
 namespace DromVehiclesParser.Commands.ExtractAdvertisementsFromCatalogue;
 
-public sealed class ExtractAdvertisementsFromCatalogueCommand(Func<Task<IPage>> pageSource) : IExtractAdvertisementsFromCatalogueCommand
+public sealed class ExtractAdvertisementsFromCatalogueCommand(IPage webPage) : IExtractAdvertisementsFromCatalogueCommand
 {
     public async Task<DromCatalogueAdvertisement[]> Extract(DromCataloguePage page, IHoverAdvertisementsCatalogueImagesCommand hovering)
     {
-        IPage webPage = await pageSource();
         await NavigateToCataloguePage(webPage, page);
         await hovering.Hover(page);
         return await ExtractCatalogueAdvertisementsUsingJavaScript(webPage);

@@ -4,5 +4,5 @@ namespace DromVehiclesParser.Commands.HoverCatalogueImages;
 
 public interface IHoverAdvertisementsCatalogueImagesCommand
 {
-    Task Hover(DromCataloguePage page);
+    Task Hover(DromCataloguePage dromCataloguePage);
 }
