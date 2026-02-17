@@ -22,7 +22,7 @@ public static class ParserInvokingContextInjection
         
         public void RegisterParserInvokingQueue(Func<IServiceProvider, ParserStartQueueRabbitMqProvide> connectionProvide)
         {
-            services.AddSingleton<ParserStartQueueRabbitMqProvide>(sp => connectionProvide(sp));
+            services.AddSingleton(sp => connectionProvide(sp));
             services.AddHostedService<ParserStartQueue>();
         }
     }

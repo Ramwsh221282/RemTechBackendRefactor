@@ -1,5 +1,6 @@
 ﻿using AvitoFirewallBypass;
 using ParsingSDK;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.RabbitMq;
 using ParsingSDK.TextProcessing;
 using RemTechAvitoVehiclesParser.ParserWorkStages;
@@ -12,6 +13,7 @@ public static class ParserDependenciesInjection
     {
         public void RegisterDependenciesForParsing(bool isDevelopment)
         {
+            services.AddScoped<IParserStopper, AvitoParserStopper>();
             services.RegisterParserDependencies(isDevelopment);
             services.RegisterParserWorkStagesContext();
             services.RegisterParserSubscription();

@@ -1,5 +1,6 @@
 using DotNetEnv.Configuration;
 using ParserSubscriber.SubscribtionContext;
+using ParsingSDK.ParserStopingContext;
 using Quartz;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
@@ -55,6 +56,7 @@ try
     logger.Information("Планировщик заданий (бекграунд процессы) зарегистрирован.");
 
     builder.Services.AddTransient<IConsumer, ParserStartConsumer>();
+    builder.Services.AddTransient<IConsumer, ParserStopConsumer>();
     builder.Services.AddHostedService<AggregatedConsumersHostedService>();
     logger.Information("RabbitMQ потребители зарегистрированы.");
 

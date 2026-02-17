@@ -15,7 +15,7 @@ public sealed class PermantlyDisableManyParsingHandler(ISubscribedParsersCollect
 	: ICommandHandler<PermantlyDisableManyParsingCommand, IEnumerable<SubscribedParser>>
 {
 	/// <summary>
-	/// Выполнение команды отключения списка подписанных парсеров.
+	/// Выполнение команды отключения всех подписанных парсеров.
 	/// </summary>
 	/// <param name="command">Команда для выполнения.</param>
 	/// <param name="ct">Токен отмены.</param>
@@ -51,6 +51,7 @@ public sealed class PermantlyDisableManyParsingHandler(ISubscribedParsersCollect
 		{
 			return enabling.Error;
 		}
+
 		return await repository.SaveChanges(parsers.Value, ct);
 	}
 

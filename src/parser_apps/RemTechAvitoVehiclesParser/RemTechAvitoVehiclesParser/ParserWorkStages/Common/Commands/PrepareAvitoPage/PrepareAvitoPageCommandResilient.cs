@@ -24,7 +24,7 @@ public sealed class PrepareAvitoPageCommandResilient(
                 await inner.Handle();
                 return;
             }
-            catch (Exception e) when (currentAttempt < attemptsCount)
+            catch when (currentAttempt < attemptsCount)
             {
                 currentAttempt++;
                 page = await manager.RecreatePage(page);

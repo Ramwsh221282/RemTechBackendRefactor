@@ -44,7 +44,9 @@ public static class FinalizationWorkStageProcessImplementation
 
                 Maybe<ParserWorkStage> stage = await GetFinalizationStage(session, logger, ct);
                 if (!stage.HasValue)
+                {
                     return;
+                }
 
                 AvitoVehicle[] items = await GetFinalizationItems(session, logger, ct);
                 if (CanFinalize(items))

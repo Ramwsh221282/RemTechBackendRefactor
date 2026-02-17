@@ -4,14 +4,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="SharedDependencies\PostgreSql\Migrations\001.AvitoParser_Initial.sql" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="AvitoFirewallBypass" Version="3.0.0" />
+    <PackageReference Include="AvitoFirewallBypass" Version="3.0.2" />
     <PackageReference Include="ParserSubscriber" Version="3.0.0" />
-    <PackageReference Include="ParsingSDK" Version="3.0.1" />
+    <PackageReference Include="ParsingSDK" Version="3.0.4" />
   </ItemGroup>
 </Project>

@@ -67,8 +67,12 @@ public sealed class AvitoPagedUrlsExtractor
                                    const maxPage = Math.max(...pageNumbersArray);
                                    const pagedUrls = [];
                                    for (let i = 1; i <= maxPage; i++) {
-                                       const pagedUrl = currentUrl + '&p=' + i;
-                                       pagedUrls.push(pagedUrl);
+                                        if (currentUrl.includes('?')) {
+                                            pagedUrls.push(currentUrl + '&p=' + i);
+                                            continue;
+                                        }
+                                       
+                                       pagedUrls.push(currentUrl + '?p=' + i);
                                    }
                                    return { maxPage: maxPage, pagedUrls: pagedUrls };
                                    }
