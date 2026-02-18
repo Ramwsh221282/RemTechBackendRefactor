@@ -37,12 +37,9 @@ public static class ConcreteItemExtractingProcess
 
                 await using (BrowserManager manager = deps.BrowserProvider.Provide())
                 {
-                    await using (IPage page = await manager.ProvidePage())
-                    {
-                        await ProcessConcreteItemsExtraction(catalogueSpares, manager, page, deps, session);
-                    }
+                    await ProcessConcreteItemsExtraction(catalogueSpares, manager, deps, session);
                 }
-                
+
                 await FinishTransaction(scope, logger, ct);
             };
     }
@@ -88,32 +85,37 @@ public static class ConcreteItemExtractingProcess
         logger.Information("Switched to {Stage} stage.", finalization.Name);
     }
 
-    private static async Task ProcessConcreteItemsExtraction(AvitoSpare[] spares, BrowserManager manager, IPage page, ParserStageDependencies deps, NpgSqlSession session)
+    private static async Task ProcessConcreteItemsExtraction(AvitoSpare[] spares, BrowserManager manager, ParserStageDependencies deps, NpgSqlSession session)
     {
         for (int i = 0; i < spares.Length; i++)
         {
-            AvitoSpare spare = spares[i];
-            
-            try
-            {
-                spares[i] = await ExtractConcreteSpareFromCatalogueSpare(spare, page, deps.Logger, deps.Bypasses);
-            }
-            catch(Exception)
-            {
-                page = await manager.RecreatePage(page);
-                manager.ReleasePageUsedMemoryResources();
-                spares[i] = spares[i].IncreaseRetryAmount();    
-            }
+            spares[i] = await ExtractConcreteSpareFromCatalogueSpare(spares[i], manager, deps.Logger, deps.Bypasses);
         }
-        
+
         await spares.PersistAsConcreteRepresentationMany(session);
     }
 
-    private static async Task<AvitoSpare> ExtractConcreteSpareFromCatalogueSpare(AvitoSpare spare, IPage page, ILogger logger, AvitoBypassFactory bypass)
-    {
-        IExtractConcretePageItemCommand command = new ExtractConcretePageItemCommand(page, bypass).UseLogging(logger);
-        spare = await command.Extract(spare);
-        return spare.MarkProcessed();
+    private static async Task<AvitoSpare> ExtractConcreteSpareFromCatalogueSpare(AvitoSpare spare, BrowserManager manager, ILogger logger, AvitoBypassFactory bypass)
+    {                
+        int attempts = 0;
+        int currentAttempt = 5;
+        while (attempts < currentAttempt)
+        {
+            await using IPage page = await manager.ProvidePage();
+            ExtractConcretePageItemCommand command = new(page, bypass);
+            try
+            {
+                AvitoSpare result = await command.UseLogging(logger).Extract(spare);
+                return result.MarkProcessed();
+            }
+            catch (Exception)
+            {
+                attempts++;
+                logger.Warning("Attempt {Attempt} of {TotalAttempts} failed for spare with id: {SpareId}", attempts, currentAttempt, spare.Id);
+            }
+        }
+
+        return spare.IncreaseRetryAmount();
     }
 
     private static async Task FinishTransaction(

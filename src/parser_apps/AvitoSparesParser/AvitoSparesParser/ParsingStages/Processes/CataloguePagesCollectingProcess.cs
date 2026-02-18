@@ -170,45 +170,9 @@ public static class CataloguePagesCollectingProcess
         Serilog.ILogger logger
     )
     {
-        await page.PerformNavigation(targetUrl);
-        IAvitoBypassFirewall bypasser = factory.Create(page);
-        if (!await bypasser.Bypass())
-            throw new InvalidOperationException("Page is blocked.");
-        await page.ScrollBottom();
-        const string javaScript = """
-            (() => {
-
-            let maxPage = 0;
-            const pagedUrls = [];
-
-            const currentUrl = window.location.href;
-            const paginationSelector = document.querySelector('nav[aria-label="Пагинация"]');
-            if (!paginationSelector) return { maxPage, pagedUrls };
-
-            const paginationGroupSelector = paginationSelector.querySelector('ul[data-marker="pagination-button"]');
-            if (!paginationGroupSelector) return { maxPage, pagedUrls };
-
-            const pageNumbersArray = Array.from(
-            paginationGroupSelector.querySelectorAll('span[class="styles-module-text-Z0vDE"]'))
-                .map(s => parseInt(s.innerText, 10));
-
-            maxPage = Math.max(...pageNumbersArray);
-
-            for (let i = 1; i <= maxPage; i++) {
-                const pagedUrl = currentUrl + '&p=' + i;
-                pagedUrls.push(pagedUrl);
-            }
-
-            return { maxPage, pagedUrls };
-            })();
-            """;
-        PaginationResult result = await page.EvaluateExpressionAsync<PaginationResult>(javaScript);
-        AvitoCataloguePage[] links =
-        [
-            .. Enumerable
-                .Range(0, result.MaxPage)
-                .Select(p => AvitoCataloguePage.New(result.PagedUrls[p])),
-        ];
+        AvitoPagedUrlsExtractor extractor = new(page, factory.Create(page));
+        string[] urls = await extractor.ExtractUrls(targetUrl);
+        AvitoCataloguePage[] links = [.. urls.Select(AvitoCataloguePage.New)];        
         logger.Information("Extracted {Count} paged urls.", links.Length);
         foreach (var link in links)
             logger.Information("Paged URL: {Url}", link.Url);

@@ -39,7 +39,8 @@ public sealed class AvitoSparesParserStopper : IParserStopper
         {
             await using ITransactionScope txn = await _transactionSource.BeginTransaction(ct);
             Maybe<ParsingStage> stage = await GetCurrentParsingStage(_session, ct);                                    
-            await SwitchToFinalizationStage(_session, stage, ct);            
+            await SwitchToFinalizationStage(_session, stage, ct);       
+            await txn.Commit(ct);     
         }        
     }
 

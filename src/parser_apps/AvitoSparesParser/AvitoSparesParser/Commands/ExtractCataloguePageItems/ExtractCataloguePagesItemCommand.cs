@@ -10,8 +10,12 @@ public sealed partial class ExtractCataloguePagesItemCommand(
     IPage browserPage,
     AvitoBypassFactory bypassFactory
 ) : IExtractCataloguePagesItemCommand
-{
-    private const int TIME_OUT_MS = 5000;
+{    
+    private static readonly NavigationOptions _options = new()
+    {
+        Timeout = 3000,
+        WaitUntil = [WaitUntilNavigation.Load]
+    };
 
     public async Task<AvitoSpare[]> Extract(AvitoCataloguePage page)
     {
@@ -58,10 +62,11 @@ public sealed partial class ExtractCataloguePagesItemCommand(
 ";
 
         string url = page.Url;
-        await browserPage.PerformQuickNavigation(url, timeout: TIME_OUT_MS);
-
+        await Navigate(browserPage, url);
         if (!await bypassFactory.Create(browserPage).Bypass())
+        {
             throw new InvalidOperationException("Bypass failed.");
+        }
 
         await browserPage.ScrollBottom();
         await new AvitoImagesHoverer(browserPage).Invoke();
@@ -131,6 +136,18 @@ public sealed partial class ExtractCataloguePagesItemCommand(
         private bool PriceIsNotZero()
         {
             return !string.IsNullOrWhiteSpace(Price) && Price != "0";
+        }
+    }
+
+    private static async Task Navigate(IPage page, string url)
+    {
+        try
+        {
+            await page.GoToAsync(url, _options);
+        }
+        catch
+        {
+            
         }
     }
 

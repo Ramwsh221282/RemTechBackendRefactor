@@ -9,6 +9,12 @@ public sealed class ExtractConcretePageItemCommand(
     AvitoBypassFactory bypassFactory
 ) : IExtractConcretePageItemCommand
 {
+    private static readonly NavigationOptions _options = new()
+    {
+        Timeout = 3000,
+        WaitUntil = [WaitUntilNavigation.Load]
+    };
+
     public async Task<AvitoSpare> Extract(AvitoSpare spare)
     {
         const string javaScript =
@@ -36,13 +42,18 @@ return { title, type };
 ";
 
         
-        await browserPage.PerformQuickNavigation(spare.CatalogueRepresentation.Url, timeout: 2000);
+        await Navigate(browserPage, spare.CatalogueRepresentation.Url);
         if (!await bypassFactory.Create(browserPage).Bypass())
+        {
             throw new InvalidOperationException("Bypass failed.");
+        }
 
+        await browserPage.ScrollBottom();
         JsonData result = await browserPage.EvaluateFunctionAsync<JsonData>(javaScript);
         if (!result.AllPropertiesSet())
+        {
             throw new InvalidOperationException("Not all properties set.");
+        }
 
         AvitoSpareConcreteRepresentation representation = result.Representation();
         return spare.Concretized(representation);
@@ -57,5 +68,17 @@ return { title, type };
 
         public bool AllPropertiesSet() =>
             !string.IsNullOrWhiteSpace(Title) && !string.IsNullOrWhiteSpace(Type);
+    }
+
+    private static async Task Navigate(IPage page, string url)
+    {
+        try
+        {
+            await page.GoToAsync(url, _options);
+        }
+        catch (Exception)
+        {
+            
+        }
     }
 }
