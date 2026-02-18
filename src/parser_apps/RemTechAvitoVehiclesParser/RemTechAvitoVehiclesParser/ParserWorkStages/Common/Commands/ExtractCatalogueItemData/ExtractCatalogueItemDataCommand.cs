@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using AvitoFirewallBypass;
+﻿using AvitoFirewallBypass;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing;
@@ -12,6 +11,12 @@ public sealed class ExtractCatalogueItemDataCommand(
     AvitoBypassFactory bypassFactory
 ) : IExtractCatalogueItemDataCommand
 {
+    private static readonly NavigationOptions _options = new()
+    {
+        WaitUntil = [WaitUntilNavigation.Load],
+        Timeout = 3000,
+    };
+
     public async Task<AvitoVehicle[]> Handle()
     {
         CataloguePageUrl normalized = pagedUrl with
@@ -57,15 +62,14 @@ public sealed class ExtractCatalogueItemDataCommand(
                                   });
                                   return data;
                                   }";
-        
-        await page.PerformQuickNavigation(normalized.Url);
+
+        await Navigate(page, normalized.Url);
+        if (!await bypassFactory.Create(page).Bypass())
         {
-            if (!await bypassFactory.Create(page).Bypass())
-            {
-                throw new InvalidOperationException("Unable to bypass Avito firewall");
-            }
+            throw new InvalidOperationException("Unable to bypass Avito firewall");
         }
 
+        await page.ScrollBottom();
         await new AvitoImagesHoverer(page).Invoke();
         await page.ResilientWaitForSelector("div[id=\"bx_serp-item-list\"]");
 
@@ -103,5 +107,17 @@ public sealed class ExtractCatalogueItemDataCommand(
         public string[]? Photos { get; set; }
         public bool AllPropertiesSet() =>
             Url != null && Price != null && Id != null && Address != null && Photos != null;
+    }
+
+    private static async Task Navigate(IPage page, string url)
+    {
+        try
+        {
+            await page.GoToAsync(url, _options);
+        }
+        catch
+        {
+
+        }
     }
 }

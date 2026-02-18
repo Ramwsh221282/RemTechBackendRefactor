@@ -8,7 +8,7 @@
     <EmbeddedResource Include="SharedDependencies\PostgreSql\Migrations\001.AvitoParser_Initial.sql" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AvitoFirewallBypass" Version="3.0.3" />
+    <PackageReference Include="AvitoFirewallBypass" Version="3.0.4" />
     <PackageReference Include="ParserSubscriber" Version="3.0.0" />
     <PackageReference Include="ParsingSDK" Version="3.0.4" />
   </ItemGroup>

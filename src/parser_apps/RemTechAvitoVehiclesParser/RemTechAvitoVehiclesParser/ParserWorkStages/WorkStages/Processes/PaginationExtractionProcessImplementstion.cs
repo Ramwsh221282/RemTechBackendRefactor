@@ -1,3 +1,4 @@
+using AvitoFirewallBypass;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -16,13 +17,13 @@ public static class PaginationExtractionProcessImplementation
 {
     extension(WorkStageProcess)
     {
-        public static WorkStageProcess PaginationExtraction =>
-            async (WorkStageProcessDependencies deps, CancellationToken ct) =>
+        public static WorkStageProcess PaginationExtraction => async (deps, ct) =>
             {
                 Serilog.ILogger logger = deps.Logger.ForContext<WorkStageProcess>();
                 await using NpgSqlSession session = new(deps.NpgSql);
                 NpgSqlTransactionSource transactionSource = new(session);
                 await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
+                
                 Maybe<ParserWorkStage> stage = await GetPaginationStage(session, ct);
                 if (!stage.HasValue)
                 {
@@ -116,49 +117,13 @@ public static class PaginationExtractionProcessImplementation
     
     private static async Task<CataloguePageUrl[]> ExtractPagination(WorkStageProcessDependencies dependencies, ProcessingParserLink link, IPage page)
     {
-        await page.PerformNavigation(link.Url);
-        if (!await dependencies.Bypasses.Create(page).Bypass())
-        {
-            throw new InvalidOperationException("Page is blocked.");
-        }
-        
-        await page.ScrollBottom();
-        const string javaScript = """
-            (() => {
-
-            let maxPage = 0;
-            const pagedUrls = [];
-
-            const currentUrl = window.location.href;
-            const paginationSelector = document.querySelector('nav[aria-label="Пагинация"]');
-            if (!paginationSelector) return { maxPage, pagedUrls };
-
-            const paginationGroupSelector = paginationSelector.querySelector('ul[data-marker="pagination-button"]');
-            if (!paginationGroupSelector) return { maxPage, pagedUrls };
-
-            const pageNumbersArray = Array.from(
-            paginationGroupSelector.querySelectorAll('span[class="styles-module-text-Z0vDE"]'))
-                .map(s => parseInt(s.innerText, 10));
-
-            maxPage = Math.max(...pageNumbersArray);
-
-            for (let i = 1; i <= maxPage; i++) {
-                let url = new URL(currentUrl);
-                url.searchParams.set('p', i);
-                pagedUrls.push(url.toString());
-            }
-
-            return { maxPage, pagedUrls };
-            })();
-            """;
-
-        PaginationResult result = await page.EvaluateExpressionAsync<PaginationResult>(javaScript);
-        CataloguePageUrl[] pages = [.. result.PagedUrls.Select(CataloguePageUrl.New)];        
-        
-        dependencies.Logger.Information("Extracted {PageCount} pages for url: {Url}", result.MaxPage, link.Url);
-        string pagesLogText = string.Join("\n", pages.Select(p => p.Url));
+        AvitoPagedUrlsExtractor extractor = new(page, dependencies.Bypasses.Create(page));
+        string[] urls = await extractor.ExtractUrls(link.Url);
+        CataloguePageUrl[] pagedUrls = [.. urls.Select(CataloguePageUrl.New)];
+        dependencies.Logger.Information("Extracted {PageCount} pages for url: {Url}", pagedUrls.Length, link.Url);
+        string pagesLogText = string.Join("\n", pagedUrls.Select(p => p.Url));
         dependencies.Logger.Information("Paged Url: {PagedUrl}", pagesLogText);
-        return pages;
+        return pagedUrls;        
     }
 
     private sealed class PaginationResult

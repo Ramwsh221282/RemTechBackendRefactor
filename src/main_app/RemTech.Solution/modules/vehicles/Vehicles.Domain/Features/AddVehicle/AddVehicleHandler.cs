@@ -130,7 +130,7 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 			: new Category(CategoryId.Create(Guid.NewGuid()), categoryName);
 	}
 
-	private static Vehicle CreateVehicle(
+	private static Result<Vehicle> CreateVehicle(
 		Brand brand,
 		Category category,
 		Model model,
@@ -140,12 +140,48 @@ public sealed class AddVehicleHandler(IPersister persister) : ICommandHandler<Ad
 	)
 	{
 		VehicleFactory factory = new(brand, category, location, model, ctxes);
-		VehicleId id = VehicleId.Create(payload.Id);
-		VehicleSource source = VehicleSource.Create(payload.Url);
-		VehiclePriceInformation price = VehiclePriceInformation.Create(payload.Price, payload.IsNds);
-		VehicleTextInformation text = VehicleTextInformation.Create(payload.Title);
-		IReadOnlyList<VehiclePhoto> photos = [.. payload.Photos.Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => VehiclePhoto.Create(p).Value)];
-		return factory.Construct(id, source, price, text, VehiclePhotosGallery.Create(photos));
+        Result<VehicleId> id = VehicleId.Create(payload.Id);
+		if (id.IsFailure)
+		{
+			return id.Error;
+		}
+
+        Result<VehicleSource> source = VehicleSource.Create(payload.Url);
+		if (source.IsFailure)
+		{
+			return source.Error;
+		}
+
+        Result<VehiclePriceInformation> price = VehiclePriceInformation.Create(payload.Price, payload.IsNds);
+		if (price.IsFailure)
+		{
+			return price.Error;
+		}
+		
+        Result<VehicleTextInformation> text = VehicleTextInformation.Create(payload.Title);
+		if (text.IsFailure)
+		{
+			return text.Error;
+		}
+
+		List<VehiclePhoto> photos = [];
+		foreach (string photo in payload.Photos)
+		{
+			if (string.IsNullOrWhiteSpace(photo))
+			{
+				continue;
+			}
+
+            Result<VehiclePhoto> photoRes = VehiclePhoto.Create(photo);
+			if (photoRes.IsFailure)
+			{
+				continue;
+			}			
+
+			photos.Add(photoRes.Value);
+		}		
+
+		return factory.Construct(id, source, price, text, VehiclePhotosGallery.Create(photos));	
 	}
 
 	private static Dictionary<Characteristic, VehicleCharacteristicValue> CreateCharacteristicsDictionary(

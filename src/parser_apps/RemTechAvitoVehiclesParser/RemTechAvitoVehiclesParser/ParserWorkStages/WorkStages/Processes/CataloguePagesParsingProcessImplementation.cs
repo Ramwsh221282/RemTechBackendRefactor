@@ -87,7 +87,7 @@ public static class CataloguePagesParsingProcessImplementation
                 await items.PersistAsCatalogueRepresentation(session);
             }
         }
-        
+
         await urls.UpdateMany(session);
     }
     
