@@ -1,11 +1,9 @@
 using AvitoSparesParser.Extensions;
-using AvitoSparesParser.RabbitMq.Consumers;
 using DotNetEnv.Configuration;
 using ParserSubscriber.SubscribtionContext;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
-using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using Serilog;
 using Serilog.Core;
 
@@ -39,11 +37,7 @@ try
     logger.Information("Логгер настроен.");
 
     builder.Services.RegisterDependenciesForParsing(isDevelopment);
-    logger.Information("Зависимости для парсинга зарегистрированы.");
-
-    builder.Services.AddTransient<IConsumer, StartParserConsumer>();
-    builder.Services.AddHostedService<AggregatedConsumersHostedService>();
-    logger.Information("Регистрация сервиса агрегированных слушателей RabbitMQ...");
+    logger.Information("Зависимости для парсинга зарегистрированы.");        
 
     builder.Services.RegisterInfrastructureDependencies();
     logger.Information("Инфраструктурные зависимости зарегистрированы.");

@@ -1,14 +1,11 @@
 using DotNetEnv.Configuration;
 using ParserSubscriber.SubscribtionContext;
-using ParsingSDK.ParserStopingContext;
 using Quartz;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.Quartz;
-using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using RemTechAvitoVehiclesParser;
-using RemTechAvitoVehiclesParser.RabbitMq.Consumers;
 using Serilog;
 using Serilog.Core;
 
@@ -50,15 +47,10 @@ try
     logger.Information("Зависимости для парсинга зарегистрированы.");
 
     builder.Services.RegisterInfrastructureDependencies(isDevelopment);
-    logger.Information("Инфраструктурные зависимости зарегистрированы.");
+    logger.Information("Инфраструктурные зависимости зарегистрированы.");            
 
     builder.Services.AddCronScheduledJobs();
     logger.Information("Планировщик заданий (бекграунд процессы) зарегистрирован.");
-
-    builder.Services.AddTransient<IConsumer, ParserStartConsumer>();
-    builder.Services.AddTransient<IConsumer, ParserStopConsumer>();
-    builder.Services.AddHostedService<AggregatedConsumersHostedService>();
-    logger.Information("RabbitMQ потребители зарегистрированы.");
 
     builder.Services.AddQuartzHostedService(c =>
     {
@@ -71,7 +63,7 @@ try
     logger.Information(
         "Попытка/повторная попытка подписки в основной бекенд запущена Fire And Forget."
     );
-    await Task.Delay(TimeSpan.FromMinutes(1));
+    // await Task.Delay(TimeSpan.FromMinutes(1));
     app.Lifetime.ApplicationStarted.Register(() =>
     {
         _ = Task.Run(async () =>

@@ -65,9 +65,9 @@ public static class PaginationExtractionProcessImplementation
         for (int i = 0; i < links.Length; i++)
         {
             ProcessingParserLink link = links[i];
-            (ProcessingParserLink processingLink, CataloguePageUrl[] pagedUrls) result = await ExtractPaginatedCatalogueUrls(dependencies, link, page, manager);
-            links[i] = result.processingLink;
-            yield return result.pagedUrls;
+            (ProcessingParserLink processingLink, CataloguePageUrl[] pagedUrls) = await ExtractPaginatedCatalogueUrls(dependencies, link, page, manager);
+            links[i] = processingLink;
+            yield return pagedUrls;
         }
     }
     
@@ -143,20 +143,17 @@ public static class PaginationExtractionProcessImplementation
             maxPage = Math.max(...pageNumbersArray);
 
             for (let i = 1; i <= maxPage; i++) {
-                const pagedUrl = currentUrl + '&p=' + i;
-                pagedUrls.push(pagedUrl);
+                let url = new URL(currentUrl);
+                url.searchParams.set('p', i);
+                pagedUrls.push(url.toString());
             }
 
             return { maxPage, pagedUrls };
             })();
             """;
+
         PaginationResult result = await page.EvaluateExpressionAsync<PaginationResult>(javaScript);
-        CataloguePageUrl[] pages =
-        [
-            .. Enumerable
-                .Range(0, result.MaxPage)
-                .Select(p => CataloguePageUrl.New(result.PagedUrls[p])),
-        ];
+        CataloguePageUrl[] pages = [.. result.PagedUrls.Select(CataloguePageUrl.New)];        
         
         dependencies.Logger.Information("Extracted {PageCount} pages for url: {Url}", result.MaxPage, link.Url);
         string pagesLogText = string.Join("\n", pages.Select(p => p.Url));

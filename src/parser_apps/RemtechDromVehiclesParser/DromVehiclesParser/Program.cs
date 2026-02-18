@@ -1,11 +1,9 @@
 using DotNetEnv.Configuration;
 using DromVehiclesParser.DependencyInjection;
-using DromVehiclesParser.RabbitMq.Consumers;
 using ParserSubscriber.SubscribtionContext;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
-using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using Serilog;
 using Serilog.Core;
 
@@ -45,11 +43,7 @@ try
     logger.Information("Логгирование зарегистрировано");
 
     builder.Services.RegisterParserSubscription();
-    logger.Information("Подписка на парсер зарегистрирована");
-
-    builder.Services.AddTransient<IConsumer, StartParserConsumer>();
-    builder.Services.AddHostedService<AggregatedConsumersHostedService>();
-    logger.Information("RabbitMq потребители зарегистрированы");
+    logger.Information("Подписка на парсер зарегистрирована");        
 
     builder.Services.RegisterDependenciesForParsing(isDevelopment);
     logger.Information("Зависимости для парсинга зарегистрированы");

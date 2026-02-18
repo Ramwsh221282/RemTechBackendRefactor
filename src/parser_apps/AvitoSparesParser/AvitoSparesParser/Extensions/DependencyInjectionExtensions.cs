@@ -1,6 +1,8 @@
 ﻿using AvitoSparesParser.Database;
 using AvitoSparesParser.ParserSubscription;
 using AvitoSparesParser.ParsingStages;
+using AvitoSparesParser.RabbitMq.Consumers;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.RabbitMq;
 using Quartz;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -14,7 +16,7 @@ public static class DependencyInjectionExtensions
     extension(IServiceCollection services)
     {
         public void RegisterDependenciesForParsing(bool isDevelopment)
-        {
+        {            
             services.RegisterParserDependencies(isDevelopment);
             services.AddContainedItemsProducer();
             services.AddFinishParserProducer();
@@ -22,6 +24,10 @@ public static class DependencyInjectionExtensions
             services.RegisterParserSubscriptionProcess();
             services.RegisterParserWorkStages();
             services.RegisterTextTransformerBuilder();
+            services.AddScoped<IParserStopper, AvitoSparesParserStopper>();
+            services.AddTransient<IConsumer, ParserStopConsumer>();
+            services.AddTransient<IConsumer, StartParserConsumer>();
+            services.AddHostedService<AggregatedConsumersHostedService>();
         }
 
         public void RegisterInfrastructureDependencies()

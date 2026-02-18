@@ -4,7 +4,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
   <ItemGroup>
     <Using Include="ParsingSDK" />
     <Using Include="AvitoFirewallBypass" />
@@ -12,14 +11,12 @@
     <Using Include="ParsingSDK.TextProcessing" />
     <Using Include="RemTech.SharedKernel.Infrastructure" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="Database\*.sql" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="AvitoFirewallBypass" Version="3.0.0" />
+    <PackageReference Include="AvitoFirewallBypass" Version="3.0.2" />
     <PackageReference Include="ParserSubscriber" Version="3.0.0" />
-    <PackageReference Include="ParsingSDK" Version="3.0.1" />
+    <PackageReference Include="ParsingSDK" Version="3.0.4" />
   </ItemGroup>
 </Project>

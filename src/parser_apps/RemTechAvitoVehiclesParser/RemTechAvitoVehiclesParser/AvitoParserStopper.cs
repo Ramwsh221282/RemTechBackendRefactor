@@ -14,15 +14,40 @@ public sealed class AvitoParserStopper : IParserStopper
     private readonly NpgSqlTransactionSource _transactions;
     private readonly Serilog.ILogger _logger;
 
-    public AvitoParserStopper(NpgSqlSession session, Serilog.ILogger logger)
+    private readonly BrowserManagerProvider _browsers;
+
+    public AvitoParserStopper(
+        NpgSqlSession session, 
+        Serilog.ILogger logger, 
+        BrowserManagerProvider browsers)
     {
         _session = session;
         _transactions = new NpgSqlTransactionSource(session);
         _logger = logger.ForContext<AvitoParserStopper>();
+        _browsers = browsers;
     }
 
     public async Task Stop(string Domain, string Type, CancellationToken ct = default)
     {                
+        BreakParserProcessThread();
+        await ProcessParserFinalizationStageSwitchTransaction(ct);        
+        await CleanParserRemainsResources();
+        _logger.Information("Finalized");
+    }
+
+    private async Task ProcessParserFinalizationStageSwitchTransaction(CancellationToken ct)
+    {
+        await using(_session)
+        {
+            await using ITransactionScope transaction = await _transactions.BeginTransaction(ct);
+            Maybe<ParserWorkStage> stage = await GetCurrentWorkStageProcess(ct);
+            await SwitchToFinalizationStage(stage, ct);
+            await transaction.Commit(ct);
+        }                                
+    }
+
+    private static void BreakParserProcessThread()
+    {
         try
         {
             BrowserManager.ForceKillBrowserProcess();
@@ -31,12 +56,12 @@ public sealed class AvitoParserStopper : IParserStopper
         {
             
         }
+    }
 
-        await using ITransactionScope transaction = await _transactions.BeginTransaction(ct: ct);
-        Maybe<ParserWorkStage> stage = await GetCurrentWorkStageProcess(ct);
-        await SwitchToFinalizationStage(stage, ct);
-        await transaction.Commit(ct);
-        _logger.Information("Finalized");
+    private async Task CleanParserRemainsResources()
+    {
+        BrowserManager manager = _browsers.Provide();
+        await manager.DisposeAsync();
     }
 
     private async Task<Maybe<ParserWorkStage>> GetCurrentWorkStageProcess(CancellationToken ct)
