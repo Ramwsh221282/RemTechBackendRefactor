@@ -5,6 +5,7 @@ using DromVehiclesParser.Parsing.ConcreteItemParsing.Extensions;
 using DromVehiclesParser.Parsing.ConcreteItemParsing.Models;
 using DromVehiclesParser.Parsing.ParsingStages.Database;
 using DromVehiclesParser.Parsing.ParsingStages.Models;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -31,6 +32,13 @@ public static class AdvertisementsExtactingFromitsPageStage
                     return;
                 }
 
+                if (deps.StopState.HasStopBeenRequested())
+                {
+                    await stage.Value.PermanentFinalize(session, transaction, ct);
+                    logger.Information("Stop has been requested. Finishing parser work.");
+                    return;
+                }
+
                 DromCatalogueAdvertisement[] advertisements = await GetCatalogueAdvertisementsForProcessing(session);
                 if (CanSwitchNextStage(advertisements))
                 {
@@ -42,7 +50,7 @@ public static class AdvertisementsExtactingFromitsPageStage
                 await using BrowserManager manager = deps.Browsers.Provide();
                 await using IPage page = await manager.ProvidePage();
                 
-                await ExtractAdvertisementsFromItsPage(advertisements, manager, page, session, logger);
+                await ExtractAdvertisementsFromItsPage(advertisements, manager, page, session, logger, deps.StopState);
                 await FinishTransaction(transaction, logger, ct);
             };
     }
@@ -52,13 +60,20 @@ public static class AdvertisementsExtactingFromitsPageStage
         BrowserManager manager,
         IPage page,
         NpgSqlSession session,
-        Serilog.ILogger logger
+        Serilog.ILogger logger,
+        ParserStopState state
     )
     {
         
         List<DromAdvertisementFromPage> results = [];
         for (int i = 0; i < advertisements.Length; i++)
         {
+            if (state.HasStopBeenRequested())
+            {
+                logger.Information("Stop has been requested. Finishing parser work.");
+                break;
+            }
+
             DromCatalogueAdvertisement advertisement = advertisements[i];
             
             try

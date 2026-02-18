@@ -39,7 +39,7 @@ public sealed class ParsingProcessInvoker(ParsingStageDependencies dependencies)
         }
     }
 
-    private ParsingStage ResolveStage(Maybe<ParserWorkStage> stage)
+    private static ParsingStage ResolveStage(Maybe<ParserWorkStage> stage)
     {
         if (!stage.HasValue) return ParsingStage.Sleep;
         return ParsingStageRouter.ResolveByStageName(stage.Value);

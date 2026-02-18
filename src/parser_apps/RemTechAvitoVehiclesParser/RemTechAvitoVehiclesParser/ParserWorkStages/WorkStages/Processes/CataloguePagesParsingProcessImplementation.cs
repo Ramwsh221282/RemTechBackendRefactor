@@ -1,4 +1,5 @@
 using AvitoFirewallBypass;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -29,6 +30,12 @@ public static class CataloguePagesParsingProcessImplementation
                 {
                     return;
                 }
+
+                if (deps.StopState.HasStopBeenRequested())
+                {
+                    await stage.Value.PermanentFinalize(session, txn, ct);
+                    return;
+                }
                 
                 CataloguePageUrl[] urls = await RetrieveCataloguePagedUrlsFromDb(session);
                 if (urls.Length == 0)
@@ -37,7 +44,7 @@ public static class CataloguePagesParsingProcessImplementation
                     return;
                 }
                 
-                await ProcessExtractionAndPersistance(deps, session, urls);
+                await ProcessExtractionAndPersistance(deps, session, urls, deps.StopState);
                 Result commit = await txn.Commit(ct);
                 if (commit.IsFailure)
                 {
@@ -76,12 +83,22 @@ public static class CataloguePagesParsingProcessImplementation
         return await CataloguePageUrl.GetMany(session, pageUrlQuery);
     }
     
-    private static async Task ProcessExtractionAndPersistance(WorkStageProcessDependencies dependencies, NpgSqlSession session, CataloguePageUrl[] urls)
+    private static async Task ProcessExtractionAndPersistance(
+        WorkStageProcessDependencies dependencies, 
+        NpgSqlSession session, 
+        CataloguePageUrl[] urls,
+        ParserStopState stopState)
     {
         await using BrowserManager manager = dependencies.BrowserManagerProvider.Provide();
         await using IPage page = await manager.ProvidePage();
         await foreach (AvitoVehicle[] items in ExtractCatalogueItems(urls, manager, page, dependencies))
         {
+            if (stopState.HasStopBeenRequested())
+            {
+                dependencies.Logger.Information("Stop requested. Ending processing catalogue pages.");
+                break;
+            }
+
             if (items.Length > 0)
             {
                 await items.PersistAsCatalogueRepresentation(session);

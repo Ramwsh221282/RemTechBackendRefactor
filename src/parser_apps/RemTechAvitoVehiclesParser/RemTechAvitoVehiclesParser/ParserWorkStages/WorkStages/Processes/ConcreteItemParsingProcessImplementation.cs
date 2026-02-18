@@ -1,4 +1,5 @@
 using AvitoFirewallBypass;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -29,6 +30,12 @@ public static class ConcreteItemParsingProcessImplementation
                 {
                     return;
                 }
+
+                if (deps.StopState.HasStopBeenRequested())
+                {
+                    await workStage.Value.PermanentFinalize(session, txn, ct);
+                    return;
+                }
                 
                 AvitoVehicle[] items = await FetchVehiclesFromDb(session, ct);
                 if (items.Length == 0)
@@ -37,7 +44,7 @@ public static class ConcreteItemParsingProcessImplementation
                     return;
                 }
 
-                await ProcessItemParsingAndPersisting(deps, session, items, ct);
+                await ProcessItemParsingAndPersisting(deps, session, items, deps.StopState, ct);
                 await CommitTransaction(txn, deps.Logger, ct);
             };
     }
@@ -55,11 +62,22 @@ public static class ConcreteItemParsingProcessImplementation
         }
     }
     
-    private static async Task ProcessItemParsingAndPersisting(WorkStageProcessDependencies dependencies, NpgSqlSession session, AvitoVehicle[] items, CancellationToken ct)
+    private static async Task ProcessItemParsingAndPersisting(
+        WorkStageProcessDependencies dependencies, 
+        NpgSqlSession session, 
+        AvitoVehicle[] items, 
+        ParserStopState stopState, 
+        CancellationToken ct)
     {
         await using BrowserManager manager = dependencies.BrowserManagerProvider.Provide();        
-        await foreach (AvitoVehicle[] parsedItems in ProcessItemParsing(dependencies, items, manager).WithCancellation(ct))
+        await foreach (AvitoVehicle[] parsedItems in ProcessItemParsing(dependencies, items, manager, stopState).WithCancellation(ct))
         {
+            if (stopState.HasStopBeenRequested())
+            {
+                dependencies.Logger.Information("Stop requested. Ending processing concrete items.");
+                break;
+            }
+
             await parsedItems.UpdateFull(session);
         }
     }
@@ -79,10 +97,16 @@ public static class ConcreteItemParsingProcessImplementation
         logger.Information("Switched to: {Stage}", stage.Name);
     }
 
-    private static async IAsyncEnumerable<AvitoVehicle[]> ProcessItemParsing(WorkStageProcessDependencies dependencies, AvitoVehicle[] items, BrowserManager manager)
+    private static async IAsyncEnumerable<AvitoVehicle[]> ProcessItemParsing(WorkStageProcessDependencies dependencies, AvitoVehicle[] items, BrowserManager manager, ParserStopState stopState)
     {
         for (int i = 0; i < items.Length; i++)
         {
+            if (stopState.HasStopBeenRequested())
+            {
+                dependencies.Logger.Information("Stop requested. Ending processing concrete items.");
+                break;
+            }
+
             AvitoVehicle item = items[i];
             item = await Scraped(manager, dependencies, item);
             items[i] = item;

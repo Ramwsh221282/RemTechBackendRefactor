@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ParsingSDK.Parsing;
 using RabbitMQ.Client;
@@ -11,9 +10,10 @@ public sealed class ParserStopConsumer : IConsumer
 {    
     private readonly Serilog.ILogger _logger;
     private readonly RabbitMqConnectionSource _connectionSource;
-    private readonly IOptions<ParserStopConsumerOptions> _options;
-    private readonly IServiceProvider _services;
+    private readonly IOptions<ParserStopConsumerOptions> _options;    
     private readonly BrowserManagerProvider _provider;
+    private readonly ParserStopState _state;
+
     private IChannel? _channel;
     private AsyncEventingBasicConsumer? _consumer;
     private IChannel Channel => _channel ?? throw new InvalidOperationException($"{nameof(ParserStopConsumer)} channel was not initialized.");
@@ -22,14 +22,14 @@ public sealed class ParserStopConsumer : IConsumer
         Serilog.ILogger logger,
         RabbitMqConnectionSource connectionSource,
         IOptions<ParserStopConsumerOptions> options,
-        IServiceProvider services,
+        ParserStopState state,
         BrowserManagerProvider provider
     )
     {
         _logger = logger.ForContext<ParserStopConsumer>();
         _connectionSource = connectionSource;
         _options = options;
-        _services = services;
+        _state = state;
         _provider = provider;
     }
 
@@ -39,8 +39,7 @@ public sealed class ParserStopConsumer : IConsumer
         try
         {
             ParserStopMessage message = ParserStopMessage.FromDeliverEventArgs(ea);
-            await HandleStopMessage(message);
-            await DestroyBrowser();
+            await HandleStopMessage();            
         }
         catch(Exception ex)
         {
@@ -53,8 +52,7 @@ public sealed class ParserStopConsumer : IConsumer
     };
 
     public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
-    {
-        EnsureParserStopInterfaceImplementationIsRegistered(_services);
+    {        
         ParserStopConsumerOptions value = _options.Value;        
         (string queue, string routingKey) = value.CreateQueueRoutingKeyPair();
         _channel = await TopicConsumerInitialization.InitializeChannel(_connectionSource, "parsers", queue, routingKey, ct);
@@ -73,7 +71,7 @@ public sealed class ParserStopConsumer : IConsumer
         await Channel.BasicConsumeAsync(queue, false, _consumer, cancellationToken: ct);
     }    
 
-    private async Task HandleStopMessage(ParserStopMessage message, int attempts = 10, CancellationToken ct = default)
+    private async Task HandleStopMessage(int attempts = 10, CancellationToken ct = default)
     {
         int currentAttempt = 0;
 
@@ -81,9 +79,7 @@ public sealed class ParserStopConsumer : IConsumer
         {            
             try
             {
-                await using AsyncServiceScope scope = _services.CreateAsyncScope();
-                IParserStopper stopper = scope.ServiceProvider.GetRequiredService<IParserStopper>();
-                await stopper.Stop(message.Domain, message.Type, ct);
+                await _state.RequestStop(ct);
                 break;
             }
             catch(Exception ex)
@@ -93,22 +89,5 @@ public sealed class ParserStopConsumer : IConsumer
                 await Task.Delay(TimeSpan.FromSeconds(5), ct);
             }
         }        
-    }
-
-    private static void EnsureParserStopInterfaceImplementationIsRegistered(IServiceProvider services)
-    {
-        using IServiceScope scope = services.CreateScope();
-        IParserStopper? stopper = scope.ServiceProvider.GetService<IParserStopper>();
-        if (stopper is null)
-        {
-            throw new InvalidOperationException($"{nameof(ParserStopConsumer)} implementation of {nameof(IParserStopper)} is not registered.");
-        }
-    }
-
-    private async Task DestroyBrowser()
-    {
-        BrowserManager browser = _provider.Provide();
-        await browser.DisposeAsync();
-        browser.ReleasePageUsedMemoryResources();
-    }
+    }        
 }

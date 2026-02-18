@@ -1,4 +1,5 @@
 using AvitoFirewallBypass;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using ParsingSDK.RabbitMq;
 using ParsingSDK.TextProcessing;
@@ -13,5 +14,6 @@ public sealed record WorkStageProcessDependencies(
     Serilog.ILogger Logger,
     NpgSqlConnectionFactory NpgSql,
     FinishParserProducer FinishProducer,
-    AddContainedItemProducer AddContainedItemsProducer
+    AddContainedItemProducer AddContainedItemsProducer,
+    ParserStopState StopState
 );

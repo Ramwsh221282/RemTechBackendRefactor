@@ -1,3 +1,4 @@
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using ParsingSDK.RabbitMq;
 using RemTech.SharedKernel.Infrastructure.Database;
@@ -11,6 +12,7 @@ public sealed record ParserStageDependencies(
     BrowserManagerProvider BrowserProvider,
     TextTransformerBuilder TextTransformerBuilder,
     FinishParserProducer FinishProducer,
-    AddContainedItemProducer AddContainedItem
+    AddContainedItemProducer AddContainedItem,
+    ParserStopState StopState
     );
 public delegate Task ParserStageProcess(ParserStageDependencies deps, CancellationToken ct);

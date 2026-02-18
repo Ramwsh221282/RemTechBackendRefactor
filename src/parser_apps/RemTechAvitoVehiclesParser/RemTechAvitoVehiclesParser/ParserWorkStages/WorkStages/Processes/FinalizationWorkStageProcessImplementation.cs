@@ -1,5 +1,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using ParsingSDK.RabbitMq;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -34,7 +35,8 @@ public static class FinalizationWorkStageProcessImplementation
                     out Serilog.ILogger dLogger,
                     out NpgSqlConnectionFactory npgSql,
                     out FinishParserProducer finishProducer,
-                    out AddContainedItemProducer addProducer
+                    out AddContainedItemProducer addProducer,
+                    out ParserStopState state
                 );
 
                 Serilog.ILogger logger = dLogger.ForContext<WorkStageProcess>();
@@ -46,7 +48,7 @@ public static class FinalizationWorkStageProcessImplementation
                 if (!stage.HasValue)
                 {
                     return;
-                }
+                }                
 
                 AvitoVehicle[] items = await GetFinalizationItems(session, logger, ct);
                 if (CanFinalize(items))

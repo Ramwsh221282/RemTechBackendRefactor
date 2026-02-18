@@ -2,6 +2,7 @@ using AvitoSparesParser.AvitoSpareContext;
 using AvitoSparesParser.AvitoSpareContext.Extensions;
 using AvitoSparesParser.Commands.ExtractConcretePageItem;
 using AvitoSparesParser.ParsingStages.Extensions;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -25,7 +26,15 @@ public static class ConcreteItemExtractingProcess
 
                 Maybe<ParsingStage> stage = await GetConcreteItemsStage(session, ct);
                 if (!stage.HasValue)
+                {
                     return;
+                }
+
+                if (deps.StopState.HasStopBeenRequested())
+                {
+                    await stage.Value.PermanentFinalize(session, scope, ct);
+                    return;
+                }
 
                 AvitoSpare[] catalogueSpares = await GetAvitoCatalogueItems(session, ct);
                 if (CanSwitchNextStage(catalogueSpares))
@@ -37,7 +46,7 @@ public static class ConcreteItemExtractingProcess
 
                 await using (BrowserManager manager = deps.BrowserProvider.Provide())
                 {
-                    await ProcessConcreteItemsExtraction(catalogueSpares, manager, deps, session);
+                    await ProcessConcreteItemsExtraction(catalogueSpares, manager, deps, session, deps.StopState);
                 }
 
                 await FinishTransaction(scope, logger, ct);
@@ -85,10 +94,15 @@ public static class ConcreteItemExtractingProcess
         logger.Information("Switched to {Stage} stage.", finalization.Name);
     }
 
-    private static async Task ProcessConcreteItemsExtraction(AvitoSpare[] spares, BrowserManager manager, ParserStageDependencies deps, NpgSqlSession session)
+    private static async Task ProcessConcreteItemsExtraction(AvitoSpare[] spares, BrowserManager manager, ParserStageDependencies deps, NpgSqlSession session, ParserStopState state)
     {
         for (int i = 0; i < spares.Length; i++)
         {
+            if (state.HasStopBeenRequested())
+            {
+                break;
+            }
+
             spares[i] = await ExtractConcreteSpareFromCatalogueSpare(spares[i], manager, deps.Logger, deps.Bypasses);
         }
 

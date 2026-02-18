@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup>
-    <Version>3.0.4</Version>
+    <Version>3.0.5</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DotNetEnv" Version="3.1.1" />

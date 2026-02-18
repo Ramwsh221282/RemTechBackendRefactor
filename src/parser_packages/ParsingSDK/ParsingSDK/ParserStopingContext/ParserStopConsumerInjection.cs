@@ -14,6 +14,7 @@ public static class ParserStopConsumerInjection
             }
 
             services.AddOptions<ParserStopConsumerOptions>().BindConfiguration(nameof(ParserStopConsumerOptions));            
+            services.AddSingleton<ParserStopState>();
         }
     }
 }

@@ -14,8 +14,7 @@ public static class DependenciesForParsingInjection
     extension(IServiceCollection services)
     {
         public void RegisterDependenciesForParsing(bool isDevelopment)
-        {
-            services.AddScoped<IParserStopper, DromParserStopper>();
+        {            
             services.AddContainedItemsProducer();
             services.AddFinishParserProducer();
             services.RegisterTextTransformerBuilder();

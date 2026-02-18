@@ -30,6 +30,13 @@ public static class PaginationExtractionProcessImplementation
                     return;
                 }
 
+                if (deps.StopState.HasStopBeenRequested())
+                {
+                    logger.Information("Stop requested. Finalizing stage.");
+                    await stage.Value.PermanentFinalize(session, txn, ct);
+                    return;
+                }
+
                 ProcessingParserLink[] links = await GetProcessingParserLinksFromDb(session, ct);
                 if (links.Length == 0)
                 {

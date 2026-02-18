@@ -1,4 +1,5 @@
-﻿using ParsingSDK.Parsing;
+﻿using ParsingSDK.ParserStopingContext;
+using ParsingSDK.Parsing;
 using ParsingSDK.RabbitMq;
 using RemTech.SharedKernel.Infrastructure.Database;
 
@@ -9,5 +10,6 @@ public sealed record ParsingStageDependencies(
     NpgSqlConnectionFactory NpgSql, 
     Serilog.ILogger Logger,
     FinishParserProducer FinishProducer,
-    AddContainedItemProducer AddContainedItemProducer
+    AddContainedItemProducer AddContainedItemProducer,
+    ParserStopState StopState
 );

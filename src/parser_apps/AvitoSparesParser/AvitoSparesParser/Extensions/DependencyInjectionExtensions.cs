@@ -23,8 +23,7 @@ public static class DependencyInjectionExtensions
             services.RegisterAvitoFirewallBypass();
             services.RegisterParserSubscriptionProcess();
             services.RegisterParserWorkStages();
-            services.RegisterTextTransformerBuilder();
-            services.AddScoped<IParserStopper, AvitoSparesParserStopper>();
+            services.RegisterTextTransformerBuilder();            
             services.AddTransient<IConsumer, ParserStopConsumer>();
             services.AddTransient<IConsumer, StartParserConsumer>();
             services.AddHostedService<AggregatedConsumersHostedService>();

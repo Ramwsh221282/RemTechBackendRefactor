@@ -14,8 +14,7 @@ public static class ParserDependenciesInjection
     extension(IServiceCollection services)
     {
         public void RegisterDependenciesForParsing(bool isDevelopment)
-        {
-            services.AddScoped<IParserStopper, AvitoParserStopper>();
+        {            
             services.RegisterParserDependencies(isDevelopment);
             services.RegisterParserWorkStagesContext();
             services.RegisterParserSubscription();

@@ -3,6 +3,7 @@ using AvitoSparesParser.CatalogueParsing.Extensions;
 using AvitoSparesParser.ParserStartConfiguration;
 using AvitoSparesParser.ParserStartConfiguration.Extensions;
 using AvitoSparesParser.ParsingStages.Extensions;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -25,8 +26,9 @@ public static class CataloguePagesCollectingProcess
                     out BrowserManagerProvider browsers,
                     out _,
                     out _,
-                    out _
-                );
+                    out _,
+                    out ParserStopState stopState
+                );                
 
                 Serilog.ILogger logger = dLogger.ForContext<ParserStageProcess>();
                 await using NpgSqlSession session = new(npgSql);
@@ -35,7 +37,15 @@ public static class CataloguePagesCollectingProcess
 
                 Maybe<ParsingStage> stage = await GetPaginationStage(session, ct);
                 if (!stage.HasValue)
+                {
                     return;
+                }
+
+                if (stopState.HasStopBeenRequested())
+                {
+                    await stage.Value.PermanentFinalize(session, scope, ct);
+                    return;
+                }
 
                 ProcessingParserLink[] links = await GetParserLinksForPagedUrlsExtraction(
                     session,
@@ -52,7 +62,7 @@ public static class CataloguePagesCollectingProcess
                 {
                     await using (IPage page = await manager.ProvidePage())
                     {
-                        await ProcessPagedUrlExtraction(links, manager, page, factory, session, logger);
+                        await ProcessPagedUrlExtraction(links, manager, page, factory, session, logger, stopState);
                     }
                 }
                 
@@ -111,11 +121,17 @@ public static class CataloguePagesCollectingProcess
         IPage browserPage,
         AvitoBypassFactory bypassFactory,
         NpgSqlSession session,
-        Serilog.ILogger logger
+        Serilog.ILogger logger,
+        ParserStopState stopState
     )
     {
         foreach (ProcessingParserLink link in links)
         {
+            if (stopState.HasStopBeenRequested())
+            {                
+                break;
+            }
+
             try
             {
                 await ProcessPagedUrlExtractionFromParserLink(

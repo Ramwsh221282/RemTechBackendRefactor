@@ -4,6 +4,7 @@ using DromVehiclesParser.Parsing.CatalogueParsing.Extensions;
 using DromVehiclesParser.Parsing.CatalogueParsing.Models;
 using DromVehiclesParser.Parsing.ParsingStages.Database;
 using DromVehiclesParser.Parsing.ParsingStages.Models;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -32,6 +33,13 @@ public static class CatalogueAdvertisementsExtractingStage
                     return;
                 }
 
+                if (deps.StopState.HasStopBeenRequested())
+                {
+                    await stage.Value.PermanentFinalize(session, transaction, ct);
+                    logger.Information("Stop has been requested. Finishing parser work.");
+                    return;
+                }
+
                 DromCataloguePage[] pages = await GetCataloguePages(session, ct);
                 if (CanSwitchNextStage(pages))
                 {
@@ -40,26 +48,30 @@ public static class CatalogueAdvertisementsExtractingStage
                     return;
                 }
 
-                await using BrowserManager manager = deps.Browsers.Provide();
-                await using IPage page = await manager.ProvidePage();
-                
-                await ExtractCatalogueAdvertisements(pages, manager, page, session, logger);
+                await using BrowserManager manager = deps.Browsers.Provide();                                
+                await ExtractCatalogueAdvertisements(pages, manager, session, logger, deps.StopState);
                 await FinishTransaction(transaction, logger, ct);
             };
     }
 
     private static async Task ExtractCatalogueAdvertisements(
         DromCataloguePage[] pages,
-        BrowserManager manager,
-        IPage page,
+        BrowserManager manager,        
         NpgSqlSession session,
-        Serilog.ILogger logger
+        Serilog.ILogger logger,
+        ParserStopState state
     )
     {
         for (int i = 0; i < pages.Length; i++)
         {
+            if (state.HasStopBeenRequested())
+            {
+                logger.Information("Stop has been requested. Finishing parser work.");
+                break;
+            }
+
             DromCataloguePage dromCataloguePage = pages[i];
-            pages[i] = await ProcessExtraction(manager, page, logger, dromCataloguePage, session);
+            pages[i] = await ProcessExtraction(manager, logger, dromCataloguePage, session);
             await Task.Delay(TimeSpan.FromSeconds(5));
         }
         
@@ -67,31 +79,34 @@ public static class CatalogueAdvertisementsExtractingStage
     }
 
     private static async Task<DromCataloguePage> ProcessExtraction(
-        BrowserManager manager,
-        IPage webPage,
+        BrowserManager manager,        
         Serilog.ILogger logger,
         DromCataloguePage page,
         NpgSqlSession session
     )
     {
-        IExtractAdvertisementsFromCatalogueCommand extractCommand = new ExtractAdvertisementsFromCatalogueCommand(webPage)
-            .UseLogging(logger)
-            .UseResilience(manager, webPage);
-            
-        IHoverAdvertisementsCatalogueImagesCommand hoverCommand = new HoverAdvertisementsCatalogueImagesCommand(webPage)
-            .UseLogging(logger)
-            .UseResilience(manager, webPage);
-        
-        try
+        int attempts = 5;
+        int currentAttempts = 0;
+        while(attempts < currentAttempts)
         {
-            DromCatalogueAdvertisement[] advertisements = await extractCommand.Extract(page, hoverCommand);
-            await advertisements.PersistMany(session);
-            return page.MarkProcessed();
+            await using IPage webPage = await manager.ProvidePage();
+            ExtractAdvertisementsFromCatalogueCommand extract = new(webPage);
+            HoverAdvertisementsCatalogueImagesCommand hover = new(webPage);
+
+            try
+            {
+                DromCatalogueAdvertisement[] advertisements = await extract.UseLogging(logger).Extract(page, hover.UseLogging(logger));
+                await advertisements.PersistMany(session);
+                return page.MarkProcessed();
+            }
+            catch(Exception)
+            {
+                logger.Warning("Ошибка при извлечении объявлений с страницы {Url}. Попытка номер {Attempt}", page.Url, currentAttempts + 1);
+                currentAttempts++;
+            }
         }
-        catch (Exception)
-        {
-            return page.IncreaseRetryCount();
-        }
+
+        return page.IncreaseRetryCount();
     }
 
     private static async Task FinishTransaction(

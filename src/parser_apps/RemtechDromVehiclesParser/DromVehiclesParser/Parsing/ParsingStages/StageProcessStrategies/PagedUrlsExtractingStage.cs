@@ -31,6 +31,13 @@ public static class PagedUrlsExtractingStage
                     return;
                 }
 
+                if (deps.StopState.HasStopBeenRequested())
+                {
+                    await stage.Value.PermanentFinalize(session, transaction, ct);
+                    logger.Information("Stop has been requested. Finishing parser work.");
+                    return;
+                }
+
                 WorkingParserLink[] links = await GetParserLinksForPaginationUrlsExtraction(session, ct);
                 if (CanSwitchNextStage(links))
                 {

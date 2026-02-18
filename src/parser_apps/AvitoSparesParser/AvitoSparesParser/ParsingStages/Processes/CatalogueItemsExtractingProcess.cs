@@ -5,6 +5,7 @@ using AvitoSparesParser.CatalogueParsing.Extensions;
 using AvitoSparesParser.Commands.ExtractCataloguePageItems;
 using AvitoSparesParser.Common;
 using AvitoSparesParser.ParsingStages.Extensions;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
@@ -23,11 +24,17 @@ public static class CatalogueItemsExtractingProcess
                 Serilog.ILogger logger = deps.Logger.ForContext<ParserStageProcess>();
                 await using NpgSqlSession session = new(deps.NpgSql);
                 NpgSqlTransactionSource source = new(session);
-                await using ITransactionScope scope = await source.BeginTransaction(ct);
+                await using ITransactionScope scope = await source.BeginTransaction(ct);                
 
                 Maybe<ParsingStage> stage = await GetCatalogueStage(session, ct);
                 if (!stage.HasValue)
                 {
+                    return;
+                }
+
+                if (deps.StopState.HasStopBeenRequested())
+                {
+                    await stage.Value.PermanentFinalize(session, scope, ct);
                     return;
                 }
 
@@ -43,7 +50,7 @@ public static class CatalogueItemsExtractingProcess
                 {
                     await using (IPage page = await manager.ProvidePage())
                     {
-                        await ExtractCataloguePageItems(pages, logger, manager, page, deps.Bypasses, session);
+                        await ExtractCataloguePageItems(pages, logger, manager, page, deps.Bypasses, deps.StopState, session);
                     }
                 }
                 
@@ -71,11 +78,17 @@ public static class CatalogueItemsExtractingProcess
         BrowserManager manager,
         IPage browserPage,
         AvitoBypassFactory bypass,
+        ParserStopState stopState,
         NpgSqlSession session
     )
     {
         foreach (AvitoCataloguePage cataloguePage in pages)
         {
+            if (stopState.HasStopBeenRequested())
+            {                
+                break;
+            }
+
             try
             {
                 IExtractCataloguePagesItemCommand command = new ExtractCataloguePagesItemCommand(browserPage, bypass)
