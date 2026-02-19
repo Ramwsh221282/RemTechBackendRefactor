@@ -7,10 +7,10 @@ using RemTech.SharedKernel.Infrastructure.RabbitMq;
 namespace ParsingSDK.ParserStopingContext;
 
 public sealed class ParserStopConsumer : IConsumer
-{    
+{
     private readonly Serilog.ILogger _logger;
     private readonly RabbitMqConnectionSource _connectionSource;
-    private readonly IOptions<ParserStopConsumerOptions> _options;    
+    private readonly IOptions<ParserStopConsumerOptions> _options;
     private readonly BrowserManagerProvider _provider;
     private readonly ParserStopState _state;
 
@@ -39,9 +39,9 @@ public sealed class ParserStopConsumer : IConsumer
         try
         {
             ParserStopMessage message = ParserStopMessage.FromDeliverEventArgs(ea);
-            await HandleStopMessage();            
+            await HandleStopMessage();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.Fatal(ex, "Error at handling: {message}", nameof(ParserStopMessage));
         }
@@ -52,15 +52,15 @@ public sealed class ParserStopConsumer : IConsumer
     };
 
     public async Task InitializeChannel(IConnection connection, CancellationToken ct = default)
-    {        
-        ParserStopConsumerOptions value = _options.Value;        
+    {
+        ParserStopConsumerOptions value = _options.Value;
         (string queue, string routingKey) = value.CreateQueueRoutingKeyPair();
         _channel = await TopicConsumerInitialization.InitializeChannel(_connectionSource, "parsers", queue, routingKey, ct);
     }
 
     public Task Shutdown(CancellationToken ct = default)
     {
-        return Channel.CloseAsync(cancellationToken: ct);        
+        return Channel.CloseAsync(cancellationToken: ct);
     }
 
     public async Task StartConsuming(CancellationToken ct = default)
@@ -69,25 +69,17 @@ public sealed class ParserStopConsumer : IConsumer
         _consumer.ReceivedAsync += ConsumeHandle;
         (string queue, _) = _options.Value.CreateQueueRoutingKeyPair();
         await Channel.BasicConsumeAsync(queue, false, _consumer, cancellationToken: ct);
-    }    
+    }
 
-    private async Task HandleStopMessage(int attempts = 10, CancellationToken ct = default)
+    private async Task HandleStopMessage(CancellationToken ct = default)
     {
-        int currentAttempt = 0;
+        if (_state.HasStopBeenRequested())
+        {
+            _logger.Warning("Stop has already been requested. Ignoring message.");
+            return;
+        }
 
-        while (currentAttempt <= attempts)
-        {            
-            try
-            {
-                await _state.RequestStop(ct);
-                break;
-            }
-            catch(Exception ex)
-            {
-                currentAttempt++;
-                _logger.Error(ex, "Error at stopping parser work. Attempt: {attempt}.", currentAttempt);                
-                await Task.Delay(TimeSpan.FromSeconds(5), ct);
-            }
-        }        
-    }        
+        await _state.RequestStop(ct);
+        _logger.Information("Stop requested. Attempting to stop browser manager.");
+    }
 }

@@ -31,6 +31,13 @@ public sealed class ParsingProcessInvoker(ParsingStageDependencies dependencies,
             return;
         }
 
+        if (Dependencies.StopState.HasStopBeenRequested())
+        {
+            await stage.Value.PermanentFinalize(session, Dependencies.StopState, ct);            
+            Dependencies.Logger.Information("Stop has been requested. Finishing parser work.");
+            return;
+        }
+
         if (!await EnsureHasWorkingParsers(session, ct))
         {
             Dependencies.Logger.Information("No working parsers detected. Not invoking parser process.");

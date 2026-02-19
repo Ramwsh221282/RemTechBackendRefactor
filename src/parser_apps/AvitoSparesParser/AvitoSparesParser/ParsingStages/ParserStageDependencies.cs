@@ -5,16 +5,14 @@ using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.ParsingStages;
 
-public sealed record ParserStageDependencies(
-    NpgSqlConnectionFactory NpgSql,
+public sealed record ParserStageDependencies(    
     Serilog.ILogger Logger,
     AvitoBypassFactory Bypasses,
     BrowserManagerProvider BrowserProvider,
     TextTransformerBuilder TextTransformerBuilder,
     FinishParserProducer FinishProducer,
     AddContainedItemProducer AddContainedItem,
-    ParserStopState StopState
-    );
+    ParserStopState StopState);
     
 public delegate Task ParserStageProcess(
     ParserStageDependencies deps, 

@@ -71,43 +71,65 @@ public static class ConcreteItemExtractingProcess
         NpgSqlSession session, 
         ParserStopState state)
     {
+        List<AvitoSpare> processedSpares = [];
+        List<AvitoSpare> sparesForDelete = [];
         for (int i = 0; i < spares.Length; i++)
         {
             if (state.HasStopBeenRequested())
             {
                 break;
             }
-
-            spares[i] = await ExtractConcreteSpareFromCatalogueSpare(spares[i], manager, deps.Logger, deps.Bypasses);
+            
+            (AvitoSpare processed, bool forDelete) = await ExtractConcreteSpareFromCatalogueSpare(spares[i], manager, deps.Logger, deps.Bypasses, state);
+            if (forDelete)
+            {
+                sparesForDelete.Add(processed);
+            }
+            else
+            {
+                processedSpares.Add(processed);
+            }            
         }
 
-        await spares.PersistAsConcreteRepresentationMany(session);
+        await processedSpares.PersistAsConcreteRepresentationMany(session);
+        await sparesForDelete.DeleteMany(session);        
     }
 
-    private static async Task<AvitoSpare> ExtractConcreteSpareFromCatalogueSpare(
+    private static async Task<(AvitoSpare spare, bool forDelete)> ExtractConcreteSpareFromCatalogueSpare(
         AvitoSpare spare, 
         BrowserManager manager, 
         ILogger logger, 
-        AvitoBypassFactory bypass)
+        AvitoBypassFactory bypass,        
+        ParserStopState state)
     {                
         int attempts = 0;
-        int currentAttempt = 5;
+        int currentAttempt = 5;        
         while (attempts < currentAttempt)
         {
+            if (state.HasStopBeenRequested())
+            {
+                break;
+            }
+
             await using IPage page = await manager.ProvidePage();
             ExtractConcretePageItemCommand command = new(page, bypass);
             try
             {
                 AvitoSpare result = await command.UseLogging(logger).Extract(spare);
-                return result.MarkProcessed();
+                return (result.MarkProcessed(), false);
             }
-            catch (Exception)
-            {
+            catch (Exception ex)
+            {                
+                if (ex.Message.Contains("Not all properties set."))
+                {                    
+                    return (spare, true);
+                }
+
                 attempts++;
                 logger.Warning("Attempt {Attempt} of {TotalAttempts} failed for spare with id: {SpareId}", attempts, currentAttempt, spare.Id);
             }
         }
 
-        return spare.IncreaseRetryAmount();
+        return (spare.IncreaseRetryAmount(), false);
     }    
 }

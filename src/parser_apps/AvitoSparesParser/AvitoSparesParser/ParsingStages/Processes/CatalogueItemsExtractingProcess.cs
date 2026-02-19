@@ -34,51 +34,64 @@ public static class CatalogueItemsExtractingProcess
                     return;
                 }
 
-                await using BrowserManager manager = deps.BrowserProvider.Provide();
-                await using IPage page = await manager.ProvidePage();
-                await ExtractCataloguePageItems(pages, logger, manager, page, deps.Bypasses, deps.StopState, session);
+                await using BrowserManager manager = deps.BrowserProvider.Provide();                
+                await ExtractCataloguePageItems(pages, logger, manager, deps.Bypasses, deps.StopState, session);
+                await pages.UpdateMany(session);
             };
     }    
 
     private static async Task ExtractCataloguePageItems(
         AvitoCataloguePage[] pages,
         Serilog.ILogger logger,
-        BrowserManager manager,
-        IPage browserPage,
+        BrowserManager manager,        
         AvitoBypassFactory bypass,
         ParserStopState stopState,
         NpgSqlSession session
     )
-    {
+    {        
         foreach (AvitoCataloguePage cataloguePage in pages)
-        {
+        {            
             if (stopState.HasStopBeenRequested())
             {                
                 break;
             }
-
             try
-            {
-                IExtractCataloguePagesItemCommand command = new ExtractCataloguePagesItemCommand(browserPage, bypass)
-                    .UseLogging(logger);
-                await ProcessExtraction(command, cataloguePage, session);
-                cataloguePage.Marker.MarkProcessed();
+            {                
+                AvitoSpare[] items = await ProcessExtraction(manager, logger, bypass, cataloguePage, stopState);
+                await items.PersistAsCatalogueRepresentationMany(session);
+                cataloguePage.Marker.MarkProcessed();                
             }
             catch(Exception)
             {
                 cataloguePage.Counter.Increase();
-                browserPage = await manager.RecreatePage(browserPage);
                 manager.ReleasePageUsedMemoryResources();
-            }
-        }
-
-        await pages.UpdateMany(session);
+            }            
+        }        
     }
 
-    private static async Task ProcessExtraction(IExtractCataloguePagesItemCommand command, AvitoCataloguePage page, NpgSqlSession session)
+    private static async Task<AvitoSpare[]> ProcessExtraction(
+        BrowserManager manager, 
+        Serilog.ILogger logger, 
+        AvitoBypassFactory bypass, 
+        AvitoCataloguePage page,
+        ParserStopState state)
     {
-        AvitoSpare[] items = await command.Extract(page);
-        await items.PersistAsCatalogueRepresentationMany(session);
+        if (state.HasStopBeenRequested())
+        {
+            return [];
+        }
+
+        IPage browserPage = await manager.ProvidePage();        
+        try
+        {
+            ExtractCataloguePagesItemCommand command = new(browserPage, bypass);                    
+            AvitoSpare[] items = await command.UseLogging(logger).Extract(page);
+            return items;
+        }
+        finally
+        {
+            await browserPage.DisposeAsync();
+        }                                
     }    
 
     private static async Task<AvitoCataloguePage[]> GetPaginatedUrls(NpgSqlSession session, CancellationToken ct)

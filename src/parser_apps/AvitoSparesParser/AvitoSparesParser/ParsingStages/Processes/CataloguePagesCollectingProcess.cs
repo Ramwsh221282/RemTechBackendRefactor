@@ -7,7 +7,6 @@ using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.ParsingStages.Processes;
@@ -19,8 +18,7 @@ public static class CataloguePagesCollectingProcess
         public static ParserStageProcess Pagination =>
             async (deps, stage, session, ct) =>
             {
-                deps.Deconstruct(
-                    out NpgSqlConnectionFactory npgSql,
+                deps.Deconstruct(                    
                     out Serilog.ILogger dLogger,
                     out AvitoBypassFactory factory,
                     out BrowserManagerProvider browsers,
@@ -131,16 +129,7 @@ public static class CataloguePagesCollectingProcess
     {
         AvitoCataloguePage[] pages = await ExtractPagination(page, bypass, link.Url, logger);
         await pages.AddMany(session);
-    }
-
-    private static async Task FinishTransaction(ITransactionScope scope, Serilog.ILogger logger, CancellationToken ct)
-    {
-        Result commit = await scope.Commit(ct);
-        if (commit.IsFailure)
-        {
-            logger.Error(commit.Error, "Failed to commit transaction.");
-        }
-    }
+    }    
 
     private static async Task<AvitoCataloguePage[]> ExtractPagination(
         IPage page,

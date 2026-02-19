@@ -1,6 +1,4 @@
-﻿using System.Text.Encodings.Web;
-using System.Text.Json;
-using Dapper;
+﻿using Dapper;
 using DromVehiclesParser.Parsers.Database;
 using DromVehiclesParser.Parsers.Models;
 using DromVehiclesParser.Parsing.ConcreteItemParsing.Extensions;
@@ -10,8 +8,9 @@ using DromVehiclesParser.Parsing.ParsingStages.Models;
 using ParsingSDK.Parsing;
 using ParsingSDK.RabbitMq;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 
 namespace DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
 

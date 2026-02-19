@@ -10,11 +10,11 @@ namespace AvitoSparesParser.ParsingStages;
 
 [DisallowConcurrentExecution]
 [CronSchedule("*/5 * * * * ?")]
-public sealed class ParsingStageBackgroundInvoker(ParserStageDependencies dependencies) : ICronScheduleJob
+public sealed class ParsingStageBackgroundInvoker(ParserStageDependencies dependencies, NpgSqlConnectionFactory npgsql) : ICronScheduleJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
-        await using NpgSqlSession session = new(dependencies.NpgSql);
+        await using NpgSqlSession session = new(npgsql);
         NpgSqlTransactionSource transactionSource = new(session);
         await using ITransactionScope transaction = await transactionSource.BeginTransaction(context.CancellationToken);
         Maybe<ParsingStage> stage = await GetStage(session, context.CancellationToken);

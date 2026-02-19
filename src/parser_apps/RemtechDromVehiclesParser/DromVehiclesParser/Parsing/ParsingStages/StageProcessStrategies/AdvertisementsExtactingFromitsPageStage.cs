@@ -26,7 +26,7 @@ public static class AdvertisementsExtactingFromitsPageStage
                 Serilog.ILogger logger = deps.Logger.ForContext<ParsingStage>();                                                                
                 if (deps.StopState.HasStopBeenRequested())
                 {
-                    await stage.PermanentFinalize(session, ct);
+                    await stage.PermanentFinalize(session, deps.StopState, ct);                    
                     logger.Information("Stop has been requested. Finishing parser work.");
                     return;
                 }

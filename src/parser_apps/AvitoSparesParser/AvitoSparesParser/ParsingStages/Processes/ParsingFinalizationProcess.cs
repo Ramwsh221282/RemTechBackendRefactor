@@ -10,7 +10,6 @@ using AvitoSparesParser.ParsingStages.Extensions;
 using ParsingSDK.Parsing;
 using ParsingSDK.RabbitMq;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.ParsingStages.Processes;
@@ -26,8 +25,7 @@ public static class ParsingFinalizationProcess
     {
         public static ParserStageProcess Finalization =>
             async (deps, stage, session, ct) =>
-            {
-                NpgSqlConnectionFactory npgSql = deps.NpgSql;
+            {                
                 Serilog.ILogger logger = deps.Logger;
                 FinishParserProducer finishProducer = deps.FinishProducer;
                 AddContainedItemProducer addProducer = deps.AddContainedItem;                
@@ -110,20 +108,7 @@ public static class ParsingFinalizationProcess
         long elapsed = parser.Finish().TotalElapsedSeconds();
         await finishProducer.Publish(new FinishParserMessage(id, elapsed), ct);
         logger.Information("Finished parser {Id} in {Elapsed} seconds.", id, elapsed);
-    }
-
-    private static async Task FinishTransaction(
-        ITransactionScope scope,
-        Serilog.ILogger logger,
-        CancellationToken ct
-    )
-    {
-        Result commit = await scope.Commit(ct);
-        if (commit.IsFailure)
-        {
-            logger.Error(commit.Error, "Failed to commit transaction.");
-        }
-    }
+    }    
 
     private static async Task SendResultsToMainBackend(
         AvitoSpare[] spares,
