@@ -21,7 +21,7 @@ public static class ConcreteItemParsingProcessImplementation
                 deps.Logger.Information("Concrete items stage");                                
                 if (deps.StopState.HasStopBeenRequested())
                 {
-                    await stage.PermanentFinalize(session, ct);
+                    await stage.PermanentFinalize(session, deps.StopState, ct);
                     return;
                 }
                 
@@ -58,7 +58,7 @@ public static class ConcreteItemParsingProcessImplementation
     
     private static async Task<AvitoVehicle[]> FetchVehiclesFromDb(NpgSqlSession session, CancellationToken ct)
     {
-        AvitoItemQuery itemsQuery = new(UnprocessedOnly: true, Limit: 50, RetryCount: 10, CatalogueOnly: true);
+        AvitoItemQuery itemsQuery = new(UnprocessedOnly: true, Limit: 50, RetryCount: 9, CatalogueOnly: true);
         AvitoVehicle[] items = await AvitoVehicle.GetAsCatalogueRepresentation(session, itemsQuery, ct: ct);
         return items;
     }
@@ -104,17 +104,21 @@ public static class ConcreteItemParsingProcessImplementation
         int currentAttempt = 0;
         while(currentAttempt < attempts)
         {
-            await using IPage page = await manager.ProvidePage();
+            IPage page = await manager.ProvidePage();
             ExtractConcreteItemCommand command = new(page, vehicle, bypasses);        
             try
             {
                 AvitoVehicle result = await command.UseLogging(logger).Handle();    
                 return result.MarkProcessed();
-            }
+            }            
             catch(Exception)
             {
                 currentAttempt++;
             }                        
+            finally
+            {
+                await page.DisposeAsync();                
+            }            
         }        
 
         logger.Error("Error at extracting concrete item {Url}", vehicle.CatalogueRepresentation.Url);                        

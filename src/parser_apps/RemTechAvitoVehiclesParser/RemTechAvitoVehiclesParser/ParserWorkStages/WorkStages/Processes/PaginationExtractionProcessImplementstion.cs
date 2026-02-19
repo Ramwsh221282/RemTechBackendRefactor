@@ -22,7 +22,7 @@ public static class PaginationExtractionProcessImplementation
                 if (deps.StopState.HasStopBeenRequested())
                 {
                     logger.Information("Stop requested. Finalizing stage.");
-                    await stage.PermanentFinalize(session, ct);
+                    await stage.PermanentFinalize(session, deps.StopState, ct);
                     return;
                 }
 

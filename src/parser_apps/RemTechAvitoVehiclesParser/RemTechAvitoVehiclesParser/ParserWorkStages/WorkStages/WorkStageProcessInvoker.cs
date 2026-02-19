@@ -26,7 +26,7 @@ public sealed class WorkStageProcessInvoker(WorkStageProcessDependencies deps, N
 
         if (deps.StopState.HasStopBeenRequested())
         {
-            await workStage.Value.PermanentFinalize(session, context.CancellationToken);
+            await workStage.Value.PermanentFinalize(session, deps.StopState, context.CancellationToken);
             return;
         }
 

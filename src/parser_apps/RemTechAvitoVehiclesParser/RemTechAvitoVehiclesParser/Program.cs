@@ -56,14 +56,17 @@ try
     {
         c.WaitForJobsToComplete = true;
         c.StartDelay = TimeSpan.FromSeconds(10);
-    });
+    });    
 
     WebApplication app = builder.Build();
 
-    logger.Information(
-        "Попытка/повторная попытка подписки в основной бекенд запущена Fire And Forget."
-    );
-    await Task.Delay(TimeSpan.FromMinutes(1));
+    if (!isDevelopment)
+    {
+        logger.Information("Ожидание 1 минуты перед запуском подписки в основной бекенд для обеспечения его готовности.");
+        await Task.Delay(TimeSpan.FromMinutes(1));
+    }
+
+    logger.Information("Попытка/повторная попытка подписки в основной бекенд запущена Fire And Forget.");    
     app.Lifetime.ApplicationStarted.Register(() =>
     {
         _ = Task.Run(async () =>

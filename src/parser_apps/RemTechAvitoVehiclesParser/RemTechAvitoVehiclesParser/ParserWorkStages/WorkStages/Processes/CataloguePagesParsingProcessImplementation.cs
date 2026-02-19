@@ -26,7 +26,7 @@ public static class CataloguePagesParsingProcessImplementation
             {                                                             
                 if (deps.StopState.HasStopBeenRequested())
                 {
-                    await stage.PermanentFinalize(session, ct);
+                    await stage.PermanentFinalize(session, deps.StopState, ct);
                     return;
                 }
                 
