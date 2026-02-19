@@ -5,6 +5,8 @@ using DromVehiclesParser.Parsing.ParsingStages.Models;
 using DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
 using ParsingSDK.Parsing;
 using Quartz;
+using RemTech.SharedKernel.Core.FunctionExtensionsModule;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.Quartz;
 
@@ -12,26 +14,35 @@ namespace DromVehiclesParser.Parsing.ParsingStages;
 
 [DisallowConcurrentExecution]
 [CronSchedule("*/5 * * * * ?")]
-public sealed class ParsingProcessInvoker(ParsingStageDependencies dependencies) : ICronScheduleJob
+public sealed class ParsingProcessInvoker(ParsingStageDependencies dependencies, NpgSqlConnectionFactory npgsql) : ICronScheduleJob
 {
     private ParsingStageDependencies Dependencies { get; } = dependencies;
     
     public async Task Execute(IJobExecutionContext context)
     {
+        await using NpgSqlSession session = new(npgsql);
+        NpgSqlTransactionSource transactionSource = new(session);        
         CancellationToken ct = context.CancellationToken;
-        if (!await EnsureHasWorkingParsers(ct))
+        await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);        
+        Maybe<ParserWorkStage> stage = await GetCurrentParsingStage(session, ct);
+        if (!stage.HasValue)        
+        {
+            Dependencies.Logger.Information("No active parsing stage found. Not invoking parser process.");
+            return;
+        }
+
+        if (!await EnsureHasWorkingParsers(session, ct))
         {
             Dependencies.Logger.Information("No working parsers detected. Not invoking parser process.");
             return;
         }
-        
-        Maybe<ParserWorkStage> stage = await GetCurrentParsingStage(ct);
-        ParsingStage process = ResolveStage(stage);
-        
+                
+        ParsingStage process = ResolveStage(stage);        
         try
         {
-            await process(Dependencies, ct);
+            await process(Dependencies, stage.Value, session, ct);
             Dependencies.Logger.Information("Parsing stage completed.");
+            Result commit = await transaction.Commit(ct);
         }
         catch(Exception e)
         {
@@ -45,16 +56,14 @@ public sealed class ParsingProcessInvoker(ParsingStageDependencies dependencies)
         return ParsingStageRouter.ResolveByStageName(stage.Value);
     }
     
-    private async Task<Maybe<ParserWorkStage>> GetCurrentParsingStage(CancellationToken ct)
+    private static async Task<Maybe<ParserWorkStage>> GetCurrentParsingStage(NpgSqlSession session, CancellationToken ct)
     {
-        await using NpgSqlSession session = new(Dependencies.NpgSql);
-        var query = new ParserWorkStageStoringImplementation.ParserWorkStageQuery();
+        ParserWorkStageStoringImplementation.ParserWorkStageQuery query = new(WithLock: true);
         return await ParserWorkStage.FromDb(session, query, ct);
     }
 
-    private async Task<bool> EnsureHasWorkingParsers(CancellationToken ct)
-    {
-        await using NpgSqlSession session = new(Dependencies.NpgSql);
+    private static async Task<bool> EnsureHasWorkingParsers(NpgSqlSession session, CancellationToken ct)
+    {        
         return await WorkingParser.Exists(session, ct);
     }
 }

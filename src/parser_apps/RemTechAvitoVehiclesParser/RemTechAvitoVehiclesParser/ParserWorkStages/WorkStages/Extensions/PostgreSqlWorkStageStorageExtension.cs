@@ -53,11 +53,10 @@ public static class PostgreSqlWorkStageStorageExtension
 
     extension(ParserWorkStage stage)
     {
-        public async Task PermanentFinalize(NpgSqlSession session, ITransactionScope transaction, CancellationToken ct = default)
+        public async Task PermanentFinalize(NpgSqlSession session, CancellationToken ct = default)
         {
             stage.ToFinalizationStage();
-            await stage.Update(session, ct);
-            await transaction.Commit(ct);
+            await stage.Update(session, ct);            
         }        
 
         public async Task Update(NpgSqlSession session, CancellationToken ct = default)

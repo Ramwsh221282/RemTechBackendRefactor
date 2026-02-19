@@ -19,63 +19,38 @@ public static class CataloguePagesParsingProcessImplementation
     extension(WorkStageProcess)
     {
         public static WorkStageProcess CatalogueProcess =>
-            async (WorkStageProcessDependencies deps, CancellationToken ct) =>
-            {
-                await using NpgSqlSession session = new(deps.NpgSql);
-                NpgSqlTransactionSource transactionSource = new(session);
-                await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
-                
-                Maybe<ParserWorkStage> stage = await GetCatalogueStage(session, ct);
-                if (!stage.HasValue)
-                {
-                    return;
-                }
-
+            async (WorkStageProcessDependencies deps, 
+                  ParserWorkStage stage, 
+                  NpgSqlSession session, 
+                  CancellationToken ct) =>
+            {                                                             
                 if (deps.StopState.HasStopBeenRequested())
                 {
-                    await stage.Value.PermanentFinalize(session, txn, ct);
+                    await stage.PermanentFinalize(session, ct);
                     return;
                 }
                 
                 CataloguePageUrl[] urls = await RetrieveCataloguePagedUrlsFromDb(session);
                 if (urls.Length == 0)
                 {
-                    await SwitchToTheNextStage(stage.Value, session, deps.Logger, txn, ct);
+                    await SwitchToTheNextStage(stage, session, deps.Logger, ct);
                     return;
                 }
                 
-                await ProcessExtractionAndPersistance(deps, session, urls, deps.StopState);
-                Result commit = await txn.Commit(ct);
-                if (commit.IsFailure)
-                {
-                    deps.Logger.Error(commit.Error, "Error at committing transaction");
-                }
-                else
-                {
-                    deps.Logger.Information("Transaction committed successfully.");
-                }
+                await ProcessExtractionAndPersistance(deps, session, urls, deps.StopState);                
             };
     }
 
     private static async Task SwitchToTheNextStage(
         ParserWorkStage workStage, 
         NpgSqlSession session,
-        Serilog.ILogger logger,
-        ITransactionScope transaction, 
+        Serilog.ILogger logger,        
         CancellationToken ct)
     {
         workStage.ToConcreteStage();
-        await workStage.Update(session, ct);
-        await transaction.Commit(ct);
+        await workStage.Update(session, ct);        
         logger.Information("Switched to stage: {Stage}", workStage.Name);
-    }
-    
-    private static async Task<Maybe<ParserWorkStage>> GetCatalogueStage(NpgSqlSession session, CancellationToken ct)
-    {
-        WorkStageQuery stageQuery = new(Name: WorkStageConstants.CatalogueStageName, WithLock: true);
-        Maybe<ParserWorkStage> stage = await ParserWorkStage.GetSingle(session, stageQuery, ct);
-        return stage;
-    }
+    }        
     
     private static async Task<CataloguePageUrl[]> RetrieveCataloguePagedUrlsFromDb(NpgSqlSession session)
     {
@@ -118,9 +93,9 @@ public static class CataloguePagesParsingProcessImplementation
         for (int i = 0; i < urls.Length; i++)
         {
             CataloguePageUrl url = urls[i];
-            (AvitoVehicle[] items, CataloguePageUrl processedUrl) result = await ProcessPage(manager, page, dependencies, url);
-            urls[i] = result.processedUrl;
-            yield return result.items;
+            (AvitoVehicle[] items, CataloguePageUrl processedUrl) = await ProcessPage(manager, page, dependencies, url);
+            urls[i] = processedUrl;
+            yield return items;
         }
     }
 
@@ -133,7 +108,7 @@ public static class CataloguePagesParsingProcessImplementation
         AvitoBypassFactory bypass = dependencies.Bypasses;
         Serilog.ILogger logger = dependencies.Logger;
         ExtractCatalogueItemDataCommand command = new(page, url, bypass);
-        AvitoVehicle[] items = Array.Empty<AvitoVehicle>();
+        AvitoVehicle[] items = [];
         try
         {
             items = await command.UseLogging(logger).UseResilience(manager, page, logger).Handle();

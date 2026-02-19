@@ -6,8 +6,7 @@ using RemTech.SharedKernel.Infrastructure.Database;
 namespace DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
 
 public sealed record ParsingStageDependencies(
-    BrowserManagerProvider Browsers, 
-    NpgSqlConnectionFactory NpgSql, 
+    BrowserManagerProvider Browsers,     
     Serilog.ILogger Logger,
     FinishParserProducer FinishProducer,
     AddContainedItemProducer AddContainedItemProducer,

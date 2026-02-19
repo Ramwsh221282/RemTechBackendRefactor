@@ -78,11 +78,10 @@ public static class ParserWorkStageStoringImplementation
     
     extension(ParserWorkStage stage)
     {
-        public async Task PermanentFinalize(NpgSqlSession session, ITransactionScope transaction, CancellationToken ct = default)
+        public async Task PermanentFinalize(NpgSqlSession session, CancellationToken ct = default)
         {
             ParserWorkStage finalized = stage.FinalizationStage();
-            await finalized.Update(session, ct);
-            await transaction.Commit(ct);
+            await finalized.Update(session, ct);            
         }
 
         public async Task Save(NpgSqlSession session, CancellationToken ct = default)

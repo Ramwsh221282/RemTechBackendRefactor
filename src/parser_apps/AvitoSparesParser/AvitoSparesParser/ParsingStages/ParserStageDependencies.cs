@@ -15,4 +15,9 @@ public sealed record ParserStageDependencies(
     AddContainedItemProducer AddContainedItem,
     ParserStopState StopState
     );
-public delegate Task ParserStageProcess(ParserStageDependencies deps, CancellationToken ct);
+    
+public delegate Task ParserStageProcess(
+    ParserStageDependencies deps, 
+    ParsingStage stage, 
+    NpgSqlSession session, 
+    CancellationToken ct);

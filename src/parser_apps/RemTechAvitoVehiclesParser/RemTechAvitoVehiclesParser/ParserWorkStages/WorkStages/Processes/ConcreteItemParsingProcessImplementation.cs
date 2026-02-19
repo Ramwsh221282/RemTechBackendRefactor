@@ -3,7 +3,6 @@ using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTechAvitoVehiclesParser.ParserWorkStages.Common;
 using RemTechAvitoVehiclesParser.ParserWorkStages.Common.Commands.ExtractConcreteItem;
@@ -17,50 +16,25 @@ public static class ConcreteItemParsingProcessImplementation
     extension(WorkStageProcess)
     {
         public static WorkStageProcess ConcreteItems =>
-            async (deps, ct) =>
+            async (deps, stage, session, ct) =>
             {
-                deps.Logger.Information("Concrete items stage");
-                await using NpgSqlSession session = new(deps.NpgSql);
-                NpgSqlTransactionSource transactionSource = new(session);
-                await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
-
-                WorkStageQuery stageQuery = new(Name: WorkStageConstants.ConcreteItemStageName, WithLock: true);
-                Maybe<ParserWorkStage> workStage = await ParserWorkStage.GetSingle(session, stageQuery, ct);
-                if (!workStage.HasValue)
-                {
-                    return;
-                }
-
+                deps.Logger.Information("Concrete items stage");                                
                 if (deps.StopState.HasStopBeenRequested())
                 {
-                    await workStage.Value.PermanentFinalize(session, txn, ct);
+                    await stage.PermanentFinalize(session, ct);
                     return;
                 }
                 
                 AvitoVehicle[] items = await FetchVehiclesFromDb(session, ct);
                 if (items.Length == 0)
                 {
-                    await SwitchToTheNextStage(workStage.Value, session, deps.Logger, txn, ct);
+                    await SwitchToTheNextStage(stage, session, deps.Logger, ct);
                     return;
                 }
 
-                await ProcessItemParsingAndPersisting(deps, session, items, deps.StopState, ct);
-                await CommitTransaction(txn, deps.Logger, ct);
+                await ProcessItemParsingAndPersisting(deps, session, items, deps.StopState, ct);                
             };
-    }
-
-    private static async Task CommitTransaction(ITransactionScope txn, Serilog.ILogger logger, CancellationToken ct)
-    {
-        Result commit = await txn.Commit(ct);
-        if (commit.IsFailure)
-        {
-            logger.Error(commit.Error, "Error at committing transaction");
-        }
-        else
-        {
-            logger.Information("Transaction committed successfully.");
-        }
-    }
+    }    
     
     private static async Task ProcessItemParsingAndPersisting(
         WorkStageProcessDependencies dependencies, 
@@ -89,15 +63,22 @@ public static class ConcreteItemParsingProcessImplementation
         return items;
     }
 
-    private static async Task SwitchToTheNextStage(ParserWorkStage stage, NpgSqlSession session, Serilog.ILogger logger, ITransactionScope txn, CancellationToken ct)
+    private static async Task SwitchToTheNextStage(
+        ParserWorkStage stage, 
+        NpgSqlSession session, 
+        Serilog.ILogger logger, 
+        CancellationToken ct)
     {
         stage.ToFinalizationStage();
-        await stage.Update(session, ct);
-        await txn.Commit(ct);
+        await stage.Update(session, ct);        
         logger.Information("Switched to: {Stage}", stage.Name);
     }
 
-    private static async IAsyncEnumerable<AvitoVehicle[]> ProcessItemParsing(WorkStageProcessDependencies dependencies, AvitoVehicle[] items, BrowserManager manager, ParserStopState stopState)
+    private static async IAsyncEnumerable<AvitoVehicle[]> ProcessItemParsing(
+        WorkStageProcessDependencies dependencies, 
+        AvitoVehicle[] items, 
+        BrowserManager manager, 
+        ParserStopState stopState)
     {
         for (int i = 0; i < items.Length; i++)
         {

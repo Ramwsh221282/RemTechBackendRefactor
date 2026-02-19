@@ -9,7 +9,6 @@ using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.ParsingStages.Processes;
@@ -19,58 +18,27 @@ public static class CatalogueItemsExtractingProcess
     extension(ParserStageProcess)
     {
         public static ParserStageProcess CatalogueItemsExtracting =>
-            async (deps, ct) =>
+            async (deps, stage, session, ct) =>
             {
-                Serilog.ILogger logger = deps.Logger.ForContext<ParserStageProcess>();
-                await using NpgSqlSession session = new(deps.NpgSql);
-                NpgSqlTransactionSource source = new(session);
-                await using ITransactionScope scope = await source.BeginTransaction(ct);                
-
-                Maybe<ParsingStage> stage = await GetCatalogueStage(session, ct);
-                if (!stage.HasValue)
-                {
-                    return;
-                }
-
+                Serilog.ILogger logger = deps.Logger.ForContext<ParserStageProcess>();                                                                
                 if (deps.StopState.HasStopBeenRequested())
                 {
-                    await stage.Value.PermanentFinalize(session, scope, ct);
+                    await stage.PermanentFinalize(session, ct);
                     return;
                 }
 
                 AvitoCataloguePage[] pages = await GetPaginatedUrls(session, ct);
                 if (CanSwitchToNextStage(pages))
                 {
-                    await SwitchToNextStage(logger, stage.Value, session, ct);
-                    await FinishTransaction(scope, logger, ct);
+                    await SwitchToNextStage(logger, stage, session, ct);                    
                     return;
                 }
 
-                await using (BrowserManager manager = deps.BrowserProvider.Provide())
-                {
-                    await using (IPage page = await manager.ProvidePage())
-                    {
-                        await ExtractCataloguePageItems(pages, logger, manager, page, deps.Bypasses, deps.StopState, session);
-                    }
-                }
-                
-                
-                await FinishTransaction(scope, logger, ct);
+                await using BrowserManager manager = deps.BrowserProvider.Provide();
+                await using IPage page = await manager.ProvidePage();
+                await ExtractCataloguePageItems(pages, logger, manager, page, deps.Bypasses, deps.StopState, session);
             };
-    }
-
-    private static async Task FinishTransaction(
-        ITransactionScope scope,
-        Serilog.ILogger logger,
-        CancellationToken ct
-    )
-    {
-        Result commit = await scope.Commit(ct);
-        if (commit.IsFailure)
-        {
-            logger.Error(commit.Error, "Failed to commit transaction.");
-        }
-    }
+    }    
 
     private static async Task ExtractCataloguePageItems(
         AvitoCataloguePage[] pages,
@@ -107,41 +75,24 @@ public static class CatalogueItemsExtractingProcess
         await pages.UpdateMany(session);
     }
 
-    private static async Task ProcessExtraction(
-        IExtractCataloguePagesItemCommand command,
-        AvitoCataloguePage page,
-        NpgSqlSession session
-    )
+    private static async Task ProcessExtraction(IExtractCataloguePagesItemCommand command, AvitoCataloguePage page, NpgSqlSession session)
     {
         AvitoSpare[] items = await command.Extract(page);
         await items.PersistAsCatalogueRepresentationMany(session);
-    }
+    }    
 
-    private static async Task<Maybe<ParsingStage>> GetCatalogueStage(
-        NpgSqlSession session,
-        CancellationToken ct
-    )
-    {
-        ParsingStageQuery stageQuery = new(Name: ParsingStageConstants.CATALOGUE, WithLock: true);
-        Maybe<ParsingStage> stage = await ParsingStage.GetStage(session, stageQuery, ct);
-        return stage;
-    }
-
-    private static async Task<AvitoCataloguePage[]> GetPaginatedUrls(
-        NpgSqlSession session,
-        CancellationToken ct
-    )
+    private static async Task<AvitoCataloguePage[]> GetPaginatedUrls(NpgSqlSession session, CancellationToken ct)
     {
         AvitoCataloguePageQuery pagesQuery = new(
             UnprocessedOnly: true,
             RetryThreshold: 10,
-            WithLock: true
-        );
+            WithLock: true);
+
         AvitoCataloguePage[] pages = await IEnumerable<AvitoCataloguePage>.GetMany(
             session,
             pagesQuery,
-            ct
-        );
+            ct);
+
         return pages;
     }
 

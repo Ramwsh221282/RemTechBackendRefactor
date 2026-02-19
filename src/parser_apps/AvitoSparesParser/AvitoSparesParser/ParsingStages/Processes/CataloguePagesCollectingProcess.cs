@@ -17,7 +17,7 @@ public static class CataloguePagesCollectingProcess
     extension(ParserStageProcess)
     {
         public static ParserStageProcess Pagination =>
-            async (deps, ct) =>
+            async (deps, stage, session, ct) =>
             {
                 deps.Deconstruct(
                     out NpgSqlConnectionFactory npgSql,
@@ -30,71 +30,38 @@ public static class CataloguePagesCollectingProcess
                     out ParserStopState stopState
                 );                
 
-                Serilog.ILogger logger = dLogger.ForContext<ParserStageProcess>();
-                await using NpgSqlSession session = new(npgSql);
-                NpgSqlTransactionSource source = new(session);
-                await using ITransactionScope scope = await source.BeginTransaction(ct);
-
-                Maybe<ParsingStage> stage = await GetPaginationStage(session, ct);
-                if (!stage.HasValue)
-                {
-                    return;
-                }
-
+                Serilog.ILogger logger = dLogger.ForContext<ParserStageProcess>();                                                
                 if (stopState.HasStopBeenRequested())
                 {
-                    await stage.Value.PermanentFinalize(session, scope, ct);
+                    await stage.PermanentFinalize(session, ct);
                     return;
                 }
 
-                ProcessingParserLink[] links = await GetParserLinksForPagedUrlsExtraction(
-                    session,
-                    ct
-                );
+                ProcessingParserLink[] links = await GetParserLinksForPagedUrlsExtraction(session, ct);                    
                 if (CanSwitchNextStage(links))
                 {
-                    await SwitchNextStage(stage.Value, session, logger, ct);
-                    await FinishTransaction(scope, logger, ct);
+                    await SwitchNextStage(stage, session, logger, ct);                    
                     return;
                 }
 
-                await using (BrowserManager manager = deps.BrowserProvider.Provide())
-                {
-                    await using (IPage page = await manager.ProvidePage())
-                    {
-                        await ProcessPagedUrlExtraction(links, manager, page, factory, session, logger, stopState);
-                    }
-                }
-                
-                await FinishTransaction(scope, logger, ct);
+                await using BrowserManager manager = deps.BrowserProvider.Provide();
+                await using IPage page = await manager.ProvidePage();
+                await ProcessPagedUrlExtraction(links, manager, page, factory, session, logger, stopState);
             };
-    }
+    }    
 
-    private static async Task<Maybe<ParsingStage>> GetPaginationStage(
-        NpgSqlSession session,
-        CancellationToken ct
-    )
-    {
-        ParsingStageQuery stageQuery = new(Name: ParsingStageConstants.PAGINATION, WithLock: true);
-        Maybe<ParsingStage> stage = await ParsingStage.GetStage(session, stageQuery, ct);
-        return stage;
-    }
-
-    private static async Task<ProcessingParserLink[]> GetParserLinksForPagedUrlsExtraction(
-        NpgSqlSession session,
-        CancellationToken ct
-    )
+    private static async Task<ProcessingParserLink[]> GetParserLinksForPagedUrlsExtraction(NpgSqlSession session, CancellationToken ct)
     {
         ProcessingParserLinkQuery linksQuery = new(
             OnlyNotFetched: true,
             RetryCountThreshold: 5,
-            WithLock: true
-        );
+            WithLock: true);
+
         ProcessingParserLink[] links = await IEnumerable<ProcessingParserLink>.QueryMany(
             session,
             linksQuery,
-            ct
-        );
+            ct);
+
         return links;
     }
 
@@ -139,8 +106,8 @@ public static class CataloguePagesCollectingProcess
                     browserPage,
                     bypassFactory,
                     session,
-                    logger
-                );
+                    logger);
+
                 link.Marker.MarkProcessed();
             }
             catch(Exception)
@@ -166,11 +133,7 @@ public static class CataloguePagesCollectingProcess
         await pages.AddMany(session);
     }
 
-    private static async Task FinishTransaction(
-        ITransactionScope scope,
-        Serilog.ILogger logger,
-        CancellationToken ct
-    )
+    private static async Task FinishTransaction(ITransactionScope scope, Serilog.ILogger logger, CancellationToken ct)
     {
         Result commit = await scope.Commit(ct);
         if (commit.IsFailure)
@@ -183,15 +146,17 @@ public static class CataloguePagesCollectingProcess
         IPage page,
         AvitoBypassFactory factory,
         string targetUrl,
-        Serilog.ILogger logger
-    )
+        Serilog.ILogger logger)
     {
         AvitoPagedUrlsExtractor extractor = new(page, factory.Create(page));
         string[] urls = await extractor.ExtractUrls(targetUrl);
         AvitoCataloguePage[] links = [.. urls.Select(AvitoCataloguePage.New)];        
         logger.Information("Extracted {Count} paged urls.", links.Length);
         foreach (var link in links)
+        {
             logger.Information("Paged URL: {Url}", link.Url);
+        }
+
         return links;
     }
 

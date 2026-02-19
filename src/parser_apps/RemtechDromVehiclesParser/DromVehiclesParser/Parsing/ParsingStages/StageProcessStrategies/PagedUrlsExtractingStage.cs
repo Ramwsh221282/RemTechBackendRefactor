@@ -8,7 +8,6 @@ using DromVehiclesParser.Parsing.ParsingStages.Models;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
@@ -18,22 +17,15 @@ public static class PagedUrlsExtractingStage
     extension(ParsingStage)
     {
         public static ParsingStage Pagination =>
-            async (deps, ct) =>
+            async (deps, 
+                   stage, 
+                   session, 
+                   ct) =>
             {
-                Serilog.ILogger logger = deps.Logger;
-                await using NpgSqlSession session = new(deps.NpgSql);
-                NpgSqlTransactionSource transactionSource = new(session);
-                await using ITransactionScope transaction = await transactionSource.BeginTransaction(ct);
-
-                Maybe<ParserWorkStage> stage = await GetPaginationStage(session, ct);
-                if (StageIsNotPaginationStage(stage))
-                {
-                    return;
-                }
-
+                Serilog.ILogger logger = deps.Logger;                
                 if (deps.StopState.HasStopBeenRequested())
                 {
-                    await stage.Value.PermanentFinalize(session, transaction, ct);
+                    await stage.PermanentFinalize(session, ct);
                     logger.Information("Stop has been requested. Finishing parser work.");
                     return;
                 }
@@ -41,16 +33,13 @@ public static class PagedUrlsExtractingStage
                 WorkingParserLink[] links = await GetParserLinksForPaginationUrlsExtraction(session, ct);
                 if (CanSwitchNextStage(links))
                 {
-                    await SwitchNextStage(stage, session, logger, ct);
-                    await FinishTransaction(transaction, logger, ct);
+                    await SwitchNextStage(stage, session, logger, ct);                    
                     return;
                 }
 
                 await using BrowserManager manager = deps.Browsers.Provide();
-                await using IPage page = await manager.ProvidePage();
-                
-                await CollectPagedUrlsFromLinks(links, session, manager, page, logger);
-                await FinishTransaction(transaction, logger, ct);
+                await using IPage page = await manager.ProvidePage();                
+                await CollectPagedUrlsFromLinks(links, session, manager, page, logger);                
             };
     }
 
@@ -104,29 +93,16 @@ public static class PagedUrlsExtractingStage
             manager.ReleasePageUsedMemoryResources();
             return link.IncreaseRetryCount();
         }
-    }
-
-    private static async Task FinishTransaction(
-        ITransactionScope transaction,
-        Serilog.ILogger logger,
-        CancellationToken ct
-    )
-    {
-        Result result = await transaction.Commit(ct);
-        if (result.IsFailure)
-        {
-            logger.Fatal(result.Error, "Failed to commit transaction");
-        }
-    }
+    }    
 
     private static async Task SwitchNextStage(
-        Maybe<ParserWorkStage> stage,
+        ParserWorkStage stage,
         NpgSqlSession session,
         Serilog.ILogger logger,
         CancellationToken ct
     )
     {
-        ParserWorkStage catalogueStage = stage.Value.CatalogueStage();
+        ParserWorkStage catalogueStage = stage.CatalogueStage();
         await catalogueStage.Update(session, ct);
         logger.Information("Switched to stage: {Name}", catalogueStage.StageName);
     }
@@ -144,23 +120,5 @@ public static class PagedUrlsExtractingStage
         WorkingParserLinkQuery query = new(UnprocessedOnly: true, RetryLimit: 5, WithLock: true);
         WorkingParserLink[] links = await WorkingParserLink.GetMany(session, query, ct);
         return links;
-    }
-
-    private static async Task<Maybe<ParserWorkStage>> GetPaginationStage(
-        NpgSqlSession session,
-        CancellationToken ct
-    )
-    {
-        ParserWorkStageStoringImplementation.ParserWorkStageQuery query = new(
-            Name: ParserWorkStageConstants.PAGINATION,
-            WithLock: true
-        );
-        Maybe<ParserWorkStage> stage = await ParserWorkStage.FromDb(session, query, ct);
-        return stage;
-    }
-
-    private static bool StageIsNotPaginationStage(Maybe<ParserWorkStage> stage)
-    {
-        return !stage.HasValue;
-    }
+    }        
 }
