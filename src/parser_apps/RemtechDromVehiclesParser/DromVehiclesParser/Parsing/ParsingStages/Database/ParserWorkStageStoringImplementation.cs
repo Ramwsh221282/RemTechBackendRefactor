@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using DromVehiclesParser.Parsing.ParsingStages.Models;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using RemTech.SharedKernel.Infrastructure.Database;
 
@@ -77,6 +78,16 @@ public static class ParserWorkStageStoringImplementation
     
     extension(ParserWorkStage stage)
     {
+        public async Task PermanentFinalize(
+            NpgSqlSession session, 
+            ParserStopState state, 
+            CancellationToken ct = default)
+        {
+            ParserWorkStage finalized = stage.FinalizationStage();
+            await finalized.Update(session, ct);            
+            state.CommitStop();            
+        }
+
         public async Task Save(NpgSqlSession session, CancellationToken ct = default)
         {
             const string sql = """

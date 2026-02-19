@@ -1,6 +1,4 @@
-﻿using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-
-namespace Vehicles.Domain.Vehicles;
+﻿namespace Vehicles.Domain.Vehicles;
 
 /// <summary>
 /// Галерея фотографий транспортного средства.
@@ -22,10 +20,8 @@ public sealed record VehiclePhotosGallery
 	/// </summary>
 	/// <param name="photos">Фотографии транспортного средства.</param>
 	/// <returns>Результат создания галереи фотографий транспортного средства.</returns>
-	public static Result<VehiclePhotosGallery> Create(IReadOnlyList<VehiclePhoto> photos)
-	{
-		return photos.Count == 0
-			? (Result<VehiclePhotosGallery>)Error.Validation("Фотографии техники не могут отсутствовать.")
-			: (Result<VehiclePhotosGallery>)new VehiclePhotosGallery(photos);
+	public static VehiclePhotosGallery Create(IReadOnlyList<VehiclePhoto> photos)
+	{		
+		return new VehiclePhotosGallery(photos);
 	}
 }

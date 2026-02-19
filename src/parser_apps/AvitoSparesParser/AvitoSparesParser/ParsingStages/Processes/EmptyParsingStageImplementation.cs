@@ -4,7 +4,7 @@ public static class EmptyParsingStageImplementation
 {
     extension(ParserStageProcess)
     {
-        public static ParserStageProcess Empty => (deps, _) =>
+        public static ParserStageProcess Empty => (deps, _, _, _) =>
         {
             Serilog.ILogger logger = deps.Logger.ForContext<ParserStageProcess>();
             logger.Information("Empty stage executed.");

@@ -3,13 +3,15 @@ using ParsingSDK.Parsing;
 using RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Models;
 using System.Data;
 using RemTech.SharedKernel.Infrastructure.Database;
+using RemTech.SharedKernel.Core.InfrastructureContracts;
+using ParsingSDK.ParserStopingContext;
 
 namespace RemTechAvitoVehiclesParser.ParserWorkStages.WorkStages.Extensions;
 
 public static class PostgreSqlWorkStageStorageExtension
 {
     extension(ParserWorkStage)
-    {
+    {        
         public static async Task DeleteAll(NpgSqlSession session, CancellationToken ct = default)
         {
             const string sql = """
@@ -52,6 +54,13 @@ public static class PostgreSqlWorkStageStorageExtension
 
     extension(ParserWorkStage stage)
     {
+        public async Task PermanentFinalize(NpgSqlSession session, ParserStopState state, CancellationToken ct = default)
+        {
+            stage.ToFinalizationStage();
+            await stage.Update(session, ct);            
+            state.CommitStop();
+        }        
+
         public async Task Update(NpgSqlSession session, CancellationToken ct = default)
         {
             const string sql =

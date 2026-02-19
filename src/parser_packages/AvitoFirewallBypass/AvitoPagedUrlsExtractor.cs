@@ -16,66 +16,54 @@ public sealed class AvitoPagedUrlsExtractor
 
     public async Task<string[]> ExtractUrls(string initialUrl)
     {
-        int maxPage = await ExtractMaxPage(initialUrl);
-        return CreateByMaxPage(maxPage, initialUrl);
-    }
-    
-    private string[] CreateByMaxPage(int maxPage, string initialUrl)
-    {
-        List<string> pagedUrls = [];
-        for (int i = 1; i <= maxPage; i++)
-            pagedUrls.Add(initialUrl + $"&p={i}");
-        return pagedUrls.ToArray();
-    }
-    
-    private async Task<int> ExtractMaxPage(string initialUrl)
-    {
-        JsonData current = new() { MaxPage = 1, PagedUrls = [initialUrl] };
-        string mutatingUrl = initialUrl;
-        while (true)
+        await _page.PerformNavigation(initialUrl);
+        if (!await _bypass.Bypass())
         {
-            await _page.PerformQuickNavigation(mutatingUrl, timeout: 2000);
-            if (!await _bypass.Bypass())
-                continue;
+            throw new InvalidOperationException("Page is blocked.");
+        }                
 
-            await WaitForPagination(_page);
-            JsonData paginationInfo = await ExtractPaginationUrls(_page);
-
-            if (paginationInfo.MaxPage <= current.MaxPage)
-                break;
-            
-            current = paginationInfo;
-            mutatingUrl = paginationInfo.PagedUrls[^1];
-        }
-
-        return current.MaxPage;
+        PaginationResult result = await ExtractPaginationUsingJavaScript(_page);
+        string[] pages = [.. result.PagedUrls.Select(u => u)];                        
+        return pages;
     }
 
-    private static Task WaitForPagination(IPage page) => 
-        page.ResilientWaitForSelector("nav[aria-label='Пагинация']", attempts: 5);
 
-    private static async Task<JsonData> ExtractPaginationUrls(IPage page)
+    private static async Task<PaginationResult> ExtractPaginationUsingJavaScript(IPage page)
     {
-        return await page.EvaluateFunctionAsync<JsonData>(@"
-                                   () => {
-                                   const currentUrl = window.location.href;
-                                   const paginationSelector = document.querySelector('nav[aria-label=""Пагинация""]');
-                                   if (!paginationSelector) return [currentUrl];
-                                   const paginationGroupSelector = paginationSelector.querySelector('ul[data-marker=""pagination-button""]');
-                                   if (!paginationGroupSelector) return [currentUrl];
-                                   const pageNumbersArray = Array.from(paginationGroupSelector.querySelectorAll('span[class=""styles-module-text-Z0vDE""]')).map(s => parseInt(s.innerText, 10));
-                                   const maxPage = Math.max(...pageNumbersArray);
-                                   const pagedUrls = [];
-                                   for (let i = 1; i <= maxPage; i++) {
-                                       const pagedUrl = currentUrl + '&p=' + i;
-                                       pagedUrls.push(pagedUrl);
-                                   }
-                                   return { maxPage: maxPage, pagedUrls: pagedUrls };
-                                   }
-                                   ");
+        await page.ScrollBottom();
+        const string javaScript = """
+            (() => {
+
+            let maxPage = 0;
+            const pagedUrls = [];
+
+            const currentUrl = window.location.href;
+            const paginationSelector = document.querySelector('nav[aria-label="Пагинация"]');
+            if (!paginationSelector) return { maxPage, pagedUrls };
+
+            const paginationGroupSelector = paginationSelector.querySelector('ul[data-marker="pagination-button"]');
+            if (!paginationGroupSelector) return { maxPage, pagedUrls };
+
+            const pageNumbersArray = Array.from(
+            paginationGroupSelector.querySelectorAll('span[class="styles-module-text-Z0vDE"]'))
+                .map(s => parseInt(s.innerText, 10));
+
+            maxPage = Math.max(...pageNumbersArray);
+
+            for (let i = 1; i <= maxPage; i++) {
+                let url = new URL(currentUrl);
+                url.searchParams.set('p', i);
+                pagedUrls.push(url.toString());
+            }
+
+            return { maxPage, pagedUrls };
+            })();
+            """;
+
+        return await page.EvaluateExpressionAsync<PaginationResult>(javaScript);
     }
 
-    private sealed class JsonData
+    private sealed class PaginationResult
     {
         public int MaxPage { get; set; }
         public string[] PagedUrls { get; set; } = [];

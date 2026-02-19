@@ -4,7 +4,7 @@ public static class SleepingParserStageImplementation
 {
     extension(ParsingStage)
     {
-        public static ParsingStage Sleep => (deps, _) =>
+        public static ParsingStage Sleep => (deps, _, _, _) =>
         {
             Serilog.ILogger logger = deps.Logger.ForContext<ParsingStage>();
             logger.Information("sleeping.");

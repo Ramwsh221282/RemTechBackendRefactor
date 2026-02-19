@@ -1,8 +1,8 @@
 using AvitoFirewallBypass;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTechAvitoVehiclesParser.ParserWorkStages.Common;
 using RemTechAvitoVehiclesParser.ParserWorkStages.Common.Commands.ExtractConcreteItem;
@@ -16,99 +16,112 @@ public static class ConcreteItemParsingProcessImplementation
     extension(WorkStageProcess)
     {
         public static WorkStageProcess ConcreteItems =>
-            async (deps, ct) =>
+            async (deps, stage, session, ct) =>
             {
-                await using NpgSqlSession session = new(deps.NpgSql);
-                NpgSqlTransactionSource transactionSource = new(session);
-                await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
-
-                WorkStageQuery stageQuery = new(Name: WorkStageConstants.ConcreteItemStageName, WithLock: true);
-                Maybe<ParserWorkStage> workStage = await ParserWorkStage.GetSingle(session, stageQuery, ct);
-                if (!workStage.HasValue)
+                deps.Logger.Information("Concrete items stage");                                
+                if (deps.StopState.HasStopBeenRequested())
                 {
+                    await stage.PermanentFinalize(session, deps.StopState, ct);
                     return;
                 }
                 
                 AvitoVehicle[] items = await FetchVehiclesFromDb(session, ct);
                 if (items.Length == 0)
                 {
-                    await SwitchToTheNextStage(workStage.Value, session, deps.Logger, txn, ct);
+                    await SwitchToTheNextStage(stage, session, deps.Logger, ct);
                     return;
                 }
 
-                await ProcessItemParsingAndPersisting(deps, session, items, ct);
-                await CommitTransaction(session, txn, deps.Logger, ct);
+                await ProcessItemParsingAndPersisting(deps, session, items, deps.StopState, ct);                
             };
-    }
-
-    private static async Task CommitTransaction(NpgSqlSession session, ITransactionScope txn, Serilog.ILogger logger, CancellationToken ct)
-    {
-        Result commit = await txn.Commit(ct);
-        if (commit.IsFailure)
-        {
-            logger.Error(commit.Error, "Error at committing transaction");
-        }
-        else
-        {
-            logger.Information("Transaction committed successfully.");
-        }
-    }
+    }    
     
-    private static async Task ProcessItemParsingAndPersisting(WorkStageProcessDependencies dependencies, NpgSqlSession session, AvitoVehicle[] items, CancellationToken ct)
+    private static async Task ProcessItemParsingAndPersisting(
+        WorkStageProcessDependencies dependencies, 
+        NpgSqlSession session, 
+        AvitoVehicle[] items, 
+        ParserStopState stopState, 
+        CancellationToken ct)
     {
-        await using BrowserManager manager = dependencies.BrowserManagerProvider.Provide();
-        await using IPage page = await manager.ProvidePage();
-        await foreach (AvitoVehicle[] parsedItems in ProcessItemParsing(dependencies, items, page, manager).WithCancellation(ct))
+        await using BrowserManager manager = dependencies.BrowserManagerProvider.Provide();        
+        await foreach (AvitoVehicle[] parsedItems in ProcessItemParsing(dependencies, items, manager, stopState).WithCancellation(ct))
         {
+            if (stopState.HasStopBeenRequested())
+            {
+                dependencies.Logger.Information("Stop requested. Ending processing concrete items.");
+                break;
+            }
+
             await parsedItems.UpdateFull(session);
         }
     }
     
     private static async Task<AvitoVehicle[]> FetchVehiclesFromDb(NpgSqlSession session, CancellationToken ct)
     {
-        AvitoItemQuery itemsQuery = new(UnprocessedOnly: true, Limit: 50, RetryCount: 10, CatalogueOnly: true);
+        AvitoItemQuery itemsQuery = new(UnprocessedOnly: true, Limit: 50, RetryCount: 9, CatalogueOnly: true);
         AvitoVehicle[] items = await AvitoVehicle.GetAsCatalogueRepresentation(session, itemsQuery, ct: ct);
         return items;
     }
 
-    private static async Task SwitchToTheNextStage(ParserWorkStage stage, NpgSqlSession session, Serilog.ILogger logger, ITransactionScope txn, CancellationToken ct)
+    private static async Task SwitchToTheNextStage(
+        ParserWorkStage stage, 
+        NpgSqlSession session, 
+        Serilog.ILogger logger, 
+        CancellationToken ct)
     {
         stage.ToFinalizationStage();
-        await stage.Update(session, ct);
-        await txn.Commit(ct);
+        await stage.Update(session, ct);        
         logger.Information("Switched to: {Stage}", stage.Name);
     }
 
     private static async IAsyncEnumerable<AvitoVehicle[]> ProcessItemParsing(
         WorkStageProcessDependencies dependencies, 
         AvitoVehicle[] items, 
-        IPage page, 
-        BrowserManager manager)
+        BrowserManager manager, 
+        ParserStopState stopState)
     {
         for (int i = 0; i < items.Length; i++)
         {
+            if (stopState.HasStopBeenRequested())
+            {
+                dependencies.Logger.Information("Stop requested. Ending processing concrete items.");
+                break;
+            }
+
             AvitoVehicle item = items[i];
-            item = await Scraped(page, manager, dependencies, item);
+            item = await Scraped(manager, dependencies, item);
             items[i] = item;
         }
         
         yield return items;
     }
     
-    private static async Task<AvitoVehicle> Scraped(IPage page, BrowserManager manager, WorkStageProcessDependencies dependencies, AvitoVehicle vehicle)
+    private static async Task<AvitoVehicle> Scraped(BrowserManager manager, WorkStageProcessDependencies dependencies, AvitoVehicle vehicle)
     {
         Serilog.ILogger logger = dependencies.Logger;
         AvitoBypassFactory bypasses = dependencies.Bypasses;
-        ExtractConcreteItemCommand command = new ExtractConcreteItemCommand(page, vehicle, bypasses);
-        try
+        int attempts = 5;
+        int currentAttempt = 0;
+        while(currentAttempt < attempts)
         {
-            AvitoVehicle result = await command.UseLogging(logger).UseResilience(manager, page).Handle();
-            return result.MarkProcessed();
-        }
-        catch(Exception)
-        {
-            logger.Error("Error at extracting concrete item {Url}", vehicle.CatalogueRepresentation.Url);
-            return vehicle.IncreaseRetryCount();
-        }
+            IPage page = await manager.ProvidePage();
+            ExtractConcreteItemCommand command = new(page, vehicle, bypasses);        
+            try
+            {
+                AvitoVehicle result = await command.UseLogging(logger).Handle();    
+                return result.MarkProcessed();
+            }            
+            catch(Exception)
+            {
+                currentAttempt++;
+            }                        
+            finally
+            {
+                await page.DisposeAsync();                
+            }            
+        }        
+
+        logger.Error("Error at extracting concrete item {Url}", vehicle.CatalogueRepresentation.Url);                        
+        return vehicle.IncreaseRetryCount();        
     }
 }

@@ -22,6 +22,12 @@ public sealed class ExtractConcreteItemCommand(
         ["Доступность"] = true,
     };
 
+    private static readonly NavigationOptions _navigationOptions = new()
+    {
+        WaitUntil = [WaitUntilNavigation.Load],
+        Timeout = 3000,
+    };
+
     public async Task<AvitoVehicle> Handle()
     {
         const string javaScript =
@@ -52,15 +58,19 @@ public sealed class ExtractConcreteItemCommand(
                                   }
                                   ";
         
-        await page.PerformQuickNavigation(vehicle.CatalogueRepresentation.Url, timeout: 1500);
+        await Navigate(page, vehicle.CatalogueRepresentation.Url);        
         if (!await bypassFactory.Create(page).Bypass())
+        {
             throw new InvalidOperationException("Unable to bypass Avito firewall");
-
+        }
+        
+        await page.ScrollBottom();
         await page.ResilientWaitForSelector("div[id=\"bx_item-params\"]");
-        JsonExtractConcreteItemCommandData json =
-            await page.EvaluateFunctionAsync<JsonExtractConcreteItemCommandData>(javaScript);
+        JsonExtractConcreteItemCommandData json = await page.EvaluateFunctionAsync<JsonExtractConcreteItemCommandData>(javaScript);
         if (!json.AllPropertiesSet())
+        {
             throw new InvalidOperationException("Unable to extract concrete item data");
+        }
 
         json.Characteristics = [.. json.Characteristics!.Where(NotBelongsToIgnoredCharacteristics)];
         AvitoVehicleConcretePageRepresentation representation = new(
@@ -99,6 +109,18 @@ public sealed class ExtractConcreteItemCommand(
             foreach (JsonCharacteristic characteristic in Characteristics!)
                 result.Add(characteristic.Name, characteristic.Value);
             return result;
+        }
+    }
+
+    private static async Task Navigate(IPage page, string url)
+    {
+        try
+        {
+            await page.GoToAsync(url, _navigationOptions);
+        }
+        catch
+        {
+
         }
     }
 

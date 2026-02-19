@@ -1,4 +1,5 @@
 ﻿using ParsersControl.Core.Contracts;
+using ParsersControl.Infrastructure.EventTransporters.PermantlyDisabled;
 using ParsersControl.Infrastructure.Listeners;
 using ParsersControl.Infrastructure.Migrations;
 using ParsersControl.Infrastructure.Parsers.Repository;
@@ -43,6 +44,7 @@ public static class ParsersModuleInjection
 
 		public void AddInfrastructureLayer()
 		{
+			services.AddScoped<PermantlyDisabledParserEventEmitter>();
 			services.AddEventListeners();
 			services.AddRepositories();
 		}

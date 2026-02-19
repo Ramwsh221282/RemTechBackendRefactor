@@ -1,9 +1,9 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using ParsingSDK.RabbitMq;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing;
 using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing.Extensions;
@@ -25,40 +25,30 @@ public static class FinalizationWorkStageProcessImplementation
     extension(WorkStageProcess)
     {
         public static WorkStageProcess Finalization =>
-            async (deps, ct) =>
+            async (deps, stage, session, ct) =>
             {
                 deps.Deconstruct(
                     out _,
                     out _,
                     out _,
-                    out Serilog.ILogger dLogger,
-                    out NpgSqlConnectionFactory npgSql,
+                    out Serilog.ILogger dLogger,                    
                     out FinishParserProducer finishProducer,
-                    out AddContainedItemProducer addProducer
+                    out AddContainedItemProducer addProducer,
+                    out ParserStopState state
                 );
 
-                Serilog.ILogger logger = dLogger.ForContext<WorkStageProcess>();
-                await using NpgSqlSession session = new(npgSql);
-                NpgSqlTransactionSource transactionSource = new(session);
-                await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
-
-                Maybe<ParserWorkStage> stage = await GetFinalizationStage(session, logger, ct);
-                if (!stage.HasValue)
-                    return;
-
+                Serilog.ILogger logger = dLogger.ForContext<WorkStageProcess>();                                                
                 AvitoVehicle[] items = await GetFinalizationItems(session, logger, ct);
                 if (CanFinalize(items))
                 {
                     await FinalizeParser(session, finishProducer, logger, ct);
-                    await FinalizeStage(session, logger, ct);
-                    await FinishTransaction(txn, logger, ct);
+                    await FinalizeStage(session, logger, ct);                    
                     return;
                 }
 
                 await SendAddContainedItemsMessage(session, addProducer, items, ct);
                 await items.Remove(session);
-                logger.Information("Finalized {Count} items.", items.Length);
-                await FinishTransaction(txn, logger, ct);
+                logger.Information("Finalized {Count} items.", items.Length);                
             };
     }
 
@@ -72,18 +62,18 @@ public static class FinalizationWorkStageProcessImplementation
         Maybe<ProcessingParser> parser = await ProcessingParser.Get(
             session,
             new ProcessingParserQuery(WithLock: true),
-            ct
-        );
+            ct);
+
         if (!parser.HasValue)
+        {
             throw new InvalidOperationException("No active parser found.");
+        }
+
         AddContainedItemsMessage message = CreateMessage(parser.Value, items);
         await producer.Publish(message, ct);
     }
 
-    private static AddContainedItemsMessage CreateMessage(
-        ProcessingParser parser,
-        AvitoVehicle[] vehicles
-    )
+    private static AddContainedItemsMessage CreateMessage(ProcessingParser parser, AvitoVehicle[] vehicles)
     {
         Guid creatorId = parser.Id;
         string domain = parser.Domain;
@@ -129,20 +119,7 @@ public static class FinalizationWorkStageProcessImplementation
     private static bool CanFinalize(AvitoVehicle[] items)
     {
         return items.Length == 0;
-    }
-
-    private static async Task FinishTransaction(
-        ITransactionScope txn,
-        Serilog.ILogger logger,
-        CancellationToken ct
-    )
-    {
-        Result result = await txn.Commit(ct);
-        if (result.IsFailure)
-            logger.Error(result.Error, "Error at committing transaction");
-        else
-            logger.Information("Transaction committed successfully.");
-    }
+    }    
 
     private static async Task<AvitoVehicle[]> GetFinalizationItems(
         NpgSqlSession session,
@@ -154,24 +131,11 @@ public static class FinalizationWorkStageProcessImplementation
         AvitoVehicle[] items = await AvitoVehicle.GetAsConcreteRepresentation(
             session,
             itemsQuery,
-            ct
-        );
+            ct);
+
         logger.Information("Found {Count} items for finalization.", items.Length);
         return items;
-    }
-
-    private static async Task<Maybe<ParserWorkStage>> GetFinalizationStage(
-        NpgSqlSession session,
-        Serilog.ILogger logger,
-        CancellationToken ct
-    )
-    {
-        WorkStageQuery stageQuery = new(Name: WorkStageConstants.FinalizationStage, WithLock: true);
-        Maybe<ParserWorkStage> stage = await ParserWorkStage.GetSingle(session, stageQuery, ct);
-        if (!stage.HasValue)
-            logger.Warning("No finalization stage found.");
-        return stage;
-    }
+    }    
 
     private static async Task FinalizeParser(
         NpgSqlSession session,
@@ -183,7 +147,10 @@ public static class FinalizationWorkStageProcessImplementation
         ProcessingParserQuery query = new(WithLock: true);
         Maybe<ProcessingParser> parser = await ProcessingParser.Get(session, query, ct);
         if (!parser.HasValue)
+        {
             throw new InvalidOperationException("No active parser found.");
+        }
+
         long elapsed = parser.Value.Finish().CalculateTotalElapsedSeconds();
         Guid id = parser.Value.Id;
         await producer.Publish(new FinishParserMessage(id, elapsed), ct);

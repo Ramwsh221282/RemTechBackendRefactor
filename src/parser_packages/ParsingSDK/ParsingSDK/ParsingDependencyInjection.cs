@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 
 namespace ParsingSDK;
@@ -15,14 +16,13 @@ public static class ParsingDependencyInjection
 
         private void RegisterBrowserOptionsByEnvironment(bool isDevelopment)
         {            
-            if (isDevelopment)
+            if (!isDevelopment)
             {
-                services.RegisterConfig();
-                return;
+                RegisterFromEnv();                                
             }
-            
-            RegisterFromEnv();
+                        
             services.RegisterConfig();
+            services.RegisterParserStoppingContext(isDevelopment);
         }
 
         private void RegisterConfig()

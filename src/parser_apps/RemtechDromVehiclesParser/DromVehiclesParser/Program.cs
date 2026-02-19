@@ -1,11 +1,9 @@
 using DotNetEnv.Configuration;
 using DromVehiclesParser.DependencyInjection;
-using DromVehiclesParser.RabbitMq.Consumers;
 using ParserSubscriber.SubscribtionContext;
 using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
-using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using Serilog;
 using Serilog.Core;
 
@@ -45,11 +43,7 @@ try
     logger.Information("Логгирование зарегистрировано");
 
     builder.Services.RegisterParserSubscription();
-    logger.Information("Подписка на парсер зарегистрирована");
-
-    builder.Services.AddTransient<IConsumer, StartParserConsumer>();
-    builder.Services.AddHostedService<AggregatedConsumersHostedService>();
-    logger.Information("RabbitMq потребители зарегистрированы");
+    logger.Information("Подписка на парсер зарегистрирована");        
 
     builder.Services.RegisterDependenciesForParsing(isDevelopment);
     logger.Information("Зависимости для парсинга зарегистрированы");
@@ -60,7 +54,13 @@ try
     WebApplication app = builder.Build();
 
     logger.Information("Запуск подписки/повторной подписки на основной бекенд. Fire And Forget.");
-    await Task.Delay(TimeSpan.FromMinutes(1));
+    
+    if (!isDevelopment)
+    {
+        logger.Information("Ожидание 1 минуты перед запуском подписки, чтобы дать время основному бекенду запуститься и быть готовым к приему сообщений.");
+        await Task.Delay(TimeSpan.FromMinutes(1));
+    }
+
     app.Lifetime.ApplicationStarted.Register(() =>
     {
         _ = Task.Run(async () =>

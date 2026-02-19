@@ -169,7 +169,8 @@ public sealed class ActionRecordsPersistingBackgroundProcess(
 			INSERT INTO telemetry_module.action_records
 			(id, invoker_id, error, severity, name, created_at, payload, embedding)
 			VALUES
-			(@id, @invoker_id, @error, @severity, @name, @created_at, @payload, @embedding);
+			(@id, @invoker_id, @error, @severity, @name, @created_at, @payload, @embedding)
+			ON CONFLICT (id) DO NOTHING;
 			""";
 
 		NpgSqlSession session = new(NpgSql);

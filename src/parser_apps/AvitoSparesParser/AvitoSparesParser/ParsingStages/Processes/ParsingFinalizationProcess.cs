@@ -10,14 +10,13 @@ using AvitoSparesParser.ParsingStages.Extensions;
 using ParsingSDK.Parsing;
 using ParsingSDK.RabbitMq;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.ParsingStages.Processes;
 
 public static class ParsingFinalizationProcess
 {
-    private static JsonSerializerOptions _jsonOptions = new()
+    private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
@@ -25,33 +24,27 @@ public static class ParsingFinalizationProcess
     extension(ParserStageProcess)
     {
         public static ParserStageProcess Finalization =>
-            async (deps, ct) =>
-            {
-                NpgSqlConnectionFactory npgSql = deps.NpgSql;
+            async (deps, stage, session, ct) =>
+            {                
                 Serilog.ILogger logger = deps.Logger;
                 FinishParserProducer finishProducer = deps.FinishProducer;
-                AddContainedItemProducer addProducer = deps.AddContainedItem;
-
-                await using NpgSqlSession session = new(npgSql);
-                NpgSqlTransactionSource source = new(session);
-                await using ITransactionScope scope = await source.BeginTransaction(ct);
-
+                AddContainedItemProducer addProducer = deps.AddContainedItem;                
                 Maybe<ParsingStage> finalization = await GetFinalizationStage(session, ct);
                 if (!finalization.HasValue)
+                {
                     return;
+                }
 
                 AvitoSpare[] spares = await GetCompletedAvitoSpares(session, ct);
                 if (CanSwitchNextStage(spares))
                 {
                     await FinishParser(session, finishProducer, logger, ct);
-                    await FinalizeParser(session, logger, ct);
-                    await FinishTransaction(scope, logger, ct);
+                    await FinalizeParser(session, logger, ct);                    
                     return;
                 }
 
                 await SendAddContainedItems(session, spares, addProducer, ct);
-                await SendResultsToMainBackend(spares, session, logger);
-                await FinishTransaction(scope, logger, ct);
+                await SendResultsToMainBackend(spares, session, logger);                
             };
     }
 
@@ -79,7 +72,7 @@ public static class ParsingFinalizationProcess
             CreatorId = parser.Id,
             CreatorType = parser.Type,
             ItemType = "Запчасти",
-            Items = spares.Select(CreatePayload).ToArray(),
+            Items = [.. spares.Select(CreatePayload)],
         };
     }
 
@@ -115,20 +108,7 @@ public static class ParsingFinalizationProcess
         long elapsed = parser.Finish().TotalElapsedSeconds();
         await finishProducer.Publish(new FinishParserMessage(id, elapsed), ct);
         logger.Information("Finished parser {Id} in {Elapsed} seconds.", id, elapsed);
-    }
-
-    private static async Task FinishTransaction(
-        ITransactionScope scope,
-        Serilog.ILogger logger,
-        CancellationToken ct
-    )
-    {
-        Result commit = await scope.Commit(ct);
-        if (commit.IsFailure)
-        {
-            logger.Error(commit.Error, "Failed to commit transaction.");
-        }
-    }
+    }    
 
     private static async Task SendResultsToMainBackend(
         AvitoSpare[] spares,
@@ -147,8 +127,8 @@ public static class ParsingFinalizationProcess
     {
         ParsingStageQuery query = new(
             Name: ParsingStageConstants.FINALIZATION_STAGE,
-            WithLock: true
-        );
+            WithLock: true);
+
         Maybe<ParsingStage> stage = await ParsingStage.GetStage(session, query, ct);
         return stage;
     }

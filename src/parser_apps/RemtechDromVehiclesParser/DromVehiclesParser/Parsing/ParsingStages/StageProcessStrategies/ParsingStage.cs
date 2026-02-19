@@ -1,3 +1,10 @@
-﻿namespace DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
+﻿using DromVehiclesParser.Parsing.ParsingStages.Models;
+using RemTech.SharedKernel.Infrastructure.Database;
 
-public delegate Task ParsingStage(ParsingStageDependencies deps, CancellationToken ct);
+namespace DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
+
+public delegate Task ParsingStage(
+    ParsingStageDependencies deps, 
+    ParserWorkStage stage, 
+    NpgSqlSession session, 
+    CancellationToken ct);

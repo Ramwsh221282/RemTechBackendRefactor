@@ -1,7 +1,7 @@
+using AvitoFirewallBypass;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing;
 using RemTechAvitoVehiclesParser.ParserWorkStages.CatalogueParsing.Extensions;
@@ -16,23 +16,20 @@ public static class PaginationExtractionProcessImplementation
 {
     extension(WorkStageProcess)
     {
-        public static WorkStageProcess PaginationExtraction =>
-            async (WorkStageProcessDependencies deps, CancellationToken ct) =>
+        public static WorkStageProcess PaginationExtraction => async (deps, stage, session, ct) =>
             {
-                Serilog.ILogger logger = deps.Logger.ForContext<WorkStageProcess>();
-                await using NpgSqlSession session = new(deps.NpgSql);
-                NpgSqlTransactionSource transactionSource = new(session);
-                await using ITransactionScope txn = await transactionSource.BeginTransaction(ct);
-                Maybe<ParserWorkStage> stage = await GetPaginationStage(session, ct);
-                if (!stage.HasValue)
+                Serilog.ILogger logger = deps.Logger.ForContext<WorkStageProcess>();                                                                                
+                if (deps.StopState.HasStopBeenRequested())
                 {
+                    logger.Information("Stop requested. Finalizing stage.");
+                    await stage.PermanentFinalize(session, deps.StopState, ct);
                     return;
                 }
 
                 ProcessingParserLink[] links = await GetProcessingParserLinksFromDb(session, ct);
                 if (links.Length == 0)
                 {
-                    await SwitchToTheNextStage(stage.Value, session, txn, logger, ct);
+                    await SwitchToTheNextStage(stage, session, logger, ct);
                     return;
                 }
                 
@@ -43,16 +40,7 @@ public static class PaginationExtractionProcessImplementation
                     await results.PersistMany(session);
                 }
                 
-                await links.UpdateMany(session);
-                Result commit = await txn.Commit(ct);
-                if (commit.IsFailure)
-                {
-                    logger.Error(commit.Error, "Error at committing transaction");
-                }
-                else
-                {
-                    logger.Information("Pagination extracting finished.");
-                }
+                await links.UpdateMany(session);                
             };
     }
 
@@ -65,9 +53,9 @@ public static class PaginationExtractionProcessImplementation
         for (int i = 0; i < links.Length; i++)
         {
             ProcessingParserLink link = links[i];
-            (ProcessingParserLink processingLink, CataloguePageUrl[] pagedUrls) result = await ExtractPaginatedCatalogueUrls(dependencies, link, page, manager);
-            links[i] = result.processingLink;
-            yield return result.pagedUrls;
+            (ProcessingParserLink processingLink, CataloguePageUrl[] pagedUrls) = await ExtractPaginatedCatalogueUrls(dependencies, link, page, manager);
+            links[i] = processingLink;
+            yield return pagedUrls;
         }
     }
     
@@ -91,11 +79,10 @@ public static class PaginationExtractionProcessImplementation
         }
     }
 
-    private static async Task SwitchToTheNextStage(ParserWorkStage stage, NpgSqlSession session, ITransactionScope txn, Serilog.ILogger logger, CancellationToken ct)
+    private static async Task SwitchToTheNextStage(ParserWorkStage stage, NpgSqlSession session, Serilog.ILogger logger, CancellationToken ct)
     {
         stage.ToCatalogueStage();
-        await stage.Update(session, ct);
-        await txn.Commit(ct);
+        await stage.Update(session, ct);        
         logger.Information("Switched to stage: {Name}", stage.Name);
     }
     
@@ -116,52 +103,13 @@ public static class PaginationExtractionProcessImplementation
     
     private static async Task<CataloguePageUrl[]> ExtractPagination(WorkStageProcessDependencies dependencies, ProcessingParserLink link, IPage page)
     {
-        await page.PerformNavigation(link.Url);
-        if (!await dependencies.Bypasses.Create(page).Bypass())
-        {
-            throw new InvalidOperationException("Page is blocked.");
-        }
-        
-        await page.ScrollBottom();
-        const string javaScript = """
-            (() => {
-
-            let maxPage = 0;
-            const pagedUrls = [];
-
-            const currentUrl = window.location.href;
-            const paginationSelector = document.querySelector('nav[aria-label="Пагинация"]');
-            if (!paginationSelector) return { maxPage, pagedUrls };
-
-            const paginationGroupSelector = paginationSelector.querySelector('ul[data-marker="pagination-button"]');
-            if (!paginationGroupSelector) return { maxPage, pagedUrls };
-
-            const pageNumbersArray = Array.from(
-            paginationGroupSelector.querySelectorAll('span[class="styles-module-text-Z0vDE"]'))
-                .map(s => parseInt(s.innerText, 10));
-
-            maxPage = Math.max(...pageNumbersArray);
-
-            for (let i = 1; i <= maxPage; i++) {
-                const pagedUrl = currentUrl + '&p=' + i;
-                pagedUrls.push(pagedUrl);
-            }
-
-            return { maxPage, pagedUrls };
-            })();
-            """;
-        PaginationResult result = await page.EvaluateExpressionAsync<PaginationResult>(javaScript);
-        CataloguePageUrl[] pages =
-        [
-            .. Enumerable
-                .Range(0, result.MaxPage)
-                .Select(p => CataloguePageUrl.New(result.PagedUrls[p])),
-        ];
-        
-        dependencies.Logger.Information("Extracted {PageCount} pages for url: {Url}", result.MaxPage, link.Url);
-        string pagesLogText = string.Join("\n", pages.Select(p => p.Url));
+        AvitoPagedUrlsExtractor extractor = new(page, dependencies.Bypasses.Create(page));
+        string[] urls = await extractor.ExtractUrls(link.Url);
+        CataloguePageUrl[] pagedUrls = [.. urls.Select(CataloguePageUrl.New)];
+        dependencies.Logger.Information("Extracted {PageCount} pages for url: {Url}", pagedUrls.Length, link.Url);
+        string pagesLogText = string.Join("\n", pagedUrls.Select(p => p.Url));
         dependencies.Logger.Information("Paged Url: {PagedUrl}", pagesLogText);
-        return pages;
+        return pagedUrls;        
     }
 
     private sealed class PaginationResult

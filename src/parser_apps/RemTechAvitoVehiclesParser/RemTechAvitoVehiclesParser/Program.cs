@@ -5,9 +5,7 @@ using RemTech.SharedKernel.Configurations;
 using RemTech.SharedKernel.Core.Logging;
 using RemTech.SharedKernel.Infrastructure.Database;
 using RemTech.SharedKernel.Infrastructure.Quartz;
-using RemTech.SharedKernel.Infrastructure.RabbitMq;
 using RemTechAvitoVehiclesParser;
-using RemTechAvitoVehiclesParser.RabbitMq.Consumers;
 using Serilog;
 using Serilog.Core;
 
@@ -49,27 +47,26 @@ try
     logger.Information("Зависимости для парсинга зарегистрированы.");
 
     builder.Services.RegisterInfrastructureDependencies(isDevelopment);
-    logger.Information("Инфраструктурные зависимости зарегистрированы.");
+    logger.Information("Инфраструктурные зависимости зарегистрированы.");            
 
     builder.Services.AddCronScheduledJobs();
     logger.Information("Планировщик заданий (бекграунд процессы) зарегистрирован.");
-
-    builder.Services.AddTransient<IConsumer, ParserStartConsumer>();
-    builder.Services.AddHostedService<AggregatedConsumersHostedService>();
-    logger.Information("RabbitMQ потребители зарегистрированы.");
 
     builder.Services.AddQuartzHostedService(c =>
     {
         c.WaitForJobsToComplete = true;
         c.StartDelay = TimeSpan.FromSeconds(10);
-    });
+    });    
 
     WebApplication app = builder.Build();
 
-    logger.Information(
-        "Попытка/повторная попытка подписки в основной бекенд запущена Fire And Forget."
-    );
-    await Task.Delay(TimeSpan.FromMinutes(1));
+    if (!isDevelopment)
+    {
+        logger.Information("Ожидание 1 минуты перед запуском подписки в основной бекенд для обеспечения его готовности.");
+        await Task.Delay(TimeSpan.FromMinutes(1));
+    }
+
+    logger.Information("Попытка/повторная попытка подписки в основной бекенд запущена Fire And Forget.");    
     app.Lifetime.ApplicationStarted.Register(() =>
     {
         _ = Task.Run(async () =>

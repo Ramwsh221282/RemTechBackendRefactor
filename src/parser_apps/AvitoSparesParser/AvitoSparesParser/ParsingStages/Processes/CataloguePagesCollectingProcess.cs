@@ -3,10 +3,10 @@ using AvitoSparesParser.CatalogueParsing.Extensions;
 using AvitoSparesParser.ParserStartConfiguration;
 using AvitoSparesParser.ParserStartConfiguration.Extensions;
 using AvitoSparesParser.ParsingStages.Extensions;
+using ParsingSDK.ParserStopingContext;
 using ParsingSDK.Parsing;
 using PuppeteerSharp;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
 
 namespace AvitoSparesParser.ParsingStages.Processes;
@@ -16,75 +16,50 @@ public static class CataloguePagesCollectingProcess
     extension(ParserStageProcess)
     {
         public static ParserStageProcess Pagination =>
-            async (deps, ct) =>
+            async (deps, stage, session, ct) =>
             {
-                deps.Deconstruct(
-                    out NpgSqlConnectionFactory npgSql,
+                deps.Deconstruct(                    
                     out Serilog.ILogger dLogger,
                     out AvitoBypassFactory factory,
                     out BrowserManagerProvider browsers,
                     out _,
                     out _,
-                    out _
-                );
+                    out _,
+                    out ParserStopState stopState
+                );                
 
-                Serilog.ILogger logger = dLogger.ForContext<ParserStageProcess>();
-                await using NpgSqlSession session = new(npgSql);
-                NpgSqlTransactionSource source = new(session);
-                await using ITransactionScope scope = await source.BeginTransaction(ct);
-
-                Maybe<ParsingStage> stage = await GetPaginationStage(session, ct);
-                if (!stage.HasValue)
+                Serilog.ILogger logger = dLogger.ForContext<ParserStageProcess>();                                                
+                if (stopState.HasStopBeenRequested())
+                {
+                    await stage.PermanentFinalize(session, ct);
                     return;
+                }
 
-                ProcessingParserLink[] links = await GetParserLinksForPagedUrlsExtraction(
-                    session,
-                    ct
-                );
+                ProcessingParserLink[] links = await GetParserLinksForPagedUrlsExtraction(session, ct);                    
                 if (CanSwitchNextStage(links))
                 {
-                    await SwitchNextStage(stage.Value, session, logger, ct);
-                    await FinishTransaction(scope, logger, ct);
+                    await SwitchNextStage(stage, session, logger, ct);                    
                     return;
                 }
 
-                await using (BrowserManager manager = deps.BrowserProvider.Provide())
-                {
-                    await using (IPage page = await manager.ProvidePage())
-                    {
-                        await ProcessPagedUrlExtraction(links, manager, page, factory, session, logger);
-                    }
-                }
-                
-                await FinishTransaction(scope, logger, ct);
+                await using BrowserManager manager = deps.BrowserProvider.Provide();
+                await using IPage page = await manager.ProvidePage();
+                await ProcessPagedUrlExtraction(links, manager, page, factory, session, logger, stopState);
             };
-    }
+    }    
 
-    private static async Task<Maybe<ParsingStage>> GetPaginationStage(
-        NpgSqlSession session,
-        CancellationToken ct
-    )
-    {
-        ParsingStageQuery stageQuery = new(Name: ParsingStageConstants.PAGINATION, WithLock: true);
-        Maybe<ParsingStage> stage = await ParsingStage.GetStage(session, stageQuery, ct);
-        return stage;
-    }
-
-    private static async Task<ProcessingParserLink[]> GetParserLinksForPagedUrlsExtraction(
-        NpgSqlSession session,
-        CancellationToken ct
-    )
+    private static async Task<ProcessingParserLink[]> GetParserLinksForPagedUrlsExtraction(NpgSqlSession session, CancellationToken ct)
     {
         ProcessingParserLinkQuery linksQuery = new(
             OnlyNotFetched: true,
             RetryCountThreshold: 5,
-            WithLock: true
-        );
+            WithLock: true);
+
         ProcessingParserLink[] links = await IEnumerable<ProcessingParserLink>.QueryMany(
             session,
             linksQuery,
-            ct
-        );
+            ct);
+
         return links;
     }
 
@@ -111,11 +86,17 @@ public static class CataloguePagesCollectingProcess
         IPage browserPage,
         AvitoBypassFactory bypassFactory,
         NpgSqlSession session,
-        Serilog.ILogger logger
+        Serilog.ILogger logger,
+        ParserStopState stopState
     )
     {
         foreach (ProcessingParserLink link in links)
         {
+            if (stopState.HasStopBeenRequested())
+            {                
+                break;
+            }
+
             try
             {
                 await ProcessPagedUrlExtractionFromParserLink(
@@ -123,8 +104,8 @@ public static class CataloguePagesCollectingProcess
                     browserPage,
                     bypassFactory,
                     session,
-                    logger
-                );
+                    logger);
+
                 link.Marker.MarkProcessed();
             }
             catch(Exception)
@@ -148,70 +129,23 @@ public static class CataloguePagesCollectingProcess
     {
         AvitoCataloguePage[] pages = await ExtractPagination(page, bypass, link.Url, logger);
         await pages.AddMany(session);
-    }
-
-    private static async Task FinishTransaction(
-        ITransactionScope scope,
-        Serilog.ILogger logger,
-        CancellationToken ct
-    )
-    {
-        Result commit = await scope.Commit(ct);
-        if (commit.IsFailure)
-        {
-            logger.Error(commit.Error, "Failed to commit transaction.");
-        }
-    }
+    }    
 
     private static async Task<AvitoCataloguePage[]> ExtractPagination(
         IPage page,
         AvitoBypassFactory factory,
         string targetUrl,
-        Serilog.ILogger logger
-    )
+        Serilog.ILogger logger)
     {
-        await page.PerformNavigation(targetUrl);
-        IAvitoBypassFirewall bypasser = factory.Create(page);
-        if (!await bypasser.Bypass())
-            throw new InvalidOperationException("Page is blocked.");
-        await page.ScrollBottom();
-        const string javaScript = """
-            (() => {
-
-            let maxPage = 0;
-            const pagedUrls = [];
-
-            const currentUrl = window.location.href;
-            const paginationSelector = document.querySelector('nav[aria-label="Пагинация"]');
-            if (!paginationSelector) return { maxPage, pagedUrls };
-
-            const paginationGroupSelector = paginationSelector.querySelector('ul[data-marker="pagination-button"]');
-            if (!paginationGroupSelector) return { maxPage, pagedUrls };
-
-            const pageNumbersArray = Array.from(
-            paginationGroupSelector.querySelectorAll('span[class="styles-module-text-Z0vDE"]'))
-                .map(s => parseInt(s.innerText, 10));
-
-            maxPage = Math.max(...pageNumbersArray);
-
-            for (let i = 1; i <= maxPage; i++) {
-                const pagedUrl = currentUrl + '&p=' + i;
-                pagedUrls.push(pagedUrl);
-            }
-
-            return { maxPage, pagedUrls };
-            })();
-            """;
-        PaginationResult result = await page.EvaluateExpressionAsync<PaginationResult>(javaScript);
-        AvitoCataloguePage[] links =
-        [
-            .. Enumerable
-                .Range(0, result.MaxPage)
-                .Select(p => AvitoCataloguePage.New(result.PagedUrls[p])),
-        ];
+        AvitoPagedUrlsExtractor extractor = new(page, factory.Create(page));
+        string[] urls = await extractor.ExtractUrls(targetUrl);
+        AvitoCataloguePage[] links = [.. urls.Select(AvitoCataloguePage.New)];        
         logger.Information("Extracted {Count} paged urls.", links.Length);
         foreach (var link in links)
+        {
             logger.Information("Paged URL: {Url}", link.Url);
+        }
+
         return links;
     }
 

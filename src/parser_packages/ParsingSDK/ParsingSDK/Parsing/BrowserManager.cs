@@ -95,6 +95,20 @@ public sealed class BrowserManager : IDisposable, IAsyncDisposable
             await CloseChannel();
         }
     }
+    
+    public static void ForceKillBrowserProcess()
+    {
+        Process[] processes = [..Process.GetProcessesByName("chrome"), ..Process.GetProcessesByName("chromium")];
+        foreach (Process process in processes)
+        {
+            using (process)
+            {
+                process.Kill();
+            }
+        }        
+
+        CallFinalizersForMemoryClear();
+    }
 
     private async Task KillBrowserProcess()
     {

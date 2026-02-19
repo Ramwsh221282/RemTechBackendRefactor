@@ -73,7 +73,15 @@ public static class AvitoSpareStoringImplementation
     
     extension(IEnumerable<AvitoSpare> spares)
     {
+        public async Task DeleteMany(NpgSqlSession session)
+        {
+            string[] identifiers = [.. spares.Select(s => s.Id)];
+            const string sql = "DELETE FROM avito_spares_parser.spares WHERE id = ANY(@ids)";
+            CommandDefinition command = new(sql, new { ids = identifiers }, transaction: session.Transaction);
+            await session.Execute(command);
+        }
         
+
         public async Task RemoveMany(NpgSqlSession session)
         {
             const string sql = "DELETE FROM avito_spares_parser.spares WHERE id = ANY(@ids)";
@@ -83,8 +91,8 @@ public static class AvitoSpareStoringImplementation
             };
             CommandDefinition command = new(sql, parameters, transaction: session.Transaction);
             await session.Execute(command);
-        }
-        
+        }                
+
         public async Task PersistAsCatalogueRepresentationMany(NpgSqlSession session)
         {
             const string sql =
@@ -116,6 +124,13 @@ public static class AvitoSpareStoringImplementation
     
     extension(AvitoSpare spare)
     {
+        public async Task RemoveSpare(NpgSqlSession session, CancellationToken ct = default)
+        {
+            const string sql = "DELETE FROM avito_spares_parser.spares WHERE id = @id";
+            CommandDefinition command = new(sql, new { id = spare.Id }, transaction: session.Transaction, cancellationToken: ct);
+            await session.Execute(command);
+        }
+
         private object ExtractCatalogueRepresentationParameters() => new
         {
             id = spare.Id,

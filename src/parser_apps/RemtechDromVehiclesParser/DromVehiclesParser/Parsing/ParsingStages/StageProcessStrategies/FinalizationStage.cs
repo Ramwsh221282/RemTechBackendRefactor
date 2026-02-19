@@ -1,6 +1,4 @@
-﻿using System.Text.Encodings.Web;
-using System.Text.Json;
-using Dapper;
+﻿using Dapper;
 using DromVehiclesParser.Parsers.Database;
 using DromVehiclesParser.Parsers.Models;
 using DromVehiclesParser.Parsing.ConcreteItemParsing.Extensions;
@@ -10,8 +8,9 @@ using DromVehiclesParser.Parsing.ParsingStages.Models;
 using ParsingSDK.Parsing;
 using ParsingSDK.RabbitMq;
 using RemTech.SharedKernel.Core.FunctionExtensionsModule;
-using RemTech.SharedKernel.Core.InfrastructureContracts;
 using RemTech.SharedKernel.Infrastructure.Database;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 
 namespace DromVehiclesParser.Parsing.ParsingStages.StageProcessStrategies;
 
@@ -25,36 +24,21 @@ public static class FinalizationStage
     extension(ParsingStage)
     {
         public static ParsingStage Finalization =>
-            async (deps, ct) =>
-            {
-                NpgSqlConnectionFactory npgSql = deps.NpgSql;
+            async (deps, stage, session, ct) =>
+            {                
                 FinishParserProducer finishProducer = deps.FinishProducer;
                 AddContainedItemProducer addProducer = deps.AddContainedItemProducer;
-                Serilog.ILogger logger = deps.Logger;
-
-                await using NpgSqlSession session = new(npgSql);
-                NpgSqlTransactionSource transactionSource = new(session);
-                await using ITransactionScope transaction =
-                    await transactionSource.BeginTransaction(ct);
-
-                Maybe<ParserWorkStage> stage = await GetFinalizationStage(session);
-                if (!stage.HasValue)
-                    return;
-
-                DromAdvertisementFromPage[] advertisements = await GetAdvertisementsForFinalization(
-                    session
-                );
+                Serilog.ILogger logger = deps.Logger;                     
+                DromAdvertisementFromPage[] advertisements = await GetAdvertisementsForFinalization(session);
                 if (CanSwitchNextStage(advertisements))
                 {
                     await FinishParser(session, finishProducer, logger, ct);
-                    await FinalizeParsing(session, logger, ct);
-                    await FinishTransaction(transaction, logger, ct);
+                    await FinalizeParsing(session, logger, ct);                    
                     return;
                 }
 
                 await PublishAddContainedItemsMessage(session, advertisements, addProducer, ct);
-                await FinalizeAdvertisements(advertisements, session, logger, ct);
-                await FinishTransaction(transaction, logger, ct);
+                await FinalizeAdvertisements(advertisements, session, logger, ct);            
             };
     }
 
@@ -147,20 +131,7 @@ public static class FinalizationStage
     private static bool CanSwitchNextStage(DromAdvertisementFromPage[] advertisements)
     {
         return advertisements.Length == 0;
-    }
-
-    private static async Task FinishTransaction(
-        ITransactionScope transaction,
-        Serilog.ILogger logger,
-        CancellationToken ct
-    )
-    {
-        Result result = await transaction.Commit(ct);
-        if (result.IsFailure)
-        {
-            logger.Fatal(result.Error, "Failed to commit transaction");
-        }
-    }
+    }    
 
     private static async Task FinalizeAdvertisements(
         DromAdvertisementFromPage[] advertisements,
@@ -179,16 +150,7 @@ public static class FinalizationStage
     {
         QueryDromAdvertisements query = new(Limit: 50, WithLock: true);
         return await DromAdvertisementFromPage.GetMany(session, query, CancellationToken.None);
-    }
-
-    private static async Task<Maybe<ParserWorkStage>> GetFinalizationStage(NpgSqlSession session)
-    {
-        ParserWorkStageStoringImplementation.ParserWorkStageQuery query = new(
-            Name: ParserWorkStageConstants.FINALIZATION,
-            WithLock: true
-        );
-        return await ParserWorkStage.FromDb(session, query);
-    }
+    }    
 
     private static async Task RemoveWorkingParserInformation(
         NpgSqlSession session,

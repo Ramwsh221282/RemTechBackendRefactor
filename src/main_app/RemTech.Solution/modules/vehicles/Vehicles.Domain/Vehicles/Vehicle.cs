@@ -110,7 +110,7 @@ public sealed class Vehicle(
 	/// <param name="characteristics">Коллекция характеристик для добавления.</param>
 	public void AddCharacteristics(IEnumerable<VehicleCharacteristicToAdd> characteristics)
 	{
-		VehicleCharacteristicByNameComparer comparer = new VehicleCharacteristicByNameComparer();
+		VehicleCharacteristicByNameComparer comparer = new();
 		HashSet<VehicleCharacteristic> result = new(comparer);
 		foreach (VehicleCharacteristicToAdd characteristic in characteristics)
 		{
