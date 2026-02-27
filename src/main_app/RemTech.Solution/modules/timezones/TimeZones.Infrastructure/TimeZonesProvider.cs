@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Options;
 using Timezones.Core.Contracts;
@@ -54,11 +55,15 @@ internal sealed class TimeZonesProvider : ITimeZonesProvider
             .Add("key", key)
             .Add("format", "json")
             .Add("fields", "zoneName")
-            .Add("country", "ru")
+            .Add("country", "RU")
             .ApplyTo(uriBuilder);
 
         HttpResponseMessage response = await client.GetAsync(uriBuilder.Uri, ct);
-        response.EnsureSuccessStatusCode();
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            throw new InvalidOperationException("TimeZoneDb вернул не 200 статус при запросе чтения часовых поясов.");
+        }
+        
         await Task.Delay(TimeSpan.FromSeconds(RequestDelaySeconds), ct);
         return response;
     }
