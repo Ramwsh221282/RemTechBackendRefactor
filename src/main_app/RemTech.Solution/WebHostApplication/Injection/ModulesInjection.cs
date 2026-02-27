@@ -29,6 +29,7 @@ using Spares.WebApi.Extensions;
 using Telemetry.Core.ActionRecords;
 using Telemetry.Infrastructure;
 using Telemetry.Infrastructure.Migrations;
+using TimeZones.Infrastructure;
 using Vehicles.Domain.Vehicles;
 using Vehicles.Infrastructure.BackgroundServices;
 using Vehicles.Infrastructure.Vehicles.PersisterImplementation;
@@ -80,6 +81,8 @@ public static class ModulesInjection
 
 			services.DecorateQueryHandlersWith(typeof(CachingQueryHandler<,>));
 			services.DecorateQueryHandlersWith(typeof(LoggingQueryHandler<,>));
+
+			services.InjectTimeZonesModule();
 		}
 
 		private void DecorateCommandHandlersWith(Type decoratorType)

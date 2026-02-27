@@ -13,6 +13,7 @@
     <ProjectReference Include="..\modules\vehicles\Vehicles.WebApi\Vehicles.WebApi.csproj" />
     <ProjectReference Include="..\modules\telemetry\Telemetry.Infrastructure\Telemetry.Infrastructure.csproj" />
     <ProjectReference Include="..\modules\telemetry\Telemetry.Core\Telemetry.Core.csproj" />
+    <ProjectReference Include="..\modules\timezones\TimeZones.Infrastructure\TimeZones.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DotNetEnv" Version="3.1.1" />

@@ -1,6 +1,6 @@
 namespace TimeZones.Infrastructure;
 
-public static class HttpRequestMessageConstructionModule
+internal static class HttpRequestMessageConstructionModule
 {
     extension(HttpRequestMessage)
     {

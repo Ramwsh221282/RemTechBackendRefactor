@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using RemTech.SharedKernel.Configurations;
+using TimeZones.Infrastructure;
 
 namespace WebHostApplication.Injection;
 
@@ -61,6 +62,7 @@ public static class AppsettingsConfigurationInjection
 			JwtOptions jwt = GetConfiguration<JwtOptions>(sp);
 			CachingOptions caching = GetConfiguration<CachingOptions>(sp);
 			AesEncryptionOptions aes = GetConfiguration<AesEncryptionOptions>(sp);
+			TimeZonesProviderOptions tzOptions = GetConfiguration<TimeZonesProviderOptions>(sp);
 
 			ValidateEmbeddingsProviderOptions(errors, embeddings);
 			ValidateFrontendOptions(errors, frontend);
@@ -71,6 +73,7 @@ public static class AppsettingsConfigurationInjection
 			ValidateBcryptOptions(errors, bcrypt);
 			ValidateRabbitMqOptions(errors, rabbitMq);
 			ValidateNpgSqlOptions(errors, npgSql);
+			ValidateTimeZoneProviderOptions(errors, tzOptions);
 
 			ThrowIfContainsErrors(errors);
 		}
@@ -100,6 +103,15 @@ public static class AppsettingsConfigurationInjection
 		if (string.IsNullOrWhiteSpace(options.Url))
 		{
 			errors.Add("FrontendOptions.Url не задан.");
+		}
+	}
+
+	private static void ValidateTimeZoneProviderOptions(List<string> errors, TimeZonesProviderOptions options)
+	{
+		string apiKey = options.ApiKey;
+		if (string.IsNullOrWhiteSpace(apiKey))
+		{
+			errors.Add("Time Zones Provider options ApiKey из TimeScaleDb не задан.");
 		}
 	}
 

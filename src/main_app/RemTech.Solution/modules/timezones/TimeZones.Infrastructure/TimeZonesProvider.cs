@@ -5,20 +5,50 @@ using Timezones.Core.Models;
 
 namespace TimeZones.Infrastructure;
 
-public sealed class TimeZonesProvider : ITimeZonesProvider
-{
-    private readonly TimeZonesProviderOptions _options;
-
+internal sealed class TimeZonesProvider : ITimeZonesProvider
+{    
     public TimeZonesProvider(IOptions<TimeZonesProviderOptions> options)
-    {
-        _options = options.Value;
+    {        
+        _options = options;
     }
 
-    public async Task<Dictionary<string, TimeZoneInfo>> FetchTimeZones(CancellationToken ct = default)
-    {
-        string key = _options.ApiKey;
-        const string requestUrl = "http://api.timezonedb.com/v2.1/list-time-zone";
+    private readonly IOptions<TimeZonesProviderOptions> _options;
+    private TimeZonesProviderOptions Options => _options.Value;    
+    private const int RequestDelaySeconds = 3;
 
+    public async Task<Dictionary<string, TimeZoneRecord>> FetchTimeZones(CancellationToken ct = default)
+    {        
+        string key = Options.ApiKey;        
+        using HttpClientHandler handler = new() { UseProxy = false };        
+        using HttpClient client = new(handler);
+        using HttpResponseMessage response = await InvokeRequest(client, key, ct);                
+        return await ParseResponseMessage(response, ct);                        
+    }    
+
+    private static async Task<Dictionary<string, TimeZoneRecord>> ParseResponseMessage(HttpResponseMessage response, CancellationToken ct)
+    {
+        TimeZoneListResponse? responseResult = await response
+            .Content
+            .ReadFromJsonAsync<TimeZoneListResponse>(cancellationToken: ct);
+        
+        if (responseResult is null)
+        {
+            return [];
+        }
+
+        Dictionary<string, TimeZoneRecord> result = [];
+        foreach (TimeZoneRecord record in responseResult.Zones)
+        {
+            string zoneName = record.ZoneName;
+            result.Add(zoneName, record);
+        }
+
+        return result;
+    }
+
+    private static async Task<HttpResponseMessage> InvokeRequest(HttpClient client, string key, CancellationToken ct)
+    {
+        const string requestUrl = "http://api.timezonedb.com/v2.1/list-time-zone";
         UriBuilder uriBuilder = new(requestUrl);
         new HttpRequestQueryBuilder()
             .Add("key", key)
@@ -27,28 +57,10 @@ public sealed class TimeZonesProvider : ITimeZonesProvider
             .Add("country", "ru")
             .ApplyTo(uriBuilder);
 
-        using HttpClientHandler handler = new() { UseProxy = false };
-        using HttpClient client = new(handler);
         HttpResponseMessage response = await client.GetAsync(uriBuilder.Uri, ct);
         response.EnsureSuccessStatusCode();
-
-        TimeZoneListResponse? responseResult = await response
-            .Content
-            .ReadFromJsonAsync<TimeZoneListResponse>(cancellationToken: ct);
-
-        if (responseResult is null)
-        {
-            return [];
-        }
-
-        Dictionary<string, TimeZoneInfo> result = [];
-        foreach (TimeZoneRecord record in responseResult.Zones)
-        {
-            string zoneName = record.ZoneName;
-            result.Add(zoneName, TimeZoneInfo.FindSystemTimeZoneById(zoneName));
-        }
-
-        return result;
+        await Task.Delay(TimeSpan.FromSeconds(RequestDelaySeconds), ct);
+        return response;
     }
 
     private sealed class TimeZoneListResponse

@@ -2,7 +2,7 @@ using System.Collections.Specialized;
 
 namespace TimeZones.Infrastructure;
 
-public sealed class HttpRequestQueryBuilder
+internal sealed class HttpRequestQueryBuilder
 {
     private readonly NameValueCollection _query = System.Web.HttpUtility.ParseQueryString(string.Empty);
 
