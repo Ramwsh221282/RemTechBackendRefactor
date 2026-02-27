@@ -13,13 +13,12 @@ public sealed class TimeZonesController : ControllerBase
 {
     [HttpGet]
     public async Task<Envelope> GetTimeZones(
-        [FromServices] IQueryHandler<GetTimeZonesQuery, IReadOnlyList<TimeZoneRecord>> handler,
+        [FromServices] IQueryHandler<GetRegionLocalDateTimes, IReadOnlyList<RegionLocalDateTime>> handler,
         CancellationToken ct = default
     )
     {
-        GetTimeZonesQuery query = new();
-        IReadOnlyList<TimeZoneRecord> records = await handler.Handle(query, ct);
-        IReadOnlyList<TimeZoneModuleResponses.TimeZoneRecordResponse> response = TimeZoneModuleResponses.TimeZoneRecordResponse.From(records);
-        return EnvelopedResultsExtensions.AsEnvelope(response);
+        GetRegionLocalDateTimes query = new();
+        IReadOnlyList<RegionLocalDateTime> records = await handler.Handle(query, ct);        
+        return EnvelopedResultsExtensions.AsEnvelope(records);
     }
 }

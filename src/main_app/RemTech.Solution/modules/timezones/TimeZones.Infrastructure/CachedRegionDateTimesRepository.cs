@@ -6,36 +6,31 @@ using Timezones.Core.Models;
 
 namespace TimeZones.Infrastructure;
 
-internal sealed class CachedTimeZonesRepository : ITimeZonesRepository
+internal sealed class CachedRegionDateTimesRepository : IRegionDateTimesRepository
 {
-    public CachedTimeZonesRepository(IOptions<CachingOptions> options)
+    public CachedRegionDateTimesRepository(IOptions<CachingOptions> options)
     {
         _options = options;                
     }
 
-    private const string TIMEZONES_ARRAY_KEY = "TIME_ZONES_ARRAY";
+    private const string TIMEZONES_ARRAY_KEY = "REGION_DATE_TIMES_ARRAY";
     private readonly IOptions<CachingOptions> _options;
     private static readonly Expiration _expiration = new(TimeSpan.FromMinutes(5));
     private ConnectionMultiplexer? _multiplexer;
     private IDatabase? _database;    
 
-    public async Task Refresh(IReadOnlyList<TimeZoneRecord> records)
+    public async Task Refresh(IReadOnlyList<RegionLocalDateTime> dateTimes)
     {
-        string json = TimeZoneRecord.ToJson(records);
+        string json = dateTimes.ToJson();
         IDatabase database = await Database();
         await database.StringSetAsync(TIMEZONES_ARRAY_KEY, json, _expiration);
     }
 
-    public async Task<Dictionary<string, TimeZoneRecord>> ProvideTimeZones()
+    public async Task<IReadOnlyList<RegionLocalDateTime>> ProvideDateTimes()
     {
         IDatabase database = await Database();
         string? json = await database.StringGetAsync(TIMEZONES_ARRAY_KEY);
-        if (json is null)
-        {
-            return [];
-        }
-
-        return TimeZoneRecord.ToDictionary(json);
+        return string.IsNullOrWhiteSpace(json) ? [] : RegionLocalDateTime.ToList(json);
     }
     
     private async Task<ConnectionMultiplexer> Multiplexer()
@@ -49,5 +44,5 @@ internal sealed class CachedTimeZonesRepository : ITimeZonesRepository
         ConnectionMultiplexer multiplexer = await Multiplexer();
         _database ??= multiplexer.GetDatabase();
         return _database;
-    } 
+    }    
 }

@@ -12,10 +12,9 @@ internal static class TimeZoneRecordsStoringModule
             using JsonDocument document = JsonDocument.Parse(json);
             Dictionary<string, TimeZoneRecord> records = [];
             foreach (JsonElement element in document.RootElement.EnumerateArray())
-            {
-                string name = element.GetProperty("ZoneName").GetString()!;
-                TimeZoneRecord record = new() { ZoneName = name, };
-                records[name] = record;
+            {                
+                TimeZoneRecord record = ParseSingleJsonToTimeZoneRecord(element);
+                records[record.ZoneName] = record;
             }
 
             return records;
@@ -40,6 +39,14 @@ internal static class TimeZoneRecordsStoringModule
         public static IReadOnlyList<TimeZoneRecord> ToList(Dictionary<string, TimeZoneRecord> dict)
         {
             return [.. dict.Values];
+        }
+
+        private static TimeZoneRecord ParseSingleJsonToTimeZoneRecord(JsonElement element)
+        {
+            string name = element.GetProperty("ZoneName").GetString()!;
+            ulong gmtOffset = element.GetProperty("GmtOffset").GetUInt64();
+            ulong timeStamp = element.GetProperty("Timestamp").GetUInt64();
+            return new TimeZoneRecord { ZoneName = name, GmtOffset = gmtOffset, Timestamp = timeStamp };
         }
     }
 }

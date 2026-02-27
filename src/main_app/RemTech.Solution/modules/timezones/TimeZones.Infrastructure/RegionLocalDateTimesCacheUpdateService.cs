@@ -4,17 +4,17 @@ using Timezones.Core.Models;
 
 namespace TimeZones.Infrastructure;
 
-internal sealed class TimeZoneRecordsCacheUpdateService : BackgroundService
+internal sealed class RegionLocalDateTimesCacheUpdateService : BackgroundService
 {
-    public TimeZoneRecordsCacheUpdateService(ITimeZonesProvider provider, ITimeZonesRepository repository, Serilog.ILogger logger)
+    public RegionLocalDateTimesCacheUpdateService(ITimeZonesProvider provider, IRegionDateTimesRepository repository, Serilog.ILogger logger)
     {
         _provider = provider;
         _repository = repository;
-        _logger = logger.ForContext<TimeZoneRecordsCacheUpdateService>();
+        _logger = logger.ForContext<RegionLocalDateTimesCacheUpdateService>();
     }
 
     private readonly ITimeZonesProvider _provider;
-    private readonly ITimeZonesRepository _repository;
+    private readonly IRegionDateTimesRepository _repository;
     private readonly Serilog.ILogger _logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -38,7 +38,7 @@ internal sealed class TimeZoneRecordsCacheUpdateService : BackgroundService
     {
         Dictionary<string, TimeZoneRecord> timeZones = await _provider.FetchTimeZones(ct);
         IReadOnlyList<TimeZoneRecord> records = TimeZoneRecord.ToList(timeZones);
-        await _repository.Refresh(records);
-        await Task.Delay(TimeSpan.FromMinutes(5), ct);
+        IReadOnlyList<RegionLocalDateTime> dateTimes = records.ToRegionLocalDateTimes();
+        await _repository.Refresh(dateTimes);        
     }
 }

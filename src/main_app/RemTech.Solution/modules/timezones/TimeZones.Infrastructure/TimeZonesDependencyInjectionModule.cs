@@ -14,9 +14,9 @@ public static class TimeZonesDependencyInjectionModule
         {                    
             services.AddOptions<TimeZonesProviderOptions>().BindConfiguration(nameof(TimeZonesProviderOptions));            
             services.TryAddSingleton<ITimeZonesProvider, TimeZonesProvider>();
-            services.TryAddSingleton<ITimeZonesRepository, CachedTimeZonesRepository>();
-            services.TryAddScoped<IQueryHandler<GetTimeZonesQuery, IReadOnlyList<TimeZoneRecord>>, GetTimeZonesQueryHandler>();
-            services.AddHostedService<TimeZoneRecordsCacheUpdateService>();
+            services.TryAddSingleton<IRegionDateTimesRepository, CachedRegionDateTimesRepository>();
+            services.TryAddScoped<IQueryHandler<GetRegionLocalDateTimes, IReadOnlyList<RegionLocalDateTime>>, GetRegionLocalDateTimesQueryHandler>();
+            services.AddHostedService<RegionLocalDateTimesCacheUpdateService>();
         }
     }
 }

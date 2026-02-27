@@ -54,7 +54,7 @@ internal sealed class TimeZonesProvider : ITimeZonesProvider
         new HttpRequestQueryBuilder()
             .Add("key", key)
             .Add("format", "json")
-            .Add("fields", "zoneName")
+            .Add("fields", "zoneName,gmtOffset,timestamp")
             .Add("country", "RU")
             .ApplyTo(uriBuilder);
 
