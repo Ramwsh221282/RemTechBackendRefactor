@@ -4,7 +4,7 @@ using Timezones.Core.Models;
 
 namespace TimeZones.Infrastructure;
 
-internal sealed class GetRegionLocalDateTimesQueryHandler : IQueryHandler<GetRegionLocalDateTimes, IReadOnlyList<RegionLocalDateTime>>
+internal sealed class GetRegionLocalDateTimesQueryHandler : IQueryHandler<GetRegionLocalDateTimesQuery, IReadOnlyList<RegionLocalDateTime>>
 {
     public GetRegionLocalDateTimesQueryHandler(IRegionDateTimesRepository repository)
     {
@@ -13,7 +13,7 @@ internal sealed class GetRegionLocalDateTimesQueryHandler : IQueryHandler<GetReg
 
     private readonly IRegionDateTimesRepository _repository;
 
-    public async Task<IReadOnlyList<RegionLocalDateTime>> Handle(GetRegionLocalDateTimes query, CancellationToken ct = default)
+    public async Task<IReadOnlyList<RegionLocalDateTime>> Handle(GetRegionLocalDateTimesQuery query, CancellationToken ct = default)
     {
         IReadOnlyList<RegionLocalDateTime> dateTimes = await _repository.ProvideDateTimes();
         return dateTimes;        

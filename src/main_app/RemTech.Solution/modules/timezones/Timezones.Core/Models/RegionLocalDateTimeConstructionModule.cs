@@ -24,7 +24,7 @@ public static class RegionLocalDateTimeConstructionModule
             return FromPlainDateTimeInfo(record, plainDateTime);
         }
 
-        private PlainDateTimeInfo ToPlainDateTimeInfo()
+        public PlainDateTimeInfo ToPlainDateTimeInfo()
         {
             ulong localSeconds = record.Timestamp;
             int year = CalculateCurrentYear(localSeconds);

@@ -3,8 +3,9 @@ using RemTech.SharedKernel.Configurations;
 using StackExchange.Redis;
 using Timezones.Core.Contracts;
 using Timezones.Core.Models;
+using TimeZones.Infrastructure;
 
-namespace TimeZones.Infrastructure;
+namespace TimeZones.Infrastructure.Persistence;
 
 internal sealed class CachedRegionDateTimesRepository : IRegionDateTimesRepository
 {

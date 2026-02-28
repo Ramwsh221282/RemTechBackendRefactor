@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using RemTech.SharedKernel.Core.Handlers;
 using Timezones.Core.Contracts;
 using Timezones.Core.Models;
+using TimeZones.Infrastructure.Persistence;
 
 namespace TimeZones.Infrastructure;
 
@@ -15,7 +16,7 @@ public static class TimeZonesDependencyInjectionModule
             services.AddOptions<TimeZonesProviderOptions>().BindConfiguration(nameof(TimeZonesProviderOptions));            
             services.TryAddSingleton<ITimeZonesProvider, TimeZonesProvider>();
             services.TryAddSingleton<IRegionDateTimesRepository, CachedRegionDateTimesRepository>();
-            services.TryAddScoped<IQueryHandler<GetRegionLocalDateTimes, IReadOnlyList<RegionLocalDateTime>>, GetRegionLocalDateTimesQueryHandler>();
+            services.TryAddScoped<IQueryHandler<GetRegionLocalDateTimesQuery, IReadOnlyList<RegionLocalDateTime>>, GetRegionLocalDateTimesQueryHandler>();
             services.AddHostedService<RegionLocalDateTimesCacheUpdateService>();
         }
     }
