@@ -4,27 +4,29 @@ using RemTech.SharedKernel.Infrastructure.Database;
 using Serilog;
 using Serilog.Core;
 using SwaggerThemes;
+using WebHostApplication;
 using WebHostApplication.Injection;
 using WebHostApplication.Middlewares;
 using WebHostApplication.Middlewares.Telemetry;
 
 // TODO: Add rate limiters.
 
-// TODO: Add response compression.
+// TODO: Add response compression
 
 Logger logger = new LoggerConfiguration().Enrich.With(new ClassNameLogEnricher()).WriteTo.Console().CreateLogger();
 logger.Information("Запуск веб-приложения.");
+DatabaseExplorer.LogLastMigrationLevel(logger);
 
 try
 {
 	WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 	builder.ConfigureKestrelServer();
 
-    builder.Services.Configure<HostOptions>(x =>
-    {
-        x.StartupTimeout = TimeSpan.FromMinutes(1);
-    });
-    
+	builder.Services.Configure<HostOptions>(x =>
+	{
+		x.StartupTimeout = TimeSpan.FromMinutes(1);
+	});
+
 	bool isDevelopment = builder.Environment.IsDevelopment();
 	if (isDevelopment)
 	{
@@ -48,8 +50,8 @@ try
 	logger.Information("Миграции модулей зарегистрированы.");
 
 	builder.Services.AddSwaggerGen();
-    builder.Services.AddControllers();
-    
+	builder.Services.AddControllers();
+
 	builder.Services.AddEndpointsApiExplorer();
 	logger.Information("Контроллеры зарегистрированы.");
 
@@ -58,29 +60,29 @@ try
 
 	WebApplication app = builder.Build();
 
-    IHostApplicationLifetime lifeTime = app.Services.GetRequiredService<IHostApplicationLifetime>();
-    lifeTime.ApplicationStarted.Register(() =>
-    {
-        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
-        GC.WaitForPendingFinalizers();
-        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
-    });
-    
+	IHostApplicationLifetime lifeTime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+	lifeTime.ApplicationStarted.Register(() =>
+	{
+		GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
+		GC.WaitForPendingFinalizers();
+		GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
+	});
+
 	await app.ValidateConfigurations();
-    
-    logger.Information("Применение миграций модулей...");
+
+	logger.Information("Применение миграций модулей...");
 	app.Services.ApplyModuleMigrations();
-    
+
 	logger.Information("Настройка middleware...");
-    app.UseHttpsRedirection();
-    app.UseCors("frontend");
-    app.MapControllers();
-    app.UseSwagger();
-    app.UseHttpsRedirection();
+	app.UseHttpsRedirection();
+	app.UseCors("frontend");
+	app.MapControllers();
+	app.UseSwagger();
+	app.UseHttpsRedirection();
 
 	app.UseSwaggerUI(Theme.UniversalDark);
 	app.UseMiddleware<ExceptionMiddleware>();
-    app.UseMiddleware<TelemetryRecordWritingMiddleware>();
+	app.UseMiddleware<TelemetryRecordWritingMiddleware>();
 
 	logger.Information("Запуск приложения...");
 	app.Run();
