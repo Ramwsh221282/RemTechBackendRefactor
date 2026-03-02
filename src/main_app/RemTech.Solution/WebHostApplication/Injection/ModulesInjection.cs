@@ -29,7 +29,9 @@ using Spares.WebApi.Extensions;
 using Telemetry.Core.ActionRecords;
 using Telemetry.Infrastructure;
 using Telemetry.Infrastructure.Migrations;
+using Timezones.Core.Models;
 using TimeZones.Infrastructure;
+using TimeZones.Infrastructure.Migrations;
 using Vehicles.Domain.Vehicles;
 using Vehicles.Infrastructure.BackgroundServices;
 using Vehicles.Infrastructure.Vehicles.PersisterImplementation;
@@ -80,9 +82,7 @@ public static class ModulesInjection
 			services.DecorateCommandHandlersWith(typeof(LoggingCommandHandler<,>));
 
 			services.DecorateQueryHandlersWith(typeof(CachingQueryHandler<,>));
-			services.DecorateQueryHandlersWith(typeof(LoggingQueryHandler<,>));
-
-			services.InjectTimeZonesModule();
+			services.DecorateQueryHandlersWith(typeof(LoggingQueryHandler<,>));			
 		}
 
 		private void DecorateCommandHandlersWith(Type decoratorType)
@@ -142,6 +142,7 @@ public static class ModulesInjection
 			ContainedItemsModuleInjection.RegisterInfrastructure(services);
 			SparesModuleInjection.RegisterSparesInfrastructure(services);
 			VehiclesModuleInjection.RegisterInfrastructureLayerDependencies(services);
+			TimeZonesDependencyInjectionModule.RegisterInfrastructure(services);
 		}
 
 		private void AddTelemetryModule()
@@ -177,8 +178,11 @@ public static class ModulesInjection
 			// telemetry module
 			typeof(ActionRecord).Assembly,
 			typeof(ActionRecordsTableMigration).Assembly,
+			// timezones module
+			typeof(RegionLocalDateTime).Assembly,
+			typeof(ApplicationTimeZonesSchemaMigration).Assembly,
 			// current assembly
-			typeof(GetActionRecordsQuery).Assembly,
+			typeof(GetActionRecordsQuery).Assembly,			
 		];
 	}
 }

@@ -6,4 +6,5 @@ public interface IRegionDateTimesRepository
 {
     Task Refresh(IReadOnlyList<RegionLocalDateTime> dateTimes);
     Task<IReadOnlyList<RegionLocalDateTime>> ProvideDateTimes();
+    Task Save(RegionLocalDateTime dateTime, CancellationToken ct = default);        
 }

@@ -2,7 +2,7 @@ using RemTech.SharedKernel.Core.Handlers;
 using Timezones.Core.Contracts;
 using Timezones.Core.Models;
 
-namespace TimeZones.Infrastructure.Queries;
+namespace TimeZones.Infrastructure.Queries.GetRegionLocalDateTimes;
 
 internal sealed class GetRegionLocalDateTimesQueryHandler
 	: IQueryHandler<GetRegionLocalDateTimesQuery, IReadOnlyList<RegionLocalDateTime>>
